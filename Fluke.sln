@@ -1,0 +1,85 @@
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".paket", ".paket", "{AC1CE2EB-72D2-480C-889B-C4940CBC5578}"
+	ProjectSection(SolutionItems) = preProject
+		paket.dependencies = paket.dependencies
+	EndProjectSection
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.Shared", "src\Fluke.Shared\Fluke.Shared.fsproj", "{1BC0C538-C979-4F53-AE78-01857D7AB278}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.Shared.Tests", "test\Fluke.Shared.Tests\Fluke.Shared.Tests.fsproj", "{58AF0C5F-09F6-4F4A-9A56-3F6676BD5B86}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Frontend", "src\Fluke.UI.Frontend\Fluke.UI.Frontend.fsproj", "{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{74A00DAC-A1C6-400D-8181-30373D536EB9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D9ACD469-4657-4966-9E60-BCE40BC88944}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{324E3A97-C70E-49FC-B512-42A855CFB4B9}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.Core", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj", "{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.CoreCLR", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.CoreCLR\Suigetsu.CoreCLR.fsproj", "{C18B4D7D-1232-444B-8F27-2A590CA552CD}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.Testing", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Testing\Suigetsu.Testing.fsproj", "{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.UI.ElmishBridge.Frontend", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI.ElmishBridge.Frontend\Suigetsu.UI.ElmishBridge.Frontend.fsproj", "{06F44E61-A596-467E-974C-240FE08F0A04}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.UI", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI\Suigetsu.UI.fsproj", "{1060C22D-A36B-4430-9489-678AA6BF6E3B}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Elmish.Bridge.Client", "paket-files\github.com\fc1943s\Suigetsu\paket-files\suigetsu.ui.elmishbridge.frontend\github.com\fc1943s\Elmish.Bridge\src\Client\Elmish.Bridge.Client.fsproj", "{2113C1F6-5A26-454B-AE64-90191FEBD151}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1BC0C538-C979-4F53-AE78-01857D7AB278}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BC0C538-C979-4F53-AE78-01857D7AB278}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BC0C538-C979-4F53-AE78-01857D7AB278}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BC0C538-C979-4F53-AE78-01857D7AB278}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58AF0C5F-09F6-4F4A-9A56-3F6676BD5B86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58AF0C5F-09F6-4F4A-9A56-3F6676BD5B86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58AF0C5F-09F6-4F4A-9A56-3F6676BD5B86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58AF0C5F-09F6-4F4A-9A56-3F6676BD5B86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C18B4D7D-1232-444B-8F27-2A590CA552CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C18B4D7D-1232-444B-8F27-2A590CA552CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C18B4D7D-1232-444B-8F27-2A590CA552CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C18B4D7D-1232-444B-8F27-2A590CA552CD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}.Release|Any CPU.Build.0 = Release|Any CPU
+		{06F44E61-A596-467E-974C-240FE08F0A04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{06F44E61-A596-467E-974C-240FE08F0A04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{06F44E61-A596-467E-974C-240FE08F0A04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{06F44E61-A596-467E-974C-240FE08F0A04}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1060C22D-A36B-4430-9489-678AA6BF6E3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1060C22D-A36B-4430-9489-678AA6BF6E3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1060C22D-A36B-4430-9489-678AA6BF6E3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1060C22D-A36B-4430-9489-678AA6BF6E3B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2113C1F6-5A26-454B-AE64-90191FEBD151}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2113C1F6-5A26-454B-AE64-90191FEBD151}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2113C1F6-5A26-454B-AE64-90191FEBD151}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2113C1F6-5A26-454B-AE64-90191FEBD151}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{58AF0C5F-09F6-4F4A-9A56-3F6676BD5B86} = {D9ACD469-4657-4966-9E60-BCE40BC88944}
+		{1BC0C538-C979-4F53-AE78-01857D7AB278} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
+		{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
+		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
+		{C18B4D7D-1232-444B-8F27-2A590CA552CD} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
+		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
+		{06F44E61-A596-467E-974C-240FE08F0A04} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
+		{1060C22D-A36B-4430-9489-678AA6BF6E3B} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
+		{2113C1F6-5A26-454B-AE64-90191FEBD151} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
+	EndGlobalSection
+EndGlobal

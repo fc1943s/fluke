@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="PrivateData.fs" />
+    <Compile Include="ExtTypes.fs" />
+    <Compile Include="Element.fs" />
+    <Compile Include="Ext.fs" />
+    <Compile Include="HomePageComponent.fs" />
+    <Compile Include="MainView.fs" />
+    <Compile Include="Client.fs" />
+    <Content Include="paket.references" />
+    <Content Include="package.json" />
+    <Content Include="webpack.config.js" />
+    <Content Include="build.fsx" />
+    <Content Include="public\index.js" />
+    <Content Include="public\index.scss" />
+    <Content Include="public\index.html" />
+    <Content Include="public\index.jsx" />
+    <Content Include="public\index.ts" />
+    <Content Include="public\index.tsx" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj" />
+    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI.ElmishBridge.Frontend\Suigetsu.UI.ElmishBridge.Frontend.fsproj" />
+    <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>
