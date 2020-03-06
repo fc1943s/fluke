@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend
 
+open Browser
 open Fluke.Shared
 open Suigetsu.Core
 open Fable.React
@@ -30,6 +31,9 @@ module Functions =
         minDate
         |> loop
         |> Seq.toList
+        
+    let isToday (date: DateTime) =
+        date.Date = DateTime.Now.Date.AddDays (if DateTime.Now.Hour < Model.hourOffset then -1. else 0.)
         
     
 module HomePageComponent =
@@ -102,15 +106,13 @@ module HomePageComponent =
                 ]
                 
                 div [][
-                    div [ Style [Display DisplayOptions.Flex ] ][
+                    div [ Style [ Display DisplayOptions.Flex ] ][
                         dateRange
                         |> List.map (fun date ->
                             span [ Key (date.ToString ())
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center
-                                           Color (if date.Date = DateTime.Now.Date.AddDays (if DateTime.Now.Hour < Model.hourOffset
-                                                                                            then -1. else 0.)
-                                                  then "#f22" else "") ] ][
+                                           Color (if Functions.isToday date then "#f22" else "") ] ][
                                 str (date.Day.ToString "D2")
                             ]
                         )
@@ -136,6 +138,7 @@ module HomePageComponent =
                                     div [ Key (date.ToString ())
                                           Style [ Width 18
                                                   Height 18
+                                                  Opacity (if Functions.isToday date then 0.8 else 1.)
                                                   BackgroundColor cellStatus.CellColor ] ][]
                             )
                             |> ofList

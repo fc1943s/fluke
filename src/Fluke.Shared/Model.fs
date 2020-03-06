@@ -84,7 +84,7 @@ module Model =
             | Pending -> "#262626"
             | EventStatus status ->
                 match status with
-                | Missed -> "#339933"
+                | Missed -> "#990022"
                 | Postponed -> "#b08200"
                 | Complete -> "#339933"
         
