@@ -131,9 +131,9 @@ module HomePageComponent =
                                         PrivateData.cellEvents
                                         |> List.tryFindBack (fun cell -> cell.Task.Name = task.Name && cell.Date.Date = date.Date)
                                     
-                                    let cellComment =
+                                    let cellComments =
                                         PrivateData.cellComments
-                                        |> List.tryFindBack (fun cell -> cell.Task.Name = task.Name && cell.Date.Date = date.Date)
+                                        |> List.filter (fun cell -> cell.Task.Name = task.Name && cell.Date.Date = date.Date)
                                         
                                     cellEvent
                                     |> function
@@ -149,12 +149,35 @@ module HomePageComponent =
                                                       Opacity (if Functions.isToday date then 0.8 else 1.)
                                                       BackgroundColor cellStatus.CellColor ] ][]
                                         
-                                    if cellComment.IsSome then
+                                    if cellComments |> List.isEmpty |> not then
                                         div [ Style [ Position PositionOptions.Absolute
                                                       BorderTop "8px solid #f00"
                                                       BorderLeft "8px solid transparent"
                                                       Right 0
                                                       Top 0 ] ][]
+                                        
+                                        div [ Style [ Position PositionOptions.Absolute
+                                                      Padding 20
+                                                      MinWidth 200
+                                                      BackgroundColor "#000"
+                                                      Opacity 0.7
+                                                      Left 18
+                                                      ZIndex 1
+                                                      Top 0 ] ][
+                                            
+                                            cellComments
+                                            |> List.map (fun comment ->
+                                                div [][
+                                                    ReactBindings.React.createElement
+                                                        (Ext.reactMarkdown,
+                                                            {| source = comment.Comment |}, [])
+                                                ]
+                                            )
+                                            |> ofList
+                                            
+                                        ]
+                                        
+                                        
                                 ]
                             )
                             |> ofList

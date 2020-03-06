@@ -4,8 +4,6 @@ open Suigetsu.UI
 open Suigetsu.UI.ElmishBridge.Frontend
 
 module MainView =
-    Ext.load ()
-    
     let lazyView (props: Client.MainViewProps<SharedState.SharedServerMessage, UIState.State>) =
 
         let dispatch =
