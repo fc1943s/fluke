@@ -125,21 +125,37 @@ module HomePageComponent =
                               Style [ Display DisplayOptions.Flex ] ][
                             dateRange
                             |> List.map (fun date ->
-                                PrivateData.cellEvents
-                                |> List.tryFindBack (fun cell -> cell.Task.Name = task.Name && cell.Date.Date = date.Date)
-                                |> function
-                                    | Some event -> Model.EventStatus event.Status
-                                    | None ->
-                                        match task.Scheduling with
-                                        | Model.Disabled -> Model.CellStatus.Disabled
-                                        | Model.Optional -> Model.CellStatus.Optional
-                                        | Model.Recurrency interval -> Model.Pending
-                                |> fun cellStatus ->
-                                    div [ Key (date.ToString ())
-                                          Style [ Width 18
-                                                  Height 18
-                                                  Opacity (if Functions.isToday date then 0.8 else 1.)
-                                                  BackgroundColor cellStatus.CellColor ] ][]
+                                div [ Key (date.ToString ())
+                                      Style [ Position PositionOptions.Relative ] ][
+                                    let cellEvent =
+                                        PrivateData.cellEvents
+                                        |> List.tryFindBack (fun cell -> cell.Task.Name = task.Name && cell.Date.Date = date.Date)
+                                    
+                                    let cellComment =
+                                        PrivateData.cellComments
+                                        |> List.tryFindBack (fun cell -> cell.Task.Name = task.Name && cell.Date.Date = date.Date)
+                                        
+                                    cellEvent
+                                    |> function
+                                        | Some event -> Model.EventStatus event.Status
+                                        | None ->
+                                            match task.Scheduling with
+                                            | Model.Disabled -> Model.CellStatus.Disabled
+                                            | Model.Optional -> Model.CellStatus.Optional
+                                            | Model.Recurrency interval -> Model.Pending
+                                    |> fun cellStatus ->
+                                        div [ Style [ Width 18
+                                                      Height 18
+                                                      Opacity (if Functions.isToday date then 0.8 else 1.)
+                                                      BackgroundColor cellStatus.CellColor ] ][]
+                                        
+                                    if cellComment.IsSome then
+                                        div [ Style [ Position PositionOptions.Absolute
+                                                      BorderTop "8px solid #f00"
+                                                      BorderLeft "8px solid transparent"
+                                                      Right 0
+                                                      Top 0 ] ][]
+                                ]
                             )
                             |> ofList
                         ]

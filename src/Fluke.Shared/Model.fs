@@ -100,6 +100,7 @@ module Model =
     
     type CellComment = {
         Task: Task
+        Date: DateTime
         Comment: string
     }
         
