@@ -11,6 +11,7 @@ Heavily inspired by:
 Some features planned:
 - Quantum-safe data encryption
 - Vivaldi integration (via browser.html JavaScript injection or Chrome extension) to sync bookmarks
+- Telegram integration (fast link sharing)
 - YouTube playlists integration
 - Spotify playlists integration
 - Filmow lists integration
