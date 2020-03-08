@@ -79,6 +79,13 @@ module HomePageComponent =
                 
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
+                let topPadding =
+                    [ 1 .. 3 ]
+                    |> List.map (fun n ->
+                        div [ Key (string -n)
+                              DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
+                    )
+                    
                 div [ Style [ PaddingRight 10 ] ][
                     taskList
                     |> List.map (fun x ->
@@ -89,8 +96,7 @@ module HomePageComponent =
                             str x.InformationType.Name
                         ]
                     )
-                    |> List.append [ div [ Key ""
-                                           DangerouslySetInnerHTML { __html = "&nbsp;" } ][] ]
+                    |> List.append topPadding
                     |> ofList
                 ]
                 
@@ -100,8 +106,7 @@ module HomePageComponent =
                         div [ Key x.Name
                               Style [ Padding 0 ] ][ str x.Name ]
                     )
-                    |> List.append [ div [ Key ""
-                                           DangerouslySetInnerHTML { __html = "&nbsp;" } ][] ]
+                    |> List.append topPadding
                     |> ofList
                 ]
                 
@@ -109,7 +114,33 @@ module HomePageComponent =
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         dateRange
                         |> List.map (fun date ->
-                            span [ Key (date.ToString ())
+                            span [ Key (date.ToShortDateString ())
+                                   Style [ Width 18
+                                           TextAlign TextAlignOptions.Center ] ][
+                                
+                                str (date.Month.ToString ("D2"))
+                            ]
+                        )
+                        |> ofList
+                    ]
+                    
+                    div [ Style [ Display DisplayOptions.Flex ] ][
+                        dateRange
+                        |> List.map (fun date ->
+                            span [ Key (date.ToShortDateString ())
+                                   Style [ Width 18
+                                           TextAlign TextAlignOptions.Center ] ][
+                                
+                                str (date.ToString().ToLower().Substring (0, 2))
+                            ]
+                        )
+                        |> ofList
+                    ]
+                    
+                    div [ Style [ Display DisplayOptions.Flex ] ][
+                        dateRange
+                        |> List.map (fun date ->
+                            span [ Key (date.ToShortDateString ())
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center
                                            Color (if Functions.isToday date then "#f22" else "") ] ][
@@ -125,7 +156,7 @@ module HomePageComponent =
                               Style [ Display DisplayOptions.Flex ] ][
                             dateRange
                             |> List.map (fun date ->
-                                div [ Key (date.ToString ())
+                                div [ Key (date.ToShortDateString ())
                                       Style [ Position PositionOptions.Relative ] ][
                                     let cellEvent =
                                         PrivateData.cellEvents
@@ -160,14 +191,14 @@ module HomePageComponent =
                                                       Padding 20
                                                       MinWidth 200
                                                       BackgroundColor "#000"
-                                                      Opacity 0.7
+                                                      Opacity 0.4
                                                       Left 18
                                                       ZIndex 1
                                                       Top 0 ] ][
                                             
                                             cellComments
                                             |> List.map (fun comment ->
-                                                div [][
+                                                div [ Key (date.ToShortDateString ()) ][
                                                     ReactBindings.React.createElement
                                                         (Ext.reactMarkdown,
                                                             {| source = comment.Comment |}, [])
