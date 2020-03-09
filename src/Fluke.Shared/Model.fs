@@ -10,10 +10,6 @@ module Temp =
     
 
 module Model =
-    let hourOffset = 7
-    
-    let utcHour hour =
-        hour// - TimeZoneInfo.Local.BaseUtcOffset.Hours
     
     type Area =
         { Name: string }
@@ -92,17 +88,15 @@ module Model =
         { Date: DateTime
           Status: CellStatus }
         
-    type CellEvent = {
-        Task: Task
-        Date: DateTime
-        Status: CellEventStatus
-    }
+    type CellEvent =
+        { Task: Task
+          Date: DateTime
+          Status: CellEventStatus }
     
-    type CellComment = {
-        Task: Task
-        Date: DateTime
-        Comment: string
-    }
+    type CellComment =
+        { Task: Task
+          Date: DateTime
+          Comment: string }
         
     
     type TaskOrderPriority =

@@ -26,4 +26,4 @@ module Functions =
         |> Seq.toList
         
     let isToday (date: DateTime) =
-        date.Date = DateTime.Now.Date.AddDays (if DateTime.Now.Hour < Model.hourOffset then -1. else 0.)
+        date.Date = DateTime.Now.Date.AddDays (if DateTime.Now.Hour < PrivateData.hourOffset then -1. else 0.)
