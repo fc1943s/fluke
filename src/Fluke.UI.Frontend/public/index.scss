@@ -11,6 +11,16 @@ a {
   }
 }
 
+.cell {
+  .comment-container {
+    display: none;
+  }
+  
+  &:hover .comment-container {
+    display: block;
+  }
+}
+
 .tags.has-addons .tag {
   border: 1px solid #444;
   

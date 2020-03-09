@@ -24,7 +24,7 @@ module Ext =
     let flatted : ExtTypes.IFlatted = importAll "flatted/esm"
     let moment : obj -> ExtTypes.IMoment = importAll "moment"
     let reactMarkdown : obj -> obj = importDefault "react-markdown"
-
+    
     Dom.window?Ext <-
         {| flatted = flatted
            moment = moment

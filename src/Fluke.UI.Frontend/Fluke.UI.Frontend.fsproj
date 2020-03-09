@@ -8,6 +8,8 @@
     <Compile Include="Eager\Ext.fs" />
     <Compile Include="PrivateData.fs" />
     <Compile Include="Element.fs" />
+    <Compile Include="Functions.fs" />
+    <Compile Include="CellComponent.fs" />
     <Compile Include="HomePageComponent.fs" />
     <Compile Include="MainView.fs" />
     <Compile Include="Client.fs" />
