@@ -3,13 +3,19 @@
   color: #ddd;
 }
 
-.cell {
-  .comment-container {
-    display: none;
+.lane {
+  &:nth-child(even) {
+    opacity: 0.85;
   }
   
-  &:hover .comment-container {
-    display: block;
+  .cell {
+    .comment-container {
+      display: none;
+    }
+
+    &:hover .comment-container {
+      display: block;
+    }
   }
 }
 

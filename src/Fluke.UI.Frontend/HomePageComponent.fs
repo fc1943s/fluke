@@ -51,6 +51,7 @@ module HomePageComponent =
                 Model.getTaskList PrivateData.taskOrderList
                 |> List.filter (function { InformationType = Model.Project _ } -> false | _ -> true)
                 
+            // Columns
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
                 let topPadding =
@@ -60,6 +61,7 @@ module HomePageComponent =
                               DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
                     )
                     
+                // Information Type
                 div [ Style [ PaddingRight 10 ] ][
                     taskList
                     |> List.map (fun x ->
@@ -74,6 +76,7 @@ module HomePageComponent =
                     |> ofList
                 ]
                 
+                // Task Name
                 div [][
                     taskList
                     |> List.map (fun x ->
@@ -85,6 +88,7 @@ module HomePageComponent =
                 ]
                 
                 div [][
+                    // Month Row
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         dateRange
                         |> List.map (fun date ->
@@ -98,6 +102,7 @@ module HomePageComponent =
                         |> ofList
                     ]
                     
+                    // Day of Week Row
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         dateRange
                         |> List.map (fun date ->
@@ -111,6 +116,7 @@ module HomePageComponent =
                         |> ofList
                     ]
                     
+                    // Day Row
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         dateRange
                         |> List.map (fun date ->
@@ -128,6 +134,7 @@ module HomePageComponent =
                     |> List.map (fun task ->
                         
                         div [ Key task.Name
+                              Class "lane"
                               Style [ Display DisplayOptions.Flex ] ][
                             
                             dateRange
