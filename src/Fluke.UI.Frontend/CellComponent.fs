@@ -77,8 +77,7 @@ module CellComponent =
                                 (Ext.reactMarkdown,
                                     {| source = comment.Comment |}, [])
                         ]
-                    )
-                    |> ofList
+                    ) |> ofList
                 ]
         ]
     , memoizeWith = equalsButFunctions)

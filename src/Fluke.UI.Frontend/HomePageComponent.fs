@@ -98,8 +98,7 @@ module HomePageComponent =
                                 
                                 str (date.Month.ToString ("D2"))
                             ]
-                        )
-                        |> ofList
+                        ) |> ofList
                     ]
                     
                     // Day of Week Row
@@ -112,8 +111,7 @@ module HomePageComponent =
                                 
                                 str (date.ToString().ToLower().Substring (0, 2))
                             ]
-                        )
-                        |> ofList
+                        ) |> ofList
                     ]
                     
                     // Day Row
@@ -126,8 +124,7 @@ module HomePageComponent =
                                            Color (if Functions.isToday date then "#f22" else "") ] ][
                                 str (date.Day.ToString "D2")
                             ]
-                        )
-                        |> ofList
+                        ) |> ofList
                     ]
                             
                     taskList
@@ -146,11 +143,9 @@ module HomePageComponent =
                                         { Date = date
                                           Task = task }
                                 ]
-                            )
-                            |> ofList
+                            ) |> ofList
                         ]
-                    )
-                    |> ofList
+                    ) |> ofList
                 ]
             ]
         ]
