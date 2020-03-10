@@ -126,7 +126,21 @@ module Model =
 module Functions =
     
     let sortLanes (today: Model.FlukeDate) (lanes: Model.Lane list) =
+        let order = [
+            Model.Pending
+            Model.CellStatus.Optional
+            Model.EventStatus Model.Postponed
+            Model.EventStatus Model.Complete
+            Model.EventStatus Model.Missed
+            Model.CellStatus.Disabled
+        ]
+        
         lanes
+        |> List.sortBy (fun (Model.Lane (_, cells)) ->
+            cells
+            |> List.filter (fun cell -> cell.Date = today)
+            |> List.map (fun cell -> order |> List.tryFindIndex (fun status -> status = cell.Status))
+        )
     
     let getManualSortedTaskList (taskOrderList: Model.TaskOrderEntry list) =
         let result = List<Model.Task> ()
@@ -171,7 +185,7 @@ module Functions =
             |> fun x -> x.AddDays (float paddingRight)
             
         let rec loop date = seq {
-            if date < maxDate then
+            if date <= maxDate then
                 yield date
                 yield! loop (date.AddDays 1.)
         }

@@ -91,6 +91,60 @@ module ModelTests =
             |> should equal [ task4; task5; task3; task2; task1 ]
             
         [<Fact>]
+        member _.GetSortedTaskListTests () =
+            let today = { Year = 2020; Month = 3; Day = 10 }
+            let data = [
+                { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional },
+                [] 
+               
+                { defaultTask with Name = "2"; Scheduling = TaskScheduling.Optional },
+                [ { Year = 2020; Month = 3; Day = 10 }, Postponed ]
+                
+                { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency 4 },
+                [ { Year = 2020; Month = 3; Day = 8 }, Complete ]
+                
+                { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency 2 },
+                [ { Year = 2020; Month = 3; Day = 10 }, Complete ]
+                
+                { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency 2 },
+                [ { Year = 2020; Month = 3; Day = 10 }, Postponed ]
+                
+                { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency 1 },
+                []
+                
+                { defaultTask with Name = "7"; Scheduling = TaskScheduling.Disabled },
+                []
+            ]
+            
+            let dateSequence =
+                data
+                |> List.collect (fun (task, cellEvents) ->
+                    cellEvents
+                    |> List.map (fun (date, status) -> date)
+                )
+                |> Functions.getDateSequence (0, 0)
+            
+            data
+            |> List.map fst
+            |> List.map (fun task ->
+                data
+                |> List.filter (fun (task_, _) -> task_ = task)
+                |> List.collect (fun (task, events) ->
+                    events
+                    |> List.map (fun (date, status) ->
+                        { Task = task
+                          Date = date
+                          Status = status }
+                    )
+                )
+                |> Functions.renderLane task today dateSequence
+            )
+            |> Functions.sortLanes today
+            |> List.map (fun (Lane (task, _)) -> task.Name)
+            |> should equal [ "6"; "1"; "2"; "5"; "4"; "3"; "7" ]
+            
+            
+        [<Fact>]
         member _.SetPriorityTests () =
             let createPriorityEvents task priority taskList =
                 taskList
