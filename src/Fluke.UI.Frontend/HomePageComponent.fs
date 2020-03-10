@@ -49,7 +49,7 @@ module HomePageComponent =
                 PrivateData.cellEvents
                 |> List.map (fun x -> x.Date)
                 |> List.append [ today ]
-                |> Functions.getDateSequence (10, 70)
+                |> Functions.getDateSequence (3, 70)
                 
             let taskList =
                 Functions.getTaskList PrivateData.taskOrderList
