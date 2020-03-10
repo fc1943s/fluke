@@ -50,7 +50,9 @@ module Model =
         member this.DateTime =
             DateTime (this.Year, this.Month, this.Day, 12, 0, 0)
         static member inline FromDateTime (date: DateTime) =
-            { Year = date.Year; Month = date.Month; Day = date.Day }
+            { Year = date.Year
+              Month = date.Month
+              Day = date.Day }
             
     type InformationComment =
         { Information: InformationType
@@ -171,7 +173,7 @@ module Functions =
         
         minDate
         |> loop
-        |> Seq.map (fun date -> { Model.Year = date.Year; Model.Month = date.Month; Model.Day = date.Day })
+        |> Seq.map Model.FlukeDate.FromDateTime
         |> Seq.toList
             
     let renderLane (task: Model.Task) today dateSequence (cellEvents: Model.CellEvent list) =
