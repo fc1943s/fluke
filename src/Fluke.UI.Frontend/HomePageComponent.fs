@@ -113,7 +113,7 @@ module HomePageComponent =
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center ] ][
                                 
-                                str (date.ToString().ToLower().Substring (0, 2))
+                                str (date.DateTime.ToString().ToLower().Substring (0, 2))
                             ]
                         ) |> ofList
                     ]
