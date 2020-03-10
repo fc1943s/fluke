@@ -17,7 +17,7 @@ module Data =
           Comments = []
           Scheduling = TaskScheduling.Disabled
           Duration = None
-          VisibleAfter = None }
+          PendingAfter = None }
     
     let task1 = { defaultTask with Name = "1" }
     let task2 = { defaultTask with Name = "2" }

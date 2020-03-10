@@ -74,7 +74,7 @@ module Model =
           Comments: string list 
           Scheduling: TaskScheduling
           Duration: int option
-          VisibleAfter: Time option }
+          PendingAfter: Time option }
         
     type CellEventStatus =
         | Missed
