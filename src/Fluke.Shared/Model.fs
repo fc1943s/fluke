@@ -184,25 +184,27 @@ module Functions =
             
         let rec loop count dateSequence =
             match dateSequence with
-            | h :: t ->
-                match task.Scheduling, cellEventsByDate |> Map.tryFind h with
-                | _, Some cellEvent ->
-                    (h, Model.EventStatus cellEvent.Status) :: loop 1 t
+            | head :: tail ->
+                match cellEventsByDate |> Map.tryFind head with
+                | Some cellEvent -> 
+                    (head, Model.EventStatus cellEvent.Status) :: loop 1 tail
                     
-                | Model.Disabled, _ ->
-                    (h, Model.CellStatus.Disabled) :: loop count t
-                    
-                | Model.Optional, _ ->
-                    (h, Model.CellStatus.Optional) :: loop count t
-                    
-                | Model.Recurrency _, _ when h < today ->
-                    (h, Model.CellStatus.Disabled) :: loop count t
-                    
-                | Model.Recurrency interval, _ when count = 0 || count = interval -> 
-                    (h, Model.CellStatus.Pending) :: loop 1 t
-                    
-                | Model.Recurrency _, _ -> 
-                    (h, Model.CellStatus.Disabled) :: loop (count + 1) t
-                    
+                | None ->
+                    match task.Scheduling with
+                    | Model.Disabled ->
+                        (head, Model.CellStatus.Disabled) :: loop count tail
+                        
+                    | Model.Optional ->
+                        (head, Model.CellStatus.Optional) :: loop count tail
+                        
+                    | Model.Recurrency interval ->
+                        let status, count =
+                            match head < today, count with
+                            | true, 0 -> Model.CellStatus.EventStatus Model.Missed, 0
+                            | true, _ -> Model.CellStatus.Disabled, 1
+                            | _, 0 -> Model.CellStatus.Pending, 1
+                            | _, _ when count = interval -> Model.CellStatus.Pending, 1
+                            | _, _ -> Model.CellStatus.Disabled, count + 1
+                        (head, status) :: loop count tail
             | [] -> []
         loop 0 dateSequence
