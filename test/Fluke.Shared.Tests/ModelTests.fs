@@ -2,6 +2,7 @@ namespace Fluke.Shared
 
 open System
 open Fluke.Shared
+open Serilog
 open Suigetsu.Core
 open Suigetsu.Testing
 open Xunit
@@ -41,7 +42,7 @@ module ModelTests =
         [<Fact>]
         member _.GetTaskListTests () =
             orderedEventList
-            |> Model.getTaskList
+            |> Functions.getTaskList
             |> should equal orderedList
             
             [
@@ -51,7 +52,7 @@ module ModelTests =
                 { Task = task2; Priority = LessThan task1 }
                 { Task = task1; Priority = First }
             ]
-            |> Model.getTaskList
+            |> Functions.getTaskList
             |> should equal orderedList
             
             [
@@ -61,14 +62,14 @@ module ModelTests =
                 { Task = task1; Priority = First }
                 { Task = task2; Priority = LessThan task1 }
             ]
-            |> Model.getTaskList
+            |> Functions.getTaskList
             |> should equal orderedList
             
             [
                 { Task = task3; Priority = First }
             ]
             |> List.append orderedEventList
-            |> Model.getTaskList
+            |> Functions.getTaskList
             |> should equal [ task3; task4; task1; task2; task5 ]
             
             [
@@ -76,7 +77,7 @@ module ModelTests =
                 { Task = task4; Priority = LessThan task2 }
             ]
             |> List.append orderedEventList
-            |> Model.getTaskList
+            |> Functions.getTaskList
             |> should equal [ task3; task1; task2; task4; task5 ]
             
             [
@@ -86,7 +87,7 @@ module ModelTests =
                 { Task = task4; Priority = First }
                 { Task = task5; Priority = LessThan task4 }
             ]
-            |> Model.getTaskList
+            |> Functions.getTaskList
             |> should equal [ task4; task5; task3; task2; task1 ]
             
         [<Fact>]
@@ -155,14 +156,61 @@ module ModelTests =
             
         [<Fact>]
         member _.RenderCellsTests () =
-            let renderCell date =
-                Disabled
             
-            renderCell (DateTime.Parse "2020-03-01 00:00")
-            |> should equal Disabled
+            let dateSequence =
+                [ { Year = 2020; Month = 3; Day = 7 }
+                  { Year = 2020; Month = 3; Day = 22 } ]
+                |> Functions.getDateSequence (0, 0)
+                
+            let getExpectedStatusList expectedList =
+                let expectedMap =
+                    expectedList
+                    |> Map.ofList
+                    
+                dateSequence
+                |> List.map (fun date ->
+                    expectedMap
+                    |> Map.tryFind date
+                    |> function
+                        | Some status -> status
+                        | None -> Model.CellStatus.Disabled
+                    |> fun x -> date, x
+                )
+                
+            let expectedStatusList =
+                [ { Year = 2020; Month = 3; Day = 9 }, Pending
+                  { Year = 2020; Month = 3; Day = 20 }, Pending ]
+                |> getExpectedStatusList
             
-            renderCell (DateTime.Parse "2020-03-02 00:00")
-            |> should equal (EventStatus Complete)
+            let today = { Year = 2020; Month = 3; Day = 9 }
             
-            renderCell (DateTime.Parse "2020-03-03 00:00")
-            |> should equal Disabled
+            let task = { defaultTask with Scheduling = Recurrency 11 }
+            
+            let cells = []
+            
+            Functions.renderLane task today dateSequence cells
+            |> should equal expectedStatusList
+            
+            
+            
+            let expectedStatusList =
+                [ { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
+                  { Year = 2020; Month = 3; Day = 11 }, Pending
+                  { Year = 2020; Month = 3; Day = 14 }, Pending
+                  { Year = 2020; Month = 3; Day = 17 }, Pending
+                  { Year = 2020; Month = 3; Day = 20 }, Pending ]
+                |> getExpectedStatusList
+            
+            let task = { defaultTask with Scheduling = Recurrency 3 }
+            
+            let cells = [
+                { Task = task
+                  Date = { Year = 2020; Month = 3; Day = 8 }
+                  Status = Complete }
+            ]
+            
+            Functions.renderLane task today dateSequence cells
+            |> should equal expectedStatusList
+            
+            
+            

@@ -25,6 +25,7 @@ module HomePageComponent =
     type ToggleBindingSource =
         | ToggleBindingSource of string * string
         
+    
 
     let ``default`` = FunctionComponent.Of (fun (props: Props) ->
 
@@ -40,15 +41,18 @@ module HomePageComponent =
                                                    MinHeight 36 ]]][
 
             ]
+            
+            let today =
+                Model.FlukeDate.FromDateTime DateTime.Now
                 
-            let dateRange = 
+            let dateSequence = 
                 PrivateData.cellEvents
                 |> List.map (fun x -> x.Date)
-                |> List.append [ DateTime.UtcNow ]
-                |> Functions.getDateRange
+                |> List.append [ today ]
+                |> Functions.getDateSequence (10, 70)
                 
             let taskList =
-                Model.getTaskList PrivateData.taskOrderList
+                Functions.getTaskList PrivateData.taskOrderList
                 |> List.filter (function { InformationType = Model.Project _ } -> false | _ -> true)
                 
             // Columns
@@ -90,9 +94,9 @@ module HomePageComponent =
                 div [][
                     // Month Row
                     div [ Style [ Display DisplayOptions.Flex ] ][
-                        dateRange
+                        dateSequence
                         |> List.map (fun date ->
-                            span [ Key (date.ToShortDateString ())
+                            span [ Key (date.ToString ())
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center ] ][
                                 
@@ -103,9 +107,9 @@ module HomePageComponent =
                     
                     // Day of Week Row
                     div [ Style [ Display DisplayOptions.Flex ] ][
-                        dateRange
+                        dateSequence
                         |> List.map (fun date ->
-                            span [ Key (date.ToShortDateString ())
+                            span [ Key (date.ToString ())
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center ] ][
                                 
@@ -116,12 +120,12 @@ module HomePageComponent =
                     
                     // Day Row
                     div [ Style [ Display DisplayOptions.Flex ] ][
-                        dateRange
+                        dateSequence
                         |> List.map (fun date ->
-                            span [ Key (date.ToShortDateString ())
+                            span [ Key (date.ToString ())
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center
-                                           Color (if Functions.isToday date then "#f22" else "") ] ][
+                                           Color (if date = today then "#f22" else "") ] ][
                                 str (date.Day.ToString "D2")
                             ]
                         ) |> ofList
@@ -129,19 +133,25 @@ module HomePageComponent =
                             
                     taskList
                     |> List.map (fun task ->
+                        let cellEvents =
+                            PrivateData.cellEvents
+                            |> List.filter (fun x -> x.Task = task)
                         
                         div [ Key task.Name
                               Class "lane"
                               Style [ Display DisplayOptions.Flex ] ][
                             
-                            dateRange
-                            |> List.map (fun date ->
+                            
+                            Functions.renderLane task today dateSequence cellEvents
+                            |> List.map (fun (date, status) ->
                                 
-                                div [ Key (date.ToShortDateString ()) ][
+                                div [ Key (date.ToString ()) ][
                                     
                                     CellComponent.``default``
                                         { Date = date
-                                          Task = task }
+                                          Task = task
+                                          Status = status
+                                          Today = today }
                                 ]
                             ) |> ofList
                         ]

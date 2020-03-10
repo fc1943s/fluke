@@ -41,9 +41,20 @@ module Model =
             | Resource _ -> "#333"
             | Archive archive -> sprintf "[%s]" archive.Color
             
+    type FlukeDate =
+        { Year: int
+          Month: int
+          Day: int }
+        override this.ToString () =
+           sprintf "%d-%d-%d" this.Year this.Month this.Day
+        member this.DateTime =
+            DateTime (this.Year, this.Month, this.Day, 12, 0, 0)
+        static member inline FromDateTime (date: DateTime) =
+            { Year = date.Year; Month = date.Month; Day = date.Day }
+            
     type InformationComment =
         { Information: InformationType
-          Date: DateTime
+          Date: FlukeDate
           Comment: string }
     
     type TaskScheduling =
@@ -85,17 +96,17 @@ module Model =
                 | Complete -> "#339933"
         
     type Cell =
-        { Date: DateTime
+        { Date: FlukeDate
           Status: CellStatus }
         
     type CellEvent =
         { Task: Task
-          Date: DateTime
+          Date: FlukeDate
           Status: CellEventStatus }
     
     type CellComment =
         { Task: Task
-          Date: DateTime
+          Date: FlukeDate
           Comment: string }
         
     
@@ -108,9 +119,10 @@ module Model =
         { Task: Task
           Priority: TaskOrderPriority }
     
+module Functions =
     
-    let getTaskList (taskOrderList: TaskOrderEntry list) =
-        let result = List<Task> ()
+    let getTaskList (taskOrderList: Model.TaskOrderEntry list) =
+        let result = List<Model.Task> ()
         
         let taskOrderList =
             taskOrderList
@@ -121,9 +133,9 @@ module Model =
         
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | First, None -> result.Insert (0, task)
-            | Last, None -> result.Add task
-            | LessThan lessThan, None ->
+            | Model.First, None -> result.Insert (0, task)
+            | Model.Last, None -> result.Add task
+            | Model.LessThan lessThan, None ->
                 match result |> Seq.tryFindIndexBack ((=) lessThan) with
                 | None -> seq { task; lessThan } |> Seq.iter (fun x -> result.Insert (0, x))
                 | Some i -> result.Insert (i + 1, task)
@@ -131,11 +143,64 @@ module Model =
             
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | First, None -> result.Insert (0, task)
-            | Last, None -> result.Add task
+            | Model.First, None -> result.Insert (0, task)
+            | Model.Last, None -> result.Add task
             | _ -> ()
             
         result |> Seq.toList
 
     
-    
+    let getDateSequence (paddingLeft, paddingRight) (cellDates: Model.FlukeDate list) =
+        let minDate =
+            cellDates
+            |> List.map (fun x -> x.DateTime)
+            |> List.min
+            |> fun x -> x.AddDays -(float paddingLeft)
+            
+        let maxDate =
+            cellDates
+            |> List.map (fun x -> x.DateTime)
+            |> List.max
+            |> fun x -> x.AddDays (float paddingRight)
+            
+        let rec loop date = seq {
+            if date < maxDate then
+                yield date
+                yield! loop (date.AddDays 1.)
+        }
+        
+        minDate
+        |> loop
+        |> Seq.map (fun date -> { Model.Year = date.Year; Model.Month = date.Month; Model.Day = date.Day })
+        |> Seq.toList
+            
+    let renderLane (task: Model.Task) today dateSequence (cellEvents: Model.CellEvent list) =
+        let cellEventsByDate =
+            cellEvents
+            |> List.map (fun x -> x.Date, x)
+            |> Map.ofList
+            
+        let rec loop count dateSequence =
+            match dateSequence with
+            | h :: t ->
+                match task.Scheduling, cellEventsByDate |> Map.tryFind h with
+                | _, Some cellEvent ->
+                    (h, Model.EventStatus cellEvent.Status) :: loop 1 t
+                    
+                | Model.Disabled, _ ->
+                    (h, Model.CellStatus.Disabled) :: loop count t
+                    
+                | Model.Optional, _ ->
+                    (h, Model.CellStatus.Optional) :: loop count t
+                    
+                | Model.Recurrency _, _ when h < today ->
+                    (h, Model.CellStatus.Disabled) :: loop count t
+                    
+                | Model.Recurrency interval, _ when count = 0 || count = interval -> 
+                    (h, Model.CellStatus.Pending) :: loop 1 t
+                    
+                | Model.Recurrency _, _ -> 
+                    (h, Model.CellStatus.Disabled) :: loop (count + 1) t
+                    
+            | [] -> []
+        loop 0 dateSequence

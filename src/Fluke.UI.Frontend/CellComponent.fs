@@ -15,8 +15,10 @@ open Fulma
 module CellComponent =
 
     type Props =
-        { Date: DateTime
-          Task: Model.Task }
+        { Date: Model.FlukeDate
+          Task: Model.Task
+          Status: Model.CellStatus
+          Today: Model.FlukeDate }
 
     type State =
         { a: unit }
@@ -31,27 +33,14 @@ module CellComponent =
         div [ Class "cell"
               Style [ Position PositionOptions.Relative ] ][
             
-            let cellEvent =
-                PrivateData.cellEvents
-                |> List.tryFindBack (fun cell -> cell.Task.Name = props.Task.Name && cell.Date.Date = props.Date.Date)
-            
             let cellComments =
                 PrivateData.cellComments
-                |> List.filter (fun cell -> cell.Task.Name = props.Task.Name && cell.Date.Date = props.Date.Date)
+                |> List.filter (fun cell -> cell.Task.Name = props.Task.Name && cell.Date = props.Date)
                 
-            cellEvent 
-            |> function
-                | Some event -> Model.EventStatus event.Status
-                | None ->
-                    match props.Task.Scheduling with
-                    | Model.Disabled -> Model.CellStatus.Disabled
-                    | Model.Optional -> Model.CellStatus.Optional
-                    | Model.Recurrency interval -> Model.Pending
-            |> fun cellStatus ->
-                div [ Style [ Width 18
-                              Height 18
-                              Opacity (if Functions.isToday props.Date then 0.8 else 1.)
-                              BackgroundColor cellStatus.CellColor ] ][]
+            div [ Style [ Width 18
+                          Height 18
+                          Opacity (if props.Date = props.Today then 0.8 else 1.)
+                          BackgroundColor props.Status.CellColor ] ][]
                 
             if cellComments |> List.isEmpty |> not then
                 div [ Style [ Position PositionOptions.Absolute
@@ -72,7 +61,7 @@ module CellComponent =
                     
                     cellComments
                     |> List.map (fun comment ->
-                        div [ Key (props.Date.ToShortDateString ()) ][
+                        div [ Key (props.Date.ToString ()) ][
                             ReactBindings.React.createElement
                                 (Ext.reactMarkdown,
                                     {| source = comment.Comment |}, [])
