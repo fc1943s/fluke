@@ -156,61 +156,45 @@ module ModelTests =
             
         [<Fact>]
         member _.RenderCellsTests () =
-            
-            let dateSequence =
-                [ { Year = 2020; Month = 3; Day = 7 }
-                  { Year = 2020; Month = 3; Day = 22 } ]
-                |> Functions.getDateSequence (0, 0)
-                
-            let getExpectedStatusList expectedList =
-                let expectedMap =
-                    expectedList
-                    |> Map.ofList
-                    
-                dateSequence
-                |> List.map (fun date ->
-                    expectedMap
-                    |> Map.tryFind date
-                    |> function
-                        | Some status -> status
-                        | None -> Model.CellStatus.Disabled
-                    |> fun x -> date, x
-                )
-                
-            let expectedStatusList =
-                [ { Year = 2020; Month = 3; Day = 9 }, Pending
-                  { Year = 2020; Month = 3; Day = 20 }, Pending ]
-                |> getExpectedStatusList
-            
             let today = { Year = 2020; Month = 3; Day = 9 }
             
-            let task = { defaultTask with Scheduling = Recurrency 11 }
+            //
             
+            let data = [
+                  { Year = 2020; Month = 3; Day = 7 }, EventStatus Missed
+                  { Year = 2020; Month = 3; Day = 8 }, EventStatus Missed
+                  { Year = 2020; Month = 3; Day = 9 }, Pending
+                  { Year = 2020; Month = 3; Day = 10 }, Disabled
+                  { Year = 2020; Month = 3; Day = 11 }, Pending
+                  { Year = 2020; Month = 3; Day = 12 }, Disabled
+            ]
+            let task = { defaultTask with Scheduling = Recurrency 2 }
             let cells = []
             
-            Functions.renderLane task today dateSequence cells
-            |> should equal expectedStatusList
+            Functions.renderLane task today (data |> List.map fst) cells
+            |> should equal data
             
+            //
             
-            
-            let expectedStatusList =
-                [ { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
-                  { Year = 2020; Month = 3; Day = 11 }, Pending
-                  { Year = 2020; Month = 3; Day = 14 }, Pending
-                  { Year = 2020; Month = 3; Day = 17 }, Pending
-                  { Year = 2020; Month = 3; Day = 20 }, Pending ]
-                |> getExpectedStatusList
-            
+            let data = [
+                { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
+                { Year = 2020; Month = 3; Day = 9 }, Disabled
+                { Year = 2020; Month = 3; Day = 10 }, Disabled
+                { Year = 2020; Month = 3; Day = 11 }, Pending
+                { Year = 2020; Month = 3; Day = 12 }, Disabled
+                { Year = 2020; Month = 3; Day = 13 }, Disabled
+                { Year = 2020; Month = 3; Day = 14 }, Pending
+                { Year = 2020; Month = 3; Day = 15 }, Disabled
+            ]
             let task = { defaultTask with Scheduling = Recurrency 3 }
-            
             let cells = [
                 { Task = task
                   Date = { Year = 2020; Month = 3; Day = 8 }
                   Status = Complete }
             ]
             
-            Functions.renderLane task today dateSequence cells
-            |> should equal expectedStatusList
+            Functions.renderLane task today (data |> List.map fst) cells
+            |> should equal data
             
             
             
