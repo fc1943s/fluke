@@ -51,9 +51,15 @@ module HomePageComponent =
                 |> List.append [ today ]
                 |> Functions.getDateSequence (3, 70)
                 
-            let taskList =
-                Functions.getTaskList PrivateData.taskOrderList
-                |> List.filter (function { InformationType = Model.Project _ } -> false | _ -> true)
+            let lanes =
+                Functions.getManualSortedTaskList PrivateData.taskOrderList
+                |> List.map (fun task ->
+                    PrivateData.cellEvents
+                    |> List.filter (fun x -> x.Task = task)
+                    |> Functions.renderLane task today dateSequence
+                )
+                |> Functions.sortLanes today
+                |> List.filter (function Model.Lane ({ InformationType = Model.Project _ }, _) -> false | _ -> true)
                 
             // Columns
             div [ Style [ Display DisplayOptions.Flex ] ][
@@ -67,13 +73,13 @@ module HomePageComponent =
                     
                 // Information Type
                 div [ Style [ PaddingRight 10 ] ][
-                    taskList
-                    |> List.map (fun x ->
-                        div [ Key x.Name
+                    lanes
+                    |> List.map (fun (Model.Lane (task, _)) ->
+                        div [ Key task.Name
                               Style [ Padding 0
-                                      Color x.InformationType.Color ] ][
+                                      Color task.InformationType.Color ] ][
                             
-                            str x.InformationType.Name
+                            str task.InformationType.Name
                         ]
                     )
                     |> List.append topPadding
@@ -82,10 +88,10 @@ module HomePageComponent =
                 
                 // Task Name
                 div [][
-                    taskList
-                    |> List.map (fun x ->
-                        div [ Key x.Name
-                              Style [ Padding 0 ] ][ str x.Name ]
+                    lanes
+                    |> List.map (fun (Model.Lane (task, _)) ->
+                        div [ Key task.Name
+                              Style [ Padding 0 ] ][ str task.Name ]
                     )
                     |> List.append topPadding
                     |> ofList
@@ -131,26 +137,21 @@ module HomePageComponent =
                         ) |> ofList
                     ]
                             
-                    taskList
-                    |> List.map (fun task ->
-                        let cellEvents =
-                            PrivateData.cellEvents
-                            |> List.filter (fun x -> x.Task = task)
-                        
+                    lanes
+                    |> List.map (fun (Model.Lane (task, cells)) ->
                         div [ Key task.Name
                               Class "lane"
                               Style [ Display DisplayOptions.Flex ] ][
                             
-                            
-                            Functions.renderLane task today dateSequence cellEvents
-                            |> List.map (fun (date, status) ->
+                            cells
+                            |> List.map (fun cell ->
                                 
-                                div [ Key (date.ToString ()) ][
+                                div [ Key (cell.Date.ToString ()) ][
                                     
                                     CellComponent.``default``
-                                        { Date = date
+                                        { Date = cell.Date
                                           Task = task
-                                          Status = status
+                                          Status = cell.Status
                                           Today = today }
                                 ]
                             ) |> ofList

@@ -120,10 +120,15 @@ module Model =
     type TaskOrderEntry =
         { Task: Task
           Priority: TaskOrderPriority }
+        
+    type Lane = Lane of Task * Cell list
     
 module Functions =
     
-    let getTaskList (taskOrderList: Model.TaskOrderEntry list) =
+    let sortLanes (today: Model.FlukeDate) (lanes: Model.Lane list) =
+        lanes
+    
+    let getManualSortedTaskList (taskOrderList: Model.TaskOrderEntry list) =
         let result = List<Model.Task> ()
         
         let taskOrderList =
@@ -210,4 +215,11 @@ module Functions =
                             | _, _ -> Model.CellStatus.Disabled, count + 1
                         (head, status) :: loop count tail
             | [] -> []
-        loop 0 dateSequence
+            
+        let cells =
+            loop 0 dateSequence
+            |> List.map (fun (date, status) ->
+                { Model.Cell.Date = date
+                  Model.Cell.Status = status }
+            )
+        Model.Lane (task, cells)

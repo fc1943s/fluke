@@ -40,9 +40,9 @@ module ModelTests =
         inherit DefaultTestRunner (output)
         
         [<Fact>]
-        member _.GetTaskListTests () =
+        member _.GetManualSortedTaskListTests () =
             orderedEventList
-            |> Functions.getTaskList
+            |> Functions.getManualSortedTaskList
             |> should equal orderedList
             
             [
@@ -52,7 +52,7 @@ module ModelTests =
                 { Task = task2; Priority = LessThan task1 }
                 { Task = task1; Priority = First }
             ]
-            |> Functions.getTaskList
+            |> Functions.getManualSortedTaskList
             |> should equal orderedList
             
             [
@@ -62,14 +62,14 @@ module ModelTests =
                 { Task = task1; Priority = First }
                 { Task = task2; Priority = LessThan task1 }
             ]
-            |> Functions.getTaskList
+            |> Functions.getManualSortedTaskList
             |> should equal orderedList
             
             [
                 { Task = task3; Priority = First }
             ]
             |> List.append orderedEventList
-            |> Functions.getTaskList
+            |> Functions.getManualSortedTaskList
             |> should equal [ task3; task4; task1; task2; task5 ]
             
             [
@@ -77,7 +77,7 @@ module ModelTests =
                 { Task = task4; Priority = LessThan task2 }
             ]
             |> List.append orderedEventList
-            |> Functions.getTaskList
+            |> Functions.getManualSortedTaskList
             |> should equal [ task3; task1; task2; task4; task5 ]
             
             [
@@ -87,7 +87,7 @@ module ModelTests =
                 { Task = task4; Priority = First }
                 { Task = task5; Priority = LessThan task4 }
             ]
-            |> Functions.getTaskList
+            |> Functions.getManualSortedTaskList
             |> should equal [ task4; task5; task3; task2; task1 ]
             
         [<Fact>]
@@ -156,6 +156,9 @@ module ModelTests =
             
         [<Fact>]
         member _.RenderLaneTests () =
+            let unwrapLane (Lane (_, cells)) =
+               cells
+               |> List.map (fun x -> x.Date, x.Status)
             
             let today = { Year = 2020; Month = 3; Day = 9 }
             let data = [
@@ -167,9 +170,10 @@ module ModelTests =
                   { Year = 2020; Month = 3; Day = 12 }, Disabled
             ]
             let task = { defaultTask with Scheduling = Recurrency 2 }
-            let cells = []
+            let cellEvents = []
             
-            Functions.renderLane task today (data |> List.map fst) cells
+            Functions.renderLane task today (data |> List.map fst) cellEvents
+            |> unwrapLane
             |> should equal data
             
             //
@@ -186,13 +190,14 @@ module ModelTests =
                 { Year = 2020; Month = 3; Day = 15 }, Disabled
             ]
             let task = { defaultTask with Scheduling = Recurrency 3 }
-            let cells = [
+            let cellEvents = [
                 { Task = task
                   Date = { Year = 2020; Month = 3; Day = 8 }
                   Status = Complete }
             ]
             
-            Functions.renderLane task today (data |> List.map fst) cells
+            Functions.renderLane task today (data |> List.map fst) cellEvents
+            |> unwrapLane
             |> should equal data
             
             //
@@ -205,13 +210,14 @@ module ModelTests =
                 { Year = 2020; Month = 3; Day = 12 }, Disabled
             ]
             let task = { defaultTask with Scheduling = Recurrency 2 }
-            let cells = [
+            let cellEvents = [
                 { Task = task
                   Date = { Year = 2020; Month = 3; Day = 10 }
                   Status = Postponed }
             ]
             
-            Functions.renderLane task today (data |> List.map fst) cells
+            Functions.renderLane task today (data |> List.map fst) cellEvents
+            |> unwrapLane
             |> should equal data
             
             
