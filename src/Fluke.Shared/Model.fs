@@ -186,8 +186,11 @@ module Functions =
             match dateSequence with
             | head :: tail ->
                 match cellEventsByDate |> Map.tryFind head with
-                | Some cellEvent -> 
-                    (head, Model.EventStatus cellEvent.Status) :: loop 1 tail
+                | Some { Status = Model.Postponed as status } ->
+                    (head, Model.EventStatus status) :: loop 0 tail
+                    
+                | Some { Status = status } ->
+                    (head, Model.EventStatus status) :: loop 1 tail
                     
                 | None ->
                     match task.Scheduling with

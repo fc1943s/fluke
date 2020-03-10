@@ -92,14 +92,14 @@ module ModelTests =
             
         [<Fact>]
         member _.SetPriorityTests () =
-            let getPriorityEvents task priority taskList =
+            let createPriorityEvents task priority taskList =
                 taskList
                 |> List.tryFindIndexBack ((=) task)
                 |> function
                     | None -> None
                     | Some i -> 
                         match (i + 1, i - 1) |> Tuple2.map (fun x -> taskList |> List.tryItem x), priority with
-                        | (Some below, None), First when i = 0 -> None
+                        | (Some _, None), First when i = 0 -> None
                         | (Some below, None), _ -> Some { Task = below; Priority = First }
                         | (Some below, Some above), _ -> Some { Task = below; Priority = LessThan above }
                         | _, First when i > 0 -> Some { Task = taskList |> List.head; Priority = LessThan task }
@@ -108,58 +108,56 @@ module ModelTests =
                 |> List.append [ { Task = task; Priority = priority } ]
             
             [ task1; task2; task3; task4; task5 ]
-            |> getPriorityEvents task3 First
+            |> createPriorityEvents task3 First
             |> should equal [
                 { Task = task3; Priority = First }
                 { Task = task4; Priority = LessThan task2 }
             ]
             
             [ task1; task2; task3; task4; task5 ]
-            |> getPriorityEvents task1 First
+            |> createPriorityEvents task1 First
             |> should equal [
                 { Task = task1; Priority = First }
             ]
             
             [ task1; task2; task3; task4; task5 ]
-            |> getPriorityEvents task1 Last
+            |> createPriorityEvents task1 Last
             |> should equal [
                 { Task = task1; Priority = Last }
                 { Task = task2; Priority = First }
             ]
             
             [ task1; task2; task3; task4; task5 ]
-            |> getPriorityEvents task5 Last
+            |> createPriorityEvents task5 Last
             |> should equal [
                 { Task = task5; Priority = Last }
             ]
             
             [ task1; task2; task3; task4; task5 ]
-            |> getPriorityEvents task5 First
+            |> createPriorityEvents task5 First
             |> should equal [
                 { Task = task5; Priority = First }
                 { Task = task1; Priority = LessThan task5 }
             ]
             
             [ task1; task2; task3; task4; task5 ]
-            |> getPriorityEvents task2 First
+            |> createPriorityEvents task2 First
             |> should equal [
                 { Task = task2; Priority = First }
                 { Task = task3; Priority = LessThan task1 }
             ]
             
             [ task1; task2; task3; task4; task5 ]
-            |> getPriorityEvents task4 (LessThan task1)
+            |> createPriorityEvents task4 (LessThan task1)
             |> should equal [
                 { Task = task4; Priority = LessThan task1 }
                 { Task = task5; Priority = LessThan task3 }
             ]
             
         [<Fact>]
-        member _.RenderCellsTests () =
+        member _.RenderLaneTests () =
+            
             let today = { Year = 2020; Month = 3; Day = 9 }
-            
-            //
-            
             let data = [
                   { Year = 2020; Month = 3; Day = 7 }, EventStatus Missed
                   { Year = 2020; Month = 3; Day = 8 }, EventStatus Missed
@@ -176,6 +174,7 @@ module ModelTests =
             
             //
             
+            let today = { Year = 2020; Month = 3; Day = 9 }
             let data = [
                 { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
                 { Year = 2020; Month = 3; Day = 9 }, Disabled
@@ -196,5 +195,23 @@ module ModelTests =
             Functions.renderLane task today (data |> List.map fst) cells
             |> should equal data
             
+            //
+            
+            let today = { Year = 2020; Month = 3; Day = 10 }
+            let data = [
+                { Year = 2020; Month = 3; Day = 9 }, EventStatus Missed
+                { Year = 2020; Month = 3; Day = 10 }, EventStatus Postponed
+                { Year = 2020; Month = 3; Day = 11 }, Pending
+                { Year = 2020; Month = 3; Day = 12 }, Disabled
+            ]
+            let task = { defaultTask with Scheduling = Recurrency 2 }
+            let cells = [
+                { Task = task
+                  Date = { Year = 2020; Month = 3; Day = 10 }
+                  Status = Postponed }
+            ]
+            
+            Functions.renderLane task today (data |> List.map fst) cells
+            |> should equal data
             
             
