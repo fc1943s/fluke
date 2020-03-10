@@ -43,7 +43,7 @@ module HomePageComponent =
             ]
             
             let today =
-                Model.FlukeDate.FromDateTime DateTime.Now
+                Model.FlukeDate.FromDateTime (DateTime.Now.AddHours -(float PrivateData.hourOffset))
                 
             let dateSequence = 
                 PrivateData.cellEvents
