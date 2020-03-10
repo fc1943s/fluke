@@ -1,6 +1,8 @@
 namespace Fluke.UI.Frontend
 
-open System
+module Model =
+    ()
+    
 module Functions =
     ()
         

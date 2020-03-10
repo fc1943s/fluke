@@ -1,16 +1,9 @@
 namespace MechaHaze.UI.Frontend
 
-open Browser
-open Fable.Core
-open Fable.Core.JsInterop
-open System
-open Browser
-open Browser.Types
 open Fable.React
 open Fable.React.Props
 open Fluke.Shared
 open Fluke.UI.Frontend
-open Fulma
     
 module CellComponent =
 
@@ -36,13 +29,16 @@ module CellComponent =
             let cellComments =
                 PrivateData.cellComments
                 |> List.filter (fun cell -> cell.Task.Name = props.Task.Name && cell.Date = props.Date)
+            let hasComments = cellComments |> List.isEmpty |> not
                 
             div [ Style [ Width 18
                           Height 18
+                          if hasComments then
+                              Border "1px solid #ffffff77"
                           Opacity (if props.Date = props.Today then 0.8 else 1.)
                           BackgroundColor props.Status.CellColor ] ][]
                 
-            if cellComments |> List.isEmpty |> not then
+            if hasComments then
                 div [ Style [ Position PositionOptions.Absolute
                               BorderTop "8px solid #f00"
                               BorderLeft "8px solid transparent"

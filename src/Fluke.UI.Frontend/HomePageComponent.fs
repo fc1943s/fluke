@@ -1,9 +1,7 @@
 namespace Fluke.UI.Frontend
 
-open Browser
 open Fluke.Shared
 open MechaHaze.UI.Frontend
-open Suigetsu.Core
 open Fable.React
 open Fable.React.Props
 open Fulma
@@ -18,9 +16,9 @@ module HomePageComponent =
           PrivateState: Client.PrivateState<UIState.State> }
         
     type State =
-        { SelectedPeaks: Set<string * string> }
+        { a: unit }
         static member inline Default =
-            { SelectedPeaks = Set.empty }
+            { a = () }
             
     type ToggleBindingSource =
         | ToggleBindingSource of string * string

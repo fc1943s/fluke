@@ -1,8 +1,6 @@
 namespace Fluke.Shared
 
-open System
 open Fluke.Shared
-open Serilog
 open Suigetsu.Core
 open Suigetsu.Testing
 open Xunit
@@ -118,9 +116,9 @@ module ModelTests =
             
             let dateSequence =
                 data
-                |> List.collect (fun (task, cellEvents) ->
+                |> List.collect (fun (_, cellEvents) ->
                     cellEvents
-                    |> List.map (fun (date, status) -> date)
+                    |> List.map (fun (date, _) -> date)
                 )
                 |> Functions.getDateSequence (0, 0)
             
@@ -128,7 +126,7 @@ module ModelTests =
             |> List.map fst
             |> List.map (fun task ->
                 data
-                |> List.filter (fun (task_, _) -> task_ = task)
+                |> List.filter (fun (t, _) -> t = task)
                 |> List.collect (fun (task, events) ->
                     events
                     |> List.map (fun (date, status) ->
