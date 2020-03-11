@@ -89,8 +89,9 @@ module ModelTests =
             
         [<Fact>]
         member _.GetSortedTaskListTests () =
-            let today = { Year = 2020; Month = 3; Day = 10 }
-            let now = { Hour = 0; Minute = 0 }
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 10 }
+                  Time = { Hour = 0; Minute = 0 } }
             let data = [
                 { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional },
                 [] 
@@ -135,9 +136,9 @@ module ModelTests =
                           Status = status }
                     )
                 )
-                |> Functions.renderLane task today now dateSequence
+                |> Functions.renderLane task now dateSequence
             )
-            |> Functions.sortLanes today
+            |> Functions.sortLanes now.Date
             |> List.map (fun (Lane (task, _)) -> task.Name)
             |> should equal [ "6"; "1"; "2"; "5"; "4"; "3"; "7" ]
             
@@ -212,8 +213,9 @@ module ModelTests =
                cells
                |> List.map (fun x -> x.Date, x.Status)
             
-            let today = { Year = 2020; Month = 3; Day = 9 }
-            let now = { Hour = 0; Minute = 0 }
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 9 }
+                  Time = { Hour = 0; Minute = 0 } }
             let data = [
                   { Year = 2020; Month = 3; Day = 7 }, Missed
                   { Year = 2020; Month = 3; Day = 8 }, Missed
@@ -225,13 +227,15 @@ module ModelTests =
             let task = { defaultTask with Scheduling = Recurrency 2 }
             let cellEvents = []
             
-            Functions.renderLane task today now (data |> List.map fst) cellEvents
+            Functions.renderLane task now (data |> List.map fst) cellEvents
             |> unwrapLane
             |> should equal data
             
             //
             
-            let today = { Year = 2020; Month = 3; Day = 9 }
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 9 }
+                  Time = { Hour = 0; Minute = 0 } }
             let data = [
                 { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
                 { Year = 2020; Month = 3; Day = 9 }, Disabled
@@ -249,13 +253,15 @@ module ModelTests =
                   Status = Complete }
             ]
             
-            Functions.renderLane task today now (data |> List.map fst) cellEvents
+            Functions.renderLane task now (data |> List.map fst) cellEvents
             |> unwrapLane
             |> should equal data
             
             //
             
-            let today = { Year = 2020; Month = 3; Day = 10 }
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 10 }
+                  Time = { Hour = 0; Minute = 0 } }
             let data = [
                 { Year = 2020; Month = 3; Day = 9 }, Missed
                 { Year = 2020; Month = 3; Day = 10 }, EventStatus Postponed
@@ -269,36 +275,73 @@ module ModelTests =
                   Status = Postponed }
             ]
             
-            Functions.renderLane task today now (data |> List.map fst) cellEvents
+            Functions.renderLane task now (data |> List.map fst) cellEvents
             |> unwrapLane
             |> should equal data
             
             //
             
-            let today = { Year = 2020; Month = 3; Day = 10 }
-            let task = { defaultTask with Scheduling = Delayed { Hour = 20; Minute = 0 } }
+            let task = { defaultTask with Scheduling = OptionalDelayed { Hour = 20; Minute = 0 } }
             let cellEvents = []
             
-            let now = { Hour = 19; Minute = 0 }
+            
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 10 }
+                  Time = { Hour = 19; Minute = 30 } }
             let data = [
                 { Year = 2020; Month = 3; Day = 9 }, Optional
                 { Year = 2020; Month = 3; Day = 10 }, Optional
                 { Year = 2020; Month = 3; Day = 11 }, Optional
             ]
             
-            Functions.renderLane task today now (data |> List.map fst) cellEvents
+            Functions.renderLane task now (data |> List.map fst) cellEvents
             |> unwrapLane
             |> should equal data
             
             
-            let now = { Hour = 21; Minute = 0 }
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 10 }
+                  Time = { Hour = 21; Minute = 0 } }
             let data = [
                 { Year = 2020; Month = 3; Day = 9 }, Optional
                 { Year = 2020; Month = 3; Day = 10 }, Pending
                 { Year = 2020; Month = 3; Day = 11 }, Optional
             ]
             
-            Functions.renderLane task today now (data |> List.map fst) cellEvents
+            Functions.renderLane task now (data |> List.map fst) cellEvents
+            |> unwrapLane
+            |> should equal data
+            
+            //
+            
+            let task = { defaultTask with Scheduling = RecurrencyDelayed (1, { Hour = 20; Minute = 0 }) }
+            let cellEvents = []
+            
+            
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 10 }
+                  Time = { Hour = 19; Minute = 30 } }
+            let data = [
+                { Year = 2020; Month = 3; Day = 9 }, Missed
+                { Year = 2020; Month = 3; Day = 10 }, Optional
+                { Year = 2020; Month = 3; Day = 11 }, Pending
+            ]
+            
+            Functions.renderLane task now (data |> List.map fst) cellEvents
+            |> unwrapLane
+            |> should equal data
+            
+            
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 10 }
+                  Time = { Hour = 21; Minute = 0 } }
+            let data = [
+                { Year = 2020; Month = 3; Day = 9 }, Missed
+                { Year = 2020; Month = 3; Day = 10 }, Pending
+                { Year = 2020; Month = 3; Day = 11 }, Pending
+            ]
+            
+            Functions.renderLane task now (data |> List.map fst) cellEvents
             |> unwrapLane
             |> should equal data
             

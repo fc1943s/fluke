@@ -40,13 +40,14 @@ module HomePageComponent =
 
             ]
             
-            let today = Model.FlukeDate.FromDateTime (DateTime.Now.AddHours -(float PrivateData.hourOffset))
-            let now = Model.FlukeTime.FromDateTime DateTime.Now
+            let now =
+                { Model.Date = Model.FlukeDate.FromDateTime (DateTime.Now.AddHours -(float PrivateData.hourOffset))
+                  Model.Time = Model.FlukeTime.FromDateTime DateTime.Now }
                 
             let dateSequence = 
                 PrivateData.cellEvents
                 |> List.map (fun x -> x.Date)
-                |> List.append [ today ]
+                |> List.append [ now.Date ]
                 |> Functions.getDateSequence (3, 70)
                 
             let lanes =
@@ -54,9 +55,9 @@ module HomePageComponent =
                 |> List.map (fun task ->
                     PrivateData.cellEvents
                     |> List.filter (fun x -> x.Task = task)
-                    |> Functions.renderLane task today now dateSequence
+                    |> Functions.renderLane task now dateSequence
                 )
-                |> Functions.sortLanes today
+                |> Functions.sortLanes now.Date
                 |> List.filter (function Model.Lane ({ InformationType = Model.Project _ }, _) -> false | _ -> true)
                 
             // Columns
@@ -129,7 +130,7 @@ module HomePageComponent =
                             span [ Key (date.ToString ())
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center
-                                           Color (if date = today then "#f22" else "") ] ][
+                                           Color (if date = now.Date then "#f22" else "") ] ][
                                 str (date.Day.ToString "D2")
                             ]
                         ) |> ofList
@@ -150,7 +151,7 @@ module HomePageComponent =
                                         { Date = cell.Date
                                           Task = task
                                           Status = cell.Status
-                                          Today = today }
+                                          Today = now.Date }
                                 ]
                             ) |> ofList
                         ]

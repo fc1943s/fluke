@@ -60,6 +60,13 @@ module Model =
         static member inline FromDateTime (date: DateTime) =
             { Hour = date.Hour
               Minute = date.Minute }
+    
+    type FlukeDateTime =
+        { Date: FlukeDate
+          Time: FlukeTime }
+        static member inline FromDateTime (date: DateTime) =
+            { Date = FlukeDate.FromDateTime date
+              Time = FlukeTime.FromDateTime date }
             
     type InformationComment =
         { Information: InformationType
@@ -69,8 +76,9 @@ module Model =
     type TaskScheduling =
         | Disabled
         | Optional
-        | Delayed of pendingAfter: FlukeTime
-        | Recurrency of days: int
+        | OptionalDelayed of pendingAfter:FlukeTime
+        | Recurrency of days:int
+        | RecurrencyDelayed of days:int * pendingAfter:FlukeTime
     
         
     type Task =
@@ -198,10 +206,9 @@ module Functions =
         |> loop
         |> Seq.map Model.FlukeDate.FromDateTime
         |> Seq.toList
-            
+        
     let renderLane (task: Model.Task)
-                   (today: Model.FlukeDate)
-                   (now: Model.FlukeTime)
+                   (now: Model.FlukeDateTime)
                    (dateSequence: Model.FlukeDate list)
                    (cellEvents: Model.CellEvent list) =
         let cellEventsByDate =
@@ -209,41 +216,44 @@ module Functions =
             |> List.map (fun x -> x.Date, x)
             |> Map.ofList
             
+        let optionalStatus (date: Model.FlukeDate) (pendingAfter: Model.FlukeTime) =
+            if    now.Date = date
+               && now.Time.Hour > pendingAfter.Hour
+               || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
+            then Model.CellStatus.Pending
+            else Model.CellStatus.Optional
+            
+        let recurringStatus (days: int) (date: Model.FlukeDate) (pendingAfter: Model.FlukeTime) (count: int) =
+            match date < now.Date, count with
+            | true, 0 -> Model.CellStatus.Missed, 0
+            | true, _ -> Model.CellStatus.Disabled, 1
+            | false, _ when [ 0; days ] |> List.contains count ->
+                let status =
+                    if now.Date <> date
+                    then Model.CellStatus.Pending
+                    elif    now.Time.Hour > pendingAfter.Hour
+                         || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
+                    then Model.CellStatus.Pending
+                    else Model.CellStatus.Optional
+                status, 1
+            | false, _ -> Model.CellStatus.Disabled, count + 1
+            
         let rec loop count dateSequence =
             match dateSequence with
             | head :: tail ->
                 match cellEventsByDate |> Map.tryFind head with
-                | Some { Status = Model.Postponed as status } ->
-                    (head, Model.EventStatus status) :: loop 0 tail
-                    
-                | Some { Status = status } ->
-                    (head, Model.EventStatus status) :: loop 1 tail
-                    
+                | Some ({ Status = Model.Postponed _ } as cellEvent) -> (head, Model.EventStatus cellEvent.Status) :: loop 0 tail
+                | Some cellEvent -> (head, Model.EventStatus cellEvent.Status) :: loop 1 tail
                 | None ->
                     match task.Scheduling with
-                    | Model.Disabled ->
-                        (head, Model.CellStatus.Disabled) :: loop count tail
-                        
-                    | Model.Optional ->
-                        (head, Model.CellStatus.Optional) :: loop count tail
-                        
-                    | Model.Delayed pendingAfter
-                          when today = head
-                            && now.Hour > pendingAfter.Hour
-                            || now.Hour = pendingAfter.Hour && now.Minute >= pendingAfter.Minute ->
-                        (head, Model.CellStatus.Pending) :: loop count tail
-                        
-                    | Model.Delayed _ ->
-                        (head, Model.CellStatus.Optional) :: loop count tail
-                        
-                    | Model.Recurrency interval ->
-                        let status, count =
-                            match head < today, count with
-                            | true, 0 -> Model.CellStatus.Missed, 0
-                            | true, _ -> Model.CellStatus.Disabled, 1
-                            | _, 0 -> Model.CellStatus.Pending, 1
-                            | _, _ when count = interval -> Model.CellStatus.Pending, 1
-                            | _, _ -> Model.CellStatus.Disabled, count + 1
+                    | Model.Disabled -> (head, Model.CellStatus.Disabled) :: loop count tail
+                    | Model.OptionalDelayed pendingAfter -> (head, optionalStatus head pendingAfter) :: loop count tail
+                    | Model.Optional -> (head, optionalStatus head { Hour = 24; Minute = 0 }) :: loop count tail
+                    | Model.RecurrencyDelayed (days, pendingAfter) ->
+                        let status, count = recurringStatus days head pendingAfter count in 
+                        (head, status) :: loop count tail
+                    | Model.Recurrency days ->
+                        let status, count = recurringStatus days head { Hour = 0; Minute = 0 } count
                         (head, status) :: loop count tail
             | [] -> []
             
