@@ -133,29 +133,30 @@ module Model =
         { Task: Task
           Priority: TaskOrderPriority }
         
-    type Lane = Lane of Task * Cell list
+    type Lane = Lane of task:Task * cells:Cell list
     
 module Functions =
+    open Model
     
-    let sortLanes (today: Model.FlukeDate) (lanes: Model.Lane list) =
+    let sortLanes (today: FlukeDate) (lanes: Lane list) =
         let order = [
-            Model.Pending
-            Model.CellStatus.Optional
-            Model.EventStatus Model.Postponed
-            Model.EventStatus Model.Complete
-            Model.CellStatus.Missed
-            Model.CellStatus.Disabled
+            Pending
+            Optional
+            EventStatus Postponed
+            EventStatus Complete
+            Missed
+            Disabled
         ]
         
         lanes
-        |> List.sortBy (fun (Model.Lane (_, cells)) ->
+        |> List.sortBy (fun (Lane (_, cells)) ->
             cells
             |> List.filter (fun cell -> cell.Date = today)
             |> List.map (fun cell -> order |> List.tryFindIndex ((=) cell.Status))
         )
     
-    let getManualSortedTaskList (taskOrderList: Model.TaskOrderEntry list) =
-        let result = List<Model.Task> ()
+    let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
+        let result = List<Task> ()
         
         let taskOrderList =
             taskOrderList
@@ -166,9 +167,9 @@ module Functions =
         
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | Model.First, None -> result.Insert (0, task)
-            | Model.Last, None -> result.Add task
-            | Model.LessThan lessThan, None ->
+            | First, None -> result.Insert (0, task)
+            | Last, None -> result.Add task
+            | LessThan lessThan, None ->
                 match result |> Seq.tryFindIndexBack ((=) lessThan) with
                 | None -> seq { task; lessThan } |> Seq.iter (fun x -> result.Insert (0, x))
                 | Some i -> result.Insert (i + 1, task)
@@ -176,14 +177,14 @@ module Functions =
             
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | Model.First, None -> result.Insert (0, task)
-            | Model.Last, None -> result.Add task
+            | First, None -> result.Insert (0, task)
+            | Last, None -> result.Add task
             | _ -> ()
             
         result |> Seq.toList
 
     
-    let getDateSequence (paddingLeft, paddingRight) (cellDates: Model.FlukeDate list) =
+    let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
         let minDate =
             cellDates
             |> List.map (fun x -> x.DateTime)
@@ -204,55 +205,55 @@ module Functions =
         
         minDate
         |> loop
-        |> Seq.map Model.FlukeDate.FromDateTime
+        |> Seq.map FlukeDate.FromDateTime
         |> Seq.toList
         
-    let renderLane (task: Model.Task)
-                   (now: Model.FlukeDateTime)
-                   (dateSequence: Model.FlukeDate list)
-                   (cellEvents: Model.CellEvent list) =
+    let renderLane (task: Task)
+                   (now: FlukeDateTime)
+                   (dateSequence: FlukeDate list)
+                   (cellEvents: CellEvent list) =
         let cellEventsByDate =
             cellEvents
             |> List.map (fun x -> x.Date, x)
             |> Map.ofList
             
-        let optionalStatus (date: Model.FlukeDate) (pendingAfter: Model.FlukeTime) =
+        let optionalStatus (date: FlukeDate) (pendingAfter: FlukeTime) =
             if    now.Date = date
                && now.Time.Hour > pendingAfter.Hour
                || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
-            then Model.CellStatus.Pending
-            else Model.CellStatus.Optional
+            then CellStatus.Pending
+            else CellStatus.Optional
             
-        let recurringStatus (days: int) (date: Model.FlukeDate) (pendingAfter: Model.FlukeTime) (count: int) =
+        let recurringStatus (days: int) (date: FlukeDate) (pendingAfter: FlukeTime) (count: int) =
             match date < now.Date, count with
-            | true, 0 -> Model.CellStatus.Missed, 0
-            | true, _ -> Model.CellStatus.Disabled, 1
+            | true, 0 -> CellStatus.Missed, 0
+            | true, _ -> CellStatus.Disabled, 1
             | false, _ when [ 0; days ] |> List.contains count ->
                 let status =
                     if now.Date <> date
-                    then Model.CellStatus.Pending
+                    then CellStatus.Pending
                     elif    now.Time.Hour > pendingAfter.Hour
                          || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
-                    then Model.CellStatus.Pending
-                    else Model.CellStatus.Optional
+                    then CellStatus.Pending
+                    else CellStatus.Optional
                 status, 1
-            | false, _ -> Model.CellStatus.Disabled, count + 1
+            | false, _ -> CellStatus.Disabled, count + 1
             
         let rec loop count dateSequence =
             match dateSequence with
             | head :: tail ->
                 match cellEventsByDate |> Map.tryFind head with
-                | Some ({ Status = Model.Postponed _ } as cellEvent) -> (head, Model.EventStatus cellEvent.Status) :: loop 0 tail
-                | Some cellEvent -> (head, Model.EventStatus cellEvent.Status) :: loop 1 tail
+                | Some ({ Status = Postponed _ } as cellEvent) -> (head, EventStatus cellEvent.Status) :: loop 0 tail
+                | Some cellEvent -> (head, EventStatus cellEvent.Status) :: loop 1 tail
                 | None ->
                     match task.Scheduling with
-                    | Model.Disabled -> (head, Model.CellStatus.Disabled) :: loop count tail
-                    | Model.OptionalDelayed pendingAfter -> (head, optionalStatus head pendingAfter) :: loop count tail
-                    | Model.Optional -> (head, optionalStatus head { Hour = 24; Minute = 0 }) :: loop count tail
-                    | Model.RecurrencyDelayed (days, pendingAfter) ->
+                    | TaskScheduling.Disabled -> (head, CellStatus.Disabled) :: loop count tail
+                    | OptionalDelayed pendingAfter -> (head, optionalStatus head pendingAfter) :: loop count tail
+                    | TaskScheduling.Optional -> (head, optionalStatus head { Hour = 24; Minute = 0 }) :: loop count tail
+                    | RecurrencyDelayed (days, pendingAfter) ->
                         let status, count = recurringStatus days head pendingAfter count in 
                         (head, status) :: loop count tail
-                    | Model.Recurrency days ->
+                    | Recurrency days ->
                         let status, count = recurringStatus days head { Hour = 0; Minute = 0 } count
                         (head, status) :: loop count tail
             | [] -> []
@@ -260,7 +261,7 @@ module Functions =
         let cells =
             loop 0 dateSequence
             |> List.map (fun (date, status) ->
-                { Model.Cell.Date = date
-                  Model.Cell.Status = status }
+                { Cell.Date = date
+                  Cell.Status = status }
             )
-        Model.Lane (task, cells)
+        Lane (task, cells)
