@@ -40,8 +40,8 @@ module HomePageComponent =
 
             ]
             
-            let today =
-                Model.FlukeDate.FromDateTime (DateTime.Now.AddHours -(float PrivateData.hourOffset))
+            let today = Model.FlukeDate.FromDateTime (DateTime.Now.AddHours -(float PrivateData.hourOffset))
+            let now = Model.FlukeTime.FromDateTime DateTime.Now
                 
             let dateSequence = 
                 PrivateData.cellEvents
@@ -54,7 +54,7 @@ module HomePageComponent =
                 |> List.map (fun task ->
                     PrivateData.cellEvents
                     |> List.filter (fun x -> x.Task = task)
-                    |> Functions.renderLane task today dateSequence
+                    |> Functions.renderLane task today now dateSequence
                 )
                 |> Functions.sortLanes today
                 |> List.filter (function Model.Lane ({ InformationType = Model.Project _ }, _) -> false | _ -> true)

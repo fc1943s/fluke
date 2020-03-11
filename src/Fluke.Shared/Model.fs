@@ -54,6 +54,13 @@ module Model =
               Month = date.Month
               Day = date.Day }
             
+    type FlukeTime =
+        { Hour: int
+          Minute: int }
+        static member inline FromDateTime (date: DateTime) =
+            { Hour = date.Hour
+              Minute = date.Minute }
+            
     type InformationComment =
         { Information: InformationType
           Date: FlukeDate
@@ -62,19 +69,16 @@ module Model =
     type TaskScheduling =
         | Disabled
         | Optional
-        | Recurrency of int
-        
-    type Time =
-        { Hour: int
-          Minute: int }
+        | Delayed of pendingAfter: FlukeTime
+        | Recurrency of days: int
+    
         
     type Task =
         { Name: string
           InformationType: InformationType
           Comments: string list 
           Scheduling: TaskScheduling
-          Duration: int option
-          PendingAfter: Time option }
+          Duration: int option }
         
     type CellEventStatus =
         | Postponed
@@ -82,7 +86,7 @@ module Model =
     
     type CellStatus =
         | Disabled
-        | Optional
+        | Optional 
         | Pending
         | Missed
         | EventStatus of CellEventStatus
@@ -139,7 +143,7 @@ module Functions =
         |> List.sortBy (fun (Model.Lane (_, cells)) ->
             cells
             |> List.filter (fun cell -> cell.Date = today)
-            |> List.map (fun cell -> order |> List.tryFindIndex (fun status -> status = cell.Status))
+            |> List.map (fun cell -> order |> List.tryFindIndex ((=) cell.Status))
         )
     
     let getManualSortedTaskList (taskOrderList: Model.TaskOrderEntry list) =
@@ -195,7 +199,11 @@ module Functions =
         |> Seq.map Model.FlukeDate.FromDateTime
         |> Seq.toList
             
-    let renderLane (task: Model.Task) today dateSequence (cellEvents: Model.CellEvent list) =
+    let renderLane (task: Model.Task)
+                   (today: Model.FlukeDate)
+                   (now: Model.FlukeTime)
+                   (dateSequence: Model.FlukeDate list)
+                   (cellEvents: Model.CellEvent list) =
         let cellEventsByDate =
             cellEvents
             |> List.map (fun x -> x.Date, x)
@@ -217,6 +225,15 @@ module Functions =
                         (head, Model.CellStatus.Disabled) :: loop count tail
                         
                     | Model.Optional ->
+                        (head, Model.CellStatus.Optional) :: loop count tail
+                        
+                    | Model.Delayed pendingAfter
+                          when today = head
+                            && now.Hour > pendingAfter.Hour
+                            || now.Hour = pendingAfter.Hour && now.Minute >= pendingAfter.Minute ->
+                        (head, Model.CellStatus.Pending) :: loop count tail
+                        
+                    | Model.Delayed _ ->
                         (head, Model.CellStatus.Optional) :: loop count tail
                         
                     | Model.Recurrency interval ->
