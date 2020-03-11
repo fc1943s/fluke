@@ -217,10 +217,12 @@ module Functions =
             |> List.map (fun x -> x.Date, x)
             |> Map.ofList
             
+        let compareTime now pendingAfter =
+               now.Time.Hour > pendingAfter.Hour
+            || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
+            
         let optionalStatus (date: FlukeDate) (pendingAfter: FlukeTime) =
-            if    now.Date = date
-               && now.Time.Hour > pendingAfter.Hour
-               || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
+            if now.Date = date && compareTime now pendingAfter
             then Pending
             else Optional
             
@@ -230,10 +232,7 @@ module Functions =
             | true, _ -> Disabled, 1
             | false, _ when [ 0; days ] |> List.contains count ->
                 let status =
-                    if now.Date <> date
-                    then Pending
-                    elif    now.Time.Hour > pendingAfter.Hour
-                         || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
+                    if now.Date <> date || compareTime now pendingAfter
                     then Pending
                     else Optional
                 status, 1
