@@ -208,10 +208,7 @@ module Functions =
         |> Seq.map FlukeDate.FromDateTime
         |> Seq.toList
         
-    let renderLane (task: Task)
-                   (now: FlukeDateTime)
-                   (dateSequence: FlukeDate list)
-                   (cellEvents: CellEvent list) =
+    let renderLane task (now: FlukeDateTime) dateSequence (cellEvents: CellEvent list) =
         let cellEventsByDate =
             cellEvents
             |> List.map (fun x -> x.Date, x)
@@ -221,12 +218,12 @@ module Functions =
                now.Time.Hour > pendingAfter.Hour
             || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
             
-        let optionalStatus (date: FlukeDate) (pendingAfter: FlukeTime) =
+        let optionalStatus date pendingAfter =
             if now.Date = date && compareTime now pendingAfter
             then Pending
             else Optional
             
-        let recurringStatus (days: int) (date: FlukeDate) (pendingAfter: FlukeTime) (count: int) =
+        let recurringStatus days date pendingAfter count =
             match date < now.Date, count with
             | true, 0 -> Missed, 0
             | true, _ -> Disabled, 1
