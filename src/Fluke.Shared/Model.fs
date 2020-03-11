@@ -221,23 +221,23 @@ module Functions =
             if    now.Date = date
                && now.Time.Hour > pendingAfter.Hour
                || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
-            then CellStatus.Pending
-            else CellStatus.Optional
+            then Pending
+            else Optional
             
         let recurringStatus (days: int) (date: FlukeDate) (pendingAfter: FlukeTime) (count: int) =
             match date < now.Date, count with
-            | true, 0 -> CellStatus.Missed, 0
-            | true, _ -> CellStatus.Disabled, 1
+            | true, 0 -> Missed, 0
+            | true, _ -> Disabled, 1
             | false, _ when [ 0; days ] |> List.contains count ->
                 let status =
                     if now.Date <> date
-                    then CellStatus.Pending
+                    then Pending
                     elif    now.Time.Hour > pendingAfter.Hour
                          || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
-                    then CellStatus.Pending
-                    else CellStatus.Optional
+                    then Pending
+                    else Optional
                 status, 1
-            | false, _ -> CellStatus.Disabled, count + 1
+            | false, _ -> Disabled, count + 1
             
         let rec loop count dateSequence =
             match dateSequence with
@@ -247,13 +247,13 @@ module Functions =
                 | Some cellEvent -> (head, EventStatus cellEvent.Status) :: loop 1 tail
                 | None ->
                     match task.Scheduling with
-                    | TaskScheduling.Disabled -> (head, CellStatus.Disabled) :: loop count tail
-                    | OptionalDelayed pendingAfter -> (head, optionalStatus head pendingAfter) :: loop count tail
+                    | TaskScheduling.Disabled -> (head, Disabled) :: loop count tail
+                    | TaskScheduling.OptionalDelayed pendingAfter -> (head, optionalStatus head pendingAfter) :: loop count tail
                     | TaskScheduling.Optional -> (head, optionalStatus head { Hour = 24; Minute = 0 }) :: loop count tail
-                    | RecurrencyDelayed (days, pendingAfter) ->
+                    | TaskScheduling.RecurrencyDelayed (days, pendingAfter) ->
                         let status, count = recurringStatus days head pendingAfter count in 
                         (head, status) :: loop count tail
-                    | Recurrency days ->
+                    | TaskScheduling.Recurrency days ->
                         let status, count = recurringStatus days head { Hour = 0; Minute = 0 } count
                         (head, status) :: loop count tail
             | [] -> []
