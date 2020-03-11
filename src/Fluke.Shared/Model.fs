@@ -77,7 +77,6 @@ module Model =
           PendingAfter: Time option }
         
     type CellEventStatus =
-        | Missed
         | Postponed
         | Complete
     
@@ -85,15 +84,16 @@ module Model =
         | Disabled
         | Optional
         | Pending
+        | Missed
         | EventStatus of CellEventStatus
         member this.CellColor =
             match this with
             | Disabled -> "#595959"
             | Optional -> "#4c664e"
             | Pending -> "#262626"
+            | Missed -> "#990022"
             | EventStatus status ->
                 match status with
-                | Missed -> "#990022"
                 | Postponed -> "#b08200"
                 | Complete -> "#339933"
         
@@ -131,7 +131,7 @@ module Functions =
             Model.CellStatus.Optional
             Model.EventStatus Model.Postponed
             Model.EventStatus Model.Complete
-            Model.EventStatus Model.Missed
+            Model.CellStatus.Missed
             Model.CellStatus.Disabled
         ]
         
@@ -222,7 +222,7 @@ module Functions =
                     | Model.Recurrency interval ->
                         let status, count =
                             match head < today, count with
-                            | true, 0 -> Model.CellStatus.EventStatus Model.Missed, 0
+                            | true, 0 -> Model.CellStatus.Missed, 0
                             | true, _ -> Model.CellStatus.Disabled, 1
                             | _, 0 -> Model.CellStatus.Pending, 1
                             | _, _ when count = interval -> Model.CellStatus.Pending, 1

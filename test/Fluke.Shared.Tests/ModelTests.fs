@@ -214,8 +214,8 @@ module ModelTests =
             
             let today = { Year = 2020; Month = 3; Day = 9 }
             let data = [
-                  { Year = 2020; Month = 3; Day = 7 }, EventStatus Missed
-                  { Year = 2020; Month = 3; Day = 8 }, EventStatus Missed
+                  { Year = 2020; Month = 3; Day = 7 }, Missed
+                  { Year = 2020; Month = 3; Day = 8 }, Missed
                   { Year = 2020; Month = 3; Day = 9 }, Pending
                   { Year = 2020; Month = 3; Day = 10 }, Disabled
                   { Year = 2020; Month = 3; Day = 11 }, Pending
@@ -256,7 +256,7 @@ module ModelTests =
             
             let today = { Year = 2020; Month = 3; Day = 10 }
             let data = [
-                { Year = 2020; Month = 3; Day = 9 }, EventStatus Missed
+                { Year = 2020; Month = 3; Day = 9 }, Missed
                 { Year = 2020; Month = 3; Day = 10 }, EventStatus Postponed
                 { Year = 2020; Month = 3; Day = 11 }, Pending
                 { Year = 2020; Month = 3; Day = 12 }, Disabled
