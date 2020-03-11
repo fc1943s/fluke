@@ -4,10 +4,6 @@
 }
 
 .lane {
-  &:nth-child(even) {
-    opacity: 0.85;
-  }
-  
   .cell {
     .comment-container {
       display: none;
@@ -16,6 +12,10 @@
     &:hover .comment-container {
       display: block;
     }
+  }
+  
+  &:nth-child(even) .cell > div:first-child {
+    opacity: 0.85;
   }
 }
 

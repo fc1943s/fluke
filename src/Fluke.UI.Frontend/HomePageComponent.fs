@@ -98,45 +98,47 @@ module HomePageComponent =
                 ]
                 
                 div [][
-                    // Month Row
-                    div [ Style [ Display DisplayOptions.Flex ] ][
-                        dateSequence
-                        |> List.map (fun date ->
-                            span [ Key (string date)
-                                   Style [ Width 18
-                                           TextAlign TextAlignOptions.Center ] ][
-                                
-                                str (date.Month.ToString ("D2"))
-                            ]
-                        ) |> ofList
-                    ]
                     
-                    // Day of Week Row
-                    div [ Style [ Display DisplayOptions.Flex ] ][
-                        dateSequence
-                        |> List.map (fun date ->
-                            span [ Key (string date)
-                                   Style [ Width 18
+                    let rec dayOfWeekRow = function
+                        | (date: Model.FlukeDate) :: tail -> 
+                            span [ Style [ Width 18
+                                           Functions.getCellSeparatorBorderLeft date
                                            TextAlign TextAlignOptions.Center ] ][
                                 
                                 str (date.DateTime.ToString().ToLower().Substring (0, 2))
-                            ]
-                        ) |> ofList
-                    ]
+                            ] :: dayOfWeekRow tail
+                        | [] -> []
+                    dateSequence
+                    |> dayOfWeekRow
+                    |> div [ Style [ Display DisplayOptions.Flex ] ]
+                    
+                    
+                    dateSequence
+                    |> Temp.Core.recFn (fun monthRow -> function
+                        | date :: tail -> 
+                            span [ Style [ Width 18
+                                           Functions.getCellSeparatorBorderLeft date
+                                           TextAlign TextAlignOptions.Center ] ][
+                                
+                                str (date.Month.ToString ("D2"))
+                            ] :: monthRow tail
+                        | [] -> [])
+                    |> div [ Style [ Display DisplayOptions.Flex ] ]
                     
                     // Day Row
-                    div [ Style [ Display DisplayOptions.Flex ] ][
-                        dateSequence
-                        |> List.map (fun date ->
-                            span [ Key (string date)
-                                   Style [ Width 18
-                                           TextAlign TextAlignOptions.Center
-                                           Color (if date = now.Date then "#f22" else "") ] ][
-                                str (date.Day.ToString "D2")
-                            ]
-                        ) |> ofList
-                    ]
-                            
+                    dateSequence
+                    |> Seq.map (fun date ->
+                        span [ Style [ Width 18
+                                       Functions.getCellSeparatorBorderLeft date
+                                       TextAlign TextAlignOptions.Center
+                                       Color (if date = now.Date then "#f22" else "") ] ][
+                            str (date.Day.ToString "D2")
+                        ]
+                    )
+                    |> div [ Style [ Display DisplayOptions.Flex ] ]
+                    
+                    
+                    // Cells
                     lanes
                     |> List.map (fun (Model.Lane (task, cells)) ->
                         div [ Key task.Name

@@ -33,10 +33,10 @@ module CellComponent =
                 
             div [ Style [ Width 18
                           Height 18
+                          Functions.getCellSeparatorBorderLeft props.Date
                           if hasComments then
                               Border "1px solid #ffffff77"
-                          Opacity (if props.Date = props.Today then 0.8 else 1.)
-                          BackgroundColor props.Status.CellColor ] ][]
+                          BackgroundColor (props.Status.CellColor + (if props.Date = props.Today then "bb" else "ff")) ] ][]
                 
             if hasComments then
                 div [ Style [ Position PositionOptions.Absolute
@@ -49,8 +49,7 @@ module CellComponent =
                       Style [ Position PositionOptions.Absolute
                               Padding 20
                               MinWidth 200
-                              BackgroundColor "#000"
-                              Opacity 0.4
+                              BackgroundColor "#00000088"
                               Left 18
                               ZIndex 1
                               Top 0 ] ][

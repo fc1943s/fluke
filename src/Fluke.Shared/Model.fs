@@ -235,23 +235,22 @@ module Functions =
                 status, 1
             | false, _ -> Disabled, count + 1
             
-        let rec loop count dateSequence =
-            match dateSequence with
-            | head :: tail ->
-                match cellEventsByDate |> Map.tryFind head with
-                | Some ({ Status = Postponed _ } as cellEvent) -> (head, EventStatus cellEvent.Status) :: loop 0 tail
-                | Some cellEvent -> (head, EventStatus cellEvent.Status) :: loop 1 tail
+        let rec loop count = function
+            | date :: tail ->
+                match cellEventsByDate |> Map.tryFind date with
+                | Some ({ Status = Postponed _ } as cellEvent) -> (date, EventStatus cellEvent.Status) :: loop 0 tail
+                | Some cellEvent -> (date, EventStatus cellEvent.Status) :: loop 1 tail
                 | None ->
                     match task.Scheduling with
-                    | TaskScheduling.Disabled -> (head, Disabled) :: loop count tail
-                    | TaskScheduling.OptionalDelayed pendingAfter -> (head, optionalStatus head pendingAfter) :: loop count tail
-                    | TaskScheduling.Optional -> (head, optionalStatus head { Hour = 24; Minute = 0 }) :: loop count tail
+                    | TaskScheduling.Disabled -> (date, Disabled) :: loop count tail
+                    | TaskScheduling.OptionalDelayed pendingAfter -> (date, optionalStatus date pendingAfter) :: loop count tail
+                    | TaskScheduling.Optional -> (date, optionalStatus date { Hour = 24; Minute = 0 }) :: loop count tail
                     | TaskScheduling.RecurrencyDelayed (days, pendingAfter) ->
-                        let status, count = recurringStatus days head pendingAfter count in 
-                        (head, status) :: loop count tail
+                        let status, count = recurringStatus days date pendingAfter count in 
+                        (date, status) :: loop count tail
                     | TaskScheduling.Recurrency days ->
-                        let status, count = recurringStatus days head { Hour = 0; Minute = 0 } count
-                        (head, status) :: loop count tail
+                        let status, count = recurringStatus days date { Hour = 0; Minute = 0 } count
+                        (date, status) :: loop count tail
             | [] -> []
             
         let cells =
