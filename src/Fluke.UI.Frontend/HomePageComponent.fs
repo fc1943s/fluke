@@ -41,8 +41,9 @@ module HomePageComponent =
             ]
             
             let now =
-                { Model.Date = Model.FlukeDate.FromDateTime (DateTime.Now.AddHours -(float PrivateData.hourOffset))
-                  Model.Time = Model.FlukeTime.FromDateTime DateTime.Now }
+                let rawDate = DateTime.Now.AddHours -(float PrivateData.hourOffset)
+                { Model.Date = Model.FlukeDate.FromDateTime rawDate
+                  Model.Time = Model.FlukeTime.FromDateTime rawDate }
                 
             let dateSequence = 
                 PrivateData.cellEvents
@@ -101,7 +102,7 @@ module HomePageComponent =
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         dateSequence
                         |> List.map (fun date ->
-                            span [ Key (date.ToString ())
+                            span [ Key (string date)
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center ] ][
                                 
@@ -114,7 +115,7 @@ module HomePageComponent =
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         dateSequence
                         |> List.map (fun date ->
-                            span [ Key (date.ToString ())
+                            span [ Key (string date)
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center ] ][
                                 
@@ -127,7 +128,7 @@ module HomePageComponent =
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         dateSequence
                         |> List.map (fun date ->
-                            span [ Key (date.ToString ())
+                            span [ Key (string date)
                                    Style [ Width 18
                                            TextAlign TextAlignOptions.Center
                                            Color (if date = now.Date then "#f22" else "") ] ][
@@ -145,7 +146,7 @@ module HomePageComponent =
                             cells
                             |> List.map (fun cell ->
                                 
-                                div [ Key (cell.Date.ToString ()) ][
+                                div [ Key (string cell.Date) ][
                                     
                                     CellComponent.``default``
                                         { Date = cell.Date

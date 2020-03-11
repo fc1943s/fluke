@@ -57,7 +57,7 @@ module CellComponent =
                     
                     cellComments
                     |> List.map (fun comment ->
-                        div [ Key (props.Date.ToString ()) ][
+                        div [ Key (string props.Date) ][
                             ReactBindings.React.createElement
                                 (Ext.reactMarkdown,
                                     {| source = comment.Comment |}, [])
