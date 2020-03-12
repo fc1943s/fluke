@@ -60,6 +60,7 @@ module Model =
         static member inline FromDateTime (date: DateTime) =
             { Hour = date.Hour
               Minute = date.Minute }
+    let midnight = { Hour = 0; Minute = 0 }
     
     type FlukeDateTime =
         { Date: FlukeDate
@@ -76,6 +77,7 @@ module Model =
     type TaskScheduling =
         | Disabled
         | Optional
+        | Once
         | OptionalDelayed of pendingAfter:FlukeTime
         | Recurrency of days:int
         | RecurrencyDelayed of days:int * pendingAfter:FlukeTime
@@ -224,10 +226,11 @@ module Functions =
             else Optional
             
         let recurringStatus days date pendingAfter count =
-            match date < now.Date, count, [ 0; days ] |> List.contains count with
-            | true, 0, _ -> Disabled, 0
+            match date < now.Date, count, [ -1; 0; days ] |> List.contains count with
+            | true, -1, _ -> Disabled, -1 
+            | true, 0, false -> Missed, 0
             | true, _, true -> Missed, 0
-            | _, _, true ->
+            | false, _, true ->
                 let status =
                     if now.Date <> date || compareTime pendingAfter
                     then Pending
@@ -242,19 +245,22 @@ module Functions =
                 | Some cellEvent -> (date, EventStatus cellEvent.Status) :: loop 1 tail
                 | None ->
                     match task.Scheduling with
-                    | TaskScheduling.Disabled -> (date, Disabled) :: loop count tail
-                    | TaskScheduling.OptionalDelayed pendingAfter -> (date, optionalStatus date pendingAfter) :: loop count tail
-                    | TaskScheduling.Optional -> (date, optionalStatus date { Hour = 24; Minute = 0 }) :: loop count tail
+                    | TaskScheduling.Disabled -> (date, Disabled) :: loop -1 tail
+                    | TaskScheduling.OptionalDelayed pendingAfter -> (date, optionalStatus date pendingAfter) :: loop -1 tail
+                    | TaskScheduling.Optional -> (date, optionalStatus date { Hour = 24; Minute = 0 }) :: loop -1 tail
                     | TaskScheduling.RecurrencyDelayed (days, pendingAfter) ->
-                        let status, count = recurringStatus days date pendingAfter count in 
+                        let status, count = recurringStatus days date pendingAfter count
                         (date, status) :: loop count tail
                     | TaskScheduling.Recurrency days ->
-                        let status, count = recurringStatus days date { Hour = 0; Minute = 0 } count
+                        let status, count = recurringStatus days date midnight count
+                        (date, status) :: loop count tail
+                    | TaskScheduling.Once ->
+                        let status, count = recurringStatus 0 date midnight count
                         (date, status) :: loop count tail
             | [] -> []
             
         let cells =
-            loop 0 dateSequence
+            loop -1 dateSequence
             |> List.map (fun (date, status) ->
                 { Cell.Date = date
                   Cell.Status = status }

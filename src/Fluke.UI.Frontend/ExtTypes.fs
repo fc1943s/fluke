@@ -1,7 +1,5 @@
 namespace Fluke.UI.Frontend
 
-open Fable.Core
-
 module ExtTypes =
     
     type IFlatted =

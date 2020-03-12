@@ -91,7 +91,7 @@ module ModelTests =
         member _.GetSortedTaskListTests () =
             let now =
                 { Date = { Year = 2020; Month = 3; Day = 10 }
-                  Time = { Hour = 0; Minute = 0 } }
+                  Time = midnight }
             let data = [
                 { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional },
                 [] 
@@ -215,7 +215,7 @@ module ModelTests =
             
             let now =
                 { Date = { Year = 2020; Month = 3; Day = 9 }
-                  Time = { Hour = 0; Minute = 0 } }
+                  Time = midnight }
             let data = [
                   { Year = 2020; Month = 3; Day = 7 }, Disabled
                   { Year = 2020; Month = 3; Day = 8 }, Disabled
@@ -235,7 +235,7 @@ module ModelTests =
             
             let now =
                 { Date = { Year = 2020; Month = 3; Day = 9 }
-                  Time = { Hour = 0; Minute = 0 } }
+                  Time = midnight }
             let data = [
                 { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
                 { Year = 2020; Month = 3; Day = 9 }, Disabled
@@ -261,7 +261,7 @@ module ModelTests =
             
             let now =
                 { Date = { Year = 2020; Month = 3; Day = 10 }
-                  Time = { Hour = 0; Minute = 0 } }
+                  Time = midnight }
             let data = [
                 { Year = 2020; Month = 3; Day = 9 }, Disabled
                 { Year = 2020; Month = 3; Day = 10 }, EventStatus Postponed
@@ -283,7 +283,7 @@ module ModelTests =
             
             let now =
                 { Date = { Year = 2020; Month = 3; Day = 11 }
-                  Time = { Hour = 0; Minute = 0 } }
+                  Time = midnight }
             let data = [
                 { Year = 2020; Month = 3; Day = 7 }, Disabled
                 { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
@@ -309,7 +309,7 @@ module ModelTests =
             
             let now =
                 { Date = { Year = 2020; Month = 3; Day = 11 }
-                  Time = { Hour = 0; Minute = 0 } }
+                  Time = midnight }
             let data = [
                 { Year = 2020; Month = 3; Day = 7 }, Disabled
                 { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
@@ -339,7 +339,50 @@ module ModelTests =
             
             let now =
                 { Date = { Year = 2020; Month = 3; Day = 11 }
-                  Time = { Hour = 0; Minute = 0 } }
+                  Time = midnight }
+            let data = [
+                { Year = 2020; Month = 3; Day = 9 }, Disabled
+                { Year = 2020; Month = 3; Day = 10 }, Disabled
+                { Year = 2020; Month = 3; Day = 11 }, Pending
+                { Year = 2020; Month = 3; Day = 12 }, Disabled
+                { Year = 2020; Month = 3; Day = 13 }, Disabled
+            ]
+            let task = { defaultTask with Scheduling = Once }
+            let cellEvents = []
+            
+            Functions.renderLane task now (data |> List.map fst) cellEvents
+            |> unwrapLane
+            |> should equal data
+            
+            //
+            
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 11 }
+                  Time = midnight }
+            let data = [
+                { Year = 2020; Month = 3; Day = 8 }, Disabled
+                { Year = 2020; Month = 3; Day = 9 }, EventStatus Postponed
+                { Year = 2020; Month = 3; Day = 10 }, Missed
+                { Year = 2020; Month = 3; Day = 11 }, Pending
+                { Year = 2020; Month = 3; Day = 12 }, Disabled
+                { Year = 2020; Month = 3; Day = 13 }, Disabled
+            ]
+            let task = { defaultTask with Scheduling = Once }
+            let cellEvents = [
+                { Task = task
+                  Date = { Year = 2020; Month = 3; Day = 9 }
+                  Status = Postponed }
+            ]
+            
+            Functions.renderLane task now (data |> List.map fst) cellEvents
+            |> unwrapLane
+            |> should equal data
+            
+            //
+            
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 11 }
+                  Time = midnight }
             let data = [
                 { Year = 2020; Month = 3; Day = 9 }, Disabled
                 { Year = 2020; Month = 3; Day = 10 }, EventStatus Complete

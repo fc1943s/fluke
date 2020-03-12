@@ -25,7 +25,7 @@ module HomePageComponent =
         
     
 
-    let ``default`` = FunctionComponent.Of (fun (props: Props) ->
+    let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
 
         Text.div [ Props [ Style [ Height "100%" ] ]
                    Modifiers [ Modifier.TextSize (Screen.All, TextSize.Is7) ] ][
