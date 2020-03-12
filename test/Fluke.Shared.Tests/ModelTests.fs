@@ -217,8 +217,8 @@ module ModelTests =
                 { Date = { Year = 2020; Month = 3; Day = 9 }
                   Time = { Hour = 0; Minute = 0 } }
             let data = [
-                  { Year = 2020; Month = 3; Day = 7 }, Missed
-                  { Year = 2020; Month = 3; Day = 8 }, Missed
+                  { Year = 2020; Month = 3; Day = 7 }, Disabled
+                  { Year = 2020; Month = 3; Day = 8 }, Disabled
                   { Year = 2020; Month = 3; Day = 9 }, Pending
                   { Year = 2020; Month = 3; Day = 10 }, Disabled
                   { Year = 2020; Month = 3; Day = 11 }, Pending
@@ -263,7 +263,7 @@ module ModelTests =
                 { Date = { Year = 2020; Month = 3; Day = 10 }
                   Time = { Hour = 0; Minute = 0 } }
             let data = [
-                { Year = 2020; Month = 3; Day = 9 }, Missed
+                { Year = 2020; Month = 3; Day = 9 }, Disabled
                 { Year = 2020; Month = 3; Day = 10 }, EventStatus Postponed
                 { Year = 2020; Month = 3; Day = 11 }, Pending
                 { Year = 2020; Month = 3; Day = 12 }, Disabled
@@ -273,6 +273,86 @@ module ModelTests =
                 { Task = task
                   Date = { Year = 2020; Month = 3; Day = 10 }
                   Status = Postponed }
+            ]
+            
+            Functions.renderLane task now (data |> List.map fst) cellEvents
+            |> unwrapLane
+            |> should equal data
+            
+            //
+            
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 11 }
+                  Time = { Hour = 0; Minute = 0 } }
+            let data = [
+                { Year = 2020; Month = 3; Day = 7 }, Disabled
+                { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
+                { Year = 2020; Month = 3; Day = 9 }, Disabled
+                { Year = 2020; Month = 3; Day = 10 }, Missed
+                { Year = 2020; Month = 3; Day = 11 }, Pending
+                { Year = 2020; Month = 3; Day = 12 }, Disabled
+                { Year = 2020; Month = 3; Day = 13 }, Pending
+                { Year = 2020; Month = 3; Day = 14 }, Disabled
+            ]
+            let task = { defaultTask with Scheduling = Recurrency 2 }
+            let cellEvents = [
+                { Task = task
+                  Date = { Year = 2020; Month = 3; Day = 8 }
+                  Status = Complete }
+            ]
+            
+            Functions.renderLane task now (data |> List.map fst) cellEvents
+            |> unwrapLane
+            |> should equal data
+            
+            //
+            
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 11 }
+                  Time = { Hour = 0; Minute = 0 } }
+            let data = [
+                { Year = 2020; Month = 3; Day = 7 }, Disabled
+                { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
+                { Year = 2020; Month = 3; Day = 9 }, Disabled
+                { Year = 2020; Month = 3; Day = 10 }, Missed
+                { Year = 2020; Month = 3; Day = 11 }, Pending
+                { Year = 2020; Month = 3; Day = 12 }, EventStatus Complete
+                { Year = 2020; Month = 3; Day = 13 }, Disabled
+                { Year = 2020; Month = 3; Day = 14 }, Pending
+            ]
+            let task = { defaultTask with Scheduling = Recurrency 2 }
+            let cellEvents = [
+                { Task = task
+                  Date = { Year = 2020; Month = 3; Day = 8 }
+                  Status = Complete }
+                
+                { Task = task
+                  Date = { Year = 2020; Month = 3; Day = 12 }
+                  Status = Complete }
+            ]
+            
+            Functions.renderLane task now (data |> List.map fst) cellEvents
+            |> unwrapLane
+            |> should equal data
+            
+            //
+            
+            let now =
+                { Date = { Year = 2020; Month = 3; Day = 11 }
+                  Time = { Hour = 0; Minute = 0 } }
+            let data = [
+                { Year = 2020; Month = 3; Day = 9 }, Disabled
+                { Year = 2020; Month = 3; Day = 10 }, EventStatus Complete
+                { Year = 2020; Month = 3; Day = 11 }, Disabled
+                { Year = 2020; Month = 3; Day = 12 }, Disabled
+                { Year = 2020; Month = 3; Day = 13 }, Pending
+                { Year = 2020; Month = 3; Day = 14 }, Disabled
+            ]
+            let task = { defaultTask with Scheduling = Recurrency 3 }
+            let cellEvents = [
+                { Task = task
+                  Date = { Year = 2020; Month = 3; Day = 10 }
+                  Status = Complete }
             ]
             
             Functions.renderLane task now (data |> List.map fst) cellEvents
@@ -322,7 +402,7 @@ module ModelTests =
                 { Date = { Year = 2020; Month = 3; Day = 10 }
                   Time = { Hour = 19; Minute = 30 } }
             let data = [
-                { Year = 2020; Month = 3; Day = 9 }, Missed
+                { Year = 2020; Month = 3; Day = 9 }, Disabled
                 { Year = 2020; Month = 3; Day = 10 }, Optional
                 { Year = 2020; Month = 3; Day = 11 }, Pending
             ]
@@ -336,7 +416,7 @@ module ModelTests =
                 { Date = { Year = 2020; Month = 3; Day = 10 }
                   Time = { Hour = 21; Minute = 0 } }
             let data = [
-                { Year = 2020; Month = 3; Day = 9 }, Missed
+                { Year = 2020; Month = 3; Day = 9 }, Disabled
                 { Year = 2020; Month = 3; Day = 10 }, Pending
                 { Year = 2020; Month = 3; Day = 11 }, Pending
             ]

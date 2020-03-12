@@ -224,16 +224,16 @@ module Functions =
             else Optional
             
         let recurringStatus days date pendingAfter count =
-            match date < now.Date, count with
-            | true, 0 -> Missed, 0
-            | true, _ -> Disabled, 1
-            | false, _ when [ 0; days ] |> List.contains count ->
+            match date < now.Date, count, [ 0; days ] |> List.contains count with
+            | true, 0, _ -> Disabled, 0
+            | true, _, true -> Missed, 0
+            | _, _, true ->
                 let status =
                     if now.Date <> date || compareTime pendingAfter
                     then Pending
                     else Optional
                 status, 1
-            | false, _ -> Disabled, count + 1
+            | _, _, _ -> Disabled, count + 1
             
         let rec loop count = function
             | date :: tail ->

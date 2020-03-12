@@ -91,7 +91,11 @@ module HomePageComponent =
                     lanes
                     |> List.map (fun (Model.Lane (task, _)) ->
                         div [ Key task.Name
-                              Style [ Padding 0 ] ][ str task.Name ]
+                              Style [ Padding 0
+                                      WhiteSpace WhiteSpaceOptions.Nowrap ] ][
+                            
+                            str task.Name
+                        ]
                     )
                     |> List.append topPadding
                     |> ofList
