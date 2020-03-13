@@ -1,7 +1,7 @@
 namespace Fluke.UI.Frontend
 
 open Fluke.Shared
-open MechaHaze.UI.Frontend
+open Fluke.UI.Frontend
 open Fable.React
 open Fable.React.Props
 open Fulma
@@ -10,14 +10,21 @@ open System
 
         
 module HomePageComponent =
-
+    
     type Props =
         { Dispatch: SharedState.SharedServerMessage -> unit
           UIState: UIState.State
           PrivateState: Client.PrivateState<UIState.State> }
         
     type State =
-        { Now: Model.FlukeDateTime }
+        { Now: Model.FlukeDateTime
+          GridView: bool
+          TreeView: bool }
+        static member inline Default =
+            { Now = { Date = { Year = 0; Month = 0; Day = 0 }
+                      Time = Model.midnight }
+              GridView = true
+              TreeView = false }
             
     type ToggleBindingSource =
         | ToggleBindingSource of string * string
@@ -28,7 +35,7 @@ module HomePageComponent =
             { Model.Date = Model.FlukeDate.FromDateTime rawDate
               Model.Time = Model.FlukeTime.FromDateTime rawDate }
             
-        let state = Hooks.useState { Now = getNow () }
+        let state = Hooks.useState { State.Default with Now = getNow () }
             
         Temp.CustomHooks.useInterval (fun () ->
             state.update (fun state -> { state with Now = getNow () })
@@ -49,6 +56,14 @@ module HomePageComponent =
             )
             |> Functions.sortLanes state.current.Now.Date
             // |> List.filter (function Model.Lane ({ InformationType = Model.Project _ }, _) -> false | _ -> true)
+            
+        let events = {|
+            OnGridViewToggle = fun _ ->
+                state.update (fun state -> { state with GridView = not state.GridView })
+                
+            OnTreeViewToggle = fun _ ->
+                state.update (fun state -> { state with TreeView = not state.TreeView })
+        |}
 
         Text.div [ Props [ Style [ Height "100%" ] ]
                    Modifiers [ Modifier.TextSize (Screen.All, TextSize.Is7) ] ][
@@ -59,10 +74,37 @@ module HomePageComponent =
 
             Navbar.navbar [ Navbar.Color IsBlack
                             Navbar.Props [ Style [ Height 36
-                                                   MinHeight 36 ]]][
+                                                   MinHeight 36
+                                                   Padding "8px 0 0 10px"
+                                                   Display DisplayOptions.Flex
+                                                   JustifyContent "space-around" ]]][
+                
+                Navbar.Item.div [ Navbar.Item.Props [ ClassName "field"
+                                                      OnClick events.OnGridViewToggle ] ][
+
+                    Checkbox.input [ CustomClass "switch is-small is-dark"
+                                     Props [ Checked state.current.GridView
+                                             OnChange (fun _ -> ()) ]]
+                    
+                    Checkbox.checkbox [][
+                        str "Default View"
+                    ]
+                ]
+                
+                Navbar.Item.div [ Navbar.Item.Props [ ClassName "field"
+                                                      OnClick events.OnTreeViewToggle ] ][
+
+                    Checkbox.input [ CustomClass "switch is-small is-dark"
+                                     Props [ Checked state.current.TreeView
+                                             OnChange (fun _ -> ()) ]]
+                    
+                    Checkbox.checkbox [][
+                        str "Tree View"
+                    ]
+                ]
             ]
             
-            // Columns
+            // Grid View
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
                 let topPadding =
@@ -162,5 +204,12 @@ module HomePageComponent =
                     ) |> div []
                 ]
             ]
+            |> fun x -> if state.current.GridView then x else div [][]
+            
+            // Tree View
+            div [ Style [ Display DisplayOptions.Flex ] ][
+                str "Tree View"
+            ]
+            |> fun x -> if state.current.TreeView then x else div [][]
         ]
     , memoizeWith = equalsButFunctions)

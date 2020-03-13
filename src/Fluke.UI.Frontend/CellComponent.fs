@@ -1,4 +1,4 @@
-namespace MechaHaze.UI.Frontend
+namespace Fluke.UI.Frontend
 
 open Fable.React
 open Fable.React.Props
