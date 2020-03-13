@@ -3,17 +3,32 @@
   color: #ddd;
 }
 
-.lane {
-  .cell {
-    .comment-container {
-      display: none;
-    }
+.tooltip-indicator::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-top: 8px solid #f00;
+  border-left: 8px solid transparent;
+}
 
-    &:hover .comment-container {
-      display: block;
-    }
+.tooltip-container {
+  position: relative;
+
+  .tooltip-popup {
+    white-space: nowrap;
+    position: absolute;
+    display: none;
+    z-index: 1;
+    background-color: #000a;
   }
-  
+
+  &:hover .tooltip-popup {
+    display: block;
+  }
+}
+
+.lane {
   &:nth-child(even) .cell > div:first-child {
     opacity: 0.85;
   }

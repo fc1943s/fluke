@@ -23,13 +23,12 @@ module CellComponent =
         
         
     let ``default`` = FunctionComponent.Of (fun props ->
-        div [ Class "cell"
-              Style [ Position PositionOptions.Relative ] ][
-            
-            let cellComments =
-                PrivateData.cellComments
-                |> List.filter (fun cell -> cell.Task.Name = props.Task.Name && cell.Date = props.Date)
-            let hasComments = cellComments |> List.isEmpty |> not
+        let cellComments =
+            PrivateData.cellComments
+            |> List.filter (fun cell -> cell.Task.Name = props.Task.Name && cell.Date = props.Date)
+        let hasComments = cellComments |> List.isEmpty |> not
+        
+        div [ Class (["cell"; "tooltip-container"; if hasComments then "tooltip-indicator" else ""] |> String.concat " ") ][
                 
             div [ Style [ Width 18
                           Height 18
@@ -39,29 +38,16 @@ module CellComponent =
                           BackgroundColor (props.Status.CellColor + (if props.Date = props.Today then "bb" else "ff")) ] ][]
                 
             if hasComments then
-                div [ Style [ Position PositionOptions.Absolute
-                              BorderTop "8px solid #f00"
-                              BorderLeft "8px solid transparent"
-                              Right 0
-                              Top 0 ] ][]
-                
-                div [ Class "comment-container"
-                      Style [ Position PositionOptions.Absolute
-                              Padding 20
-                              MinWidth 200
-                              BackgroundColor "#00000088"
-                              Left 18
-                              ZIndex 1
-                              Top 0 ] ][
-                    
-                    cellComments
-                    |> List.map (fun comment ->
-                        div [ Key (string props.Date) ][
-                            ReactBindings.React.createElement
-                                (Ext.reactMarkdown,
-                                    {| source = comment.Comment |}, [])
-                        ]
-                    ) |> ofList
-                ]
+                cellComments
+                |> List.map (fun comment ->
+                    ReactBindings.React.createElement
+                        (Ext.reactMarkdown,
+                            {| source = comment.Comment |}, [])
+                )
+                |> div [ Class "tooltip-popup"
+                         Style [ Padding 20
+                                 MinWidth 200
+                                 Left 18
+                                 Top 0 ] ]
         ]
     , memoizeWith = equalsButFunctions)

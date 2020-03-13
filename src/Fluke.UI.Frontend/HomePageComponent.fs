@@ -59,47 +59,52 @@ module HomePageComponent =
                     |> Functions.renderLane task now dateSequence
                 )
                 |> Functions.sortLanes now.Date
-                |> List.filter (function Model.Lane ({ InformationType = Model.Project _ }, _) -> false | _ -> true)
+//                |> List.filter (function Model.Lane ({ InformationType = Model.Project _ }, _) -> false | _ -> true)
                 
             // Columns
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
                 let topPadding =
-                    [ 1 .. 3 ]
-                    |> List.map (fun n ->
-                        div [ Key (string -n)
-                              DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
-                    )
+                    div [ DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
+                    |> List.replicate 3
                     
                 // Information Type
-                div [ Style [ PaddingRight 10 ] ][
-                    lanes
-                    |> List.map (fun (Model.Lane (task, _)) ->
-                        div [ Key task.Name
-                              Style [ Padding 0
-                                      Color task.InformationType.Color ] ][
-                            
-                            str task.InformationType.Name
-                        ]
-                    )
-                    |> List.append topPadding
-                    |> ofList
-                ]
+                lanes
+                |> List.map (fun (Model.Lane (task, _)) ->
+                    div [ Style [ Padding 0
+                                  Color task.InformationType.Color
+                                  WhiteSpace WhiteSpaceOptions.Nowrap ] ][
+                        
+                        str task.InformationType.Name
+                    ]
+                )
+                |> List.append topPadding
+                |> div [ Style [ PaddingRight 10 ] ]
                 
                 // Task Name
-                div [][
-                    lanes
-                    |> List.map (fun (Model.Lane (task, _)) ->
-                        div [ Key task.Name
-                              Style [ Padding 0
-                                      WhiteSpace WhiteSpaceOptions.Nowrap ] ][
+                lanes
+                |> List.map (fun (Model.Lane (task, _)) ->
+                    div [ Class "tooltip-container" ][
+                        
+                        div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
+                                      WhiteSpace WhiteSpaceOptions.Nowrap
+                                      TextOverflow "ellipsis" ] ][
                             
                             str task.Name
                         ]
-                    )
-                    |> List.append topPadding
-                    |> ofList
-                ]
+                        
+                        div [ Class "tooltip-popup"
+                              Style [ Padding 20
+                                      MinWidth 200
+                                      Left 18
+                                      Top 0 ] ][
+                            
+                            str task.Name
+                        ]
+                    ]
+                )
+                |> List.append topPadding
+                |> div [ Style [ Width 200 ] ]
                 
                 div [][
                     
@@ -141,28 +146,20 @@ module HomePageComponent =
                     )
                     |> div [ Style [ Display DisplayOptions.Flex ] ]
                     
-                    
                     // Cells
                     lanes
                     |> List.map (fun (Model.Lane (task, cells)) ->
-                        div [ Key task.Name
-                              Class "lane"
-                              Style [ Display DisplayOptions.Flex ] ][
-                            
-                            cells
-                            |> List.map (fun cell ->
-                                
-                                div [ Key (string cell.Date) ][
-                                    
-                                    CellComponent.``default``
-                                        { Date = cell.Date
-                                          Task = task
-                                          Status = cell.Status
-                                          Today = now.Date }
-                                ]
-                            ) |> ofList
-                        ]
-                    ) |> ofList
+                        cells
+                        |> List.map (fun cell ->
+                            CellComponent.``default``
+                                { Date = cell.Date
+                                  Task = task
+                                  Status = cell.Status
+                                  Today = now.Date }
+                        )
+                        |> div [ Class "lane"
+                                 Style [ Display DisplayOptions.Flex ] ]
+                    ) |> div []
                 ]
             ]
         ]

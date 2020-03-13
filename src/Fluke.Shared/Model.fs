@@ -4,10 +4,7 @@ open System
 open System.Collections.Generic
 
 module Temp =
-    type WatchSource =
-        | Filmow
-        | Trakt
-    
+    ()
 
 module Model =
     
