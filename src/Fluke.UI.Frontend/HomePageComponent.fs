@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend
 
-open Fable.Core
 open Fluke.Shared
 open MechaHaze.UI.Frontend
 open Fable.React
@@ -23,27 +22,6 @@ module HomePageComponent =
     type ToggleBindingSource =
         | ToggleBindingSource of string * string
         
-
-    module CustomHooks =
-        // TODO: move to Suigetsu
-        let useInterval fn interval =
-            let savedCallback = Hooks.useRef fn 
-            
-            Hooks.useEffect (fun () ->
-                savedCallback.current <- fn
-            , [| fn |])
-            
-            Hooks.useEffectDisposable (fun () ->
-                let id =
-                    JS.setInterval (fun () ->
-                        savedCallback.current ()
-                    ) interval
-                
-                { new IDisposable with
-                    member _.Dispose () =
-                        JS.clearInterval id }
-            , [| interval |])
-
     let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
         let getNow () =
             let rawDate = DateTime.Now.AddHours -(float PrivateData.hourOffset)
@@ -52,7 +30,7 @@ module HomePageComponent =
             
         let state = Hooks.useState { Now = getNow () }
             
-        CustomHooks.useInterval (fun () ->
+        Temp.CustomHooks.useInterval (fun () ->
             state.update (fun state -> { state with Now = getNow () })
         ) (60 * 1000)
             
@@ -107,6 +85,7 @@ module HomePageComponent =
                 // Task Name
                 lanes
                 |> List.map (fun (Model.Lane (task, _)) ->
+                    
                     div [ Class "tooltip-container" ][
                         
                         div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
@@ -131,19 +110,17 @@ module HomePageComponent =
                 
                 div [][
                     
-                    let rec dayOfWeekRow = function
-                        | (date: Model.FlukeDate) :: tail -> 
+                    dateSequence
+                    |> Temp.Core.recFn (fun dayOfWeekRow -> function
+                        | date :: tail -> 
                             span [ Style [ Width 18
                                            Functions.getCellSeparatorBorderLeft date
                                            TextAlign TextAlignOptions.Center ] ][
                                 
                                 str (date.DateTime.ToString().ToLower().Substring (0, 2))
                             ] :: dayOfWeekRow tail
-                        | [] -> []
-                    dateSequence
-                    |> dayOfWeekRow
+                        | [] -> [])
                     |> div [ Style [ Display DisplayOptions.Flex ] ]
-                    
                     
                     dateSequence
                     |> Temp.Core.recFn (fun monthRow -> function
