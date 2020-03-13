@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend
 
+open Fable.Core
 open Fluke.Shared
 open MechaHaze.UI.Frontend
 open Fable.React
@@ -8,6 +9,7 @@ open Fulma
 open Suigetsu.UI.ElmishBridge.Frontend
 open System
 
+        
 module HomePageComponent =
 
     type Props =
@@ -16,16 +18,59 @@ module HomePageComponent =
           PrivateState: Client.PrivateState<UIState.State> }
         
     type State =
-        { a: unit }
-        static member inline Default =
-            { a = () }
+        { Now: Model.FlukeDateTime }
             
     type ToggleBindingSource =
         | ToggleBindingSource of string * string
         
-    
+
+    module CustomHooks =
+        // TODO: move to Suigetsu
+        let useInterval fn interval =
+            let savedCallback = Hooks.useRef fn 
+            
+            Hooks.useEffect (fun () ->
+                savedCallback.current <- fn
+            , [| fn |])
+            
+            Hooks.useEffectDisposable (fun () ->
+                let id =
+                    JS.setInterval (fun () ->
+                        savedCallback.current ()
+                    ) interval
+                
+                { new IDisposable with
+                    member _.Dispose () =
+                        JS.clearInterval id }
+            , [| interval |])
 
     let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
+        let getNow () =
+            let rawDate = DateTime.Now.AddHours -(float PrivateData.hourOffset)
+            { Model.Date = Model.FlukeDate.FromDateTime rawDate
+              Model.Time = Model.FlukeTime.FromDateTime rawDate }
+            
+        let state = Hooks.useState { Now = getNow () }
+            
+        CustomHooks.useInterval (fun () ->
+            state.update (fun state -> { state with Now = getNow () })
+        ) (60 * 1000)
+            
+        let dateSequence = 
+            PrivateData.cellEvents
+            |> List.map (fun x -> x.Date)
+            |> List.append [ state.current.Now.Date ]
+            |> Functions.getDateSequence (3, 70)
+            
+        let lanes =
+            Functions.getManualSortedTaskList PrivateData.taskOrderList
+            |> List.map (fun task ->
+                PrivateData.cellEvents
+                |> List.filter (fun x -> x.Task = task)
+                |> Functions.renderLane task state.current.Now dateSequence
+            )
+            |> Functions.sortLanes state.current.Now.Date
+            // |> List.filter (function Model.Lane ({ InformationType = Model.Project _ }, _) -> false | _ -> true)
 
         Text.div [ Props [ Style [ Height "100%" ] ]
                    Modifiers [ Modifier.TextSize (Screen.All, TextSize.Is7) ] ][
@@ -37,30 +82,8 @@ module HomePageComponent =
             Navbar.navbar [ Navbar.Color IsBlack
                             Navbar.Props [ Style [ Height 36
                                                    MinHeight 36 ]]][
-
             ]
             
-            let now =
-                let rawDate = DateTime.Now.AddHours -(float PrivateData.hourOffset)
-                { Model.Date = Model.FlukeDate.FromDateTime rawDate
-                  Model.Time = Model.FlukeTime.FromDateTime rawDate }
-                
-            let dateSequence = 
-                PrivateData.cellEvents
-                |> List.map (fun x -> x.Date)
-                |> List.append [ now.Date ]
-                |> Functions.getDateSequence (3, 70)
-                
-            let lanes =
-                Functions.getManualSortedTaskList PrivateData.taskOrderList
-                |> List.map (fun task ->
-                    PrivateData.cellEvents
-                    |> List.filter (fun x -> x.Task = task)
-                    |> Functions.renderLane task now dateSequence
-                )
-                |> Functions.sortLanes now.Date
-//                |> List.filter (function Model.Lane ({ InformationType = Model.Project _ }, _) -> false | _ -> true)
-                
             // Columns
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
@@ -140,7 +163,7 @@ module HomePageComponent =
                         span [ Style [ Width 18
                                        Functions.getCellSeparatorBorderLeft date
                                        TextAlign TextAlignOptions.Center
-                                       Color (if date = now.Date then "#f22" else "") ] ][
+                                       Color (if date = state.current.Now.Date then "#f22" else "") ] ][
                             str (date.Day.ToString "D2")
                         ]
                     )
@@ -155,7 +178,7 @@ module HomePageComponent =
                                 { Date = cell.Date
                                   Task = task
                                   Status = cell.Status
-                                  Today = now.Date }
+                                  Today = state.current.Now.Date }
                         )
                         |> div [ Class "lane"
                                  Style [ Display DisplayOptions.Flex ] ]
