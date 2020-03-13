@@ -20,7 +20,20 @@
     position: absolute;
     display: none;
     z-index: 1;
-    background-color: #000a;
+    background-color: #000c;
+    
+    h1 {
+      border-bottom: 1px solid #777;
+      margin-bottom: 3px;
+    }
+    
+    li {
+      list-style-type: square;
+    }
+    
+    ul, p {
+      padding: 5px 0;
+    }
   }
 
   &:hover .tooltip-popup {

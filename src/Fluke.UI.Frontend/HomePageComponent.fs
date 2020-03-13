@@ -128,7 +128,9 @@ module HomePageComponent =
                 lanes
                 |> List.map (fun (Model.Lane (task, _)) ->
                     
-                    div [ Class "tooltip-container" ][
+                    div [ Class ([ "tooltip-container"
+                                   if task.Comments |> List.isEmpty then "" else "tooltip-indicator" ]
+                                 |> String.concat " ") ][
                         
                         div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
                                       WhiteSpace WhiteSpaceOptions.Nowrap
@@ -143,7 +145,14 @@ module HomePageComponent =
                                       Left 18
                                       Top 0 ] ][
                             
-                            str task.Name
+                            task.Comments
+                            |> List.map (fun x -> x + Environment.NewLine)
+                            |> List.append [ "# " + task.Name ]
+                            |> String.concat (Environment.NewLine + Environment.NewLine)
+                            |> fun text ->
+                                ReactBindings.React.createElement
+                                    (Ext.reactMarkdown,
+                                        {| source = text |}, [])
                         ]
                     ]
                 )

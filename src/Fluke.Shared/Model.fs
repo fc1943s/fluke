@@ -73,8 +73,8 @@ module Model =
     
     type TaskScheduling =
         | Disabled
-        | Optional
         | Once
+        | Optional
         | OptionalDelayed of pendingAfter:FlukeTime
         | Recurrency of days:int
         | RecurrencyDelayed of days:int * pendingAfter:FlukeTime
