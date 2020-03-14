@@ -39,7 +39,7 @@ module CellComponent =
                           Functions.getCellSeparatorBorderLeft props.Date
                           if hasComments then
                               Border "1px solid #ffffff77"
-                          BackgroundColor (props.Status.CellColor + (if props.Date = props.Today then "bb" else "ff")) ] ][]
+                          BackgroundColor (props.Status.CellColor + (if props.Date = props.Today then "cc" else "ff")) ] ][]
                 
             if hasComments then
                 div [ Class "tooltip-popup"
