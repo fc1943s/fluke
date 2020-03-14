@@ -6,6 +6,7 @@
   <ItemGroup>
     <Compile Include="ExtTypes.fs" />
     <Compile Include="Eager\Ext.fs" />
+    <Compile Include="TempData.fs" />
     <Compile Include="PrivateData.fs" />
     <Compile Include="Element.fs" />
     <Compile Include="Model.fs" />
