@@ -8,12 +8,12 @@ module TempTests =
         inherit DefaultTestRunner (output)
         
         [<Fact>]
-        member _.Test1() =
+        member _.Test1 () =
                 
             ()
         
         [<Fact>]
-        member _.Test2() =
+        member _.Test2 () =
                 
             ()
         

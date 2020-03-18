@@ -14,10 +14,10 @@
     <Compile Include="HomePageComponent.fs" />
     <Compile Include="MainView.fs" />
     <Compile Include="Client.fs" />
-    <Content Include="paket.references" />
     <Content Include="package.json" />
     <Content Include="webpack.config.js" />
     <Content Include="build.fsx" />
+    <Content Include="paket.references" />
     <Content Include="public\index.js" />
     <Content Include="public\index.scss" />
     <Content Include="public\index.html" />

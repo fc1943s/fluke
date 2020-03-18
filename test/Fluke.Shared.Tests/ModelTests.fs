@@ -93,22 +93,22 @@ module ModelTests =
                 { Date = { Year = 2020; Month = 3; Day = 10 }
                   Time = midnight }
             let data = [
-                { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional },
+                { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional None },
                 [] 
                
-                { defaultTask with Name = "2"; Scheduling = TaskScheduling.Optional },
+                { defaultTask with Name = "2"; Scheduling = TaskScheduling.Optional None },
                 [ { Year = 2020; Month = 3; Day = 10 }, Postponed ]
                 
-                { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency 4 },
+                { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency (4, None) },
                 [ { Year = 2020; Month = 3; Day = 8 }, Complete ]
                 
-                { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency 2 },
+                { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (2, None) },
                 [ { Year = 2020; Month = 3; Day = 10 }, Complete ]
                 
-                { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency 2 },
+                { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency (2, None) },
                 [ { Year = 2020; Month = 3; Day = 10 }, Postponed ]
                 
-                { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency 1 },
+                { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (1, None) },
                 []
                 
                 { defaultTask with Name = "7"; Scheduling = TaskScheduling.Disabled },
@@ -224,7 +224,7 @@ module ModelTests =
                   { Year = 2020; Month = 3; Day = 11 }, Pending
                   { Year = 2020; Month = 3; Day = 12 }, Disabled
             ]
-            let task = { defaultTask with Scheduling = Recurrency 2 }
+            let task = { defaultTask with Scheduling = Recurrency (2, None) }
             let cellEvents = []
             
             Functions.renderLane task now (data |> List.map fst) cellEvents
@@ -246,7 +246,7 @@ module ModelTests =
                 { Year = 2020; Month = 3; Day = 14 }, Pending
                 { Year = 2020; Month = 3; Day = 15 }, Disabled
             ]
-            let task = { defaultTask with Scheduling = Recurrency 3 }
+            let task = { defaultTask with Scheduling = Recurrency (3, None) }
             let cellEvents = [
                 { Task = task
                   Date = { Year = 2020; Month = 3; Day = 8 }
@@ -268,7 +268,7 @@ module ModelTests =
                 { Year = 2020; Month = 3; Day = 11 }, Pending
                 { Year = 2020; Month = 3; Day = 12 }, Disabled
             ]
-            let task = { defaultTask with Scheduling = Recurrency 2 }
+            let task = { defaultTask with Scheduling = Recurrency (2, None) }
             let cellEvents = [
                 { Task = task
                   Date = { Year = 2020; Month = 3; Day = 10 }
@@ -294,7 +294,7 @@ module ModelTests =
                 { Year = 2020; Month = 3; Day = 13 }, Pending
                 { Year = 2020; Month = 3; Day = 14 }, Disabled
             ]
-            let task = { defaultTask with Scheduling = Recurrency 2 }
+            let task = { defaultTask with Scheduling = Recurrency (2, None) }
             let cellEvents = [
                 { Task = task
                   Date = { Year = 2020; Month = 3; Day = 8 }
@@ -320,7 +320,7 @@ module ModelTests =
                 { Year = 2020; Month = 3; Day = 13 }, Disabled
                 { Year = 2020; Month = 3; Day = 14 }, Pending
             ]
-            let task = { defaultTask with Scheduling = Recurrency 2 }
+            let task = { defaultTask with Scheduling = Recurrency (2, None) }
             let cellEvents = [
                 { Task = task
                   Date = { Year = 2020; Month = 3; Day = 8 }
@@ -391,7 +391,7 @@ module ModelTests =
                 { Year = 2020; Month = 3; Day = 13 }, Pending
                 { Year = 2020; Month = 3; Day = 14 }, Disabled
             ]
-            let task = { defaultTask with Scheduling = Recurrency 3 }
+            let task = { defaultTask with Scheduling = Recurrency (3, None) }
             let cellEvents = [
                 { Task = task
                   Date = { Year = 2020; Month = 3; Day = 10 }
@@ -404,7 +404,7 @@ module ModelTests =
             
             //
             
-            let task = { defaultTask with Scheduling = OptionalDelayed { Hour = 20; Minute = 0 } }
+            let task = { defaultTask with Scheduling = TaskScheduling.Optional (Some { Hour = 20; Minute = 0 }) }
             let cellEvents = []
             
             
@@ -437,7 +437,7 @@ module ModelTests =
             
             //
             
-            let task = { defaultTask with Scheduling = RecurrencyDelayed (1, { Hour = 20; Minute = 0 }) }
+            let task = { defaultTask with Scheduling = Recurrency (1, Some { Hour = 20; Minute = 0 }) }
             let cellEvents = []
             
             
