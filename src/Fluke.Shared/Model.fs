@@ -75,7 +75,7 @@ module Model =
         | Disabled
         | Once
         | Optional of pendingAfter:FlukeTime option
-        | Recurrency of days:int * pendinfAfter:FlukeTime option
+        | Recurrency of days:int * pendingAfter:FlukeTime option
     
         
     type Task =
