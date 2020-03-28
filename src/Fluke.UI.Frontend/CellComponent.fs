@@ -25,7 +25,7 @@ module CellComponent =
         
     let ``default`` = FunctionComponent.Of (fun props ->
         let cellComments =
-            PrivateData.cellComments
+            TempData._cellComments
             |> List.filter (fun cell -> cell.Task.Name = props.Task.Name && cell.Date = props.Date)
         let hasComments = cellComments |> List.isEmpty |> not
         

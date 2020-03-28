@@ -31,7 +31,7 @@ module HomePageComponent =
         
     let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
         let getNow () =
-            let rawDate = DateTime.Now.AddHours -(float PrivateData.hourOffset)
+            let rawDate = DateTime.Now.AddHours -(float TempData._hourOffset)
             { Model.Date = Model.FlukeDate.FromDateTime rawDate
               Model.Time = Model.FlukeTime.FromDateTime rawDate }
             
@@ -42,16 +42,16 @@ module HomePageComponent =
         ) (60 * 1000)
             
         let dateSequence = 
-            PrivateData.cellEvents
+            TempData._cellEvents
             |> List.map (fun x -> x.Date)
             |> List.append [ state.current.Now.Date ]
             |> Functions.getDateSequence (3, 70)
             
         let lanes =
-            PrivateData.taskOrderList
+            TempData._taskOrderList
             |> Functions.getManualSortedTaskList 
             |> List.map (fun task ->
-                PrivateData.cellEvents
+                TempData._cellEvents
                 |> List.filter (fun x -> x.Task = task)
                 |> Functions.renderLane task state.current.Now dateSequence
             )

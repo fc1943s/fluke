@@ -271,7 +271,7 @@ module Functions =
                     match task.Scheduling with
                     | TaskScheduling.Disabled ->
                         (date, Disabled) :: loop -1 tail
-                    | TaskScheduling.Recurrency Fixed ->
+                    | TaskScheduling.Recurrency (Fixed _) ->
                         (date, Disabled) :: loop -1 tail
                     | TaskScheduling.Optional pendingAfter ->
                         (date, optionalStatus date (defaultArg pendingAfter { Hour = 24; Minute = 0 })) :: loop -1 tail
