@@ -2,8 +2,12 @@ namespace Fluke.Shared
 
 open System.Diagnostics.CodeAnalysis
 
+open Expecto
+
 module Program =
+
     [<ExcludeFromCodeCoverage>]
     [<EntryPoint>]
-    let main _ =
-        0
+    let main args =
+        runTestsWithArgs defaultConfig args Tests.tests
+

@@ -2,55 +2,41 @@ version 5.226.0
 
 framework: netcoreapp3.1, netstandard2.0
 
-
-
 group Main
+    storage: none
+    source https://api.nuget.org/v3/index.json
 
-storage: none
-source https://api.nuget.org/v3/index.json
-
-nuget FSharp.Core ~> 4.7
-git https://github.com/fc1943s/Suigetsu.git master build: "powershell –ExecutionPolicy Bypass ./build.ps1"
+    nuget FSharp.Core ~> 4.7
+    git https://github.com/fc1943s/Suigetsu.git master build: "powershell –ExecutionPolicy Bypass ./build.ps1"
 
 
 group Fluke.Shared
-
-storage: none
-source https://api.nuget.org/v3/index.json
-
+    storage: none
+    source https://api.nuget.org/v3/index.json
 
 
 group Fluke.UI.Frontend
+    storage: none
+    source https://api.nuget.org/v3/index.json
 
-storage: none
-source https://api.nuget.org/v3/index.json
-
-
-clitool dotnet-fable ~> 2.0
-nuget Fable.FontAwesome.Free ~> 2.0
-nuget Fulma.Extensions.Wikiki.PageLoader ~> 2.0
-nuget Fulma.Extensions.Wikiki.Slider ~> 2.0
-
+    clitool dotnet-fable ~> 2.0
+    nuget Fable.FontAwesome.Free ~> 2.0
+    nuget Fulma.Extensions.Wikiki.PageLoader ~> 2.0
+    nuget Fulma.Extensions.Wikiki.Slider ~> 2.0
 
 
 group Testing
+    storage: none
+    source https://api.nuget.org/v3/index.json
 
-storage: none
-source https://api.nuget.org/v3/index.json
-
-nuget Serilog.Sinks.XUnit ~> 1.0
-nuget Microsoft.NET.Test.Sdk ~> 16.4 prerelease
-nuget xunit.runner.visualstudio ~> 2.2 prerelease
-nuget FsUnit.xUnit ~> 3.8
-
+    nuget Expecto ~> 8.13
 
 
 group Build
+    storage: none
+    source https://api.nuget.org/v3/index.json
 
-storage: none
-source https://api.nuget.org/v3/index.json
-
-nuget Fake.Core.Target prerelease
-nuget Fake.DotNet.Cli prerelease
-nuget Fake.IO.FileSystem prerelease 
+    nuget Fake.Core.Target prerelease
+    nuget Fake.DotNet.Cli prerelease
+    nuget Fake.IO.FileSystem prerelease 
 

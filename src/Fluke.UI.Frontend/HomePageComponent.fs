@@ -48,7 +48,8 @@ module HomePageComponent =
             |> Functions.getDateSequence (3, 70)
             
         let lanes =
-            Functions.getManualSortedTaskList PrivateData.taskOrderList
+            PrivateData.taskOrderList
+            |> Functions.getManualSortedTaskList 
             |> List.map (fun task ->
                 PrivateData.cellEvents
                 |> List.filter (fun x -> x.Task = task)
