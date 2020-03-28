@@ -31,15 +31,11 @@ module HomePageComponent =
         | ToggleBindingSource of string * string
         
     let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
-        let getNow () =
-            let rawDate = DateTime.Now.AddHours -(float TempData._hourOffset)
-            { Date = FlukeDate.FromDateTime rawDate
-              Time = FlukeTime.FromDateTime rawDate }
             
-        let state = Hooks.useState { State.Default with Now = getNow () }
+        let state = Hooks.useState { State.Default with Now = TempData._getNow TempData._hourOffset }
             
         Temp.CustomHooks.useInterval (fun () ->
-            state.update (fun state -> { state with Now = getNow () })
+            state.update (fun state -> { state with Now = TempData._getNow TempData._hourOffset })
         ) (60 * 1000)
             
         let dateSequence = 

@@ -240,7 +240,7 @@ module Tests =
                 |> unwrapLane
                 |> Expect.equal "" (props.Data |> List.map (fun (date, status) -> string date, status))
                
-            test "1" {
+            test "Offset recurrency without events" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 9 }
@@ -256,7 +256,7 @@ module Tests =
                        CellEvents = [] |}
             }
             
-            test "2" {
+            test "Offset recurrency with a past Complete event" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 3) }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 9 }
@@ -276,7 +276,7 @@ module Tests =
                        ] |}
             }
             
-            test "3" {
+            test "Offset recurrency: Pending tomorrow when postponing today" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
@@ -286,13 +286,14 @@ module Tests =
                            { Year = 2020; Month = Month.March; Day = 10 }, EventStatus Postponed
                            { Year = 2020; Month = Month.March; Day = 11 }, Pending
                            { Year = 2020; Month = Month.March; Day = 12 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 13 }, Pending
                        ]
                        CellEvents = [
                            { Year = 2020; Month = Month.March; Day = 10 }, Postponed
                        ] |}
             }
             
-            test "4" {
+            test "Offset recurrency: Pending today after missing yesterday" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
@@ -312,7 +313,7 @@ module Tests =
                        ] |}
             }
             
-            test "5" {
+            test "Offset recurrency: Reset counting after completing a future cell" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
@@ -333,7 +334,7 @@ module Tests =
                        ] |}
             }
             
-            test "6" {
+            test "Once task pending for today" {
                 testData
                     {| Task = { defaultTask with Scheduling = Once }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
@@ -348,7 +349,7 @@ module Tests =
                        CellEvents = [] |}
             }
             
-            test "7" {
+            test "Once task pending for today after postponing and missing" {
                 testData
                     {| Task = { defaultTask with Scheduling = Once }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
@@ -366,25 +367,7 @@ module Tests =
                        ] |}
             }
             
-            test "8" {
-                testData
-                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 3) }
-                       Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
-                               Time = midnight }
-                       Data = [
-                           { Year = 2020; Month = Month.March; Day = 9 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 10 }, EventStatus Complete
-                           { Year = 2020; Month = Month.March; Day = 11 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 12 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 13 }, Pending
-                           { Year = 2020; Month = Month.March; Day = 14 }, Disabled
-                       ]
-                       CellEvents = [
-                           { Year = 2020; Month = Month.March; Day = 10 }, Complete
-                       ] |}
-            }
-            
-            test "9" {
+            test "Optional task Optional before PendingAfter" {
                 testData
                     {| Task = { defaultTask with Scheduling = TaskScheduling.Optional
                                                  PendingAfter = { Hour = 20; Minute = 0 } }
@@ -398,7 +381,7 @@ module Tests =
                        CellEvents = [] |}
             }
             
-            test "9.2" {
+            test "Optional task Pending after PendingAfter" {
                 testData
                     {| Task = { defaultTask with Scheduling = TaskScheduling.Optional
                                                  PendingAfter = { Hour = 20; Minute = 0 } }
@@ -412,7 +395,7 @@ module Tests =
                        CellEvents = [] |}
             }
             
-            test "10" {
+            test "Recurring task Optional before PendingAfter" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 1)
                                                  PendingAfter = { Hour = 20; Minute = 0 } }
@@ -426,7 +409,7 @@ module Tests =
                        CellEvents = [] |}
             }
             
-            test "10.2" {
+            test "Recurring task Pending after PendingAfter" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 1)
                                                  PendingAfter = { Hour = 20; Minute = 0 } }
@@ -440,7 +423,7 @@ module Tests =
                        CellEvents = [] |}
             }
             
-            test "Recurrency for the next days should work normally while today is still optional (behind pendingAfter)" {
+            test "Recurrency for the next days should work normally while today is still optional (before PendingAfter)" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 2)
                                                  PendingAfter = { Hour = 18; Minute = 0 } }
