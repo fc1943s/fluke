@@ -99,16 +99,16 @@ module Tests =
                     { defaultTask with Name = "2"; Scheduling = TaskScheduling.Optional None },
                     [ { Year = 2020; Month = 3; Day = 10 }, Postponed ]
                     
-                    { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency (4, None) },
+                    { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency (Offset (4, None)) },
                     [ { Year = 2020; Month = 3; Day = 8 }, Complete ]
                     
-                    { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (2, None) },
+                    { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (Offset (2, None)) },
                     [ { Year = 2020; Month = 3; Day = 10 }, Complete ]
                     
-                    { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency (2, None) },
+                    { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency (Offset (2, None)) },
                     [ { Year = 2020; Month = 3; Day = 10 }, Postponed ]
                     
-                    { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (1, None) },
+                    { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (Offset (1, None)) },
                     []
                     
                     { defaultTask with Name = "7"; Scheduling = TaskScheduling.Disabled },
@@ -241,7 +241,7 @@ module Tests =
                
             test "1" {
                 testData
-                    {| Scheduling = Recurrency (2, None)
+                    {| Scheduling = Recurrency (Offset (2, None))
                        Now = { Date = { Year = 2020; Month = 3; Day = 9 }
                                Time = midnight }
                        Data = [
@@ -257,7 +257,7 @@ module Tests =
             
             test "2" {
                 testData
-                    {| Scheduling = Recurrency (3, None)
+                    {| Scheduling = Recurrency (Offset (3, None))
                        Now = { Date = { Year = 2020; Month = 3; Day = 9 }
                                Time = midnight }
                        Data = [
@@ -277,7 +277,7 @@ module Tests =
             
             test "3" {
                 testData
-                    {| Scheduling = Recurrency (2, None)
+                    {| Scheduling = Recurrency (Offset (2, None))
                        Now = { Date = { Year = 2020; Month = 3; Day = 10 }
                                Time = midnight }
                        Data = [
@@ -293,7 +293,7 @@ module Tests =
             
             test "4" {
                 testData
-                    {| Scheduling = Recurrency (2, None)
+                    {| Scheduling = Recurrency (Offset (2, None))
                        Now = { Date = { Year = 2020; Month = 3; Day = 11 }
                                Time = midnight }
                        Data = [
@@ -313,7 +313,7 @@ module Tests =
             
             test "5" {
                 testData
-                    {| Scheduling = Recurrency (2, None)
+                    {| Scheduling = Recurrency (Offset (2, None))
                        Now = { Date = { Year = 2020; Month = 3; Day = 11 }
                                Time = midnight }
                        Data = [
@@ -367,7 +367,7 @@ module Tests =
             
             test "8" {
                 testData
-                    {| Scheduling = Recurrency (3, None)
+                    {| Scheduling = Recurrency (Offset (3, None))
                        Now = { Date = { Year = 2020; Month = 3; Day = 11 }
                                Time = midnight }
                        Data = [
@@ -411,7 +411,7 @@ module Tests =
             
             test "10" {
                 testData
-                    {| Scheduling = Recurrency (1, Some { Hour = 20; Minute = 0 })
+                    {| Scheduling = Recurrency (Offset (1, Some { Hour = 20; Minute = 0 }))
                        Now = { Date = { Year = 2020; Month = 3; Day = 10 }
                                Time = { Hour = 19; Minute = 30 } }
                        Data = [
@@ -424,7 +424,7 @@ module Tests =
             
             test "10.2" {
                 testData
-                    {| Scheduling = Recurrency (1, Some { Hour = 20; Minute = 0 })
+                    {| Scheduling = Recurrency (Offset (1, Some { Hour = 20; Minute = 0 }))
                        Now = { Date = { Year = 2020; Month = 3; Day = 10 }
                                Time = { Hour = 21; Minute = 0 } }
                        Data = [
@@ -437,7 +437,7 @@ module Tests =
             
             test "Recurrency for the next days should work normally while today is still optional (behind pendingAfter)" {
                 testData
-                    {| Scheduling = Recurrency (2, Some { Hour = 18; Minute = 0 })
+                    {| Scheduling = Recurrency (Offset (2, Some { Hour = 18; Minute = 0 }))
                        Now = { Date = { Year = 2020; Month = 3; Day = 27 }
                                Time = { Hour = 17; Minute = 0 } }
                        Data = [
@@ -453,7 +453,7 @@ module Tests =
             
             test "Stop generating pending tasks when finding a Dropped status" {
                 testData
-                    {| Scheduling = Recurrency (3, None)
+                    {| Scheduling = Recurrency (Offset (3, None))
                        Now = { Date = { Year = 2020; Month = 3; Day = 27 }
                                Time = midnight }
                        Data = [

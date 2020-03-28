@@ -70,12 +70,35 @@ module Model =
         { Information: InformationType
           Date: FlukeDate
           Comment: string }
+        
+    type Month =
+        | January = 1
+        | February = 2
+        | March = 3
+        | April = 4
+        | May = 5
+        | June = 6
+        | July = 7
+        | August = 8
+        | September = 9
+        | October = 10
+        | November = 11
+        | December = 12
+        
+    type FixedRecurrency =
+        | Weekly of DayOfWeek
+        | Monthly of day:int
+        | Yearly of day:int * month:Month
+        
+    type TaskRecurrency =
+        | Offset of days:int * pendingAfter:FlukeTime option
+        | Fixed of FixedRecurrency
     
     type TaskScheduling =
         | Disabled
         | Once
         | Optional of pendingAfter:FlukeTime option
-        | Recurrency of days:int * pendingAfter:FlukeTime option
+        | Recurrency of TaskRecurrency
     
         
     type Task =
@@ -248,9 +271,11 @@ module Functions =
                     match task.Scheduling with
                     | TaskScheduling.Disabled ->
                         (date, Disabled) :: loop -1 tail
+                    | TaskScheduling.Recurrency Fixed ->
+                        (date, Disabled) :: loop -1 tail
                     | TaskScheduling.Optional pendingAfter ->
                         (date, optionalStatus date (defaultArg pendingAfter { Hour = 24; Minute = 0 })) :: loop -1 tail
-                    | TaskScheduling.Recurrency (days, pendingAfter) ->
+                    | TaskScheduling.Recurrency (Offset (days, pendingAfter)) ->
                         let status, count = recurringStatus days date (defaultArg pendingAfter midnight) count
                         (date, status) :: loop count tail
                     | TaskScheduling.Once ->
