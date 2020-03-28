@@ -7,12 +7,13 @@ open Fluke.Shared
 open Fluke.UI.Frontend
     
 module CellComponent =
+    open Model
 
     type Props =
-        { Date: Model.FlukeDate
-          Task: Model.Task
-          Status: Model.CellStatus
-          Today: Model.FlukeDate }
+        { Date: FlukeDate
+          Task: Task
+          Status: CellStatus
+          Today: FlukeDate }
 
     type State =
         { a: unit }

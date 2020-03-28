@@ -45,7 +45,9 @@ module Model =
     ()
     
 module Functions =
-    let getCellSeparatorBorderLeft (date: Model.FlukeDate) =
+    open Model
+    
+    let getCellSeparatorBorderLeft (date: FlukeDate) =
         if date.Day = 1
         then Some "#000"
         elif date.DateTime.DayOfWeek = System.DayOfWeek.Sunday

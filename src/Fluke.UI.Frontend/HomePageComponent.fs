@@ -10,6 +10,7 @@ open System
 
         
 module HomePageComponent =
+    open Model
     
     type Props =
         { Dispatch: SharedState.SharedServerMessage -> unit
@@ -17,12 +18,12 @@ module HomePageComponent =
           PrivateState: Client.PrivateState<UIState.State> }
         
     type State =
-        { Now: Model.FlukeDateTime
+        { Now: FlukeDateTime
           GridView: bool
           TreeView: bool }
         static member inline Default =
-            { Now = { Date = { Year = 0; Month = 0; Day = 0 }
-                      Time = Model.midnight }
+            { Now = { Date = { Year = 0; Month = Month.January; Day = 1 }
+                      Time = midnight }
               GridView = true
               TreeView = false }
             
@@ -32,8 +33,8 @@ module HomePageComponent =
     let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
         let getNow () =
             let rawDate = DateTime.Now.AddHours -(float TempData._hourOffset)
-            { Model.Date = Model.FlukeDate.FromDateTime rawDate
-              Model.Time = Model.FlukeTime.FromDateTime rawDate }
+            { Date = FlukeDate.FromDateTime rawDate
+              Time = FlukeTime.FromDateTime rawDate }
             
         let state = Hooks.useState { State.Default with Now = getNow () }
             
@@ -56,7 +57,8 @@ module HomePageComponent =
                 |> Functions.renderLane task state.current.Now dateSequence
             )
             |> Functions.sortLanes state.current.Now.Date
-            // |> List.filter (function Model.Lane ({ InformationType = Model.Project _ }, _) -> false | _ -> true)
+            |> List.filter (function Lane ({ Scheduling = TaskScheduling.Disabled }, _) -> false | _ -> true)
+            // |> List.filter (function Lane ({ InformationType = Project _ }, _) -> false | _ -> true)
             
         let events = {|
             OnGridViewToggle = fun _ ->
@@ -114,7 +116,7 @@ module HomePageComponent =
                     
                 // Information Type
                 lanes
-                |> List.map (fun (Model.Lane (task, _)) ->
+                |> List.map (fun (Lane (task, _)) ->
                     div [ Style [ Padding 0
                                   Color task.InformationType.Color
                                   WhiteSpace WhiteSpaceOptions.Nowrap ] ][
@@ -127,7 +129,7 @@ module HomePageComponent =
                 
                 // Task Name
                 lanes
-                |> List.map (fun (Model.Lane (task, _)) ->
+                |> List.map (fun (Lane (task, _)) ->
                     
                     div [ Class ([ "tooltip-container"
                                    if task.Comments |> List.isEmpty then "" else "tooltip-indicator" ]
@@ -181,7 +183,7 @@ module HomePageComponent =
                                            Functions.getCellSeparatorBorderLeft date
                                            TextAlign TextAlignOptions.Center ] ][
                                 
-                                str (date.Month.ToString ("D2"))
+                                str ((int date.Month).ToString ("D2"))
                             ] :: monthRow tail
                         | [] -> [])
                     |> div [ Style [ Display DisplayOptions.Flex ] ]
@@ -200,7 +202,7 @@ module HomePageComponent =
                     
                     // Cells
                     lanes
-                    |> List.map (fun (Model.Lane (task, cells)) ->
+                    |> List.map (fun (Lane (task, cells)) ->
                         cells
                         |> List.map (fun cell ->
                             CellComponent.``default``

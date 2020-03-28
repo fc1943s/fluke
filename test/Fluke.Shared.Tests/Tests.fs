@@ -1,17 +1,18 @@
 namespace Fluke.Shared
 
+open System
 open Expecto
 open Fluke.Shared
 open Fluke.Shared.Model
 open Expecto.Flip
 open Suigetsu.Core
 
-[<AutoOpen>]
 module Data =
     let defaultTask =
         { Name = "<blank>"
           InformationType = Area { Name = "Area" }
           Comments = []
+          PendingAfter = midnight
           Scheduling = TaskScheduling.Disabled
           Duration = None }
     
@@ -31,6 +32,8 @@ module Data =
     let orderedList = [ task1; task2; task3; task4; task5 ]
     
 module Tests =
+    open Data
+    
     let tests = testList "Tests" [
         
         testList "GetManualSortedTaskListTests" [
@@ -90,25 +93,25 @@ module Tests =
         testList "GetSortedTaskListTests" [
             test "1" {
                 let now =
-                    { Date = { Year = 2020; Month = 3; Day = 10 }
+                    { Date = { Year = 2020; Month = Month.March; Day = 10 }
                       Time = midnight }
                 let data = [
-                    { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional None },
+                    { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional },
                     [] 
                    
-                    { defaultTask with Name = "2"; Scheduling = TaskScheduling.Optional None },
-                    [ { Year = 2020; Month = 3; Day = 10 }, Postponed ]
+                    { defaultTask with Name = "2"; Scheduling = TaskScheduling.Optional },
+                    [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed ]
                     
-                    { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency (Offset (4, None)) },
-                    [ { Year = 2020; Month = 3; Day = 8 }, Complete ]
+                    { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency (Offset 4) },
+                    [ { Year = 2020; Month = Month.March; Day = 8 }, Complete ]
                     
-                    { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (Offset (2, None)) },
-                    [ { Year = 2020; Month = 3; Day = 10 }, Complete ]
+                    { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                    [ { Year = 2020; Month = Month.March; Day = 10 }, Complete ]
                     
-                    { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency (Offset (2, None)) },
-                    [ { Year = 2020; Month = 3; Day = 10 }, Postponed ]
+                    { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                    [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed ]
                     
-                    { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (Offset (1, None)) },
+                    { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (Offset 1) },
                     []
                     
                     { defaultTask with Name = "7"; Scheduling = TaskScheduling.Disabled },
@@ -214,259 +217,281 @@ module Tests =
         
         testList "Lane Rendering" [
             
-            let testData (props: {| Scheduling: TaskScheduling
+            let testData (props: {| Task: Task
                                     Now: FlukeDateTime
                                     Data: (FlukeDate * CellStatus) list
                                     CellEvents: (FlukeDate * CellEventStatus) list |}) =
                    
-                let task = { defaultTask with Scheduling = props.Scheduling }
-                
                 let dateSequence =
                     props.Data
                     |> List.map fst
                     
                 let unwrapLane (Lane (_, cells)) =
                    cells
-                   |> List.map (fun x -> x.Date, x.Status)
+                   |> List.map (fun x -> string x.Date, x.Status)
                 
                 props.CellEvents
                 |> List.map (fun (date, status) ->
-                    { Task = task
+                    { Task = props.Task
                       Date = date
                       Status = status }
                 )
-                |> Functions.renderLane task props.Now dateSequence
+                |> Functions.renderLane props.Task props.Now dateSequence
                 |> unwrapLane
-                |> Expect.equal "" props.Data
+                |> Expect.equal "" (props.Data |> List.map (fun (date, status) -> string date, status))
                
             test "1" {
                 testData
-                    {| Scheduling = Recurrency (Offset (2, None))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 9 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 9 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 7 }, Disabled
-                           { Year = 2020; Month = 3; Day = 8 }, Disabled
-                           { Year = 2020; Month = 3; Day = 9 }, Pending
-                           { Year = 2020; Month = 3; Day = 10 }, Disabled
-                           { Year = 2020; Month = 3; Day = 11 }, Pending
-                           { Year = 2020; Month = 3; Day = 12 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 7 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 8 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 9 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 10 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 12 }, Disabled
                        ]
                        CellEvents = [] |}
             }
             
             test "2" {
                 testData
-                    {| Scheduling = Recurrency (Offset (3, None))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 9 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 3) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 9 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
-                           { Year = 2020; Month = 3; Day = 9 }, Disabled
-                           { Year = 2020; Month = 3; Day = 10 }, Disabled
-                           { Year = 2020; Month = 3; Day = 11 }, Pending
-                           { Year = 2020; Month = 3; Day = 12 }, Disabled
-                           { Year = 2020; Month = 3; Day = 13 }, Disabled
-                           { Year = 2020; Month = 3; Day = 14 }, Pending
-                           { Year = 2020; Month = 3; Day = 15 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 8 }, EventStatus Complete
+                           { Year = 2020; Month = Month.March; Day = 9 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 10 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 12 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 13 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 14 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 15 }, Disabled
                        ]
                        CellEvents = [
-                           { Year = 2020; Month = 3; Day = 8 }, Complete
+                           { Year = 2020; Month = Month.March; Day = 8 }, Complete
                        ] |}
             }
             
             test "3" {
                 testData
-                    {| Scheduling = Recurrency (Offset (2, None))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 10 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 9 }, Disabled
-                           { Year = 2020; Month = 3; Day = 10 }, EventStatus Postponed
-                           { Year = 2020; Month = 3; Day = 11 }, Pending
-                           { Year = 2020; Month = 3; Day = 12 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 9 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 10 }, EventStatus Postponed
+                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 12 }, Disabled
                        ]
                        CellEvents = [
-                           { Year = 2020; Month = 3; Day = 10 }, Postponed
+                           { Year = 2020; Month = Month.March; Day = 10 }, Postponed
                        ] |}
             }
             
             test "4" {
                 testData
-                    {| Scheduling = Recurrency (Offset (2, None))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 11 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 7 }, Disabled
-                           { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
-                           { Year = 2020; Month = 3; Day = 9 }, Disabled
-                           { Year = 2020; Month = 3; Day = 10 }, Missed
-                           { Year = 2020; Month = 3; Day = 11 }, Pending
-                           { Year = 2020; Month = 3; Day = 12 }, Disabled
-                           { Year = 2020; Month = 3; Day = 13 }, Pending
-                           { Year = 2020; Month = 3; Day = 14 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 7 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 8 }, EventStatus Complete
+                           { Year = 2020; Month = Month.March; Day = 9 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 10 }, Missed
+                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 12 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 13 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 14 }, Disabled
                        ]
                        CellEvents = [
-                           { Year = 2020; Month = 3; Day = 8 }, Complete
+                           { Year = 2020; Month = Month.March; Day = 8 }, Complete
                        ] |}
             }
             
             test "5" {
                 testData
-                    {| Scheduling = Recurrency (Offset (2, None))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 11 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 7 }, Disabled
-                           { Year = 2020; Month = 3; Day = 8 }, EventStatus Complete
-                           { Year = 2020; Month = 3; Day = 9 }, Disabled
-                           { Year = 2020; Month = 3; Day = 10 }, Missed
-                           { Year = 2020; Month = 3; Day = 11 }, Pending
-                           { Year = 2020; Month = 3; Day = 12 }, EventStatus Complete
-                           { Year = 2020; Month = 3; Day = 13 }, Disabled
-                           { Year = 2020; Month = 3; Day = 14 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 7 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 8 }, EventStatus Complete
+                           { Year = 2020; Month = Month.March; Day = 9 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 10 }, Missed
+                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 12 }, EventStatus Complete
+                           { Year = 2020; Month = Month.March; Day = 13 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 14 }, Pending
                        ]
                        CellEvents = [
-                           { Year = 2020; Month = 3; Day = 8 }, Complete
-                           { Year = 2020; Month = 3; Day = 12 }, Complete
+                           { Year = 2020; Month = Month.March; Day = 8 }, Complete
+                           { Year = 2020; Month = Month.March; Day = 12 }, Complete
                        ] |}
             }
             
             test "6" {
                 testData
-                    {| Scheduling = Once
-                       Now = { Date = { Year = 2020; Month = 3; Day = 11 }
+                    {| Task = { defaultTask with Scheduling = Once }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 9 }, Disabled
-                           { Year = 2020; Month = 3; Day = 10 }, Disabled
-                           { Year = 2020; Month = 3; Day = 11 }, Pending
-                           { Year = 2020; Month = 3; Day = 12 }, Disabled
-                           { Year = 2020; Month = 3; Day = 13 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 9 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 10 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 12 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 13 }, Disabled
                        ]
                        CellEvents = [] |}
             }
             
             test "7" {
                 testData
-                    {| Scheduling = Once
-                       Now = { Date = { Year = 2020; Month = 3; Day = 11 }
+                    {| Task = { defaultTask with Scheduling = Once }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 8 }, Disabled
-                           { Year = 2020; Month = 3; Day = 9 }, EventStatus Postponed
-                           { Year = 2020; Month = 3; Day = 10 }, Missed
-                           { Year = 2020; Month = 3; Day = 11 }, Pending
-                           { Year = 2020; Month = 3; Day = 12 }, Disabled
-                           { Year = 2020; Month = 3; Day = 13 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 8 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 9 }, EventStatus Postponed
+                           { Year = 2020; Month = Month.March; Day = 10 }, Missed
+                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 12 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 13 }, Disabled
                        ]
                        CellEvents = [
-                           { Year = 2020; Month = 3; Day = 9 }, Postponed
+                           { Year = 2020; Month = Month.March; Day = 9 }, Postponed
                        ] |}
             }
             
             test "8" {
                 testData
-                    {| Scheduling = Recurrency (Offset (3, None))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 11 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 3) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 9 }, Disabled
-                           { Year = 2020; Month = 3; Day = 10 }, EventStatus Complete
-                           { Year = 2020; Month = 3; Day = 11 }, Disabled
-                           { Year = 2020; Month = 3; Day = 12 }, Disabled
-                           { Year = 2020; Month = 3; Day = 13 }, Pending
-                           { Year = 2020; Month = 3; Day = 14 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 9 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 10 }, EventStatus Complete
+                           { Year = 2020; Month = Month.March; Day = 11 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 12 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 13 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 14 }, Disabled
                        ]
                        CellEvents = [
-                           { Year = 2020; Month = 3; Day = 10 }, Complete
+                           { Year = 2020; Month = Month.March; Day = 10 }, Complete
                        ] |}
             }
             
             test "9" {
                 testData
-                    {| Scheduling = TaskScheduling.Optional (Some { Hour = 20; Minute = 0 })
-                       Now = { Date = { Year = 2020; Month = 3; Day = 10 }
+                    {| Task = { defaultTask with Scheduling = TaskScheduling.Optional
+                                                 PendingAfter = { Hour = 20; Minute = 0 } }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                Time = { Hour = 19; Minute = 30 } }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 9 }, Optional
-                           { Year = 2020; Month = 3; Day = 10 }, Optional
-                           { Year = 2020; Month = 3; Day = 11 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 9 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 10 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 11 }, Optional
                        ]
                        CellEvents = [] |}
             }
             
             test "9.2" {
                 testData
-                    {| Scheduling = TaskScheduling.Optional (Some { Hour = 20; Minute = 0 })
-                       Now = { Date = { Year = 2020; Month = 3; Day = 10 }
+                    {| Task = { defaultTask with Scheduling = TaskScheduling.Optional
+                                                 PendingAfter = { Hour = 20; Minute = 0 } }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                Time = { Hour = 21; Minute = 0 } }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 9 }, Optional
-                           { Year = 2020; Month = 3; Day = 10 }, Pending
-                           { Year = 2020; Month = 3; Day = 11 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 9 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 10 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 11 }, Optional
                        ]
                        CellEvents = [] |}
             }
             
             test "10" {
                 testData
-                    {| Scheduling = Recurrency (Offset (1, Some { Hour = 20; Minute = 0 }))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 10 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 1)
+                                                 PendingAfter = { Hour = 20; Minute = 0 } }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                Time = { Hour = 19; Minute = 30 } }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 9 }, Disabled
-                           { Year = 2020; Month = 3; Day = 10 }, Optional
-                           { Year = 2020; Month = 3; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 9 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 10 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
                        ]
                        CellEvents = [] |}
             }
             
             test "10.2" {
                 testData
-                    {| Scheduling = Recurrency (Offset (1, Some { Hour = 20; Minute = 0 }))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 10 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 1)
+                                                 PendingAfter = { Hour = 20; Minute = 0 } }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                Time = { Hour = 21; Minute = 0 } }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 9 }, Disabled
-                           { Year = 2020; Month = 3; Day = 10 }, Pending
-                           { Year = 2020; Month = 3; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 9 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 10 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
                        ]
                        CellEvents = [] |}
             }
             
             test "Recurrency for the next days should work normally while today is still optional (behind pendingAfter)" {
                 testData
-                    {| Scheduling = Recurrency (Offset (2, Some { Hour = 18; Minute = 0 }))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 27 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 2)
+                                                 PendingAfter = { Hour = 18; Minute = 0 } }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 27 }
                                Time = { Hour = 17; Minute = 0 } }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 25 }, Disabled
-                           { Year = 2020; Month = 3; Day = 26 }, Disabled
-                           { Year = 2020; Month = 3; Day = 27 }, Optional
-                           { Year = 2020; Month = 3; Day = 28 }, Disabled
-                           { Year = 2020; Month = 3; Day = 29 }, Pending
-                           { Year = 2020; Month = 3; Day = 29 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 25 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 26 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 27 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 28 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 29 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 29 }, Disabled
                        ]
                        CellEvents = [] |}
             }
             
             test "Stop generating pending tasks when finding a Dropped status" {
                 testData
-                    {| Scheduling = Recurrency (Offset (3, None))
-                       Now = { Date = { Year = 2020; Month = 3; Day = 27 }
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 3) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 27 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = 3; Day = 25 }, EventStatus Complete
-                           { Year = 2020; Month = 3; Day = 26 }, Disabled
-                           { Year = 2020; Month = 3; Day = 27 }, EventStatus Dropped
-                           { Year = 2020; Month = 3; Day = 28 }, Disabled
-                           { Year = 2020; Month = 3; Day = 29 }, Disabled
-                           { Year = 2020; Month = 3; Day = 29 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 25 }, EventStatus Complete
+                           { Year = 2020; Month = Month.March; Day = 26 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 27 }, EventStatus Dropped
+                           { Year = 2020; Month = Month.March; Day = 28 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 29 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 29 }, Disabled
                        ]
                        CellEvents = [
-                           { Year = 2020; Month = 3; Day = 25 }, Complete
-                           { Year = 2020; Month = 3; Day = 27 }, Dropped
+                           { Year = 2020; Month = Month.March; Day = 25 }, Complete
+                           { Year = 2020; Month = Month.March; Day = 27 }, Dropped
+                       ] |}
+            }
+            
+            test "Weekly Fixed Recurrency" {
+                testData
+                    {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Saturday)) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                               Time = midnight }
+                       Data = [
+                           for d in 13 .. 29 do
+                               { Year = 2020; Month = Month.March; Day = d },
+                               if d = 14
+                               then EventStatus Complete
+                               elif d = 21 || d = 28
+                               then Pending
+                               else Disabled
+                       ]
+                       CellEvents = [
+                           { Year = 2020; Month = Month.March; Day = 14 }, Complete
                        ] |}
             }
             

@@ -38,17 +38,31 @@ module Model =
             | Resource _ -> "#333"
             | Archive archive -> sprintf "[%s]" archive.Color
             
+    type Month =
+        | January = 1
+        | February = 2
+        | March = 3
+        | April = 4
+        | May = 5
+        | June = 6
+        | July = 7
+        | August = 8
+        | September = 9
+        | October = 10
+        | November = 11
+        | December = 12
+        
     type FlukeDate =
         { Year: int
-          Month: int
+          Month: Month
           Day: int }
         override this.ToString () =
-           sprintf "%d-%d-%d" this.Year this.Month this.Day
+           sprintf "%d-%A-%d" this.Year this.Month this.Day
         member this.DateTime =
-            DateTime (this.Year, this.Month, this.Day, 12, 0, 0)
+            DateTime (this.Year, int this.Month, this.Day, 12, 0, 0)
         static member inline FromDateTime (date: DateTime) =
             { Year = date.Year
-              Month = date.Month
+              Month = Month.Parse (typeof<Month>, string date.Month) :?> Month
               Day = date.Day }
             
     type FlukeTime =
@@ -71,19 +85,6 @@ module Model =
           Date: FlukeDate
           Comment: string }
         
-    type Month =
-        | January = 1
-        | February = 2
-        | March = 3
-        | April = 4
-        | May = 5
-        | June = 6
-        | July = 7
-        | August = 8
-        | September = 9
-        | October = 10
-        | November = 11
-        | December = 12
         
     type FixedRecurrency =
         | Weekly of DayOfWeek
@@ -91,13 +92,13 @@ module Model =
         | Yearly of day:int * month:Month
         
     type TaskRecurrency =
-        | Offset of days:int * pendingAfter:FlukeTime option
+        | Offset of days:int
         | Fixed of FixedRecurrency
     
     type TaskScheduling =
         | Disabled
         | Once
-        | Optional of pendingAfter:FlukeTime option
+        | Optional
         | Recurrency of TaskRecurrency
     
         
@@ -106,6 +107,7 @@ module Model =
           InformationType: InformationType
           Comments: string list 
           Scheduling: TaskScheduling
+          PendingAfter: FlukeTime
           Duration: int option }
         
     type CellEventStatus =
@@ -232,35 +234,36 @@ module Functions =
         |> Seq.toList
         
     let renderLane task (now: FlukeDateTime) dateSequence (cellEvents: CellEvent list) =
+        let isVisibleNow pendingAfter =
+               now.Time.Hour > pendingAfter.Hour
+            || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
+            
+        let todayStatus pendingAfter =
+            if isVisibleNow pendingAfter
+            then Pending
+            else Optional
+            
+        let recurringStatus days (date: FlukeDate) pendingAfter count =
+            match date.DateTime.CompareTo now.Date.DateTime,
+                  count,
+                  List.contains count [ -1; 0; days ] with
+            | _, -2, _ -> Disabled, -2
+            | -1, -1, _ -> Disabled, -1 
+            | -1, 0, false -> Missed, 0
+            | -1, _, true -> Missed, 0
+            | 0, _, true -> todayStatus pendingAfter, 1
+            | 1, _, true -> Pending, 1
+            | _, _, _ -> Disabled, count + 1
+            
         let cellEventsByDate =
             cellEvents
             |> List.map (fun x -> x.Date, x)
             |> Map.ofList
             
-        let compareTime pendingAfter =
-               now.Time.Hour > pendingAfter.Hour
-            || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
-            
-        let optionalStatus date pendingAfter =
-            if now.Date = date && compareTime pendingAfter
-            then Pending
-            else Optional
-            
-        let recurringStatus days date pendingAfter count =
-            match date < now.Date, count, List.contains count [ -1; 0; days ] with
-            | _, -2, _ -> Disabled, -2
-            | true, -1, _ -> Disabled, -1 
-            | false, _, true ->
-                if date = now.Date && not (compareTime pendingAfter)
-                then Optional, 1
-                else Pending, 1
-            | true, 0, false -> Missed, 0
-            | true, _, true -> Missed, 0
-            | _, _, _ -> Disabled, count + 1
-            
         let rec loop count = function
             | date :: tail ->
-                match cellEventsByDate |> Map.tryFind date with
+                match cellEventsByDate
+                      |> Map.tryFind date with
                 | Some ({ Status = Postponed _ } as cellEvent) ->
                     (date, EventStatus cellEvent.Status) :: loop 0 tail
                 | Some ({ Status = Dropped _ } as cellEvent) ->
@@ -271,15 +274,41 @@ module Functions =
                     match task.Scheduling with
                     | TaskScheduling.Disabled ->
                         (date, Disabled) :: loop -1 tail
-                    | TaskScheduling.Recurrency (Fixed _) ->
-                        (date, Disabled) :: loop -1 tail
-                    | TaskScheduling.Optional pendingAfter ->
-                        (date, optionalStatus date (defaultArg pendingAfter { Hour = 24; Minute = 0 })) :: loop -1 tail
-                    | TaskScheduling.Recurrency (Offset (days, pendingAfter)) ->
-                        let status, count = recurringStatus days date (defaultArg pendingAfter midnight) count
+                        
+                    | TaskScheduling.Optional ->
+                        let pendingAfter =
+                            if task.PendingAfter = midnight
+                            then { Hour = 24; Minute = 0 }
+                            else task.PendingAfter
+                            
+                        let status =
+                            if date = now.Date
+                            then todayStatus pendingAfter
+                            else Optional
+                            
+                        (date, status) :: loop -1 tail
+                        
+                    | TaskScheduling.Recurrency (Fixed recurrency) ->
+                        let status =
+                            match recurrency with
+                            | Weekly dayOfWeek -> dayOfWeek = date.DateTime.DayOfWeek
+                            | Monthly day -> day = date.Day
+                            | Yearly (day, month) -> day = date.Day && month = date.Month
+                            |> function
+                                | false -> Disabled
+                                | true ->
+                                    if date = now.Date
+                                    then todayStatus task.PendingAfter
+                                    else Pending
+                                    
+                        (date, status) :: loop -1 tail
+                        
+                    | TaskScheduling.Recurrency (Offset days) ->
+                        let status, count = recurringStatus days date task.PendingAfter count
                         (date, status) :: loop count tail
+                        
                     | TaskScheduling.Once ->
-                        let status, count = recurringStatus 0 date midnight count
+                        let status, count = recurringStatus 0 date task.PendingAfter count
                         (date, status) :: loop count tail
             | [] -> []
             
