@@ -435,6 +435,22 @@ module Tests =
                        CellEvents = [] |}
             }
             
+            test "Recurrency for the next days should work normally while today is still optional (behind pendingAfter)" {
+                testData
+                    {| Scheduling = Recurrency (2, Some { Hour = 18; Minute = 0 })
+                       Now = { Date = { Year = 2020; Month = 3; Day = 27 }
+                               Time = { Hour = 17; Minute = 0 } }
+                       Data = [
+                           { Year = 2020; Month = 3; Day = 25 }, Disabled
+                           { Year = 2020; Month = 3; Day = 26 }, Disabled
+                           { Year = 2020; Month = 3; Day = 27 }, Optional
+                           { Year = 2020; Month = 3; Day = 28 }, Disabled
+                           { Year = 2020; Month = 3; Day = 29 }, Pending
+                           { Year = 2020; Month = 3; Day = 29 }, Disabled
+                       ]
+                       CellEvents = [] |}
+            }
+            
             test "Stop generating pending tasks when finding a Dropped status" {
                 testData
                     {| Scheduling = Recurrency (3, None)
@@ -443,12 +459,17 @@ module Tests =
                        Data = [
                            { Year = 2020; Month = 3; Day = 25 }, EventStatus Complete
                            { Year = 2020; Month = 3; Day = 26 }, Disabled
-                           { Year = 2020; Month = 3; Day = 27 }, Disabled
-                           { Year = 2020; Month = 3; Day = 28 }, Pending
+                           { Year = 2020; Month = 3; Day = 27 }, EventStatus Dropped
+                           { Year = 2020; Month = 3; Day = 28 }, Disabled
+                           { Year = 2020; Month = 3; Day = 29 }, Disabled
                            { Year = 2020; Month = 3; Day = 29 }, Disabled
                        ]
-                       CellEvents = [] |}
+                       CellEvents = [
+                           { Year = 2020; Month = 3; Day = 25 }, Complete
+                           { Year = 2020; Month = 3; Day = 27 }, Dropped
+                       ] |}
             }
+            
         ]
     ]
 

@@ -88,6 +88,7 @@ module Model =
     type CellEventStatus =
         | Postponed
         | Complete
+        | Dropped
     
     type CellStatus =
         | Disabled
@@ -105,6 +106,7 @@ module Model =
                 match status with
                 | Postponed -> "#b08200"
                 | Complete -> "#339933"
+                | Dropped -> "#673ab7"
         
     type Cell =
         { Date: FlukeDate
@@ -142,6 +144,7 @@ module Functions =
             EventStatus Postponed
             EventStatus Complete
             Missed
+            EventStatus Dropped
             Disabled
         ]
         
@@ -221,16 +224,15 @@ module Functions =
             else Optional
             
         let recurringStatus days date pendingAfter count =
-            match date < now.Date, count, [ -1; 0; days ] |> List.contains count with
+            match date < now.Date, count, List.contains count [ -1; 0; days ] with
+            | _, -2, _ -> Disabled, -2
             | true, -1, _ -> Disabled, -1 
+            | false, _, true ->
+                if date = now.Date && not (compareTime pendingAfter)
+                then Optional, 1
+                else Pending, 1
             | true, 0, false -> Missed, 0
             | true, _, true -> Missed, 0
-            | false, _, true ->
-                let status =
-                    if now.Date <> date || compareTime pendingAfter
-                    then Pending
-                    else Optional
-                status, 1
             | _, _, _ -> Disabled, count + 1
             
         let rec loop count = function
@@ -238,6 +240,8 @@ module Functions =
                 match cellEventsByDate |> Map.tryFind date with
                 | Some ({ Status = Postponed _ } as cellEvent) ->
                     (date, EventStatus cellEvent.Status) :: loop 0 tail
+                | Some ({ Status = Dropped _ } as cellEvent) ->
+                    (date, EventStatus cellEvent.Status) :: loop -2 tail
                 | Some cellEvent ->
                     (date, EventStatus cellEvent.Status) :: loop 1 tail
                 | None ->
