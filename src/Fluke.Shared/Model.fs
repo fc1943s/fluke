@@ -165,21 +165,23 @@ module Functions =
     
     let sortLanes (today: FlukeDate) (lanes: Lane list) =
         let order = [
-            Pending
-            Optional
-            EventStatus Postponed
-            EventStatus Complete
-            Missed
-            EventStatus Dropped
-            Disabled
+            fun _ -> Pending
+            fun (task: Task) -> if task.Scheduling <> Manual then Optional else Disabled
+            fun _ -> EventStatus Postponed
+            fun _ -> EventStatus Complete
+            fun _ -> Missed
+            fun _ -> EventStatus Dropped
+            fun (task: Task) -> if task.Scheduling = Manual then Optional else Disabled
+            fun _ -> Disabled
         ]
         
         lanes
-        |> List.sortBy (fun (Lane (_, cells)) ->
+        |> List.sortBy (fun (Lane (task, cells)) ->
             cells
             |> List.filter (fun cell -> cell.Date = today)
             |> List.map (fun cell ->
                 order
+                |> List.map (fun fn -> fn task)
                 |> List.tryFindIndex ((=) cell.Status)
             )
         )

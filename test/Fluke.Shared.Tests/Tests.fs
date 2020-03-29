@@ -90,63 +90,6 @@ module Tests =
             }
         ]
         
-        testList "GetSortedTaskListTests" [
-            test "1" {
-                let now =
-                    { Date = { Year = 2020; Month = Month.March; Day = 10 }
-                      Time = midnight }
-                let data = [
-                    { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional },
-                    [] 
-                   
-                    { defaultTask with Name = "2"; Scheduling = TaskScheduling.Optional },
-                    [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed ]
-                    
-                    { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency (Offset 4) },
-                    [ { Year = 2020; Month = Month.March; Day = 8 }, Complete ]
-                    
-                    { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
-                    [ { Year = 2020; Month = Month.March; Day = 10 }, Complete ]
-                    
-                    { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
-                    [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed ]
-                    
-                    { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (Offset 1) },
-                    []
-                    
-                    { defaultTask with Name = "7"; Scheduling = TaskScheduling.Manual },
-                    []
-                ]
-                
-                let dateSequence =
-                    data
-                    |> List.collect (fun (_, cellEvents) ->
-                        cellEvents
-                        |> List.map (fun (date, _) -> date)
-                    )
-                    |> Functions.getDateSequence (0, 0)
-                
-                data
-                |> List.map fst
-                |> List.map (fun task ->
-                    data
-                    |> List.filter (fun (t, _) -> t = task)
-                    |> List.collect (fun (task, events) ->
-                        events
-                        |> List.map (fun (date, status) ->
-                            { Task = task
-                              Date = date
-                              Status = status }
-                        )
-                    )
-                    |> Functions.renderLane task now dateSequence
-                )
-                |> Functions.sortLanes now.Date
-                |> List.map (fun (Lane (task, _)) -> task.Name)
-                |> Expect.equal "" [ "6"; "1"; "2"; "5"; "4"; "3"; "7" ]
-            
-            }
-        ]
         
         testList "SetPriorityTests" [
             
@@ -212,6 +155,67 @@ module Tests =
                     { Task = task4; Priority = LessThan task1 }
                     { Task = task5; Priority = LessThan task3 }
                 ]
+            }
+        ]
+        
+        testList "Lane Sorting" [
+            
+            let testData (props: {| Now: FlukeDateTime
+                                    Data: (Task * (FlukeDate * CellEventStatus) list) list
+                                    Expected: string list |}) =
+                let dateSequence =
+                    props.Data
+                    |> List.collect (fun (_, cellEvents) ->
+                        cellEvents
+                        |> List.map (fun (date, _) -> date)
+                    )
+                    |> Functions.getDateSequence (0, 0)
+                
+                props.Data
+                |> List.map (fun (task, events) ->
+                    events
+                    |> List.map (fun (date, status) ->
+                        { Task = task
+                          Date = date
+                          Status = status }
+                    )
+                    |> Functions.renderLane task props.Now dateSequence
+                )
+                |> Functions.sortLanes props.Now.Date
+                |> List.map (fun (Lane (task, _)) -> task.Name)
+                |> Expect.equal "" props.Expected
+            
+            test "All task types mixed" {
+                testData
+                    {| Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
+                               Time = midnight }
+                       Data = [
+                           { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional },
+                           [] 
+                           
+                           { defaultTask with Name = "2"; Scheduling = TaskScheduling.Optional },
+                           [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed
+                             { Year = 2020; Month = Month.March; Day = 8 }, Postponed ]
+                           
+                           { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency (Offset 4) },
+                           [ { Year = 2020; Month = Month.March; Day = 8 }, Complete ]
+                           
+                           { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                           [ { Year = 2020; Month = Month.March; Day = 10 }, Complete ]
+                           
+                           { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                           [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed ]
+                           
+                           { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (Offset 1) },
+                           []
+                           
+                           { defaultTask with Name = "7"; Scheduling = TaskScheduling.Manual },
+                           []
+                           
+                           { defaultTask with Name = "8"; Scheduling = TaskScheduling.Manual },
+                           []
+                       ]
+                       Expected = [ "6"; "1"; "2"; "5"; "4"; "3"; "7" ] |}
             }
         ]
         
