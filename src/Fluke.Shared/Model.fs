@@ -96,8 +96,7 @@ module Model =
         | Fixed of FixedRecurrency
     
     type TaskScheduling =
-        | Disabled
-        | Once
+        | Manual
         | Optional
         | Recurrency of TaskRecurrency
     
@@ -114,6 +113,7 @@ module Model =
         | Postponed
         | Complete
         | Dropped
+        | ManualPending
     
     type CellStatus =
         | Disabled
@@ -132,6 +132,7 @@ module Model =
                 | Postponed -> "#b08200"
                 | Complete -> "#339933"
                 | Dropped -> "#673ab7"
+                | ManualPending -> "#003038"
         
     type Cell =
         { Date: FlukeDate
@@ -177,7 +178,10 @@ module Functions =
         |> List.sortBy (fun (Lane (_, cells)) ->
             cells
             |> List.filter (fun cell -> cell.Date = today)
-            |> List.map (fun cell -> order |> List.tryFindIndex ((=) cell.Status))
+            |> List.map (fun cell ->
+                order
+                |> List.tryFindIndex ((=) cell.Status)
+            )
         )
     
     let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
@@ -234,7 +238,7 @@ module Functions =
         |> Seq.toList
         
         
-    type LaneCellRenderingStatus =
+    type LaneCellRenderStatus =
         | Disabled
         | WaitingFirstEvent
         | WaitingEvent
@@ -250,6 +254,11 @@ module Functions =
             then Pending
             else Optional
             
+        let defaultCellStatus =
+            if task.Scheduling = TaskScheduling.Optional
+            then CellStatus.Optional
+            else CellStatus.Disabled
+                
         let (|BeforeToday|Today|AfterToday|) (now: FlukeDate, date: FlukeDate) =
             now.DateTime
             |> date.DateTime.CompareTo
@@ -258,11 +267,11 @@ module Functions =
                 | n when n = 0 -> Today
                 | _ -> AfterToday
                 
-        let recurringStatus days (date: FlukeDate) pendingAfter lastCell =
+        let getStatus days (date: FlukeDate) pendingAfter lastCell =
             match (now.Date, date), lastCell with
             | _,           Disabled                         -> CellStatus.Disabled, Disabled
             
-            | BeforeToday, WaitingFirstEvent                -> CellStatus.Disabled, WaitingFirstEvent
+            | BeforeToday, WaitingFirstEvent                -> defaultCellStatus, WaitingFirstEvent
             | BeforeToday, WaitingEvent                     -> Missed, WaitingEvent
             | BeforeToday, Counting count when count = days -> Missed, WaitingEvent
             
@@ -274,7 +283,7 @@ module Functions =
             | AfterToday,  WaitingEvent                     -> Pending, Counting 1
             | AfterToday,  Counting count when count = days -> Pending, Counting 1
             
-            | _,           Counting count                   -> CellStatus.Disabled, Counting (count + 1)
+            | _,           Counting count                   -> defaultCellStatus, Counting (count + 1)
             
         let cellEventsByDate =
             cellEvents
@@ -287,28 +296,23 @@ module Functions =
                       |> Map.tryFind date with
                 | Some ({ Status = Postponed _ } as cellEvent) ->
                     (date, EventStatus cellEvent.Status) :: loop WaitingEvent tail
+                    
                 | Some ({ Status = Dropped _ } as cellEvent) ->
                     (date, EventStatus cellEvent.Status) :: loop Disabled tail
+                    
+                | Some ({ Status = ManualPending _ } as cellEvent) ->
+                    let status, renderStatus =
+                        if date < now.Date
+                        then getStatus 0 date task.PendingAfter WaitingEvent
+                        else EventStatus cellEvent.Status, Counting 1
+                        
+                    (date, status) :: loop renderStatus tail
+                    
                 | Some cellEvent ->
                     (date, EventStatus cellEvent.Status) :: loop (Counting 1) tail
+                    
                 | None ->
                     match task.Scheduling with
-                    | TaskScheduling.Disabled ->
-                        (date, CellStatus.Disabled) :: loop Disabled tail
-                        
-                    | TaskScheduling.Optional ->
-                        let pendingAfter =
-                            if task.PendingAfter = midnight
-                            then { Hour = 24; Minute = 0 }
-                            else task.PendingAfter
-                            
-                        let status =
-                            if date = now.Date
-                            then todayStatus pendingAfter
-                            else Optional
-                            
-                        (date, status) :: loop Disabled tail
-                        
                     | TaskScheduling.Recurrency (Fixed recurrency) ->
                         let status =
                             match recurrency with
@@ -325,12 +329,20 @@ module Functions =
                         (date, status) :: loop Disabled tail
                         
                     | TaskScheduling.Recurrency (Offset days) ->
-                        let status, count = recurringStatus days date task.PendingAfter lastCell
-                        (date, status) :: loop count tail
+                        let status, renderStatus = getStatus days date task.PendingAfter lastCell
+                        (date, status) :: loop renderStatus tail
                         
-                    | TaskScheduling.Once ->
-                        let status, count = recurringStatus 0 date task.PendingAfter lastCell
-                        (date, status) :: loop count tail
+                    | TaskScheduling.Optional
+                    | TaskScheduling.Manual ->
+                        let pendingAfter =
+                            if task.PendingAfter = midnight && lastCell <> WaitingEvent
+                            then { Hour = 24; Minute = 0 }
+                            else task.PendingAfter
+                            
+                        let status, renderStatus =
+                            getStatus 0 date pendingAfter lastCell
+                            
+                        (date, status) :: loop renderStatus tail
             | [] -> []
             
         let cells =

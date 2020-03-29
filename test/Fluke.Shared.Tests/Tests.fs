@@ -13,7 +13,7 @@ module Data =
           InformationType = Area { Name = "Area" }
           Comments = []
           PendingAfter = midnight
-          Scheduling = TaskScheduling.Disabled
+          Scheduling = TaskScheduling.Manual
           Duration = None }
     
     let task1 = { defaultTask with Name = "1" }
@@ -114,7 +114,7 @@ module Tests =
                     { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (Offset 1) },
                     []
                     
-                    { defaultTask with Name = "7"; Scheduling = TaskScheduling.Disabled },
+                    { defaultTask with Name = "7"; Scheduling = TaskScheduling.Manual },
                     []
                 ]
                 
@@ -334,36 +334,36 @@ module Tests =
                        ] |}
             }
             
-            test "Once task pending for today" {
+            test "Empty manual task" {
                 testData
-                    {| Task = { defaultTask with Scheduling = Once }
+                    {| Task = { defaultTask with Scheduling = Manual }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                Time = midnight }
                        Data = [
                            { Year = 2020; Month = Month.March; Day = 9 }, Disabled
                            { Year = 2020; Month = Month.March; Day = 10 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 11 }, Optional
                            { Year = 2020; Month = Month.March; Day = 12 }, Disabled
                            { Year = 2020; Month = Month.March; Day = 13 }, Disabled
                        ]
                        CellEvents = [] |}
             }
             
-            test "Once task pending for today after postponing and missing" {
+            test "Manual task pending for today after postponing and missing" {
                 testData
-                    {| Task = { defaultTask with Scheduling = Once }
+                    {| Task = { defaultTask with Scheduling = Manual }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                Time = midnight }
                        Data = [
                            { Year = 2020; Month = Month.March; Day = 8 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 9 }, EventStatus Postponed
+                           { Year = 2020; Month = Month.March; Day = 9 }, Missed
                            { Year = 2020; Month = Month.March; Day = 10 }, Missed
                            { Year = 2020; Month = Month.March; Day = 11 }, Pending
                            { Year = 2020; Month = Month.March; Day = 12 }, Disabled
                            { Year = 2020; Month = Month.March; Day = 13 }, Disabled
                        ]
                        CellEvents = [
-                           { Year = 2020; Month = Month.March; Day = 9 }, Postponed
+                           { Year = 2020; Month = Month.March; Day = 9 }, ManualPending
                        ] |}
             }
             
@@ -475,6 +475,66 @@ module Tests =
                        ]
                        CellEvents = [
                            { Year = 2020; Month = Month.March; Day = 14 }, Complete
+                       ] |}
+            }
+            
+            test "Reset counting after a ManualPending event" {
+                testData
+                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 3) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
+                               Time = midnight }
+                       Data = [
+                           { Year = 2020; Month = Month.March; Day = 27 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 28 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 29 }, Disabled
+                           { Year = 2020; Month = Month.March; Day = 30 }, EventStatus ManualPending
+                           { Year = 2020; Month = Month.March; Day = 31 }, EventStatus ManualPending
+                           { Year = 2020; Month = Month.April; Day = 01 }, Disabled
+                           { Year = 2020; Month = Month.April; Day = 02 }, Disabled
+                           { Year = 2020; Month = Month.April; Day = 03 }, Pending
+                       ]
+                       CellEvents = [
+                           { Year = 2020; Month = Month.March; Day = 30 }, ManualPending
+                           { Year = 2020; Month = Month.March; Day = 31 }, ManualPending
+                       ] |}
+            }
+            
+            test "Optional task: Missed ManualPending propagates until today" {
+                testData
+                    {| Task = { defaultTask with Scheduling = TaskScheduling.Optional }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
+                               Time = midnight }
+                       Data = [
+                           { Year = 2020; Month = Month.March; Day = 25 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 26 }, Missed
+                           { Year = 2020; Month = Month.March; Day = 27 }, Missed
+                           { Year = 2020; Month = Month.March; Day = 28 }, Pending
+                           { Year = 2020; Month = Month.March; Day = 29 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 30 }, EventStatus ManualPending
+                           { Year = 2020; Month = Month.March; Day = 31 }, Optional
+                       ]
+                       CellEvents = [
+                           { Year = 2020; Month = Month.March; Day = 26 }, ManualPending
+                           { Year = 2020; Month = Month.March; Day = 30 }, ManualPending
+                       ] |}
+            }
+            
+            test "Optional task: Optional mode restored after completing a missed ManualPending event" {
+                testData
+                    {| Task = { defaultTask with Scheduling = TaskScheduling.Optional }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
+                               Time = midnight }
+                       Data = [
+                           { Year = 2020; Month = Month.March; Day = 24 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 25 }, Missed
+                           { Year = 2020; Month = Month.March; Day = 26 }, EventStatus Complete
+                           { Year = 2020; Month = Month.March; Day = 27 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 28 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 29 }, Optional
+                       ]
+                       CellEvents = [
+                           { Year = 2020; Month = Month.March; Day = 25 }, ManualPending
+                           { Year = 2020; Month = Month.March; Day = 26 }, Complete
                        ] |}
             }
             

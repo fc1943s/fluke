@@ -53,7 +53,7 @@ module HomePageComponent =
                 |> Functions.renderLane task state.current.Now dateSequence
             )
             |> Functions.sortLanes state.current.Now.Date
-            |> List.filter (function Lane ({ Scheduling = TaskScheduling.Disabled }, _) -> false | _ -> true)
+//            |> List.filter (function Lane ({ Scheduling = TaskScheduling.Disabled }, _) -> false | _ -> true)
             // |> List.filter (function Lane ({ InformationType = Project _ }, _) -> false | _ -> true)
             
         let events = {|
