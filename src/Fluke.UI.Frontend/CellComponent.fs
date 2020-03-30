@@ -12,6 +12,7 @@ module CellComponent =
     type Props =
         { Date: FlukeDate
           Task: Task
+          Comments: CellComment list
           Status: CellStatus
           Today: FlukeDate }
 
@@ -25,10 +26,7 @@ module CellComponent =
         
         
     let ``default`` = FunctionComponent.Of (fun props ->
-        let cellComments =
-            TempData._cellComments
-            |> List.filter (fun cell -> cell.Task.Name = props.Task.Name && cell.Date = props.Date)
-        let hasComments = cellComments |> List.isEmpty |> not
+        let hasComments = props.Comments |> List.isEmpty |> not
         
         div [ Class ([ "cell"
                        "tooltip-container"
@@ -49,7 +47,7 @@ module CellComponent =
                               Left 18
                               Top 0 ] ][
                     
-                    cellComments
+                    props.Comments
                     |> List.map (fun x -> x.Comment + Environment.NewLine)
                     |> String.concat (Environment.NewLine + Environment.NewLine)
                     |> fun text ->

@@ -197,25 +197,41 @@ module Tests =
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed
                              { Year = 2020; Month = Month.March; Day = 8 }, Postponed ]
                            
-                           { defaultTask with Name = "3"; Scheduling = TaskScheduling.Recurrency (Offset 4) },
+                           { defaultTask with Name = "3"; Scheduling = TaskScheduling.Manual },
+                           [ { Year = 2020; Month = Month.March; Day = 9 }, ManualPending ]
+                           
+                           { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (Offset 1);
+                                                           PendingAfter = { Hour = 20; Minute = 0 } },
+                           []
+                           
+                           { defaultTask with Name = "5"; Scheduling = TaskScheduling.Manual },
+                           [ { Year = 2020; Month = Month.March; Day = 10 }, ManualPending ]
+                           
+                           { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                           [ { Year = 2020; Month = Month.March; Day = 6 }, Dropped ]
+                           
+                           { defaultTask with Name = "7"; Scheduling = TaskScheduling.Recurrency (Offset 4) },
                            [ { Year = 2020; Month = Month.March; Day = 8 }, Complete ]
                            
-                           { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                           { defaultTask with Name = "8"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Complete ]
                            
-                           { defaultTask with Name = "5"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                           { defaultTask with Name = "9"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                           [ { Year = 2020; Month = Month.March; Day = 10 }, Dropped ]
+                           
+                           { defaultTask with Name = "10"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed ]
                            
-                           { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (Offset 1) },
+                           { defaultTask with Name = "11"; Scheduling = TaskScheduling.Recurrency (Offset 1) },
                            []
                            
-                           { defaultTask with Name = "7"; Scheduling = TaskScheduling.Manual },
+                           { defaultTask with Name = "12"; Scheduling = TaskScheduling.Manual },
                            []
                            
-                           { defaultTask with Name = "8"; Scheduling = TaskScheduling.Manual },
+                           { defaultTask with Name = "13"; Scheduling = TaskScheduling.Recurrency (Fixed (Weekly DayOfWeek.Sunday)) },
                            []
                        ]
-                       Expected = [ "6"; "1"; "2"; "5"; "4"; "3"; "7" ] |}
+                       Expected = [ "5"; "3"; "11"; "1"; "4"; "2"; "10"; "8"; "7"; "13"; "12"; "6"; "9" ] |}
             }
         ]
         

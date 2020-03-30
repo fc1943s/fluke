@@ -8,8 +8,9 @@ open Fulma
 open Suigetsu.UI.ElmishBridge.Frontend
 open System
 
-        
 module HomePageComponent =
+    PrivateData.tasks |> ignore // Just to load the module. Remove line to use TestData
+    
     open Model
     
     type Props =
@@ -45,8 +46,7 @@ module HomePageComponent =
             |> Functions.getDateSequence (3, 70)
             
         let lanes =
-            TempData._taskOrderList
-            |> Functions.getManualSortedTaskList 
+            TempData._taskList
             |> List.map (fun task ->
                 TempData._cellEvents
                 |> List.filter (fun x -> x.Task = task)
@@ -201,9 +201,14 @@ module HomePageComponent =
                     |> List.map (fun (Lane (task, cells)) ->
                         cells
                         |> List.map (fun cell ->
+                            let comments =
+                                TempData._cellComments
+                                |> List.filter (fun x -> x.Task.Name = task.Name && x.Date = cell.Date)
+                                
                             CellComponent.``default``
                                 { Date = cell.Date
                                   Task = task
+                                  Comments = comments
                                   Status = cell.Status
                                   Today = state.current.Now.Date }
                         )

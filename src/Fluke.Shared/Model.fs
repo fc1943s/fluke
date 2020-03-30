@@ -164,26 +164,47 @@ module Functions =
     open Model
     
     let sortLanes (today: FlukeDate) (lanes: Lane list) =
-        let order = [
-            fun _ -> Pending
-            fun (task: Task) -> if task.Scheduling <> Manual then Optional else Disabled
-            fun _ -> EventStatus Postponed
-            fun _ -> EventStatus Complete
-            fun _ -> Missed
-            fun _ -> EventStatus Dropped
-            fun (task: Task) -> if task.Scheduling = Manual then Optional else Disabled
-            fun _ -> Disabled
-        ]
+        
+        let getIndex task (cells: Cell list) (cell: Cell) =
+            let dropped =
+                cells
+                |> List.filter (function
+                    { Date = date; Status = EventStatus _ }
+                        when date.DateTime <= today.DateTime -> true | _ -> false
+                )
+                |> List.tryLast
+                |> function
+                    | Some { Status = EventStatus Dropped } -> true
+                    | _ -> false
+                
+                
+            let (|Manual|Optional|RecOffset|RecFixed|) = function
+                | { Scheduling = Manual } -> Manual
+                | { Scheduling = TaskScheduling.Optional } -> Optional
+                | { Scheduling = Recurrency (Offset _) } -> RecOffset
+                | { Scheduling = Recurrency (Fixed _) } -> RecFixed
+                
+            [
+                function EventStatus ManualPending, _                                 -> true | _ -> false
+                function Pending,                   _                                 -> true | _ -> false
+                function CellStatus.Optional,       (Optional | RecFixed | RecOffset) -> true | _ -> false
+                function EventStatus Postponed,     _                                 -> true | _ -> false
+                function EventStatus Complete,      _                                 -> true | _ -> false
+                function Disabled,                  RecOffset        when not dropped -> true | _ -> false
+                function Disabled,                  RecFixed         when not dropped -> true | _ -> false
+                function CellStatus.Optional,       Manual                            -> true | _ -> false
+                function _,                         _                when dropped     -> true | _ -> false
+                function _,                         _                                 -> true
+            ]
+            |> List.mapi (fun i v -> i, v (cell.Status, task))
+            |> List.filter (fun (_, ok) -> ok)
+            |> List.map fst
         
         lanes
         |> List.sortBy (fun (Lane (task, cells)) ->
             cells
             |> List.filter (fun cell -> cell.Date = today)
-            |> List.map (fun cell ->
-                order
-                |> List.map (fun fn -> fn task)
-                |> List.tryFindIndex ((=) cell.Status)
-            )
+            |> List.map (fun cell -> getIndex task cells cell)
         )
     
     let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
@@ -304,7 +325,7 @@ module Functions =
                     
                 | Some ({ Status = ManualPending _ } as cellEvent) ->
                     let status, renderStatus =
-                        if date < now.Date
+                        if date.DateTime < now.Date.DateTime
                         then getStatus 0 date task.PendingAfter WaitingEvent
                         else EventStatus cellEvent.Status, Counting 1
                         

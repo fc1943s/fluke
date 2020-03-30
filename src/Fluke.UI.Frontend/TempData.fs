@@ -6,18 +6,18 @@ open Fluke.Shared
 module TempData =
     open Model
     
+    let areaList = [
+        { Area.Name = "chores" }
+        { Area.Name = "finances" }
+        { Area.Name = "leisure" }
+        { Area.Name = "workflow" }
+    ]
+    
     let areas = {|
-        chores =
-            { Area.Name = "chores" }
-            
-        finances =
-            { Area.Name = "finances" }
-            
-        leisure =
-            { Area.Name = "leisure" }
-            
-        workflow =
-            { Area.Name = "workflow" }
+        chores = areaList |> List.find (fun x -> x.Name = "chores")
+        finances = areaList |> List.find (fun x -> x.Name = "finances")
+        leisure = areaList |> List.find (fun x -> x.Name = "leisure")
+        workflow = areaList |> List.find (fun x -> x.Name = "workflow")
     |}
     
     let defaultTask =
@@ -35,6 +35,8 @@ module TempData =
         { Date = FlukeDate.FromDateTime rawDate
           Time = FlukeTime.FromDateTime rawDate }
     
+    let mutable _taskList: Task list = []
+    
     let mutable _taskOrderList: TaskOrderEntry list = []
     
     let mutable _cellEvents: CellEvent list = []
@@ -42,26 +44,31 @@ module TempData =
     let mutable _cellComments: CellComment list = []
     
     
-    let loadTestData () =
-        let testData =
-            {| Task = { defaultTask with Scheduling = TaskScheduling.Optional }
-               Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
-                       Time = midnight }
-               Data = [
-                   { Year = 2020; Month = Month.March; Day = 24 }, Optional
-                   { Year = 2020; Month = Month.March; Day = 25 }, Missed
-                   { Year = 2020; Month = Month.March; Day = 26 }, EventStatus Complete
-                   { Year = 2020; Month = Month.March; Day = 27 }, Optional
-                   { Year = 2020; Month = Month.March; Day = 28 }, Optional
-                   { Year = 2020; Month = Month.March; Day = 29 }, Optional
-               ]
-               CellEvents = [
-                   { Year = 2020; Month = Month.March; Day = 25 }, ManualPending
-                   { Year = 2020; Month = Month.March; Day = 26 }, Complete
-               ] |}
+    let loadRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
+                                             Data: (FlukeDate * CellStatus) list
+                                             Now: FlukeDateTime
+                                             Task: Task |}) =
         
         _cellEvents <- (testData.CellEvents |> List.map (fun (date, status) -> { Task = testData.Task; Date = date; Status = status }))
+        _taskList <- [ testData.Task ]
         _taskOrderList <- [ { Task = testData.Task; Priority = First } ]
         _getNow <- fun _ -> testData.Now
         
-    // loadTestData ()
+    let loadSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
+                                             Expected: string list
+                                             Now: FlukeDateTime |}) =
+        let cellEvents =
+            testData.Data
+            |> List.collect (fun (task, events) ->
+                events
+                |> List.map (fun (date, status) ->
+                    { Task = task
+                      Date = date
+                      Status = status }
+                )
+            )
+            
+        _cellEvents <- cellEvents
+        _taskList <- testData.Data |> List.map fst
+        _taskOrderList <- testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = First })
+        _getNow <- fun _ -> testData.Now
