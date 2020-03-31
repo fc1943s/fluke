@@ -25,7 +25,7 @@ module TempData =
           InformationType = Area areas.workflow
           Comments = []
           PendingAfter = midnight
-          Scheduling = TaskScheduling.Manual
+          Scheduling = Manual false
           Duration = None }
         
     let mutable _hourOffset = 0

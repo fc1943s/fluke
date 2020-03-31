@@ -13,7 +13,7 @@ module Data =
           InformationType = Area { Name = "Area" }
           Comments = []
           PendingAfter = midnight
-          Scheduling = TaskScheduling.Manual
+          Scheduling = Manual false
           Duration = None }
     
     let task1 = { defaultTask with Name = "1" }
@@ -190,48 +190,56 @@ module Tests =
                     {| Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                Time = midnight }
                        Data = [
-                           { defaultTask with Name = "1"; Scheduling = TaskScheduling.Optional },
+                           { defaultTask with Name = "1"; Scheduling = Manual true },
                            [] 
                            
-                           { defaultTask with Name = "2"; Scheduling = TaskScheduling.Optional },
+                           { defaultTask with Name = "2"; Scheduling = Manual true },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed
                              { Year = 2020; Month = Month.March; Day = 8 }, Postponed ]
                            
-                           { defaultTask with Name = "3"; Scheduling = TaskScheduling.Manual },
+                           { defaultTask with Name = "3"; Scheduling = Manual false },
                            [ { Year = 2020; Month = Month.March; Day = 9 }, ManualPending ]
                            
-                           { defaultTask with Name = "4"; Scheduling = TaskScheduling.Recurrency (Offset 1);
+                           { defaultTask with Name = "4"; Scheduling = Recurrency (Offset 1);
                                                            PendingAfter = { Hour = 20; Minute = 0 } },
                            []
                            
-                           { defaultTask with Name = "5"; Scheduling = TaskScheduling.Manual },
+                           { defaultTask with Name = "5"; Scheduling = Manual false },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, ManualPending ]
                            
-                           { defaultTask with Name = "6"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
-                           [ { Year = 2020; Month = Month.March; Day = 6 }, Dropped ]
+                           { defaultTask with Name = "6"; Scheduling = Manual false },
+                           [ { Year = 2020; Month = Month.March; Day = 4 }, Postponed
+                             { Year = 2020; Month = Month.March; Day = 6 }, Dropped ]
                            
-                           { defaultTask with Name = "7"; Scheduling = TaskScheduling.Recurrency (Offset 4) },
+                           { defaultTask with Name = "7"; Scheduling = Recurrency (Offset 4) },
                            [ { Year = 2020; Month = Month.March; Day = 8 }, Complete ]
                            
-                           { defaultTask with Name = "8"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                           { defaultTask with Name = "8"; Scheduling = Recurrency (Offset 2) },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Complete ]
                            
-                           { defaultTask with Name = "9"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                           { defaultTask with Name = "9"; Scheduling = Recurrency (Offset 2) },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Dropped ]
                            
-                           { defaultTask with Name = "10"; Scheduling = TaskScheduling.Recurrency (Offset 2) },
+                           { defaultTask with Name = "10"; Scheduling = Recurrency (Offset 2) },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed ]
                            
-                           { defaultTask with Name = "11"; Scheduling = TaskScheduling.Recurrency (Offset 1) },
+                           { defaultTask with Name = "11"; Scheduling = Recurrency (Offset 1) },
                            []
                            
-                           { defaultTask with Name = "12"; Scheduling = TaskScheduling.Manual },
+                           { defaultTask with Name = "12"; Scheduling = Manual false },
                            []
                            
-                           { defaultTask with Name = "13"; Scheduling = TaskScheduling.Recurrency (Fixed (Weekly DayOfWeek.Sunday)) },
+                           { defaultTask with Name = "13"; Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Tuesday)) },
                            []
+                           
+                           { defaultTask with Name = "14"; Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Wednesday)) },
+                           []
+                           
+                           { defaultTask with Name = "15"; Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Friday)) },
+                           [ { Year = 2020; Month = Month.March; Day = 7 }, Postponed 
+                             { Year = 2020; Month = Month.March; Day = 9 }, Dropped ]
                        ]
-                       Expected = [ "5"; "3"; "11"; "1"; "4"; "2"; "10"; "8"; "7"; "13"; "12"; "6"; "9" ] |}
+                       Expected = [ "5"; "3"; "11"; "13"; "4"; "1"; "2"; "10"; "8"; "9"; "7"; "14"; "15"; "12"; "6" ] |}
             }
         ]
         
@@ -363,13 +371,13 @@ module Tests =
             
             test "Empty manual task" {
                 testData
-                    {| Task = { defaultTask with Scheduling = Manual }
+                    {| Task = { defaultTask with Scheduling = Manual false }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                Time = midnight }
                        Data = [
                            { Year = 2020; Month = Month.March; Day = 9 }, Disabled
                            { Year = 2020; Month = Month.March; Day = 10 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 11 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 11 }, Suggested
                            { Year = 2020; Month = Month.March; Day = 12 }, Disabled
                            { Year = 2020; Month = Month.March; Day = 13 }, Disabled
                        ]
@@ -378,7 +386,7 @@ module Tests =
             
             test "Manual task pending for today after postponing and missing" {
                 testData
-                    {| Task = { defaultTask with Scheduling = Manual }
+                    {| Task = { defaultTask with Scheduling = Manual false }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                Time = midnight }
                        Data = [
@@ -394,35 +402,35 @@ module Tests =
                        ] |}
             }
             
-            test "Optional task Optional before PendingAfter" {
+            test "Manual Suggested task Suggested before PendingAfter" {
                 testData
-                    {| Task = { defaultTask with Scheduling = TaskScheduling.Optional
+                    {| Task = { defaultTask with Scheduling = Manual true
                                                  PendingAfter = { Hour = 20; Minute = 0 } }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                Time = { Hour = 19; Minute = 30 } }
                        Data = [
-                           { Year = 2020; Month = Month.March; Day = 9 }, Optional
-                           { Year = 2020; Month = Month.March; Day = 10 }, Optional
-                           { Year = 2020; Month = Month.March; Day = 11 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 9 }, Suggested
+                           { Year = 2020; Month = Month.March; Day = 10 }, Suggested
+                           { Year = 2020; Month = Month.March; Day = 11 }, Suggested
                        ]
                        CellEvents = [] |}
             }
             
-            test "Optional task Pending after PendingAfter" {
+            test "Manual Suggested task Pending after PendingAfter" {
                 testData
-                    {| Task = { defaultTask with Scheduling = TaskScheduling.Optional
+                    {| Task = { defaultTask with Scheduling = Manual true
                                                  PendingAfter = { Hour = 20; Minute = 0 } }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                Time = { Hour = 21; Minute = 0 } }
                        Data = [
-                           { Year = 2020; Month = Month.March; Day = 9 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 9 }, Suggested
                            { Year = 2020; Month = Month.March; Day = 10 }, Pending
-                           { Year = 2020; Month = Month.March; Day = 11 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 11 }, Suggested
                        ]
                        CellEvents = [] |}
             }
             
-            test "Recurring task Optional before PendingAfter" {
+            test "Recurring task only Suggested before PendingAfter" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 1)
                                                  PendingAfter = { Hour = 20; Minute = 0 } }
@@ -430,7 +438,7 @@ module Tests =
                                Time = { Hour = 19; Minute = 30 } }
                        Data = [
                            { Year = 2020; Month = Month.March; Day = 9 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 10 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 10 }, Suggested
                            { Year = 2020; Month = Month.March; Day = 11 }, Pending
                        ]
                        CellEvents = [] |}
@@ -450,7 +458,7 @@ module Tests =
                        CellEvents = [] |}
             }
             
-            test "Recurrency for the next days should work normally while today is still optional (before PendingAfter)" {
+            test "Recurrency for the next days should work normally while today is still optional/suggested (before PendingAfter)" {
                 testData
                     {| Task = { defaultTask with Scheduling = Recurrency (Offset 2)
                                                  PendingAfter = { Hour = 18; Minute = 0 } }
@@ -459,31 +467,12 @@ module Tests =
                        Data = [
                            { Year = 2020; Month = Month.March; Day = 25 }, Disabled
                            { Year = 2020; Month = Month.March; Day = 26 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 27 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 27 }, Suggested
                            { Year = 2020; Month = Month.March; Day = 28 }, Disabled
                            { Year = 2020; Month = Month.March; Day = 29 }, Pending
                            { Year = 2020; Month = Month.March; Day = 29 }, Disabled
                        ]
                        CellEvents = [] |}
-            }
-            
-            test "Stop generating pending tasks when finding a Dropped status" {
-                testData
-                    {| Task = { defaultTask with Scheduling = Recurrency (Offset 3) }
-                       Now = { Date = { Year = 2020; Month = Month.March; Day = 27 }
-                               Time = midnight }
-                       Data = [
-                           { Year = 2020; Month = Month.March; Day = 25 }, EventStatus Complete
-                           { Year = 2020; Month = Month.March; Day = 26 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 27 }, EventStatus Dropped
-                           { Year = 2020; Month = Month.March; Day = 28 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 29 }, Disabled
-                           { Year = 2020; Month = Month.March; Day = 29 }, Disabled
-                       ]
-                       CellEvents = [
-                           { Year = 2020; Month = Month.March; Day = 25 }, Complete
-                           { Year = 2020; Month = Month.March; Day = 27 }, Dropped
-                       ] |}
             }
             
             test "Weekly Fixed Recurrency" {
@@ -494,11 +483,10 @@ module Tests =
                        Data = [
                            for d in 13 .. 29 do
                                { Year = 2020; Month = Month.March; Day = d },
-                               if d = 14
-                               then EventStatus Complete
-                               elif d = 21 || d = 28
-                               then Pending
-                               else Disabled
+                               match d with
+                               | 14 -> EventStatus Complete
+                               | 21 | 28 -> Pending
+                               | _ -> Disabled
                        ]
                        CellEvents = [
                            { Year = 2020; Month = Month.March; Day = 14 }, Complete
@@ -526,19 +514,19 @@ module Tests =
                        ] |}
             }
             
-            test "Optional task: Missed ManualPending propagates until today" {
+            test "Manual Suggested task: Missed ManualPending propagates until today" {
                 testData
-                    {| Task = { defaultTask with Scheduling = TaskScheduling.Optional }
+                    {| Task = { defaultTask with Scheduling = Manual true }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = Month.March; Day = 25 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 25 }, Suggested
                            { Year = 2020; Month = Month.March; Day = 26 }, Missed
                            { Year = 2020; Month = Month.March; Day = 27 }, Missed
                            { Year = 2020; Month = Month.March; Day = 28 }, Pending
-                           { Year = 2020; Month = Month.March; Day = 29 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 29 }, Suggested
                            { Year = 2020; Month = Month.March; Day = 30 }, EventStatus ManualPending
-                           { Year = 2020; Month = Month.March; Day = 31 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 31 }, Suggested
                        ]
                        CellEvents = [
                            { Year = 2020; Month = Month.March; Day = 26 }, ManualPending
@@ -546,22 +534,108 @@ module Tests =
                        ] |}
             }
             
-            test "Optional task: Optional mode restored after completing a missed ManualPending event" {
+            test "Manual Suggested task: Suggested mode restored after completing a missed ManualPending event" {
                 testData
-                    {| Task = { defaultTask with Scheduling = TaskScheduling.Optional }
+                    {| Task = { defaultTask with Scheduling = Manual true }
                        Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
                                Time = midnight }
                        Data = [
-                           { Year = 2020; Month = Month.March; Day = 24 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 24 }, Suggested
                            { Year = 2020; Month = Month.March; Day = 25 }, Missed
                            { Year = 2020; Month = Month.March; Day = 26 }, EventStatus Complete
-                           { Year = 2020; Month = Month.March; Day = 27 }, Optional
-                           { Year = 2020; Month = Month.March; Day = 28 }, Optional
-                           { Year = 2020; Month = Month.March; Day = 29 }, Optional
+                           { Year = 2020; Month = Month.March; Day = 27 }, Suggested
+                           { Year = 2020; Month = Month.March; Day = 28 }, Suggested
+                           { Year = 2020; Month = Month.March; Day = 29 }, Suggested
                        ]
                        CellEvents = [
                            { Year = 2020; Month = Month.March; Day = 25 }, ManualPending
                            { Year = 2020; Month = Month.March; Day = 26 }, Complete
+                       ] |}
+            }
+            
+            test "Fixed weekly task, missed until today, initialized by past completion" {
+                testData
+                    {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Wednesday)) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                               Time = midnight }
+                       Data = [
+                           for d in 10 .. 26 do
+                               { Year = 2020; Month = Month.March; Day = d },
+                               match d with
+                               | 13 -> EventStatus Complete
+                               | 18 | 19 -> Missed
+                               | 20 | 25 -> Pending
+                               | _ -> Disabled
+                       ]
+                       CellEvents = [
+                           { Year = 2020; Month = Month.March; Day = 13 }, Complete
+                       ] |}
+            }
+            
+            test "Fixed weekly task, postponed then missed until today, pending tomorrow" {
+                testData
+                    {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Saturday)) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                               Time = midnight }
+                       Data = [
+                           for d in 13 .. 29 do
+                               { Year = 2020; Month = Month.March; Day = d },
+                               match d with
+                               | 18 -> EventStatus Postponed
+                               | 19 -> Missed
+                               | 20 | 21 | 28 -> Pending
+                               | _ -> Disabled
+                       ]
+                       CellEvents = [
+                           { Year = 2020; Month = Month.March; Day = 18 }, Postponed
+                       ] |}
+            }
+            
+            test "Fixed weekly task, without past events, pending in a few days" {
+                testData
+                    {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Wednesday)) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                               Time = midnight }
+                       Data = [
+                           for d in 17 .. 26 do
+                               { Year = 2020; Month = Month.March; Day = d },
+                               match d with
+                               | 25 -> Pending
+                               | _ -> Disabled
+                       ]
+                       CellEvents = [
+                       ] |}
+            }
+            
+            test "Fixed weekly task, without past events, pending today" {
+                testData
+                    {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Friday)) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                               Time = midnight }
+                       Data = [
+                           for d in 12 .. 28 do
+                               { Year = 2020; Month = Month.March; Day = d },
+                               match d with
+                               | 20 | 27 -> Pending
+                               | _ -> Disabled
+                       ]
+                       CellEvents = [
+                       ] |}
+            }
+            
+            test "Fixed weekly task, without past events, pending tomorrow" {
+                testData
+                    {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Saturday)) }
+                       Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                               Time = midnight }
+                       Data = [
+                           for d in 13 .. 29 do
+                               { Year = 2020; Month = Month.March; Day = d },
+                               match d with
+                               | 21 | 28 -> Pending
+                               | _ -> Disabled
+                       ]
+                       CellEvents = [
                        ] |}
             }
             
