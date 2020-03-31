@@ -30,10 +30,12 @@ module TempData =
         
     let mutable _hourOffset = 0
     
-    let mutable _getNow = fun hourOffset ->
+    let private getNow = fun hourOffset ->
         let rawDate = DateTime.Now.AddHours -(float hourOffset)
         { Date = FlukeDate.FromDateTime rawDate
           Time = FlukeTime.FromDateTime rawDate }
+    
+    let mutable _getNow = getNow
     
     let mutable _taskList: Task list = []
     
@@ -52,7 +54,10 @@ module TempData =
         _cellEvents <- (testData.CellEvents |> List.map (fun (date, status) -> { Task = testData.Task; Date = date; Status = status }))
         _taskList <- [ testData.Task ]
         _taskOrderList <- [ { Task = testData.Task; Priority = First } ]
-        _getNow <- fun _ -> testData.Now
+        _getNow <- fun _ ->
+            if _taskList.Length = 1
+            then testData.Now
+            else getNow _hourOffset
         
     let loadSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
                                              Expected: string list
@@ -71,4 +76,7 @@ module TempData =
         _cellEvents <- cellEvents
         _taskList <- testData.Data |> List.map fst
         _taskOrderList <- testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = First })
-        _getNow <- fun _ -> testData.Now
+        _getNow <- fun _ ->
+            if _taskList.Length = testData.Data.Length
+            then testData.Now
+            else getNow _hourOffset

@@ -250,6 +250,10 @@ module Tests =
                    cells
                    |> List.map (fun x -> string x.Date, x.Status)
                 
+                let toString =
+                    List.map string
+                    >> String.concat Environment.NewLine
+                
                 props.CellEvents
                 |> List.map (fun (date, status) ->
                     { Task = props.Task
@@ -258,7 +262,10 @@ module Tests =
                 )
                 |> Functions.renderLane props.Task props.Now dateSequence
                 |> unwrapLane
-                |> Expect.equal "" (props.Data |> List.map (fun (date, status) -> string date, status))
+                |> toString
+                |> Expect.equal "" (props.Data
+                                    |> List.map (fun (date, status) -> string date, status)
+                                    |> toString)
                
             test "Offset recurrency without events" {
                 testData
