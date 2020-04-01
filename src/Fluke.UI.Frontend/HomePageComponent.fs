@@ -53,7 +53,7 @@ module HomePageComponent =
                 
         let lanes =
             tasks
-            |> List.filter (function ({ Scheduling = Manual false }, []) -> false | _ -> true)
+//            |> List.filter (function ({ Scheduling = Manual false }, []) -> false | _ -> true)
             |> List.map (fun (task, events) ->
                 events
                 |> Functions.renderLane task state.current.Now dateSequence

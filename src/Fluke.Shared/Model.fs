@@ -217,22 +217,17 @@ module Functions =
     let sortLanes (today: FlukeDate) (lanes: Lane list) =
         
         let getIndex task (cell: Cell) =
-            let (|Manual|RecOffset|RecFixed|) = function
-                | { Scheduling = Manual suggested } -> Manual suggested
-                | { Scheduling = Recurrency (Offset _) } -> RecOffset
-                | { Scheduling = Recurrency (Fixed _) } -> RecFixed
-                
-            [ function EventStatus ManualPending, _                                 -> true | _ -> false
-              function Pending,                   _                                 -> true | _ -> false
-              function Suggested,                 (RecFixed | RecOffset)            -> true | _ -> false
-              function Suggested,                 Manual true                       -> true | _ -> false
-              function EventStatus Postponed,     _                                 -> true | _ -> false
-              function EventStatus Complete,      _                                 -> true | _ -> false
+            [ function EventStatus ManualPending, _                             -> true | _ -> false
+              function Pending,                   _                             -> true | _ -> false
+              function Suggested,                 { Scheduling = Recurrency _ } -> true | _ -> false
+              function Suggested,                 { Scheduling = Manual true }  -> true | _ -> false
+              function EventStatus Postponed,     _                             -> true | _ -> false
+              function EventStatus Complete,      _                             -> true | _ -> false
               
-              function EventStatus Dropped,       _                                 -> true | _ -> false
-              function Disabled,                  (RecFixed | RecOffset)            -> true | _ -> false
-              function Suggested,                 Manual false                      -> true | _ -> false
-              function _,                         _                                 -> true ]
+              function EventStatus Dropped,       _                             -> true | _ -> false
+              function Disabled,                  { Scheduling = Recurrency _ } -> true | _ -> false
+              function Suggested,                 { Scheduling = Manual false } -> true | _ -> false
+              function _,                         _                             -> true ]
             |> List.mapi (fun i v -> i, v (cell.Status, task))
             |> List.filter (fun (_, ok) -> ok)
             |> List.map fst
@@ -298,14 +293,14 @@ module Functions =
             | date :: tail ->
                 match cellEventsByDate
                       |> Map.tryFind date with
-                | Some ({ Status = Postponed _ } as cellEvent) ->
-                    (date, EventStatus cellEvent.Status) :: loop WaitingEvent tail
+                | Some { Status = Postponed _ } ->
+                    (date, EventStatus Postponed) :: loop WaitingEvent tail
                     
-                | Some ({ Status = ManualPending _ } as cellEvent) ->
+                | Some { Status = ManualPending _ } ->
                     let status, renderStatus =
                         if date.DateTime < now.Date.DateTime
                         then getStatus 0 date task.PendingAfter WaitingEvent
-                        else EventStatus cellEvent.Status, Counting 1
+                        else EventStatus ManualPending, Counting 1
                         
                     (date, status) :: loop renderStatus tail
                     
