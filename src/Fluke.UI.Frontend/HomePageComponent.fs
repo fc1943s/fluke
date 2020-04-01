@@ -43,16 +43,22 @@ module HomePageComponent =
             |> List.append [ state.current.Now.Date ]
             |> Functions.getDateSequence (3, 70)
             
-        let lanes =
+        let tasks =
             TempData._taskList
             |> List.map (fun task ->
                 TempData._cellEvents
                 |> List.filter (fun x -> x.Task = task)
+                |> fun events -> task, events
+            )
+                
+        let lanes =
+            tasks
+            |> List.filter (function ({ Scheduling = Manual false }, []) -> false | _ -> true)
+            |> List.map (fun (task, events) ->
+                events
                 |> Functions.renderLane task state.current.Now dateSequence
             )
             |> Functions.sortLanes state.current.Now.Date
-//            |> List.filter (function Lane ({ Scheduling = Disabled }, _) -> false | _ -> true)
-            // |> List.filter (function Lane ({ InformationType = Project _ }, _) -> false | _ -> true)
             
         let events = {|
             OnGridViewToggle = fun _ ->

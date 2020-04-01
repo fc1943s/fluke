@@ -162,49 +162,30 @@ module Model =
 module Functions =
     open Model
     
-    let sortLanes (today: FlukeDate) (lanes: Lane list) =
+    let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
+        let minDate =
+            cellDates
+            |> List.map (fun x -> x.DateTime)
+            |> List.min
+            |> fun x -> x.AddDays -(float paddingLeft)
+            
+        let maxDate =
+            cellDates
+            |> List.map (fun x -> x.DateTime)
+            |> List.max
+            |> fun x -> x.AddDays (float paddingRight)
+            
+        let rec loop date = seq {
+            if date <= maxDate then
+                yield date
+                yield! loop (date.AddDays 1.)
+        }
         
-        let getIndex task (cells: Cell list) (cell: Cell) =
-            let (|Manual|RecOffset|RecFixed|) = function
-                | { Scheduling = Manual suggested } -> Manual suggested
-                | { Scheduling = Recurrency (Offset _) } -> RecOffset
-                | { Scheduling = Recurrency (Fixed _) } -> RecFixed
-                
-            let dropped =
-                cells
-                |> List.filter (function
-                    { Date = date; Status = EventStatus _ }
-                        when date.DateTime <= today.DateTime -> true | _ -> false)
-                |> List.tryLast
-                |> function
-                    | Some { Status = EventStatus Dropped } -> true
-                    | _ -> false
-                
-            [ function EventStatus ManualPending, _                                 -> true | _ -> false
-              function Pending,                   _                                 -> true | _ -> false
-              function Suggested,                 (RecFixed | RecOffset)            -> true | _ -> false
-              function Suggested,                 Manual true                       -> true | _ -> false
-              function EventStatus Postponed,     _                                 -> true | _ -> false
-              function EventStatus Complete,      _                                 -> true | _ -> false
-              
-              function EventStatus Dropped,       _                                 -> true | _ -> false
-              function Disabled,                  RecOffset                         -> true | _ -> false
-              function Disabled,                  RecFixed                          -> true | _ -> false
-              function Suggested,                 Manual false                      -> true | _ -> false
-//              function Optional,       Manual           when dropped     -> true | _ -> false
-//              function _,                         _                when dropped     -> true | _ -> false
-              function _,                         _                                 -> true ]
-            |> List.mapi (fun i v -> i, v (cell.Status, task))
-            |> List.filter (fun (_, ok) -> ok)
-            |> List.map fst
+        minDate
+        |> loop
+        |> Seq.map FlukeDate.FromDateTime
+        |> Seq.toList
         
-        lanes
-        |> List.sortBy (fun (Lane (task, cells)) ->
-            cells
-            |> List.filter (fun cell -> cell.Date = today)
-            |> List.map (fun cell -> getIndex task cells cell)
-        )
-    
     let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
         let result = List<Task> ()
         
@@ -232,33 +213,37 @@ module Functions =
             | _ -> ()
             
         result |> Seq.toList
-
+        
+    let sortLanes (today: FlukeDate) (lanes: Lane list) =
+        
+        let getIndex task (cell: Cell) =
+            let (|Manual|RecOffset|RecFixed|) = function
+                | { Scheduling = Manual suggested } -> Manual suggested
+                | { Scheduling = Recurrency (Offset _) } -> RecOffset
+                | { Scheduling = Recurrency (Fixed _) } -> RecFixed
+                
+            [ function EventStatus ManualPending, _                                 -> true | _ -> false
+              function Pending,                   _                                 -> true | _ -> false
+              function Suggested,                 (RecFixed | RecOffset)            -> true | _ -> false
+              function Suggested,                 Manual true                       -> true | _ -> false
+              function EventStatus Postponed,     _                                 -> true | _ -> false
+              function EventStatus Complete,      _                                 -> true | _ -> false
+              
+              function EventStatus Dropped,       _                                 -> true | _ -> false
+              function Disabled,                  (RecFixed | RecOffset)            -> true | _ -> false
+              function Suggested,                 Manual false                      -> true | _ -> false
+              function _,                         _                                 -> true ]
+            |> List.mapi (fun i v -> i, v (cell.Status, task))
+            |> List.filter (fun (_, ok) -> ok)
+            |> List.map fst
+        
+        lanes
+        |> List.sortBy (fun (Lane (task, cells)) ->
+            cells
+            |> List.filter (fun cell -> cell.Date = today)
+            |> List.map (getIndex task)
+        )
     
-    let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
-        let minDate =
-            cellDates
-            |> List.map (fun x -> x.DateTime)
-            |> List.min
-            |> fun x -> x.AddDays -(float paddingLeft)
-            
-        let maxDate =
-            cellDates
-            |> List.map (fun x -> x.DateTime)
-            |> List.max
-            |> fun x -> x.AddDays (float paddingRight)
-            
-        let rec loop date = seq {
-            if date <= maxDate then
-                yield date
-                yield! loop (date.AddDays 1.)
-        }
-        
-        minDate
-        |> loop
-        |> Seq.map FlukeDate.FromDateTime
-        |> Seq.toList
-        
-        
     type LaneCellRenderStatus =
         | WaitingFirstEvent
         | WaitingEvent
@@ -294,11 +279,10 @@ module Functions =
             | Counting count,    BeforeToday when count = days -> Missed, WaitingEvent
             | WaitingEvent,      BeforeToday                   -> Missed, WaitingEvent
                                                                            
-//            | WaitingFirstEvent, Today             when task.Scheduling = Manual true            -> Missed, Counting 1
             | WaitingFirstEvent, Today                         -> todayStatus pendingAfter, Counting 1
             | Counting count,    Today       when count = days -> todayStatus pendingAfter, Counting 1
             | WaitingEvent,      Today                         -> todayStatus pendingAfter, Counting 1
-                                                                           
+            
             | WaitingFirstEvent, AfterToday                    -> defaultCellStatus, WaitingFirstEvent
             | Counting count,    AfterToday  when count = days -> Pending, Counting 1
             | WaitingEvent,      AfterToday                    -> Pending, Counting 1
@@ -366,10 +350,18 @@ module Functions =
                             else task.PendingAfter
                             
 //                        let pendingAfter = task.PendingAfter
+//
+//                        let oldRenderStatus = renderStatus
                             
                         let status, renderStatus =
                             getStatus 0 date pendingAfter renderStatus
                             
+//                        if task.Name = "12" && date = now.Date then
+//                            printfn "12: %A %A->%A" status oldRenderStatus renderStatus
+//                            
+//                        if task.Name = "6" && date = now.Date then
+//                            printfn "06: %A %A->%A" status oldRenderStatus renderStatus
+//                        
                         (date, status) :: loop renderStatus tail
             | [] -> []
             
