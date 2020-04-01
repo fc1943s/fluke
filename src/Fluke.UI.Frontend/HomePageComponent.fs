@@ -14,9 +14,7 @@ module HomePageComponent =
     open Model
     
     type Props =
-        { Dispatch: SharedState.SharedServerMessage -> unit
-          UIState: UIState.State
-          PrivateState: Client.PrivateState<UIState.State> }
+        unit
         
     type State =
         { Now: FlukeDateTime
