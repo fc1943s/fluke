@@ -610,7 +610,7 @@ module Tests =
                            ] |}
                 }
                 
-                test "Manual Suggested task: Suggested mode restored after completing a non-postponed ManualPending event" {
+                test "Manual Suggested task: Suggested mode restored after completing a forgotten ManualPending event" {
                     testData
                         {| Task = { defaultTask with Scheduling = Manual true }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
