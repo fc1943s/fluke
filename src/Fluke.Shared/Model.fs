@@ -245,7 +245,7 @@ module Functions =
         | Counting of int
         
     let renderLane task (now: FlukeDateTime) dateSequence (cellEvents: CellEvent list) =
-                
+            
         let (|BeforeToday|Today|AfterToday|) (now: FlukeDate, date: FlukeDate) =
             now.DateTime
             |> date.DateTime.CompareTo
@@ -253,37 +253,7 @@ module Functions =
                 | n when n < 0 -> BeforeToday
                 | n when n = 0 -> Today
                 | _ -> AfterToday
-                
-        let isVisibleNow pendingAfter =
-               now.Time.Hour > pendingAfter.Hour
-            || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
-            
-        let todayStatus pendingAfter =
-            if isVisibleNow pendingAfter
-            then Pending
-            else Suggested
-            
-        let defaultCellStatus =
-            match task.Scheduling with
-            | Manual true -> Suggested
-            | _ -> Disabled
-            
-        let getStatus days (date: FlukeDate) pendingAfter renderStatus =
-            match renderStatus, (now.Date, date) with
-            | WaitingFirstEvent, BeforeToday                   -> defaultCellStatus, WaitingFirstEvent
-            | Counting count,    BeforeToday when count = days -> Missed, WaitingEvent
-            | WaitingEvent,      BeforeToday                   -> Missed, WaitingEvent
-                                                                           
-            | WaitingFirstEvent, Today                         -> todayStatus pendingAfter, Counting 1
-            | Counting count,    Today       when count = days -> todayStatus pendingAfter, Counting 1
-            | WaitingEvent,      Today                         -> todayStatus pendingAfter, Counting 1
-            
-            | WaitingFirstEvent, AfterToday                    -> defaultCellStatus, WaitingFirstEvent
-            | Counting count,    AfterToday  when count = days -> Pending, Counting 1
-            | WaitingEvent,      AfterToday                    -> Pending, Counting 1
-                                                                           
-            | Counting count,    _                             -> defaultCellStatus, Counting (count + 1)
-            
+
         let cellEventsByDate =
             cellEvents
             |> List.map (fun x -> x.Date, x)
@@ -291,73 +261,85 @@ module Functions =
             
         let rec loop renderStatus = function
             | date :: tail ->
-                match cellEventsByDate
-                      |> Map.tryFind date with
-                | Some { Status = Postponed _ } ->
-                    (date, EventStatus Postponed) :: loop WaitingEvent tail
+                let event = 
+                    cellEventsByDate
+                    |> Map.tryFind date
                     
-                | Some { Status = ManualPending _ } ->
-                    let status, renderStatus =
-                        if date.DateTime < now.Date.DateTime
-                        then getStatus 0 date task.PendingAfter WaitingEvent
-                        else EventStatus ManualPending, Counting 1
-                        
-                    (date, status) :: loop renderStatus tail
-                    
-                | Some cellEvent ->
-                    (date, EventStatus cellEvent.Status) :: loop (Counting 1) tail
-                    
-                | None ->
-                    match task.Scheduling with
-                    | Recurrency (Fixed recurrency) ->
-                        
-                        let isDateMatched =
-                            match recurrency with
-                            | Weekly dayOfWeek -> dayOfWeek = date.DateTime.DayOfWeek
-                            | Monthly day -> day = date.Day
-                            | Yearly (day, month) -> day = date.Day && month = date.Month
+                let status, renderStatus =
+                    match event with
+                    | Some cellEvent ->
+                        let renderStatus =
+                            match cellEvent.Status, (now.Date, date) with
+                            | (Postponed | ManualPending), BeforeToday -> WaitingEvent
+                            | _ -> Counting 1
                             
-                        let status, renderStatus =
+                        Some (EventStatus cellEvent.Status), renderStatus
+                        
+                    | None ->
+                
+                        let getStatus days pendingAfter renderStatus =
+                                    
+                            let isVisibleNow =
+                                   now.Time.Hour > pendingAfter.Hour
+                                || now.Time.Hour = pendingAfter.Hour && now.Time.Minute >= pendingAfter.Minute
+                                
+                            let todayStatus =
+                                if isVisibleNow 
+                                then Pending
+                                else Suggested
+
+                            match renderStatus, (now.Date, date), days with
+                            | WaitingFirstEvent, BeforeToday, _                           -> None, WaitingFirstEvent
+                            | Counting count,    BeforeToday, Some days when count = days -> Some Missed, WaitingEvent
+                            | WaitingEvent,      BeforeToday, _                           -> Some Missed, WaitingEvent
+
+                            | WaitingFirstEvent, Today,       _                           -> Some todayStatus, Counting 1
+                            | Counting count,    Today,       Some days when count = days -> Some todayStatus, Counting 1
+                            | WaitingEvent,      Today,       _                           -> Some todayStatus, Counting 1
+
+                            | WaitingFirstEvent, AfterToday,  _                           -> None, WaitingFirstEvent
+                            | Counting count,    AfterToday,  Some days when count = days -> Some Pending, Counting 1
+                            | WaitingEvent,      AfterToday,  _                           -> Some Pending, Counting 1
+
+                            | Counting count,    _,           _                           -> None, Counting (count + 1)
+                            
+                        match task.Scheduling with
+                        | Recurrency (Fixed recurrency) ->
+                            
+                            let isDateMatched =
+                                match recurrency with
+                                | Weekly dayOfWeek -> dayOfWeek = date.DateTime.DayOfWeek
+                                | Monthly day -> day = date.Day
+                                | Yearly (day, month) -> day = date.Day && month = date.Month
+                                
                             if date = now.Date && isDateMatched then
-                                Pending, Counting 1
+                                Some Pending, Counting 1
                             elif date = now.Date && renderStatus = WaitingFirstEvent then
-                                Disabled, Counting 1
+                                Some Disabled, Counting 1
                             else
                                 match renderStatus with
                                 | WaitingFirstEvent -> WaitingFirstEvent
                                 | _ when isDateMatched -> WaitingEvent
                                 | _ -> renderStatus
-                                |> getStatus 0 date task.PendingAfter
-                        
-//                        printfn "AA: %A - %A - %A - %A" date status renderStatus renderStatus
-//                        
-                        (date, status) :: loop renderStatus tail
-                        
-                    | Recurrency (Offset days) ->
-                        let status, renderStatus = getStatus days date task.PendingAfter renderStatus
-                        (date, status) :: loop renderStatus tail
-                        
-                    | Manual _ ->
-                        let pendingAfter =
-                            if    task.PendingAfter = midnight
-                               && renderStatus <> WaitingEvent
-                            then { Hour = 24; Minute = 0 }
-                            else task.PendingAfter
+                                |> getStatus None task.PendingAfter
                             
-//                        let pendingAfter = task.PendingAfter
-//
-//                        let oldRenderStatus = renderStatus
+                        | Recurrency (Offset days) ->
+                            getStatus (Some days) task.PendingAfter renderStatus
                             
-                        let status, renderStatus =
-                            getStatus 0 date pendingAfter renderStatus
-                            
-//                        if task.Name = "12" && date = now.Date then
-//                            printfn "12: %A %A->%A" status oldRenderStatus renderStatus
-//                            
-//                        if task.Name = "6" && date = now.Date then
-//                            printfn "06: %A %A->%A" status oldRenderStatus renderStatus
-//                        
-                        (date, status) :: loop renderStatus tail
+                        | Manual suggested ->
+                            let pendingAfter =
+                                if    task.PendingAfter = midnight
+                                   && renderStatus <> WaitingEvent
+                                then { Hour = 24; Minute = 0 }
+                                else task.PendingAfter
+                                
+                            getStatus None pendingAfter renderStatus
+                            |> function
+                                | Some status, renderStatus -> Some status, renderStatus
+                                | None, renderStatus when suggested -> Some Suggested, renderStatus
+                                | None, renderStatus -> Some Disabled, renderStatus
+                                
+                (date, defaultArg status Disabled) :: loop renderStatus tail
             | [] -> []
             
         let cells =
