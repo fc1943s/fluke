@@ -1,9 +1,12 @@
 namespace Fluke.UI.Frontend
 
+open Browser
+open Browser.Types
 open Fluke.Shared
 open Fluke.UI.Frontend
 open Fable.React
 open Fable.React.Props
+open Fable.Core.JsInterop
 open Fulma
 open Suigetsu.UI.ElmishBridge.Frontend
 open System
@@ -18,12 +21,12 @@ module HomePageComponent =
         
     type State =
         { Now: FlukeDateTime
-          GridView: bool
+          FlatView: bool
           TreeView: bool }
         static member inline Default =
             { Now = { Date = { Year = 0; Month = Month.January; Day = 1 }
                       Time = midnight }
-              GridView = true
+              FlatView = true
               TreeView = false }
             
     type ToggleBindingSource =
@@ -36,7 +39,7 @@ module HomePageComponent =
         Temp.CustomHooks.useInterval (fun () ->
             state.update (fun state -> { state with Now = TempData._getNow TempData._hourOffset })
         ) (60 * 1000)
-            
+        
         let dateSequence = 
             TempData._cellEvents
             |> List.map (fun x -> x.Date)
@@ -53,7 +56,7 @@ module HomePageComponent =
                 
         let lanes =
             tasks
-//            |> List.filter (function ({ Scheduling = Manual false }, []) -> false | _ -> true)
+            |> List.filter (function ({ Scheduling = Manual false }, []) -> false | _ -> true)
             |> List.map (fun (task, events) ->
                 events
                 |> LaneRendering.renderLane task state.current.Now dateSequence
@@ -61,13 +64,21 @@ module HomePageComponent =
             |> Sorting.sortLanes state.current.Now.Date
             
         let events = {|
-            OnGridViewToggle = fun _ ->
-                state.update (fun state -> { state with GridView = not state.GridView })
+            OnFlatViewToggle = fun () ->
+                state.update (fun state -> { state with FlatView = not state.FlatView })
                 
-            OnTreeViewToggle = fun _ ->
+            OnTreeViewToggle = fun () ->
                 state.update (fun state -> { state with TreeView = not state.TreeView })
         |}
 
+        Ext.useEventListener "keydown" (fun (e: KeyboardEvent) ->
+            printfn "AE"
+            match e.ctrlKey, e.shiftKey, e.key with
+            | _, true, "F" -> events.OnFlatViewToggle ()
+            | _, true, "T" -> events.OnTreeViewToggle ()
+            | _, _,    _   -> ()
+        )
+            
         Text.div [ Props [ Style [ Height "100%" ] ]
                    Modifiers [ Modifier.TextSize (Screen.All, TextSize.Is7) ] ][
 
@@ -83,19 +94,19 @@ module HomePageComponent =
                                                    JustifyContent "space-around" ]]][
                 
                 Navbar.Item.div [ Navbar.Item.Props [ ClassName "field"
-                                                      OnClick events.OnGridViewToggle ] ][
+                                                      OnClick (fun _ -> events.OnFlatViewToggle ()) ] ][
 
                     Checkbox.input [ CustomClass "switch is-small is-dark"
-                                     Props [ Checked state.current.GridView
+                                     Props [ Checked state.current.FlatView
                                              OnChange (fun _ -> ()) ]]
                     
                     Checkbox.checkbox [][
-                        str "Default View"
+                        str "Flat View"
                     ]
                 ]
                 
                 Navbar.Item.div [ Navbar.Item.Props [ ClassName "field"
-                                                      OnClick events.OnTreeViewToggle ] ][
+                                                      OnClick (fun _ -> events.OnTreeViewToggle ()) ] ][
 
                     Checkbox.input [ CustomClass "switch is-small is-dark"
                                      Props [ Checked state.current.TreeView
@@ -107,7 +118,7 @@ module HomePageComponent =
                 ]
             ]
             
-            // Grid View
+            // Flat View
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
                 let topPadding =
@@ -221,7 +232,7 @@ module HomePageComponent =
                     ) |> div []
                 ]
             ]
-            |> fun x -> if state.current.GridView then x else div [][]
+            |> fun x -> if state.current.FlatView then x else div [][]
             
             // Tree View
             div [ Style [ Display DisplayOptions.Flex ] ][

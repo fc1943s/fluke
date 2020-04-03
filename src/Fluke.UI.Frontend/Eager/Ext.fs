@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend
 
 open Browser
+open Browser.Types
 open Fable.Core
 open Fable.Core.JsInterop
 
@@ -25,8 +26,11 @@ module Ext =
     let moment : obj -> ExtTypes.IMoment = importAll "moment"
     let reactMarkdown : obj -> obj = importDefault "react-markdown"
     
+    let useEventListener (_event: string) (_fn: KeyboardEvent -> unit) : unit = importDefault "@use-it/event-listener"
+    
     Dom.window?Ext <-
         {| flatted = flatted
            moment = moment
-           reactMarkdown = reactMarkdown |}
+           reactMarkdown = reactMarkdown
+           useEventListener = useEventListener |}
 
