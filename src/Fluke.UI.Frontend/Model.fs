@@ -42,19 +42,46 @@ module UIState =
         static member inline Default = { x = () }
 
 module Model =
-    ()
+    open Model
+    
+    type InformationType with
+        member this.Name = 
+            match this with
+            | Project project -> project.Name
+            | Area area -> area.Name
+            | Resource resource -> resource.Name
+            | Archive archive -> sprintf "[%s]" archive.Name
+            
+        member this.Color = 
+            match this with
+            | Project _ -> "#999"
+            | Area _ -> "#666"
+            | Resource _ -> "#333"
+            | Archive archive -> sprintf "[%s]" archive.Color
+            
+    type CellStatus with
+        member this.CellColor =
+            match this with
+            | Disabled -> "#595959"
+            | Suggested -> "#4c664e"
+            | Pending -> "#262626"
+            | Missed -> "#990022"
+            | EventStatus status ->
+                match status with
+                | Postponed -> "#b08200"
+                | Complete -> "#339933"
+                | Dropped -> "#673ab7"
+                | ManualPending -> "#003038"
+    
     
 module Functions =
     open Model
     
     let getCellSeparatorBorderLeft (date: FlukeDate) =
-        if date.Day = 1
-        then Some "#000"
-        elif date.DateTime.DayOfWeek = System.DayOfWeek.Sunday
-        then Some "#ffffff3d"
-        else None
-        |> Option.map (fun color -> "1px solid " + color)
+        match date with
+        | { Day = 1 } -> Some "#000"
+        | date when date.DateTime.DayOfWeek = DayOfWeek.Sunday -> Some "#ffffff3d"
+        | _ -> None
+        |> Option.map ((+) "1px solid ")
         |> fun x -> CSSProp.BorderLeft x
-
-          
 

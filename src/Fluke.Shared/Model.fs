@@ -19,24 +19,11 @@ module Model =
         { Area: Area
           Name: string }
         
-        
     type InformationType =
         | Project of Project
         | Area of Area
         | Resource of Resource
         | Archive of InformationType
-        member this.Name =
-            match this with
-            | Project project -> project.Name
-            | Area area -> area.Name
-            | Resource resource -> resource.Name
-            | Archive archive -> sprintf "[%s]" archive.Name
-        member this.Color =
-            match this with
-            | Project _ -> "#999"
-            | Area _ -> "#666"
-            | Resource _ -> "#333"
-            | Archive archive -> sprintf "[%s]" archive.Color
             
     type Month =
         | January = 1
@@ -85,21 +72,24 @@ module Model =
           Date: FlukeDate
           Comment: string }
         
-        
     type FixedRecurrency =
         | Weekly of DayOfWeek
         | Monthly of day:int
         | Yearly of day:int * month:Month
         
+    type TaskRecurrencyOffset =
+        | Days of int
+        | Weeks of int
+        | Months of int
+        
     type TaskRecurrency =
-        | Offset of days:int
+        | Offset of TaskRecurrencyOffset
         | Fixed of FixedRecurrency
     
     type TaskScheduling =
         | Manual of suggested:bool
         | Recurrency of TaskRecurrency
     
-        
     type Task =
         { Name: string
           InformationType: InformationType
@@ -120,18 +110,6 @@ module Model =
         | Pending
         | Missed
         | EventStatus of CellEventStatus
-        member this.CellColor =
-            match this with
-            | Disabled -> "#595959"
-            | Suggested -> "#4c664e"
-            | Pending -> "#262626"
-            | Missed -> "#990022"
-            | EventStatus status ->
-                match status with
-                | Postponed -> "#b08200"
-                | Complete -> "#339933"
-                | Dropped -> "#673ab7"
-                | ManualPending -> "#003038"
         
     type Cell =
         { Date: FlukeDate
@@ -159,7 +137,9 @@ module Model =
         
     type Lane = Lane of task:Task * cells:Cell list
     
-module Functions =
+    
+    
+module Rendering =
     open Model
     
     let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
@@ -186,6 +166,10 @@ module Functions =
         |> Seq.map FlukeDate.FromDateTime
         |> Seq.toList
         
+        
+module Sorting =
+    open Model
+    
     let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
         let result = List<Task> ()
         
@@ -239,6 +223,9 @@ module Functions =
             |> List.map (getIndex task)
         )
     
+module LaneRendering =
+    open Model
+    
     type LaneCellRenderState =
         | WaitingFirstEvent
         | WaitingEvent
@@ -250,7 +237,6 @@ module Functions =
         | StatusCell of CellStatus
         | TodayCell
                     
-        
     let renderLane task (now: FlukeDateTime) dateSequence (cellEvents: CellEvent list) =
             
         let (|BeforeToday|Today|AfterToday|) (now: FlukeDate, date: FlukeDate) =
@@ -278,7 +264,7 @@ module Functions =
                         let renderState =
                             match cellEvent.Status, (now.Date, date) with
                             | (Postponed | ManualPending), BeforeToday -> WaitingEvent
-                            | _ -> Counting 1
+                            | _,                           _           -> Counting 1
                             
                         StatusCell (EventStatus cellEvent.Status), renderState
                         
@@ -300,7 +286,13 @@ module Functions =
                             | Counting count,    _           -> EmptyCell, Counting (count + 1)
                             
                         match task.Scheduling with
-                        | Recurrency (Offset days) ->
+                        | Recurrency (Offset offset) ->
+                            let days =
+                                match offset with
+                                | Days days -> days
+                                | Weeks weeks -> weeks * 7
+                                | Months months -> months * 28
+                                
                             let renderState =
                                 match renderState with
                                 | Counting count when count = days -> DayMatch
@@ -323,46 +315,21 @@ module Functions =
                             | _,                 _                               -> getStatus renderState
                             
                         | Manual suggested ->
-                            
-                            let status, renderStatus =
-                                match renderState, (now.Date, date) with
-//                                | WaitingFirstEvent, BeforeToday                     -> EmptyCell, WaitingFirstEvent
-                                | WaitingFirstEvent, Today       when suggested && task.PendingAfter = midnight -> StatusCell Suggested, Counting 1
-                                | WaitingFirstEvent, Today       when suggested -> TodayCell, Counting 1
-                                | WaitingFirstEvent, Today                          -> StatusCell Suggested, Counting 1
-                                | _,                 _                               -> 
-                                    let oldRenderState = renderState
-                                    let status, renderState =
-                                        getStatus renderState
+                            match renderState, (now.Date, date) with
+                            | WaitingFirstEvent, Today when suggested && task.PendingAfter = midnight -> StatusCell Suggested, Counting 1
+                            | WaitingFirstEvent, Today when suggested                                 -> TodayCell, Counting 1
+                            | WaitingFirstEvent, Today                                                -> StatusCell Suggested, Counting 1
+                            | _, _ -> 
+                                let status, renderState =
+                                    getStatus renderState
+
+                                let status =
+                                    match status with
+                                    | EmptyCell when suggested -> StatusCell Suggested
+                                    | TodayCell                -> StatusCell Pending
+                                    | status                   -> status
                                     
-//                                    printfn "AA: %A %A %A->%A" date status oldRenderState renderState
-                                    let status =
-                                        match renderState, status with
-                                        | _,          EmptyCell when suggested -> StatusCell Suggested
-                                        | Counting _, TodayCell                -> StatusCell Pending
-                                        | _,          TodayCell                -> StatusCell Suggested
-                                        | _,          status                   -> status
-                                        
-                                    status, renderState
-                                
-                            status, renderStatus
-//                            match renderState with
-//                            | WaitingFirstEvent -> EmptyCell, WaitingFirstEvent
-//                            | WaitingEvent -> StatusCell Pending, Counting 1
-//                            | _ ->
-//                                let oldRenderState = renderState
-//                                let status, renderState =
-//                                    getStatus renderState
-//                                
-//                                printfn "AA: %A %A %A->%A" date status oldRenderState renderState
-//                                let status =
-//                                    match renderState, status with
-//                                    | _,          EmptyCell when suggested -> StatusCell Suggested
-//                                    | Counting _, TodayCell                -> StatusCell Pending
-//                                    | _,          TodayCell                -> StatusCell Suggested
-//                                    | _,          status                   -> status
-//                                    
-//                                status, renderState
+                                status, renderState
                                 
                 let status =
                     match status with
@@ -376,11 +343,6 @@ module Functions =
                         match isPendingNow with
                         | true -> Pending
                         | false -> Suggested
-//                            match renderStatus, pendingAfter, isVisibleNow with
-//                            | WaitingEvent, _,            _                                  -> Pending
-//                            | _,            _,            true                               -> Pending
-//                            | _,            _,            false                              -> Suggested
-//                            | _,            _, _     when pendingAfter = midnight -> Suggested
                 
                 (date, status) :: loop renderState tail
             | [] -> []

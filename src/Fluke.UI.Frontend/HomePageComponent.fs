@@ -41,7 +41,7 @@ module HomePageComponent =
             TempData._cellEvents
             |> List.map (fun x -> x.Date)
             |> List.append [ state.current.Now.Date ]
-            |> Functions.getDateSequence (3, 70)
+            |> Rendering.getDateSequence (3, 70)
             
         let tasks =
             TempData._taskList
@@ -56,9 +56,9 @@ module HomePageComponent =
 //            |> List.filter (function ({ Scheduling = Manual false }, []) -> false | _ -> true)
             |> List.map (fun (task, events) ->
                 events
-                |> Functions.renderLane task state.current.Now dateSequence
+                |> LaneRendering.renderLane task state.current.Now dateSequence
             )
-            |> Functions.sortLanes state.current.Now.Date
+            |> Sorting.sortLanes state.current.Now.Date
             
         let events = {|
             OnGridViewToggle = fun _ ->

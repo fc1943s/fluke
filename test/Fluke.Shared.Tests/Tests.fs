@@ -39,7 +39,7 @@ module Tests =
         testList "GetManualSortedTaskListTests" [
             test "1" {
                 orderedEventList
-                |> Functions.getManualSortedTaskList
+                |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" orderedList
                 
                 [
@@ -49,7 +49,7 @@ module Tests =
                     { Task = task2; Priority = LessThan task1 }
                     { Task = task1; Priority = First }
                 ]
-                |> Functions.getManualSortedTaskList
+                |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" orderedList
                 
                 [
@@ -59,14 +59,14 @@ module Tests =
                     { Task = task1; Priority = First }
                     { Task = task2; Priority = LessThan task1 }
                 ]
-                |> Functions.getManualSortedTaskList
+                |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" orderedList
                 
                 [
                     { Task = task3; Priority = First }
                 ]
                 |> List.append orderedEventList
-                |> Functions.getManualSortedTaskList
+                |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" [ task3; task4; task1; task2; task5 ]
                 
                 [
@@ -74,7 +74,7 @@ module Tests =
                     { Task = task4; Priority = LessThan task2 }
                 ]
                 |> List.append orderedEventList
-                |> Functions.getManualSortedTaskList
+                |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" [ task3; task1; task2; task4; task5 ]
                 
                 [
@@ -84,7 +84,7 @@ module Tests =
                     { Task = task4; Priority = First }
                     { Task = task5; Priority = LessThan task4 }
                 ]
-                |> Functions.getManualSortedTaskList
+                |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" [ task4; task5; task3; task2; task1 ]
                 
             }
@@ -169,7 +169,7 @@ module Tests =
                         cellEvents
                         |> List.map (fun (date, _) -> date)
                     )
-                    |> Functions.getDateSequence (0, 0)
+                    |> Rendering.getDateSequence (0, 0)
                 
                 props.Data
                 |> List.map (fun (task, events) ->
@@ -179,9 +179,9 @@ module Tests =
                           Date = date
                           Status = status }
                     )
-                    |> Functions.renderLane task props.Now dateSequence
+                    |> LaneRendering.renderLane task props.Now dateSequence
                 )
-                |> Functions.sortLanes props.Now.Date
+                |> Sorting.sortLanes props.Now.Date
                 |> List.map (fun (Lane (task, _)) -> task.Name)
                 |> Expect.equal "" props.Expected
             
@@ -200,7 +200,7 @@ module Tests =
                            { defaultTask with Name = "3"; Scheduling = Manual false },
                            [ { Year = 2020; Month = Month.March; Day = 9 }, ManualPending ]
                            
-                           { defaultTask with Name = "4"; Scheduling = Recurrency (Offset 1);
+                           { defaultTask with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
                                                            PendingAfter = { Hour = 20; Minute = 0 } },
                            []
                            
@@ -211,19 +211,19 @@ module Tests =
                            [ { Year = 2020; Month = Month.March; Day = 4 }, Postponed
                              { Year = 2020; Month = Month.March; Day = 6 }, Dropped ]
                            
-                           { defaultTask with Name = "7"; Scheduling = Recurrency (Offset 4) },
+                           { defaultTask with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
                            [ { Year = 2020; Month = Month.March; Day = 8 }, Complete ]
                            
-                           { defaultTask with Name = "8"; Scheduling = Recurrency (Offset 2) },
+                           { defaultTask with Name = "8"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Complete ]
                            
-                           { defaultTask with Name = "9"; Scheduling = Recurrency (Offset 2) },
+                           { defaultTask with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Dropped ]
                            
-                           { defaultTask with Name = "10"; Scheduling = Recurrency (Offset 2) },
+                           { defaultTask with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed ]
                            
-                           { defaultTask with Name = "11"; Scheduling = Recurrency (Offset 1) },
+                           { defaultTask with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
                            []
                            
                            { defaultTask with Name = "12"; Scheduling = Manual false },
@@ -268,7 +268,7 @@ module Tests =
                       Date = date
                       Status = status }
                 )
-                |> Functions.renderLane props.Task props.Now dateSequence
+                |> LaneRendering.renderLane props.Task props.Now dateSequence
                 |> unwrapLane
                 |> toString
                 |> Expect.equal "" (props.Data
@@ -279,7 +279,7 @@ module Tests =
                 
                 test "Start scheduling today without any events" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 9 }
                                    Time = midnight }
                            Data = [
@@ -295,7 +295,7 @@ module Tests =
                 
                 test "Disabled today after a Complete event yesterday" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset 3) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 3)) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 9 }
                                    Time = midnight }
                            Data = [
@@ -315,7 +315,7 @@ module Tests =
                 
                 test "Postponing today wont schedule for tomorrow" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                    Time = midnight }
                            Data = [
@@ -332,7 +332,7 @@ module Tests =
                 
                 test "Postponed yesterday schedules for today" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                    Time = midnight }
                            Data = [
@@ -349,7 +349,7 @@ module Tests =
             
                 test "Pending today after missing yesterday, then resetting the schedule with a future Complete event" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset 2) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
                                    Time = midnight }
                            Data = [
@@ -370,7 +370,7 @@ module Tests =
                 
                 test "Recurring task only Suggested before PendingAfter" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset 1)
+                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 1))
                                                      PendingAfter = { Hour = 20; Minute = 0 } }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                    Time = { Hour = 19; Minute = 30 } }
@@ -384,7 +384,7 @@ module Tests =
             
                 test "Recurring task Pending after PendingAfter" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset 1)
+                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 1))
                                                      PendingAfter = { Hour = 20; Minute = 0 } }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
                                    Time = { Hour = 21; Minute = 0 } }
@@ -398,7 +398,7 @@ module Tests =
             
                 test "Recurrency for the next days should work normally while today is still optional/suggested (before PendingAfter)" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset 2)
+                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2))
                                                      PendingAfter = { Hour = 18; Minute = 0 } }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 27 }
                                    Time = { Hour = 17; Minute = 0 } }
@@ -415,7 +415,7 @@ module Tests =
                 
                 test "Reset counting after a future ManualPending event" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset 3) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 3)) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
                                    Time = midnight }
                            Data = [
