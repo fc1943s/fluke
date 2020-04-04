@@ -813,6 +813,13 @@ NUGET
 
 GROUP Fluke.Shared
 STORAGE: NONE
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (4.7.1) - restriction: || (>= net45) (>= netstandard2.0)
+    FSharpPlus (1.1.0-rc4)
+      FSharp.Core (>= 4.6.2) - restriction: || (>= net45) (>= netstandard2.0)
+      System.ValueTuple (>= 4.4) - restriction: >= net45
+    System.ValueTuple (4.5) - restriction: >= net45
 
 GROUP Fluke.UI.Frontend
 STORAGE: NONE

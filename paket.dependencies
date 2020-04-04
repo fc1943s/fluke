@@ -13,6 +13,8 @@ group Main
 group Fluke.Shared
     storage: none
     source https://api.nuget.org/v3/index.json
+    
+    nuget FSharpPlus ~> 1.1.0-rc4
 
 
 group Fluke.UI.Frontend

@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend
 
 open Browser.Types
+open FSharpPlus
 open Fluke.Shared
 open Fluke.UI.Frontend
 open Fable.React
@@ -135,6 +136,48 @@ module HomePageComponent =
                 |> div []
             ) |> div [ Class "lane-container" ]
             
+        let gridHeader dateSequence (now: FlukeDateTime) =
+            div [][
+                // Month row
+                dateSequence
+                |> List.groupBy (fun date -> date.Month)
+                |> List.map (fun (_, dates) -> dates.Head, dates.Length)
+                |> List.map (fun (firstDay, days) ->
+                    span [ Style [ Functions.getCellSeparatorBorderLeft firstDay
+                                   TextAlign TextAlignOptions.Center
+                                   Width (18 * days) ] ][
+                        str (firstDay.DateTime.Format "MMM")
+                    ]
+                )
+                |> div [ Style [ Display DisplayOptions.Flex ] ]
+                
+                // Day of Week row
+                dateSequence
+                |> List.map (fun date ->
+                    span [ Style [ Width 18
+                                   Functions.getCellSeparatorBorderLeft date
+                                   TextAlign TextAlignOptions.Center ] ][
+                            
+                        date.DateTime.Format "dd"
+                        |> String.toLower
+                        |> str
+                    ]
+                )
+                |> div [ Style [ Display DisplayOptions.Flex ] ]
+                
+                // Day row
+                dateSequence
+                |> List.map (fun date ->
+                    span [ Style [ Width 18
+                                   Functions.getCellSeparatorBorderLeft date
+                                   TextAlign TextAlignOptions.Center
+                                   Color (if date = now.Date then "#f22" else "") ] ][
+                        str (date.Day.ToString "D2")
+                    ]
+                )
+                |> div [ Style [ Display DisplayOptions.Flex ] ]
+            ]
+            
         let flatView now dateSequence tasks =
             let lanes =
                 tasks
@@ -171,44 +214,8 @@ module HomePageComponent =
                     ]
                 ]
                     
-                // Column: Grid
                 div [][
-                    // Month row
-                    dateSequence
-                    |> List.groupBy (fun date -> date.Month)
-                    |> List.map (fun (_, dates) -> dates.Head, dates.Length)
-                    |> List.map (fun (firstDay, days) ->
-                        span [ Style [ Functions.getCellSeparatorBorderLeft firstDay
-                                       TextAlign TextAlignOptions.Center
-                                       Width (18 * days) ] ][
-                            str (firstDay.DateTime.Format "MMM")
-                        ]
-                    )
-                    |> div [ Style [ Display DisplayOptions.Flex ] ]
-                    
-                    // Day of Week row
-                    dateSequence
-                    |> List.map (fun date ->
-                        span [ Style [ Width 18
-                                       Functions.getCellSeparatorBorderLeft date
-                                       TextAlign TextAlignOptions.Center ] ][
-                                
-                            str (date.DateTime.ToString().ToLower().Substring (0, 2))
-                        ]
-                    )
-                    |> div [ Style [ Display DisplayOptions.Flex ] ]
-                    
-                    // Day row
-                    dateSequence
-                    |> List.map (fun date ->
-                        span [ Style [ Width 18
-                                       Functions.getCellSeparatorBorderLeft date
-                                       TextAlign TextAlignOptions.Center
-                                       Color (if date = now.Date then "#f22" else "") ] ][
-                            str (date.Day.ToString "D2")
-                        ]
-                    )
-                    |> div [ Style [ Display DisplayOptions.Flex ] ]
+                    gridHeader dateSequence now
                     
                     gridCells now.Date lanes
                 ]
@@ -277,42 +284,7 @@ module HomePageComponent =
                     
                 // Column: Grid
                 div [][
-                    dateSequence
-                    |> Temp.Core.recFn (fun dayOfWeekRow -> function
-                        | date :: tail -> 
-                            span [ Style [ Width 18
-                                           Functions.getCellSeparatorBorderLeft date
-                                           TextAlign TextAlignOptions.Center ] ][
-                                
-                                str (date.DateTime.ToString().ToLower().Substring (0, 2))
-                            ] :: dayOfWeekRow tail
-                        | [] -> [])
-                    |> div [ Style [ Display DisplayOptions.Flex ] ]
-                    
-                    dateSequence
-                    |> Temp.Core.recFn (fun monthRow -> function
-                        | date :: tail -> 
-                            span [ Style [ Width 18
-                                           Functions.getCellSeparatorBorderLeft date
-                                           TextAlign TextAlignOptions.Center ] ][
-                                
-                                str ((int date.Month).ToString "D2")
-                            ] :: monthRow tail
-                        | [] -> [])
-                    |> div [ Style [ Display DisplayOptions.Flex ] ]
-                    
-                    // Day Row
-                    dateSequence
-                    |> Seq.map (fun date ->
-                        span [ Style [ Width 18
-                                       Functions.getCellSeparatorBorderLeft date
-                                       TextAlign TextAlignOptions.Center
-                                       Color (if date = now.Date then "#f22" else "") ] ][
-                            str (date.Day.ToString "D2")
-                        ]
-                    )
-                    |> div [ Style [ Display DisplayOptions.Flex ] ]
-                    
+                    gridHeader dateSequence now
                     
                     groups
                     |> List.map (fun (_, lanes) ->
