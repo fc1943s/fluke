@@ -229,13 +229,13 @@ module Tests =
                            { defaultTask with Name = "12"; Scheduling = Manual false },
                            []
                            
-                           { defaultTask with Name = "13"; Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Tuesday)) },
+                           { defaultTask with Name = "13"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
                            []
                            
-                           { defaultTask with Name = "14"; Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Wednesday)) },
+                           { defaultTask with Name = "14"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
                            []
                            
-                           { defaultTask with Name = "15"; Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Friday)) },
+                           { defaultTask with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
                            [ { Year = 2020; Month = Month.March; Day = 7 }, Postponed 
                              { Year = 2020; Month = Month.March; Day = 9 }, Dropped ]
                        ]
@@ -439,7 +439,7 @@ module Tests =
                 
                 test "Weekly task, pending today, initialized by past completion" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Saturday)) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 21 }
                                    Time = midnight }
                            Data = [
@@ -457,7 +457,7 @@ module Tests =
                 
                 test "Weekly task, missed until today, initialized by past completion" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Wednesday)) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
                                    Time = midnight }
                            Data = [
@@ -476,7 +476,7 @@ module Tests =
                 
                 test "Weekly task, postponed then missed until today, pending tomorrow" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Saturday)) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
                                    Time = midnight }
                            Data = [
@@ -495,7 +495,7 @@ module Tests =
                 
                 test "Weekly task, without past events, pending in a few days" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Wednesday)) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
                                    Time = midnight }
                            Data = [
@@ -512,7 +512,7 @@ module Tests =
                 
                 test "Fixed weekly task, without past events, pending tomorrow" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed (Weekly DayOfWeek.Saturday)) }
+                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
                            Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
                                    Time = midnight }
                            Data = [

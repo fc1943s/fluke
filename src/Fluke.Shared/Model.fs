@@ -81,7 +81,7 @@ module Model =
         
     type TaskRecurrency =
         | Offset of TaskRecurrencyOffset
-        | Fixed of FixedRecurrency
+        | Fixed of FixedRecurrency list
     
     type TaskScheduling =
         | Manual of suggested:bool
@@ -295,12 +295,15 @@ module LaneRendering =
                                 
                             getStatus renderState
                             
-                        | Recurrency (Fixed recurrency) ->
+                        | Recurrency (Fixed recurrencyList) ->
                             let isDateMatched =
-                                match recurrency with
-                                | Weekly dayOfWeek -> dayOfWeek = date.DateTime.DayOfWeek
-                                | Monthly day -> day = date.Day
-                                | Yearly (day, month) -> day = date.Day && month = date.Month
+                                recurrencyList
+                                |> List.map (function
+                                    | Weekly dayOfWeek -> dayOfWeek = date.DateTime.DayOfWeek
+                                    | Monthly day -> day = date.Day
+                                    | Yearly (day, month) -> day = date.Day && month = date.Month
+                                )
+                                |> List.exists id
                                 
                             match renderState, (now.Date, date) with
                             | WaitingFirstEvent, BeforeToday                     -> EmptyCell, WaitingFirstEvent
