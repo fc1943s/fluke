@@ -24,7 +24,7 @@ module HomePageComponent =
             { Now = { Date = { Year = 0; Month = Month.January; Day = 1 }
                       Time = midnight }
               FlatView = true
-              TreeView = true }
+              TreeView = false }
         
     let navBar (props: {| FlatView: bool
                           TreeView: bool
@@ -90,9 +90,8 @@ module HomePageComponent =
             lanes
             |> List.map (fun (Lane (task, _)) ->
                 
-                div [ Class ([ "tooltip-container"
-                               if task.Comments |> List.isEmpty then "" else "tooltip-indicator" ]
-                             |> String.concat " ") ][
+                div [ classList [ "tooltip-container", true
+                                  "tooltip-indicator", task.Comments |> List.isEmpty |> not ] ][
                     
                     div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
                                   WhiteSpace WhiteSpaceOptions.Nowrap
@@ -102,14 +101,10 @@ module HomePageComponent =
                         str task.Name
                     ]
                     
-                    div [ Class "tooltip-popup"
-                          Style [ Padding 20
-                                  MinWidth 200
-                                  Left 18
-                                  Top 0 ] ][
+                    div [ Class "tooltip-popup" ][
                         
                         task.Comments
-                        |> List.map (fun x -> x + Environment.NewLine)
+                        |> List.map ((+) Environment.NewLine)
                         |> List.append [ "# " + task.Name ]
                         |> String.concat (Environment.NewLine + Environment.NewLine)
                         |> fun text ->
@@ -136,9 +131,8 @@ module HomePageComponent =
                           Status = cell.Status
                           Today = today }
                 )
-                |> div [ Class "lane"
-                         Style [ Display DisplayOptions.Flex ] ]
-            ) |> div []
+                |> div []
+            ) |> div [ Class "lane-container" ]
             
         let flatView now dateSequence tasks =
             let lanes =

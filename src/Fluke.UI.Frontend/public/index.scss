@@ -1,3 +1,13 @@
+$color-cell-disabled: #595959;
+$color-cell-suggested: #4c664e;
+$color-cell-pending: #262626;
+$color-cell-missed: #990022;
+$color-cell-postponed: #b08200;
+$color-cell-complete: #339933;
+$color-cell-dropped: #673ab7;
+$color-cell-manualpending: #003038;
+
+
 * {
   font-family: Roboto Condensed, sans-serif;
   color: #ddd;
@@ -16,6 +26,10 @@
   position: relative;
 
   .tooltip-popup {
+    padding: 20px;
+    min-width: 200px;
+    left: 18px;
+    top: 0;
     white-space: nowrap;
     position: absolute;
     display: none;
@@ -41,9 +55,78 @@
   }
 }
 
-.lane {
-  &:nth-child(even) .cell > div:first-child {
-    opacity: 0.85;
+
+.lane-container {
+  
+  .cell {
+    @extend .tooltip-container;
+    
+    > div:first-child {
+      width: 18px;
+      height: 18px;
+    }
+
+    @mixin cell-bgcolor($color) {
+      & > div {
+        background-color: $color;
+      }
+
+      &.cell-today > div {
+        background-color: $color#{cc};
+      }
+    }
+
+    &.cell-disabled {
+      @include cell-bgcolor($color-cell-disabled);
+    }
+
+    &.cell-suggested {
+      @include cell-bgcolor($color-cell-suggested);
+    }
+
+    &.cell-pending {
+      @include cell-bgcolor($color-cell-pending);
+    }
+
+    &.cell-missed {
+      @include cell-bgcolor($color-cell-missed);
+    }
+
+    &.cell-postponed {
+      @include cell-bgcolor($color-cell-postponed);
+    }
+
+    &.cell-complete {
+      @include cell-bgcolor($color-cell-complete);
+    }
+
+    &.cell-dropped {
+      @include cell-bgcolor($color-cell-dropped);
+    }
+
+    &.cell-manualpending {
+      @include cell-bgcolor($color-cell-manualpending);
+    }
+
+    &.tooltip-indicator > div {
+      border: 1px solid #ffffff77;
+    }
+  }
+
+  .lane {
+    display: flex;
+
+    > div {
+      @extend .cell;
+    }
+    
+    &:nth-child(even) > div > div:first-child {
+      opacity: 0.85;
+    }
+  }
+  
+  > div {
+    @extend .lane;
   }
 }
 

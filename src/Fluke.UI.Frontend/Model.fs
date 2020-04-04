@@ -60,18 +60,18 @@ module Model =
             | Archive archive -> sprintf "[%s]" archive.Color
             
     type CellStatus with
-        member this.CellColor =
+        member this.CellClass =
             match this with
-            | Disabled -> "#595959"
-            | Suggested -> "#4c664e"
-            | Pending -> "#262626"
-            | Missed -> "#990022"
+            | Disabled -> "cell-disabled"
+            | Suggested -> "cell-suggested"
+            | Pending -> "cell-pending"
+            | Missed -> "cell-missed"
             | EventStatus status ->
                 match status with
-                | Postponed -> "#b08200"
-                | Complete -> "#339933"
-                | Dropped -> "#673ab7"
-                | ManualPending -> "#003038"
+                | Postponed -> "cell-postponed"
+                | Complete -> "cell-complete"
+                | Dropped -> "cell-dropped"
+                | ManualPending -> "cell-manualpending"
     
     
 module Functions =

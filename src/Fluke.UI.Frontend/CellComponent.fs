@@ -28,27 +28,18 @@ module CellComponent =
     let ``default`` = FunctionComponent.Of (fun props ->
         let hasComments = props.Comments |> List.isEmpty |> not
         
-        div [ Class ([ "cell"
-                       "tooltip-container"
-                       if hasComments then "tooltip-indicator" else "" ]
-                     |> String.concat " ") ][
+        div [ classList [ props.Status.CellClass, true
+                          "tooltip-indicator", hasComments
+                          "cell-today", props.Date = props.Today ] ][
                 
-            div [ Style [ Width 18
-                          Height 18
-                          Functions.getCellSeparatorBorderLeft props.Date
-                          if hasComments then
-                              Border "1px solid #ffffff77"
-                          BackgroundColor (props.Status.CellColor + (if props.Date = props.Today then "cc" else "ff")) ] ][]
+            div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][]
                 
             if hasComments then
-                div [ Class "tooltip-popup"
-                      Style [ Padding 20
-                              MinWidth 200
-                              Left 18
-                              Top 0 ] ][
+                div [ Class "tooltip-popup" ][
                     
                     props.Comments
-                    |> List.map (fun x -> x.Comment + Environment.NewLine)
+                    |> List.map (fun x -> x.Comment)
+                    |> List.map ((+) Environment.NewLine)
                     |> String.concat (Environment.NewLine + Environment.NewLine)
                     |> fun text ->
                         ReactBindings.React.createElement
