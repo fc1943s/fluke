@@ -3,9 +3,6 @@ namespace Fluke.Shared
 open System
 open System.Collections.Generic
 
-module Temp =
-    ()
-
 module Model =
     
     type Area =
@@ -137,8 +134,6 @@ module Model =
         
     type Lane = Lane of task:Task * cells:Cell list
     
-    
-    
 module Rendering =
     open Model
     
@@ -236,8 +231,8 @@ module LaneRendering =
         | EmptyCell
         | StatusCell of CellStatus
         | TodayCell
-                    
-    let renderLane task (now: FlukeDateTime) dateSequence (cellEvents: CellEvent list) =
+    
+    let renderLane (now: FlukeDateTime) dateSequence task (cellEvents: CellEvent list) =
             
         let (|BeforeToday|Today|AfterToday|) (now: FlukeDate, date: FlukeDate) =
             now.DateTime
@@ -354,3 +349,12 @@ module LaneRendering =
                   Cell.Status = status }
             )
         Lane (task, cells)
+        
+module Temp =
+    
+    type Mode =
+        | Navigation
+        | Selection
+        | Editing
+    
+    

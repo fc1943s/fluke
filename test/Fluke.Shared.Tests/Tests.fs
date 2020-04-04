@@ -179,7 +179,7 @@ module Tests =
                           Date = date
                           Status = status }
                     )
-                    |> LaneRendering.renderLane task props.Now dateSequence
+                    |> LaneRendering.renderLane props.Now dateSequence task
                 )
                 |> Sorting.sortLanes props.Now.Date
                 |> List.map (fun (Lane (task, _)) -> task.Name)
@@ -268,7 +268,7 @@ module Tests =
                       Date = date
                       Status = status }
                 )
-                |> LaneRendering.renderLane props.Task props.Now dateSequence
+                |> LaneRendering.renderLane props.Now dateSequence props.Task
                 |> unwrapLane
                 |> toString
                 |> Expect.equal "" (props.Data

@@ -6,7 +6,7 @@ open Fluke.Shared
 module TempData =
     open Model
     
-    let areaList = [
+    let mutable _areaList = [
         { Area.Name = "chores" }
         { Area.Name = "finances" }
         { Area.Name = "leisure" }
@@ -14,11 +14,14 @@ module TempData =
     ]
     
     let areas = {|
-        chores = areaList |> List.find (fun x -> x.Name = "chores")
-        finances = areaList |> List.find (fun x -> x.Name = "finances")
-        leisure = areaList |> List.find (fun x -> x.Name = "leisure")
-        workflow = areaList |> List.find (fun x -> x.Name = "workflow")
+        chores = _areaList |> List.find (fun x -> x.Name = "chores")
+        finances = _areaList |> List.find (fun x -> x.Name = "finances")
+        leisure = _areaList |> List.find (fun x -> x.Name = "leisure")
+        workflow = _areaList |> List.find (fun x -> x.Name = "workflow")
     |}
+    
+    let mutable _projectList : Project list = []
+    let mutable _resourceList : Resource list = []
     
     let defaultTask =
         { Name = "<blank>"
@@ -44,6 +47,8 @@ module TempData =
     let mutable _cellEvents: CellEvent list = []
     
     let mutable _cellComments: CellComment list = []
+    
+    let mutable _informationComments: InformationComment list = []
     
     
     let loadRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
