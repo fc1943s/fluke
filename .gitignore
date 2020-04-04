@@ -2,12 +2,7 @@
 
 # ide settings
 .vs/
-
-**/.idea/*
-!**/.idea/*/
-**/.idea/*/*
-!**/.idea/*/.idea/
-!**/.idea/*/.idea/runConfigurations/**
+.idea/
 
 # user configurations
 *.user

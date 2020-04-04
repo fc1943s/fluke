@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Fluke.UI.Frontend - fake/Build" type="RunNativeExe" factoryName="Native Executable">
-    <option name="EXE_PATH" value="C:/Program Files/dotnet/dotnet.exe" />
+    <option name="EXE_PATH" value="$PROJECT_DIR$/../../../../Program Files/dotnet/dotnet.exe" />
     <option name="PROGRAM_PARAMETERS" value="fake run build.fsx -t Build" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/Fluke.UI.Frontend" />
     <option name="PASS_PARENT_ENVS" value="1" />
