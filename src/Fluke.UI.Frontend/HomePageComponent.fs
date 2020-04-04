@@ -341,10 +341,8 @@ module HomePageComponent =
         ) (60 * 1000)
         
         let dateSequence = 
-            TempData._cellEvents
-            |> List.map (fun x -> x.Date)
-            |> List.append [ state.current.Now.Date ]
-            |> Rendering.getDateSequence (3, 70)
+            [ state.current.Now.Date ]
+            |> Rendering.getDateSequence (35, 35)
             
         let tasks =
             TempData._taskList
