@@ -22,15 +22,11 @@ module Ext =
     JsInterop.importAll "../public/index.jsx"
 
 
-    let flatted : ExtTypes.IFlatted = importAll "flatted/esm"
-    let moment : obj -> ExtTypes.IMoment = importAll "moment"
     let reactMarkdown : obj -> obj = importDefault "react-markdown"
     
     let useEventListener (_event: string) (_fn: KeyboardEvent -> unit) : unit = importDefault "@use-it/event-listener"
     
     Dom.window?Ext <-
-        {| flatted = flatted
-           moment = moment
-           reactMarkdown = reactMarkdown
+        {| reactMarkdown = reactMarkdown
            useEventListener = useEventListener |}
 

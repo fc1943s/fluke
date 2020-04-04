@@ -2,9 +2,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ExtTypes.fs" />
     <Compile Include="Eager\Ext.fs" />
     <Compile Include="TempData.fs" />
     <Compile Include="PrivateData.fs" />

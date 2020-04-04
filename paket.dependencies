@@ -1,6 +1,6 @@
 version 5.226.0
 
-framework: netcoreapp3.1, netstandard2.0
+framework: netcoreapp5.0, netstandard2.0
 
 group Main
     storage: none
@@ -19,17 +19,17 @@ group Fluke.UI.Frontend
     storage: none
     source https://api.nuget.org/v3/index.json
 
-    clitool dotnet-fable ~> 2.0
     nuget Fable.FontAwesome.Free ~> 2.0
     nuget Fulma.Extensions.Wikiki.PageLoader ~> 2.0
     nuget Fulma.Extensions.Wikiki.Slider ~> 2.0
+    nuget Fable.DateFunctions ~> 2.6
 
 
 group Testing
     storage: none
     source https://api.nuget.org/v3/index.json
 
-    nuget Expecto ~> 8.13
+    nuget Expecto ~> 9.0
 
 
 group Build

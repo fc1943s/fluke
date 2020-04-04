@@ -5,6 +5,7 @@ open Fluke.Shared
 open Fluke.UI.Frontend
 open Fable.React
 open Fable.React.Props
+open Fable.DateFunctions
 open Fulma
 open System
 
@@ -172,33 +173,34 @@ module HomePageComponent =
                     
                 // Column: Grid
                 div [][
+                    // Month row
                     dateSequence
-                    |> Temp.Core.recFn (fun dayOfWeekRow -> function
-                        | date :: tail -> 
-                            span [ Style [ Width 18
-                                           Functions.getCellSeparatorBorderLeft date
-                                           TextAlign TextAlignOptions.Center ] ][
-                                
-                                str (date.DateTime.ToString().ToLower().Substring (0, 2))
-                            ] :: dayOfWeekRow tail
-                        | [] -> [])
+                    |> List.groupBy (fun date -> date.Month)
+                    |> List.map (fun (_, dates) -> dates.Head, dates.Length)
+                    |> List.map (fun (firstDay, days) ->
+                        span [ Style [ Functions.getCellSeparatorBorderLeft firstDay
+                                       TextAlign TextAlignOptions.Center
+                                       Width (18 * days) ] ][
+                            str (firstDay.DateTime.Format "MMM")
+                        ]
+                    )
                     |> div [ Style [ Display DisplayOptions.Flex ] ]
                     
+                    // Day of Week row
                     dateSequence
-                    |> Temp.Core.recFn (fun monthRow -> function
-                        | date :: tail -> 
-                            span [ Style [ Width 18
-                                           Functions.getCellSeparatorBorderLeft date
-                                           TextAlign TextAlignOptions.Center ] ][
+                    |> List.map (fun date ->
+                        span [ Style [ Width 18
+                                       Functions.getCellSeparatorBorderLeft date
+                                       TextAlign TextAlignOptions.Center ] ][
                                 
-                                str ((int date.Month).ToString "D2")
-                            ] :: monthRow tail
-                        | [] -> [])
+                            str (date.DateTime.ToString().ToLower().Substring (0, 2))
+                        ]
+                    )
                     |> div [ Style [ Display DisplayOptions.Flex ] ]
                     
-                    // Day Row
+                    // Day row
                     dateSequence
-                    |> Seq.map (fun date ->
+                    |> List.map (fun date ->
                         span [ Style [ Width 18
                                        Functions.getCellSeparatorBorderLeft date
                                        TextAlign TextAlignOptions.Center

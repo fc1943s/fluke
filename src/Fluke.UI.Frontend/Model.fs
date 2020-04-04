@@ -79,8 +79,8 @@ module Functions =
     
     let getCellSeparatorBorderLeft (date: FlukeDate) =
         match date with
-        | { Day = 1 } -> Some "#000"
-        | date when date.DateTime.DayOfWeek = DayOfWeek.Sunday -> Some "#ffffff3d"
+        | { Day = 1 } -> Some "#ffffff3d"
+        | date when date.DateTime.DayOfWeek = DayOfWeek.Sunday -> Some "#000"
         | _ -> None
         |> Option.map ((+) "1px solid ")
         |> fun x -> CSSProp.BorderLeft x
