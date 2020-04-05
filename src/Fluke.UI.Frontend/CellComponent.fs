@@ -14,6 +14,7 @@ module CellComponent =
           Task: Task
           Comments: CellComment list
           Status: CellStatus
+          Selected: bool
           Today: FlukeDate }
 
     type State =
@@ -30,6 +31,7 @@ module CellComponent =
         
         div [ classList [ props.Status.CellClass, true
                           "tooltip-indicator", hasComments
+                          "cell-selected", props.Selected
                           "cell-today", props.Date = props.Today ] ][
                 
             div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][]

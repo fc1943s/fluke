@@ -55,7 +55,6 @@ $color-cell-manualpending: #003038;
   }
 }
 
-
 .lane-container {
   
   .cell {
@@ -73,6 +72,10 @@ $color-cell-manualpending: #003038;
 
       &.cell-today > div {
         background-color: $color#{cc};
+      }
+      
+      &.cell-selected > div {
+        border: 1px solid #ffffff55 !important;
       }
     }
 
@@ -106,10 +109,6 @@ $color-cell-manualpending: #003038;
 
     &.cell-manualpending {
       @include cell-bgcolor($color-cell-manualpending);
-    }
-
-    &.tooltip-indicator > div {
-      border: 1px solid #ffffff77;
     }
   }
 

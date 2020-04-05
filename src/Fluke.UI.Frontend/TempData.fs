@@ -56,7 +56,7 @@ module TempData =
                                              Now: FlukeDateTime
                                              Task: Task |}) =
         
-        _cellEvents <- (testData.CellEvents |> List.map (fun (date, status) -> { Task = testData.Task; Date = date; Status = status }))
+        _cellEvents <- testData.CellEvents |> LaneRendering.createCellEvents testData.Task
         _taskList <- [ testData.Task ]
         _taskOrderList <- [ { Task = testData.Task; Priority = First } ]
         _getNow <- fun _ ->
@@ -71,11 +71,7 @@ module TempData =
             testData.Data
             |> List.collect (fun (task, events) ->
                 events
-                |> List.map (fun (date, status) ->
-                    { Task = task
-                      Date = date
-                      Status = status }
-                )
+                |> LaneRendering.createCellEvents task
             )
             
         _cellEvents <- cellEvents

@@ -15,36 +15,37 @@ module HomePageComponent =
     
     open Model
     
+    type View =
+        | Flat
+        | Tree
+    
     type Props =
         unit
         
     type State =
         { Now: FlukeDateTime
-          FlatView: bool
-          TreeView: bool }
+          Selection: Cell list
+          Lanes: Lane list
+          View: View }
         static member inline Default =
-            { Now = { Date = { Year = 0; Month = Month.January; Day = 1 }
-                      Time = midnight }
-              FlatView = true
-              TreeView = false }
+            let date = { Year = 0; Month = Month.January; Day = 1 }
+            { Now = { Date = date; Time = midnight }
+              Selection = []
+              Lanes = []
+              View = Tree }
         
-    let navBar (props: {| FlatView: bool
-                          TreeView: bool
-                          ToggleFlatView: bool -> unit
-                          ToggleTreeView: bool -> unit |}) =
+    let navBar (props: {| View: View
+                          SetView: View -> unit |}) =
         
         let events = {|
-            OnFlatViewToggle = fun () ->
-                props.ToggleFlatView (not props.FlatView)
-                
-            OnTreeViewToggle = fun () ->
-                props.ToggleTreeView (not props.TreeView)
+            OnViewChange = fun view ->
+                props.SetView view
         |}
         
         Ext.useEventListener "keydown" (fun (e: KeyboardEvent) ->
             match e.ctrlKey, e.shiftKey, e.key with
-            | _, true, "F" -> events.OnFlatViewToggle ()
-            | _, true, "T" -> events.OnTreeViewToggle ()
+            | _, true, "F" -> events.OnViewChange Flat
+            | _, true, "T" -> events.OnViewChange Tree
             | _, _,    _   -> ()
         )
         
@@ -56,10 +57,10 @@ module HomePageComponent =
                                                JustifyContent "space-around" ]]][
             
             Navbar.Item.div [ Navbar.Item.Props [ ClassName "field"
-                                                  OnClick (fun _ -> events.OnFlatViewToggle ()) ] ][
+                                                  OnClick (fun _ -> events.OnViewChange Flat) ] ][
 
                 Checkbox.input [ CustomClass "switch is-small is-dark"
-                                 Props [ Checked props.FlatView
+                                 Props [ Checked (props.View = Flat)
                                          OnChange (fun _ -> ()) ]]
                 
                 Checkbox.checkbox [][
@@ -68,10 +69,10 @@ module HomePageComponent =
             ]
             
             Navbar.Item.div [ Navbar.Item.Props [ ClassName "field"
-                                                  OnClick (fun _ -> events.OnTreeViewToggle ()) ] ][
+                                                  OnClick (fun _ -> events.OnViewChange Tree) ] ][
 
                 Checkbox.input [ CustomClass "switch is-small is-dark"
-                                 Props [ Checked props.TreeView
+                                 Props [ Checked (props.View = Tree)
                                          OnChange (fun _ -> ()) ]]
                 
                 Checkbox.checkbox [][
@@ -117,19 +118,20 @@ module HomePageComponent =
                 ]
             )
             
-        let gridCells today lanes =
+        let gridCells today selection lanes =
             lanes
             |> List.map (fun (Lane (task, cells)) ->
                 cells
                 |> List.map (fun cell ->
                     let comments =
                         TempData._cellComments
-                        |> List.filter (fun x -> x.Task.Name = task.Name && x.Date = cell.Date)
+                        |> List.filter (fun x -> x.Cell.Task.Name = task.Name && x.Cell.Date = cell.Date)
                         
                     CellComponent.``default``
                         { Date = cell.Date
                           Task = task
                           Comments = comments
+                          Selected = selection |> List.contains cell
                           Status = cell.Status
                           Today = today }
                 )
@@ -178,15 +180,7 @@ module HomePageComponent =
                 |> div [ Style [ Display DisplayOptions.Flex ] ]
             ]
             
-        let flatView now dateSequence tasks =
-            let lanes =
-                tasks
-                |> List.filter (function ({ Scheduling = Manual false }, []) -> false | _ -> true)
-                |> List.map (fun (task, events) ->
-                    LaneRendering.renderLane now dateSequence task events
-                )
-                |> Sorting.sortLanes now.Date
-                
+        let flatView dateSequence now selection lanes =
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
                 // Column: Left
@@ -217,36 +211,24 @@ module HomePageComponent =
                 div [][
                     gridHeader dateSequence now
                     
-                    gridCells now.Date lanes
+                    gridCells now.Date selection lanes
                 ]
             ]
             
-        let treeView now dateSequence tasks =
-            let lanes =
-                tasks
-//                |> List.filter (function ({ Scheduling = Manual false }, []) -> true | _ -> false)
-                |> List.map (fun (task, events) ->
-                    LaneRendering.renderLane now dateSequence task events
-                )
-                
-            let groupLanes informationList = 
-                informationList
-                |> List.map (fun information ->
-                    let lanes =
-                        lanes
-                        |> List.filter (fun (Lane (task, _)) -> task.InformationType = information)
-                        |> Sorting.sortLanes now.Date
-                        
-                    information, lanes
-                )
-                |> List.filter (snd >> List.isEmpty >> not)
-                
+        let treeView dateSequence now selection lanes =
             let groups =
-                [ "projects", TempData._projectList |> List.map Project |> groupLanes
-                  "areas", TempData._areaList |> List.map Area |> groupLanes
-                  "resources", TempData._resourceList |> List.map Resource |> groupLanes ]
-                |> List.filter (snd >> List.isEmpty >> not)
-            
+                lanes
+                |> List.groupBy (fun (Lane (task, _)) ->
+                    task.InformationType
+                )
+                |> List.groupBy (fun (info, _) ->
+                    match info with
+                    | Project _ -> "projects"
+                    | Area _ -> "areas"
+                    | Resource _ -> "resources"
+                    | _ -> "archive"
+                )
+                
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
                 // Column: Left
@@ -257,13 +239,13 @@ module HomePageComponent =
                     |> div []
                         
                     groups
-                    |> List.map (fun (name, lanes) ->
+                    |> List.map (fun (name, groupLanes) ->
                         div [][
                             div [ Style [ Color "#444" ] ][
                                 str name
                             ]
                             
-                            lanes
+                            groupLanes
                             |> List.map (fun (information, lanes) ->
                                 
                                 div [][
@@ -287,16 +269,19 @@ module HomePageComponent =
                     gridHeader dateSequence now
                     
                     groups
-                    |> List.map (fun (_, lanes) ->
+                    |> List.map (fun (_, groupLanes) ->
+                        
                         div [][
                             emptyDiv
                             
-                            lanes
+                            
+                            groupLanes
                             |> List.map (fun (_, lanes) ->
                                 
                                 div [][
+                                    
                                     emptyDiv
-                                    gridCells now.Date lanes
+                                    gridCells now.Date selection lanes
                                 ]
                             )
                             |> div []
@@ -308,30 +293,92 @@ module HomePageComponent =
             
     let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
             
-        let state = Hooks.useState { State.Default with Now = TempData._getNow TempData._hourOffset }
+        let getLanes dateSequence now view =
+            let tasks =
+                TempData._taskList
+                |> List.map (fun task ->
+                    let events =
+                        TempData._cellEvents
+                        |> List.filter (fun x -> x.Cell.Task = task)
+                    task, events
+                )
+            
+            match view with
+            | Flat ->
+                tasks
+                |> List.filter (function { Scheduling = Manual false }, [] -> false | _ -> true)
+                |> List.map (fun (task, events) ->
+                    LaneRendering.renderLane now dateSequence task events
+                )
+                |> Sorting.sortLanes now.Date
+            | Tree ->
+                let lanes =
+                    tasks
+                    |> List.filter (function { Scheduling = Manual _ }, _ -> true | _ -> false)
+                    |> List.map (fun (task, events) ->
+                        LaneRendering.renderLane now dateSequence task events
+                    )
+                    
+                [ TempData._projectList |> List.map Project
+                  TempData._areaList |> List.map Area
+                  TempData._resourceList |> List.map Resource ]
+                |> List.collect (List.map (fun information ->
+                    let lanes =
+                        lanes
+                        |> List.filter (fun (Lane (task, _)) -> task.InformationType = information)
+                        |> Sorting.sortLanes now.Date
+                        
+                    information, lanes
+                ))
+                |> List.collect snd
+                    
+        let getState oldState =
+            let now = TempData._getNow TempData._hourOffset
+            
+            let dateSequence = 
+                [ now.Date ]
+                |> Rendering.getDateSequence (35, 35)
+                
+            let lanes = getLanes dateSequence now oldState.View
+            
+            let selection =
+                match oldState.Selection with
+                | [] ->
+                    lanes
+                    |> List.tryHead
+                    |> Option.map (fun (Lane (_, cells)) ->
+                        cells
+                        |> List.tryFind (fun cell -> cell.Date = now.Date)
+                        |> Option.map (fun cell -> [ cell ])
+                        |> Option.defaultValue []
+                    )
+                    |> Option.defaultValue []
+                | x -> x
+            
+            { oldState with
+                  Now = now
+                  Lanes = lanes
+                  Selection = selection }
+        
+        let state =
+            Hooks.useState (getState State.Default)
             
         Temp.CustomHooks.useInterval (fun () ->
-            state.update (fun state -> { state with Now = TempData._getNow TempData._hourOffset })
+            state.update getState
         ) (60 * 1000)
         
-        let dateSequence = 
-            [ state.current.Now.Date ]
-            |> Rendering.getDateSequence (35, 35)
+        let dateSequence =
+            match state.current.Lanes with
+            | Lane (_, cells) :: _ -> 
+                cells
+                |> List.map (fun x -> x.Date)
+            | _ -> []
             
-        let tasks =
-            TempData._taskList
-            |> List.map (fun task ->
-                TempData._cellEvents
-                |> List.filter (fun x -> x.Task = task) |> fun events -> task, events
-            )
-            
-
         let events = {|
-            OnFlatViewToggle = fun visible ->
-                state.update (fun state -> { state with FlatView = visible })
-                
-            OnTreeViewToggle = fun visible ->
-                state.update (fun state -> { state with TreeView = visible })
+            OnViewChange = fun view ->
+                state.update (fun state -> getState { state with
+                                                          View = view
+                                                          Selection = [] })
         |}
         
         
@@ -343,15 +390,12 @@ module HomePageComponent =
 //                                        PageLoader.IsActive (match props.PrivateState.Connection with Client.Connected _ -> false | _ -> true) ][]
 
             navBar
-                {| FlatView = state.current.FlatView
-                   TreeView = state.current.TreeView
-                   ToggleFlatView = events.OnFlatViewToggle
-                   ToggleTreeView = events.OnTreeViewToggle |}
+                {| View = state.current.View
+                   SetView = events.OnViewChange |}
                    
-            if state.current.TreeView then
-                Grid.treeView state.current.Now dateSequence tasks
                 
-            if state.current.FlatView then
-                Grid.flatView state.current.Now dateSequence tasks
+            match state.current.View with
+            | Tree -> Grid.treeView dateSequence state.current.Now state.current.Selection state.current.Lanes
+            | Flat -> Grid.flatView dateSequence state.current.Now state.current.Selection state.current.Lanes
         ]
     , memoizeWith = equalsButFunctions)

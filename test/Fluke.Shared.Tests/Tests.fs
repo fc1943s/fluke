@@ -165,20 +165,13 @@ module Tests =
                                     Expected: string list |}) =
                 let dateSequence =
                     props.Data
-                    |> List.collect (fun (_, cellEvents) ->
-                        cellEvents
-                        |> List.map (fun (date, _) -> date)
-                    )
+                    |> List.collect (snd >> List.map fst)
                     |> Rendering.getDateSequence (0, 0)
                 
                 props.Data
                 |> List.map (fun (task, events) ->
                     events
-                    |> List.map (fun (date, status) ->
-                        { Task = task
-                          Date = date
-                          Status = status }
-                    )
+                    |> LaneRendering.createCellEvents task
                     |> LaneRendering.renderLane props.Now dateSequence task
                 )
                 |> Sorting.sortLanes props.Now.Date
@@ -263,11 +256,7 @@ module Tests =
                     >> String.concat Environment.NewLine
                 
                 props.CellEvents
-                |> List.map (fun (date, status) ->
-                    { Task = props.Task
-                      Date = date
-                      Status = status }
-                )
+                |> LaneRendering.createCellEvents props.Task
                 |> LaneRendering.renderLane props.Now dateSequence props.Task
                 |> unwrapLane
                 |> toString

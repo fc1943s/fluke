@@ -110,16 +110,15 @@ module Model =
         
     type Cell =
         { Date: FlukeDate
+          Task: Task
           Status: CellStatus }
         
     type CellEvent =
-        { Task: Task
-          Date: FlukeDate
+        { Cell: Cell
           Status: CellEventStatus }
     
     type CellComment =
-        { Task: Task
-          Date: FlukeDate
+        { Cell: Cell
           Comment: string }
         
     
@@ -231,7 +230,16 @@ module LaneRendering =
         | EmptyCell
         | StatusCell of CellStatus
         | TodayCell
-    
+        
+    let createCellEvents task events =
+        events
+        |> List.map (fun (date, status) ->
+            { Cell = { Task = task
+                       Date = date
+                       Status = Disabled }
+              Status = status }
+        )
+        
     let renderLane (now: FlukeDateTime) dateSequence task (cellEvents: CellEvent list) =
             
         let (|BeforeToday|Today|AfterToday|) (now: FlukeDate, date: FlukeDate) =
@@ -244,7 +252,7 @@ module LaneRendering =
                 
         let cellEventsByDate =
             cellEvents
-            |> List.map (fun x -> x.Date, x)
+            |> List.map (fun x -> x.Cell.Date, x)
             |> Map.ofList
             
         let rec loop renderState = function
@@ -348,8 +356,9 @@ module LaneRendering =
         let cells =
             loop WaitingFirstEvent dateSequence
             |> List.map (fun (date, status) ->
-                { Cell.Date = date
-                  Cell.Status = status }
+                { Date = date
+                  Task = task
+                  Status = status }
             )
         Lane (task, cells)
         
