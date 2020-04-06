@@ -10,9 +10,13 @@ open Fable.DateFunctions
 open Fulma
 open System
 
-module HomePageComponent =
-    PrivateData.tasks |> ignore // Just to load the module. Remove line to use TestData
+module Temp =
+    let _toCompile () = // Just to load the modules. Remove the function to use TestData instead of PrivateData
+        PrivateData.loadTasks
+        PrivateData.loadCellEvents
+        PrivateData.loadJournal
     
+module HomePageComponent =
     open Model
     
     type View =

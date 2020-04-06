@@ -27,10 +27,12 @@ $color-cell-manualpending: #003038;
 
   .tooltip-popup {
     padding: 20px 40px;
-    min-width: 200px;
-    left: 18px;
+    //min-width: 200px;
+    //max-width: 600px;
+    width: 600px;
+    left: 30px;
     top: 0;
-    white-space: nowrap;
+    white-space: pre-wrap;
     position: absolute;
     display: none;
     z-index: 1;
@@ -66,15 +68,15 @@ $color-cell-manualpending: #003038;
     }
 
     @mixin cell-bgcolor($color) {
-      & > div {
+      & > div:first-child {
         background-color: $color;
       }
 
-      &.cell-today > div {
+      &.cell-today > div:first-child {
         background-color: $color#{cc};
       }
       
-      &.cell-selected > div {
+      &.cell-selected > div:first-child {
         border: 1px solid #ffffff55 !important;
       }
     }

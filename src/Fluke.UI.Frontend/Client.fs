@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend
 
 open Suigetsu.UI.ElmishBridge.Frontend
 open Elmish
-open Elmish.Bridge
 open Elmish.React
 
 module Temp =
