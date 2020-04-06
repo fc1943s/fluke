@@ -304,6 +304,7 @@ module HomePageComponent =
                     let events =
                         TempData._cellEvents
                         |> List.filter (fun x -> x.Cell.Task = task)
+                        |> List.sortBy (fun x -> x.Cell.Date)
                     task, events
                 )
             
@@ -319,6 +320,14 @@ module HomePageComponent =
                 let lanes =
                     tasks
                     |> List.filter (function { Scheduling = Manual _ }, _ -> true | _ -> false)
+                    |> List.filter (fun (_, events) ->
+                        events
+                        |> List.filter (function { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true | _ -> false)
+                        |> List.tryLast
+                        |> function
+                            | Some { Status = Dropped } -> false
+                            | _ -> true
+                    )
                     |> List.map (fun (task, events) ->
                         LaneRendering.renderLane now dateSequence task events
                     )
