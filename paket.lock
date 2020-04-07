@@ -5,7 +5,7 @@ NUGET
     FSharp.Core (4.7.1)
 GIT
   remote: https://github.com/fc1943s/Suigetsu.git
-     (10c97ed5bbb469f5c20f6152bccd3dc092b34e40)
+     (2868b7e2c6acb5be0c6110ecae2ba612f7bebd38)
       build: powershell –ExecutionPolicy Bypass ./build.ps1
 GROUP Build
 STORAGE: NONE

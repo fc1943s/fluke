@@ -9,12 +9,14 @@ open Fable.React.Props
 open Fable.DateFunctions
 open Fulma
 open System
+open Suigetsu.UI.Frontend.ElmishBridge
+open Suigetsu.UI.Frontend.React
 
 module Temp =
     let _toCompile () = // Just to load the modules. Remove the function to use TestData instead of PrivateData
-        PrivateData.loadTasks
-        PrivateData.loadCellEvents
-        PrivateData.loadJournal
+        PrivateData.Tasks.load
+        PrivateData.CellEvents.load
+        PrivateData.Journal.load
     
 module HomePageComponent =
     open Model
@@ -24,7 +26,9 @@ module HomePageComponent =
         | Tree
     
     type Props =
-        unit
+        { Dispatch: SharedState.SharedServerMessage -> unit
+          UIState: UIState.State
+          PrivateState: Client.PrivateState<UIState.State> }
         
     type State =
         { Now: FlukeDateTime
@@ -319,7 +323,7 @@ module HomePageComponent =
             | Tree ->
                 let lanes =
                     tasks
-                    |> List.filter (function { Scheduling = Manual _ }, _ -> true | _ -> false)
+                    |> List.filter (function { Scheduling = Manual false }, _ -> true | _ -> false)
                     |> List.filter (fun (_, events) ->
                         events
                         |> List.filter (function { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true | _ -> false)
@@ -376,7 +380,7 @@ module HomePageComponent =
         let state =
             Hooks.useState (getState State.Default)
             
-        Temp.CustomHooks.useInterval (fun () ->
+        CustomHooks.useInterval (fun () ->
             state.update getState
         ) (60 * 1000)
         

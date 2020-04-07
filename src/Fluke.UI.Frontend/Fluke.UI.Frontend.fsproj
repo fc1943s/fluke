@@ -1,13 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>netstandard2.1</TargetFramework>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Eager\Ext.fs" />
+    <Compile Include="Temp\CustomHooks.fs" />
+    <Compile Include="Ext.fs" />
     <Compile Include="TempData.fs" />
-    <Compile Include="PrivateData\PrivateData.fs" />
+    <Compile Include="PrivateData\TempData.fs" />
     <Compile Include="PrivateData\Tasks.fs" />
     <Compile Include="PrivateData\CellEvents.fs" />
     <Compile Include="PrivateData\Journal.fs" />
@@ -30,7 +31,8 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj" />
-    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI.ElmishBridge.Frontend\Suigetsu.UI.ElmishBridge.Frontend.fsproj" />
+    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI.Frontend.React\Suigetsu.UI.Frontend.React.fsproj" />
+    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI.Frontend.ElmishBridge\Suigetsu.UI.Frontend.ElmishBridge.fsproj" />
     <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
