@@ -34,16 +34,16 @@ module Model =
     type CellStatus with
         member this.CellClass =
             match this with
-            | Disabled -> "cell-disabled"
-            | Suggested -> "cell-suggested"
-            | Pending -> "cell-pending"
-            | Missed -> "cell-missed"
+            | Disabled -> Css.cellDisabled
+            | Suggested -> Css.cellSuggested
+            | Pending -> Css.cellPending
+            | Missed -> Css.cellMissed
             | EventStatus status ->
                 match status with
-                | Postponed -> "cell-postponed"
-                | Complete -> "cell-complete"
-                | Dropped -> "cell-dropped"
-                | ManualPending -> "cell-manualpending"
+                | Postponed -> Css.cellPostponed
+                | Complete -> Css.cellComplete
+                | Dropped -> Css.cellDropped
+                | ManualPending -> Css.cellManualPending
     
     
 module Functions =

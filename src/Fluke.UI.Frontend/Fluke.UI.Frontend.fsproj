@@ -5,7 +5,7 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Temp\CustomHooks.fs" />
+    <Compile Include="Css.fs" />
     <Compile Include="Ext.fs" />
     <Compile Include="TempData.fs" />
     <Compile Include="PrivateData\TempData.fs" />

@@ -22,9 +22,11 @@ group Fluke.UI.Frontend
     source https://api.nuget.org/v3/index.json
 
     nuget Fable.FontAwesome.Free ~> 2.0
+    nuget Fable.DateFunctions ~> 2.6
+    nuget Zanaptak.TypedCssClasses ~> 0.2
     nuget Fulma.Extensions.Wikiki.PageLoader ~> 2.0
     nuget Fulma.Extensions.Wikiki.Slider ~> 2.0
-    nuget Fable.DateFunctions ~> 2.6
+    nuget Feliz.Bulma ~> 1.14
 
 
 group Testing

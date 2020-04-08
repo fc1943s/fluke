@@ -1,3 +1,16 @@
+.tooltip-popup, 
+.cell-selected, 
+.cell-today,
+.cell-disabled, 
+.cell-suggested, 
+.cell-pending, 
+.cell-missed, 
+.cell-postponed, 
+.cell-complete, 
+.cell-dropped, 
+.cell-manual-pending
+{} // https://github.com/zanaptak/TypedCssClasses/issues/4
+
 $color-cell-disabled: #595959;
 $color-cell-suggested: #4c664e;
 $color-cell-pending: #262626;
@@ -5,7 +18,7 @@ $color-cell-missed: #990022;
 $color-cell-postponed: #b08200;
 $color-cell-complete: #339933;
 $color-cell-dropped: #673ab7;
-$color-cell-manualpending: #003038;
+$color-cell-manual-pending: #003038;
 
 
 * {
@@ -109,8 +122,8 @@ $color-cell-manualpending: #003038;
       @include cell-bgcolor($color-cell-dropped);
     }
 
-    &.cell-manualpending {
-      @include cell-bgcolor($color-cell-manualpending);
+    &.cell-manual-pending {
+      @include cell-bgcolor($color-cell-manual-pending);
     }
   }
 

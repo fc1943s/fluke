@@ -1,39 +1,21 @@
 ### Local settings
-
-# ide settings
-.vs/
+# IDE settings
 .idea/
-
-# user configurations
+# User configurations
 *.user
 
-
-
-### .net
-
-obj/
+### .NET
 bin/
-nupkg/
-packages/
-!/packages/
-
-.fake/
+obj/
 .paket/
 paket-files/
 
+### DevOps
+.fake/
 
-
-### JavaScript
-
-# npm packages
+### JS
 node_modules/
 
-
-
-### Mixed
-
+### Output
 dist/
-logs/
-
-
 

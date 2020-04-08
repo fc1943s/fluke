@@ -30,14 +30,14 @@ module CellComponent =
         let hasComments = props.Comments |> List.isEmpty |> not
         
         div [ classList [ props.Status.CellClass, true
-                          "tooltip-indicator", hasComments
-                          "cell-selected", props.Selected
-                          "cell-today", props.Date = props.Today ] ][
+                          Css.tooltipIndicator, hasComments
+                          Css.cellSelected, props.Selected
+                          Css.cellToday, props.Date = props.Today ] ][
                 
             div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][]
                 
             if hasComments then
-                div [ Class "tooltip-popup" ][
+                div [ Class Css.tooltipPopup ][
                     
                     props.Comments
                     |> List.map (fun x -> x.Comment)

@@ -3,6 +3,9 @@ group Fluke.UI.Frontend
 FSharp.Core
 
 Fable.FontAwesome.Free
+Fable.DateFunctions
+Zanaptak.TypedCssClasses
 Fulma.Extensions.Wikiki.PageLoader
 Fulma.Extensions.Wikiki.Slider
-Fable.DateFunctions
+Feliz.Bulma 
+

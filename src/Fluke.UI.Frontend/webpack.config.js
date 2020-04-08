@@ -100,8 +100,9 @@ module.exports = {
         ]),
     resolve: {
         // See https://github.com/fable-compiler/Fable/issues/1490
+        modules: ['node_modules', path.resolve(__dirname, "node_modules")],
         symlinks: false
-    },
+   },
     // Configuration for webpack-dev-server
     devServer: {
         publicPath: "/",

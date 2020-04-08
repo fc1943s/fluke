@@ -12,6 +12,7 @@ open System
 open Suigetsu.UI.Frontend.ElmishBridge
 open Suigetsu.UI.Frontend.React
 
+
 module Temp =
     let _toCompile () = // Just to load the modules. Remove the function to use TestData instead of PrivateData
         PrivateData.Tasks.load
@@ -64,7 +65,7 @@ module HomePageComponent =
                                                Display DisplayOptions.Flex
                                                JustifyContent "space-around" ]]][
             
-            Navbar.Item.div [ Navbar.Item.Props [ ClassName "field"
+            Navbar.Item.div [ Navbar.Item.Props [ Class "field"
                                                   OnClick (fun _ -> events.OnViewChange Flat) ] ][
 
                 Checkbox.input [ CustomClass "switch is-small is-dark"
@@ -76,7 +77,7 @@ module HomePageComponent =
                 ]
             ]
             
-            Navbar.Item.div [ Navbar.Item.Props [ ClassName "field"
+            Navbar.Item.div [ Navbar.Item.Props [ Class "field"
                                                   OnClick (fun _ -> events.OnViewChange Tree) ] ][
 
                 Checkbox.input [ CustomClass "switch is-small is-dark"
@@ -101,8 +102,8 @@ module HomePageComponent =
             lanes
             |> List.map (fun (Lane (task, _)) ->
                 
-                div [ classList [ "tooltip-container", true
-                                  "tooltip-indicator", task.Comments |> List.isEmpty |> not ] ][
+                div [ classList [ Css.tooltipContainer, true
+                                  Css.tooltipIndicator, task.Comments |> List.isEmpty |> not ] ][
                     
                     div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
                                   WhiteSpace WhiteSpaceOptions.Nowrap
@@ -112,7 +113,7 @@ module HomePageComponent =
                         str task.Name
                     ]
                     
-                    div [ Class "tooltip-popup" ][
+                    div [ Class Css.tooltipPopup ][
                         
                         task.Comments
                         |> List.map ((+) Environment.NewLine)
@@ -144,7 +145,7 @@ module HomePageComponent =
                           Today = today }
                 )
                 |> div []
-            ) |> div [ Class "lane-container" ]
+            ) |> div [ Class Css.laneContainer ]
             
         let gridHeader dateSequence (now: FlukeDateTime) =
             div [][

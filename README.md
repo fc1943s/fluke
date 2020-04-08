@@ -15,9 +15,6 @@ Some features planned:
 - Mobile responsive layout (with maybe full apps later)
 
 
-This is my attempt to show that the [SAFE Stack](https://safe-stack.github.io/) rocks!
-
-
 Why Fluke? Because there will be many randomization possibilities to make everything fun. That is probably one of the last things I will implement though. More on that later.
 
 ### Known Issues
