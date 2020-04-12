@@ -33,7 +33,6 @@ group Testing
     storage: none
     source https://api.nuget.org/v3/index.json
 
-    nuget Expecto ~> 9.0
 
 
 group Build

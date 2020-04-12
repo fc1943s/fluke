@@ -41,7 +41,7 @@ module HomePageComponent =
             { Now = { Date = date; Time = midnight }
               Selection = []
               Lanes = []
-              View = Tree }
+              View = Flat }
         
     let navBar (props: {| View: View
                           SetView: View -> unit |}) =

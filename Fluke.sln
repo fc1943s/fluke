@@ -31,6 +31,10 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.UI.Frontend.React"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Elmish.Bridge.Client", "paket-files\github.com\fc1943s\Suigetsu\paket-files\github.com\fc1943s\Elmish.Bridge\src\Client\Elmish.Bridge.Client.fsproj", "{F664291D-7A33-43F8-89CF-938388193C1B}"
 EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.FileSystem.Cli.Tests", "test\Fluke.FileSystem.Cli.Tests\Fluke.FileSystem.Cli.Tests.fsproj", "{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.FileSystem.Cli", "src\Fluke.FileSystem.Cli\Fluke.FileSystem.Cli.fsproj", "{A96ECBAD-209E-47DF-8E90-3092FB51E942}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -77,6 +81,14 @@ Global
 		{F664291D-7A33-43F8-89CF-938388193C1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F664291D-7A33-43F8-89CF-938388193C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F664291D-7A33-43F8-89CF-938388193C1B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A96ECBAD-209E-47DF-8E90-3092FB51E942}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A96ECBAD-209E-47DF-8E90-3092FB51E942}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A96ECBAD-209E-47DF-8E90-3092FB51E942}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A96ECBAD-209E-47DF-8E90-3092FB51E942}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{58AF0C5F-09F6-4F4A-9A56-3F6676BD5B86} = {D9ACD469-4657-4966-9E60-BCE40BC88944}
@@ -89,5 +101,7 @@ Global
 		{1060C22D-A36B-4430-9489-678AA6BF6E3B} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
 		{ED2436F4-4E74-4BB0-A6C6-7ACFF23B2488} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
 		{F664291D-7A33-43F8-89CF-938388193C1B} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
+		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC} = {D9ACD469-4657-4966-9E60-BCE40BC88944}
+		{A96ECBAD-209E-47DF-8E90-3092FB51E942} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
 	EndGlobalSection
 EndGlobal
