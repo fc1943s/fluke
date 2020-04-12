@@ -2,7 +2,6 @@
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "repo", "repo", "{AC1CE2EB-72D2-480C-889B-C4940CBC5578}"
 	ProjectSection(SolutionItems) = preProject
 		paket.dependencies = paket.dependencies
-		LICENSE = LICENSE
 		README.md = README.md
 	EndProjectSection
 EndProject
