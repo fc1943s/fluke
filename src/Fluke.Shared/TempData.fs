@@ -1,7 +1,6 @@
-namespace Fluke.UI.Frontend
+namespace Fluke.Shared
 
 open System
-open Fluke.Shared
 
 module TempData =
     open Model

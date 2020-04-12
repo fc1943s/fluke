@@ -13,11 +13,11 @@ open Suigetsu.UI.Frontend.ElmishBridge
 open Suigetsu.UI.Frontend.React
 
 
-module Temp =
-    let _toCompile () = // Just to load the modules. Remove the function to use TestData instead of PrivateData
-        PrivateData.Tasks.load
-        PrivateData.CellEvents.load
-        PrivateData.Journal.load
+module Temp = // Just to load the modules. Comment the module to use TestData instead of PrivateData
+    PrivateData.TempData.load ()
+    PrivateData.Tasks.load ()
+    PrivateData.CellEvents.load ()
+    PrivateData.Journal.load ()
     
 module HomePageComponent =
     open Model

@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Testing\Suigetsu.Testing.fsproj" />
     <ProjectReference Include="..\..\src\Fluke.FileSystem.Cli\Fluke.FileSystem.Cli.fsproj" />
+    <ProjectReference Include="..\..\src\Fluke.Shared\Fluke.Shared.fsproj" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
