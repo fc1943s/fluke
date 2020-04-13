@@ -5,13 +5,16 @@ open System.Collections.Generic
 
 module Model =
     
+    [<StructuredFormatDisplay("{Name}")>]
     type Area =
         { Name: string }
         
+    [<StructuredFormatDisplay("{Area}/{Name}")>]
     type Project =
         { Area: Area
           Name: string }
         
+    [<StructuredFormatDisplay("{Area}/{Name}")>]
     type Resource =
         { Area: Area
           Name: string }
@@ -36,12 +39,11 @@ module Model =
         | November = 11
         | December = 12
         
+    [<StructuredFormatDisplay("{Year}-{Month}-{Day}")>]
     type FlukeDate =
         { Year: int
           Month: Month
           Day: int }
-        override this.ToString () =
-           sprintf "%d-%A-%d" this.Year this.Month this.Day
         member this.DateTime =
             DateTime (this.Year, int this.Month, this.Day, 12, 0, 0)
         static member inline FromDateTime (date: DateTime) =
@@ -49,6 +51,7 @@ module Model =
               Month = Enum.Parse (typeof<Month>, string date.Month) :?> Month
               Day = date.Day }
             
+    [<StructuredFormatDisplay("{Hour}:{Minute}")>]
     type FlukeTime =
         { Hour: int
           Minute: int }
@@ -57,6 +60,7 @@ module Model =
               Minute = date.Minute }
     let midnight = { Hour = 0; Minute = 0 }
     
+    [<StructuredFormatDisplay("{Date} {Time}")>]
     type FlukeDateTime =
         { Date: FlukeDate
           Time: FlukeTime }

@@ -116,6 +116,7 @@ module HomePageComponent =
                     div [ Class Css.tooltipPopup ][
                         
                         task.Comments
+                        |> List.map (fun x -> x.Trim ())
                         |> List.map ((+) Environment.NewLine)
                         |> List.append [ "# " + task.Name ]
                         |> String.concat (Environment.NewLine + Environment.NewLine)
@@ -235,7 +236,7 @@ module HomePageComponent =
                     | Project _ -> "projects"
                     | Area _ -> "areas"
                     | Resource _ -> "resources"
-                    | _ -> "archive"
+                    | Archive _ -> "archives"
                 )
                 
             div [ Style [ Display DisplayOptions.Flex ] ][
