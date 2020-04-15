@@ -8,19 +8,11 @@ open Expecto.Flip
 open Suigetsu.Core
 
 module Data =
-    let defaultTask =
-        { Name = "<blank>"
-          InformationType = Area { Name = "Area" }
-          Comments = []
-          PendingAfter = midnight
-          Scheduling = Manual false
-          Duration = None }
-    
-    let task1 = { defaultTask with Name = "1" }
-    let task2 = { defaultTask with Name = "2" }
-    let task3 = { defaultTask with Name = "3" }
-    let task4 = { defaultTask with Name = "4" }
-    let task5 = { defaultTask with Name = "5" }
+    let task1 = { Task.Default with Name = "1" }
+    let task2 = { Task.Default with Name = "2" }
+    let task3 = { Task.Default with Name = "3" }
+    let task4 = { Task.Default with Name = "4" }
+    let task5 = { Task.Default with Name = "5" }
         
     let orderedEventList = [
         { Task = task1; Priority = First }
@@ -183,52 +175,52 @@ module Tests =
                     {| Now = { Date = flukeDate 2020 Month.March 10
                                Time = midnight }
                        Data = [
-                           { defaultTask with Name = "1"; Scheduling = Manual true },
+                           { Task.Default with Name = "1"; Scheduling = Manual true },
                            [] 
                            
-                           { defaultTask with Name = "2"; Scheduling = Manual true },
+                           { Task.Default with Name = "2"; Scheduling = Manual true },
                            [ flukeDate 2020 Month.March 10, Postponed midnight
                              flukeDate 2020 Month.March 8, Postponed midnight ]
                            
-                           { defaultTask with Name = "3"; Scheduling = Manual false },
+                           { Task.Default with Name = "3"; Scheduling = Manual false },
                            [ flukeDate 2020 Month.March 9, ManualPending ]
                            
-                           { defaultTask with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
+                           { Task.Default with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
                                                            PendingAfter = flukeTime 20 0 },
                            []
                            
-                           { defaultTask with Name = "5"; Scheduling = Manual false },
+                           { Task.Default with Name = "5"; Scheduling = Manual false },
                            [ flukeDate 2020 Month.March 10, ManualPending ]
                            
-                           { defaultTask with Name = "6"; Scheduling = Manual false },
+                           { Task.Default with Name = "6"; Scheduling = Manual false },
                            [ flukeDate 2020 Month.March 4, Postponed midnight
                              flukeDate 2020 Month.March 6, Dropped ]
                            
-                           { defaultTask with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
+                           { Task.Default with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
                            [ flukeDate 2020 Month.March 8, Completed ]
                            
-                           { defaultTask with Name = "8"; Scheduling = Recurrency (Offset (Days 2)) },
+                           { Task.Default with Name = "8"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Completed ]
                            
-                           { defaultTask with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
+                           { Task.Default with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Dropped ]
                            
-                           { defaultTask with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
+                           { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Postponed midnight ]
                            
-                           { defaultTask with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
+                           { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
                            []
                            
-                           { defaultTask with Name = "12"; Scheduling = Manual false },
+                           { Task.Default with Name = "12"; Scheduling = Manual false },
                            []
                            
-                           { defaultTask with Name = "13"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
+                           { Task.Default with Name = "13"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
                            []
                            
-                           { defaultTask with Name = "14"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
+                           { Task.Default with Name = "14"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
                            []
                            
-                           { defaultTask with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
+                           { Task.Default with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
                            [ flukeDate 2020 Month.March 7, Postponed midnight
                              flukeDate 2020 Month.March 9, Dropped ]
                        ]
@@ -268,7 +260,7 @@ module Tests =
                 
                 test "Start scheduling today without any events" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 9
                                    Time = midnight }
                            Data = [
@@ -284,7 +276,7 @@ module Tests =
                 
                 test "Disabled today after a Completed event yesterday" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 3)) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 3)) }
                            Now = { Date = flukeDate 2020 Month.March 9
                                    Time = midnight }
                            Data = [
@@ -304,7 +296,7 @@ module Tests =
                 
                 test "Postponing today wont schedule for tomorrow" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 10
                                    Time = midnight }
                            Data = [
@@ -321,7 +313,7 @@ module Tests =
                 
                 test "(Postponed midnight) yesterday schedules for today" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 11
                                    Time = midnight }
                            Data = [
@@ -338,7 +330,7 @@ module Tests =
             
                 test "Pending today after missing yesterday, then resetting the schedule with a future Completed event" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 11
                                    Time = midnight }
                            Data = [
@@ -359,8 +351,8 @@ module Tests =
                 
                 test "Recurring task only Suggested before PendingAfter" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 1))
-                                                     PendingAfter = flukeTime 20 0 }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1))
+                                                      PendingAfter = flukeTime 20 0 }
                            Now = { Date = flukeDate 2020 Month.March 10
                                    Time = flukeTime 19 30 }
                            Data = [
@@ -373,8 +365,8 @@ module Tests =
             
                 test "Recurring task Pending after PendingAfter" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 1))
-                                                     PendingAfter = flukeTime 20 0 }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1))
+                                                      PendingAfter = flukeTime 20 0 }
                            Now = { Date = flukeDate 2020 Month.March 10
                                    Time = flukeTime 21 0 }
                            Data = [
@@ -387,8 +379,8 @@ module Tests =
             
                 test "Recurrency for the next days should work normally while today is still optional/suggested (before PendingAfter)" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2))
-                                                     PendingAfter = flukeTime 18 0 }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2))
+                                                      PendingAfter = flukeTime 18 0 }
                            Now = { Date = flukeDate 2020 Month.March 27
                                    Time = flukeTime 17 0 }
                            Data = [
@@ -404,7 +396,7 @@ module Tests =
                 
                 test "Reset counting after a future ManualPending event" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 3)) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 3)) }
                            Now = { Date = flukeDate 2020 Month.March 28
                                    Time = midnight }
                            Data = [
@@ -428,7 +420,7 @@ module Tests =
                 
                 test "Weekly task, pending today, initialized by past completion" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
                            Now = { Date = flukeDate 2020 Month.March 21
                                    Time = midnight }
                            Data = [
@@ -446,7 +438,7 @@ module Tests =
                 
                 test "Weekly task, missed until today, initialized by past completion" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
                            Now = { Date = flukeDate 2020 Month.March 20
                                    Time = midnight }
                            Data = [
@@ -465,7 +457,7 @@ module Tests =
                 
                 test "Weekly task, (Postponed midnight) then missed until today, pending tomorrow" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
                            Now = { Date = flukeDate 2020 Month.March 20
                                    Time = midnight }
                            Data = [
@@ -484,7 +476,7 @@ module Tests =
                 
                 test "Weekly task, without past events, pending in a few days" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
                            Now = { Date = flukeDate 2020 Month.March 20
                                    Time = midnight }
                            Data = [
@@ -501,7 +493,7 @@ module Tests =
                 
                 test "Fixed weekly task, without past events, pending tomorrow" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
+                        {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
                            Now = { Date = flukeDate 2020 Month.March 20
                                    Time = midnight }
                            Data = [
@@ -520,7 +512,7 @@ module Tests =
             
                 test "Empty manual task" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Manual false }
+                        {| Task = { Task.Default with Scheduling = Manual false }
                            Now = { Date = flukeDate 2020 Month.March 11
                                    Time = midnight }
                            Data = [
@@ -535,7 +527,7 @@ module Tests =
                 
                 test "ManualPending task scheduled for today after missing" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Manual false }
+                        {| Task = { Task.Default with Scheduling = Manual false }
                            Now = { Date = flukeDate 2020 Month.March 11
                                    Time = midnight }
                            Data = [
@@ -553,8 +545,8 @@ module Tests =
                 
                 test "Manual Suggested task Suggested before PendingAfter" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Manual true
-                                                     PendingAfter = flukeTime 20 0 }
+                        {| Task = { Task.Default with Scheduling = Manual true
+                                                      PendingAfter = flukeTime 20 0 }
                            Now = { Date = flukeDate 2020 Month.March 10
                                    Time = flukeTime 19 30 }
                            Data = [
@@ -567,8 +559,8 @@ module Tests =
                 
                 test "Manual Suggested task Pending after PendingAfter" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Manual true
-                                                     PendingAfter = flukeTime 20 0 }
+                        {| Task = { Task.Default with Scheduling = Manual true
+                                                      PendingAfter = flukeTime 20 0 }
                            Now = { Date = flukeDate 2020 Month.March 10
                                    Time = flukeTime 21 0 }
                            Data = [
@@ -581,7 +573,7 @@ module Tests =
                 
                 test "Manual Suggested task: Missed ManualPending propagates until today" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Manual true }
+                        {| Task = { Task.Default with Scheduling = Manual true }
                            Now = { Date = flukeDate 2020 Month.March 28
                                    Time = midnight }
                            Data = [
@@ -601,7 +593,7 @@ module Tests =
                 
                 test "Manual Suggested task: Suggested mode restored after completing a forgotten ManualPending event" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Manual true }
+                        {| Task = { Task.Default with Scheduling = Manual true }
                            Now = { Date = flukeDate 2020 Month.March 28
                                    Time = midnight }
                            Data = [
@@ -620,7 +612,7 @@ module Tests =
                 
                 test "Manual Suggested task: Pending today after missing a ManualPending event" {
                     testData
-                        {| Task = { defaultTask with Scheduling = Manual true }
+                        {| Task = { Task.Default with Scheduling = Manual true }
                            Now = { Date = flukeDate 2020 Month.March 28
                                    Time = midnight }
                            Data = [

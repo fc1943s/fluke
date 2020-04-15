@@ -21,15 +21,6 @@ module TempData =
     
     let mutable _projectList : Project list = []
     let mutable _resourceList : Resource list = []
-    
-    let defaultTask =
-        { Name = "<blank>"
-          InformationType = Area areas.workflow
-          Comments = []
-          PendingAfter = midnight
-          Scheduling = Manual false
-          Duration = None }
-        
     let mutable _hourOffset = 0
     
     let private getNow = fun hourOffset ->

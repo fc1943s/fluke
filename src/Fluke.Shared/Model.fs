@@ -99,7 +99,16 @@ module Model =
           Comments: string list 
           Scheduling: TaskScheduling
           PendingAfter: FlukeTime
+          MissedAfter: FlukeTime
           Duration: int option }
+        static member inline Default =
+            { Name = "<null>"
+              InformationType = Area { Name = "<null>" }
+              Comments = []
+              PendingAfter = midnight
+              MissedAfter = midnight
+              Scheduling = Manual false
+              Duration = None }
         
     type CellEventStatus =
         | Postponed of FlukeTime
@@ -207,7 +216,7 @@ module Sorting =
               function Pending,                   _                             -> true | _ -> false
               function Suggested,                 { Scheduling = Recurrency _ } -> true | _ -> false
               function Suggested,                 { Scheduling = Manual true }  -> true | _ -> false
-              function EventStatus Postponed,     _                             -> true | _ -> false
+              function EventStatus (Postponed _), _                             -> true | _ -> false
               function EventStatus Completed,     _                             -> true | _ -> false
               
               function EventStatus Dropped,       _                             -> true | _ -> false
@@ -274,8 +283,8 @@ module LaneRendering =
                     | Some cellEvent ->
                         let renderState =
                             match cellEvent.Status, (now.Date, date) with
-                            | (Postponed | ManualPending), BeforeToday -> WaitingEvent
-                            | _,                           _           -> Counting 1
+                            | (Postponed _ | ManualPending), BeforeToday -> WaitingEvent
+                            | _,                             _           -> Counting 1
                             
                         StatusCell (EventStatus cellEvent.Status), renderState
                         

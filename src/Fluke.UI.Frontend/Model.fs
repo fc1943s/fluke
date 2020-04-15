@@ -40,7 +40,7 @@ module Model =
             | Missed -> Css.cellMissed
             | EventStatus status ->
                 match status with
-                | Postponed -> Css.cellPostponed
+                | Postponed _ -> Css.cellPostponed
                 | Completed -> Css.cellCompleted
                 | Dropped -> Css.cellDropped
                 | ManualPending -> Css.cellManualPending
