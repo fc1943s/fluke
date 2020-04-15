@@ -37,7 +37,7 @@ module HomePageComponent =
           Lanes: Lane list
           View: View }
         static member inline Default =
-            let date = { Year = 0; Month = Month.January; Day = 1 }
+            let date = flukeDate 0 Month.January 1
             { Now = { Date = date; Time = midnight }
               Selection = []
               Lanes = []

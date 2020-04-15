@@ -180,41 +180,41 @@ module Tests =
             
             test "All task types mixed" {
                 testData
-                    {| Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
+                    {| Now = { Date = flukeDate 2020 Month.March 10
                                Time = midnight }
                        Data = [
                            { defaultTask with Name = "1"; Scheduling = Manual true },
                            [] 
                            
                            { defaultTask with Name = "2"; Scheduling = Manual true },
-                           [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed
-                             { Year = 2020; Month = Month.March; Day = 8 }, Postponed ]
+                           [ flukeDate 2020 Month.March 10, Postponed midnight
+                             flukeDate 2020 Month.March 8, Postponed midnight ]
                            
                            { defaultTask with Name = "3"; Scheduling = Manual false },
-                           [ { Year = 2020; Month = Month.March; Day = 9 }, ManualPending ]
+                           [ flukeDate 2020 Month.March 9, ManualPending ]
                            
                            { defaultTask with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
-                                                           PendingAfter = { Hour = 20; Minute = 0 } },
+                                                           PendingAfter = flukeTime 20 0 },
                            []
                            
                            { defaultTask with Name = "5"; Scheduling = Manual false },
-                           [ { Year = 2020; Month = Month.March; Day = 10 }, ManualPending ]
+                           [ flukeDate 2020 Month.March 10, ManualPending ]
                            
                            { defaultTask with Name = "6"; Scheduling = Manual false },
-                           [ { Year = 2020; Month = Month.March; Day = 4 }, Postponed
-                             { Year = 2020; Month = Month.March; Day = 6 }, Dropped ]
+                           [ flukeDate 2020 Month.March 4, Postponed midnight
+                             flukeDate 2020 Month.March 6, Dropped ]
                            
                            { defaultTask with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
-                           [ { Year = 2020; Month = Month.March; Day = 8 }, Complete ]
+                           [ flukeDate 2020 Month.March 8, Completed ]
                            
                            { defaultTask with Name = "8"; Scheduling = Recurrency (Offset (Days 2)) },
-                           [ { Year = 2020; Month = Month.March; Day = 10 }, Complete ]
+                           [ flukeDate 2020 Month.March 10, Completed ]
                            
                            { defaultTask with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
-                           [ { Year = 2020; Month = Month.March; Day = 10 }, Dropped ]
+                           [ flukeDate 2020 Month.March 10, Dropped ]
                            
                            { defaultTask with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
-                           [ { Year = 2020; Month = Month.March; Day = 10 }, Postponed ]
+                           [ flukeDate 2020 Month.March 10, Postponed midnight ]
                            
                            { defaultTask with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
                            []
@@ -229,8 +229,8 @@ module Tests =
                            []
                            
                            { defaultTask with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
-                           [ { Year = 2020; Month = Month.March; Day = 7 }, Postponed 
-                             { Year = 2020; Month = Month.March; Day = 9 }, Dropped ]
+                           [ flukeDate 2020 Month.March 7, Postponed midnight
+                             flukeDate 2020 Month.March 9, Dropped ]
                        ]
                        Expected = [ "5"; "3"; "11"; "13"; "4"; "1"; "2"; "10"; "8"; "9"; "7"; "14"; "15"; "12"; "6" ] |}
             }
@@ -269,104 +269,104 @@ module Tests =
                 test "Start scheduling today without any events" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 9 }
+                           Now = { Date = flukeDate 2020 Month.March 9
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 7 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 8 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 9 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 10 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 11 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 12 }, Disabled
+                               flukeDate 2020 Month.March 7, Disabled
+                               flukeDate 2020 Month.March 8, Disabled
+                               flukeDate 2020 Month.March 9, Pending
+                               flukeDate 2020 Month.March 10, Disabled
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Disabled
                            ]
                            CellEvents = [] |}
                 }
                 
-                test "Disabled today after a Complete event yesterday" {
+                test "Disabled today after a Completed event yesterday" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 3)) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 9 }
+                           Now = { Date = flukeDate 2020 Month.March 9
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 8 }, EventStatus Complete
-                               { Year = 2020; Month = Month.March; Day = 9 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 10 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 11 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 12 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 13 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 14 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 15 }, Disabled
+                               flukeDate 2020 Month.March 8, EventStatus Completed
+                               flukeDate 2020 Month.March 9, Disabled
+                               flukeDate 2020 Month.March 10, Disabled
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Disabled
+                               flukeDate 2020 Month.March 13, Disabled
+                               flukeDate 2020 Month.March 14, Pending
+                               flukeDate 2020 Month.March 15, Disabled
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 8 }, Complete
+                               flukeDate 2020 Month.March 8, Completed
                            ] |}
                 }
                 
                 test "Postponing today wont schedule for tomorrow" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
+                           Now = { Date = flukeDate 2020 Month.March 10
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 9 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 10 }, EventStatus Postponed
-                               { Year = 2020; Month = Month.March; Day = 11 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 12 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 13 }, Disabled
+                               flukeDate 2020 Month.March 9, Disabled
+                               flukeDate 2020 Month.March 10, EventStatus (Postponed midnight)
+                               flukeDate 2020 Month.March 11, Disabled
+                               flukeDate 2020 Month.March 12, Pending
+                               flukeDate 2020 Month.March 13, Disabled
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 10 }, Postponed
+                               flukeDate 2020 Month.March 10, Postponed midnight
                            ] |}
                 }
                 
-                test "Postponed yesterday schedules for today" {
+                test "(Postponed midnight) yesterday schedules for today" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
+                           Now = { Date = flukeDate 2020 Month.March 11
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 9 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 10 }, EventStatus Postponed
-                               { Year = 2020; Month = Month.March; Day = 11 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 12 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 13 }, Pending
+                               flukeDate 2020 Month.March 9, Disabled
+                               flukeDate 2020 Month.March 10, EventStatus (Postponed midnight)
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Disabled
+                               flukeDate 2020 Month.March 13, Pending
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 10 }, Postponed
+                               flukeDate 2020 Month.March 10, Postponed midnight
                            ] |}
                 }
             
-                test "Pending today after missing yesterday, then resetting the schedule with a future Complete event" {
+                test "Pending today after missing yesterday, then resetting the schedule with a future Completed event" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2)) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
+                           Now = { Date = flukeDate 2020 Month.March 11
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 7 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 8 }, EventStatus Complete
-                               { Year = 2020; Month = Month.March; Day = 9 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 10 }, Missed
-                               { Year = 2020; Month = Month.March; Day = 11 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 12 }, EventStatus Complete
-                               { Year = 2020; Month = Month.March; Day = 13 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 14 }, Pending
+                               flukeDate 2020 Month.March 7, Disabled
+                               flukeDate 2020 Month.March 8, EventStatus Completed
+                               flukeDate 2020 Month.March 9, Disabled
+                               flukeDate 2020 Month.March 10, Missed
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, EventStatus Completed
+                               flukeDate 2020 Month.March 13, Disabled
+                               flukeDate 2020 Month.March 14, Pending
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 8 }, Complete
-                               { Year = 2020; Month = Month.March; Day = 12 }, Complete
+                               flukeDate 2020 Month.March 8, Completed
+                               flukeDate 2020 Month.March 12, Completed
                            ] |}
                 }
                 
                 test "Recurring task only Suggested before PendingAfter" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 1))
-                                                     PendingAfter = { Hour = 20; Minute = 0 } }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
-                                   Time = { Hour = 19; Minute = 30 } }
+                                                     PendingAfter = flukeTime 20 0 }
+                           Now = { Date = flukeDate 2020 Month.March 10
+                                   Time = flukeTime 19 30 }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 9 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 10 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                               flukeDate 2020 Month.March 9, Disabled
+                               flukeDate 2020 Month.March 10, Suggested
+                               flukeDate 2020 Month.March 11, Pending
                            ]
                            CellEvents = [] |}
                 }
@@ -374,13 +374,13 @@ module Tests =
                 test "Recurring task Pending after PendingAfter" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 1))
-                                                     PendingAfter = { Hour = 20; Minute = 0 } }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
-                                   Time = { Hour = 21; Minute = 0 } }
+                                                     PendingAfter = flukeTime 20 0 }
+                           Now = { Date = flukeDate 2020 Month.March 10
+                                   Time = flukeTime 21 0 }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 9 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 10 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 11 }, Pending
+                               flukeDate 2020 Month.March 9, Disabled
+                               flukeDate 2020 Month.March 10, Pending
+                               flukeDate 2020 Month.March 11, Pending
                            ]
                            CellEvents = [] |}
                 }
@@ -388,16 +388,16 @@ module Tests =
                 test "Recurrency for the next days should work normally while today is still optional/suggested (before PendingAfter)" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 2))
-                                                     PendingAfter = { Hour = 18; Minute = 0 } }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 27 }
-                                   Time = { Hour = 17; Minute = 0 } }
+                                                     PendingAfter = flukeTime 18 0 }
+                           Now = { Date = flukeDate 2020 Month.March 27
+                                   Time = flukeTime 17 0 }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 25 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 26 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 27 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 28 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 29 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 29 }, Disabled
+                               flukeDate 2020 Month.March 25, Disabled
+                               flukeDate 2020 Month.March 26, Disabled
+                               flukeDate 2020 Month.March 27, Suggested
+                               flukeDate 2020 Month.March 28, Disabled
+                               flukeDate 2020 Month.March 29, Pending
+                               flukeDate 2020 Month.March 29, Disabled
                            ]
                            CellEvents = [] |}
                 }
@@ -405,21 +405,21 @@ module Tests =
                 test "Reset counting after a future ManualPending event" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Offset (Days 3)) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
+                           Now = { Date = flukeDate 2020 Month.March 28
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 27 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 28 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 29 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 30 }, EventStatus ManualPending
-                               { Year = 2020; Month = Month.March; Day = 31 }, EventStatus ManualPending
-                               { Year = 2020; Month = Month.April; Day = 01 }, Disabled
-                               { Year = 2020; Month = Month.April; Day = 02 }, Disabled
-                               { Year = 2020; Month = Month.April; Day = 03 }, Pending
+                               flukeDate 2020 Month.March 27, Disabled
+                               flukeDate 2020 Month.March 28, Pending
+                               flukeDate 2020 Month.March 29, Disabled
+                               flukeDate 2020 Month.March 30, EventStatus ManualPending
+                               flukeDate 2020 Month.March 31, EventStatus ManualPending
+                               flukeDate 2020 Month.April 01, Disabled
+                               flukeDate 2020 Month.April 02, Disabled
+                               flukeDate 2020 Month.April 03, Pending
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 30 }, ManualPending
-                               { Year = 2020; Month = Month.March; Day = 31 }, ManualPending
+                               flukeDate 2020 Month.March 30, ManualPending
+                               flukeDate 2020 Month.March 31, ManualPending
                            ] |}
                 }
             ]
@@ -429,67 +429,67 @@ module Tests =
                 test "Weekly task, pending today, initialized by past completion" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 21 }
+                           Now = { Date = flukeDate 2020 Month.March 21
                                    Time = midnight }
                            Data = [
                                for d in 13 .. 29 do
-                                   { Year = 2020; Month = Month.March; Day = d },
+                                   flukeDate 2020 Month.March d,
                                    match d with
-                                   | 14 -> EventStatus Complete
+                                   | 14 -> EventStatus Completed
                                    | 21 | 28 -> Pending
                                    | _ -> Disabled
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 14 }, Complete
+                               flukeDate 2020 Month.March 14, Completed
                            ] |}
                 }
                 
                 test "Weekly task, missed until today, initialized by past completion" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                           Now = { Date = flukeDate 2020 Month.March 20
                                    Time = midnight }
                            Data = [
                                for d in 10 .. 26 do
-                                   { Year = 2020; Month = Month.March; Day = d },
+                                   flukeDate 2020 Month.March d,
                                    match d with
-                                   | 13 -> EventStatus Complete
+                                   | 13 -> EventStatus Completed
                                    | 18 | 19 -> Missed
                                    | 20 | 25 -> Pending
                                    | _ -> Disabled
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 13 }, Complete
+                               flukeDate 2020 Month.March 13, Completed
                            ] |}
                 }
                 
-                test "Weekly task, postponed then missed until today, pending tomorrow" {
+                test "Weekly task, (Postponed midnight) then missed until today, pending tomorrow" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                           Now = { Date = flukeDate 2020 Month.March 20
                                    Time = midnight }
                            Data = [
                                for d in 13 .. 29 do
-                                   { Year = 2020; Month = Month.March; Day = d },
+                                   flukeDate 2020 Month.March d,
                                    match d with
-                                   | 18 -> EventStatus Postponed
+                                   | 18 -> EventStatus (Postponed midnight)
                                    | 19 -> Missed
                                    | 20 | 21 | 28 -> Pending
                                    | _ -> Disabled
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 18 }, Postponed
+                               flukeDate 2020 Month.March 18, Postponed midnight
                            ] |}
                 }
                 
                 test "Weekly task, without past events, pending in a few days" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                           Now = { Date = flukeDate 2020 Month.March 20
                                    Time = midnight }
                            Data = [
                                for d in 17 .. 26 do
-                                   { Year = 2020; Month = Month.March; Day = d },
+                                   flukeDate 2020 Month.March d,
                                    match d with
                                    | 25 -> Pending
                                    | _ -> Disabled
@@ -502,11 +502,11 @@ module Tests =
                 test "Fixed weekly task, without past events, pending tomorrow" {
                     testData
                         {| Task = { defaultTask with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 20 }
+                           Now = { Date = flukeDate 2020 Month.March 20
                                    Time = midnight }
                            Data = [
                                for d in 13 .. 29 do
-                                   { Year = 2020; Month = Month.March; Day = d },
+                                   flukeDate 2020 Month.March d,
                                    match d with
                                    | 21 | 28 -> Pending
                                    | _ -> Disabled
@@ -521,14 +521,14 @@ module Tests =
                 test "Empty manual task" {
                     testData
                         {| Task = { defaultTask with Scheduling = Manual false }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
+                           Now = { Date = flukeDate 2020 Month.March 11
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 9 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 10 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 11 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 12 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 13 }, Disabled
+                               flukeDate 2020 Month.March 9, Disabled
+                               flukeDate 2020 Month.March 10, Disabled
+                               flukeDate 2020 Month.March 11, Suggested
+                               flukeDate 2020 Month.March 12, Disabled
+                               flukeDate 2020 Month.March 13, Disabled
                            ]
                            CellEvents = [] |}
                 }
@@ -536,31 +536,31 @@ module Tests =
                 test "ManualPending task scheduled for today after missing" {
                     testData
                         {| Task = { defaultTask with Scheduling = Manual false }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 11 }
+                           Now = { Date = flukeDate 2020 Month.March 11
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 8 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 9 }, EventStatus ManualPending
-                               { Year = 2020; Month = Month.March; Day = 10 }, Missed
-                               { Year = 2020; Month = Month.March; Day = 11 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 12 }, Disabled
-                               { Year = 2020; Month = Month.March; Day = 13 }, Disabled
+                               flukeDate 2020 Month.March 8, Disabled
+                               flukeDate 2020 Month.March 9, EventStatus ManualPending
+                               flukeDate 2020 Month.March 10, Missed
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Disabled
+                               flukeDate 2020 Month.March 13, Disabled
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 9 }, ManualPending
+                               flukeDate 2020 Month.March 9, ManualPending
                            ] |}
                 }
                 
                 test "Manual Suggested task Suggested before PendingAfter" {
                     testData
                         {| Task = { defaultTask with Scheduling = Manual true
-                                                     PendingAfter = { Hour = 20; Minute = 0 } }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
-                                   Time = { Hour = 19; Minute = 30 } }
+                                                     PendingAfter = flukeTime 20 0 }
+                           Now = { Date = flukeDate 2020 Month.March 10
+                                   Time = flukeTime 19 30 }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 9 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 10 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 11 }, Suggested
+                               flukeDate 2020 Month.March 9, Suggested
+                               flukeDate 2020 Month.March 10, Suggested
+                               flukeDate 2020 Month.March 11, Suggested
                            ]
                            CellEvents = [] |}
                 }
@@ -568,13 +568,13 @@ module Tests =
                 test "Manual Suggested task Pending after PendingAfter" {
                     testData
                         {| Task = { defaultTask with Scheduling = Manual true
-                                                     PendingAfter = { Hour = 20; Minute = 0 } }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 10 }
-                                   Time = { Hour = 21; Minute = 0 } }
+                                                     PendingAfter = flukeTime 20 0 }
+                           Now = { Date = flukeDate 2020 Month.March 10
+                                   Time = flukeTime 21 0 }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 9 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 10 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 11 }, Suggested
+                               flukeDate 2020 Month.March 9, Suggested
+                               flukeDate 2020 Month.March 10, Pending
+                               flukeDate 2020 Month.March 11, Suggested
                            ]
                            CellEvents = [] |}
                 }
@@ -582,57 +582,57 @@ module Tests =
                 test "Manual Suggested task: Missed ManualPending propagates until today" {
                     testData
                         {| Task = { defaultTask with Scheduling = Manual true }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
+                           Now = { Date = flukeDate 2020 Month.March 28
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 25 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 26 }, EventStatus ManualPending
-                               { Year = 2020; Month = Month.March; Day = 27 }, Missed
-                               { Year = 2020; Month = Month.March; Day = 28 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 29 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 30 }, EventStatus ManualPending
-                               { Year = 2020; Month = Month.March; Day = 31 }, Suggested
+                               flukeDate 2020 Month.March 25, Suggested
+                               flukeDate 2020 Month.March 26, EventStatus ManualPending
+                               flukeDate 2020 Month.March 27, Missed
+                               flukeDate 2020 Month.March 28, Pending
+                               flukeDate 2020 Month.March 29, Suggested
+                               flukeDate 2020 Month.March 30, EventStatus ManualPending
+                               flukeDate 2020 Month.March 31, Suggested
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 26 }, ManualPending
-                               { Year = 2020; Month = Month.March; Day = 30 }, ManualPending
+                               flukeDate 2020 Month.March 26, ManualPending
+                               flukeDate 2020 Month.March 30, ManualPending
                            ] |}
                 }
                 
                 test "Manual Suggested task: Suggested mode restored after completing a forgotten ManualPending event" {
                     testData
                         {| Task = { defaultTask with Scheduling = Manual true }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
+                           Now = { Date = flukeDate 2020 Month.March 28
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 24 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 25 }, EventStatus ManualPending
-                               { Year = 2020; Month = Month.March; Day = 26 }, EventStatus Complete
-                               { Year = 2020; Month = Month.March; Day = 27 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 28 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 29 }, Suggested
+                               flukeDate 2020 Month.March 24, Suggested
+                               flukeDate 2020 Month.March 25, EventStatus ManualPending
+                               flukeDate 2020 Month.March 26, EventStatus Completed
+                               flukeDate 2020 Month.March 27, Suggested
+                               flukeDate 2020 Month.March 28, Suggested
+                               flukeDate 2020 Month.March 29, Suggested
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 25 }, ManualPending
-                               { Year = 2020; Month = Month.March; Day = 26 }, Complete
+                               flukeDate 2020 Month.March 25, ManualPending
+                               flukeDate 2020 Month.March 26, Completed
                            ] |}
                 }
                 
                 test "Manual Suggested task: Pending today after missing a ManualPending event" {
                     testData
                         {| Task = { defaultTask with Scheduling = Manual true }
-                           Now = { Date = { Year = 2020; Month = Month.March; Day = 28 }
+                           Now = { Date = flukeDate 2020 Month.March 28
                                    Time = midnight }
                            Data = [
-                               { Year = 2020; Month = Month.March; Day = 24 }, Suggested
-                               { Year = 2020; Month = Month.March; Day = 25 }, EventStatus ManualPending
-                               { Year = 2020; Month = Month.March; Day = 26 }, Missed
-                               { Year = 2020; Month = Month.March; Day = 27 }, Missed
-                               { Year = 2020; Month = Month.March; Day = 28 }, Pending
-                               { Year = 2020; Month = Month.March; Day = 29 }, Suggested
+                               flukeDate 2020 Month.March 24, Suggested
+                               flukeDate 2020 Month.March 25, EventStatus ManualPending
+                               flukeDate 2020 Month.March 26, Missed
+                               flukeDate 2020 Month.March 27, Missed
+                               flukeDate 2020 Month.March 28, Pending
+                               flukeDate 2020 Month.March 29, Suggested
                            ]
                            CellEvents = [
-                               { Year = 2020; Month = Month.March; Day = 25 }, ManualPending
+                               flukeDate 2020 Month.March 25, ManualPending
                            ] |}
                 }
             ]

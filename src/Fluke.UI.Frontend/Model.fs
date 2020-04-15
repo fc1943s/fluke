@@ -41,7 +41,7 @@ module Model =
             | EventStatus status ->
                 match status with
                 | Postponed -> Css.cellPostponed
-                | Complete -> Css.cellComplete
+                | Completed -> Css.cellCompleted
                 | Dropped -> Css.cellDropped
                 | ManualPending -> Css.cellManualPending
     

@@ -50,6 +50,7 @@ module Model =
             { Year = date.Year
               Month = Enum.Parse (typeof<Month>, string date.Month) :?> Month
               Day = date.Day }
+    let flukeDate year month day = { Year = year; Month = month; Day = day }
             
     [<StructuredFormatDisplay("{Hour}:{Minute}")>]
     type FlukeTime =
@@ -58,7 +59,8 @@ module Model =
         static member inline FromDateTime (date: DateTime) =
             { Hour = date.Hour
               Minute = date.Minute }
-    let midnight = { Hour = 0; Minute = 0 }
+    let flukeTime hour minute = { Hour = hour; Minute = minute }
+    let midnight = flukeTime 0 0
     
     [<StructuredFormatDisplay("{Date} {Time}")>]
     type FlukeDateTime =
@@ -100,8 +102,8 @@ module Model =
           Duration: int option }
         
     type CellEventStatus =
-        | Postponed
-        | Complete
+        | Postponed of FlukeTime
+        | Completed
         | Dropped
         | ManualPending
     
@@ -206,7 +208,7 @@ module Sorting =
               function Suggested,                 { Scheduling = Recurrency _ } -> true | _ -> false
               function Suggested,                 { Scheduling = Manual true }  -> true | _ -> false
               function EventStatus Postponed,     _                             -> true | _ -> false
-              function EventStatus Complete,      _                             -> true | _ -> false
+              function EventStatus Completed,     _                             -> true | _ -> false
               
               function EventStatus Dropped,       _                             -> true | _ -> false
               function Disabled,                  { Scheduling = Recurrency _ } -> true | _ -> false

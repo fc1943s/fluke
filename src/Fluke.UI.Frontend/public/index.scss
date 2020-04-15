@@ -6,7 +6,7 @@
 .cell-pending, 
 .cell-missed, 
 .cell-postponed, 
-.cell-complete, 
+.cell-completed, 
 .cell-dropped, 
 .cell-manual-pending
 {} // https://github.com/zanaptak/TypedCssClasses/issues/4
@@ -16,7 +16,7 @@ $color-cell-suggested: #4c664e;
 $color-cell-pending: #262626;
 $color-cell-missed: #990022;
 $color-cell-postponed: #b08200;
-$color-cell-complete: #339933;
+$color-cell-completed: #339933;
 $color-cell-dropped: #673ab7;
 $color-cell-manual-pending: #003038;
 
@@ -114,8 +114,8 @@ $color-cell-manual-pending: #003038;
       @include cell-bgcolor($color-cell-postponed);
     }
 
-    &.cell-complete {
-      @include cell-bgcolor($color-cell-complete);
+    &.cell-completed {
+      @include cell-bgcolor($color-cell-completed);
     }
 
     &.cell-dropped {
