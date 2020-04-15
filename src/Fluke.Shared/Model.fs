@@ -141,15 +141,17 @@ module Rendering =
     open Model
     
     let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
-        let minDate =
+        let dates = 
             cellDates
             |> List.map (fun x -> x.DateTime)
+            
+        let minDate =
+            dates
             |> List.min
             |> fun x -> x.AddDays -(float paddingLeft)
             
         let maxDate =
-            cellDates
-            |> List.map (fun x -> x.DateTime)
+            dates
             |> List.max
             |> fun x -> x.AddDays (float paddingRight)
             

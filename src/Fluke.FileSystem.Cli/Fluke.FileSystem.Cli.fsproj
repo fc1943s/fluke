@@ -6,7 +6,7 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Program.fs" />
+    <Compile Include="Main.fs" />
     <Content Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
