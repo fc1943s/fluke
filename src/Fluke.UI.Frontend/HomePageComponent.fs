@@ -322,9 +322,7 @@ module HomePageComponent =
             | Flat ->
                 tasks
                 |> List.filter (function { Scheduling = Manual false }, [] -> false | _ -> true)
-                |> List.map (fun (task, events) ->
-                    LaneRendering.renderLane now dateSequence task events
-                )
+                |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
                 |> Sorting.sortLanes now.Date
             | Tree ->
                 let lanes =

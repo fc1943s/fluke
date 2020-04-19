@@ -173,7 +173,7 @@ module TempData =
                 )
             )
         )
-        |> List.map (Result.map (Result.fold (fun result next -> next :: result) (Ok [])) >> Result.flatten)
+        |> List.map (Result.map (Result.fold (fun state next -> state @ [ next ]) (Ok [])) >> Result.flatten)
         |> Result.collect
         
     let loadTaskList taskList =
