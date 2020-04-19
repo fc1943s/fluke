@@ -13,8 +13,8 @@ open Suigetsu.UI.Frontend.ElmishBridge
 open Suigetsu.UI.Frontend.React
 
 
-module Temp = // Just to load the modules. Comment the module to use TestData instead of PrivateData
-    match false with
+module Temp =
+    match true with
     | true ->
         PrivateData.TempData.load ()
         PrivateData.Tasks.load ()

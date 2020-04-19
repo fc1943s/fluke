@@ -9,7 +9,7 @@ open Fluke.Shared.PrivateData
 open Suigetsu.Core
 
 
-module Temp = // Just to load the modules. Comment the module to use TestData instead of PrivateData
+module Temp =
     match true with
     | true ->
         PrivateData.TempData.load ()

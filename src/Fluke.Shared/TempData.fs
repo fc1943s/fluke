@@ -15,12 +15,15 @@ module TempData =
         { Area.Name = "workflow" }
     ]
     
+    let getArea name =
+        _areaList |> List.find (fun x -> x.Name = name)
+    
     let areas = {|
-        chores = _areaList |> List.find (fun x -> x.Name = "chores")
-        finances = _areaList |> List.find (fun x -> x.Name = "finances")
-        leisure = _areaList |> List.find (fun x -> x.Name = "leisure")
-        programming = _areaList |> List.find (fun x -> x.Name = "programming")
-        workflow = _areaList |> List.find (fun x -> x.Name = "workflow")
+        chores = getArea "chores"
+        finances = getArea "finances"
+        leisure = getArea "leisure"
+        programming = getArea "programming"
+        workflow = getArea "workflow"
     |}
     
     let mutable _projectList : Project list = [
@@ -30,13 +33,21 @@ module TempData =
         { Area = areas.programming
           Name = "app-mechahaze" }
     ]
+    
+    let getProject name =
+        _projectList |> List.find (fun x -> x.Name = name)
+        
     let mutable _resourceList : Resource list = [
         { Area = areas.programming; Name = "f#" }
         { Area = areas.programming; Name = "rust" }
     ]
+    
+    let getResource name =
+        _resourceList |> List.find (fun x -> x.Name = name)
+        
     let mutable _hourOffset = 0
     
-    let private getNow = fun hourOffset ->
+    let private getNow hourOffset =
         let rawDate = DateTime.Now.AddHours -(float hourOffset)
         { Date = FlukeDate.FromDateTime rawDate
           Time = FlukeTime.FromDateTime rawDate }
@@ -44,6 +55,8 @@ module TempData =
     let mutable _getNow = getNow
     
     let mutable _taskList: Task list = []
+    let getTask name =
+        _taskList |> List.find (fun x -> x.Name = name)
     
     let mutable _taskOrderList: TaskOrderEntry list = []
     
@@ -52,6 +65,18 @@ module TempData =
     let mutable _cellComments: CellComment list = []
     
     let mutable _informationComments: InformationComment list = []
+    
+    let data () =
+        {| AreaList = _areaList
+           ProjectList = _projectList
+           ResourceList = _resourceList
+           TaskList = _taskList
+           TaskOrderList = _taskOrderList
+           CellEvents = _cellEvents
+           CellComments = _cellComments
+           InformationComments = _informationComments
+           GetNow = _getNow
+           HourOffset = _hourOffset |}
     
     let getInformationList () =
         [ _projectList |> List.map Project
@@ -90,11 +115,6 @@ module TempData =
             else getNow _hourOffset
             
     let createManualTasksFromTree taskTree =
-        let mapDict fn =
-            Seq.map (|KeyValue|) // let (|KeyValue|) (kvp:KeyValuePair<_,_>) = kvp.Key,kvp.Value
-            >> Map.ofSeq
-            >> Map.map fn
-            
         let getInformationType informationTypeName informationName =
             match informationTypeName with
             | "projects" ->
@@ -120,101 +140,103 @@ module TempData =
                 
             | _ ->
                 sprintf "Invalid information type: '%s'" informationTypeName |> Error
-            
+                
+        let getOrCreateTask informationType taskName =
+            _taskList
+            |> List.tryFind (fun x -> x.Name = taskName)
+            |> Option.defaultValue
+                { Task.Default with
+                    Name = taskName
+                    InformationType = informationType }
+                
         taskTree
-        |> mapDict (fun informationTypeName informationType ->
+        |> List.collect (fun (informationTypeName, informationType) ->
             informationType
-            |> mapDict (fun informationName information ->
+            |> List.map (fun (informationName, information) ->
                 getInformationType informationTypeName informationName
                 |> Result.map (fun informationType ->
                     information
-                    |> mapDict (fun taskName comments ->
-                        _taskList
-                        |> List.tryFind (fun x -> x.Name = taskName)
-                        |> Option.defaultValue
-                            { Task.Default with
-                                Name = taskName
-                                InformationType = informationType }
-                        |> function
-                            | task when
-                                [ Task.Default.InformationType; informationType ]
-                                |> List.forall ((<>) task.InformationType) ->
-                                sprintf "Task: %s. Invalid information type: (%s != %s)"
-                                    task.Name
-                                    (string task.InformationType)
-                                    (string informationType)
-                                |> Error
-                                
-                            | task ->
-                                { task with
-                                    Comments = task.Comments |> List.append comments }
-                                |> Ok
+                    |> List.map (fun (taskName, comments) ->
+                        let task = getOrCreateTask informationType taskName
+                        match task with
+                        | task when
+                            [ Task.Default.InformationType; informationType ]
+                            |> List.forall ((<>) task.InformationType) ->
+                            sprintf "Task: %s. Invalid information type: (%s != %s)"
+                                task.Name
+                                (string task.InformationType)
+                                (string informationType)
+                            |> Error
+                            
+                        | task -> { task with Comments = task.Comments @ comments } |> Ok
                     )
                 )
             )
         )
-        |> Map.values
-        |> Seq.collect Map.values
-        |> Seq.map (Result.map Map.values)
-        |> Seq.map (Result.map (Result.fold (fun result next -> next :: result) (Ok [])) >> Result.flatten)
+        |> List.map (Result.map (Result.fold (fun result next -> next :: result) (Ok [])) >> Result.flatten)
         |> Result.collect
+        
+    let loadTaskList taskList =
+        taskList
+        |> List.map (fun x -> x.InformationType)
+        |> List.iter (function
+            | Project project when _projectList |> List.exists (fun x -> x.Name = project.Name) |> not ->
+                _projectList <- project :: _projectList
+                
+            | Area area when _areaList |> List.exists (fun x -> x.Name = area.Name) |> not ->
+                _areaList <- area :: _areaList
+                
+            | Resource resource when _resourceList |> List.exists (fun x -> x.Name = resource.Name) |> not ->
+                _resourceList <- resource :: _resourceList
+                    
+            | _ -> ()
+        )
+        
+        _taskList <-
+            _taskList
+            |> List.filter (fun x -> taskList |> List.map (fun x -> x.Name) |> List.contains x.Name |> not)
+            |> List.append taskList
+        _taskOrderList <- _taskList |> List.map (fun task -> { Task = task; Priority = First })
+        
+    let loadTaskTree taskTree =
+        taskTree
+        |> createManualTasksFromTree
+        |> fun (tasks, errors) ->
+            match tasks, errors with
+            | _, _ :: _ -> failwithf "Error creating tasks: %s" (String.Join ("\n", errors))
+            | _ :: _, _ -> loadTaskList tasks
+            | _ -> ()
 
     let loadTempManualTasks () =
-        let taskLists = dict [
-            "projects", dict [
-                "app-fluke", dict [
-                    "task1", []
-                    "task2", []
+        [
+            "projects", [
+                "app-fluke", [
+                    "filesystem tests", []
+                    "review onenote tasks", []
                 ]
-                "app-mechahaze", dict [
-                    "task3", []
-                    "task4", []
+                "app-mechahaze", [
+                    "multi dimensional separation", []
+                    "create animations mathematically", []
                 ]
             ]
-            "areas", dict [
-                "chores", dict [
+            "areas", [
+                "chores", [
                     "groceries", [
                         "food"
                         "beer"
                     ]
                 ]
-                "leisure", dict [
+                "leisure", [
                     "watch-movie-foobar", []
                 ]
             ]
-            "resources", dict [
-                "f#", dict [
+            "resources", [
+                "f#", [
                     "study: [choice, computation expressions]", []
                     "organize youtube playlists", []
                 ]
-                "rust", dict []
+                "rust", []
             ]
         ]
-        
-        taskLists
-        |> createManualTasksFromTree
-        |> fun (tasks, errors) ->
-            match tasks, errors with
-            | _, _ :: _ -> failwithf "Error creating tasks: %s" (String.Join ("\n", errors))
-            | _ :: _, _ ->
-                printfn "%A" tasks
-                
-                tasks
-                |> List.map (fun x -> x.InformationType)
-                |> List.iter (function
-                    | Project project when _projectList |> List.exists (fun x -> x.Name = project.Name) |> not ->
-                        _projectList <- project :: _projectList
-                        
-                    | Area area when _areaList |> List.exists (fun x -> x.Name = area.Name) |> not ->
-                        _areaList <- area :: _areaList
-                        
-                    | Resource resource when _resourceList |> List.exists (fun x -> x.Name = resource.Name) |> not ->
-                        _resourceList <- resource :: _resourceList
-                            
-                    | _ -> ()
-                )
-                
-                _taskList <- tasks
-                _taskOrderList <- tasks |> List.map (fun task -> { Task = task; Priority = First })
-            | _ -> ()
+        |> loadTaskTree
 
