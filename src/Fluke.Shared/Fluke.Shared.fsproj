@@ -13,5 +13,8 @@
     <Compile Include="PrivateData\Journal.fs" />
     <Content Include="paket.references" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj" />
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

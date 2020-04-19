@@ -14,10 +14,14 @@ open Suigetsu.UI.Frontend.React
 
 
 module Temp = // Just to load the modules. Comment the module to use TestData instead of PrivateData
-    PrivateData.TempData.load ()
-    PrivateData.Tasks.load ()
-    PrivateData.CellEvents.load ()
-    PrivateData.Journal.load ()
+    match false with
+    | true ->
+        PrivateData.TempData.load ()
+        PrivateData.Tasks.load ()
+        PrivateData.CellEvents.load ()
+        PrivateData.Journal.load ()
+    | false ->
+        TempData.loadTempManualTasks ()
     
 module HomePageComponent =
     open Model
@@ -338,9 +342,7 @@ module HomePageComponent =
                         LaneRendering.renderLane now dateSequence task events
                     )
                     
-                [ TempData._projectList |> List.map Project
-                  TempData._areaList |> List.map Area
-                  TempData._resourceList |> List.map Resource ]
+                TempData.getInformationList ()
                 |> List.collect (List.map (fun information ->
                     let lanes =
                         lanes

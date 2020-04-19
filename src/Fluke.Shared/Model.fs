@@ -8,16 +8,25 @@ module Model =
     [<StructuredFormatDisplay("{Name}")>]
     type Area =
         { Name: string }
+        static member inline Default =
+            { Name = "<null>" }
         
     [<StructuredFormatDisplay("{Area}/{Name}")>]
     type Project =
         { Area: Area
           Name: string }
+        static member inline Default =
+            { Name = "<null>"
+              Area = Area.Default }
+        
         
     [<StructuredFormatDisplay("{Area}/{Name}")>]
     type Resource =
         { Area: Area
           Name: string }
+        static member inline Default =
+            { Name = "<null>"
+              Area = Area.Default }
         
     type InformationType =
         | Project of Project
@@ -103,7 +112,7 @@ module Model =
           Duration: int option }
         static member inline Default =
             { Name = "<null>"
-              InformationType = Area { Name = "<null>" }
+              InformationType = Area Area.Default 
               Comments = []
               PendingAfter = midnight
               MissedAfter = midnight
@@ -386,4 +395,4 @@ module Temp =
         | Selection
         | Editing
     
-    
+

@@ -10,10 +10,14 @@ open Suigetsu.Core
 
 
 module Temp = // Just to load the modules. Comment the module to use TestData instead of PrivateData
-    PrivateData.TempData.load ()
-    PrivateData.Tasks.load ()
-    PrivateData.CellEvents.load ()
-    PrivateData.Journal.load ()
+    match true with
+    | true ->
+        PrivateData.TempData.load ()
+        PrivateData.Tasks.load ()
+        PrivateData.CellEvents.load ()
+        PrivateData.Journal.load ()
+    | false ->
+        TempData.loadTempManualTasks ()
         
         
 module Tests =
@@ -32,12 +36,7 @@ module Tests =
             
             test "1" {
                 
-                let informationList =
-                    [ TempData._projectList |> List.map Project
-                      TempData._areaList |> List.map Area
-                      TempData._resourceList |> List.map Resource ]
-                
-                informationList
+                TempData.getInformationList ()
                 |> List.collect (List.map (function
                     | Project project -> Some ("projects", project.Name)
                     | Area area -> Some ("areas", area.Name)
