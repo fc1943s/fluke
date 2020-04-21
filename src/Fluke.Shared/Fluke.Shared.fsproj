@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Model.fs" />
+    <Compile Include="Core.fs" />
     <Compile Include="TempData.fs" />
     <Compile Include="PrivateData\PrivateData.fs" />
     <Compile Include="PrivateData\Tasks.fs" />

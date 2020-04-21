@@ -2,4 +2,4 @@ group Fluke.Shared
 
 FSharp.Core
 
-FSharpPlus
+FSharpx.Extras

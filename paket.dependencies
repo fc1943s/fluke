@@ -14,7 +14,7 @@ group Fluke.Shared
     storage: none
     source https://api.nuget.org/v3/index.json
     
-    nuget FSharpPlus ~> 1.1.0-rc4
+    nuget FSharpx.Extras ~> 2.3
 
 
 group Fluke.UI.Frontend

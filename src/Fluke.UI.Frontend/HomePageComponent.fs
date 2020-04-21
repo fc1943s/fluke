@@ -29,7 +29,7 @@ module Temp =
             TempData.getNow,
             PrivateData.CellEvents.cellEvents,
             taskData.TaskList,
-            [],
+            taskData.TaskOrderList,
             PrivateData.PrivateData.hourOffset,
             taskData.ProjectList,
             taskData.AreaList,
@@ -381,7 +381,6 @@ module HomePageComponent =
                     let lanes =
                         lanes
                         |> List.filter (fun (Lane (task, _)) -> task.InformationType = information)
-                        |> Sorting.sortLanesByToday now.Date
                         
                     information, lanes
                 ))

@@ -4,6 +4,7 @@ open System
 open FSharpPlus
 open Suigetsu.Core
 
+
 module TempData =
     open Model
     
@@ -136,8 +137,7 @@ module TempData =
             |> List.filter (fun x -> taskNames |> Set.contains x.Name |> not)
             |> List.append taskList
             
-        let taskOrderList =
-            taskList |> List.map (fun task -> { Task = task; Priority = First })
+        let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = First })
             
         {| TaskList = taskList
            TaskOrderList = taskOrderList
@@ -145,17 +145,22 @@ module TempData =
            AreaList = areaList
            ResourceList = resourceList |}
            
-    let createManualTasksFromTree (projectList, areaList, resourceList) taskList taskTree =
+    let createManualTasksFromTree (projectList, areaList, resourceList) taskList taskTree = Core.result {
         let projectMap, areaMap, resourceMap = getInformationMap (projectList, areaList, resourceList)
         
         let createTaskMap taskList =
-            taskList
-            |> List.map (fun x -> (x.InformationType, x.Name), x)
-            |> Map.ofList
+            let map =
+                taskList
+                |> List.map (fun x -> (x.InformationType, x.Name), x)
+                |> Map.ofList
+                
+            let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = First })
+                
+            map, taskOrderList
             
-        let oldTaskMap = createTaskMap taskList
+        let oldTaskMap, oldTaskOrderList = createTaskMap taskList
             
-        let newTaskMap =
+        let! rawNewTaskList =
             let getInformationType informationTypeName informationName =
                 match informationTypeName with
                 | "projects" -> projectMap |> Map.tryFind informationName |> Option.map Project
@@ -181,43 +186,37 @@ module TempData =
                 )
             )
             |> Result.fold List.append (Ok [])
-            |> Result.map createTaskMap
             
-        let newTaskList =
-            newTaskMap
-            |> Result.map (fun newTaskMap ->
-                newTaskMap
-                |> Map.values
-                |> Seq.map (fun newTask ->
-                    match oldTaskMap |> Map.tryFind (newTask.InformationType, newTask.Name) with
-                    | Some oldTask when oldTask.InformationType <> newTask.InformationType ->
-                        sprintf "Task: %s. Invalid information type: (%s != %s)"
-                            newTask.Name
-                            (string oldTask.InformationType)
-                            (string newTask.InformationType)
-                        |> Error
-                    | Some oldTask -> { oldTask with Comments = oldTask.Comments @ newTask.Comments } |> Ok
-                    | None -> { newTask with Name = sprintf "> %s" newTask.Name } |> Ok
-                )
-                |> Result.fold (fun state next -> state @ [ next ]) (Ok [])
+        let! mergedNewTaskList =
+            rawNewTaskList
+            |> Seq.map (fun newTask ->
+                match oldTaskMap |> Map.tryFind (newTask.InformationType, newTask.Name) with
+                | Some oldTask when oldTask.InformationType <> newTask.InformationType ->
+                    sprintf "Task: %s. Invalid information type: (%s != %s)"
+                        newTask.Name
+                        (string oldTask.InformationType)
+                        (string newTask.InformationType)
+                    |> Error
+                | Some oldTask -> { oldTask with Comments = oldTask.Comments @ newTask.Comments } |> Ok
+                | None -> { newTask with Name = sprintf "> %s" newTask.Name } |> Ok
             )
-            |> Result.flatten
+            |> Result.fold (fun state next -> state @ [ next ]) (Ok [])
             
-        newTaskList
-        |> Result.map (fun newTaskList ->
-            let newTaskNames =
-                newTaskList
-                |> List.map (fun x -> x.Name)
-                |> Set.ofList
+        let newTaskMap, newTaskOrderList = createTaskMap mergedNewTaskList
+        
+        let notOnNewTaskMap task =
+            newTaskMap |> Map.containsKey (task.InformationType, task.Name) |> not
             
-            let filteredOldTaskList =
-                taskList
-                |> List.filter (fun oldTask -> newTaskNames |> Set.contains oldTask.Name |> not)
-                
-            newTaskList
-            |> List.append filteredOldTaskList
-        )
-        |> Result.map (mergeTaskList (projectList, areaList, resourceList))
+        let filteredOldTaskList = taskList |> List.filter notOnNewTaskMap
+        let taskList = mergedNewTaskList |> List.append filteredOldTaskList
+        
+        let result = taskList |> mergeTaskList (projectList, areaList, resourceList)
+        
+        let filteredOldTaskOrder = oldTaskOrderList |> List.filter (fun x -> notOnNewTaskMap x.Task)
+        let taskOrderList = filteredOldTaskOrder |> List.append newTaskOrderList
+            
+        return {| result with TaskOrderList = result.TaskOrderList @ taskOrderList |}
+    }
             
         
     let tempData<'T> = {|

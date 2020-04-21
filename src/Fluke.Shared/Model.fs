@@ -242,6 +242,7 @@ module Sorting =
             |> List.indexed
             |> List.filter snd
             |> List.map fst
+            |> List.head
         
         lanes
         |> List.indexed
@@ -249,10 +250,8 @@ module Sorting =
             cells
             |> List.filter (fun cell -> cell.Date = today)
             |> List.map (getIndex task)
-            |> List.map (function
-                | firstIndex :: _ -> firstIndex * 1000 + i
-                | _ -> -i
-            )
+            |> List.map ((*) 1000)
+            |> List.map ((+) i)
         )
         |> List.map snd
     
