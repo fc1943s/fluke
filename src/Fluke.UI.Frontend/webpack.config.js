@@ -1,3 +1,24 @@
+function enableSymlinksHmr() {
+    const Module = require('module');
+    const originalRequire = Module.prototype.require;
+
+    Module.prototype.require = function () {
+        const original = originalRequire.apply(this, arguments);
+        if ("chokidar" === arguments[0]) {
+            const originalWatch = original.watch;
+            original.watch = function () {
+                const options = arguments[1];
+                if (options) {
+                    options.followSymlinks = true;
+                }
+
+                return originalWatch.apply(this, arguments);
+            }
+        }
+        return original;
+    };
+}
+enableSymlinksHmr();
 // Template for webpack.config.js in Fable projects
 // Find latest version in https://github.com/fable-compiler/webpack-config-template
 

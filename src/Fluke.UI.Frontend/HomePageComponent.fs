@@ -11,17 +11,56 @@ open Fulma
 open System
 open Suigetsu.UI.Frontend.ElmishBridge
 open Suigetsu.UI.Frontend.React
+open Suigetsu.Core
 
 
 module Temp =
-    match true with
-    | true ->
-        PrivateData.TempData.load ()
-        PrivateData.Tasks.load ()
-        PrivateData.CellEvents.load ()
-        PrivateData.Journal.load ()
-    | false ->
-        TempData.loadTempManualTasks ()
+    
+    type TempDataType =
+        | TempPrivate
+        | TempPublic
+        | Test
+    
+    let getNow, cellEvents, taskList, taskOrderList, hourOffset, projectList, areaList, resourceList =
+        match TempPrivate with
+        | TempPrivate ->
+            let taskData = PrivateData.Tasks.tempManualTasks |> Result.okOrThrow
+            
+            TempData.getNow,
+            PrivateData.CellEvents.cellEvents,
+            taskData.TaskList,
+            [],
+            PrivateData.PrivateData.hourOffset,
+            taskData.ProjectList,
+            taskData.AreaList,
+            taskData.ResourceList
+        | TempPublic ->
+            let taskData = TempData.tempData.ManualTasks |> Result.okOrThrow
+            
+            TempData.getNow,
+            [],
+            taskData.TaskList,
+            taskData.TaskOrderList,
+            TempData.hourOffset,
+            taskData.ProjectList,
+            taskData.AreaList,
+            taskData.ResourceList
+        | Test ->
+            let testData = TempData.tempData.RenderLaneTests
+            let testData = TempData.tempData.SortLanesTests
+            
+            testData.GetNow,
+            testData.CellEvents,
+            testData.TaskList,
+            testData.TaskOrderList,
+            TempData.hourOffset,
+            TempData.projectList,
+            TempData.areaList,
+            TempData.resourceList
+        
+    let informationList = (projectList, areaList, resourceList) |> TempData.getInformationList
+    let cellComments = PrivateData.CellComments.cellComments |> List.append PrivateData.Journal.journalComments
+    
     
 module HomePageComponent =
     open Model
@@ -138,7 +177,7 @@ module HomePageComponent =
                 cells
                 |> List.map (fun cell ->
                     let comments =
-                        TempData._cellComments
+                        Temp.cellComments
                         |> List.filter (fun x -> x.Cell.Task.Name = task.Name && x.Cell.Date = cell.Date)
                         
                     CellComponent.``default``
@@ -309,10 +348,10 @@ module HomePageComponent =
             
         let getLanes dateSequence now view =
             let tasks =
-                TempData._taskList
+                Temp.taskList
                 |> List.map (fun task ->
                     let events =
-                        TempData._cellEvents
+                        Temp.cellEvents
                         |> List.filter (fun x -> x.Cell.Task = task)
                         |> List.sortBy (fun x -> x.Cell.Date)
                     task, events
@@ -322,8 +361,9 @@ module HomePageComponent =
             | Flat ->
                 tasks
                 |> List.filter (function { Scheduling = Manual false }, [] -> false | _ -> true)
-                |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
-                |> Sorting.sortLanes now.Date
+                |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events, events)
+                |> Sorting.sortLanesByFrequency
+                |> Sorting.sortLanesByToday now.Date
             | Tree ->
                 let lanes =
                     tasks
@@ -332,27 +372,23 @@ module HomePageComponent =
                         events
                         |> List.filter (function { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true | _ -> false)
                         |> List.tryLast
-                        |> function
-                            | Some { Status = Dropped } -> false
-                            | _ -> true
+                        |> function Some { Status = Dropped } -> false | _ -> true
                     )
-                    |> List.map (fun (task, events) ->
-                        LaneRendering.renderLane now dateSequence task events
-                    )
+                    |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
                     
-                TempData.getInformationList ()
+                Temp.informationList
                 |> List.collect (List.map (fun information ->
                     let lanes =
                         lanes
                         |> List.filter (fun (Lane (task, _)) -> task.InformationType = information)
-                        |> Sorting.sortLanes now.Date
+                        |> Sorting.sortLanesByToday now.Date
                         
                     information, lanes
                 ))
                 |> List.collect snd
                     
         let getState oldState =
-            let now = TempData._getNow TempData._hourOffset
+            let now = Temp.getNow Temp.hourOffset
             
             let dateSequence = 
                 [ now.Date ]
@@ -388,16 +424,16 @@ module HomePageComponent =
         
         let dateSequence =
             match state.current.Lanes with
-            | Lane (_, cells) :: _ -> 
-                cells
-                |> List.map (fun x -> x.Date)
+            | Lane (_, cells) :: _ -> cells |> List.map (fun x -> x.Date)
             | _ -> []
             
         let events = {|
             OnViewChange = fun view ->
-                state.update (fun state -> getState { state with
-                                                          View = view
-                                                          Selection = [] })
+                state.update (fun state ->
+                    getState { state with
+                                 View = view
+                                 Selection = [] }
+                )
         |}
         
         

@@ -87,17 +87,21 @@ module Tests =
             
             test "1" {
                 let createPriorityEvents task priority taskList =
-                    taskList
-                    |> List.tryFindIndexBack ((=) task)
-                    |> function
-                        | None -> None
-                        | Some i -> 
-                            match (i + 1, i - 1) |> Tuple2.map (fun x -> taskList |> List.tryItem x), priority with
-                            | (Some _, None), First when i = 0 -> None
-                            | (Some below, None), _ -> Some { Task = below; Priority = First }
-                            | (Some below, Some above), _ -> Some { Task = below; Priority = LessThan above }
-                            | _, First when i > 0 -> Some { Task = taskList |> List.head; Priority = LessThan task }
-                            | _ -> None
+                    match taskList |> List.tryFindIndexBack ((=) task) with
+                    | None -> None
+                    | Some i ->
+                        let closest =
+                            (i + 1, i - 1)
+                            |> Tuple2.map (fun x ->
+                                taskList
+                                |> List.tryItem x
+                            )
+                        match closest, priority with
+                        | (Some _, None), First when i = 0 -> None
+                        | (Some below, None), _ -> Some { Task = below; Priority = First }
+                        | (Some below, Some above), _ -> Some { Task = below; Priority = LessThan above }
+                        | _, First when i > 0 -> Some { Task = taskList |> List.head; Priority = LessThan task }
+                        | _ -> None
                     |> Option.toList
                     |> List.append [ { Task = task; Priority = priority } ]
                 
@@ -152,27 +156,40 @@ module Tests =
         
         testList "Lane Sorting" [
             
-            let testData (props: {| Now: FlukeDateTime
+            let (|None|Today|Frequency|) = function
+                | Choice1Of3 -> None
+                | Choice2Of3 -> Today
+                | Choice3Of3 -> Frequency
+            let noSorting = Choice1Of3 ()
+            let sortByToday = Choice2Of3 ()
+            let sortByFrequency = Choice3Of3 ()
+            
+            let testData (props: {| Sort: Choice<_, _, _>
                                     Data: (Task * (FlukeDate * CellEventStatus) list) list
-                                    Expected: string list |}) =
+                                    Expected: string list
+                                    Now: FlukeDateTime |}) =
                 let dateSequence =
                     props.Data
                     |> List.collect (snd >> List.map fst)
                     |> Rendering.getDateSequence (0, 0)
                 
                 props.Data
-                |> List.map (fun (task, events) ->
-                    events
-                    |> LaneRendering.createCellEvents task
-                    |> LaneRendering.renderLane props.Now dateSequence task
+                |> List.map (fun (task, rawEvents) ->
+                    let events = rawEvents |> LaneRendering.createCellEvents task
+                    LaneRendering.renderLane props.Now dateSequence task events, events
                 )
-                |> Sorting.sortLanes props.Now.Date
+                |> fun laneData ->
+                    match props.Sort with
+                    | None -> laneData |> List.map fst
+                    | Today -> Sorting.sortLanesByToday props.Now.Date (laneData |> List.map fst)
+                    | Frequency -> Sorting.sortLanesByFrequency laneData
                 |> List.map (fun (Lane (task, _)) -> task.Name)
                 |> Expect.equal "" props.Expected
             
-            test "All task types mixed" {
+            test "Sort by Today: All task types mixed" {
                 testData
-                    {| Now = { Date = flukeDate 2020 Month.March 10
+                    {| Sort = sortByToday
+                       Now = { Date = flukeDate 2020 Month.March 10
                                Time = midnight }
                        Data = [
                            { Task.Default with Name = "1"; Scheduling = Manual true },

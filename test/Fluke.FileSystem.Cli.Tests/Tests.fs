@@ -5,21 +5,10 @@ open System.IO
 open Expecto
 open Expecto.Flip
 open Fluke.Shared
-open Fluke.Shared.PrivateData
+open FSharpPlus
 open Suigetsu.Core
 
 
-module Temp =
-    match true with
-    | true ->
-        PrivateData.TempData.load ()
-        PrivateData.Tasks.load ()
-        PrivateData.CellEvents.load ()
-        PrivateData.Journal.load ()
-    | false ->
-        TempData.loadTempManualTasks ()
-        
-        
 module Tests =
     open Model
     
@@ -36,7 +25,13 @@ module Tests =
             
             test "1" {
                 
-                TempData.getInformationList ()
+                let taskData =
+                    PrivateData.Tasks.tempManualTasks
+                    |> Result.okOrThrow
+                    
+                let informationList = taskData.ProjectList, taskData.AreaList, taskData.ResourceList
+                
+                TempData.getInformationList informationList
                 |> List.collect (List.map (function
                     | Project project -> Some ("projects", project.Name)
                     | Area area -> Some ("areas", area.Name)

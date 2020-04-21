@@ -7,18 +7,18 @@ open Suigetsu.Core
 module TempData =
     open Model
     
-    let mutable _areaList = [
-        { Area.Name = "chores" }
-        { Area.Name = "finances" }
-        { Area.Name = "leisure" }
-        { Area.Name = "programming" }
-        { Area.Name = "workflow" }
+    let areaList : Area list = [
+        { Name = "chores" }
+        { Name = "finances" }
+        { Name = "leisure" }
+        { Name = "programming" }
+        { Name = "workflow" }
     ]
     
-    let getArea name =
-        _areaList |> List.find (fun x -> x.Name = name)
+    let private getArea name =
+        areaList |> List.find (fun x -> x.Name = name)
     
-    let areas = {|
+    let private areas = {|
         chores = getArea "chores"
         finances = getArea "finances"
         leisure = getArea "leisure"
@@ -26,7 +26,7 @@ module TempData =
         workflow = getArea "workflow"
     |}
     
-    let mutable _projectList : Project list = [
+    let projectList : Project list = [
         { Area = areas.workflow
           Name = "app-fluke" }
         
@@ -34,71 +34,59 @@ module TempData =
           Name = "app-mechahaze" }
     ]
     
-    let getProject name =
-        _projectList |> List.find (fun x -> x.Name = name)
+    let private getProject name =
+        projectList |> List.find (fun x -> x.Name = name)
         
-    let mutable _resourceList : Resource list = [
+    let resourceList : Resource list = [
         { Area = areas.programming; Name = "f#" }
         { Area = areas.programming; Name = "rust" }
     ]
     
-    let getResource name =
-        _resourceList |> List.find (fun x -> x.Name = name)
+    let private getResource name =
+        resourceList |> List.find (fun x -> x.Name = name)
         
-    let mutable _hourOffset = 0
+    let hourOffset = 0
     
-    let private getNow hourOffset =
+    let getNow hourOffset =
         let rawDate = DateTime.Now.AddHours -(float hourOffset)
         { Date = FlukeDate.FromDateTime rawDate
           Time = FlukeTime.FromDateTime rawDate }
     
-    let mutable _getNow = getNow
+    let private taskList : Task list = []
+//    let getTask name =
+//        _taskList |> List.find (fun x -> x.Name = name)
     
-    let mutable _taskList: Task list = []
-    let getTask name =
-        _taskList |> List.find (fun x -> x.Name = name)
+//    
+//    let data () =
+//        {| AreaList = _areaList
+//           ProjectList = _projectList
+//           ResourceList = _resourceList
+//           TaskList = _taskList
+//           TaskOrderList = _taskOrderList
+//           CellEvents = _cellEvents
+//           CellComments = _cellComments
+//           InformationComments = _informationComments
+//           GetNow = _getNow
+//           HourOffset = _hourOffset |}
     
-    let mutable _taskOrderList: TaskOrderEntry list = []
-    
-    let mutable _cellEvents: CellEvent list = []
-    
-    let mutable _cellComments: CellComment list = []
-    
-    let mutable _informationComments: InformationComment list = []
-    
-    let data () =
-        {| AreaList = _areaList
-           ProjectList = _projectList
-           ResourceList = _resourceList
-           TaskList = _taskList
-           TaskOrderList = _taskOrderList
-           CellEvents = _cellEvents
-           CellComments = _cellComments
-           InformationComments = _informationComments
-           GetNow = _getNow
-           HourOffset = _hourOffset |}
-    
-    let getInformationList () =
-        [ _projectList |> List.map Project
-          _areaList |> List.map Area
-          _resourceList |> List.map Resource ]
+    let getInformationList (projectList, areaList, resourceList) =
+        [ projectList |> List.map Project
+          areaList |> List.map Area
+          resourceList |> List.map Resource ]
         
-    let loadRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
-                                             Data: (FlukeDate * CellStatus) list
-                                             Now: FlukeDateTime
-                                             Task: Task |}) =
+    let createRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
+                                               Data: (FlukeDate * CellStatus) list
+                                               Now: FlukeDateTime
+                                               Task: Task |}) =
         
-        _cellEvents <- testData.CellEvents |> LaneRendering.createCellEvents testData.Task
-        _taskList <- [ testData.Task ]
-        _taskOrderList <- [ { Task = testData.Task; Priority = First } ]
-        _getNow <- fun _ ->
-            if _taskList.Length = 1
-            then testData.Now
-            else getNow _hourOffset
+        {| CellEvents = testData.CellEvents |> LaneRendering.createCellEvents testData.Task
+           TaskList = [ testData.Task ]
+           TaskOrderList = [ { Task = testData.Task; Priority = First } ]
+           GetNow = fun (_: int) -> testData.Now |}
         
-    let loadSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
-                                             Expected: string list
-                                             Now: FlukeDateTime |}) =
+    let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
+                                               Expected: string list
+                                               Now: FlukeDateTime |}) =
         let cellEvents =
             testData.Data
             |> List.collect (fun (task, events) ->
@@ -106,137 +94,234 @@ module TempData =
                 |> LaneRendering.createCellEvents task
             )
             
-        _cellEvents <- cellEvents
-        _taskList <- testData.Data |> List.map fst
-        _taskOrderList <- testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = First })
-        _getNow <- fun _ ->
-            if _taskList.Length = testData.Data.Length
-            then testData.Now
-            else getNow _hourOffset
+        {| CellEvents = cellEvents
+           TaskList = testData.Data |> List.map fst
+           TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = First })
+           GetNow = fun (_: int) -> testData.Now |}
+           
+    let getInformationMap (projectList: Project list, areaList: Area list, resourceList: Resource list) =
+        let projectMap = projectList |> List.map (fun x -> x.Name, x) |> Map.ofList
+        let areaMap = areaList |> List.map (fun x -> x.Name, x) |> Map.ofList
+        let resourceMap = resourceList |> List.map (fun x -> x.Name, x) |> Map.ofList
+        
+        projectMap, areaMap, resourceMap
             
-    let createManualTasksFromTree taskTree =
-        let getInformationType informationTypeName informationName =
-            match informationTypeName with
-            | "projects" ->
-                _projectList
-                |> List.tryFind (fun x -> x.Name = informationName)
-                |> Option.defaultValue { Project.Default with Name = informationName }
-                |> Project
-                |> Ok
+    let mergeTaskList (projectList, areaList, resourceList) taskList =
+        let projectMap, areaMap, resourceMap = getInformationMap (projectList, areaList, resourceList)
+        
+        let (|Project|Area|Resource|Other|) = function
+            | Project project when projectMap |> Map.containsKey project.Name |> not -> Project project
+            | Area area when areaMap |> Map.containsKey area.Name |> not -> Area area
+            | Resource resource when resourceMap |> Map.containsKey resource.Name  |> not -> Resource resource
+            | _ -> Other
+            
+        let rec loop (projectList, areaList, resourceList) = function
+            | Project project :: tail -> loop (project :: projectList, areaList, resourceList) tail
+            | Area area :: tail -> loop (projectList, area :: areaList, resourceList) tail
+            | Resource resource :: tail -> loop (projectList, areaList, resource :: resourceList) tail
+            | _ -> projectList, areaList, resourceList
+            
+        let projectList, areaList, resourceList =
+            taskList
+            |> List.map (fun x -> x.InformationType)
+            |> loop (projectList, areaList, resourceList)
+            
+        let taskList =
+            let taskNames =
+                taskList
+                |> List.map (fun x -> x.Name)
+                |> Set.ofList
                 
-            | "areas" ->
-                _areaList
-                |> List.tryFind (fun x -> x.Name = informationName)
-                |> Option.defaultValue { Area.Default with Name = informationName }
-                |> Area
-                |> Ok
+            taskList
+            |> List.filter (fun x -> taskNames |> Set.contains x.Name |> not)
+            |> List.append taskList
+            
+        let taskOrderList =
+            taskList |> List.map (fun task -> { Task = task; Priority = First })
+            
+        {| TaskList = taskList
+           TaskOrderList = taskOrderList
+           ProjectList = projectList
+           AreaList = areaList
+           ResourceList = resourceList |}
+           
+    let createManualTasksFromTree (projectList, areaList, resourceList) taskList taskTree =
+        let projectMap, areaMap, resourceMap = getInformationMap (projectList, areaList, resourceList)
+        
+        let createTaskMap taskList =
+            taskList
+            |> List.map (fun x -> (x.InformationType, x.Name), x)
+            |> Map.ofList
+            
+        let oldTaskMap = createTaskMap taskList
+            
+        let newTaskMap =
+            let getInformationType informationTypeName informationName =
+                match informationTypeName with
+                | "projects" -> projectMap |> Map.tryFind informationName |> Option.map Project
+                | "areas" -> areaMap |> Map.tryFind informationName |> Option.map Area
+                | "resources" -> resourceMap |> Map.tryFind informationName |> Option.map Resource
+                | _ -> None
+                |> Option.toResultWith (sprintf "Invalid information type: '%s/%s'" informationTypeName informationName)
                 
-            | "resources" ->
-                _resourceList
-                |> List.tryFind (fun x -> x.Name = informationName)
-                |> Option.defaultValue { Resource.Default with Name = informationName }
-                |> Resource
-                |> Ok
-                
-            | _ ->
-                sprintf "Invalid information type: '%s'" informationTypeName |> Error
-                
-        let getOrCreateTask informationType taskName =
-            _taskList
-            |> List.tryFind (fun x -> x.Name = taskName)
-            |> Option.defaultValue
-                { Task.Default with
-                    Name = taskName
-                    InformationType = informationType }
-                
-        taskTree
-        |> List.collect (fun (informationTypeName, informationType) ->
-            informationType
-            |> List.map (fun (informationName, information) ->
-                getInformationType informationTypeName informationName
-                |> Result.map (fun informationType ->
-                    information
-                    |> List.map (fun (taskName, comments) ->
-                        let task = getOrCreateTask informationType taskName
-                        match task with
-                        | task when
-                            [ Task.Default.InformationType; informationType ]
-                            |> List.forall ((<>) task.InformationType) ->
-                            sprintf "Task: %s. Invalid information type: (%s != %s)"
-                                task.Name
-                                (string task.InformationType)
-                                (string informationType)
-                            |> Error
-                            
-                        | task -> { task with Comments = task.Comments @ comments } |> Ok
+            taskTree
+            |> List.collect (fun (informationTypeName, informationType) ->
+                informationType
+                |> List.map (fun (informationName, information) ->
+                    getInformationType informationTypeName informationName
+                    |> Result.map (fun informationType ->
+                        information
+                        |> List.map (fun (taskName, comments) ->
+                            { Task.Default with
+                                Name = taskName
+                                InformationType = informationType
+                                Comments = comments }
+                        )
                     )
                 )
             )
-        )
-        |> List.map (Result.map (Result.fold (fun state next -> state @ [ next ]) (Ok [])) >> Result.flatten)
-        |> Result.collect
-        
-    let loadTaskList taskList =
-        taskList
-        |> List.map (fun x -> x.InformationType)
-        |> List.iter (function
-            | Project project when _projectList |> List.exists (fun x -> x.Name = project.Name) |> not ->
-                _projectList <- project :: _projectList
+            |> Result.fold List.append (Ok [])
+            |> Result.map createTaskMap
+            
+        let newTaskList =
+            newTaskMap
+            |> Result.map (fun newTaskMap ->
+                newTaskMap
+                |> Map.values
+                |> Seq.map (fun newTask ->
+                    match oldTaskMap |> Map.tryFind (newTask.InformationType, newTask.Name) with
+                    | Some oldTask when oldTask.InformationType <> newTask.InformationType ->
+                        sprintf "Task: %s. Invalid information type: (%s != %s)"
+                            newTask.Name
+                            (string oldTask.InformationType)
+                            (string newTask.InformationType)
+                        |> Error
+                    | Some oldTask -> { oldTask with Comments = oldTask.Comments @ newTask.Comments } |> Ok
+                    | None -> { newTask with Name = sprintf "> %s" newTask.Name } |> Ok
+                )
+                |> Result.fold (fun state next -> state @ [ next ]) (Ok [])
+            )
+            |> Result.flatten
+            
+        newTaskList
+        |> Result.map (fun newTaskList ->
+            let newTaskNames =
+                newTaskList
+                |> List.map (fun x -> x.Name)
+                |> Set.ofList
+            
+            let filteredOldTaskList =
+                taskList
+                |> List.filter (fun oldTask -> newTaskNames |> Set.contains oldTask.Name |> not)
                 
-            | Area area when _areaList |> List.exists (fun x -> x.Name = area.Name) |> not ->
-                _areaList <- area :: _areaList
-                
-            | Resource resource when _resourceList |> List.exists (fun x -> x.Name = resource.Name) |> not ->
-                _resourceList <- resource :: _resourceList
-                    
-            | _ -> ()
+            newTaskList
+            |> List.append filteredOldTaskList
         )
+        |> Result.map (mergeTaskList (projectList, areaList, resourceList))
+            
         
-        _taskList <-
-            _taskList
-            |> List.filter (fun x -> taskList |> List.map (fun x -> x.Name) |> List.contains x.Name |> not)
-            |> List.append taskList
-        _taskOrderList <- _taskList |> List.map (fun task -> { Task = task; Priority = First })
-        
-    let loadTaskTree taskTree =
-        taskTree
-        |> createManualTasksFromTree
-        |> fun (tasks, errors) ->
-            match tasks, errors with
-            | _, _ :: _ -> failwithf "Error creating tasks: %s" (String.Join ("\n", errors))
-            | _ :: _, _ -> loadTaskList tasks
-            | _ -> ()
-
-    let loadTempManualTasks () =
-        [
-            "projects", [
-                "app-fluke", [
-                    "filesystem tests", []
-                    "review onenote tasks", []
-                ]
-                "app-mechahaze", [
-                    "multi dimensional separation", []
-                    "create animations mathematically", []
-                ]
-            ]
-            "areas", [
-                "chores", [
-                    "groceries", [
-                        "food"
-                        "beer"
+    let tempData<'T> = {|
+        ManualTasks = 
+            [
+                "projects", [
+                    "app-fluke", [
+                        "filesystem tests", []
+                        "review onenote tasks", []
+                    ]
+                    "app-mechahaze", [
+                        "multi dimensional separation", []
+                        "create animations mathematically", []
                     ]
                 ]
-                "leisure", [
-                    "watch-movie-foobar", []
+                "areas", [
+                    "chores", [
+                        "groceries", [
+                            "food"
+                            "beer"
+                        ]
+                    ]
+                    "leisure", [
+                        "watch-movie-foobar", []
+                    ]
+                ]
+                "resources", [
+                    "f#", [
+                        "study: [choice, computation expressions]", []
+                        "organize youtube playlists", []
+                    ]
+                    "rust", []
                 ]
             ]
-            "resources", [
-                "f#", [
-                    "study: [choice, computation expressions]", []
-                    "organize youtube playlists", []
-                ]
-                "rust", []
-            ]
-        ]
-        |> loadTaskTree
+            |> createManualTasksFromTree (projectList, areaList, resourceList) taskList
+            
+        RenderLaneTests = 
+                        {| Task = { Task.Default with Scheduling = Manual true
+                                                      PendingAfter = flukeTime 20 0 }
+                           Now = { Date = flukeDate 2020 Month.March 10
+                                   Time = flukeTime 21 0 }
+                           Data = [
+                               flukeDate 2020 Month.March 9, Suggested
+                               flukeDate 2020 Month.March 10, Pending
+                               flukeDate 2020 Month.March 11, Suggested
+                           ]
+                           CellEvents = [] |}
+                        |> createRenderLaneTestData
+                        
+        SortLanesTests =
+                    {| Now = { Date = flukeDate 2020 Month.March 10
+                               Time = midnight }
+                       Data = [
+                           { Task.Default with Name = "1"; Scheduling = Manual true },
+                           [] 
+                           
+                           { Task.Default with Name = "2"; Scheduling = Manual true },
+                           [ flukeDate 2020 Month.March 10, Postponed midnight
+                             flukeDate 2020 Month.March 8, Postponed midnight ]
+                           
+                           { Task.Default with Name = "3"; Scheduling = Manual false },
+                           [ flukeDate 2020 Month.March 9, ManualPending ]
+                           
+                           { Task.Default with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
+                                                           PendingAfter = flukeTime 20 0 },
+                           []
+                           
+                           { Task.Default with Name = "5"; Scheduling = Manual false },
+                           [ flukeDate 2020 Month.March 10, ManualPending ]
+                           
+                           { Task.Default with Name = "6"; Scheduling = Manual false },
+                           [ flukeDate 2020 Month.March 4, Postponed midnight
+                             flukeDate 2020 Month.March 6, Dropped ]
+                           
+                           { Task.Default with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
+                           [ flukeDate 2020 Month.March 8, Completed ]
+                           
+                           { Task.Default with Name = "8"; Scheduling = Recurrency (Offset (Days 2)) },
+                           [ flukeDate 2020 Month.March 10, Completed ]
+                           
+                           { Task.Default with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
+                           [ flukeDate 2020 Month.March 10, Dropped ]
+                           
+                           { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
+                           [ flukeDate 2020 Month.March 10, Postponed midnight ]
+                           
+                           { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
+                           []
+                           
+                           { Task.Default with Name = "12"; Scheduling = Manual false },
+                           []
+                           
+                           { Task.Default with Name = "13"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
+                           []
+                           
+                           { Task.Default with Name = "14"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
+                           []
+                           
+                           { Task.Default with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
+                           [ flukeDate 2020 Month.March 7, Postponed midnight
+                             flukeDate 2020 Month.March 9, Dropped ]
+                       ]
+                       Expected = [ "5"; "3"; "11"; "13"; "4"; "1"; "2"; "10"; "8"; "9"; "7"; "14"; "15"; "12"; "6" ] |}
+                    |> createSortLanesTestData
+                    
+    |}
 
