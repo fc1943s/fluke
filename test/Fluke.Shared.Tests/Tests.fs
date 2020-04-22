@@ -156,8 +156,8 @@ module Tests =
         
         testList "Lane Sorting" [
             
-            let (|None|Today|Frequency|) = function
-                | Choice1Of3 -> None
+            let (|NoSorting|Today|Frequency|) = function
+                | Choice1Of3 -> NoSorting
                 | Choice2Of3 -> Today
                 | Choice3Of3 -> Frequency
             let noSorting = Choice1Of3 ()
@@ -171,20 +171,79 @@ module Tests =
                 let dateSequence =
                     props.Data
                     |> List.collect (snd >> List.map fst)
-                    |> Rendering.getDateSequence (0, 0)
+                    |> Rendering.getDateSequence (35, 35)
                 
                 props.Data
                 |> List.map (fun (task, rawEvents) ->
-                    let events = rawEvents |> LaneRendering.createCellEvents task
-                    LaneRendering.renderLane props.Now dateSequence task events, events
+                    rawEvents
+                    |> LaneRendering.createCellEvents task
+                    |> LaneRendering.renderLane props.Now dateSequence task
                 )
-                |> fun laneData ->
+                |> fun lanes ->
                     match props.Sort with
-                    | None -> laneData |> List.map fst
-                    | Today -> Sorting.sortLanesByToday props.Now.Date (laneData |> List.map fst)
-                    | Frequency -> Sorting.sortLanesByFrequency laneData
+                    | NoSorting -> lanes
+                    | Today -> Sorting.sortLanesByToday props.Now.Date lanes
+                    | Frequency -> Sorting.sortLanesByFrequency lanes
                 |> List.map (fun (Lane (task, _)) -> task.Name)
                 |> Expect.equal "" props.Expected
+            
+            test "Sort by Frequency: All task types mixed" {
+                testData
+                    {| Sort = sortByFrequency
+                       Now = { Date = flukeDate 2020 Month.March 10
+                               Time = midnight }
+                       Data = [
+                           { Task.Default with Name = "1"; Scheduling = Manual true },
+                           [] 
+                           
+                           { Task.Default with Name = "2"; Scheduling = Manual true },
+                           [ flukeDate 2020 Month.March 10, Postponed midnight
+                             flukeDate 2020 Month.March 8, Postponed midnight ]
+                           
+                           { Task.Default with Name = "3"; Scheduling = Manual false },
+                           [ flukeDate 2020 Month.March 9, ManualPending ]
+                           
+                           { Task.Default with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
+                                                           PendingAfter = flukeTime 20 0 },
+                           []
+                           
+                           { Task.Default with Name = "5"; Scheduling = Manual false },
+                           [ flukeDate 2020 Month.March 10, ManualPending ]
+                           
+                           { Task.Default with Name = "6"; Scheduling = Manual false },
+                           [ flukeDate 2020 Month.March 4, Postponed midnight
+                             flukeDate 2020 Month.March 6, Dropped ]
+                           
+                           { Task.Default with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
+                           [ flukeDate 2020 Month.March 8, Completed ]
+                           
+                           { Task.Default with Name = "8"; Scheduling = Recurrency (Offset (Days 2)) },
+                           [ flukeDate 2020 Month.March 10, Completed ]
+                           
+                           { Task.Default with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
+                           [ flukeDate 2020 Month.March 10, Dropped ]
+                           
+                           { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
+                           [ flukeDate 2020 Month.March 10, Postponed midnight ]
+                           
+                           { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
+                           []
+                           
+                           { Task.Default with Name = "12"; Scheduling = Manual false },
+                           []
+                           
+                           { Task.Default with Name = "13"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
+                           []
+                           
+                           { Task.Default with Name = "14"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
+                           []
+                           
+                           { Task.Default with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
+                           [ flukeDate 2020 Month.March 7, Postponed midnight
+                             flukeDate 2020 Month.March 9, Dropped ]
+                       ]
+                       Expected = [ "11"; "4"; "8"; "9"; "10"; "7"; "15"; "13"; "14"; "2"; "6"; "3"; "5"; "1"; "12" ] |}
+            }
             
             test "Sort by Today: All task types mixed" {
                 testData

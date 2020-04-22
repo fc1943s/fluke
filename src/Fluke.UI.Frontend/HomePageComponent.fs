@@ -361,7 +361,7 @@ module HomePageComponent =
             | Flat ->
                 tasks
                 |> List.filter (function { Scheduling = Manual false }, [] -> false | _ -> true)
-                |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events, events)
+                |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByToday now.Date
                 |> Sorting.applyManualOrder now.Date Temp.taskOrderList

@@ -97,7 +97,7 @@ module TempData =
             
         {| CellEvents = cellEvents
            TaskList = testData.Data |> List.map fst
-           TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = First })
+           TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = Last })
            GetNow = fun (_: int) -> testData.Now |}
            
     let getInformationMap (projectList: Project list, areaList: Area list, resourceList: Resource list) =
@@ -127,7 +127,7 @@ module TempData =
             |> List.map (fun x -> x.InformationType)
             |> loop (projectList, areaList, resourceList)
             
-        let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = First })
+        let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = Last })
             
         {| TaskList = taskList
            TaskOrderList = taskOrderList
@@ -144,7 +144,7 @@ module TempData =
                 |> List.map (fun x -> (x.InformationType, x.Name), x)
                 |> Map.ofList
                 
-            let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = First })
+            let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = Last })
                 
             map, taskOrderList
             
