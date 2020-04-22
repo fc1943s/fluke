@@ -216,12 +216,54 @@ module Sorting =
             
         result |> Seq.toList
         
+    let applyManualOrder (today: FlukeDate) (taskOrderList: TaskOrderEntry list) lanes =
+        let pending, tail =
+            lanes
+            |> List.partition (fun (Lane (_, cells)) ->
+                match cells |> List.tryFind (fun cell -> cell.Date = today) with
+                | Some { Status = Pending | EventStatus ManualPending } -> true
+                | _ -> false
+            )
+            
+        let pendingTasksSet =
+            pending
+            |> List.map (fun (Lane (task, _)) -> task)
+            |> Set.ofList
+            
+        let filteredTaskOrderList = taskOrderList |> List.filter (fun orderEntry -> pendingTasksSet.Contains orderEntry.Task)
+            
+        let filteredTaskOrderSet =
+            filteredTaskOrderList
+            |> List.map (fun x -> x.Task)
+            |> Set.ofList
+            
+        let initialPendingOrder =
+            pending
+            |> List.map (fun (Lane (task, _)) -> { Task = task; Priority = First })
+            |> List.filter (fun x -> filteredTaskOrderSet.Contains x.Task |> not)
+        
+        let newOrder = initialPendingOrder @ filteredTaskOrderList
+            
+        let indexMap =
+            newOrder
+            |> getManualSortedTaskList
+            |> List.rev
+            |> List.mapi (fun i task -> task, i)
+            |> Map.ofList
+            
+        let newPending = pending |> List.sortBy (fun (Lane (task, _)) -> indexMap.[task])
+        
+        newPending @ tail
+        
     let sortLanesByFrequency (laneData: (Lane * CellEvent list) list) =
         laneData
-        |> List.map (fun (Lane (task, cells), events) ->
-            Lane (task, cells), events
+        |> List.sortBy (fun (Lane (_, cells), events) ->
+            cells
+            |> List.filter (fun x -> x.Status = Pending || x.Status = EventStatus ManualPending)
+            |> fun list -> -list.Length - events.Length
         )
         |> List.map fst
+        
     
     let sortLanesByToday (today: FlukeDate) (lanes: Lane list) =
         let order =

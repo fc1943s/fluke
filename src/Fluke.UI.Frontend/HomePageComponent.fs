@@ -59,7 +59,7 @@ module Temp =
             TempData.resourceList
         
     let informationList = (projectList, areaList, resourceList) |> TempData.getInformationList
-    let cellComments = PrivateData.CellComments.cellComments |> List.append PrivateData.Journal.journalComments
+    let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
     
     
 module HomePageComponent =
@@ -364,6 +364,7 @@ module HomePageComponent =
                 |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events, events)
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByToday now.Date
+                |> Sorting.applyManualOrder now.Date Temp.taskOrderList
             | Tree ->
                 let lanes =
                     tasks
@@ -375,6 +376,7 @@ module HomePageComponent =
                         |> function Some { Status = Dropped } -> false | _ -> true
                     )
                     |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
+                    |> Sorting.applyManualOrder now.Date Temp.taskOrderList
                     
                 Temp.informationList
                 |> List.collect (List.map (fun information ->

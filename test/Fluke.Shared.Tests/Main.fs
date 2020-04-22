@@ -9,5 +9,8 @@ module Main =
     [<ExcludeFromCodeCoverage>]
     [<EntryPoint>]
     let main args =
-        runTestsWithArgs defaultConfig args Tests.tests
+        let tests =
+            Tests.tests
+//            |> Test.filter " / " (fun x -> true)
+        runTestsWithArgs defaultConfig args tests
 

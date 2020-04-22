@@ -110,32 +110,22 @@ module TempData =
     let mergeTaskList (projectList, areaList, resourceList) taskList =
         let projectMap, areaMap, resourceMap = getInformationMap (projectList, areaList, resourceList)
         
-        let (|Project|Area|Resource|Other|) = function
-            | Project project when projectMap |> Map.containsKey project.Name |> not -> Project project
-            | Area area when areaMap |> Map.containsKey area.Name |> not -> Area area
-            | Resource resource when resourceMap |> Map.containsKey resource.Name  |> not -> Resource resource
+        let (|ProjectMissing|AreaMissing|ResourceMissing|Other|) = function
+            | Project project when projectMap.ContainsKey project.Name |> not -> ProjectMissing project
+            | Area area when areaMap.ContainsKey area.Name |> not -> AreaMissing area
+            | Resource resource when resourceMap.ContainsKey resource.Name  |> not -> ResourceMissing resource
             | _ -> Other
             
         let rec loop (projectList, areaList, resourceList) = function
-            | Project project :: tail -> loop (project :: projectList, areaList, resourceList) tail
-            | Area area :: tail -> loop (projectList, area :: areaList, resourceList) tail
-            | Resource resource :: tail -> loop (projectList, areaList, resource :: resourceList) tail
+            | ProjectMissing project :: tail -> loop (project :: projectList, areaList, resourceList) tail
+            | AreaMissing area :: tail -> loop (projectList, area :: areaList, resourceList) tail
+            | ResourceMissing resource :: tail -> loop (projectList, areaList, resource :: resourceList) tail
             | _ -> projectList, areaList, resourceList
             
         let projectList, areaList, resourceList =
             taskList
             |> List.map (fun x -> x.InformationType)
             |> loop (projectList, areaList, resourceList)
-            
-        let taskList =
-            let taskNames =
-                taskList
-                |> List.map (fun x -> x.Name)
-                |> Set.ofList
-                
-            taskList
-            |> List.filter (fun x -> taskNames |> Set.contains x.Name |> not)
-            |> List.append taskList
             
         let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = First })
             
@@ -205,15 +195,15 @@ module TempData =
         let newTaskMap, newTaskOrderList = createTaskMap mergedNewTaskList
         
         let notOnNewTaskMap task =
-            newTaskMap |> Map.containsKey (task.InformationType, task.Name) |> not
+            newTaskMap.ContainsKey (task.InformationType, task.Name) |> not
             
         let filteredOldTaskList = taskList |> List.filter notOnNewTaskMap
-        let taskList = mergedNewTaskList |> List.append filteredOldTaskList
+        let taskList =  filteredOldTaskList @ mergedNewTaskList
         
         let result = taskList |> mergeTaskList (projectList, areaList, resourceList)
         
         let filteredOldTaskOrder = oldTaskOrderList |> List.filter (fun x -> notOnNewTaskMap x.Task)
-        let taskOrderList = filteredOldTaskOrder |> List.append newTaskOrderList
+        let taskOrderList = newTaskOrderList @ filteredOldTaskOrder
             
         return {| result with TaskOrderList = result.TaskOrderList @ taskOrderList |}
     }
