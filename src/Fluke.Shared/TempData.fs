@@ -54,21 +54,13 @@ module TempData =
           Time = FlukeTime.FromDateTime rawDate }
     
     let private taskList : Task list = []
-//    let getTask name =
-//        _taskList |> List.find (fun x -> x.Name = name)
     
-//    
-//    let data () =
-//        {| AreaList = _areaList
-//           ProjectList = _projectList
-//           ResourceList = _resourceList
-//           TaskList = _taskList
-//           TaskOrderList = _taskOrderList
-//           CellEvents = _cellEvents
-//           CellComments = _cellComments
-//           InformationComments = _informationComments
-//           GetNow = _getNow
-//           HourOffset = _hourOffset |}
+    let getTask name =
+        taskList
+        |> List.tryFind (fun x -> x.Name = name)
+        |> Option.toResultWith (sprintf "Error getting task '%s'" name)
+        |> Result.okOrThrow
+    
     
     let getInformationList (projectList, areaList, resourceList) =
         [ projectList |> List.map Project

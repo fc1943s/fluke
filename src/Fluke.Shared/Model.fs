@@ -188,7 +188,7 @@ module Rendering =
 module Sorting =
     open Model
     
-    let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
+    let getManualSortedTaskList taskOrderList =
         let result = List<Task> ()
         
         let taskOrderList =
@@ -217,7 +217,7 @@ module Sorting =
         result |> Seq.toList
         
         
-    let applyManualOrder (today: FlukeDate) (taskOrderList: TaskOrderEntry list) lanes =
+    let applyManualOrder today taskOrderList lanes =
         let lanesMap =
             lanes
             |> List.groupBy (fun (Lane (_, cells)) ->
@@ -267,7 +267,7 @@ module Sorting =
         |> List.concat
         
         
-    let sortLanesByFrequency (lanes: Lane list) =
+    let sortLanesByFrequency lanes =
         lanes
         |> List.sortBy (fun (Lane (_, cells)) ->
             cells
@@ -276,7 +276,7 @@ module Sorting =
         )
         
     
-    let sortLanesByToday (today: FlukeDate) (lanes: Lane list) =
+    let sortLanesByToday today lanes =
         let order =
             [ function EventStatus ManualPending, _                             -> true | _ -> false
               function Pending,                   _                             -> true | _ -> false
