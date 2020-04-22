@@ -275,6 +275,19 @@ module Sorting =
             |> List.length
         )
         
+    let sortLanesByIncomingRecurrency today lanes =
+        lanes
+        |> List.sortBy (fun (Lane (_, cells)) ->
+            cells
+            |> List.exists (fun x -> x.Date = today && x.Status = Disabled)
+            |> function
+                | true ->
+                    cells
+                    |> List.tryFindIndex (fun x -> x.Status = Pending)
+                    |> Option.defaultValue cells.Length
+                | false -> cells.Length
+        )
+        
     
     let sortLanesByToday today lanes =
         let order =
