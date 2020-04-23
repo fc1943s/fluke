@@ -29,7 +29,7 @@ module Temp =
             TempData.getNow,
             PrivateData.CellEvents.cellEvents,
             taskData.TaskList,
-            taskData.TaskOrderList,
+            taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
             PrivateData.PrivateData.hourOffset,
             taskData.ProjectList,
             taskData.AreaList,

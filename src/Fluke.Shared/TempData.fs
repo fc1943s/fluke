@@ -9,11 +9,18 @@ module TempData =
     open Model
     
     let areaList : Area list = [
+        { Name = "car" }
+        { Name = "career" }
         { Name = "chores" }
         { Name = "finances" }
+        { Name = "fitness" }
+        { Name = "food" }
+        { Name = "health" }
         { Name = "leisure" }
         { Name = "programming" }
+        { Name = "travel" }
         { Name = "workflow" }
+        { Name = "writing" }
     ]
     
     let private getArea name =
@@ -25,26 +32,34 @@ module TempData =
         leisure = getArea "leisure"
         programming = getArea "programming"
         workflow = getArea "workflow"
+        writing = getArea "writing"
     |}
     
     let projectList : Project list = [
-        { Area = areas.workflow
-          Name = "app-fluke" }
-        
-        { Area = areas.programming
-          Name = "app-mechahaze" }
+        { Area = areas.workflow;    Name = "app-fluke" }
+        { Area = areas.writing;     Name = "blog" }
+        { Area = areas.programming; Name = "rebuild-website" }
     ]
     
-    let private getProject name =
-        projectList |> List.find (fun x -> x.Name = name)
+//    let private getProject name =
+//        projectList |> List.find (fun x -> x.Name = name)
         
     let resourceList : Resource list = [
+        { Area = areas.programming; Name = "agile" }
+        { Area = areas.programming; Name = "artificial-intelligence" }
+        { Area = areas.programming; Name = "cloud" }
+        { Area = areas.workflow;    Name = "communication" }
+        { Area = areas.programming; Name = "docker" }
         { Area = areas.programming; Name = "f#" }
+        { Area = areas.programming; Name = "linux" }
+        { Area = areas.leisure;     Name = "music" }
         { Area = areas.programming; Name = "rust" }
+        { Area = areas.programming; Name = "vim" }
+        { Area = areas.programming; Name = "windows" }
     ]
     
-    let private getResource name =
-        resourceList |> List.find (fun x -> x.Name = name)
+//    let private getResource name =
+//        resourceList |> List.find (fun x -> x.Name = name)
         
     let hourOffset = 0
     
@@ -80,12 +95,7 @@ module TempData =
     let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
                                                Expected: string list
                                                Now: FlukeDateTime |}) =
-        let cellEvents =
-            testData.Data
-            |> List.collect (fun (task, events) ->
-                events
-                |> LaneRendering.createCellEvents task
-            )
+        let cellEvents = testData.Data |> List.collect (fun (task, events) -> LaneRendering.createCellEvents task events)
             
         {| CellEvents = cellEvents
            TaskList = testData.Data |> List.map fst
@@ -206,31 +216,58 @@ module TempData =
             [
                 "projects", [
                     "app-fluke", [
-                        "filesystem tests", []
-                        "review onenote tasks", []
+                        "data management", [ "mutability"; "initial default data (load the text first with tests)" ]
+                        "cell selection (mouse, vim navigation)", []
+                        "data structures performance", []
+                        "side panel (journal, comments)", []
+                        "add task priority (for randomization)", []
+                        "persistence", [ "data encryption" ]
+                        "vivaldi or firefox bookmark integration", [ "browser.html javascript injection or browser extension" ]
+                        "telegram integration (fast link sharing)", []
+                        "mobile layout", []
+                        "move fluke tasks to github issues", []
                     ]
-                    "app-mechahaze", [
-                        "multi dimensional separation", []
-                        "create animations mathematically", []
+                    "blog", []
+                    "rebuild-website", [
+                        "task1", []
                     ]
                 ]
                 "areas", [
+                    "car", []
+                    "career", []
                     "chores", [
                         "groceries", [
                             "food"
                             "beer"
                         ]
                     ]
+                    "fitness", []
+                    "food", []
+                    "finances", []
+                    "health", []
                     "leisure", [
                         "watch-movie-foobar", []
                     ]
+                    "programming", []
+                    "travel", []
+                    "workflow", []
+                    "writing", []
                 ]
                 "resources", [
+                    "agile", []
+                    "artificial-intelligence", []
+                    "cloud", []
+                    "communication", []
+                    "docker", []
                     "f#", [
                         "study: [choice, computation expressions]", []
                         "organize youtube playlists", []
                     ]
+                    "linux", []
+                    "music", []
                     "rust", []
+                    "vim", []
+                    "windows", []
                 ]
             ]
             |> createManualTasksFromTree (projectList, areaList, resourceList) taskList
