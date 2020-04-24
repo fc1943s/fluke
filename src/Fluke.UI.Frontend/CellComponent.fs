@@ -25,28 +25,33 @@ module CellComponent =
     type Message =
         | A of unit
         
+    // TODO: take this out of here
+    let tooltipPopup (comments: string list) =
+        div [ Class Css.tooltipPopup ][
+            
+            comments
+            |> List.map (fun x -> x.Trim ())
+            |> List.map ((+) Environment.NewLine)
+            |> String.concat (Environment.NewLine + Environment.NewLine)
+            |> fun text ->
+                ReactBindings.React.createElement
+                    (Ext.reactMarkdown,
+                        {| source = text |}, [])
+        ]
         
     let ``default`` = FunctionComponent.Of (fun props ->
-        let hasComments = props.Comments |> List.isEmpty |> not
+        let hasComments = not props.Comments.IsEmpty
         
         div [ classList [ props.Status.CellClass, true
-                          Css.tooltipIndicator, hasComments
+                          Css.tooltipContainer, hasComments
                           Css.cellSelected, props.Selected
                           Css.cellToday, props.Date = props.Today ] ][
                 
             div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][]
                 
             if hasComments then
-                div [ Class Css.tooltipPopup ][
-                    
-                    props.Comments
-                    |> List.map (fun x -> x.Comment.Trim ())
-                    |> List.map ((+) Environment.NewLine)
-                    |> String.concat (Environment.NewLine + Environment.NewLine)
-                    |> fun text ->
-                        ReactBindings.React.createElement
-                            (Ext.reactMarkdown,
-                                {| source = text |}, [])
-                ]
+                props.Comments
+                |> List.map (fun x -> x.Comment)
+                |> tooltipPopup
         ]
     , memoizeWith = equalsButFunctions)

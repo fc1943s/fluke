@@ -21,7 +21,7 @@ module Temp =
         | TempPublic
         | Test
     
-    let getNow, cellEvents, taskList, taskOrderList, hourOffset, projectList, areaList, resourceList =
+    let getNow, cellEvents, taskList, taskComments, informationComments, taskOrderList, hourOffset, projectList, areaList, resourceList =
         match TempPrivate with
         | TempPrivate ->
             let taskData = PrivateData.Tasks.tempManualTasks |> Result.okOrThrow
@@ -29,6 +29,8 @@ module Temp =
             TempData.getNow,
             PrivateData.CellEvents.cellEvents,
             taskData.TaskList,
+            PrivateData.TaskComments.taskComments |> List.groupBy (fun x -> x.Task) |> Map.ofList,
+            PrivateData.InformationComments.informationComments |> List.groupBy (fun x -> x.Information) |> Map.ofList,
             taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
             PrivateData.PrivateData.hourOffset,
             taskData.ProjectList,
@@ -40,6 +42,8 @@ module Temp =
             TempData.getNow,
             [],
             taskData.TaskList,
+            [] |> Map.ofList,
+            [] |> Map.ofList,
             taskData.TaskOrderList,
             TempData.hourOffset,
             taskData.ProjectList,
@@ -52,6 +56,8 @@ module Temp =
             testData.GetNow,
             testData.CellEvents,
             testData.TaskList,
+            [] |> Map.ofList,
+            [] |> Map.ofList,
             testData.TaskOrderList,
             TempData.hourOffset,
             TempData.projectList,
@@ -141,12 +147,12 @@ module HomePageComponent =
         let emptyDiv =
             div [ DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
             
-        let taskName level lanes =
+        let taskNameList level lanes =
             lanes
             |> List.map (fun (Lane (task, _)) ->
+                let comments = Temp.taskComments.TryFind task
                 
-                div [ classList [ Css.tooltipContainer, true
-                                  Css.tooltipIndicator, task.Comments |> List.isEmpty |> not ] ][
+                div [ classList [ Css.tooltipContainer, comments.IsSome ] ][
                     
                     div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
                                   WhiteSpace WhiteSpaceOptions.Nowrap
@@ -156,18 +162,12 @@ module HomePageComponent =
                         str task.Name
                     ]
                     
-                    div [ Class Css.tooltipPopup ][
-                        
-                        task.Comments
-                        |> List.map (fun x -> x.Trim ())
-                        |> List.map ((+) Environment.NewLine)
-                        |> List.append [ "# " + task.Name ]
-                        |> String.concat (Environment.NewLine + Environment.NewLine)
-                        |> fun text ->
-                            ReactBindings.React.createElement
-                                (Ext.reactMarkdown,
-                                    {| source = text |}, [])
-                    ]
+                    match comments with
+                    | None -> ()
+                    | Some comments ->
+                            comments
+                        |> List.map (fun x -> x.Comment)
+                        |> CellComponent.tooltipPopup
                 ]
             )
             
@@ -247,16 +247,27 @@ module HomePageComponent =
                         // Column: Information Type
                         lanes
                         |> List.map (fun (Lane (task, _)) ->
-                            div [ Style [ Padding 0
+                            let comments = Temp.informationComments.TryFind task.InformationType
+                            
+                            div [ classList [ Css.blueIndicator, comments.IsSome
+                                              Css.tooltipContainer, comments.IsSome ]
+                                  Style [ Padding 0
                                           Color task.InformationType.Color
                                           WhiteSpace WhiteSpaceOptions.Nowrap ] ][
                                 
                                 str task.InformationType.Name
+                                
+                                match comments with
+                                | None -> ()
+                                | Some comments ->
+                                        comments
+                                    |> List.map (fun x -> x.Comment)
+                                    |> CellComponent.tooltipPopup
                             ]
                         )
                         |> div [ Style [ PaddingRight 10 ] ]
                 
-                        taskName 0 lanes
+                        taskNameList 0 lanes
                         |> div [ Style [ Width 200 ] ]
                     ]
                 ]
@@ -300,14 +311,25 @@ module HomePageComponent =
                             
                             groupLanes
                             |> List.map (fun (information, lanes) ->
+                                let comments = Temp.informationComments.TryFind information
                                 
                                 div [][
-                                    div [ Style [ paddingLeftLevel 1
+                                    div [ classList [ Css.blueIndicator, comments.IsSome
+                                                      Css.tooltipContainer, comments.IsSome ]
+                                          Style [ paddingLeftLevel 1
                                                   Color "#444" ] ][
                                         str information.Name
+                                        
+                                        match comments with
+                                        | None -> ()
+                                        | Some comments ->
+                                                comments
+                                            |> List.map (fun x -> x.Comment)
+                                            |> CellComponent.tooltipPopup
                                     ]
                                     
-                                    taskName 2 lanes
+                                    
+                                    taskNameList 2 lanes
                                     |> div [ Style [ Width 500 ] ]
                                 ]
                             )

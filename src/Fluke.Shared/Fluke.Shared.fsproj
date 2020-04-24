@@ -9,8 +9,10 @@
     <Compile Include="Core.fs" />
     <Compile Include="TempData.fs" />
     <Compile Include="PrivateData\PrivateData.fs" />
+    <Compile Include="PrivateData\InformationComments.fs" />
     <Compile Include="PrivateData\Tasks.fs" />
     <Compile Include="PrivateData\CellEvents.fs" />
+    <Compile Include="PrivateData\TaskComments.fs" />
     <Compile Include="PrivateData\CellComments.fs" />
     <Compile Include="PrivateData\Journal.fs" />
     <Content Include="paket.references" />

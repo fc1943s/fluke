@@ -105,7 +105,6 @@ module Model =
     type Task =
         { Name: string
           InformationType: InformationType
-          Comments: string list 
           Scheduling: TaskScheduling
           PendingAfter: FlukeTime
           MissedAfter: FlukeTime
@@ -113,11 +112,15 @@ module Model =
         static member inline Default =
             { Name = "<null>"
               InformationType = Area Area.Default 
-              Comments = []
               PendingAfter = midnight
               MissedAfter = midnight
               Scheduling = Manual false
               Duration = None }
+        
+    type TaskComment =
+        { Task: Task
+          Date: FlukeDate
+          Comment: string }
         
     type CellEventStatus =
         | Postponed of FlukeTime

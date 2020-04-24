@@ -1,3 +1,4 @@
+.blue-indicator,
 .tooltip-popup, 
 .cell-selected, 
 .cell-today,
@@ -26,25 +27,30 @@ $color-cell-manual-pending: #003038;
   color: #ddd;
 }
 
-.tooltip-indicator::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  border-top: 8px solid #f00;
-  border-left: 8px solid transparent;
-}
 
 .tooltip-container {
   position: relative;
 
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-top: 8px solid #c13409;
+    border-left: 8px solid transparent;
+  }
+  
+  &.blue-indicator::after {
+    border-top: 8px solid #005688;
+  }
+  
   .tooltip-popup {
     padding: 20px 40px;
     //min-width: 200px;
     //max-width: 600px;
     width: 600px;
-    left: 30px;
-    top: 0;
+    left: 70px;
+    top: 70px;
     white-space: pre-wrap;
     position: absolute;
     display: none;
@@ -73,7 +79,6 @@ $color-cell-manual-pending: #003038;
 .lane-container {
   
   .cell {
-    @extend .tooltip-container;
     
     > div:first-child {
       width: 18px;
