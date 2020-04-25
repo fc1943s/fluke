@@ -117,6 +117,7 @@ module Model =
               Scheduling = Manual false
               Duration = None }
         
+    // TODO: this is overlapping with CellComment
     type TaskComment =
         { Task: Task
           Date: FlukeDate

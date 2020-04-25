@@ -3,7 +3,7 @@ namespace Fluke.Shared
 open FSharpPlus
 open System
 
-
+// TODO: move to suigetsu
 module Core =
     type ResultBuilder () =
         member _.Return x = Ok x

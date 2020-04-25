@@ -169,16 +169,14 @@ module TempData =
                     getInformationType informationTypeName informationName
                     |> Result.map (fun informationType ->
                         information
-                        |> List.map (fun (taskName, comments) ->
-                            let task =
-                                match oldTaskMap |> Map.tryFind (informationType, taskName) with
-                                | Some oldTask -> oldTask
-                                | None ->
-                                    { Task.Default with
-                                        Name = sprintf "> %s" taskName
-                                        InformationType = informationType }
-                            task, comments
-                        )
+                        |> List.map (Tuple2.mapFst (fun taskName ->
+                            oldTaskMap
+                            |> Map.tryFind (informationType, taskName)
+                            |> Option.defaultValue
+                                { Task.Default with
+                                    Name = sprintf "> %s" taskName
+                                    InformationType = informationType }
+                        ))
                     )
                 )
             )

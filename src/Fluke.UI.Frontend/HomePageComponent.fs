@@ -16,13 +16,29 @@ open Suigetsu.Core
 
 module Temp =
     
+    type View =
+        | CalendarView
+        | GroupsView
+        | TasksView
+    
     type TempDataType =
         | TempPrivate
         | TempPublic
         | Test
+        
+    let tempDataType = TempPrivate
+//    let tempDataType = TempPublic
+//    let tempDataType = Test
+
+    let view = CalendarView
+//    let view = Tree
+//    let view = FlatFlat
+
+
+
     
     let getNow, cellEvents, taskList, taskComments, informationComments, taskOrderList, hourOffset, projectList, areaList, resourceList =
-        match TempPrivate with
+        match tempDataType with
         | TempPrivate ->
             let taskData = PrivateData.Tasks.tempManualTasks |> Result.okOrThrow
             
@@ -50,7 +66,7 @@ module Temp =
             taskData.AreaList,
             taskData.ResourceList
         | Test ->
-            let testData = TempData.tempData.RenderLaneTests
+//            let testData = TempData.tempData.RenderLaneTests
             let testData = TempData.tempData.SortLanesTests
             
             testData.GetNow,
@@ -71,9 +87,6 @@ module Temp =
 module HomePageComponent =
     open Model
     
-    type View =
-        | Flat
-        | Tree
     
     type Props =
         { Dispatch: SharedState.SharedServerMessage -> unit
@@ -84,16 +97,16 @@ module HomePageComponent =
         { Now: FlukeDateTime
           Selection: Cell list
           Lanes: Lane list
-          View: View }
+          View: Temp.View }
         static member inline Default =
             let date = flukeDate 0 Month.January 1
             { Now = { Date = date; Time = midnight }
               Selection = []
               Lanes = []
-              View = Flat }
+              View = Temp.view }
         
-    let navBar (props: {| View: View
-                          SetView: View -> unit |}) =
+    let navBar (props: {| View: Temp.View
+                          SetView: Temp.View -> unit |}) =
         
         let events = {|
             OnViewChange = fun view ->
@@ -102,8 +115,9 @@ module HomePageComponent =
         
         Ext.useEventListener "keydown" (fun (e: KeyboardEvent) ->
             match e.ctrlKey, e.shiftKey, e.key with
-            | _, true, "F" -> events.OnViewChange Flat
-            | _, true, "T" -> events.OnViewChange Tree
+            | _, true, "C" -> events.OnViewChange Temp.CalendarView
+            | _, true, "G" -> events.OnViewChange Temp.GroupsView
+            | _, true, "T" -> events.OnViewChange Temp.TasksView
             | _, _,    _   -> ()
         )
         
@@ -114,29 +128,23 @@ module HomePageComponent =
                                                Display DisplayOptions.Flex
                                                JustifyContent "space-around" ]]][
             
-            Navbar.Item.div [ Navbar.Item.Props [ Class "field"
-                                                  OnClick (fun _ -> events.OnViewChange Flat) ] ][
+            let checkbox view text =
+                Navbar.Item.div [ Navbar.Item.Props [ Class "field"
+                                                      OnClick (fun _ -> events.OnViewChange view) ] ][
 
-                Checkbox.input [ CustomClass "switch is-small is-dark"
-                                 Props [ Checked (props.View = Flat)
-                                         OnChange (fun _ -> ()) ]]
-                
-                Checkbox.checkbox [][
-                    str "flat view"
+                    Checkbox.input [ CustomClass "switch is-small is-dark"
+                                     Props [ Checked (props.View = view)
+                                             OnChange (fun _ -> ()) ]]
+                    
+                    Checkbox.checkbox [][
+                        str text
+                    ]
                 ]
-            ]
+                
+            checkbox Temp.CalendarView "calendar view"
+            checkbox Temp.GroupsView "groups view"
+            checkbox Temp.TasksView "tasks view"
             
-            Navbar.Item.div [ Navbar.Item.Props [ Class "field"
-                                                  OnClick (fun _ -> events.OnViewChange Tree) ] ][
-
-                Checkbox.input [ CustomClass "switch is-small is-dark"
-                                 Props [ Checked (props.View = Tree)
-                                         OnChange (fun _ -> ()) ]]
-                
-                Checkbox.checkbox [][
-                    str "tree view"
-                ]
-            ]
         ]
         
         
@@ -165,7 +173,7 @@ module HomePageComponent =
                     match comments with
                     | None -> ()
                     | Some comments ->
-                            comments
+                        comments
                         |> List.map (fun x -> x.Comment)
                         |> CellComponent.tooltipPopup
                 ]
@@ -233,7 +241,7 @@ module HomePageComponent =
                 |> div [ Style [ Display DisplayOptions.Flex ] ]
             ]
             
-        let flatView dateSequence now selection lanes =
+        let calendarView dateSequence now selection lanes =
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
                 // Column: Left
@@ -260,7 +268,7 @@ module HomePageComponent =
                                 match comments with
                                 | None -> ()
                                 | Some comments ->
-                                        comments
+                                    comments
                                     |> List.map (fun x -> x.Comment)
                                     |> CellComponent.tooltipPopup
                             ]
@@ -279,7 +287,7 @@ module HomePageComponent =
                 ]
             ]
             
-        let treeView dateSequence now selection lanes =
+        let groupsView dateSequence now selection lanes =
             let groups =
                 lanes
                 |> List.groupBy (fun (Lane (task, _)) ->
@@ -323,7 +331,7 @@ module HomePageComponent =
                                         match comments with
                                         | None -> ()
                                         | Some comments ->
-                                                comments
+                                            comments
                                             |> List.map (fun x -> x.Comment)
                                             |> CellComponent.tooltipPopup
                                     ]
@@ -366,6 +374,52 @@ module HomePageComponent =
                 ]
             ]
             
+        let tasksView dateSequence now selection lanes =
+            div [ Style [ Display DisplayOptions.Flex ] ][
+                
+                // Column: Left
+                div [][
+                    // Top Padding
+                    emptyDiv
+                    |> List.replicate 3
+                    |> div []
+                        
+                    div [ Style [ Display DisplayOptions.Flex ] ][
+                        // Column: Information Type
+                        lanes
+                        |> List.map (fun (Lane (task, _)) ->
+                            let comments = Temp.informationComments.TryFind task.InformationType
+                            
+                            div [ classList [ Css.blueIndicator, comments.IsSome
+                                              Css.tooltipContainer, comments.IsSome ]
+                                  Style [ Padding 0
+                                          Color task.InformationType.Color
+                                          WhiteSpace WhiteSpaceOptions.Nowrap ] ][
+                                
+                                str task.InformationType.Name
+                                
+                                match comments with
+                                | None -> ()
+                                | Some comments ->
+                                    comments
+                                    |> List.map (fun x -> x.Comment)
+                                    |> CellComponent.tooltipPopup
+                            ]
+                        )
+                        |> div [ Style [ PaddingRight 10 ] ]
+                
+                        taskNameList 0 lanes
+                        |> div [ Style [ Width 200 ] ]
+                    ]
+                ]
+                    
+                div [][
+                    gridHeader dateSequence now
+                    
+                    gridCells now.Date selection lanes
+                ]
+            ]
+            
     let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
             
         let getLanes dateSequence now view =
@@ -380,7 +434,7 @@ module HomePageComponent =
                 )
             
             match view with
-            | Flat ->
+            | Temp.CalendarView ->
                 tasks
                 |> List.filter (function { Scheduling = Manual false }, [] -> false | _ -> true)
                 |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
@@ -388,7 +442,7 @@ module HomePageComponent =
                 |> Sorting.sortLanesByIncomingRecurrency now.Date
                 |> Sorting.sortLanesByToday now.Date
                 |> Sorting.applyManualOrder now.Date Temp.taskOrderList
-            | Tree ->
+            | Temp.GroupsView ->
                 let lanes =
                     tasks
                     |> List.filter (function { Scheduling = Manual false }, _ -> true | _ -> false)
@@ -410,6 +464,11 @@ module HomePageComponent =
                     information, lanes
                 ))
                 |> List.collect snd
+            | Temp.TasksView ->
+                tasks
+                |> List.filter (function { Scheduling = Manual false }, _ -> true | _ -> false)
+                |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
+            
                     
         let getState oldState =
             let now = Temp.getNow Temp.hourOffset
@@ -474,7 +533,8 @@ module HomePageComponent =
                    
                 
             match state.current.View with
-            | Tree -> Grid.treeView dateSequence state.current.Now state.current.Selection state.current.Lanes
-            | Flat -> Grid.flatView dateSequence state.current.Now state.current.Selection state.current.Lanes
+            | Temp.CalendarView -> Grid.calendarView dateSequence state.current.Now state.current.Selection state.current.Lanes
+            | Temp.GroupsView -> Grid.groupsView dateSequence state.current.Now state.current.Selection state.current.Lanes
+            | Temp.TasksView -> Grid.tasksView dateSequence state.current.Now state.current.Selection state.current.Lanes
         ]
     , memoizeWith = equalsButFunctions)
