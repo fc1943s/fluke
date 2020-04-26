@@ -14,7 +14,7 @@
     <Compile Include="MainView.fs" />
     <Compile Include="Client.fs" />
     <Content Include="package.json" />
-    <Content Include="webpack.config.js" />
+    <Content Include="webpack.config.ts" />
     <Content Include="build.fsx" />
     <Content Include="paket.references" />
     <Content Include="public\index.js" />

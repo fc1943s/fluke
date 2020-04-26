@@ -19,6 +19,8 @@ function enableSymlinksHmr() {
     };
 }
 enableSymlinksHmr();
+
+
 // Template for webpack.config.js in Fable projects
 // Find latest version in https://github.com/fable-compiler/webpack-config-template
 
