@@ -30,9 +30,9 @@ module Temp =
 //    let tempDataType = TempPublic
 //    let tempDataType = Test
 
-    let view = CalendarView
-//    let view = Tree
-//    let view = FlatFlat
+//    let view = CalendarView
+//    let view = GroupsView
+    let view = TasksView
 
 
 
@@ -47,7 +47,7 @@ module Temp =
             taskData.TaskList,
             PrivateData.TaskComments.taskComments |> List.groupBy (fun x -> x.Task) |> Map.ofList,
             PrivateData.InformationComments.informationComments |> List.groupBy (fun x -> x.Information) |> Map.ofList,
-            taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
+            taskData.TaskOrderList @ (PrivateData.Tasks.taskOrderList |> Result.okOrThrow),
             PrivateData.PrivateData.hourOffset,
             taskData.ProjectList,
             taskData.AreaList,
@@ -441,7 +441,7 @@ module HomePageComponent =
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByIncomingRecurrency now.Date
                 |> Sorting.sortLanesByToday now.Date
-                |> Sorting.applyManualOrder now.Date Temp.taskOrderList
+                |> Sorting.applyPendingManualOrder now.Date Temp.taskOrderList
             | Temp.GroupsView ->
                 let lanes =
                     tasks
@@ -453,7 +453,7 @@ module HomePageComponent =
                         |> function Some { Status = Dropped } -> false | _ -> true
                     )
                     |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
-                    |> Sorting.applyManualOrder now.Date Temp.taskOrderList
+                    |> Sorting.applyManualOrder Temp.taskOrderList
                     
                 Temp.informationList
                 |> List.collect (List.map (fun information ->
@@ -466,8 +466,9 @@ module HomePageComponent =
                 |> List.collect snd
             | Temp.TasksView ->
                 tasks
-                |> List.filter (function { Scheduling = Manual false }, _ -> true | _ -> false)
+                |> List.filter (function { Scheduling = Manual _ }, _ -> true | _ -> false)
                 |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
+                |> Sorting.applyManualOrder Temp.taskOrderList
             
                     
         let getState oldState =

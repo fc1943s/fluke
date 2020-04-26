@@ -198,7 +198,7 @@ module Sorting =
         let taskOrderList =
             taskOrderList
             |> Seq.rev
-            |> Seq.distinctBy (fun x -> x.Task.Name)
+            |> Seq.distinctBy (fun x -> x.Task)
             |> Seq.rev
             |> Seq.toList
         
@@ -220,8 +220,37 @@ module Sorting =
             
         result |> Seq.toList
         
+    let applyManualOrder taskOrderList lanes =
+        let tasksSet =
+            lanes
+            |> List.map (fun (Lane (task, _)) -> task)
+            |> Set.ofList
+            
+        let activeTaskOrderList = taskOrderList |> List.filter (fun orderEntry -> tasksSet.Contains orderEntry.Task)
         
-    let applyManualOrder today taskOrderList lanes =
+        let filteredTaskOrderSet =
+            activeTaskOrderList
+            |> List.map (fun x -> x.Task)
+            |> Set.ofList
+            
+        let remainingTaskOrderList =
+            tasksSet
+            |> Set.filter (fun task -> filteredTaskOrderSet.Contains task |> not)
+            |> Set.toList
+            |> List.map (fun task -> { Task = task; Priority = Last })
+        
+        let newTaskOrderList = remainingTaskOrderList @ activeTaskOrderList
+            
+        let indexMap =
+            newTaskOrderList
+            |> getManualSortedTaskList
+            |> List.mapi (fun i task -> task, i)
+            |> Map.ofList
+            
+        lanes |> List.sortBy (fun (Lane (task, _)) -> indexMap.[task])
+        
+        
+    let applyPendingManualOrder today taskOrderList lanes =
         let lanesMap =
             lanes
             |> List.groupBy (fun (Lane (_, cells)) ->
@@ -232,41 +261,13 @@ module Sorting =
             )
             |> Map.ofList
             
-        let sortLaneGroup lanes =
-            let pendingTasksSet =
-                lanes
-                |> List.map (fun (Lane (task, _)) -> task)
-                |> Set.ofList
-                
-            let filteredTaskOrderList = taskOrderList |> List.filter (fun orderEntry -> pendingTasksSet.Contains orderEntry.Task)
-            
-            let filteredTaskOrderSet =
-                filteredTaskOrderList
-                |> List.map (fun x -> x.Task)
-                |> Set.ofList
-                
-            let initialPendingOrder =
-                lanes
-                |> List.map (fun (Lane (task, _)) -> { Task = task; Priority = Last })
-                |> List.filter (fun x -> filteredTaskOrderSet.Contains x.Task |> not)
-            
-            let newOrder = initialPendingOrder @ filteredTaskOrderList
-                
-            let indexMap =
-                newOrder
-                |> getManualSortedTaskList
-                |> List.mapi (fun i task -> task, i)
-                |> Map.ofList
-                
-            lanes |> List.sortBy (fun (Lane (task, _)) -> indexMap.[task])
-            
         let getLaneGroup status =
             lanesMap
             |> Map.tryFind status
             |> Option.defaultValue []
             
-        [ getLaneGroup (EventStatus ManualPending) |> sortLaneGroup
-          getLaneGroup Pending |> sortLaneGroup
+        [ getLaneGroup (EventStatus ManualPending) |> applyManualOrder taskOrderList
+          getLaneGroup Pending |> applyManualOrder taskOrderList
           getLaneGroup Disabled ]
         |> List.concat
         
