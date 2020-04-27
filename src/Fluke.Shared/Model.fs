@@ -255,9 +255,9 @@ module Sorting =
             lanes
             |> List.groupBy (fun (Lane (_, cells)) ->
                 match cells |> List.tryFind (fun cell -> cell.Date = today) with
-                | Some { Status = EventStatus ManualPending } -> EventStatus ManualPending
-                | Some { Status = Pending } -> Pending
-                | _ -> Disabled
+                | Some { Status = EventStatus ManualPending } -> Some (EventStatus ManualPending)
+                | Some { Status = Pending } -> Some Pending
+                | _ -> None
             )
             |> Map.ofList
             
@@ -266,9 +266,9 @@ module Sorting =
             |> Map.tryFind status
             |> Option.defaultValue []
             
-        [ getLaneGroup (EventStatus ManualPending) |> applyManualOrder taskOrderList
-          getLaneGroup Pending |> applyManualOrder taskOrderList
-          getLaneGroup Disabled ]
+        [ getLaneGroup (Some (EventStatus ManualPending)) |> applyManualOrder taskOrderList
+          getLaneGroup (Some Pending) |> applyManualOrder taskOrderList
+          getLaneGroup None ]
         |> List.concat
         
         

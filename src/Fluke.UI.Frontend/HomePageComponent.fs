@@ -58,8 +58,8 @@ module Temp =
             TempData.getNow,
             [],
             taskData.TaskList,
-            [] |> Map.ofList,
-            [] |> Map.ofList,
+            Map.empty,
+            Map.empty,
             taskData.TaskOrderList,
             TempData.hourOffset,
             taskData.ProjectList,
@@ -72,8 +72,8 @@ module Temp =
             testData.GetNow,
             testData.CellEvents,
             testData.TaskList,
-            [] |> Map.ofList,
-            [] |> Map.ofList,
+            Map.empty,
+            Map.empty,
             testData.TaskOrderList,
             TempData.hourOffset,
             TempData.projectList,
@@ -539,3 +539,4 @@ module HomePageComponent =
             | Temp.TasksView -> Grid.tasksView dateSequence state.current.Now state.current.Selection state.current.Lanes
         ]
     , memoizeWith = equalsButFunctions)
+    
