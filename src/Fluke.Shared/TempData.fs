@@ -8,59 +8,82 @@ open Suigetsu.Core
 module TempData =
     open Model
     
-    let areaList : Area list = [
-        { Name = "car" }
-        { Name = "career" }
-        { Name = "chores" }
-        { Name = "finances" }
-        { Name = "fitness" }
-        { Name = "food" }
-        { Name = "health" }
-        { Name = "leisure" }
-        { Name = "programming" }
-        { Name = "travel" }
-        { Name = "workflow" }
-        { Name = "writing" }
-    ]
-    
-    let private getArea name =
-        areaList |> List.find (fun x -> x.Name = name)
-    
     let private areas = {|
-        chores = getArea "chores"
-        finances = getArea "finances"
-        leisure = getArea "leisure"
-        programming = getArea "programming"
-        workflow = getArea "workflow"
-        writing = getArea "writing"
+        car = { Name = "car" }
+        career = { Name = "career" }
+        chores = { Name = "chores" }
+        finances = { Name = "finances" }
+        fitness = { Name = "fitness" }
+        food = { Name = "food" }
+        health = { Name = "health" }
+        leisure = { Name = "leisure" }
+        programming = { Name = "programming" }
+        travel = { Name = "travel" }
+        workflow = { Name = "workflow" }
+        writing = { Name = "writing" }
     |}
     
-    let projectList : Project list = [
-        { Area = areas.workflow;    Name = "app-fluke" }
-        { Area = areas.writing;     Name = "blog" }
-        { Area = areas.programming; Name = "rebuild-website" }
-    ]
+    let private projects = {|
+        ``app-fluke`` =
+            { Project.Area = areas.workflow
+              Project.Name = "app-fluke" }
+            
+        blog =
+            { Project.Area = areas.writing
+              Project.Name = "blog" }
+            
+        ``rebuild-website`` =
+            { Project.Area = areas.programming
+              Project.Name = "rebuild-website" }
+    |}
     
-//    let private getProject name =
-//        projectList |> List.find (fun x -> x.Name = name)
-        
-    let resourceList : Resource list = [
-        { Area = areas.programming; Name = "agile" }
-        { Area = areas.programming; Name = "artificial-intelligence" }
-        { Area = areas.programming; Name = "cloud" }
-        { Area = areas.workflow;    Name = "communication" }
-        { Area = areas.programming; Name = "docker" }
-        { Area = areas.programming; Name = "f#" }
-        { Area = areas.programming; Name = "linux" }
-        { Area = areas.leisure;     Name = "music" }
-        { Area = areas.programming; Name = "rust" }
-        { Area = areas.programming; Name = "vim" }
-        { Area = areas.programming; Name = "windows" }
-    ]
+    let private resources = {|
+        agile =
+            { Resource.Area = areas.programming
+              Resource.Name = "agile" }
+            
+        ``artificial-intelligence`` =
+            { Resource.Area = areas.programming
+              Resource.Name = "artificial-intelligence" }
+            
+        cloud =
+            { Resource.Area = areas.programming
+              Resource.Name = "cloud" }
+            
+        communication = 
+            { Resource.Area = areas.workflow
+              Resource.Name = "communication" }
+            
+        docker = 
+            { Resource.Area = areas.programming
+              Resource.Name = "docker" }
+            
+        ``f#`` =
+            { Resource.Area = areas.programming
+              Resource.Name = "f#" }
+            
+        linux = 
+            { Resource.Area = areas.programming
+              Resource.Name = "linux" }
+              
+        music = 
+            { Resource.Area = areas.leisure
+              Resource.Name = "music" }
+            
+        rust = 
+            { Resource.Area = areas.programming
+              Resource.Name = "rust" }
+              
+        vim = 
+            { Resource.Area = areas.programming
+              Resource.Name = "vim" }
+            
+        windows = 
+            { Resource.Area = areas.programming
+              Resource.Name = "windows" }
+            
+    |}
     
-//    let private getResource name =
-//        resourceList |> List.find (fun x -> x.Name = name)
-        
     let hourOffset = 0
     
     let getNow hourOffset =
@@ -68,20 +91,6 @@ module TempData =
         { Date = FlukeDate.FromDateTime rawDate
           Time = FlukeTime.FromDateTime rawDate }
     
-    let private taskList : Task list = []
-    
-    let getTask name =
-        taskList
-        |> List.tryFind (fun x -> x.Name = name)
-        |> Option.toResultWith (sprintf "Error getting task '%s'" name)
-        |> Result.okOrThrow
-    
-    
-    let getInformationList (projectList, areaList, resourceList) =
-        [ projectList |> List.map Project
-          areaList |> List.map Area
-          resourceList |> List.map Resource ]
-        
     let createRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
                                                Data: (FlukeDate * CellStatus) list
                                                Now: FlukeDateTime
@@ -102,44 +111,9 @@ module TempData =
            TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = Last })
            GetNow = fun (_: int) -> testData.Now |}
            
-    let getInformationMap (projectList: Project list, areaList: Area list, resourceList: Resource list) =
-        let projectMap = projectList |> List.map (fun x -> x.Name, x) |> Map.ofList
-        let areaMap = areaList |> List.map (fun x -> x.Name, x) |> Map.ofList
-        let resourceMap = resourceList |> List.map (fun x -> x.Name, x) |> Map.ofList
-        
-        projectMap, areaMap, resourceMap
-            
-    let mergeTaskList (projectList, areaList, resourceList) taskList =
-        let projectMap, areaMap, resourceMap = getInformationMap (projectList, areaList, resourceList)
-        
-        let (|ProjectMissing|AreaMissing|ResourceMissing|Other|) = function
-            | Project project when projectMap.ContainsKey project.Name |> not -> ProjectMissing project
-            | Area area when areaMap.ContainsKey area.Name |> not -> AreaMissing area
-            | Resource resource when resourceMap.ContainsKey resource.Name |> not -> ResourceMissing resource
-            | _ -> Other
-            
-        let rec loop (projectList, areaList, resourceList) = function
-            | ProjectMissing project :: tail -> loop (project :: projectList, areaList, resourceList) tail
-            | AreaMissing area :: tail -> loop (projectList, area :: areaList, resourceList) tail
-            | ResourceMissing resource :: tail -> loop (projectList, areaList, resource :: resourceList) tail
-            | _ -> projectList, areaList, resourceList
-            
-        let projectList, areaList, resourceList =
-            taskList
-            |> List.map (fun x -> x.InformationType)
-            |> loop (projectList, areaList, resourceList)
-            
-        let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = Last })
-            
-        {| TaskList = taskList
-           TaskOrderList = taskOrderList
-           TaskComments = []
-           ProjectList = projectList
-           AreaList = areaList
-           ResourceList = resourceList |}
            
-    let createManualTasksFromTree (projectList, areaList, resourceList) taskList taskComments taskTree = Core.result {
-        let projectMap, areaMap, resourceMap = getInformationMap (projectList, areaList, resourceList)
+    let createManualTasksFromTree taskList (taskTree: (InformationType * (string * string list) list) list) =
+        let now = (getNow hourOffset).Date
         
         let createTaskMap taskList =
             let map =
@@ -153,35 +127,34 @@ module TempData =
             
         let oldTaskMap, oldTaskOrderList = createTaskMap taskList
         
-        let! newTaskList, newTaskComments =
-            let getInformationType informationTypeName informationName =
-                match informationTypeName with
-                | "projects" -> projectMap |> Map.tryFind informationName |> Option.map Project
-                | "areas" -> areaMap |> Map.tryFind informationName |> Option.map Area
-                | "resources" -> resourceMap |> Map.tryFind informationName |> Option.map Resource
-                | _ -> None
-                |> Option.toResultWith (sprintf "Invalid information type: '%s/%s'" informationTypeName informationName)
-                
+        let newTaskList, newTaskComments =
             taskTree
-            |> List.collect (fun (informationTypeName, informationType) ->
-                informationType
-                |> List.map (fun (informationName, information) -> 
-                    getInformationType informationTypeName informationName
-                    |> Result.map (fun informationType ->
-                        information
-                        |> List.map (Tuple2.mapFst (fun taskName ->
-                            oldTaskMap
-                            |> Map.tryFind (informationType, taskName)
-                            |> Option.defaultValue
-                                { Task.Default with
-                                    Name = sprintf "> %s" taskName
-                                    InformationType = informationType }
-                        ))
-                    )
+            |> List.collect (fun (informationType, tasks) -> 
+                tasks
+                |> List.map (fun (taskName, comments) ->
+                    let task =
+                        oldTaskMap
+                        |> Map.tryFind (informationType, taskName)
+                        |> Option.defaultValue
+                            { Task.Default with
+                                Name = sprintf "> %s" taskName
+                                InformationType = informationType }
+                    let comments =
+                        comments
+                        |> List.map (fun comment ->
+                            { Task = task
+                              Comment = comment
+                              Date = now }
+                        )
+                    task, comments
                 )
             )
-            |> Result.fold List.append (Ok [])
-            |> Result.map List.unzip
+            |> List.unzip
+        
+        let informationList =
+            taskTree
+            |> List.map fst
+            |> List.distinct
             
         let newTaskMap, newTaskOrderList = createTaskMap newTaskList
         
@@ -191,78 +164,70 @@ module TempData =
         let filteredOldTaskList = taskList |> List.filter notOnNewTaskMap
         let taskList =  filteredOldTaskList @ newTaskList
         
-        let result = taskList |> mergeTaskList (projectList, areaList, resourceList)
+        let initialTaskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = Last })
         
         let filteredOldTaskOrder = oldTaskOrderList |> List.filter (fun x -> notOnNewTaskMap x.Task)
         let taskOrderList = newTaskOrderList @ filteredOldTaskOrder
         
-        return
-            {| result with
-                TaskOrderList = result.TaskOrderList @ taskOrderList
-                TaskComments = taskComments @ newTaskComments |}
-    }
-            
-        
+        {| TaskList = taskList
+           TaskOrderList = initialTaskOrderList @ taskOrderList
+           TaskComments = newTaskComments |> List.collect id
+           InformationList = informationList |}
+    
     let tempData<'T> = {|
         ManualTasks = 
             [
-                "projects", [
-                    "app-fluke", [
-                        "data management", [ "mutability"; "initial default data (load the text first with tests)" ]
-                        "cell selection (mouse, vim navigation)", []
-                        "data structures performance", []
-                        "side panel (journal, comments)", []
-                        "add task priority (for randomization)", []
-                        "persistence", [ "data encryption" ]
-                        "vivaldi or firefox bookmark integration", [ "browser.html javascript injection or browser extension" ]
-                        "telegram integration (fast link sharing)", []
-                        "mobile layout", []
-                        "move fluke tasks to github issues", []
-                    ]
-                    "blog", []
-                    "rebuild-website", [
-                        "task1", []
+                Project projects.``app-fluke``, [
+                    "data management", [ "mutability"; "initial default data (load the text first with tests)" ]
+                    "cell selection (mouse, vim navigation)", []
+                    "data structures performance", []
+                    "side panel (journal, comments)", []
+                    "add task priority (for randomization)", []
+                    "persistence", [ "data encryption" ]
+                    "vivaldi or firefox bookmark integration", [ "browser.html javascript injection or browser extension" ]
+                    "telegram integration (fast link sharing)", []
+                    "mobile layout", []
+                    "move fluke tasks to github issues", []
+                ]
+                Project projects.blog, []
+                Project projects.``rebuild-website``, [
+                    "task1", []
+                ]
+                Area areas.car, []
+                Area areas.career, []
+                Area areas.chores, [
+                    "groceries", [
+                        "food"
+                        "beer"
                     ]
                 ]
-                "areas", [
-                    "car", []
-                    "career", []
-                    "chores", [
-                        "groceries", [
-                            "food"
-                            "beer"
-                        ]
-                    ]
-                    "fitness", []
-                    "food", []
-                    "finances", []
-                    "health", []
-                    "leisure", [
-                        "watch-movie-foobar", []
-                    ]
-                    "programming", []
-                    "travel", []
-                    "workflow", []
-                    "writing", []
+                Area areas.fitness, []
+                Area areas.food, []
+                Area areas.finances, []
+                Area areas.health, []
+                Area areas.leisure, [
+                    "watch-movie-foobar", []
                 ]
-                "resources", [
-                    "agile", []
-                    "artificial-intelligence", []
-                    "cloud", []
-                    "communication", []
-                    "docker", []
-                    "f#", [
-                        "study: [choice, computation expressions]", []
-                        "organize youtube playlists", []
-                    ]
-                    "linux", []
-                    "music", []
-                    "rust", []
-                    "vim", []
-                    "windows", []
+                Area areas.programming, []
+                Area areas.travel, []
+                Area areas.workflow, []
+                Area areas.writing, []
+                Resource resources.agile, []
+                Resource resources.``artificial-intelligence``, []
+                Resource resources.cloud, []
+                Resource resources.communication, []
+                Resource resources.docker, []
+                Resource resources.``f#``, [
+                    "study: [choice, computation expressions]", []
+                    "organize youtube playlists", []
                 ]
+                Resource resources.linux, []
+                Resource resources.music, []
+                Resource resources.rust, []
+                Resource resources.vim, []
+                Resource resources.windows, []
             ]
-            |> createManualTasksFromTree (projectList, areaList, resourceList) taskList []
+            |> createManualTasksFromTree []
             
         RenderLaneTests = 
                         {| Task = { Task.Default with Scheduling = Manual true

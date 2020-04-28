@@ -37,23 +37,21 @@ module Temp =
 
 
     
-    let getNow, cellEvents, taskList, taskComments, informationComments, taskOrderList, hourOffset, projectList, areaList, resourceList =
+    let getNow, cellEvents, taskList, taskComments, informationComments, taskOrderList, hourOffset, informationList =
         match tempDataType with
         | TempPrivate ->
-            let taskData = PrivateData.Tasks.tempManualTasks |> Result.okOrThrow
+            let taskData = PrivateData.Tasks.tempManualTasks
             
             TempData.getNow,
             PrivateData.CellEvents.cellEvents,
             taskData.TaskList,
-            PrivateData.TaskComments.taskComments |> List.groupBy (fun x -> x.Task) |> Map.ofList,
+            (PrivateData.TaskComments.taskComments @ taskData.TaskComments) |> List.groupBy (fun x -> x.Task) |> Map.ofList,
             PrivateData.InformationComments.informationComments |> List.groupBy (fun x -> x.Information) |> Map.ofList,
-            taskData.TaskOrderList @ (PrivateData.Tasks.taskOrderList |> Result.okOrThrow),
+            taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
             PrivateData.PrivateData.hourOffset,
-            taskData.ProjectList,
-            taskData.AreaList,
-            taskData.ResourceList
+            taskData.InformationList
         | TempPublic ->
-            let taskData = TempData.tempData.ManualTasks |> Result.okOrThrow
+            let taskData = TempData.tempData.ManualTasks
             
             TempData.getNow,
             [],
@@ -62,9 +60,7 @@ module Temp =
             Map.empty,
             taskData.TaskOrderList,
             TempData.hourOffset,
-            taskData.ProjectList,
-            taskData.AreaList,
-            taskData.ResourceList
+            taskData.InformationList
         | Test ->
 //            let testData = TempData.tempData.RenderLaneTests
             let testData = TempData.tempData.SortLanesTests
@@ -76,11 +72,8 @@ module Temp =
             Map.empty,
             testData.TaskOrderList,
             TempData.hourOffset,
-            TempData.projectList,
-            TempData.areaList,
-            TempData.resourceList
+            [] // informationList
         
-    let informationList = (projectList, areaList, resourceList) |> TempData.getInformationList
     let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
     
     
@@ -446,23 +439,23 @@ module HomePageComponent =
                 let lanes =
                     tasks
                     |> List.filter (function { Scheduling = Manual false }, _ -> true | _ -> false)
-                    |> List.filter (fun (_, events) ->
-                        events
-                        |> List.filter (function { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true | _ -> false)
-                        |> List.tryLast
-                        |> function Some { Status = Dropped } -> false | _ -> true
-                    )
+//                    |> List.filter (fun (_, events) ->
+//                        events
+//                        |> List.filter (function { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true | _ -> false)
+//                        |> List.tryLast
+//                        |> function Some { Status = Dropped } -> false | _ -> true
+//                    )
                     |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
                     |> Sorting.applyManualOrder Temp.taskOrderList
                     
                 Temp.informationList
-                |> List.collect (List.map (fun information ->
+                |> List.map (fun information ->
                     let lanes =
                         lanes
                         |> List.filter (fun (Lane (task, _)) -> task.InformationType = information)
                         
                     information, lanes
-                ))
+                )
                 |> List.collect snd
             | Temp.TasksView ->
                 tasks

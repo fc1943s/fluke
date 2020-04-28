@@ -1,7 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>netcoreapp5.0</TargetFramework>
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
@@ -9,11 +9,11 @@
     <Compile Include="Core.fs" />
     <Compile Include="TempData.fs" />
     <Compile Include="PrivateData\PrivateData.fs" />
-    <Compile Include="PrivateData\InformationComments.fs" />
     <Compile Include="PrivateData\Tasks.fs" />
-    <Compile Include="PrivateData\CellEvents.fs" />
+    <Compile Include="PrivateData\InformationComments.fs" />
     <Compile Include="PrivateData\TaskComments.fs" />
     <Compile Include="PrivateData\CellComments.fs" />
+    <Compile Include="PrivateData\CellEvents.fs" />
     <Compile Include="PrivateData\Journal.fs" />
     <Content Include="paket.references" />
   </ItemGroup>

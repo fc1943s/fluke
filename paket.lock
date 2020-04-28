@@ -1,11 +1,11 @@
 STORAGE: NONE
-RESTRICTION: || (== netcoreapp5.0) (== netstandard2.1)
+RESTRICTION: == netcoreapp5.0
 NUGET
   remote: https://api.nuget.org/v3/index.json
     FSharp.Core (4.7.1)
 GIT
   remote: https://github.com/fc1943s/Suigetsu.git
-     (ef3db10b916d446cb7d8a31ce14382e785307d9d)
+     (fb43157f10aebfe15c2f2e219e7bfada2ed6b5a5)
       build: powershell –ExecutionPolicy Bypass ./build.ps1
 GROUP Build
 STORAGE: NONE
