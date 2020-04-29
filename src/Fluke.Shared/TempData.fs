@@ -112,7 +112,7 @@ module TempData =
            GetNow = fun (_: int) -> testData.Now |}
            
            
-    let createManualTasksFromTree taskList (taskTree: (InformationType * (string * string list) list) list) =
+    let createManualTasksFromTree taskList taskTree =
         let now = (getNow hourOffset).Date
         
         let createTaskMap taskList =
@@ -143,8 +143,7 @@ module TempData =
                         comments
                         |> List.map (fun comment ->
                             { Task = task
-                              Comment = comment
-                              Date = now }
+                              Comment = comment }
                         )
                     task, comments
                 )
@@ -174,7 +173,7 @@ module TempData =
            TaskComments = newTaskComments |> List.collect id
            InformationList = informationList |}
     
-    let tempData<'T> = {|
+    let tempData = {|
         ManualTasks = 
             [
                 Project projects.``app-fluke``, [

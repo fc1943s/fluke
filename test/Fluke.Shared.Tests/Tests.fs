@@ -160,7 +160,7 @@ module Tests =
                 | Choice1Of3 -> NoSorting
                 | Choice2Of3 -> Today
                 | Choice3Of3 -> Frequency
-            let noSorting = Choice1Of3 ()
+            let _noSorting = Choice1Of3 ()
             let sortByToday = Choice2Of3 ()
             let sortByFrequency = Choice3Of3 ()
             

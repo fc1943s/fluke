@@ -1,12 +1,10 @@
 namespace Fluke.FileSystem.Cli
 
-open System
 open System.IO
 open Expecto
 open Expecto.Flip
 open Fluke.Shared
 open FSharpPlus
-open Suigetsu.Core
 
 
 module Tests =
@@ -16,28 +14,17 @@ module Tests =
         
         testList "FileSystem" [
             
-            let directories = {|
-                Main = @"C:\home"
-                Others = [
-                    @"C:\home\fs\onedrive\home", "onedrive"
-                ]
-            |}
-            
             test "1" {
                 
-                let taskData =
-                    PrivateData.Tasks.tempManualTasks
-                    |> Result.okOrThrow
+                let taskData = PrivateData.Tasks.tempManualTasks
                     
-                let informationList = taskData.ProjectList, taskData.AreaList, taskData.ResourceList
-                
-                TempData.getInformationList informationList
-                |> List.collect (List.map (function
+                taskData.InformationList
+                |> List.map (function
                     | Project project -> Some ("projects", project.Name)
                     | Area area -> Some ("areas", area.Name)
                     | Resource resource -> Some ("resources", resource.Name)
                     | Archive _ -> None
-                ))
+                )
                 |> List.choose id
                 |> List.groupBy fst
                 |> List.map (fun (informationName, informationList) ->
@@ -53,10 +40,10 @@ module Tests =
                         )
                         |> Array.toList
                         
-                    let mainDirectories = getDirectoriesIo directories.Main
+                    let mainDirectories = getDirectoriesIo PrivateData.Tests.directories.Main
                     
                     let otherDirectories =
-                        directories.Others
+                        PrivateData.Tests.directories.Others
                         |> List.map (fun (otherPath, otherAlias) ->
                             getDirectoriesIo otherPath, otherAlias
                         )
@@ -78,7 +65,7 @@ module Tests =
                                 && mainName = (sprintf "%s-%s" name otherAlias)
                                 |> not
                             )
-                            |> List.map (fun (mainPath, mainName, mainSymlink) ->
+                            |> List.map (fun (mainPath, _mainName, _mainSymlink) ->
                                 printfn "Missing symlink: %s -> %s"
                                      (path + string Path.DirectorySeparatorChar + name)
                                      (mainPath + string Path.DirectorySeparatorChar + name + "-" + otherAlias)

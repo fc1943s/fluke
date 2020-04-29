@@ -81,7 +81,6 @@ module Model =
             
     type InformationComment =
         { Information: InformationType
-          Date: FlukeDate
           Comment: string }
         
     type FixedRecurrency =
@@ -117,10 +116,8 @@ module Model =
               Scheduling = Manual false
               Duration = None }
         
-    // TODO: this is overlapping with CellComment
     type TaskComment =
         { Task: Task
-          Date: FlukeDate
           Comment: string }
         
     type CellEventStatus =
@@ -136,6 +133,8 @@ module Model =
         | Missed
         | EventStatus of CellEventStatus
         
+    // Cell { Date, Task }
+    // CellStatus { Cell, Status(CellStatusType) }
     type Cell =
         { Date: FlukeDate
           Task: Task
