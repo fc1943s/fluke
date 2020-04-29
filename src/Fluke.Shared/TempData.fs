@@ -91,8 +91,8 @@ module TempData =
         { Date = FlukeDate.FromDateTime rawDate
           Time = FlukeTime.FromDateTime rawDate }
     
-    let createRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
-                                               Data: (FlukeDate * CellStatus) list
+    let createRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatusType) list
+                                               Data: (FlukeDate * CellStatusType) list
                                                Now: FlukeDateTime
                                                Task: Task |}) =
         
@@ -101,7 +101,7 @@ module TempData =
            TaskOrderList = [ { Task = testData.Task; Priority = First } ]
            GetNow = fun (_: int) -> testData.Now |}
         
-    let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
+    let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatusType) list) list
                                                Expected: string list
                                                Now: FlukeDateTime |}) =
         let cellEvents = testData.Data |> List.collect (fun (task, events) -> LaneRendering.createCellEvents task events)

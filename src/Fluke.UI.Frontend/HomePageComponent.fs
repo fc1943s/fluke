@@ -88,7 +88,7 @@ module HomePageComponent =
         
     type State =
         { Now: FlukeDateTime
-          Selection: Cell list
+          Selection: CellStatus list
           Lanes: Lane list
           View: Temp.View }
         static member inline Default =
@@ -174,15 +174,15 @@ module HomePageComponent =
             
         let gridCells today selection lanes =
             lanes
-            |> List.map (fun (Lane (task, cells)) ->
-                cells
+            |> List.map (fun (Lane (task, cellStatusList)) ->
+                cellStatusList
                 |> List.map (fun cell ->
                     let comments =
                         Temp.cellComments
-                        |> List.filter (fun x -> x.Cell.Task.Name = task.Name && x.Cell.Date = cell.Date)
+                        |> List.filter (fun x -> x.Cell.Task.Name = task.Name && x.Cell.Date = cell.Cell.Date)
                         
                     CellComponent.``default``
-                        { Date = cell.Date
+                        { Date = cell.Cell.Date
                           Task = task
                           Comments = comments
                           Selected = selection |> List.contains cell
@@ -478,9 +478,9 @@ module HomePageComponent =
                 | [] ->
                     lanes
                     |> List.tryHead
-                    |> Option.map (fun (Lane (_, cells)) ->
-                        cells
-                        |> List.tryFind (fun cell -> cell.Date = now.Date)
+                    |> Option.map (fun (Lane (_, cellStatusList)) ->
+                        cellStatusList
+                        |> List.tryFind (fun cellStatus -> cellStatus.Cell.Date = now.Date)
                         |> Option.map (fun cell -> [ cell ])
                         |> Option.defaultValue []
                     )
@@ -501,7 +501,7 @@ module HomePageComponent =
         
         let dateSequence =
             match state.current.Lanes with
-            | Lane (_, cells) :: _ -> cells |> List.map (fun x -> x.Date)
+            | Lane (_, cellStatusList) :: _ -> cellStatusList |> List.map (fun cellStatus -> cellStatus.Cell.Date)
             | _ -> []
             
         let events = {|

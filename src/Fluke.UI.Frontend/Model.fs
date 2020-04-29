@@ -31,15 +31,15 @@ module Model =
             | Resource _ -> "#333"
             | Archive archive -> sprintf "[%s]" archive.Color
             
-    type CellStatus with
+    type CellStatusType with
         member this.CellClass =
             match this with
             | Disabled -> Css.cellDisabled
             | Suggested -> Css.cellSuggested
             | Pending -> Css.cellPending
             | Missed -> Css.cellMissed
-            | EventStatus status ->
-                match status with
+            | EventStatus eventStatus ->
+                match eventStatus with
                 | Postponed _ -> Css.cellPostponed
                 | Completed -> Css.cellCompleted
                 | Dropped -> Css.cellDropped

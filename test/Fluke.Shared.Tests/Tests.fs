@@ -165,7 +165,7 @@ module Tests =
             let sortByFrequency = Choice3Of3 ()
             
             let testData (props: {| Sort: Choice<_, _, _>
-                                    Data: (Task * (FlukeDate * CellEventStatus) list) list
+                                    Data: (Task * (FlukeDate * CellEventStatusType) list) list
                                     Expected: string list
                                     Now: FlukeDateTime |}) =
                 let dateSequence =
@@ -308,16 +308,16 @@ module Tests =
             
             let testData (props: {| Task: Task
                                     Now: FlukeDateTime
-                                    Data: (FlukeDate * CellStatus) list
-                                    CellEvents: (FlukeDate * CellEventStatus) list |}) =
+                                    Data: (FlukeDate * CellStatusType) list
+                                    CellEvents: (FlukeDate * CellEventStatusType) list |}) =
                    
                 let dateSequence =
                     props.Data
                     |> List.map fst
                     
-                let unwrapLane (Lane (_, cells)) =
-                   cells
-                   |> List.map (fun x -> string x.Date, x.Status)
+                let unwrapLane (Lane (_, cellStatusList)) =
+                   cellStatusList
+                   |> List.map (fun cellStatus -> string cellStatus.Cell.Date, cellStatus.Status)
                 
                 let toString =
                     List.map string
@@ -329,7 +329,7 @@ module Tests =
                 |> unwrapLane
                 |> toString
                 |> Expect.equal "" (props.Data
-                                    |> List.map (fun (date, status) -> string date, status)
+                                    |> List.map (fun (date, cellStatus) -> string date, cellStatus)
                                     |> toString)
                
             testList "Recurrency Offset" [
