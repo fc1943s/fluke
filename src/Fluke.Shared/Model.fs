@@ -78,6 +78,7 @@ module Model =
         static member inline FromDateTime (date: DateTime) =
             { Date = FlukeDate.FromDateTime date
               Time = FlukeTime.FromDateTime date }
+    let flukeDateTime year month day hour minute = { Date = flukeDate year month day; Time = flukeTime hour minute }
             
     type InformationComment =
         { Information: InformationType
@@ -121,16 +122,18 @@ module Model =
           Comment: string }
         
     type CellEventStatusType =
-        | Postponed of FlukeTime
+        | Postponed of until:FlukeTime
         | Completed
         | Dropped
         | ManualPending
+        | Session of start:FlukeTime
     
     type CellStatusType =
         | Disabled
         | Suggested 
         | Pending
         | Missed
+        | MissedToday
         | EventStatus of CellEventStatusType
         
     type Cell =
@@ -140,6 +143,10 @@ module Model =
     type CellStatus =
         { Cell: Cell
           Status: CellStatusType }
+        
+//    type CellEvent =
+//        | Status of CellEventStatusType
+//        | Comment of string
         
     type CellEvent =
         { Cell: Cell

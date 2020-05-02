@@ -38,12 +38,15 @@ module Model =
             | Suggested -> Css.cellSuggested
             | Pending -> Css.cellPending
             | Missed -> Css.cellMissed
+            | MissedToday -> Css.cellMissedToday
             | EventStatus eventStatus ->
                 match eventStatus with
+                | Postponed until when until <> midnight -> Css.cellPostponedTemp
                 | Postponed _ -> Css.cellPostponed
                 | Completed -> Css.cellCompleted
                 | Dropped -> Css.cellDropped
                 | ManualPending -> Css.cellManualPending
+                | Session _ -> Css.cellSession
     
     
 module Functions =

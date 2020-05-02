@@ -111,10 +111,11 @@ module TempData =
            TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = Last })
            GetNow = fun (_: int) -> testData.Now |}
            
+    type TempCellEvent =
+        | Comment of string
+        | Interval of FlukeDateTime
            
     let createManualTasksFromTree taskList taskTree =
-        let now = (getNow hourOffset).Date
-        
         let createTaskMap taskList =
             let map =
                 taskList
@@ -131,7 +132,7 @@ module TempData =
             taskTree
             |> List.collect (fun (informationType, tasks) -> 
                 tasks
-                |> List.map (fun (taskName, comments) ->
+                |> List.map (fun (taskName, events) ->
                     let task =
                         oldTaskMap
                         |> Map.tryFind (informationType, taskName)
@@ -140,10 +141,12 @@ module TempData =
                                 Name = sprintf "> %s" taskName
                                 InformationType = informationType }
                     let comments =
-                        comments
-                        |> List.map (fun comment ->
-                            { Task = task
-                              Comment = comment }
+                        events
+                        |> List.choose (function
+                            | Comment comment -> 
+                                { Task = task
+                                  Comment = comment } |> Some
+                            | _ -> None
                         )
                     task, comments
                 )
@@ -177,13 +180,20 @@ module TempData =
         ManualTasks = 
             [
                 Project projects.``app-fluke``, [
-                    "data management", [ "mutability"; "initial default data (load the text first with tests)" ]
+                    "data management", [
+                        Comment "mutability"
+                        Comment "initial default data (load the text first with tests)"
+                    ]
                     "cell selection (mouse, vim navigation)", []
                     "data structures performance", []
                     "side panel (journal, comments)", []
                     "add task priority (for randomization)", []
-                    "persistence", [ "data encryption" ]
-                    "vivaldi or firefox bookmark integration", [ "browser.html javascript injection or browser extension" ]
+                    "persistence", [
+                        Comment "data encryption"
+                    ]
+                    "vivaldi or firefox bookmark integration", [
+                        Comment "browser.html javascript injection or browser extension"
+                    ]
                     "telegram integration (fast link sharing)", []
                     "mobile layout", []
                     "move fluke tasks to github issues", []
@@ -196,8 +206,8 @@ module TempData =
                 Area areas.career, []
                 Area areas.chores, [
                     "groceries", [
-                        "food"
-                        "beer"
+                        Comment "food"
+                        Comment "beer"
                     ]
                 ]
                 Area areas.fitness, []
