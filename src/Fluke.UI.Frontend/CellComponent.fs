@@ -12,8 +12,8 @@ module CellComponent =
     type Props =
         { Date: FlukeDate
           Task: Task
-          Comments: CellComment list
-          Status: CellStatusType
+          Comments: string list
+          Status: CellStatus
           Selected: bool
           Today: FlukeDate }
 
@@ -50,8 +50,6 @@ module CellComponent =
             div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][]
                 
             if hasComments then
-                props.Comments
-                |> List.map (fun x -> x.Comment)
-                |> tooltipPopup
+                tooltipPopup props.Comments
         ]
     , memoizeWith = equalsButFunctions)

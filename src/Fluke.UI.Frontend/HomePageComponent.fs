@@ -26,14 +26,15 @@ module Temp =
         | TempPublic
         | Test
         
-    let tempDataType = TempPrivate
-//    let tempDataType = TempPublic
-//    let tempDataType = Test
 
-//    let view = CalendarView
+    let view = CalendarView
 //    let view = GroupsView
-    let view = TasksView
+//    let view = TasksView
+    
 
+//    let tempDataType = TempPrivate
+//    let tempDataType = TempPublic
+    let tempDataType = Test
 
 
     
@@ -88,7 +89,7 @@ module HomePageComponent =
         
     type State =
         { Now: FlukeDateTime
-          Selection: CellStatus list
+          Selection: CellAddress list
           Lanes: Lane list
           View: Temp.View }
         static member inline Default =
@@ -174,18 +175,20 @@ module HomePageComponent =
             
         let gridCells today selection lanes =
             lanes
-            |> List.map (fun (Lane (task, cellStatusList)) ->
-                cellStatusList
+            |> List.map (fun (Lane (task, cells)) ->
+                cells
                 |> List.map (fun cell ->
                     let comments =
                         Temp.cellComments
-                        |> List.filter (fun x -> x.Cell.Task.Name = task.Name && x.Cell.Date = cell.Cell.Date)
+                        |> List.choose (function Comment (address, comment) -> Some (address, comment) | _ -> None)
+                        |> List.filter (fun (address, comment) -> address.Task.Name = task.Name && address.Date = cell.Address.Date)
+                        |> List.map snd
                         
                     CellComponent.``default``
-                        { Date = cell.Cell.Date
+                        { Date = cell.Address.Date
                           Task = task
                           Comments = comments
-                          Selected = selection |> List.contains cell
+                          Selected = selection |> List.contains cell.Address
                           Status = cell.Status
                           Today = today }
                 )
@@ -421,8 +424,10 @@ module HomePageComponent =
                 |> List.map (fun task ->
                     let events =
                         Temp.cellEvents
-                        |> List.filter (fun x -> x.Cell.Task = task)
-                        |> List.sortBy (fun x -> x.Cell.Date)
+                        |> List.choose (function Status (address, status) -> Some (address, status) | _ -> None)
+                        |> List.filter (fun (address, status) -> address.Task = task)
+                        |> List.sortBy (fun (address, status) -> address.Date)
+                        |> List.map Status
                     task, events
                 )
             
@@ -478,10 +483,10 @@ module HomePageComponent =
                 | [] ->
                     lanes
                     |> List.tryHead
-                    |> Option.map (fun (Lane (_, cellStatusList)) ->
-                        cellStatusList
-                        |> List.tryFind (fun cellStatus -> cellStatus.Cell.Date = now.Date)
-                        |> Option.map (fun cell -> [ cell ])
+                    |> Option.map (fun (Lane (_, cells)) ->
+                        cells
+                        |> List.tryFind (fun cell -> cell.Address.Date = now.Date)
+                        |> Option.map (fun cell -> [ cell.Address ])
                         |> Option.defaultValue []
                     )
                     |> Option.defaultValue []
@@ -501,7 +506,7 @@ module HomePageComponent =
         
         let dateSequence =
             match state.current.Lanes with
-            | Lane (_, cellStatusList) :: _ -> cellStatusList |> List.map (fun cellStatus -> cellStatus.Cell.Date)
+            | Lane (_, cells) :: _ -> cells |> List.map (fun cell -> cell.Address.Date)
             | _ -> []
             
         let events = {|

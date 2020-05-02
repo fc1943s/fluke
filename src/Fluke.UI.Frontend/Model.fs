@@ -31,7 +31,7 @@ module Model =
             | Resource _ -> "#333"
             | Archive archive -> sprintf "[%s]" archive.Color
             
-    type CellStatusType with
+    type CellStatus with
         member this.CellClass =
             match this with
             | Disabled -> Css.cellDisabled

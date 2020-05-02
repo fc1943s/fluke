@@ -90,9 +90,10 @@ module TempData =
         let rawDate = DateTime.Now.AddHours -(float hourOffset)
         { Date = FlukeDate.FromDateTime rawDate
           Time = FlukeTime.FromDateTime rawDate }
+        
     
-    let createRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatusType) list
-                                               Data: (FlukeDate * CellStatusType) list
+    let createRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
+                                               Data: (FlukeDate * CellStatus) list
                                                Now: FlukeDateTime
                                                Task: Task |}) =
         
@@ -101,10 +102,10 @@ module TempData =
            TaskOrderList = [ { Task = testData.Task; Priority = First } ]
            GetNow = fun (_: int) -> testData.Now |}
         
-    let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatusType) list) list
+    let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
                                                Expected: string list
                                                Now: FlukeDateTime |}) =
-        let cellEvents = testData.Data |> List.collect (fun (task, events) -> LaneRendering.createCellEvents task events)
+        let cellEvents = testData.Data |> List.collect (fun (task, events) -> events |> LaneRendering.createCellEvents task)
             
         {| CellEvents = cellEvents
            TaskList = testData.Data |> List.map fst
@@ -161,7 +162,7 @@ module TempData =
         let newTaskMap, newTaskOrderList = createTaskMap newTaskList
         
         let notOnNewTaskMap task =
-            newTaskMap.ContainsKey (task.InformationType, task.Name) |> not
+            not (newTaskMap.ContainsKey (task.InformationType, task.Name))
             
         let filteredOldTaskList = taskList |> List.filter notOnNewTaskMap
         let taskList =  filteredOldTaskList @ newTaskList

@@ -121,40 +121,50 @@ module Model =
         { Task: Task
           Comment: string }
         
-    type CellEventStatusType =
+    type CellEventStatus =
         | Postponed of until:FlukeTime
         | Completed
         | Dropped
         | ManualPending
         | Session of start:FlukeTime
     
-    type CellStatusType =
+    type CellStatus =
         | Disabled
         | Suggested 
         | Pending
         | Missed
         | MissedToday
-        | EventStatus of CellEventStatusType
+        | EventStatus of CellEventStatus
         
-    type Cell =
-        { Date: FlukeDate
-          Task: Task }
+    type CellAddress =
+        { Task: Task
+          Date: FlukeDate }
         
-    type CellStatus =
-        { Cell: Cell
-          Status: CellStatusType }
-        
-//    type CellEvent =
-//        | Status of CellEventStatusType
-//        | Comment of string
+    type Cell2 =
+        { Address: CellAddress
+          Status: CellStatus
+          Comments: string list }
         
     type CellEvent =
-        { Cell: Cell
-          EventStatus: CellEventStatusType }
-    
-    type CellComment =
-        { Cell: Cell
-          Comment: string }
+        | Status of address:CellAddress * status:CellEventStatus
+        | Comment of address:CellAddress * comment:string
+        
+//    type CellEvent =
+//        { Cell: Cell
+//          Event: CellEventType }
+//    type Event = Event of cell:Cell * event:CellEvent
+        
+//    type CellEvents =
+//        { Cell: Cell2
+//          Events: CellEvent list }
+        
+//    type CellEvent =
+//        { Cell: Cell
+//          EventStatus: CellEventStatusType }
+//    
+//    type CellComment =
+//        { Cell: Cell
+//          Comment: string }
         
     
     type TaskOrderPriority =
@@ -166,7 +176,7 @@ module Model =
         { Task: Task
           Priority: TaskOrderPriority }
         
-    type Lane = Lane of task:Task * cellStatusList:CellStatus list
+    type Lane = Lane of task:Task * cells:Cell2 list
     
 module Rendering =
     open Model
@@ -228,40 +238,57 @@ module Sorting =
         result |> Seq.toList
         
     let applyManualOrder taskOrderList lanes =
-        let tasksSet =
-            lanes
-            |> List.map (fun (Lane (task, _)) -> task)
-            |> Set.ofList
-            
-        let activeTaskOrderList = taskOrderList |> List.filter (fun orderEntry -> tasksSet.Contains orderEntry.Task)
+        let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
+        let tasksSet = tasks |> Set.ofList
+        let orderEntriesOfTasks = taskOrderList |> List.filter (fun orderEntry -> tasksSet.Contains orderEntry.Task)
         
-        let filteredTaskOrderSet =
-            activeTaskOrderList
+        let tasksWithOrderEntrySet =
+            orderEntriesOfTasks
             |> List.map (fun x -> x.Task)
             |> Set.ofList
-            
-        let remainingTaskOrderList =
-            tasksSet
-            |> Set.filter (fun task -> filteredTaskOrderSet.Contains task |> not)
-            |> Set.toList
-            |> List.map (fun task -> { Task = task; Priority = Last })
         
-        let newTaskOrderList = remainingTaskOrderList @ activeTaskOrderList
+        let tasksWithoutOrderEntry = tasks |> List.filter (fun task -> not (tasksWithOrderEntrySet.Contains task))
+        let orderEntriesMissing = tasksWithoutOrderEntry |> List.map (fun task -> { Task = task; Priority = Last })
+        let newTaskOrderList = orderEntriesMissing @ orderEntriesOfTasks
             
-        let indexMap =
+        let taskIndexMap =
             newTaskOrderList
             |> getManualSortedTaskList
             |> List.mapi (fun i task -> task, i)
             |> Map.ofList
             
-        lanes |> List.sortBy (fun (Lane (task, _)) -> indexMap.[task])
+        lanes |> List.sortBy (fun (Lane (task, _)) -> taskIndexMap.[task])
         
+        
+            
+        
+        
+    let sortLanesByFrequency lanes =
+        lanes
+        |> List.sortBy (fun (Lane (_, cellEventsList)) ->
+            cellEventsList
+            |> List.filter (fun cellEvents -> cellEvents.Status = Disabled || cellEvents.Status = Suggested)
+            |> List.length
+        )
+        
+    let sortLanesByIncomingRecurrency today lanes =
+        lanes
+        |> List.sortBy (fun (Lane (_, cells)) ->
+            cells
+            |> List.exists (fun cell -> cell.Address.Date = today && cell.Status = Disabled)
+            |> function
+                | true ->
+                    cells
+                    |> List.tryFindIndex (fun x -> x.Status = Pending)
+                    |> Option.defaultValue cells.Length
+                | false -> cells.Length
+        )
         
     let applyPendingManualOrder today taskOrderList lanes =
         let lanesMap =
             lanes
-            |> List.groupBy (fun (Lane (_, cellStatusList)) ->
-                match cellStatusList |> List.tryFind (fun cellStatus -> cellStatus.Cell.Date = today) with
+            |> List.groupBy (fun (Lane (_, cells)) ->
+                match cells |> List.tryFind (function cell when cell.Address.Date = today -> true | _ -> false) with
                 | Some { Status = EventStatus ManualPending } -> Some (EventStatus ManualPending)
                 | Some { Status = Pending } -> Some Pending
                 | _ -> None
@@ -272,65 +299,46 @@ module Sorting =
             lanesMap
             |> Map.tryFind cellStatus
             |> Option.defaultValue []
-            
+    
         [ getLaneGroup (Some (EventStatus ManualPending)) |> applyManualOrder taskOrderList
           getLaneGroup (Some Pending) |> applyManualOrder taskOrderList
           getLaneGroup None ]
         |> List.concat
         
-        
-    let sortLanesByFrequency lanes =
-        lanes
-        |> List.sortBy (fun (Lane (_, cellStatusList)) ->
-            cellStatusList
-            |> List.filter (fun cellStatus -> cellStatus.Status = Disabled || cellStatus.Status = Suggested)
-            |> List.length
-        )
-        
-    let sortLanesByIncomingRecurrency today lanes =
-        lanes
-        |> List.sortBy (fun (Lane (_, cellStatusList)) ->
-            cellStatusList
-            |> List.exists (fun cellStatus -> cellStatus.Cell.Date = today && cellStatus.Status = Disabled)
-            |> function
-                | true ->
-                    cellStatusList
-                    |> List.tryFindIndex (fun x -> x.Status = Pending)
-                    |> Option.defaultValue cellStatusList.Length
-                | false -> cellStatusList.Length
-        )
-        
-    
-    let sortLanesByToday today lanes =
+    let sortLanesByToday today (*taskOrderList*) lanes =
         let order =
-            [ function EventStatus ManualPending, _                             -> true | _ -> false
-              function Pending,                   _                             -> true | _ -> false
-              function Suggested,                 { Scheduling = Recurrency _ } -> true | _ -> false
-              function Suggested,                 { Scheduling = Manual true }  -> true | _ -> false
-              function EventStatus (Postponed _), _                             -> true | _ -> false
-              function EventStatus Completed,     _                             -> true | _ -> false
-              function EventStatus Dropped,       _                             -> true | _ -> false
-              function Disabled,                  { Scheduling = Recurrency _ } -> true | _ -> false
-              function Suggested,                 { Scheduling = Manual false } -> true | _ -> false
-              function _,                         _                             -> true ]
+            [ function EventStatus ManualPending, _                             -> true, 1 | _ -> false, 0
+              function Pending,                   _                             -> true, 1 | _ -> false, 0
+              function Suggested,                 { Scheduling = Recurrency _ } -> true, 0 | _ -> false, 0
+              function Suggested,                 { Scheduling = Manual true }  -> true, 0 | _ -> false, 0
+              function EventStatus (Postponed _), _                             -> true, 0 | _ -> false, 0
+              function EventStatus Completed,     _                             -> true, 0 | _ -> false, 0
+              function EventStatus Dropped,       _                             -> true, 0 | _ -> false, 0
+              function Disabled,                  { Scheduling = Recurrency _ } -> true, 0 | _ -> false, 0
+              function Suggested,                 { Scheduling = Manual false } -> true, 0 | _ -> false, 0
+              function _,                         _                             -> true, 0 ]
         
-        let getIndex task cellStatus =
+        let getGroup task (cell: Cell2) =
             order
-            |> List.map (fun v -> v (cellStatus.Status, task))
+            |> List.map (fun orderFn -> orderFn (cell.Status, task))
             |> List.indexed
-            |> List.filter snd
-            |> List.map fst
+            |> List.filter (snd >> fst)
+            |> List.map (fun (groupIndex, (_, sortType)) -> groupIndex, sortType)
             |> List.head
-        
+            
         lanes
         |> List.indexed
-        |> List.sortBy (fun (i, Lane (task, cellStatusList)) ->
-            cellStatusList
-            |> List.filter (fun cellStatus -> cellStatus.Cell.Date = today)
-            |> List.map (getIndex task)
-            |> List.map ((*) 1000)
-            |> List.map ((+) i)
+        |> List.groupBy (fun (laneIndex, Lane (task, cells)) ->
+            cells
+            |> List.filter (fun cell -> cell.Address.Date = today)
+            |> List.map (getGroup task)
+            |> List.minBy fst
         )
+        |> List.collect (fun ((groupIndex, sortType), indexedLanes) ->
+            indexedLanes
+            |> List.map (fun (laneIndex, lane) -> (groupIndex * 1000) + laneIndex, lane)
+        )
+        |> List.sortBy fst
         |> List.map snd
     
     
@@ -345,16 +353,14 @@ module LaneRendering =
         
     type LaneCellRenderOutput =
         | EmptyCell
-        | StatusCell of CellStatusType
+        | StatusCell of CellStatus
         | TodayCell
         
         
-    let createCellEvents task events =
+    let createCellEvents task (events: (FlukeDate * CellEventStatus) list) =
         events
         |> List.map (fun (date, eventStatus) ->
-            { Cell = { Task = task
-                       Date = date }
-              EventStatus = eventStatus }
+            Status ({ Task = task; Date = date }, eventStatus)
         )
         
     let renderLane (now: FlukeDateTime) dateSequence task (cellEvents: CellEvent list) =
@@ -364,25 +370,32 @@ module LaneRendering =
             | n when n < 0 -> BeforeToday
             | n when n = 0 -> Today
             | _ -> AfterToday
-                
-        let cellEventsByDate =
+            
+        let cellStatusEventList =
             cellEvents
-            |> List.map (fun x -> x.Cell.Date, x)
+            |> List.choose (function
+                | Status (address, status) -> Some (address, status)
+                | _ -> None
+            )
+                
+        let cellStatusEventsByDate =
+            cellStatusEventList
+            |> List.map (fun (address, status) -> address.Date, status)
             |> Map.ofList
             
         let rec loop renderState = function
             | date :: tail ->
-                let event = cellEventsByDate |> Map.tryFind date
+                let event = cellStatusEventsByDate |> Map.tryFind date
                     
                 let status, renderState =
                     match event with
                     | Some cellEvent ->
                         let renderState =
-                            match cellEvent.EventStatus, (now.Date, date) with
+                            match cellEvent, (now.Date, date) with
                             | (Postponed _ | ManualPending), BeforeToday -> WaitingEvent
                             | _,                             _           -> Counting 1
                             
-                        StatusCell (EventStatus cellEvent.EventStatus), renderState
+                        StatusCell (EventStatus cellEvent), renderState
                         
                     | None ->
                         let getStatus renderState =
@@ -466,14 +479,15 @@ module LaneRendering =
                 (date, status) :: loop renderState tail
             | [] -> []
             
-        let cellStatusList =
+        let cells =
             loop WaitingFirstEvent dateSequence
             |> List.map (fun (date, cellStatus) ->
-                { Cell = { Date = date
-                           Task = task }
-                  Status = cellStatus }
+                { Address = { Date = date
+                              Task = task }
+                  Status = cellStatus
+                  Comments = [] }
             )
-        Lane (task, cellStatusList)
+        Lane (task, cells)
         
 module Temp =
     

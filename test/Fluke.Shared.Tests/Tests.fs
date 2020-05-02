@@ -165,7 +165,7 @@ module Tests =
             let sortByFrequency = Choice3Of3 ()
             
             let testData (props: {| Sort: Choice<_, _, _>
-                                    Data: (Task * (FlukeDate * CellEventStatusType) list) list
+                                    Data: (Task * (FlukeDate * CellEventStatus) list) list
                                     Expected: string list
                                     Now: FlukeDateTime |}) =
                 let dateSequence =
@@ -308,16 +308,16 @@ module Tests =
             
             let testData (props: {| Task: Task
                                     Now: FlukeDateTime
-                                    Data: (FlukeDate * CellStatusType) list
-                                    CellEvents: (FlukeDate * CellEventStatusType) list |}) =
+                                    Data: (FlukeDate * CellStatus) list
+                                    CellEvents: (FlukeDate * CellEventStatus) list |}) =
                    
                 let dateSequence =
                     props.Data
                     |> List.map fst
                     
-                let unwrapLane (Lane (_, cellStatusList)) =
-                   cellStatusList
-                   |> List.map (fun cellStatus -> string cellStatus.Cell.Date, cellStatus.Status)
+                let unwrapLane (Lane (_, cells)) =
+                   cells
+                   |> List.map (fun cell -> string cell.Address.Date, cell.Status)
                 
                 let toString =
                     List.map string
