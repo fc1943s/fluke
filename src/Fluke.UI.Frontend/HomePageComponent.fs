@@ -438,8 +438,7 @@ module HomePageComponent =
                 |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByIncomingRecurrency now.Date
-                |> Sorting.sortLanesByToday now.Date
-                |> Sorting.applyPendingManualOrder now.Date Temp.taskOrderList
+                |> Sorting.sortLanesByToday now.Date Temp.taskOrderList
             | Temp.GroupsView ->
                 let lanes =
                     tasks

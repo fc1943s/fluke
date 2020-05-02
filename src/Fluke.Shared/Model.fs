@@ -3,6 +3,7 @@ namespace Fluke.Shared
 open System
 open System.Collections.Generic
 open FSharpPlus
+open Suigetsu.Core
 
 module Model =
     
@@ -140,33 +141,14 @@ module Model =
         { Task: Task
           Date: FlukeDate }
         
-    type Cell2 =
+    type Cell =
         { Address: CellAddress
-          Status: CellStatus
-          Comments: string list }
+          Status: CellStatus }
         
     type CellEvent =
         | Status of address:CellAddress * status:CellEventStatus
         | Comment of address:CellAddress * comment:string
         
-//    type CellEvent =
-//        { Cell: Cell
-//          Event: CellEventType }
-//    type Event = Event of cell:Cell * event:CellEvent
-        
-//    type CellEvents =
-//        { Cell: Cell2
-//          Events: CellEvent list }
-        
-//    type CellEvent =
-//        { Cell: Cell
-//          EventStatus: CellEventStatusType }
-//    
-//    type CellComment =
-//        { Cell: Cell
-//          Comment: string }
-        
-    
     type TaskOrderPriority =
         | First
         | LessThan of Task
@@ -176,7 +158,7 @@ module Model =
         { Task: Task
           Priority: TaskOrderPriority }
         
-    type Lane = Lane of task:Task * cells:Cell2 list
+    type Lane = Lane of task:Task * cells:Cell list
     
 module Rendering =
     open Model
@@ -259,10 +241,6 @@ module Sorting =
             
         lanes |> List.sortBy (fun (Lane (task, _)) -> taskIndexMap.[task])
         
-        
-            
-        
-        
     let sortLanesByFrequency lanes =
         lanes
         |> List.sortBy (fun (Lane (_, cellEventsList)) ->
@@ -284,58 +262,47 @@ module Sorting =
                 | false -> cells.Length
         )
         
-    let applyPendingManualOrder today taskOrderList lanes =
-        let lanesMap =
-            lanes
-            |> List.groupBy (fun (Lane (_, cells)) ->
-                match cells |> List.tryFind (function cell when cell.Address.Date = today -> true | _ -> false) with
-                | Some { Status = EventStatus ManualPending } -> Some (EventStatus ManualPending)
-                | Some { Status = Pending } -> Some Pending
-                | _ -> None
-            )
-            |> Map.ofList
-            
-        let getLaneGroup cellStatus =
-            lanesMap
-            |> Map.tryFind cellStatus
-            |> Option.defaultValue []
-    
-        [ getLaneGroup (Some (EventStatus ManualPending)) |> applyManualOrder taskOrderList
-          getLaneGroup (Some Pending) |> applyManualOrder taskOrderList
-          getLaneGroup None ]
-        |> List.concat
+    type LaneSortType =
+        | TaskOrderList
+        | DefaultSort
         
-    let sortLanesByToday today (*taskOrderList*) lanes =
+    let sortLanesByToday today taskOrderList lanes =
         let order =
-            [ function EventStatus ManualPending, _                             -> true, 1 | _ -> false, 0
-              function Pending,                   _                             -> true, 1 | _ -> false, 0
-              function Suggested,                 { Scheduling = Recurrency _ } -> true, 0 | _ -> false, 0
-              function Suggested,                 { Scheduling = Manual true }  -> true, 0 | _ -> false, 0
-              function EventStatus (Postponed _), _                             -> true, 0 | _ -> false, 0
-              function EventStatus Completed,     _                             -> true, 0 | _ -> false, 0
-              function EventStatus Dropped,       _                             -> true, 0 | _ -> false, 0
-              function Disabled,                  { Scheduling = Recurrency _ } -> true, 0 | _ -> false, 0
-              function Suggested,                 { Scheduling = Manual false } -> true, 0 | _ -> false, 0
-              function _,                         _                             -> true, 0 ]
+            [ (function EventStatus ManualPending, _                             -> true | _ -> false), TaskOrderList
+              (function Pending,                   _                             -> true | _ -> false), TaskOrderList
+              (function Suggested,                 { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
+              (function Suggested,                 { Scheduling = Manual true }  -> true | _ -> false), DefaultSort
+              (function EventStatus (Postponed _), _                             -> true | _ -> false), DefaultSort
+              (function EventStatus Completed,     _                             -> true | _ -> false), DefaultSort
+              (function EventStatus Dropped,       _                             -> true | _ -> false), DefaultSort
+              (function Disabled,                  { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
+              (function Suggested,                 { Scheduling = Manual false } -> true | _ -> false), DefaultSort
+              (function _,                         _                             -> true)             , DefaultSort ]
         
-        let getGroup task (cell: Cell2) =
+        let getGroup task cell =
             order
-            |> List.map (fun orderFn -> orderFn (cell.Status, task))
+            |> List.map (Tuple2.mapFst (fun orderFn -> orderFn (cell.Status, task)))
             |> List.indexed
             |> List.filter (snd >> fst)
-            |> List.map (fun (groupIndex, (_, sortType)) -> groupIndex, sortType)
+            |> List.map (Tuple2.mapSnd snd)
             |> List.head
             
         lanes
         |> List.indexed
-        |> List.groupBy (fun (laneIndex, Lane (task, cells)) ->
+        |> List.groupBy (fun (_, Lane (task, cells)) ->
             cells
             |> List.filter (fun cell -> cell.Address.Date = today)
             |> List.map (getGroup task)
             |> List.minBy fst
         )
         |> List.collect (fun ((groupIndex, sortType), indexedLanes) ->
-            indexedLanes
+            match sortType with
+            | TaskOrderList ->
+                indexedLanes
+                |> List.map snd
+                |> applyManualOrder taskOrderList
+                |> List.indexed
+            | DefaultSort -> indexedLanes
             |> List.map (fun (laneIndex, lane) -> (groupIndex * 1000) + laneIndex, lane)
         )
         |> List.sortBy fst
@@ -484,8 +451,7 @@ module LaneRendering =
             |> List.map (fun (date, cellStatus) ->
                 { Address = { Date = date
                               Task = task }
-                  Status = cellStatus
-                  Comments = [] }
+                  Status = cellStatus }
             )
         Lane (task, cells)
         

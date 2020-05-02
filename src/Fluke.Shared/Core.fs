@@ -3,6 +3,9 @@ namespace Fluke.Shared
 open FSharpPlus
 open System
 
+module List =
+    let prepend a b = List.append b a
+
 // TODO: move to suigetsu
 module Core =
     type ResultBuilder () =

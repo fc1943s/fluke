@@ -182,7 +182,7 @@ module Tests =
                 |> fun lanes ->
                     match props.Sort with
                     | NoSorting -> lanes
-                    | Today -> Sorting.sortLanesByToday props.Now.Date lanes
+                    | Today -> Sorting.sortLanesByToday props.Now.Date [] lanes
                     | Frequency -> Sorting.sortLanesByFrequency lanes
                 |> List.map (fun (Lane (task, _)) -> task.Name)
                 |> Expect.equal "" props.Expected
