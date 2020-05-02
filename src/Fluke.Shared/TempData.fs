@@ -113,8 +113,8 @@ module TempData =
            GetNow = fun (_: int) -> testData.Now |}
            
     type TempCellEvent =
-        | Comment of string
-        | Interval of FlukeDateTime
+        | TempComment of string
+        | TempInterval of FlukeDateTime
            
     let createManualTasksFromTree taskList taskTree =
         let createTaskMap taskList =
@@ -144,9 +144,7 @@ module TempData =
                     let comments =
                         events
                         |> List.choose (function
-                            | Comment comment -> 
-                                { Task = task
-                                  Comment = comment } |> Some
+                            | TempComment comment -> TaskComment (task, Comment comment) |> Some
                             | _ -> None
                         )
                     task, comments
@@ -182,18 +180,18 @@ module TempData =
             [
                 Project projects.``app-fluke``, [
                     "data management", [
-                        Comment "mutability"
-                        Comment "initial default data (load the text first with tests)"
+                        TempComment "mutability"
+                        TempComment "initial default data (load the text first with tests)"
                     ]
                     "cell selection (mouse, vim navigation)", []
                     "data structures performance", []
                     "side panel (journal, comments)", []
                     "add task priority (for randomization)", []
                     "persistence", [
-                        Comment "data encryption"
+                        TempComment "data encryption"
                     ]
                     "vivaldi or firefox bookmark integration", [
-                        Comment "browser.html javascript injection or browser extension"
+                        TempComment "browser.html javascript injection or browser extension"
                     ]
                     "telegram integration (fast link sharing)", []
                     "mobile layout", []
@@ -207,8 +205,8 @@ module TempData =
                 Area areas.career, []
                 Area areas.chores, [
                     "groceries", [
-                        Comment "food"
-                        Comment "beer"
+                        TempComment "food"
+                        TempComment "beer"
                     ]
                 ]
                 Area areas.fitness, []

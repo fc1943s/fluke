@@ -12,7 +12,7 @@ module CellComponent =
     type Props =
         { Date: FlukeDate
           Task: Task
-          Comments: string list
+          Comments: Comment list
           Status: CellStatus
           Selected: bool
           Today: FlukeDate }
@@ -26,11 +26,11 @@ module CellComponent =
         | A of unit
         
     // TODO: take this out of here
-    let tooltipPopup (comments: string list) =
+    let tooltipPopup comments =
         div [ Class Css.tooltipPopup ][
             
             comments
-            |> List.map (fun x -> x.Trim ())
+            |> List.map (fun (Comment x) -> x.Trim ())
             |> List.map ((+) Environment.NewLine)
             |> String.concat (Environment.NewLine + Environment.NewLine)
             |> fun text ->

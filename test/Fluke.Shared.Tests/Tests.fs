@@ -317,7 +317,7 @@ module Tests =
                     
                 let unwrapLane (Lane (_, cells)) =
                    cells
-                   |> List.map (fun cell -> string cell.Address.Date, cell.Status)
+                   |> List.map (fun (Cell (address, status)) -> string address.Date, status)
                 
                 let toString =
                     List.map string

@@ -118,10 +118,6 @@ module Model =
               Scheduling = Manual false
               Duration = None }
         
-    type TaskComment =
-        { Task: Task
-          Comment: string }
-        
     type CellEventStatus =
         | Postponed of until:FlukeTime
         | Completed
@@ -141,13 +137,16 @@ module Model =
         { Task: Task
           Date: FlukeDate }
         
-    type Cell =
-        { Address: CellAddress
-          Status: CellStatus }
+    type Cell = Cell of address:CellAddress * status:CellStatus
+    
+    type Comment = Comment of string
+    type TaskComment = TaskComment of task:Task * comment:Comment
         
     type CellEvent =
-        | Status of address:CellAddress * status:CellEventStatus
-        | Comment of address:CellAddress * comment:string
+        | StatusEvent of address:CellAddress * status:CellEventStatus
+        | CommentEvent of address:CellAddress * comment:Comment
+        | IntervalEvent of address:CellAddress * time:FlukeDateTime
+           
         
     type TaskOrderPriority =
         | First
@@ -245,7 +244,7 @@ module Sorting =
         lanes
         |> List.sortBy (fun (Lane (_, cellEventsList)) ->
             cellEventsList
-            |> List.filter (fun cellEvents -> cellEvents.Status = Disabled || cellEvents.Status = Suggested)
+            |> List.filter (function Cell (_, (Disabled | Suggested)) -> true | _ -> false)
             |> List.length
         )
         
@@ -253,11 +252,11 @@ module Sorting =
         lanes
         |> List.sortBy (fun (Lane (_, cells)) ->
             cells
-            |> List.exists (fun cell -> cell.Address.Date = today && cell.Status = Disabled)
+            |> List.exists (fun (Cell (address, status)) -> address.Date = today && status = Disabled)
             |> function
                 | true ->
                     cells
-                    |> List.tryFindIndex (fun x -> x.Status = Pending)
+                    |> List.tryFindIndex (fun (Cell (_, status)) -> status = Pending)
                     |> Option.defaultValue cells.Length
                 | false -> cells.Length
         )
@@ -279,9 +278,9 @@ module Sorting =
               (function Suggested,                 { Scheduling = Manual false } -> true | _ -> false), DefaultSort
               (function _,                         _                             -> true)             , DefaultSort ]
         
-        let getGroup task cell =
+        let getGroup task (Cell (_, status)) =
             order
-            |> List.map (Tuple2.mapFst (fun orderFn -> orderFn (cell.Status, task)))
+            |> List.map (Tuple2.mapFst (fun orderFn -> orderFn (status, task)))
             |> List.indexed
             |> List.filter (snd >> fst)
             |> List.map (Tuple2.mapSnd snd)
@@ -291,7 +290,7 @@ module Sorting =
         |> List.indexed
         |> List.groupBy (fun (_, Lane (task, cells)) ->
             cells
-            |> List.filter (fun cell -> cell.Address.Date = today)
+            |> List.filter (fun (Cell (address, _)) -> address.Date = today)
             |> List.map (getGroup task)
             |> List.minBy fst
         )
@@ -327,7 +326,7 @@ module LaneRendering =
     let createCellEvents task (events: (FlukeDate * CellEventStatus) list) =
         events
         |> List.map (fun (date, eventStatus) ->
-            Status ({ Task = task; Date = date }, eventStatus)
+            StatusEvent ({ Task = task; Date = date }, eventStatus)
         )
         
     let renderLane (now: FlukeDateTime) dateSequence task (cellEvents: CellEvent list) =
@@ -341,7 +340,7 @@ module LaneRendering =
         let cellStatusEventList =
             cellEvents
             |> List.choose (function
-                | Status (address, status) -> Some (address, status)
+                | StatusEvent (address, status) -> Some (address, status)
                 | _ -> None
             )
                 
@@ -448,11 +447,7 @@ module LaneRendering =
             
         let cells =
             loop WaitingFirstEvent dateSequence
-            |> List.map (fun (date, cellStatus) ->
-                { Address = { Date = date
-                              Task = task }
-                  Status = cellStatus }
-            )
+            |> List.map (fun (date, cellStatus) -> Cell ({ Date = date; Task = task }, cellStatus)) 
         Lane (task, cells)
         
 module Temp =

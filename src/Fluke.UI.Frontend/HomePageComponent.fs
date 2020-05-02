@@ -46,7 +46,7 @@ module Temp =
             TempData.getNow,
             PrivateData.CellEvents.cellEvents,
             taskData.TaskList,
-            (PrivateData.TaskComments.taskComments @ taskData.TaskComments) |> List.groupBy (fun x -> x.Task) |> Map.ofList,
+            PrivateData.TaskComments.taskComments @ taskData.TaskComments |> List.groupBy (fun (Model.TaskComment (task, _)) -> task) |> Map.ofList,
             PrivateData.InformationComments.informationComments |> List.groupBy (fun x -> x.Information) |> Map.ofList,
             taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
             PrivateData.PrivateData.hourOffset,
@@ -168,7 +168,7 @@ module HomePageComponent =
                     | None -> ()
                     | Some comments ->
                         comments
-                        |> List.map (fun x -> x.Comment)
+                        |> List.map (fun (TaskComment (_, comment)) -> comment)
                         |> CellComponent.tooltipPopup
                 ]
             )
@@ -177,19 +177,19 @@ module HomePageComponent =
             lanes
             |> List.map (fun (Lane (task, cells)) ->
                 cells
-                |> List.map (fun cell ->
+                |> List.map (fun (Cell (address, status)) ->
                     let comments =
                         Temp.cellComments
-                        |> List.choose (function Comment (address, comment) -> Some (address, comment) | _ -> None)
-                        |> List.filter (fun (address, comment) -> address.Task.Name = task.Name && address.Date = cell.Address.Date)
+                        |> List.choose (function CommentEvent (address, comment) -> Some (address, comment) | _ -> None)
+                        |> List.filter (fun (commAddress, _) -> commAddress.Task.Name = task.Name && commAddress.Date = address.Date)
                         |> List.map snd
                         
                     CellComponent.``default``
-                        { Date = cell.Address.Date
+                        { Date = address.Date
                           Task = task
                           Comments = comments
-                          Selected = selection |> List.contains cell.Address
-                          Status = cell.Status
+                          Selected = selection |> List.contains address
+                          Status = status
                           Today = today }
                 )
                 |> div []
@@ -265,7 +265,7 @@ module HomePageComponent =
                                 | None -> ()
                                 | Some comments ->
                                     comments
-                                    |> List.map (fun x -> x.Comment)
+                                    |> List.map (fun x -> Comment x.Comment)
                                     |> CellComponent.tooltipPopup
                             ]
                         )
@@ -328,7 +328,7 @@ module HomePageComponent =
                                         | None -> ()
                                         | Some comments ->
                                             comments
-                                            |> List.map (fun x -> x.Comment)
+                                            |> List.map (fun x -> Comment x.Comment)
                                             |> CellComponent.tooltipPopup
                                     ]
                                     
@@ -398,7 +398,7 @@ module HomePageComponent =
                                 | None -> ()
                                 | Some comments ->
                                     comments
-                                    |> List.map (fun x -> x.Comment)
+                                    |> List.map (fun x -> Comment x.Comment)
                                     |> CellComponent.tooltipPopup
                             ]
                         )
@@ -424,10 +424,10 @@ module HomePageComponent =
                 |> List.map (fun task ->
                     let events =
                         Temp.cellEvents
-                        |> List.choose (function Status (address, status) -> Some (address, status) | _ -> None)
+                        |> List.choose (function StatusEvent (address, status) -> Some (address, status) | _ -> None)
                         |> List.filter (fun (address, status) -> address.Task = task)
                         |> List.sortBy (fun (address, status) -> address.Date)
-                        |> List.map Status
+                        |> List.map StatusEvent
                     task, events
                 )
             
@@ -484,8 +484,8 @@ module HomePageComponent =
                     |> List.tryHead
                     |> Option.map (fun (Lane (_, cells)) ->
                         cells
-                        |> List.tryFind (fun cell -> cell.Address.Date = now.Date)
-                        |> Option.map (fun cell -> [ cell.Address ])
+                        |> List.tryFind (fun (Cell (address, _)) -> address.Date = now.Date)
+                        |> Option.map (fun (Cell (address, _)) -> [ address ])
                         |> Option.defaultValue []
                     )
                     |> Option.defaultValue []
@@ -505,7 +505,7 @@ module HomePageComponent =
         
         let dateSequence =
             match state.current.Lanes with
-            | Lane (_, cells) :: _ -> cells |> List.map (fun cell -> cell.Address.Date)
+            | Lane (_, cells) :: _ -> cells |> List.map (fun (Cell (address, _)) -> address.Date)
             | _ -> []
             
         let events = {|
