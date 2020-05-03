@@ -97,7 +97,7 @@ module TempData =
                                                Now: FlukeDateTime
                                                Task: Task |}) =
         
-        {| CellEvents = testData.CellEvents |> Rendering.createCellEvents testData.Task
+        {| CellEvents = testData.CellEvents |> Rendering.createCellStatusEntries testData.Task
            TaskList = [ testData.Task ]
            TaskOrderList = [ { Task = testData.Task; Priority = First } ]
            GetNow = fun (_: int) -> testData.Now |}
@@ -105,7 +105,7 @@ module TempData =
     let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
                                                Expected: string list
                                                Now: FlukeDateTime |}) =
-        let cellEvents = testData.Data |> List.collect (fun (task, events) -> events |> Rendering.createCellEvents task)
+        let cellEvents = testData.Data |> List.collect (fun (task, events) -> events |> Rendering.createCellStatusEntries task)
             
         {| CellEvents = cellEvents
            TaskList = testData.Data |> List.map fst
@@ -113,8 +113,8 @@ module TempData =
            GetNow = fun (_: int) -> testData.Now |}
            
     type TempCellEvent =
-        | TempComment of string
-        | TempInterval of FlukeDateTime
+        | TempComment of comment:string
+        | TempSession of start:FlukeDateTime
            
     let createManualTasksFromTree taskList taskTree =
         let createTaskMap taskList =
@@ -129,7 +129,7 @@ module TempData =
             
         let oldTaskMap, oldTaskOrderList = createTaskMap taskList
         
-        let newTaskList, newTaskComments =
+        let newTaskList, newTaskComments, newCellSessions =
             taskTree
             |> List.collect (fun (informationType, tasks) -> 
                 tasks
@@ -143,14 +143,19 @@ module TempData =
                                 InformationType = informationType }
                     let comments =
                         events
+                        |> List.choose (function | TempComment comment -> TaskComment (task, Comment comment) |> Some | _ -> None)
+                        
+                    let sessions =
+                        events
                         |> List.choose (function
-                            | TempComment comment -> TaskComment (task, Comment comment) |> Some
-                            | _ -> None
-                        )
-                    task, comments
+                            | TempSession start -> CellSession ({ Task = task; Date = start.Date }, start.Time) |> Some
+                            | _ -> None)
+                        
+                        
+                    task, comments, sessions
                 )
             )
-            |> List.unzip
+            |> List.unzip3
         
         let informationList =
             taskTree
@@ -173,6 +178,7 @@ module TempData =
         {| TaskList = taskList
            TaskOrderList = initialTaskOrderList @ taskOrderList
            TaskComments = newTaskComments |> List.collect id
+           CellSessions = newCellSessions |> List.collect id
            InformationList = informationList |}
     
     let tempData = {|

@@ -142,12 +142,22 @@ module Model =
     type Cell = Cell of address:CellAddress * status:CellStatus
     
     type Comment = Comment of string
+    
     type TaskComment = TaskComment of task:Task * comment:Comment
+    
+    type CellStatusEntry = CellStatusEntry of address:CellAddress * status:CellEventStatus
+    
+    type CellComment = CellComment of address:CellAddress * comment:Comment
+    let ofCellComment = fun (CellComment (address, comment)) -> address, comment
+    
+    type CellSession = CellSession of address:CellAddress * start:FlukeTime
+    let ofCellSession = fun (CellSession (address, start)) -> address, start
+    
         
     type CellEvent =
-        | StatusEvent of address:CellAddress * status:CellEventStatus
-        | CommentEvent of address:CellAddress * comment:Comment
-        | IntervalEvent of address:CellAddress * time:FlukeDateTime
+        | StatusEvent of CellStatusEntry
+        | CommentEvent of CellComment
+        | SessionEvent of CellSession
            
         
     type TaskOrderPriority =
@@ -200,8 +210,11 @@ module Rendering =
         | StatusCell of CellStatus
         | TodayCell
         
-    let createCellEvents task (events: (FlukeDate * CellEventStatus) list) =
-        events |> List.map (fun (date, eventStatus) -> StatusEvent ({ Task = task; Date = date }, eventStatus))
+    let createCellStatusEntries task (events: (FlukeDate * CellEventStatus) list) =
+        events |> List.map (fun (date, eventStatus) -> CellStatusEntry ({ Task = task; Date = date }, eventStatus))
+        
+    let createCellComment task date comment =
+        CellComment ({ Task = task; Date = date }, Comment comment)
         
     let isLate now time =
            now.Hour > time.Hour
@@ -217,11 +230,8 @@ module Rendering =
             
         let cellStatusEventList =
             cellEvents
-            |> List.choose (function
-                | StatusEvent (address, status) -> Some (address, status)
-                | _ -> None
-            )
-                
+            |> List.choose (function | StatusEvent (CellStatusEntry (address, status)) -> Some (address, status) | _ -> None)
+            
         let cellStatusEventsByDate =
             cellStatusEventList
             |> List.map (fun (address, status) -> address.Date, status)
@@ -381,8 +391,8 @@ module Sorting =
         
     let sortLanesByFrequency lanes =
         lanes
-        |> List.sortBy (fun (Lane (_, cellEventsList)) ->
-            cellEventsList
+        |> List.sortBy (fun (Lane (_, cells)) ->
+            cells
             |> List.filter (function Cell (_, (Disabled | Suggested)) -> true | _ -> false)
             |> List.length
         )

@@ -13,6 +13,7 @@ module CellComponent =
         { Date: FlukeDate
           Task: Task
           Comments: Comment list
+          Sessions: FlukeTime list
           Status: CellStatus
           Selected: bool
           Now: FlukeDateTime }
@@ -47,7 +48,13 @@ module CellComponent =
                           Css.cellSelected, props.Selected
                           Css.cellToday, props.Date = props.Now.Date ] ][
                 
-            div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][]
+            div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][
+                match props.Sessions.Length with
+//                | x -> str (string x)
+                | x when x > 0 -> str (string x)
+                | _ -> ()
+            ]
+            
                 
             if hasComments then
                 tooltipPopup props.Comments

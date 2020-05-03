@@ -89,6 +89,11 @@ $color-cell-session: #a9a9a9;
     > div:first-child {
       width: 18px;
       height: 18px;
+      line-height: 18px;
+      text-align: center;
+      font-size: 11px;
+      color: #999;
+      text-shadow: 0 0 2px #000;
     }
 
     @mixin cell-bgcolor($color) {

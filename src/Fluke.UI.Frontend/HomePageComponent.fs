@@ -37,20 +37,21 @@ module Temp =
 //    let tempDataType = Test
 
 
-    
-    let getNow, cellEvents, taskList, taskComments, informationComments, taskOrderList, hourOffset, informationList =
+    let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
+    let getNow, cellStatusEntries, taskList, taskComments, informationComments, taskOrderList, hourOffset, informationList, cellSessions =
         match tempDataType with
         | TempPrivate ->
             let taskData = PrivateData.Tasks.tempManualTasks
             
             TempData.getNow,
-            PrivateData.CellEvents.cellEvents,
+            PrivateData.CellStatusEntries.cellStatusEntries,
             taskData.TaskList,
             PrivateData.TaskComments.taskComments @ taskData.TaskComments |> List.groupBy (fun (Model.TaskComment (task, _)) -> task) |> Map.ofList,
             PrivateData.InformationComments.informationComments |> List.groupBy (fun x -> x.Information) |> Map.ofList,
             taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
             PrivateData.PrivateData.hourOffset,
-            taskData.InformationList
+            taskData.InformationList,
+            taskData.CellSessions
         | TempPublic ->
             let taskData = TempData.tempData.ManualTasks
             
@@ -61,7 +62,8 @@ module Temp =
             Map.empty,
             taskData.TaskOrderList,
             TempData.hourOffset,
-            taskData.InformationList
+            taskData.InformationList,
+            taskData.CellSessions
         | Test ->
 //            let testData = TempData.tempData.RenderLaneTests
             let testData = TempData.tempData.SortLanesTests
@@ -73,9 +75,9 @@ module Temp =
             Map.empty,
             testData.TaskOrderList,
             TempData.hourOffset,
-            [] // informationList
+            [], // informationList
+            [] // taskSessions
         
-    let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
     
     
 module HomePageComponent =
@@ -180,14 +182,21 @@ module HomePageComponent =
                 |> List.map (fun (Cell (address, status)) ->
                     let comments =
                         Temp.cellComments
-                        |> List.choose (function CommentEvent (address, comment) -> Some (address, comment) | _ -> None)
-                        |> List.filter (fun (commAddress, _) -> commAddress.Task.Name = task.Name && commAddress.Date = address.Date)
+                        |> List.map ofCellComment
+                        |> List.filter (fun (commentAddress, _) -> commentAddress.Task = task && commentAddress.Date = address.Date)
+                        |> List.map snd
+                        
+                    let sessions =
+                        Temp.cellSessions
+                        |> List.map ofCellSession
+                        |> List.filter (fun (sessionAddress, _) -> sessionAddress.Task = task && sessionAddress.Date = address.Date)
                         |> List.map snd
                         
                     CellComponent.``default``
                         { Date = address.Date
                           Task = task
                           Comments = comments
+                          Sessions = sessions
                           Selected = selection |> List.contains address
                           Status = status
                           Now = now }
@@ -423,10 +432,9 @@ module HomePageComponent =
                 Temp.taskList
                 |> List.map (fun task ->
                     let events =
-                        Temp.cellEvents
-                        |> List.choose (function StatusEvent (address, status) -> Some (address, status) | _ -> None)
-                        |> List.filter (fun (address, _) -> address.Task = task)
-                        |> List.sortBy (fun (address, _) -> address.Date)
+                        Temp.cellStatusEntries
+                        |> List.filter (fun (CellStatusEntry (address, _)) -> address.Task = task)
+                        |> List.sortBy (fun (CellStatusEntry (address, _)) -> address.Date)
                         |> List.map StatusEvent
                     task, events
                 )

@@ -13,7 +13,7 @@
     <Compile Include="PrivateData\InformationComments.fs" />
     <Compile Include="PrivateData\TaskComments.fs" />
     <Compile Include="PrivateData\CellComments.fs" />
-    <Compile Include="PrivateData\CellEvents.fs" />
+    <Compile Include="PrivateData\CellStatusEntries.fs" />
     <Compile Include="PrivateData\Journal.fs" />
     <Compile Include="PrivateData\Tests.fs" />
     <Content Include="paket.references" />

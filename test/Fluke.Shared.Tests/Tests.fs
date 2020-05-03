@@ -176,7 +176,7 @@ module Tests =
                 props.Data
                 |> List.map (fun (task, rawEvents) ->
                     rawEvents
-                    |> Rendering.createCellEvents task
+                    |> Rendering.createCellStatusEntries task
                     |> Rendering.renderLane props.Now dateSequence task
                 )
                 |> fun lanes ->
@@ -334,7 +334,7 @@ module Tests =
                     >> String.concat Environment.NewLine
                 
                 props.CellEvents
-                |> Rendering.createCellEvents props.Task
+                |> Rendering.createCellStatusEntries props.Task
                 |> Rendering.renderLane props.Now dateSequence props.Task
                 |> unwrapLane
                 |> toString
