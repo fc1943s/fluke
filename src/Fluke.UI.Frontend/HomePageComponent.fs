@@ -32,9 +32,9 @@ module Temp =
 //    let view = TasksView
     
 
-//    let tempDataType = TempPrivate
+    let tempDataType = TempPrivate
 //    let tempDataType = TempPublic
-    let tempDataType = Test
+//    let tempDataType = Test
 
 
     
@@ -93,7 +93,7 @@ module HomePageComponent =
           Lanes: Lane list
           View: Temp.View }
         static member inline Default =
-            let date = flukeDate 0 Month.January 1
+            let date = flukeDate 0000 Month.January 01
             { Now = { Date = date; Time = midnight }
               Selection = []
               Lanes = []
@@ -173,7 +173,7 @@ module HomePageComponent =
                 ]
             )
             
-        let gridCells today selection lanes =
+        let gridCells now selection lanes =
             lanes
             |> List.map (fun (Lane (task, cells)) ->
                 cells
@@ -190,7 +190,7 @@ module HomePageComponent =
                           Comments = comments
                           Selected = selection |> List.contains address
                           Status = status
-                          Today = today }
+                          Now = now }
                 )
                 |> div []
             ) |> div [ Class Css.laneContainer ]
@@ -279,7 +279,7 @@ module HomePageComponent =
                 div [][
                     gridHeader dateSequence now
                     
-                    gridCells now.Date selection lanes
+                    gridCells now selection lanes
                 ]
             ]
             
@@ -360,7 +360,7 @@ module HomePageComponent =
                                 div [][
                                     
                                     emptyDiv
-                                    gridCells now.Date selection lanes
+                                    gridCells now selection lanes
                                 ]
                             )
                             |> div []
@@ -412,7 +412,7 @@ module HomePageComponent =
                 div [][
                     gridHeader dateSequence now
                     
-                    gridCells now.Date selection lanes
+                    gridCells now selection lanes
                 ]
             ]
             
@@ -425,8 +425,8 @@ module HomePageComponent =
                     let events =
                         Temp.cellEvents
                         |> List.choose (function StatusEvent (address, status) -> Some (address, status) | _ -> None)
-                        |> List.filter (fun (address, status) -> address.Task = task)
-                        |> List.sortBy (fun (address, status) -> address.Date)
+                        |> List.filter (fun (address, _) -> address.Task = task)
+                        |> List.sortBy (fun (address, _) -> address.Date)
                         |> List.map StatusEvent
                     task, events
                 )
@@ -435,10 +435,10 @@ module HomePageComponent =
             | Temp.CalendarView ->
                 tasks
                 |> List.filter (function { Scheduling = Manual false }, [] -> false | _ -> true)
-                |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
+                |> List.map (fun (task, events) -> Rendering.renderLane now dateSequence task events)
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByIncomingRecurrency now.Date
-                |> Sorting.sortLanesByToday now.Date Temp.taskOrderList
+                |> Sorting.sortLanesByTimeOfDay now Temp.taskOrderList
             | Temp.GroupsView ->
                 let lanes =
                     tasks
@@ -449,7 +449,7 @@ module HomePageComponent =
 //                        |> List.tryLast
 //                        |> function Some { Status = Dropped } -> false | _ -> true
 //                    )
-                    |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
+                    |> List.map (fun (task, events) -> Rendering.renderLane now dateSequence task events)
                     |> Sorting.applyManualOrder Temp.taskOrderList
                     
                 Temp.informationList
@@ -464,7 +464,7 @@ module HomePageComponent =
             | Temp.TasksView ->
                 tasks
                 |> List.filter (function { Scheduling = Manual _ }, _ -> true | _ -> false)
-                |> List.map (fun (task, events) -> LaneRendering.renderLane now dateSequence task events)
+                |> List.map (fun (task, events) -> Rendering.renderLane now dateSequence task events)
                 |> Sorting.applyManualOrder Temp.taskOrderList
             
                     

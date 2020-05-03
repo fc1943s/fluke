@@ -32,7 +32,7 @@ module Model =
             | Archive archive -> sprintf "[%s]" archive.Color
             
     type CellStatus with
-        member this.CellClass =
+        member this.CellClass now =
             match this with
             | Disabled -> Css.cellDisabled
             | Suggested -> Css.cellSuggested
@@ -41,6 +41,7 @@ module Model =
             | MissedToday -> Css.cellMissedToday
             | EventStatus eventStatus ->
                 match eventStatus with
+                | Postponed until when until <> midnight && Rendering.isLate now until -> Css.cellPending
                 | Postponed until when until <> midnight -> Css.cellPostponedTemp
                 | Postponed _ -> Css.cellPostponed
                 | Completed -> Css.cellCompleted

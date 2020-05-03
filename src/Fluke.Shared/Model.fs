@@ -69,8 +69,10 @@ module Model =
         static member inline FromDateTime (date: DateTime) =
             { Hour = date.Hour
               Minute = date.Minute }
+            
+            
     let flukeTime hour minute = { Hour = hour; Minute = minute }
-    let midnight = flukeTime 0 0
+    let midnight = flukeTime 00 00
     
     [<StructuredFormatDisplay("{Date} {Time}")>]
     type FlukeDateTime =
@@ -187,130 +189,6 @@ module Rendering =
         |> Seq.toList
         
         
-module Sorting =
-    open Model
-    
-    let getManualSortedTaskList taskOrderList =
-        let result = List<Task> ()
-        
-        let taskOrderList =
-            taskOrderList
-            |> Seq.rev
-            |> Seq.distinctBy (fun x -> x.Task)
-            |> Seq.rev
-            |> Seq.toList
-        
-        for { Priority = priority; Task = task } in taskOrderList do
-            match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | First, None -> result.Insert (0, task)
-            | Last, None -> result.Add task
-            | LessThan lessThan, None ->
-                match result |> Seq.tryFindIndexBack ((=) lessThan) with
-                | None -> seq { task; lessThan } |> Seq.iter (fun x -> result.Insert (0, x))
-                | Some i -> result.Insert (i + 1, task)
-            | _ -> ()
-            
-        for { Priority = priority; Task = task } in taskOrderList do
-            match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | First, None -> result.Insert (0, task)
-            | Last, None -> result.Add task
-            | _ -> ()
-            
-        result |> Seq.toList
-        
-    let applyManualOrder taskOrderList lanes =
-        let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
-        let tasksSet = tasks |> Set.ofList
-        let orderEntriesOfTasks = taskOrderList |> List.filter (fun orderEntry -> tasksSet.Contains orderEntry.Task)
-        
-        let tasksWithOrderEntrySet =
-            orderEntriesOfTasks
-            |> List.map (fun x -> x.Task)
-            |> Set.ofList
-        
-        let tasksWithoutOrderEntry = tasks |> List.filter (fun task -> not (tasksWithOrderEntrySet.Contains task))
-        let orderEntriesMissing = tasksWithoutOrderEntry |> List.map (fun task -> { Task = task; Priority = Last })
-        let newTaskOrderList = orderEntriesMissing @ orderEntriesOfTasks
-            
-        let taskIndexMap =
-            newTaskOrderList
-            |> getManualSortedTaskList
-            |> List.mapi (fun i task -> task, i)
-            |> Map.ofList
-            
-        lanes |> List.sortBy (fun (Lane (task, _)) -> taskIndexMap.[task])
-        
-    let sortLanesByFrequency lanes =
-        lanes
-        |> List.sortBy (fun (Lane (_, cellEventsList)) ->
-            cellEventsList
-            |> List.filter (function Cell (_, (Disabled | Suggested)) -> true | _ -> false)
-            |> List.length
-        )
-        
-    let sortLanesByIncomingRecurrency today lanes =
-        lanes
-        |> List.sortBy (fun (Lane (_, cells)) ->
-            cells
-            |> List.exists (fun (Cell (address, status)) -> address.Date = today && status = Disabled)
-            |> function
-                | true ->
-                    cells
-                    |> List.tryFindIndex (fun (Cell (_, status)) -> status = Pending)
-                    |> Option.defaultValue cells.Length
-                | false -> cells.Length
-        )
-        
-    type LaneSortType =
-        | TaskOrderList
-        | DefaultSort
-        
-    let sortLanesByToday today taskOrderList lanes =
-        let order =
-            [ (function EventStatus ManualPending, _                             -> true | _ -> false), TaskOrderList
-              (function Pending,                   _                             -> true | _ -> false), TaskOrderList
-              (function Suggested,                 { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
-              (function Suggested,                 { Scheduling = Manual true }  -> true | _ -> false), DefaultSort
-              (function EventStatus (Postponed _), _                             -> true | _ -> false), DefaultSort
-              (function EventStatus Completed,     _                             -> true | _ -> false), DefaultSort
-              (function EventStatus Dropped,       _                             -> true | _ -> false), DefaultSort
-              (function Disabled,                  { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
-              (function Suggested,                 { Scheduling = Manual false } -> true | _ -> false), DefaultSort
-              (function _,                         _                             -> true)             , DefaultSort ]
-        
-        let getGroup task (Cell (_, status)) =
-            order
-            |> List.map (Tuple2.mapFst (fun orderFn -> orderFn (status, task)))
-            |> List.indexed
-            |> List.filter (snd >> fst)
-            |> List.map (Tuple2.mapSnd snd)
-            |> List.head
-            
-        lanes
-        |> List.indexed
-        |> List.groupBy (fun (_, Lane (task, cells)) ->
-            cells
-            |> List.filter (fun (Cell (address, _)) -> address.Date = today)
-            |> List.map (getGroup task)
-            |> List.minBy fst
-        )
-        |> List.collect (fun ((groupIndex, sortType), indexedLanes) ->
-            match sortType with
-            | TaskOrderList ->
-                indexedLanes
-                |> List.map snd
-                |> applyManualOrder taskOrderList
-                |> List.indexed
-            | DefaultSort -> indexedLanes
-            |> List.map (fun (laneIndex, lane) -> (groupIndex * 1000) + laneIndex, lane)
-        )
-        |> List.sortBy fst
-        |> List.map snd
-    
-    
-module LaneRendering =
-    open Model
-    
     type LaneCellRenderState =
         | WaitingFirstEvent
         | WaitingEvent
@@ -322,12 +200,12 @@ module LaneRendering =
         | StatusCell of CellStatus
         | TodayCell
         
-        
     let createCellEvents task (events: (FlukeDate * CellEventStatus) list) =
-        events
-        |> List.map (fun (date, eventStatus) ->
-            StatusEvent ({ Task = task; Date = date }, eventStatus)
-        )
+        events |> List.map (fun (date, eventStatus) -> StatusEvent ({ Task = task; Date = date }, eventStatus))
+        
+    let isLate now time =
+           now.Hour > time.Hour
+        || now.Hour = time.Hour && now.Minute >= time.Minute
         
     let renderLane (now: FlukeDateTime) dateSequence task (cellEvents: CellEvent list) =
             
@@ -434,13 +312,10 @@ module LaneRendering =
                     | EmptyCell -> Disabled
                     | StatusCell status -> status
                     | TodayCell ->
-                        let isPendingNow =
-                               now.Time.Hour > task.PendingAfter.Hour
-                            || now.Time.Hour = task.PendingAfter.Hour && now.Time.Minute >= task.PendingAfter.Minute
-                
-                        match isPendingNow with
-                        | true -> Pending
-                        | false -> Suggested
+                        match now.Time, task.PendingAfter, task.MissedAfter with
+                        | now, _, missedAfter when missedAfter <> midnight && isLate now missedAfter -> MissedToday
+                        | now, pendingAfter, _ when isLate now pendingAfter -> Pending
+                        | _ -> Suggested
                 
                 (date, status) :: loop renderState tail
             | [] -> []
@@ -449,6 +324,136 @@ module LaneRendering =
             loop WaitingFirstEvent dateSequence
             |> List.map (fun (date, cellStatus) -> Cell ({ Date = date; Task = task }, cellStatus)) 
         Lane (task, cells)
+
+        
+module Sorting =
+    open Model
+    
+    let getManualSortedTaskList taskOrderList =
+        let result = List<Task> ()
+        
+        let taskOrderList =
+            taskOrderList
+            |> Seq.rev
+            |> Seq.distinctBy (fun x -> x.Task)
+            |> Seq.rev
+            |> Seq.toList
+        
+        for { Priority = priority; Task = task } in taskOrderList do
+            match priority, result |> Seq.tryFindIndexBack ((=) task) with
+            | First, None -> result.Insert (0, task)
+            | Last, None -> result.Add task
+            | LessThan lessThan, None ->
+                match result |> Seq.tryFindIndexBack ((=) lessThan) with
+                | None -> seq { task; lessThan } |> Seq.iter (fun x -> result.Insert (0, x))
+                | Some i -> result.Insert (i + 1, task)
+            | _ -> ()
+            
+        for { Priority = priority; Task = task } in taskOrderList do
+            match priority, result |> Seq.tryFindIndexBack ((=) task) with
+            | First, None -> result.Insert (0, task)
+            | Last, None -> result.Add task
+            | _ -> ()
+            
+        result |> Seq.toList
+        
+    let applyManualOrder taskOrderList lanes =
+        let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
+        let tasksSet = tasks |> Set.ofList
+        let orderEntriesOfTasks = taskOrderList |> List.filter (fun orderEntry -> tasksSet.Contains orderEntry.Task)
+        
+        let tasksWithOrderEntrySet =
+            orderEntriesOfTasks
+            |> List.map (fun x -> x.Task)
+            |> Set.ofList
+        
+        let tasksWithoutOrderEntry = tasks |> List.filter (fun task -> not (tasksWithOrderEntrySet.Contains task))
+        let orderEntriesMissing = tasksWithoutOrderEntry |> List.map (fun task -> { Task = task; Priority = Last })
+        let newTaskOrderList = orderEntriesMissing @ orderEntriesOfTasks
+            
+        let taskIndexMap =
+            newTaskOrderList
+            |> getManualSortedTaskList
+            |> List.mapi (fun i task -> task, i)
+            |> Map.ofList
+            
+        lanes |> List.sortBy (fun (Lane (task, _)) -> taskIndexMap.[task])
+        
+    let sortLanesByFrequency lanes =
+        lanes
+        |> List.sortBy (fun (Lane (_, cellEventsList)) ->
+            cellEventsList
+            |> List.filter (function Cell (_, (Disabled | Suggested)) -> true | _ -> false)
+            |> List.length
+        )
+        
+    let sortLanesByIncomingRecurrency today lanes =
+        lanes
+        |> List.sortBy (fun (Lane (_, cells)) ->
+            cells
+            |> List.exists (fun (Cell (address, status)) -> address.Date = today && status = Disabled)
+            |> function
+                | true ->
+                    cells
+                    |> List.tryFindIndex (fun (Cell (_, status)) -> status = Pending)
+                    |> Option.defaultValue cells.Length
+                | false -> cells.Length
+        )
+        
+    type LaneSortType =
+        | TaskOrderList
+        | DefaultSort
+        
+    let sortLanesByTimeOfDay (now: FlukeDateTime) taskOrderList lanes =
+        let (|PostponedTemp|Postponed|WasPostponed|None|) = function
+            | Postponed until when until = midnight -> Postponed
+            | Postponed until when Rendering.isLate now.Time until -> WasPostponed
+            | Postponed _ -> PostponedTemp
+            | _ -> None
+        
+        let order =
+            [ (function MissedToday,               _                             -> true | _ -> false), TaskOrderList
+              (function EventStatus ManualPending, _                             -> true | _ -> false), TaskOrderList
+              (function (EventStatus WasPostponed
+                       | Pending),                 _                             -> true | _ -> false), TaskOrderList
+              (function EventStatus PostponedTemp, _                             -> true | _ -> false), TaskOrderList
+              (function Suggested,                 { Scheduling = Recurrency _ } -> true | _ -> false), TaskOrderList
+              (function Suggested,                 { Scheduling = Manual true }  -> true | _ -> false), TaskOrderList
+              (function EventStatus Postponed,     _                             -> true | _ -> false), TaskOrderList
+              (function EventStatus Completed,     _                             -> true | _ -> false), DefaultSort
+              (function EventStatus Dropped,       _                             -> true | _ -> false), DefaultSort
+              (function Disabled,                  { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
+              (function Suggested,                 { Scheduling = Manual false } -> true | _ -> false), DefaultSort
+              (function _,                         _                             -> true)             , DefaultSort ]
+        
+        let getGroup task (Cell (_, status)) =
+            order
+            |> List.map (Tuple2.mapFst (fun orderFn -> orderFn (status, task)))
+            |> List.indexed
+            |> List.filter (snd >> fst)
+            |> List.map (Tuple2.mapSnd snd)
+            |> List.head
+            
+        lanes
+        |> List.indexed
+        |> List.groupBy (fun (_, Lane (task, cells)) ->
+            cells
+            |> List.filter (fun (Cell (address, _)) -> address.Date = now.Date)
+            |> List.map (getGroup task)
+            |> List.minBy fst
+        )
+        |> List.collect (fun ((groupIndex, sortType), indexedLanes) ->
+            match sortType with
+            | TaskOrderList ->
+                indexedLanes
+                |> List.map snd
+                |> applyManualOrder taskOrderList
+                |> List.indexed
+            | DefaultSort -> indexedLanes
+            |> List.map (fun (laneIndex, lane) -> (groupIndex * 1000) + laneIndex, lane)
+        )
+        |> List.sortBy fst
+        |> List.map snd
         
 module Temp =
     
@@ -457,6 +462,5 @@ module Temp =
         | Selection
         | Editing
     
-
 
 

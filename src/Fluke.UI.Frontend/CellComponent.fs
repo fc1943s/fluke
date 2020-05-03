@@ -15,7 +15,7 @@ module CellComponent =
           Comments: Comment list
           Status: CellStatus
           Selected: bool
-          Today: FlukeDate }
+          Now: FlukeDateTime }
 
     type State =
         { a: unit }
@@ -42,10 +42,10 @@ module CellComponent =
     let ``default`` = FunctionComponent.Of (fun props ->
         let hasComments = not props.Comments.IsEmpty
         
-        div [ classList [ props.Status.CellClass, true
+        div [ classList [ props.Status.CellClass props.Now.Time, true
                           Css.tooltipContainer, hasComments
                           Css.cellSelected, props.Selected
-                          Css.cellToday, props.Date = props.Today ] ][
+                          Css.cellToday, props.Date = props.Now.Date ] ][
                 
             div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][]
                 
