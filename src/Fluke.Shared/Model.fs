@@ -220,7 +220,7 @@ module Rendering =
            now.Hour > time.Hour
         || now.Hour = time.Hour && now.Minute >= time.Minute
         
-    let renderLane (now: FlukeDateTime) dateSequence task (cellEvents: CellEvent list) =
+    let renderLane (now: FlukeDateTime) dateSequence task (cellStatusEntries: CellStatusEntry list) =
             
         let (|BeforeToday|Today|AfterToday|) (now: FlukeDate, date: FlukeDate) =
             match now.DateTime |> date.DateTime.CompareTo with
@@ -228,13 +228,9 @@ module Rendering =
             | n when n = 0 -> Today
             | _ -> AfterToday
             
-        let cellStatusEventList =
-            cellEvents
-            |> List.choose (function | StatusEvent (CellStatusEntry (address, status)) -> Some (address, status) | _ -> None)
-            
         let cellStatusEventsByDate =
-            cellStatusEventList
-            |> List.map (fun (address, status) -> address.Date, status)
+            cellStatusEntries
+            |> List.map (fun (CellStatusEntry (address, status)) -> address.Date, status)
             |> Map.ofList
             
         let rec loop renderState = function

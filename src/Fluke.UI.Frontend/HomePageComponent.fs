@@ -435,7 +435,6 @@ module HomePageComponent =
                         Temp.cellStatusEntries
                         |> List.filter (fun (CellStatusEntry (address, _)) -> address.Task = task)
                         |> List.sortBy (fun (CellStatusEntry (address, _)) -> address.Date)
-                        |> List.map StatusEvent
                     task, events
                 )
             

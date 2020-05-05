@@ -231,12 +231,7 @@ module TempData =
                 ]
                 Area areas.car, []
                 Area areas.career, []
-                Area areas.chores, [
-                    "groceries", [
-                        TempComment "food"
-                        TempComment "beer"
-                    ]
-                ]
+                Area areas.chores, []
                 Area areas.fitness, []
                 Area areas.food, []
                 Area areas.finances, []
