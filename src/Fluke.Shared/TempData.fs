@@ -92,25 +92,24 @@ module TempData =
           Time = FlukeTime.FromDateTime rawDate }
         
     
-    let createRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
-                                               Data: (FlukeDate * CellStatus) list
-                                               Now: FlukeDateTime
-                                               Task: Task |}) =
+    let getTaskOrderList oldTaskOrderList tasks manualTaskOrder =
+        let taskMap =
+            tasks
+            |> List.map (fun x -> (x.InformationType, x.Name), x)
+            |> Map.ofList
         
-        {| CellEvents = testData.CellEvents |> Rendering.createCellStatusEntries testData.Task
-           TaskList = [ testData.Task ]
-           TaskOrderList = [ { Task = testData.Task; Priority = First } ]
-           GetNow = fun (_: int) -> testData.Now |}
+        manualTaskOrder
+        |> List.map (fun (information, taskName) ->
+            taskMap
+            |> Map.tryFind (information, taskName)
+            |> function
+                | None -> failwithf "Invalid task: '%A/%s'" information taskName
+                | Some task ->
+                    { Task = task
+                      Priority = First }
+        )
+        |> List.append oldTaskOrderList
         
-    let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
-                                               Expected: string list
-                                               Now: FlukeDateTime |}) =
-        let cellEvents = testData.Data |> List.collect (fun (task, events) -> events |> Rendering.createCellStatusEntries task)
-            
-        {| CellEvents = cellEvents
-           TaskList = testData.Data |> List.map fst
-           TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = Last })
-           GetNow = fun (_: int) -> testData.Now |}
            
     type TempCellEvent =
         | TempComment of comment:string
@@ -180,6 +179,29 @@ module TempData =
            TaskComments = newTaskComments |> List.collect id
            CellSessions = newCellSessions |> List.collect id
            InformationList = informationList |}
+           
+           
+    let createRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
+                                               Data: (FlukeDate * CellStatus) list
+                                               Now: FlukeDateTime
+                                               Task: Task |}) =
+        
+        {| CellEvents = testData.CellEvents |> Rendering.createCellStatusEntries testData.Task
+           TaskList = [ testData.Task ]
+           TaskOrderList = [ { Task = testData.Task; Priority = First } ]
+           GetNow = fun (_: int) -> testData.Now |}
+        
+        
+    let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
+                                               Expected: string list
+                                               Now: FlukeDateTime |}) =
+        let cellEvents = testData.Data |> List.collect (fun (task, events) -> events |> Rendering.createCellStatusEntries task)
+            
+        {| CellEvents = cellEvents
+           TaskList = testData.Data |> List.map fst
+           TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = Last })
+           GetNow = fun (_: int) -> testData.Now |}
+    
     
     let tempData = {|
         ManualTasks = 
