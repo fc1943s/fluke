@@ -29,11 +29,11 @@ module Model =
             { Name = "<null>"
               Area = Area.Default }
         
-    type InformationType =
+    type Information =
         | Project of Project
         | Area of Area
         | Resource of Resource
-        | Archive of InformationType
+        | Archive of Information
             
     type Month =
         | January = 1
@@ -84,7 +84,7 @@ module Model =
     let flukeDateTime year month day hour minute = { Date = flukeDate year month day; Time = flukeTime hour minute }
             
     type InformationComment =
-        { Information: InformationType
+        { Information: Information
           Comment: string }
         
     type FixedRecurrency =
@@ -107,14 +107,14 @@ module Model =
     
     type Task =
         { Name: string
-          InformationType: InformationType
+          Information: Information
           Scheduling: TaskScheduling
           PendingAfter: FlukeTime
           MissedAfter: FlukeTime
           Duration: int option }
         static member inline Default =
             { Name = "<null>"
-              InformationType = Area Area.Default 
+              Information = Area Area.Default 
               PendingAfter = midnight
               MissedAfter = midnight
               Scheduling = Manual false
@@ -170,6 +170,19 @@ module Model =
           Priority: TaskOrderPriority }
         
     type Lane = Lane of task:Task * cells:Cell list
+    
+    type TaskPriority =
+        | Low1
+        | Low2
+        | Low3
+        | Medium4
+        | Medium5
+        | Medium6
+        | High7
+        | High8
+        | High9
+        | Critical10
+    
     
 module Rendering =
     open Model

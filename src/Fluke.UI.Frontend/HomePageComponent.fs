@@ -260,15 +260,15 @@ module HomePageComponent =
                         // Column: Information Type
                         lanes
                         |> List.map (fun (Lane (task, _)) ->
-                            let comments = Temp.informationComments.TryFind task.InformationType
+                            let comments = Temp.informationComments.TryFind task.Information
                             
                             div [ classList [ Css.blueIndicator, comments.IsSome
                                               Css.tooltipContainer, comments.IsSome ]
                                   Style [ Padding 0
-                                          Color task.InformationType.Color
+                                          Color task.Information.Color
                                           WhiteSpace WhiteSpaceOptions.Nowrap ] ][
                                 
-                                str task.InformationType.Name
+                                str task.Information.Name
                                 
                                 match comments with
                                 | None -> ()
@@ -279,7 +279,18 @@ module HomePageComponent =
                             ]
                         )
                         |> div [ Style [ PaddingRight 10 ] ]
+                        
+                        // Column: Priority
+                        lanes
+                        |> List.map (fun (Lane (task, _)) ->
+                            div [][
+                                str "10"
+                            ]
+                        )
+                        |> div [ Style [ PaddingRight 10
+                                         TextAlign TextAlignOptions.Center ] ]
                 
+                        // Column: Task Name
                         taskNameList 0 lanes
                         |> div [ Style [ Width 200 ] ]
                     ]
@@ -296,7 +307,7 @@ module HomePageComponent =
             let groups =
                 lanes
                 |> List.groupBy (fun (Lane (task, _)) ->
-                    task.InformationType
+                    task.Information
                 )
                 |> List.groupBy (fun (info, _) ->
                     match info with
@@ -316,17 +327,19 @@ module HomePageComponent =
                     |> div []
                         
                     groups
-                    |> List.map (fun (name, groupLanes) ->
+                    |> List.map (fun (informationType, lanesGroups) ->
                         div [][
+                            // Information Type
                             div [ Style [ Color "#444" ] ][
-                                str name
+                                str informationType
                             ]
                             
-                            groupLanes
+                            lanesGroups
                             |> List.map (fun (information, lanes) ->
                                 let comments = Temp.informationComments.TryFind information
                                 
                                 div [][
+                                    // Information
                                     div [ classList [ Css.blueIndicator, comments.IsSome
                                                       Css.tooltipContainer, comments.IsSome ]
                                           Style [ paddingLeftLevel 1
@@ -342,6 +355,7 @@ module HomePageComponent =
                                     ]
                                     
                                     
+                                    // Task Name
                                     taskNameList 2 lanes
                                     |> div [ Style [ Width 500 ] ]
                                 ]
@@ -393,15 +407,15 @@ module HomePageComponent =
                         // Column: Information Type
                         lanes
                         |> List.map (fun (Lane (task, _)) ->
-                            let comments = Temp.informationComments.TryFind task.InformationType
+                            let comments = Temp.informationComments.TryFind task.Information
                             
                             div [ classList [ Css.blueIndicator, comments.IsSome
                                               Css.tooltipContainer, comments.IsSome ]
                                   Style [ Padding 0
-                                          Color task.InformationType.Color
+                                          Color task.Information.Color
                                           WhiteSpace WhiteSpaceOptions.Nowrap ] ][
                                 
-                                str task.InformationType.Name
+                                str task.Information.Name
                                 
                                 match comments with
                                 | None -> ()
@@ -413,6 +427,7 @@ module HomePageComponent =
                         )
                         |> div [ Style [ PaddingRight 10 ] ]
                 
+                        // Column: Task Name
                         taskNameList 0 lanes
                         |> div [ Style [ Width 200 ] ]
                     ]
@@ -463,7 +478,7 @@ module HomePageComponent =
                 |> List.map (fun information ->
                     let lanes =
                         lanes
-                        |> List.filter (fun (Lane (task, _)) -> task.InformationType = information)
+                        |> List.filter (fun (Lane (task, _)) -> task.Information = information)
                         
                     information, lanes
                 )

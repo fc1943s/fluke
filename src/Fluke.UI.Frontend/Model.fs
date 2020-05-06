@@ -16,7 +16,7 @@ module UIState =
 module Model =
     open Model
     
-    type InformationType with
+    type Information with
         member this.Name = 
             match this with
             | Project project -> project.Name

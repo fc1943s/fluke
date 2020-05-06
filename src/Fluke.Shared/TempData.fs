@@ -95,7 +95,7 @@ module TempData =
     let getTaskOrderList oldTaskOrderList tasks manualTaskOrder =
         let taskMap =
             tasks
-            |> List.map (fun x -> (x.InformationType, x.Name), x)
+            |> List.map (fun x -> (x.Information, x.Name), x)
             |> Map.ofList
         
         manualTaskOrder
@@ -114,12 +114,13 @@ module TempData =
     type TempCellEvent =
         | TempComment of comment:string
         | TempSession of start:FlukeDateTime
+        | TempPriority of priority:TaskPriority
            
     let createManualTasksFromTree taskList taskTree =
         let createTaskMap taskList =
             let map =
                 taskList
-                |> List.map (fun x -> (x.InformationType, x.Name), x)
+                |> List.map (fun x -> (x.Information, x.Name), x)
                 |> Map.ofList
                 
             let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = Last })
@@ -130,16 +131,16 @@ module TempData =
         
         let newTaskList, newTaskComments, newCellSessions =
             taskTree
-            |> List.collect (fun (informationType, tasks) -> 
+            |> List.collect (fun (information, tasks) -> 
                 tasks
                 |> List.map (fun (taskName, events) ->
                     let task =
                         oldTaskMap
-                        |> Map.tryFind (informationType, taskName)
+                        |> Map.tryFind (information, taskName)
                         |> Option.defaultValue
                             { Task.Default with
                                 Name = sprintf "> %s" taskName
-                                InformationType = informationType }
+                                Information = information }
                     let comments =
                         events
                         |> List.choose (function | TempComment comment -> TaskComment (task, Comment comment) |> Some | _ -> None)
@@ -164,7 +165,7 @@ module TempData =
         let newTaskMap, newTaskOrderList = createTaskMap newTaskList
         
         let notOnNewTaskMap task =
-            not (newTaskMap.ContainsKey (task.InformationType, task.Name))
+            not (newTaskMap.ContainsKey (task.Information, task.Name))
             
         let filteredOldTaskList = taskList |> List.filter notOnNewTaskMap
         let taskList =  filteredOldTaskList @ newTaskList
