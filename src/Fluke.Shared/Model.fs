@@ -123,7 +123,7 @@ module Model =
     type CellEventStatus =
         | Postponed of until:FlukeTime
         | Completed
-        | Dropped
+        | Dismissed
         | ManualPending
         | Session of start:FlukeTime
     
@@ -440,7 +440,7 @@ module Sorting =
               (function Suggested,                 { Scheduling = Manual true }  -> true | _ -> false), TaskOrderList
               (function EventStatus Postponed,     _                             -> true | _ -> false), TaskOrderList
               (function EventStatus Completed,     _                             -> true | _ -> false), DefaultSort
-              (function EventStatus Dropped,       _                             -> true | _ -> false), DefaultSort
+              (function EventStatus Dismissed,     _                             -> true | _ -> false), DefaultSort
               (function Disabled,                  { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
               (function Suggested,                 { Scheduling = Manual false } -> true | _ -> false), DefaultSort
               (function _,                         _                             -> true)             , DefaultSort ]

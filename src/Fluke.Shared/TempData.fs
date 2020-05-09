@@ -297,7 +297,7 @@ module TempData =
                            
                            { Task.Default with Name = "6"; Scheduling = Manual false },
                            [ flukeDate 2020 Month.March 04, Postponed midnight
-                             flukeDate 2020 Month.March 06, Dropped ]
+                             flukeDate 2020 Month.March 06, Dismissed ]
                            
                            { Task.Default with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
                            [ flukeDate 2020 Month.March 08, Completed ]
@@ -306,7 +306,7 @@ module TempData =
                            [ flukeDate 2020 Month.March 10, Completed ]
                            
                            { Task.Default with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
-                           [ flukeDate 2020 Month.March 10, Dropped ]
+                           [ flukeDate 2020 Month.March 10, Dismissed ]
                            
                            { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Postponed midnight ]
@@ -325,7 +325,7 @@ module TempData =
                            
                            { Task.Default with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
                            [ flukeDate 2020 Month.March 07, Postponed midnight
-                             flukeDate 2020 Month.March 09, Dropped ]
+                             flukeDate 2020 Month.March 09, Dismissed ]
                            
                            { Task.Default with Name = "16"; Scheduling = Recurrency (Offset (Days 1));
                                                             MissedAfter = (flukeTime 07 00) },

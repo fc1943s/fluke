@@ -469,7 +469,7 @@ module HomePageComponent =
 //                        events
 //                        |> List.filter (function { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true | _ -> false)
 //                        |> List.tryLast
-//                        |> function Some { Status = Dropped } -> false | _ -> true
+//                        |> function Some { Status = Dismissed } -> false | _ -> true
 //                    )
                     |> List.map (fun (task, events) -> Rendering.renderLane now dateSequence task events)
                     |> Sorting.applyManualOrder Temp.taskOrderList

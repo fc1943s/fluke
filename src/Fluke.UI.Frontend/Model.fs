@@ -45,7 +45,7 @@ module Model =
                 | Postponed until when until <> midnight -> Css.cellPostponedTemp
                 | Postponed _ -> Css.cellPostponed
                 | Completed -> Css.cellCompleted
-                | Dropped -> Css.cellDropped
+                | Dismissed -> Css.cellDismissed
                 | ManualPending -> Css.cellManualPending
                 | Session _ -> Css.cellSession
     
