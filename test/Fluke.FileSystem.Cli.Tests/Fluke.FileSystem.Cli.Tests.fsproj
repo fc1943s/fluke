@@ -15,5 +15,8 @@
     <ProjectReference Include="..\..\src\Fluke.FileSystem.Cli\Fluke.FileSystem.Cli.fsproj" />
     <ProjectReference Include="..\..\src\Fluke.Shared\Fluke.Shared.fsproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="FSharp.Data" Version="3.3.3" />
+  </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

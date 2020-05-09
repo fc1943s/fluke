@@ -5,16 +5,82 @@ open Expecto
 open Expecto.Flip
 open Fluke.Shared
 open FSharpPlus
+open FSharp.Data
 
 
 module Tests =
     open Model
     
+    type BookmarksSchema = JsonProvider<PrivateData.Tests.bookmarksJsonPath>
     let tests = testList "Tests" [
         
         testList "FileSystem" [
             
-            test "1" {
+            test "Bookmarks" {
+                let bookmarks = BookmarksSchema.Load PrivateData.Tests.bookmarksJsonPath
+                
+                let data2 = [
+                    for xa in bookmarks.Roots.BookmarkBar.Children do
+                        if xa.Type = "url"
+                        then xa.Name, None
+                        else xa.Name, Some [
+                            for xb in xa.Children do
+                                if xb.Type = "url"
+                                then xb.Name, None
+                                else xb.Name, Some [
+                                    for xc in xb.Children do
+                                        xc.Name, None
+                                ]
+                        ]
+                ]
+                
+                let data2 = [
+                    bookmarks.Roots.BookmarkBar.Children
+                    |> Array.map (function
+                        | x when x.Type = "url" -> x.Name, [||]
+                        | x -> x.Name, x.Children |> Array.map (function
+                            | x when x.Type = "url" -> x.Name, [||]
+                            | x -> x.Name, x.Children |> Array.map (function
+                                | x when x.Type = "url" -> x.Name, [||]
+                                | x -> x.Name, x.Children |> Array.map (function
+                                    | x when x.Type = "url" -> x.Name, [||]
+                                    | x -> x.Name, x.Children |> Array.map (function
+                                        | x when x.Type = "url" -> x.Name, [||]
+                                        | x -> x.Name, x.Children |> Array.map (function
+                                            | x when x.Type = "url" -> x.Name, [||]
+                                            | x -> x.Name, x.Children |> Array.map (function
+                                                | _ -> x.Name, [||] )))))))
+                            ] |> ignore
+                    
+                let data =
+                    bookmarks.Roots.BookmarkBar.Children
+                    |> Array.map (function
+                        | x when x.Type = "url" -> x.Name, [||]
+                        | x -> x.Name, x.Children |> Array.map (function
+                            | x when x.Type = "url" -> x.Name, [||]
+                            | x -> x.Name, x.Children |> Array.map (function
+                                | x when x.Type = "url" -> x.Name, [||]
+                                | x -> x.Name, x.Children |> Array.map (function
+                                    | x when x.Type = "url" -> x.Name, [||]
+                                    | x -> x.Name, x.Children |> Array.map (function
+                                        | x when x.Type = "url" -> x.Name, [||]
+                                        | x -> x.Name, x.Children |> Array.map (function
+                                            | x when x.Type = "url" -> x.Name, [||]
+                                            | x -> x.Name, x.Children |> Array.map (function
+                                                | _ -> x.Name, [||] )))))))
+                    |> ignore
+                    
+                    let rec loop q =
+                        match q with
+                        | (x: BookmarksSchema.Child[])  -> x
+                    let rr =
+                        loop bookmarks.Roots.BookmarkBar.Children
+                    rr |> ignore
+                    ()
+                ()
+            }
+            
+            test "Information Folders" {
                 
                 let taskData = PrivateData.Tasks.tempManualTasks
                     
