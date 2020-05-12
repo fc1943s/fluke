@@ -13,7 +13,7 @@ module CellComponent =
         { Date: FlukeDate
           Task: Task
           Comments: Comment list
-          Sessions: FlukeTime list
+          Sessions: TaskSession list
           Status: CellStatus
           Selected: bool
           Now: FlukeDateTime }

@@ -129,7 +129,7 @@ module TempData =
             
         let oldTaskMap, oldTaskOrderList = createTaskMap taskList
         
-        let newTaskList, newTaskComments, newCellSessions =
+        let newTaskStateList =
             taskTree
             |> List.collect (fun (information, tasks) -> 
                 tasks
@@ -141,44 +141,70 @@ module TempData =
                             { Task.Default with
                                 Name = sprintf "> %s" taskName
                                 Information = information }
+                            
                     let comments =
                         events
-                        |> List.choose (function | TempComment comment -> TaskComment (task, Comment comment) |> Some | _ -> None)
+                        |> List.choose (function TempComment comment -> TaskComment (task, Comment comment) |> Some | _ -> None)
                         
                     let sessions =
                         events
-                        |> List.choose (function
-                            | TempSession start -> CellSession ({ Task = task; Date = start.Date }, start.Time) |> Some
-                            | _ -> None)
+                        |> List.choose (function TempSession start -> TaskSession { Date = start.Date; Time = start.Time } |> Some | _ -> None)
+                        |> List.sortBy (fun (TaskSession start) -> start.DateTime)
                         
+                    let priority =
+                        let getPriorityValue = function
+                            | Low1 -> 1
+                            | Low2 -> 2
+                            | Low3 -> 3
+                            | Medium4 -> 4
+                            | Medium5 -> 5
+                            | Medium6 -> 6
+                            | High7 -> 7
+                            | High8 -> 8
+                            | High9 -> 9
+                            | Critical10 -> 10
+                            
+                        events
+                        |> List.choose (function TempPriority p -> getPriorityValue p |> TaskPriorityValue |> Some | _ -> None)
+                        |> List.tryHead
                         
-                    task, comments, sessions
+                    { Task = task
+                      Comments = comments |> List.map (ofTaskComment >> snd)
+                      Sessions = sessions
+                      PriorityValue = priority }
                 )
             )
-            |> List.unzip3
-        
+            
         let informationList =
             taskTree
             |> List.map fst
             |> List.distinct
             
-        let newTaskMap, newTaskOrderList = createTaskMap newTaskList
+        let newTaskMap, newTaskOrderList =
+            newTaskStateList
+            |> List.map (fun x -> x.Task)
+            |> createTaskMap
         
         let notOnNewTaskMap task =
             not (newTaskMap.ContainsKey (task.Information, task.Name))
             
-        let filteredOldTaskList = taskList |> List.filter notOnNewTaskMap
-        let taskList =  filteredOldTaskList @ newTaskList
+        let taskStateList =
+            taskList
+            |> List.filter notOnNewTaskMap
+            |> List.map (fun task ->
+                { Task = task
+                  Comments = []
+                  Sessions = []
+                  PriorityValue = None })
+            |> List.prepend newTaskStateList
         
-        let initialTaskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = Last })
+        let initialTaskOrderList = taskStateList |> List.map (fun taskState -> { Task = taskState.Task; Priority = Last })
         
         let filteredOldTaskOrder = oldTaskOrderList |> List.filter (fun x -> notOnNewTaskMap x.Task)
         let taskOrderList = newTaskOrderList @ filteredOldTaskOrder
         
-        {| TaskList = taskList
+        {| TaskStateList = taskStateList
            TaskOrderList = initialTaskOrderList @ taskOrderList
-           TaskComments = newTaskComments |> List.collect id
-           CellSessions = newCellSessions |> List.collect id
            InformationList = informationList |}
            
            

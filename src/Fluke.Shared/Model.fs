@@ -78,6 +78,8 @@ module Model =
     type FlukeDateTime =
         { Date: FlukeDate
           Time: FlukeTime }
+        member this.DateTime =
+            DateTime (this.Date.Year, int this.Date.Month, this.Date.Day, this.Time.Hour, this.Time.Minute, 0)
         static member inline FromDateTime (date: DateTime) =
             { Date = FlukeDate.FromDateTime date
               Time = FlukeTime.FromDateTime date }
@@ -119,7 +121,7 @@ module Model =
               MissedAfter = midnight
               Scheduling = Manual false
               Duration = None }
-        
+            
     type CellEventStatus =
         | Postponed of until:FlukeTime
         | Completed
@@ -142,8 +144,13 @@ module Model =
     type Cell = Cell of address:CellAddress * status:CellStatus
     
     type Comment = Comment of string
+    let ofComment = fun (Comment comment) -> comment
+    
+    type TaskSession = TaskSession of start:FlukeDateTime
+    let ofTaskSession = fun (TaskSession start) -> start
     
     type TaskComment = TaskComment of task:Task * comment:Comment
+    let ofTaskComment = fun (TaskComment (task, comment)) -> task, comment
     
     type CellStatusEntry = CellStatusEntry of address:CellAddress * status:CellEventStatus
     
@@ -171,6 +178,8 @@ module Model =
         
     type Lane = Lane of task:Task * cells:Cell list
     
+    type TaskPriorityValue = TaskPriorityValue of int
+    
     type TaskPriority =
         | Low1
         | Low2
@@ -182,6 +191,14 @@ module Model =
         | High8
         | High9
         | Critical10
+        
+    type TaskState =
+        { Task: Task
+          Comments: Comment list
+          Sessions: TaskSession list
+          PriorityValue: TaskPriorityValue option }
+        
+        
     
     
 module Rendering =
