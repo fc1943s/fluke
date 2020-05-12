@@ -297,16 +297,6 @@ module HomePageComponent =
                         )
                         |> div [ Style [ PaddingRight 10 ] ]
                         
-                        // Column: Priority
-                        lanes
-                        |> List.map (fun (Lane (task, _)) ->
-                            div [][
-                                str "10"
-                            ]
-                        )
-                        |> div [ Style [ PaddingRight 10
-                                         TextAlign TextAlignOptions.Center ] ]
-                
                         // Column: Task Name
                         taskNameList 0 lanes
                         |> div [ Style [ Width 200 ] ]
@@ -411,6 +401,14 @@ module HomePageComponent =
             ]
             
         let tasksView dateSequence now selection lanes =
+            let lanes = // TODO: Duplicated
+                lanes
+                |> List.sortByDescending (fun (Lane (task, _)) ->
+                    Temp.taskStateMap.[task].PriorityValue
+                    |> Option.map ofTaskPriorityValue
+                    |> Option.defaultValue 0
+                )
+            
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
                 // Column: Left
@@ -443,6 +441,21 @@ module HomePageComponent =
                             ]
                         )
                         |> div [ Style [ PaddingRight 10 ] ]
+                        
+                        // Column: Priority
+                        lanes
+                        |> List.map (fun (Lane (task, _)) ->
+                            let taskState = Temp.taskStateMap.[task]
+                            div [][
+                                taskState.PriorityValue
+                                |> Option.map ofTaskPriorityValue
+                                |> Option.defaultValue 0
+                                |> string
+                                |> str
+                            ]
+                        )
+                        |> div [ Style [ PaddingRight 10
+                                         TextAlign TextAlignOptions.Center ] ]
                 
                         // Column: Task Name
                         taskNameList 0 lanes

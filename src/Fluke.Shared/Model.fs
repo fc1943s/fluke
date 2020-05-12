@@ -178,7 +178,8 @@ module Model =
         
     type Lane = Lane of task:Task * cells:Cell list
     
-    type TaskPriorityValue = TaskPriorityValue of int
+    type TaskPriorityValue = TaskPriorityValue of value:int
+    let ofTaskPriorityValue = fun (TaskPriorityValue value) -> value
     
     type TaskPriority =
         | Low1
@@ -365,7 +366,7 @@ module Rendering =
 module Sorting =
     open Model
     
-    let getManualSortedTaskList taskOrderList =
+    let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
         let result = List<Task> ()
         
         let taskOrderList =
@@ -393,7 +394,7 @@ module Sorting =
             
         result |> Seq.toList
         
-    let applyManualOrder taskOrderList lanes =
+    let applyManualOrder (taskOrderList: TaskOrderEntry list) lanes =
         let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
         let tasksSet = tasks |> Set.ofList
         let orderEntriesOfTasks = taskOrderList |> List.filter (fun orderEntry -> tasksSet.Contains orderEntry.Task)
