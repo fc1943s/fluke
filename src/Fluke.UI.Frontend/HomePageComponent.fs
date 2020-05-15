@@ -50,6 +50,7 @@ module Temp =
                     { taskState with
                         Comments =
                             PrivateData.TaskComments.taskComments
+                            |> List.filter (fun (TaskComment (task, _)) -> task = taskState.Task)
                             |> List.map (ofTaskComment >> snd)
                             |> List.prepend taskState.Comments })
             
@@ -173,7 +174,7 @@ module HomePageComponent =
             |> List.map (fun (Lane (task, _)) ->
                 let comments = Temp.taskStateMap.TryFind task |> Option.map (fun taskState -> taskState.Comments)
                 
-                div [ classList [ Css.tooltipContainer, comments.IsSome ] ][
+                div [ classList [ Css.tooltipContainer, comments |> Option.defaultValue [] |> fun x -> x.Length > 0 ] ][
                     
                     div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
                                   WhiteSpace WhiteSpaceOptions.Nowrap
@@ -183,9 +184,9 @@ module HomePageComponent =
                         str task.Name
                     ]
                     
-                    match comments with
-                    | None -> ()
-                    | Some comments -> comments |> CellComponent.tooltipPopup
+                    comments
+                    |> Option.map CellComponent.tooltipPopup
+                    |> Option.defaultValue nothing
                 ]
             )
             
