@@ -1,4 +1,5 @@
-{:deps     {:aliases [:dev]}
+{:nrepl    {:port 9100}
+ :deps     {:aliases [:dev]}
  :dev-http {8100 "classpath:public"}
  :builds   {:main {:target     :browser
                    :output-dir "resources/public/js/main"
