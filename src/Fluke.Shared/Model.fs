@@ -7,27 +7,16 @@ open Suigetsu.Core
 
 module Model =
     
-    [<StructuredFormatDisplay("{Name}")>]
-    type Area =
+    type [<StructuredFormatDisplay("{Name}")>] Area =
         { Name: string }
-        static member inline Default =
-            { Name = "<null>" }
         
-    [<StructuredFormatDisplay("{Area}/{Name}")>]
-    type Project =
+    type [<StructuredFormatDisplay("{Area}/{Name}")>] Project =
         { Area: Area
           Name: string }
-        static member inline Default =
-            { Name = "<null>"
-              Area = Area.Default }
         
-    [<StructuredFormatDisplay("{Area}/{Name}")>]
-    type Resource =
+    type [<StructuredFormatDisplay("{Area}/{Name}")>] Resource =
         { Area: Area
           Name: string }
-        static member inline Default =
-            { Name = "<null>"
-              Area = Area.Default }
         
     type Information =
         | Project of Project
@@ -49,41 +38,18 @@ module Model =
         | November = 11
         | December = 12
         
-    [<StructuredFormatDisplay("{Year}-{Month}-{Day}")>]
-    type FlukeDate =
+    type [<StructuredFormatDisplay("{Year}-{Month}-{Day}")>] FlukeDate =
         { Year: int
           Month: Month
           Day: int }
-        member this.DateTime =
-            DateTime (this.Year, int this.Month, this.Day, 12, 0, 0)
-        static member inline FromDateTime (date: DateTime) =
-            { Year = date.Year
-              Month = Enum.Parse (typeof<Month>, string date.Month) :?> Month
-              Day = date.Day }
-    let flukeDate year month day = { Year = year; Month = month; Day = day }
             
-    [<StructuredFormatDisplay("{Hour}:{Minute}")>]
-    type FlukeTime =
+    type [<StructuredFormatDisplay("{Hour}h{Minute}m")>] FlukeTime =
         { Hour: int
           Minute: int }
-        static member inline FromDateTime (date: DateTime) =
-            { Hour = date.Hour
-              Minute = date.Minute }
-            
-            
-    let flukeTime hour minute = { Hour = hour; Minute = minute }
-    let midnight = flukeTime 00 00
     
-    [<StructuredFormatDisplay("{Date} {Time}")>]
-    type FlukeDateTime =
+    type [<StructuredFormatDisplay("{Date} {Time}")>] FlukeDateTime =
         { Date: FlukeDate
           Time: FlukeTime }
-        member this.DateTime =
-            DateTime (this.Date.Year, int this.Date.Month, this.Date.Day, this.Time.Hour, this.Time.Minute, 0)
-        static member inline FromDateTime (date: DateTime) =
-            { Date = FlukeDate.FromDateTime date
-              Time = FlukeTime.FromDateTime date }
-    let flukeDateTime year month day hour minute = { Date = flukeDate year month day; Time = flukeTime hour minute }
             
     type InformationComment =
         { Information: Information
@@ -102,28 +68,29 @@ module Model =
     type TaskRecurrency =
         | Offset of TaskRecurrencyOffset
         | Fixed of FixedRecurrency list
+        
+//    type TaskManualScheduling =
+//        | Suggested
+//        | Manual
     
     type TaskScheduling =
         | Manual of suggested:bool
         | Recurrency of TaskRecurrency
+        
+    type X =
+        | SameDay
+        | NextDay
     
     type Task =
         { Name: string
           Information: Information
           Scheduling: TaskScheduling
-          PendingAfter: FlukeTime
-          MissedAfter: FlukeTime
+          PendingAfter: FlukeTime option
+          MissedAfter: FlukeTime option
           Duration: int option }
-        static member inline Default =
-            { Name = "<null>"
-              Information = Area Area.Default 
-              PendingAfter = midnight
-              MissedAfter = midnight
-              Scheduling = Manual false
-              Duration = None }
             
     type CellEventStatus =
-        | Postponed of until:FlukeTime
+        | Postponed of until:FlukeTime option
         | Completed
         | Dismissed
         | ManualPending
@@ -142,31 +109,18 @@ module Model =
           Date: FlukeDate }
         
     type Cell = Cell of address:CellAddress * status:CellStatus
-    
     type Comment = Comment of string
-    let ofComment = fun (Comment comment) -> comment
-    
     type TaskSession = TaskSession of start:FlukeDateTime
-    let ofTaskSession = fun (TaskSession start) -> start
-    
     type TaskComment = TaskComment of task:Task * comment:Comment
-    let ofTaskComment = fun (TaskComment (task, comment)) -> task, comment
-    
     type CellStatusEntry = CellStatusEntry of address:CellAddress * status:CellEventStatus
-    
     type CellComment = CellComment of address:CellAddress * comment:Comment
-    let ofCellComment = fun (CellComment (address, comment)) -> address, comment
-    
     type CellSession = CellSession of address:CellAddress * start:FlukeTime
-    let ofCellSession = fun (CellSession (address, start)) -> address, start
     
-        
     type CellEvent =
         | StatusEvent of CellStatusEntry
         | CommentEvent of CellComment
         | SessionEvent of CellSession
            
-        
     type TaskOrderPriority =
         | First
         | LessThan of Task
@@ -179,7 +133,6 @@ module Model =
     type Lane = Lane of task:Task * cells:Cell list
     
     type TaskPriorityValue = TaskPriorityValue of value:int
-    let ofTaskPriorityValue = fun (TaskPriorityValue value) -> value
     
     type TaskPriority =
         | Low1
@@ -198,7 +151,68 @@ module Model =
           Comments: Comment list
           Sessions: TaskSession list
           PriorityValue: TaskPriorityValue option }
+    
+    
+    type Area with
+        static member inline Default =
+            { Name = "<null>" }
+            
+    type Project with
+        static member inline Default =
+            { Name = "<null>"
+              Area = Area.Default }
+            
+    type Resource with
+        static member inline Default =
+            { Name = "<null>"
+              Area = Area.Default }
+            
+    type FlukeDate with
+        member this.DateTime =
+            DateTime (this.Year, int this.Month, this.Day, 12, 0, 0)
+        static member inline FromDateTime (date: DateTime) =
+            { Year = date.Year
+              Month = Enum.Parse (typeof<Month>, string date.Month) :?> Month
+              Day = date.Day }
+            
+    let flukeDate year month day = { Year = year; Month = month; Day = day }
+    
+    type FlukeTime with
+        static member inline FromDateTime (date: DateTime) =
+            { Hour = date.Hour
+              Minute = date.Minute }
+        member this.GreaterEqualThan time =
+               this.Hour > time.Hour
+            || this.Hour = time.Hour && this.Minute >= time.Minute
+            
+    let flukeTime hour minute = { Hour = hour; Minute = minute }
+    
+    type FlukeDateTime with
+        member this.DateTime =
+            DateTime (this.Date.Year, int this.Date.Month, this.Date.Day, this.Time.Hour, this.Time.Minute, 0)
+        static member inline FromDateTime (date: DateTime) =
+            { Date = FlukeDate.FromDateTime date
+              Time = FlukeTime.FromDateTime date }
         
+    let flukeDateTime year month day hour minute = { Date = flukeDate year month day; Time = flukeTime hour minute }
+    
+    type Task with
+        static member inline Default =
+            { Name = "<null>"
+              Information = Area Area.Default 
+              PendingAfter = None
+              MissedAfter = None
+              Scheduling = Manual false
+              Duration = None }
+            
+    let ofComment = fun (Comment comment) -> comment
+    let ofTaskSession = fun (TaskSession start) -> start
+    let ofTaskComment = fun (TaskComment (task, comment)) -> task, comment
+    let ofCellComment = fun (CellComment (address, comment)) -> address, comment
+    let ofCellSession = fun (CellSession (address, start)) -> address, start
+    let ofTaskPriorityValue = fun (TaskPriorityValue value) -> value
+        
+
         
     
     
@@ -247,18 +261,14 @@ module Rendering =
     let createCellComment task date comment =
         CellComment ({ Task = task; Date = date }, Comment comment)
         
-    let isLate now time =
-           now.Hour > time.Hour
-        || now.Hour = time.Hour && now.Minute >= time.Minute
-        
-    let renderLane (now: FlukeDateTime) dateSequence task (cellStatusEntries: CellStatusEntry list) =
+    let renderLane dayStart (now: FlukeDateTime) dateSequence task (cellStatusEntries: CellStatusEntry list) =
             
-        let (|BeforeToday|Today|AfterToday|) (now: FlukeDate, date: FlukeDate) =
-            match now.DateTime |> date.DateTime.CompareTo with
+        let (|BeforeToday|Today|AfterToday|) (date: FlukeDate) =
+            match date.DateTime.AddHours(float dayStart.Hour).AddMinutes(float dayStart.Minute).CompareTo now.Date.DateTime with
             | n when n < 0 -> BeforeToday
             | n when n = 0 -> Today
-            | _ -> AfterToday
-            
+            | _            -> AfterToday
+    
         let cellStatusEventsByDate =
             cellStatusEntries
             |> List.map (fun (CellStatusEntry (address, status)) -> address.Date, status)
@@ -272,7 +282,7 @@ module Rendering =
                     match event with
                     | Some cellEvent ->
                         let renderState =
-                            match cellEvent, (now.Date, date) with
+                            match cellEvent, date with
                             | (Postponed _ | ManualPending), BeforeToday -> WaitingEvent
                             | _,                             _           -> Counting 1
                             
@@ -280,7 +290,7 @@ module Rendering =
                         
                     | None ->
                         let getStatus renderState =
-                            match renderState, (now.Date, date) with
+                            match renderState, date with
                             | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
                             | DayMatch,          BeforeToday -> StatusCell Missed, WaitingEvent
                             | WaitingEvent,      BeforeToday -> StatusCell Missed, WaitingEvent
@@ -299,14 +309,14 @@ module Rendering =
                         | Recurrency (Offset offset) ->
                             let days =
                                 match offset with
-                                | Days days -> days
-                                | Weeks weeks -> weeks * 7
+                                | Days days     -> days
+                                | Weeks weeks   -> weeks * 7
                                 | Months months -> months * 28
                                 
                             let renderState =
                                 match renderState with
                                 | Counting count when count = days -> DayMatch
-                                | _ -> renderState
+                                | _                                -> renderState
                                 
                             getStatus renderState
                             
@@ -314,13 +324,13 @@ module Rendering =
                             let isDateMatched =
                                 recurrencyList
                                 |> List.map (function
-                                    | Weekly dayOfWeek -> dayOfWeek = date.DateTime.DayOfWeek
-                                    | Monthly day -> day = date.Day
+                                    | Weekly dayOfWeek    -> dayOfWeek = date.DateTime.DayOfWeek
+                                    | Monthly day         -> day = date.Day
                                     | Yearly (day, month) -> day = date.Day && month = date.Month
                                 )
                                 |> List.exists id
                                 
-                            match renderState, (now.Date, date) with
+                            match renderState, date with
                             | WaitingFirstEvent, BeforeToday                     -> EmptyCell, WaitingFirstEvent
                             | _,                 Today        when isDateMatched -> StatusCell Pending, Counting 1
                             | WaitingFirstEvent, Today                           -> EmptyCell, Counting 1
@@ -328,10 +338,10 @@ module Rendering =
                             | _,                 _                               -> getStatus renderState
                             
                         | Manual suggested ->
-                            match renderState, (now.Date, date) with
-                            | WaitingFirstEvent, Today when suggested && task.PendingAfter = midnight -> StatusCell Suggested, Counting 1
-                            | WaitingFirstEvent, Today when suggested                                 -> TodayCell, Counting 1
-                            | WaitingFirstEvent, Today                                                -> StatusCell Suggested, Counting 1
+                            match renderState, date with
+                            | WaitingFirstEvent, Today when suggested && task.PendingAfter = None -> StatusCell Suggested, Counting 1
+                            | WaitingFirstEvent, Today when suggested                             -> TodayCell, Counting 1
+                            | WaitingFirstEvent, Today                                            -> StatusCell Suggested, Counting 1
                             | _, _ -> 
                                 let status, renderState =
                                     getStatus renderState
@@ -349,10 +359,11 @@ module Rendering =
                     | EmptyCell -> Disabled
                     | StatusCell status -> status
                     | TodayCell ->
-                        match now.Time, task.PendingAfter, task.MissedAfter with
-                        | now, _, missedAfter when missedAfter <> midnight && isLate now missedAfter -> MissedToday
-                        | now, pendingAfter, _ when isLate now pendingAfter -> Pending
-                        | _ -> Suggested
+                        match now.Time, task.MissedAfter, task.PendingAfter with
+                        | now, Some missedAfter, _                 when now.GreaterEqualThan missedAfter  -> MissedToday
+                        | now, _,                Some pendingAfter when now.GreaterEqualThan pendingAfter -> Pending
+                        | _,   _,                None                                                     -> Pending
+                        | _                                                                               -> Suggested
                 
                 (date, status) :: loop renderState tail
             | [] -> []
@@ -378,18 +389,18 @@ module Sorting =
         
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | First, None -> result.Insert (0, task)
-            | Last, None -> result.Add task
+            | First, None             -> result.Insert (0, task)
+            | Last, None              -> result.Add task
             | LessThan lessThan, None ->
                 match result |> Seq.tryFindIndexBack ((=) lessThan) with
-                | None -> seq { task; lessThan } |> Seq.iter (fun x -> result.Insert (0, x))
+                | None   -> seq { task; lessThan } |> Seq.iter (fun x -> result.Insert (0, x))
                 | Some i -> result.Insert (i + 1, task)
             | _ -> ()
             
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
             | First, None -> result.Insert (0, task)
-            | Last, None -> result.Add task
+            | Last, None  -> result.Add task
             | _ -> ()
             
         result |> Seq.toList
@@ -443,10 +454,10 @@ module Sorting =
         
     let sortLanesByTimeOfDay (now: FlukeDateTime) taskOrderList lanes =
         let (|PostponedTemp|Postponed|WasPostponed|None|) = function
-            | Postponed until when until = midnight -> Postponed
-            | Postponed until when Rendering.isLate now.Time until -> WasPostponed
-            | Postponed _ -> PostponedTemp
-            | _ -> None
+            | Postponed None                                              -> Postponed
+            | Postponed (Some until) when now.Time.GreaterEqualThan until -> WasPostponed
+            | Postponed _                                                 -> PostponedTemp
+            | _                                                           -> None
         
         let order =
             [ (function MissedToday,               _                             -> true | _ -> false), TaskOrderList
@@ -461,7 +472,7 @@ module Sorting =
               (function EventStatus Dismissed,     _                             -> true | _ -> false), DefaultSort
               (function Disabled,                  { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
               (function Suggested,                 { Scheduling = Manual false } -> true | _ -> false), DefaultSort
-              (function _,                         _                             -> true)             , DefaultSort ]
+              (function _                                                        -> true)             , DefaultSort ]
         
         let getGroup task (Cell (_, status)) =
             order

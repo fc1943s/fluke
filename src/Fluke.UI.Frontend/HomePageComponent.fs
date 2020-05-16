@@ -39,7 +39,7 @@ module Temp =
 
 
     let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
-    let taskStateList, getNow, cellStatusEntries, informationComments, taskOrderList, hourOffset, informationList =
+    let taskStateList, getNow, cellStatusEntries, informationComments, taskOrderList, dayStart, informationList =
         match tempDataType with
         | TempPrivate ->
             let taskData = PrivateData.Tasks.tempManualTasks
@@ -59,7 +59,7 @@ module Temp =
             PrivateData.CellStatusEntries.cellStatusEntries,
             PrivateData.InformationComments.informationComments |> List.groupBy (fun x -> x.Information) |> Map.ofList,
             taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
-            PrivateData.PrivateData.hourOffset,
+            PrivateData.PrivateData.dayStart,
             taskData.InformationList
         | TempPublic ->
             let taskData = TempData.tempData.ManualTasks
@@ -69,7 +69,7 @@ module Temp =
             [],
             Map.empty,
             taskData.TaskOrderList,
-            TempData.hourOffset,
+            TempData.dayStart,
             taskData.InformationList
         | Test ->
 //            let testData = TempData.tempData.RenderLaneTests
@@ -88,7 +88,7 @@ module Temp =
             testData.CellEvents,
             Map.empty,
             testData.TaskOrderList,
-            TempData.hourOffset,
+            TempData.dayStart,
             [] // informationList
             
     let taskStateMap =
@@ -114,7 +114,7 @@ module HomePageComponent =
           View: Temp.View }
         static member inline Default =
             let date = flukeDate 0000 Month.January 01
-            { Now = { Date = date; Time = midnight }
+            { Now = { Date = date; Time = Temp.dayStart }
               Selection = []
               Lanes = []
               View = Temp.view }
@@ -132,7 +132,7 @@ module HomePageComponent =
             | _, true, "C" -> events.OnViewChange Temp.CalendarView
             | _, true, "G" -> events.OnViewChange Temp.GroupsView
             | _, true, "T" -> events.OnViewChange Temp.TasksView
-            | _, _,    _   -> ()
+            | _            -> ()
         )
         
         Navbar.navbar [ Navbar.Color IsBlack
@@ -319,10 +319,10 @@ module HomePageComponent =
                 )
                 |> List.groupBy (fun (info, _) ->
                     match info with
-                    | Project _ -> "projects"
-                    | Area _ -> "areas"
+                    | Project _  -> "projects"
+                    | Area _     -> "areas"
                     | Resource _ -> "resources"
-                    | Archive _ -> "archives"
+                    | Archive _  -> "archives"
                 )
                 
             div [ Style [ Display DisplayOptions.Flex ] ][
@@ -489,7 +489,7 @@ module HomePageComponent =
             | Temp.CalendarView ->
                 taskStateList
                 |> List.filter (function { Task = { Task.Scheduling = Manual false }}, [] -> false | _ -> true)
-                |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane now dateSequence taskState.Task statusEntries)
+                |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries)
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByIncomingRecurrency now.Date
                 |> Sorting.sortLanesByTimeOfDay now Temp.taskOrderList
@@ -503,7 +503,7 @@ module HomePageComponent =
 //                        |> List.tryLast
 //                        |> function Some { Status = Dismissed } -> false | _ -> true
 //                    )
-                    |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane now dateSequence taskState.Task statusEntries)
+                    |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries)
                     |> Sorting.applyManualOrder Temp.taskOrderList
                     
                 Temp.informationList
@@ -518,12 +518,12 @@ module HomePageComponent =
             | Temp.TasksView ->
                 taskStateList
                 |> List.filter (function { Task = { Task.Scheduling = Manual _ }}, _ -> true | _ -> false)
-                |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane now dateSequence taskState.Task statusEntries)
+                |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries)
                 |> Sorting.applyManualOrder Temp.taskOrderList
             
                     
         let getState oldState =
-            let now = Temp.getNow Temp.hourOffset
+            let now = Temp.getNow ()
             
             let dateSequence = 
                 [ now.Date ]
@@ -586,8 +586,8 @@ module HomePageComponent =
                 
             match state.current.View with
             | Temp.CalendarView -> Grid.calendarView dateSequence state.current.Now state.current.Selection state.current.Lanes
-            | Temp.GroupsView -> Grid.groupsView dateSequence state.current.Now state.current.Selection state.current.Lanes
-            | Temp.TasksView -> Grid.tasksView dateSequence state.current.Now state.current.Selection state.current.Lanes
+            | Temp.GroupsView   -> Grid.groupsView dateSequence state.current.Now state.current.Selection state.current.Lanes
+            | Temp.TasksView    -> Grid.tasksView dateSequence state.current.Now state.current.Selection state.current.Lanes
         ]
     , memoizeWith = equalsButFunctions)
     
