@@ -243,7 +243,7 @@ module Tests =
                            [ flukeDate 2020 Month.March 07, Postponed None
                              flukeDate 2020 Month.March 09, Dismissed ]
                        ]
-                       Expected = [ "11"; "4"; "8"; "9"; "10"; "7"; "15"; "13"; "14"; "2"; "6"; "3"; "5"; "1"; "12" ] |}
+                       Expected = [ "11"; "4"; "10"; "8"; "9"; "7"; "15"; "13"; "14"; "2"; "6"; "3"; "5"; "1"; "12" ] |}
             }
             
             test "Sort by Today: All task types mixed" {
@@ -381,7 +381,7 @@ module Tests =
                            ] |}
                 }
                 
-                test "Postponing today wont schedule for tomorrow" {
+                test "Postponing today should schedule for tomorrow" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 10
@@ -389,9 +389,9 @@ module Tests =
                            Data = [
                                flukeDate 2020 Month.March 9, Disabled
                                flukeDate 2020 Month.March 10, EventStatus (Postponed None)
-                               flukeDate 2020 Month.March 11, Disabled
-                               flukeDate 2020 Month.March 12, Pending
-                               flukeDate 2020 Month.March 13, Disabled
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Disabled
+                               flukeDate 2020 Month.March 13, Pending
                            ]
                            CellEvents = [
                                flukeDate 2020 Month.March 10, Postponed None

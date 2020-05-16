@@ -284,6 +284,7 @@ module Rendering =
                         let renderState =
                             match cellEvent, date with
                             | (Postponed _ | ManualPending), BeforeToday -> WaitingEvent
+                            | Postponed _,                   Today       -> DayMatch
                             | _,                             _           -> Counting 1
                             
                         StatusCell (EventStatus cellEvent), renderState
