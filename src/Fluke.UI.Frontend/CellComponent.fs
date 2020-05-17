@@ -16,6 +16,7 @@ module CellComponent =
           Sessions: TaskSession list
           Status: CellStatus
           Selected: bool
+          DayStart: FlukeTime
           Now: FlukeDateTime }
 
     type State =
@@ -46,7 +47,7 @@ module CellComponent =
         div [ classList [ props.Status.CellClass props.Now.Time, true
                           Css.tooltipContainer, hasComments
                           Css.cellSelected, props.Selected
-                          Css.cellToday, props.Date = props.Now.Date ] ][
+                          Css.cellToday, isToday props.DayStart props.Now props.Date ] ][
                 
             div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][
                 match props.Sessions.Length with
@@ -55,7 +56,6 @@ module CellComponent =
                 | _ -> ()
             ]
             
-                
             if hasComments then
                 tooltipPopup props.Comments
         ]

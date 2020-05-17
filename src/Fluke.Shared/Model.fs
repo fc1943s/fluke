@@ -38,18 +38,27 @@ module Model =
         | November = 11
         | December = 12
         
-    type [<StructuredFormatDisplay("{Year}-{Month}-{Day}")>] FlukeDate =
+    [<StructuredFormatDisplay("{Year}-{Month}-{Day}")>]    
+    type FlukeDate =
         { Year: int
           Month: Month
           Day: int }
-            
-    type [<StructuredFormatDisplay("{Hour}h{Minute}m")>] FlukeTime =
+        override this.ToString () =
+            sprintf "%02i-%02i-%02i" this.Year (int this.Month) this.Day
+        
+    [<StructuredFormatDisplay("{Hour}h{Minute}m")>]        
+    type FlukeTime =
         { Hour: int
           Minute: int }
-    
-    type [<StructuredFormatDisplay("{Date} {Time}")>] FlukeDateTime =
+        override this.ToString () =
+            sprintf "%02i:%02i" this.Hour this.Minute
+        
+    [<StructuredFormatDisplay("{Date} {Time}")>] 
+    type FlukeDateTime =
         { Date: FlukeDate
           Time: FlukeTime }
+        override this.ToString () =
+            sprintf "%A %A" this.Date this.Time
             
     type InformationComment =
         { Information: Information
@@ -212,6 +221,22 @@ module Model =
     let ofCellSession = fun (CellSession (address, start)) -> address, start
     let ofTaskPriorityValue = fun (TaskPriorityValue value) -> value
         
+    let createCellComment task date comment =
+        CellComment ({ Task = task; Date = date }, Comment comment)
+        
+    let (|BeforeToday|Today|AfterToday|) (dayStart, (now: FlukeDateTime), (date: FlukeDate)) =
+        let dateStart = { Date = date; Time = dayStart }.DateTime
+        let dateEnd = dateStart.AddDays 1.
+        
+        match now.DateTime with
+        | now when now >=< (dateStart, dateEnd) -> Today
+        | now when dateStart < now -> BeforeToday
+        | _ -> AfterToday
+        
+    let isToday dayStart now date =
+        match (dayStart, now, date) with
+        | Today -> true
+        | _ -> false
 
         
     
@@ -258,17 +283,8 @@ module Rendering =
     let createCellStatusEntries task (events: (FlukeDate * CellEventStatus) list) =
         events |> List.map (fun (date, eventStatus) -> CellStatusEntry ({ Task = task; Date = date }, eventStatus))
         
-    let createCellComment task date comment =
-        CellComment ({ Task = task; Date = date }, Comment comment)
-        
     let renderLane dayStart (now: FlukeDateTime) dateSequence task (cellStatusEntries: CellStatusEntry list) =
             
-        let (|BeforeToday|Today|AfterToday|) (date: FlukeDate) =
-            match date.DateTime.AddHours(float dayStart.Hour).AddMinutes(float dayStart.Minute).CompareTo now.Date.DateTime with
-            | n when n < 0 -> BeforeToday
-            | n when n = 0 -> Today
-            | _            -> AfterToday
-    
         let cellStatusEventsByDate =
             cellStatusEntries
             |> List.map (fun (CellStatusEntry (address, status)) -> address.Date, status)
@@ -282,7 +298,7 @@ module Rendering =
                     match event with
                     | Some cellEvent ->
                         let renderState =
-                            match cellEvent, date with
+                            match cellEvent, (dayStart, now, date) with
                             | (Postponed _ | ManualPending), BeforeToday -> WaitingEvent
                             | Postponed _,                   Today       -> DayMatch
                             | _,                             _           -> Counting 1
@@ -291,7 +307,7 @@ module Rendering =
                         
                     | None ->
                         let getStatus renderState =
-                            match renderState, date with
+                            match renderState, (dayStart, now, date) with
                             | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
                             | DayMatch,          BeforeToday -> StatusCell Missed, WaitingEvent
                             | WaitingEvent,      BeforeToday -> StatusCell Missed, WaitingEvent
@@ -331,7 +347,7 @@ module Rendering =
                                 )
                                 |> List.exists id
                                 
-                            match renderState, date with
+                            match renderState, (dayStart, now, date) with
                             | WaitingFirstEvent, BeforeToday                     -> EmptyCell, WaitingFirstEvent
                             | _,                 Today        when isDateMatched -> StatusCell Pending, Counting 1
                             | WaitingFirstEvent, Today                           -> EmptyCell, Counting 1
@@ -339,13 +355,12 @@ module Rendering =
                             | _,                 _                               -> getStatus renderState
                             
                         | Manual suggested ->
-                            match renderState, date with
+                            match renderState, (dayStart, now, date) with
                             | WaitingFirstEvent, Today when suggested && task.PendingAfter = None -> StatusCell Suggested, Counting 1
                             | WaitingFirstEvent, Today when suggested                             -> TodayCell, Counting 1
                             | WaitingFirstEvent, Today                                            -> StatusCell Suggested, Counting 1
-                            | _, _ -> 
-                                let status, renderState =
-                                    getStatus renderState
+                            | _                                                                   -> 
+                                let status, renderState = getStatus renderState
 
                                 let status =
                                     match status with
@@ -436,11 +451,11 @@ module Sorting =
             |> List.length
         )
         
-    let sortLanesByIncomingRecurrency today lanes =
+    let sortLanesByIncomingRecurrency dayStart now lanes =
         lanes
         |> List.sortBy (fun (Lane (_, cells)) ->
             cells
-            |> List.exists (fun (Cell (address, status)) -> address.Date = today && status = Disabled)
+            |> List.exists (fun (Cell (address, status)) -> isToday dayStart now address.Date && status = Disabled)
             |> function
                 | true ->
                     cells
@@ -453,7 +468,7 @@ module Sorting =
         | TaskOrderList
         | DefaultSort
         
-    let sortLanesByTimeOfDay (now: FlukeDateTime) taskOrderList lanes =
+    let sortLanesByTimeOfDay dayStart (now: FlukeDateTime) taskOrderList lanes =
         let (|PostponedTemp|Postponed|WasPostponed|None|) = function
             | Postponed None                                              -> Postponed
             | Postponed (Some until) when now.Time.GreaterEqualThan until -> WasPostponed
@@ -487,7 +502,7 @@ module Sorting =
         |> List.indexed
         |> List.groupBy (fun (_, Lane (task, cells)) ->
             cells
-            |> List.filter (fun (Cell (address, _)) -> address.Date = now.Date)
+            |> List.filter (fun (Cell (address, _)) -> isToday dayStart now address.Date)
             |> List.map (getGroup task)
             |> List.minBy fst
         )

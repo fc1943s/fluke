@@ -289,17 +289,21 @@ module TempData =
             
         RenderLaneTests = 
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
-                           Now = { Date = flukeDate 2020 Month.March 10
+                           Now = { Date = flukeDate 2020 Month.March 11
                                    Time = flukeTime 00 00 }
                            Data = [
+                               flukeDate 2020 Month.March 7, Disabled
+                               flukeDate 2020 Month.March 8, EventStatus Completed
                                flukeDate 2020 Month.March 9, Disabled
-                               flukeDate 2020 Month.March 10, EventStatus (Postponed None)
+                               flukeDate 2020 Month.March 10, Missed
                                flukeDate 2020 Month.March 11, Pending
-                               flukeDate 2020 Month.March 12, Disabled
-                               flukeDate 2020 Month.March 13, Pending
+                               flukeDate 2020 Month.March 12, EventStatus Completed
+                               flukeDate 2020 Month.March 13, Disabled
+                               flukeDate 2020 Month.March 14, Pending
                            ]
                            CellEvents = [
-                               flukeDate 2020 Month.March 10, Postponed None
+                               flukeDate 2020 Month.March 8, Completed
+                               flukeDate 2020 Month.March 12, Completed
                            ] |}
                         |> createRenderLaneTestData
                         

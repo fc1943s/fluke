@@ -27,16 +27,17 @@ module Temp =
         | TempPublic
         | Test
         
-
     let view = CalendarView
 //    let view = GroupsView
 //    let view = TasksView
     
-
     let tempDataType = TempPrivate
-//    let tempDataType = TempPublic
 //    let tempDataType = Test
+//    let tempDataType = TempPublic
 
+    let testData = TempData.tempData.RenderLaneTests
+//    let testData = TempData.tempData.SortLanesTests
+            
 
     let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
     let taskStateList, getNow, cellStatusEntries, informationComments, taskOrderList, dayStart, informationList =
@@ -72,9 +73,6 @@ module Temp =
             TempData.dayStart,
             taskData.InformationList
         | Test ->
-//            let testData = TempData.tempData.RenderLaneTests
-            let testData = TempData.tempData.SortLanesTests
-            
             let taskStateList =
                 testData.TaskList
                 |> List.map (fun task ->
@@ -217,6 +215,7 @@ module HomePageComponent =
                           Sessions = sessions
                           Selected = selection |> List.contains address
                           Status = status
+                          DayStart = Temp.dayStart
                           Now = now }
                 )
                 |> div []
@@ -257,7 +256,7 @@ module HomePageComponent =
                     span [ Style [ Width 18
                                    Functions.getCellSeparatorBorderLeft date
                                    TextAlign TextAlignOptions.Center
-                                   Color (if date = now.Date then "#f22" else "") ] ][
+                                   Color (if isToday Temp.dayStart now date then "#f22" else "") ] ][
                         str (date.Day.ToString "D2")
                     ]
                 )
@@ -491,8 +490,8 @@ module HomePageComponent =
                 |> List.filter (function { Task = { Task.Scheduling = Manual false }}, [] -> false | _ -> true)
                 |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries)
                 |> Sorting.sortLanesByFrequency
-                |> Sorting.sortLanesByIncomingRecurrency now.Date
-                |> Sorting.sortLanesByTimeOfDay now Temp.taskOrderList
+                |> Sorting.sortLanesByIncomingRecurrency Temp.dayStart now
+                |> Sorting.sortLanesByTimeOfDay Temp.dayStart now Temp.taskOrderList
             | Temp.GroupsView ->
                 let lanes =
                     taskStateList
@@ -538,7 +537,7 @@ module HomePageComponent =
                     |> List.tryHead
                     |> Option.map (fun (Lane (_, cells)) ->
                         cells
-                        |> List.tryFind (fun (Cell (address, _)) -> address.Date = now.Date)
+                        |> List.tryFind (fun (Cell (address, _)) -> isToday Temp.dayStart now address.Date)
                         |> Option.map (fun (Cell (address, _)) -> [ address ])
                         |> Option.defaultValue []
                     )
