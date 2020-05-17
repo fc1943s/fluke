@@ -485,7 +485,7 @@ module HomePageComponent =
             match view with
             | Temp.CalendarView ->
                 taskStateList
-                |> List.filter (function { Task = { Task.Scheduling = Manual false }}, [] -> false | _ -> true)
+                |> List.filter (function { Task = { Task.Scheduling = Manual WithoutSuggestion }}, [] -> false | _ -> true)
                 |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries)
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByIncomingRecurrency Temp.dayStart now
@@ -493,7 +493,7 @@ module HomePageComponent =
             | Temp.GroupsView ->
                 let lanes =
                     taskStateList
-                    |> List.filter (function { Task = { Task.Scheduling = Manual false }}, [] -> true | _ -> false)
+                    |> List.filter (function { Task = { Task.Scheduling = Manual WithoutSuggestion }}, [] -> true | _ -> false)
 //                    |> List.filter (fun (_, statusEntries) ->
 //                        statusEntries
 //                        |> List.filter (function { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true | _ -> false)

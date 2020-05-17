@@ -307,24 +307,24 @@ module TempData =
                     {| Now = { Date = flukeDate 2020 Month.March 10
                                Time = flukeTime 14 00 }
                        Data = [
-                           { Task.Default with Name = "1"; Scheduling = Manual true },
+                           { Task.Default with Name = "1"; Scheduling = Manual WithSuggestion },
                            [] 
                            
-                           { Task.Default with Name = "2"; Scheduling = Manual true },
+                           { Task.Default with Name = "2"; Scheduling = Manual WithSuggestion },
                            [ flukeDate 2020 Month.March 10, Postponed None
                              flukeDate 2020 Month.March 08, Postponed None ]
                            
-                           { Task.Default with Name = "3"; Scheduling = Manual false },
+                           { Task.Default with Name = "3"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 09, ManualPending ]
                            
                            { Task.Default with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
                                                            PendingAfter = flukeTime 20 00 |> Some },
                            []
                            
-                           { Task.Default with Name = "5"; Scheduling = Manual false },
+                           { Task.Default with Name = "5"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 10, ManualPending ]
                            
-                           { Task.Default with Name = "6"; Scheduling = Manual false },
+                           { Task.Default with Name = "6"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 04, Postponed None
                              flukeDate 2020 Month.March 06, Dismissed ]
                            
@@ -343,7 +343,7 @@ module TempData =
                            { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
                            [ flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some) ]
                            
-                           { Task.Default with Name = "12"; Scheduling = Manual false },
+                           { Task.Default with Name = "12"; Scheduling = Manual WithoutSuggestion },
                            []
                            
                            { Task.Default with Name = "13"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },

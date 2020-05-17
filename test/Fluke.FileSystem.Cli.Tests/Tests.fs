@@ -15,6 +15,8 @@ module Tests =
         testList "FileSystem" [
             
             test "1" {
+                1
+                |> Expect.equal "" 1
                 
                 let taskData = PrivateData.Tasks.tempManualTasks
                     

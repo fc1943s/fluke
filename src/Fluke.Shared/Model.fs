@@ -78,12 +78,12 @@ module Model =
         | Offset of TaskRecurrencyOffset
         | Fixed of FixedRecurrency list
         
-//    type TaskManualScheduling =
-//        | Suggested
-//        | Manual
+    type TaskManualScheduling =
+        | WithSuggestion
+        | WithoutSuggestion
     
     type TaskScheduling =
-        | Manual of suggested:bool
+        | Manual of TaskManualScheduling
         | Recurrency of TaskRecurrency
         
     type X =
@@ -223,7 +223,7 @@ module Model =
               Information = Area Area.Default 
               PendingAfter = None
               MissedAfter = None
-              Scheduling = Manual false
+              Scheduling = Manual WithoutSuggestion
               Duration = None }
             
     let ofComment = fun (Comment comment) -> comment
@@ -373,19 +373,19 @@ module Rendering =
                             | _,                 _            when isDateMatched -> getStatus WaitingEvent
                             | _,                 _                               -> getStatus renderState
                             
-                        | Manual suggested ->
-                            match renderState, (dayStart, now, date) with
-                            | WaitingFirstEvent, Today when suggested && task.PendingAfter = None -> StatusCell Suggested, Counting 1
-                            | WaitingFirstEvent, Today when suggested                             -> TodayCell, Counting 1
-                            | WaitingFirstEvent, Today                                            -> StatusCell Suggested, Counting 1
-                            | _                                                                   -> 
+                        | Manual suggestion ->
+                            match renderState, (dayStart, now, date), suggestion with
+                            | WaitingFirstEvent, Today, WithSuggestion when task.PendingAfter = None -> StatusCell Suggested, Counting 1
+                            | WaitingFirstEvent, Today, WithSuggestion                               -> TodayCell, Counting 1
+                            | WaitingFirstEvent, Today, _                                            -> StatusCell Suggested, Counting 1
+                            | _                                                                      -> 
                                 let status, renderState = getStatus renderState
 
                                 let status =
-                                    match status with
-                                    | EmptyCell when suggested -> StatusCell Suggested
-                                    | TodayCell                -> StatusCell Pending
-                                    | status                   -> status
+                                    match status, suggestion with
+                                    | EmptyCell, WithSuggestion -> StatusCell Suggested
+                                    | TodayCell, _              -> StatusCell Pending
+                                    | status,    _              -> status
                                     
                                 status, renderState
                                 
@@ -496,19 +496,19 @@ module Sorting =
                 | Postponed _                                                                  -> PostponedUntil
                 | _                                                                            -> NotPostponed
             
-            [ (function MissedToday,                _                             -> true | _ -> false), TaskOrderList
-              (function EventStatus ManualPending,  _                             -> true | _ -> false), TaskOrderList
+            [ (function MissedToday,                _                                         -> true | _ -> false), TaskOrderList
+              (function EventStatus ManualPending,  _                                         -> true | _ -> false), TaskOrderList
               (function (EventStatus WasPostponed
-                       | Pending),                  _                             -> true | _ -> false), TaskOrderList
-              (function EventStatus PostponedUntil, _                             -> true | _ -> false), TaskOrderList
-              (function Suggested,                  { Scheduling = Recurrency _ } -> true | _ -> false), TaskOrderList
-              (function Suggested,                  { Scheduling = Manual true }  -> true | _ -> false), TaskOrderList
-              (function EventStatus Postponed,      _                             -> true | _ -> false), TaskOrderList
-              (function EventStatus Completed,      _                             -> true | _ -> false), DefaultSort
-              (function EventStatus Dismissed,      _                             -> true | _ -> false), DefaultSort
-              (function Disabled,                   { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
-              (function Suggested,                  { Scheduling = Manual false } -> true | _ -> false), DefaultSort
-              (function _                                                         -> true)             , DefaultSort ]
+                       | Pending),                                   _                        -> true | _ -> false), TaskOrderList
+              (function EventStatus PostponedUntil, _                                         -> true | _ -> false), TaskOrderList
+              (function Suggested,                  { Scheduling = Recurrency _ }             -> true | _ -> false), TaskOrderList
+              (function Suggested,                  { Scheduling = Manual WithSuggestion }    -> true | _ -> false), TaskOrderList
+              (function EventStatus Postponed,      _                                         -> true | _ -> false), TaskOrderList
+              (function EventStatus Completed,      _                                         -> true | _ -> false), DefaultSort
+              (function EventStatus Dismissed,      _                                         -> true | _ -> false), DefaultSort
+              (function Disabled,                   { Scheduling = Recurrency _ }             -> true | _ -> false), DefaultSort
+              (function Suggested,                  { Scheduling = Manual WithoutSuggestion } -> true | _ -> false), DefaultSort
+              (function _                                                                     -> true)             , DefaultSort ]
             |> List.map (Tuple2.mapFst (fun orderFn -> orderFn (status, task)))
             |> List.indexed
             |> List.filter (snd >> fst)
