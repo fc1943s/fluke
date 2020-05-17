@@ -32,7 +32,7 @@ module Model =
             | Archive archive -> sprintf "[%s]" archive.Color
             
     type CellStatus with
-        member this.CellClass (now: FlukeTime) =
+        member this.CellClass =
             match this with
             | Disabled    -> Css.cellDisabled
             | Suggested   -> Css.cellSuggested
@@ -41,13 +41,12 @@ module Model =
             | MissedToday -> Css.cellMissedToday
             | EventStatus eventStatus ->
                 match eventStatus with
-                | Postponed (Some until) when now.GreaterEqualThan until -> Css.cellPending
-                | Postponed (Some _)                                     -> Css.cellPostponedTemp
-                | Postponed _                                            -> Css.cellPostponed
-                | Completed                                              -> Css.cellCompleted
-                | Dismissed                                              -> Css.cellDismissed
-                | ManualPending                                          -> Css.cellManualPending
-                | Session _                                              -> Css.cellSession
+                | Postponed (Some _) -> Css.cellPostponedUntil
+                | Postponed _        -> Css.cellPostponed
+                | Completed          -> Css.cellCompleted
+                | Dismissed          -> Css.cellDismissed
+                | ManualPending      -> Css.cellManualPending
+                | Session _          -> Css.cellSession
     
     
 module Functions =

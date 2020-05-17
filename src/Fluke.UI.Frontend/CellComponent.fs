@@ -10,14 +10,12 @@ module CellComponent =
     open Model
 
     type Props =
-        { Date: FlukeDate
-          Task: Task
+        { CellAddress: CellAddress
           Comments: Comment list
           Sessions: TaskSession list
           Status: CellStatus
-          Selected: bool
-          DayStart: FlukeTime
-          Now: FlukeDateTime }
+          IsSelected: bool
+          IsToday: bool }
 
     type State =
         { a: unit }
@@ -44,12 +42,12 @@ module CellComponent =
     let ``default`` = FunctionComponent.Of (fun props ->
         let hasComments = not props.Comments.IsEmpty
         
-        div [ classList [ props.Status.CellClass props.Now.Time, true
+        div [ classList [ props.Status.CellClass, true
                           Css.tooltipContainer, hasComments
-                          Css.cellSelected, props.Selected
-                          Css.cellToday, isToday props.DayStart props.Now props.Date ] ][
+                          Css.cellSelected, props.IsSelected
+                          Css.cellToday, props.IsToday ] ][
                 
-            div [ Style [ Functions.getCellSeparatorBorderLeft props.Date ] ][
+            div [ Style [ Functions.getCellSeparatorBorderLeft props.CellAddress.Date ] ][
                 match props.Sessions.Length with
 //                | x -> str (string x)
                 | x when x > 0 -> str (string x)

@@ -202,6 +202,18 @@ module Model =
         static member inline FromDateTime (date: DateTime) =
             { Date = FlukeDate.FromDateTime date
               Time = FlukeTime.FromDateTime date }
+        member this.GreaterEqualThan (dayStart: FlukeTime) (date: FlukeDate) time =
+            let testingAfterMidnight = dayStart.GreaterEqualThan time
+            let currentlyBeforeMidnight = this.Time.GreaterEqualThan dayStart
+            
+            let newDate =
+                if testingAfterMidnight && currentlyBeforeMidnight
+                then date.DateTime.AddDays 1. |> FlukeDate.FromDateTime
+                else date
+                
+            let dateToCompare = { Date = newDate; Time = time }
+            
+            this.DateTime >= dateToCompare.DateTime
         
     let flukeDateTime year month day hour minute = { Date = flukeDate year month day; Time = flukeTime hour minute }
     
@@ -299,11 +311,18 @@ module Rendering =
                     | Some cellEvent ->
                         let renderState =
                             match cellEvent, (dayStart, now, date) with
-                            | (Postponed _ | ManualPending), BeforeToday -> WaitingEvent
-                            | Postponed _,                   Today       -> DayMatch
-                            | _,                             _           -> Counting 1
+                            | Postponed (Some _),               BeforeToday -> renderState
+                            | (Postponed None | ManualPending), BeforeToday -> WaitingEvent
+                            | Postponed None,                   Today       -> DayMatch
+                            | _                                             -> Counting 1
                             
-                        StatusCell (EventStatus cellEvent), renderState
+                        let event =
+                            match cellEvent, (dayStart, now, date) with
+                            | Postponed (Some _),     BeforeToday                                         -> Disabled
+                            | Postponed (Some until), Today when now.GreaterEqualThan dayStart date until -> Pending
+                            | _                                                                           -> EventStatus cellEvent
+                            
+                        StatusCell event, renderState
                         
                     | None ->
                         let getStatus renderState =
@@ -375,11 +394,11 @@ module Rendering =
                     | EmptyCell -> Disabled
                     | StatusCell status -> status
                     | TodayCell ->
-                        match now.Time, task.MissedAfter, task.PendingAfter with
-                        | now, Some missedAfter, _                 when now.GreaterEqualThan missedAfter  -> MissedToday
-                        | now, _,                Some pendingAfter when now.GreaterEqualThan pendingAfter -> Pending
-                        | _,   _,                None                                                     -> Pending
-                        | _                                                                               -> Suggested
+                        match now, task.MissedAfter, task.PendingAfter with
+                        | now, Some missedAfter, _                 when now.GreaterEqualThan dayStart date missedAfter  -> MissedToday
+                        | now, _,                Some pendingAfter when now.GreaterEqualThan dayStart date pendingAfter -> Pending
+                        | _,   _,                None                                                                   -> Pending
+                        | _                                                                                             -> Suggested
                 
                 (date, status) :: loop renderState tail
             | [] -> []
@@ -469,29 +488,27 @@ module Sorting =
         | DefaultSort
         
     let sortLanesByTimeOfDay dayStart (now: FlukeDateTime) taskOrderList lanes =
-        let (|PostponedTemp|Postponed|WasPostponed|None|) = function
-            | Postponed None                                              -> Postponed
-            | Postponed (Some until) when now.Time.GreaterEqualThan until -> WasPostponed
-            | Postponed _                                                 -> PostponedTemp
-            | _                                                           -> None
         
-        let order =
-            [ (function MissedToday,               _                             -> true | _ -> false), TaskOrderList
-              (function EventStatus ManualPending, _                             -> true | _ -> false), TaskOrderList
+        let getGroup task (Cell (address, status)) =
+            let (|PostponedUntil|Postponed|WasPostponed|NotPostponed|) = function
+                | Postponed None                                                               -> Postponed
+                | Postponed (Some until) when now.GreaterEqualThan dayStart address.Date until -> WasPostponed
+                | Postponed _                                                                  -> PostponedUntil
+                | _                                                                            -> NotPostponed
+            
+            [ (function MissedToday,                _                             -> true | _ -> false), TaskOrderList
+              (function EventStatus ManualPending,  _                             -> true | _ -> false), TaskOrderList
               (function (EventStatus WasPostponed
-                       | Pending),                 _                             -> true | _ -> false), TaskOrderList
-              (function EventStatus PostponedTemp, _                             -> true | _ -> false), TaskOrderList
-              (function Suggested,                 { Scheduling = Recurrency _ } -> true | _ -> false), TaskOrderList
-              (function Suggested,                 { Scheduling = Manual true }  -> true | _ -> false), TaskOrderList
-              (function EventStatus Postponed,     _                             -> true | _ -> false), TaskOrderList
-              (function EventStatus Completed,     _                             -> true | _ -> false), DefaultSort
-              (function EventStatus Dismissed,     _                             -> true | _ -> false), DefaultSort
-              (function Disabled,                  { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
-              (function Suggested,                 { Scheduling = Manual false } -> true | _ -> false), DefaultSort
-              (function _                                                        -> true)             , DefaultSort ]
-        
-        let getGroup task (Cell (_, status)) =
-            order
+                       | Pending),                  _                             -> true | _ -> false), TaskOrderList
+              (function EventStatus PostponedUntil, _                             -> true | _ -> false), TaskOrderList
+              (function Suggested,                  { Scheduling = Recurrency _ } -> true | _ -> false), TaskOrderList
+              (function Suggested,                  { Scheduling = Manual true }  -> true | _ -> false), TaskOrderList
+              (function EventStatus Postponed,      _                             -> true | _ -> false), TaskOrderList
+              (function EventStatus Completed,      _                             -> true | _ -> false), DefaultSort
+              (function EventStatus Dismissed,      _                             -> true | _ -> false), DefaultSort
+              (function Disabled,                   { Scheduling = Recurrency _ } -> true | _ -> false), DefaultSort
+              (function Suggested,                  { Scheduling = Manual false } -> true | _ -> false), DefaultSort
+              (function _                                                         -> true)             , DefaultSort ]
             |> List.map (Tuple2.mapFst (fun orderFn -> orderFn (status, task)))
             |> List.indexed
             |> List.filter (snd >> fst)

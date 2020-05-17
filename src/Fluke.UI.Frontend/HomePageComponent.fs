@@ -35,8 +35,8 @@ module Temp =
 //    let tempDataType = Test
 //    let tempDataType = TempPublic
 
-    let testData = TempData.tempData.RenderLaneTests
-//    let testData = TempData.tempData.SortLanesTests
+//    let testData = TempData.tempData.RenderLaneTests
+    let testData = TempData.tempData.SortLanesTests
             
 
     let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
@@ -83,10 +83,10 @@ module Temp =
             
             taskStateList,
             testData.GetNow,
-            testData.CellEvents,
+            testData.CellStatusEntries,
             Map.empty,
             testData.TaskOrderList,
-            TempData.dayStart,
+            TempData.testDayStart,
             [] // informationList
             
     let taskStateMap =
@@ -209,14 +209,12 @@ module HomePageComponent =
                         |> List.filter (fun (TaskSession start) -> start.Date = address.Date)
                         
                     CellComponent.``default``
-                        { Date = address.Date
-                          Task = task
+                        { CellAddress = address
                           Comments = comments
                           Sessions = sessions
-                          Selected = selection |> List.contains address
-                          Status = status
-                          DayStart = Temp.dayStart
-                          Now = now }
+                          IsSelected = selection |> List.contains address
+                          IsToday = isToday Temp.dayStart now address.Date
+                          Status = status }
                 )
                 |> div []
             ) |> div [ Class Css.laneContainer ]

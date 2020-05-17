@@ -8,7 +8,7 @@ open Expecto.Flip
 open Suigetsu.Core
 
 module Data =
-    let dayStart = flukeTime 00 00
+    let testDayStart = TempData.testDayStart
     let task1 = { Task.Default with Name = "1" }
     let task2 = { Task.Default with Name = "2" }
     let task3 = { Task.Default with Name = "3" }
@@ -178,12 +178,12 @@ module Tests =
                 |> List.map (fun (task, rawEvents) ->
                     rawEvents
                     |> Rendering.createCellStatusEntries task
-                    |> Rendering.renderLane dayStart props.Now dateSequence task
+                    |> Rendering.renderLane testDayStart props.Now dateSequence task
                 )
                 |> fun lanes ->
                     match props.Sort with
                     | NoSorting -> lanes
-                    | TimeOfDay -> Sorting.sortLanesByTimeOfDay dayStart props.Now [] lanes
+                    | TimeOfDay -> Sorting.sortLanesByTimeOfDay testDayStart props.Now [] lanes
                     | Frequency -> Sorting.sortLanesByFrequency lanes
                 |> List.map (fun (Lane (task, _)) -> task.Name)
                 |> Expect.equal "" props.Expected
@@ -192,7 +192,7 @@ module Tests =
                 testData
                     {| Sort = sortByFrequency
                        Now = { Date = flukeDate 2020 Month.March 10
-                               Time = flukeTime 00 00 }
+                               Time = testDayStart }
                        Data = [
                            { Task.Default with Name = "1"; Scheduling = Manual true },
                            [] 
@@ -246,11 +246,11 @@ module Tests =
                        Expected = [ "11"; "4"; "10"; "8"; "9"; "7"; "15"; "13"; "14"; "2"; "6"; "3"; "5"; "1"; "12" ] |}
             }
             
-            test "Sort by Today: All task types mixed" {
+            test "Sort by Time of Day: All task types mixed" {
                 testData
                     {| Sort = sortByTimeOfDay
                        Now = { Date = flukeDate 2020 Month.March 10
-                               Time = flukeTime 12 00 }
+                               Time = flukeTime 14 00 }
                        Data = [
                            { Task.Default with Name = "1"; Scheduling = Manual true },
                            [] 
@@ -286,7 +286,7 @@ module Tests =
                            [ flukeDate 2020 Month.March 10, Postponed None ]
                            
                            { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
-                           [ flukeDate 2020 Month.March 10, Postponed (flukeTime 11 00 |> Some) ]
+                           [ flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some) ]
                            
                            { Task.Default with Name = "12"; Scheduling = Manual false },
                            []
@@ -302,11 +302,11 @@ module Tests =
                              flukeDate 2020 Month.March 09, Dismissed ]
                            
                            { Task.Default with Name = "16"; Scheduling = Recurrency (Offset (Days 1));
-                                                            MissedAfter = (flukeTime 07 00 |> Some) },
+                                                            MissedAfter = (flukeTime 13 00 |> Some) },
                            []
                            
                            { Task.Default with Name = "17"; Scheduling = Recurrency (Offset (Days 1)) },
-                           [ flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some) ]
+                           [ flukeDate 2020 Month.March 10, Postponed (flukeTime 15 00 |> Some) ]
                            
                            { Task.Default with Name = "18"; Scheduling = Recurrency (Offset (Days 1)) },
                            []
@@ -336,12 +336,114 @@ module Tests =
                 
                 props.CellEvents
                 |> Rendering.createCellStatusEntries props.Task
-                |> Rendering.renderLane dayStart props.Now dateSequence props.Task
+                |> Rendering.renderLane testDayStart props.Now dateSequence props.Task
                 |> unwrapLane
                 |> toString
                 |> Expect.equal "" (props.Data
                                     |> List.map (fun (date, cellStatus) -> string date, cellStatus)
                                     |> toString)
+               
+            testList "Postponed Until" [
+                
+                test "Postponed until later" {
+                    testData
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
+                           Now = { Date = flukeDate 2020 Month.March 10
+                                   Time = testDayStart }
+                           Data = [
+                               flukeDate 2020 Month.March 09, Disabled
+                               flukeDate 2020 Month.March 10, EventStatus (Postponed (Some (flukeTime 23 00)))
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Pending
+                           ]
+                           CellEvents = [
+                               flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 23 00))
+                           ] |}
+                }
+                
+                test "Postponed until after midnight" {
+                    testData
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
+                           Now = { Date = flukeDate 2020 Month.March 10
+                                   Time = testDayStart }
+                           Data = [
+                               flukeDate 2020 Month.March 09, Disabled
+                               flukeDate 2020 Month.March 10, EventStatus (Postponed (Some (flukeTime 01 00)))
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Pending
+                           ]
+                           CellEvents = [
+                               flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00))
+                           ] |}
+                }
+                
+                test "Pending after expiration of Postponed (before midnight)" {
+                    testData
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
+                           Now = { Date = flukeDate 2020 Month.March 11
+                                   Time = flukeTime 02 00 }
+                           Data = [
+                               flukeDate 2020 Month.March 09, Disabled
+                               flukeDate 2020 Month.March 10, Pending
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Pending
+                           ]
+                           CellEvents = [
+                               flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 23 00))
+                           ] |}
+                }
+                
+                test "Pending after expiration of Postponed (after midnight)" {
+                    testData
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
+                           Now = { Date = flukeDate 2020 Month.March 11
+                                   Time = flukeTime 02 00 }
+                           Data = [
+                               flukeDate 2020 Month.March 09, Disabled
+                               flukeDate 2020 Month.March 10, Pending
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Pending
+                           ]
+                           CellEvents = [
+                               flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00))
+                           ] |}
+                }
+                
+                test "Past PostponedUntil events are ignored" {
+                    testData
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
+                           Now = { Date = flukeDate 2020 Month.March 13
+                                   Time = flukeTime 02 00 }
+                           Data = [
+                               flukeDate 2020 Month.March 09, Disabled
+                               flukeDate 2020 Month.March 10, Disabled
+                               flukeDate 2020 Month.March 11, Disabled
+                               flukeDate 2020 Month.March 12, Pending
+                               flukeDate 2020 Month.March 13, Pending
+                           ]
+                           CellEvents = [
+                               flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00))
+                           ] |}
+                }
+                
+                test "Future PostponedUntil events are shown" {
+                    testData
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
+                           Now = { Date = flukeDate 2020 Month.March 10
+                                   Time = testDayStart }
+                           Data = [
+                               flukeDate 2020 Month.March 09, Disabled
+                               flukeDate 2020 Month.March 10, Pending
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, EventStatus (Postponed (Some (flukeTime 13 00)))
+                               flukeDate 2020 Month.March 13, Pending
+                           ]
+                           CellEvents = [
+                               flukeDate 2020 Month.March 12, Postponed (Some (flukeTime 13 00))
+                           ] |}
+                }
+                
+            ]
                
             testList "Recurrency Offset" [
                 
@@ -349,7 +451,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 9
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 7, Disabled
                                flukeDate 2020 Month.March 8, Disabled
@@ -365,7 +467,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 3)) }
                            Now = { Date = flukeDate 2020 Month.March 9
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 8, EventStatus Completed
                                flukeDate 2020 Month.March 9, Disabled
@@ -385,7 +487,25 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 10
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
+                           Data = [
+                               flukeDate 2020 Month.March 9, Disabled
+                               flukeDate 2020 Month.March 10, EventStatus (Postponed None)
+                               flukeDate 2020 Month.March 11, Pending
+                               flukeDate 2020 Month.March 12, Disabled
+                               flukeDate 2020 Month.March 13, Pending
+                           ]
+                           CellEvents = [
+                               flukeDate 2020 Month.March 10, Postponed None
+                           ] |}
+                }
+                
+                test "Postponing today should schedule for tomorrow with PendingAfter" {
+                    testData
+                        {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2))
+                                                      PendingAfter = flukeTime 03 00 |> Some }
+                           Now = { Date = flukeDate 2020 Month.March 10
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 9, Disabled
                                flukeDate 2020 Month.March 10, EventStatus (Postponed None)
@@ -402,7 +522,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 11
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 9, Disabled
                                flukeDate 2020 Month.March 10, EventStatus (Postponed None)
@@ -419,7 +539,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 11
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 7, Disabled
                                flukeDate 2020 Month.March 8, EventStatus Completed
@@ -485,7 +605,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 3)) }
                            Now = { Date = flukeDate 2020 Month.March 28
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 27, Disabled
                                flukeDate 2020 Month.March 28, Pending
@@ -509,7 +629,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
                            Now = { Date = flukeDate 2020 Month.March 21
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                for d in 13 .. 29 do
                                    flukeDate 2020 Month.March d,
@@ -527,7 +647,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
                            Now = { Date = flukeDate 2020 Month.March 20
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                for d in 10 .. 26 do
                                    flukeDate 2020 Month.March d,
@@ -546,7 +666,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
                            Now = { Date = flukeDate 2020 Month.March 20
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                for d in 13 .. 29 do
                                    flukeDate 2020 Month.March d,
@@ -565,7 +685,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
                            Now = { Date = flukeDate 2020 Month.March 20
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                for d in 17 .. 26 do
                                    flukeDate 2020 Month.March d,
@@ -577,12 +697,11 @@ module Tests =
                            ] |}
                 }
                 
-                
                 test "Fixed weekly task, without past events, pending tomorrow" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
                            Now = { Date = flukeDate 2020 Month.March 20
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                for d in 13 .. 29 do
                                    flukeDate 2020 Month.March d,
@@ -601,7 +720,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Manual false }
                            Now = { Date = flukeDate 2020 Month.March 11
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 9, Disabled
                                flukeDate 2020 Month.March 10, Disabled
@@ -616,7 +735,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Manual false }
                            Now = { Date = flukeDate 2020 Month.March 11
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 8, Disabled
                                flukeDate 2020 Month.March 9, EventStatus ManualPending
@@ -662,7 +781,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Manual true }
                            Now = { Date = flukeDate 2020 Month.March 28
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 25, Suggested
                                flukeDate 2020 Month.March 26, EventStatus ManualPending
@@ -682,7 +801,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Manual true }
                            Now = { Date = flukeDate 2020 Month.March 28
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 24, Suggested
                                flukeDate 2020 Month.March 25, EventStatus ManualPending
@@ -701,7 +820,7 @@ module Tests =
                     testData
                         {| Task = { Task.Default with Scheduling = Manual true }
                            Now = { Date = flukeDate 2020 Month.March 28
-                                   Time = flukeTime 00 00 }
+                                   Time = testDayStart }
                            Data = [
                                flukeDate 2020 Month.March 24, Suggested
                                flukeDate 2020 Month.March 25, EventStatus ManualPending

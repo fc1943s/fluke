@@ -8,7 +8,7 @@
 .cell-missed,
 .cell-missed-today,
 .cell-postponed,
-.cell-postponed-temp,
+.cell-postponed-until,
 .cell-completed, 
 .cell-dismissed, 
 .cell-manual-pending,
@@ -21,7 +21,7 @@ $color-cell-pending: #262626;
 $color-cell-missed: #990022;
 $color-cell-missed-today: #530011;
 $color-cell-postponed: #b08200;
-$color-cell-postponed-temp: #604800;
+$color-cell-postponed-until: #604800;
 $color-cell-completed: #339933;
 $color-cell-dismissed: #673ab7;
 $color-cell-manual-pending: #003038;
@@ -134,8 +134,8 @@ $color-cell-session: #a9a9a9;
       @include cell-bgcolor($color-cell-postponed);
     }
 
-    &.cell-postponed-temp {
-      @include cell-bgcolor($color-cell-postponed-temp);
+    &.cell-postponed-until {
+      @include cell-bgcolor($color-cell-postponed-until);
     }
     
     &.cell-completed {
