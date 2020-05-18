@@ -409,19 +409,22 @@ module Tests =
                            ] |}
                 }
                 
-                test "Past PostponedUntil events are ignored" {
+                test "Past PostponedUntil events are shown" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
                            Now = { Date = flukeDate 2020 Month.March 13
                                    Time = flukeTime 02 00 }
                            Data = [
-                               flukeDate 2020 Month.March 09, Disabled
-                               flukeDate 2020 Month.March 10, Disabled
-                               flukeDate 2020 Month.March 11, Disabled
+                               flukeDate 2020 Month.March 07, Disabled
+                               flukeDate 2020 Month.March 08, EventStatus Completed
+                               flukeDate 2020 Month.March 09, Missed
+                               flukeDate 2020 Month.March 10, EventStatus (Postponed (Some (flukeTime 01 00)))
+                               flukeDate 2020 Month.March 11, Missed
                                flukeDate 2020 Month.March 12, Pending
                                flukeDate 2020 Month.March 13, Pending
                            ]
                            CellEvents = [
+                               flukeDate 2020 Month.March 08, Completed
                                flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00))
                            ] |}
                 }

@@ -318,7 +318,6 @@ module Rendering =
                             
                         let event =
                             match cellEvent, (dayStart, now, date) with
-                            | Postponed (Some _),     BeforeToday                                         -> Disabled
                             | Postponed (Some until), Today when now.GreaterEqualThan dayStart date until -> Pending
                             | _                                                                           -> EventStatus cellEvent
                             
