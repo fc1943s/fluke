@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend
 
 open Browser
 open Browser.Types
+open Fable.Core
 open Fable.Core.JsInterop
 
 module Ext =
@@ -19,6 +20,8 @@ module Ext =
     importAll "./public/index.js"
     importAll "./public/index.jsx"
 
+    [<Emit("(new Audio($0)).play();")>]
+    let playAudio (_file: string) : unit = jsNative
 
     let reactMarkdown : obj -> obj = importDefault "react-markdown"
     

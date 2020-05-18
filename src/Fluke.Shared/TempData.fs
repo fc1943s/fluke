@@ -85,6 +85,7 @@ module TempData =
     |}
     
     let sessionLength = 25.
+    let sessionBreakLength = 5.
     let dayStart = flukeTime 05 00
     let testDayStart = flukeTime 12 00
     

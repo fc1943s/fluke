@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend
 
 open Browser.Types
 open FSharpPlus
+open Fable.Core
 open Fluke.Shared
 open Fluke.UI.Frontend
 open Fable.React
@@ -103,7 +104,6 @@ module Temp =
             |> Seq.sortByDescending (fun (TaskSession start) -> start.DateTime)
             |> Seq.head
         ))
-        |> Seq.sortByDescending (snd >> ofTaskSession >> fun x -> x.DateTime)
         |> Seq.toList
         
         
@@ -118,21 +118,31 @@ module HomePageComponent =
           UIState: UIState.State
           PrivateState: Client.PrivateState<UIState.State> }
         
+    type ActiveSession = ActiveSession of task:Task * duration:float
+    
     type State =
         { Now: FlukeDateTime
           Selection: CellAddress list
           Lanes: Lane list
+          ActiveSessions: ActiveSession list
           View: Temp.View }
         static member inline Default =
             let date = flukeDate 0000 Month.January 01
             { Now = { Date = date; Time = Temp.dayStart }
               Selection = []
               Lanes = []
+              ActiveSessions = []
               View = Temp.view }
+            
+    let playDing () =
+         [ 0; 1300 ]
+         |> List.map (JS.setTimeout (fun () -> Ext.playAudio "./sounds/ding.wav"))
+         |> ignore
         
     let navBar (props: {| View: Temp.View
                           SetView: Temp.View -> unit
-                          Now: FlukeDateTime |}) =
+                          Now: FlukeDateTime
+                          ActiveSessions: ActiveSession list |}) =
         
         let events = {|
             OnViewChange = fun view ->
@@ -173,15 +183,17 @@ module HomePageComponent =
             checkbox Temp.TasksView "tasks view"
                 
             Navbar.Item.div [][
-                Temp.lastSessions
-                |> List.map (fun (task, TaskSession start) -> task.Name, (props.Now.DateTime - start.DateTime).TotalMinutes)
-                |> List.filter (fun (_, duration) -> duration < TempData.sessionLength)
-                |> List.map (fun (taskName, duration) ->
-                    sprintf "Session Task[%s] Duration[%.1f] Left[%.1f]"
-                        taskName
-                        duration
-                        (TempData.sessionLength - duration)
-                    |> str)
+                props.ActiveSessions
+                |> List.map (fun (ActiveSession (task, duration)) ->
+                    let status, color, duration, left = 
+                        match duration < TempData.sessionLength, TempData.sessionLength - duration with
+                        | true,  left -> "Session", "#7cca7c", duration,                          left
+                        | false, left -> "Break",   "#ca7c7c", duration - TempData.sessionLength, TempData.sessionBreakLength + left
+                    
+                    span [ Style [ Color color ] ][
+                        sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" status task.Name duration left |> str
+                    ]
+                )
                 |> List.intersperse (br [])
                 |> function
                     | [] -> str "No active session"
@@ -203,7 +215,7 @@ module HomePageComponent =
             |> List.map (fun (Lane (task, _)) ->
                 let comments = Temp.taskStateMap.TryFind task |> Option.map (fun taskState -> taskState.Comments)
                 
-                div [ classList [ Css.tooltipContainer, comments |> Option.defaultValue [] |> fun x -> x.Length > 0 ] ][
+                div [ classList [ Css.tooltipContainer, match comments with Some (_ :: _) -> true | _ -> false ] ][
                     
                     div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
                                   WhiteSpace WhiteSpaceOptions.Nowrap
@@ -550,7 +562,7 @@ module HomePageComponent =
                 |> Sorting.applyManualOrder Temp.taskOrderList
             
                     
-        let getState oldState =
+        let createState oldState =
             let now = Temp.getNow ()
             
             let dateSequence = 
@@ -573,16 +585,38 @@ module HomePageComponent =
                     |> Option.defaultValue []
                 | x -> x
             
+            let activeSessions =
+                Temp.lastSessions
+                |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
+                |> List.filter (fun (_, length) -> length < TempData.sessionLength + TempData.sessionBreakLength)
+                |> List.map ActiveSession
+                
+            oldState.ActiveSessions
+            |> List.filter (fun (ActiveSession (oldTask, oldDuration)) ->
+                let newSession =
+                    activeSessions
+                    |> List.tryFind (fun (ActiveSession (task, duration)) -> task = oldTask && duration = oldDuration + 1.)
+                    
+                match newSession with
+                | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> true
+                | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> true
+                | _ -> false
+            )
+            |> function
+                | [] -> ()
+                | _completingSessions -> playDing ()
+                
             { oldState with
                   Now = now
                   Lanes = lanes
-                  Selection = selection }
+                  Selection = selection
+                  ActiveSessions = activeSessions }
         
         let state =
-            Hooks.useState (getState State.Default)
+            Hooks.useState (createState State.Default)
             
         CustomHooks.useInterval (fun () ->
-            state.update getState
+            state.update createState
         ) (60 * 1000)
         
         let dateSequence =
@@ -593,9 +627,9 @@ module HomePageComponent =
         let events = {|
             OnViewChange = fun view ->
                 state.update (fun state ->
-                    getState { state with
-                                 View = view
-                                 Selection = [] }
+                    createState { state with
+                                    View = view
+                                    Selection = [] }
                 )
         |}
         
@@ -610,7 +644,8 @@ module HomePageComponent =
             navBar
                 {| View = state.current.View
                    SetView = events.OnViewChange
-                   Now = state.current.Now |}
+                   Now = state.current.Now
+                   ActiveSessions = state.current.ActiveSessions |}
                    
                 
             match state.current.View with
