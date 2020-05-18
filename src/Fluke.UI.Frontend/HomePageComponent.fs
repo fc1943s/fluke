@@ -94,6 +94,19 @@ module Temp =
         |> List.map (fun taskState -> taskState.Task, taskState)
         |> Map.ofList
         
+    let lastSessions =
+        taskStateList
+        |> Seq.filter (fun taskState -> not taskState.Sessions.IsEmpty)
+        |> Seq.map (fun taskState -> taskState.Task, taskState.Sessions)
+        |> Seq.map (Tuple2.mapSnd (fun sessions ->
+            sessions
+            |> Seq.sortByDescending (fun (TaskSession start) -> start.DateTime)
+            |> Seq.head
+        ))
+        |> Seq.sortByDescending (snd >> ofTaskSession >> fun x -> x.DateTime)
+        |> Seq.toList
+        
+        
     
     
 module HomePageComponent =
@@ -118,7 +131,8 @@ module HomePageComponent =
               View = Temp.view }
         
     let navBar (props: {| View: Temp.View
-                          SetView: Temp.View -> unit |}) =
+                          SetView: Temp.View -> unit
+                          Now: FlukeDateTime |}) =
         
         let events = {|
             OnViewChange = fun view ->
@@ -136,13 +150,14 @@ module HomePageComponent =
         Navbar.navbar [ Navbar.Color IsBlack
                         Navbar.Props [ Style [ Height 36
                                                MinHeight 36
-                                               Padding "8px 0 0 10px"
                                                Display DisplayOptions.Flex
                                                JustifyContent "space-around" ]]][
             
             let checkbox view text =
                 Navbar.Item.div [ Navbar.Item.Props [ Class "field"
-                                                      OnClick (fun _ -> events.OnViewChange view) ] ][
+                                                      OnClick (fun _ -> events.OnViewChange view)
+                                                      Style [ MarginBottom 0
+                                                              AlignSelf AlignSelfOptions.Center ] ] ][
 
                     Checkbox.input [ CustomClass "switch is-small is-dark"
                                      Props [ Checked (props.View = view)
@@ -156,6 +171,22 @@ module HomePageComponent =
             checkbox Temp.CalendarView "calendar view"
             checkbox Temp.GroupsView "groups view"
             checkbox Temp.TasksView "tasks view"
+                
+            Navbar.Item.div [][
+                Temp.lastSessions
+                |> List.map (fun (task, TaskSession start) -> task.Name, (props.Now.DateTime - start.DateTime).TotalMinutes)
+                |> List.filter (fun (_, duration) -> duration < TempData.sessionLength)
+                |> List.map (fun (taskName, duration) ->
+                    sprintf "Session Task[%s] Duration[%.1f] Left[%.1f]"
+                        taskName
+                        duration
+                        (TempData.sessionLength - duration)
+                    |> str)
+                |> List.intersperse (br [])
+                |> function
+                    | [] -> str "No active session"
+                    | list -> ofList list
+            ]
             
         ]
         
@@ -578,7 +609,8 @@ module HomePageComponent =
 
             navBar
                 {| View = state.current.View
-                   SetView = events.OnViewChange |}
+                   SetView = events.OnViewChange
+                   Now = state.current.Now |}
                    
                 
             match state.current.View with

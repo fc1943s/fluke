@@ -84,6 +84,7 @@ module TempData =
             
     |}
     
+    let sessionLength = 25.
     let dayStart = flukeTime 05 00
     let testDayStart = flukeTime 12 00
     
@@ -149,7 +150,10 @@ module TempData =
                         
                     let sessions =
                         events
-                        |> List.choose (function TempSession start -> TaskSession { Date = start.Date; Time = start.Time } |> Some | _ -> None)
+                        |> List.choose (function
+                            | TempSession { Date = date; Time = time } -> TaskSession { Date = date; Time = time } |> Some
+                            | _ -> None
+                        )
                         |> List.sortBy (fun (TaskSession start) -> start.DateTime)
                         
                     let priority =

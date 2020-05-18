@@ -236,7 +236,7 @@ module Model =
     let createCellComment task date comment =
         CellComment ({ Task = task; Date = date }, Comment comment)
         
-    let (|BeforeToday|Today|AfterToday|) (dayStart, (now: FlukeDateTime), (date: FlukeDate)) =
+    let (|BeforeToday|Today|AfterToday|) (dayStart, now:FlukeDateTime, date:FlukeDate) =
         let dateStart = { Date = date; Time = dayStart }.DateTime
         let dateEnd = dateStart.AddDays 1.
         
