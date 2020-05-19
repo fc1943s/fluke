@@ -135,9 +135,12 @@ module HomePageComponent =
               View = Temp.view }
             
     let playDing () =
-         [ 0; 1300 ]
+         [ 0; 1400 ]
          |> List.map (JS.setTimeout (fun () -> Ext.playAudio "./sounds/ding.wav"))
          |> ignore
+         
+    let playTick () =
+        Ext.playAudio "./sounds/tick.wav"
         
     let navBar (props: {| View: Temp.View
                           SetView: Temp.View -> unit
@@ -185,13 +188,13 @@ module HomePageComponent =
             Navbar.Item.div [][
                 props.ActiveSessions
                 |> List.map (fun (ActiveSession (task, duration)) ->
-                    let status, color, duration, left = 
+                    let sessionType, color, duration, left = 
                         match duration < TempData.sessionLength, TempData.sessionLength - duration with
                         | true,  left -> "Session", "#7cca7c", duration,                          left
                         | false, left -> "Break",   "#ca7c7c", duration - TempData.sessionLength, TempData.sessionBreakLength + left
                     
                     span [ Style [ Color color ] ][
-                        sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" status task.Name duration left |> str
+                        sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" sessionType task.Name duration left |> str
                     ]
                 )
                 |> List.intersperse (br [])
@@ -592,19 +595,18 @@ module HomePageComponent =
                 |> List.map ActiveSession
                 
             oldState.ActiveSessions
-            |> List.filter (fun (ActiveSession (oldTask, oldDuration)) ->
+            |> List.map (fun (ActiveSession (oldTask, oldDuration)) ->
                 let newSession =
                     activeSessions
                     |> List.tryFind (fun (ActiveSession (task, duration)) -> task = oldTask && duration = oldDuration + 1.)
                     
                 match newSession with
-                | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> true
-                | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> true
-                | _ -> false
+                | Some (ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> playTick
+                | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> playDing
+                | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> playDing
+                | _ -> fun () -> ()
             )
-            |> function
-                | [] -> ()
-                | _completingSessions -> playDing ()
+            |> List.iter (fun x -> x ())
                 
             { oldState with
                   Now = now

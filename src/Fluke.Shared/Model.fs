@@ -121,7 +121,7 @@ module Model =
     type Comment = Comment of string
     type TaskSession = TaskSession of start:FlukeDateTime
     type TaskComment = TaskComment of task:Task * comment:Comment
-    type CellStatusEntry = CellStatusEntry of address:CellAddress * status:CellEventStatus
+    type CellStatusEntry = CellStatusEntry of address:CellAddress * eventStatus:CellEventStatus
     type CellComment = CellComment of address:CellAddress * comment:Comment
     type CellSession = CellSession of address:CellAddress * start:FlukeTime
     
@@ -299,7 +299,7 @@ module Rendering =
             
         let cellStatusEventsByDate =
             cellStatusEntries
-            |> List.map (fun (CellStatusEntry (address, status)) -> address.Date, status)
+            |> List.map (fun (CellStatusEntry (address, eventStatus)) -> address.Date, eventStatus)
             |> Map.ofList
             
         let rec loop renderState = function

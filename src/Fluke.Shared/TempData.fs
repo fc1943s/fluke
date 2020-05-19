@@ -118,6 +118,7 @@ module TempData =
         | TempComment of comment:string
         | TempSession of start:FlukeDateTime
         | TempPriority of priority:TaskPriority
+        | TempStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
            
     let createManualTasksFromTree taskList taskTree =
         let createTaskMap taskList =
