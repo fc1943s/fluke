@@ -24,17 +24,17 @@ module TempData =
     |}
     
     let private projects = {|
-        ``app-fluke`` =
+        app_fluke =
             { Project.Area = areas.workflow
-              Project.Name = "app-fluke" }
+              Project.Name = "app_fluke" }
             
         blog =
             { Project.Area = areas.writing
               Project.Name = "blog" }
             
-        ``rebuild-website`` =
+        rebuild_website =
             { Project.Area = areas.programming
-              Project.Name = "rebuild-website" }
+              Project.Name = "rebuild_website" }
     |}
     
     let private resources = {|
@@ -42,9 +42,9 @@ module TempData =
             { Resource.Area = areas.programming
               Resource.Name = "agile" }
             
-        ``artificial-intelligence`` =
+        artificial_intelligence =
             { Resource.Area = areas.programming
-              Resource.Name = "artificial-intelligence" }
+              Resource.Name = "artificial_intelligence" }
             
         cloud =
             { Resource.Area = areas.programming
@@ -58,7 +58,7 @@ module TempData =
             { Resource.Area = areas.programming
               Resource.Name = "docker" }
             
-        ``f#`` =
+        fsharp =
             { Resource.Area = areas.programming
               Resource.Name = "f#" }
             
@@ -148,12 +148,17 @@ module TempData =
                             
                     let comments =
                         events
-                        |> List.choose (function TempComment comment -> TaskComment (task, Comment comment) |> Some | _ -> None)
+                        |> List.choose (function
+                            | TempComment comment ->
+                                TaskComment (task, Comment comment) |> Some
+                            | _ -> None
+                        )
                         
                     let sessions =
                         events
                         |> List.choose (function
-                            | TempSession { Date = date; Time = time } -> TaskSession { Date = date; Time = time } |> Some
+                            | TempSession { Date = date; Time = time } ->
+                                TaskSession { Date = date; Time = time } |> Some
                             | _ -> None
                         )
                         |> List.sortBy (fun (TaskSession start) -> start.DateTime)
@@ -172,7 +177,11 @@ module TempData =
                             | Critical10 -> 10
                             
                         events
-                        |> List.choose (function TempPriority p -> getPriorityValue p |> TaskPriorityValue |> Some | _ -> None)
+                        |> List.choose (function
+                            | TempPriority p ->
+                                getPriorityValue p |> TaskPriorityValue |> Some
+                            | _ -> None
+                        )
                         |> List.tryHead
                         
                     { Task = task
@@ -205,7 +214,9 @@ module TempData =
                   PriorityValue = None })
             |> List.prepend newTaskStateList
         
-        let initialTaskOrderList = taskStateList |> List.map (fun taskState -> { Task = taskState.Task; Priority = Last })
+        let initialTaskOrderList =
+            taskStateList
+            |> List.map (fun taskState -> { Task = taskState.Task; Priority = Last })
         
         let filteredOldTaskOrder = oldTaskOrderList |> List.filter (fun x -> notOnNewTaskMap x.Task)
         let taskOrderList = newTaskOrderList @ filteredOldTaskOrder
@@ -229,7 +240,10 @@ module TempData =
     let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
                                                Expected: string list
                                                Now: FlukeDateTime |}) =
-        let cellStatusEntries = testData.Data |> List.collect (fun (task, events) -> events |> Rendering.createCellStatusEntries task)
+        
+        let cellStatusEntries =
+            testData.Data
+            |> List.collect (fun (task, events) -> Rendering.createCellStatusEntries task events)
             
         {| CellStatusEntries = cellStatusEntries
            TaskList = testData.Data |> List.map fst
@@ -240,7 +254,7 @@ module TempData =
     let tempData = {|
         ManualTasks = 
             [
-                Project projects.``app-fluke``, [
+                Project projects.app_fluke, [
                     "data management", [
                         TempComment "mutability"
                         TempComment "initial default data (load the text first with tests)"
@@ -260,7 +274,7 @@ module TempData =
                     "move fluke tasks to github issues", []
                 ]
                 Project projects.blog, []
-                Project projects.``rebuild-website``, [
+                Project projects.rebuild_website, [
                     "task1", []
                 ]
                 Area areas.car, []
@@ -271,18 +285,18 @@ module TempData =
                 Area areas.finances, []
                 Area areas.health, []
                 Area areas.leisure, [
-                    "watch-movie-foobar", []
+                    "watch_movie_foobar", []
                 ]
                 Area areas.programming, []
                 Area areas.travel, []
                 Area areas.workflow, []
                 Area areas.writing, []
                 Resource resources.agile, []
-                Resource resources.``artificial-intelligence``, []
+                Resource resources.artificial_intelligence, []
                 Resource resources.cloud, []
                 Resource resources.communication, []
                 Resource resources.docker, []
-                Resource resources.``f#``, [
+                Resource resources.fsharp, [
                     "study: [choice, computation expressions]", []
                     "organize youtube playlists", []
                 ]
@@ -313,34 +327,34 @@ module TempData =
                     {| Now = { Date = flukeDate 2020 Month.March 10
                                Time = flukeTime 14 00 }
                        Data = [
-                           { Task.Default with Name = "1"; Scheduling = Manual WithSuggestion },
+                           { Task.Default with Name = "01"; Scheduling = Manual WithSuggestion },
                            [] 
                            
-                           { Task.Default with Name = "2"; Scheduling = Manual WithSuggestion },
+                           { Task.Default with Name = "02"; Scheduling = Manual WithSuggestion },
                            [ flukeDate 2020 Month.March 10, Postponed None
                              flukeDate 2020 Month.March 08, Postponed None ]
                            
-                           { Task.Default with Name = "3"; Scheduling = Manual WithoutSuggestion },
+                           { Task.Default with Name = "03"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 09, ManualPending ]
                            
-                           { Task.Default with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
+                           { Task.Default with Name = "04"; Scheduling = Recurrency (Offset (Days 1));
                                                            PendingAfter = flukeTime 20 00 |> Some },
                            []
                            
-                           { Task.Default with Name = "5"; Scheduling = Manual WithoutSuggestion },
+                           { Task.Default with Name = "05"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 10, ManualPending ]
                            
-                           { Task.Default with Name = "6"; Scheduling = Manual WithoutSuggestion },
+                           { Task.Default with Name = "06"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 04, Postponed None
                              flukeDate 2020 Month.March 06, Dismissed ]
                            
-                           { Task.Default with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
+                           { Task.Default with Name = "07"; Scheduling = Recurrency (Offset (Days 4)) },
                            [ flukeDate 2020 Month.March 08, Completed ]
                            
-                           { Task.Default with Name = "8"; Scheduling = Recurrency (Offset (Days 2)) },
+                           { Task.Default with Name = "08"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Completed ]
                            
-                           { Task.Default with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
+                           { Task.Default with Name = "09"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Dismissed ]
                            
                            { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
@@ -352,13 +366,16 @@ module TempData =
                            { Task.Default with Name = "12"; Scheduling = Manual WithoutSuggestion },
                            []
                            
-                           { Task.Default with Name = "13"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
+                           { Task.Default with Name = "13"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
                            []
                            
-                           { Task.Default with Name = "14"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
+                           { Task.Default with Name = "14"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
                            []
                            
-                           { Task.Default with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
+                           { Task.Default with Name = "15"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
                            [ flukeDate 2020 Month.March 07, Postponed None
                              flukeDate 2020 Month.March 09, Dismissed ]
                            
@@ -372,7 +389,10 @@ module TempData =
                            { Task.Default with Name = "18"; Scheduling = Recurrency (Offset (Days 1)) },
                            []
                        ]
-                       Expected = [ "16"; "5"; "3"; "11"; "13"; "18"; "17"; "4"; "1"; "2"; "10"; "8"; "9"; "7"; "14"; "15"; "12"; "6" ] |}
+                       Expected = [ "16"; "05"; "03"; "11"; "13"
+                                    "18"; "17"; "04"; "01"; "02"
+                                    "10"; "08"; "09"; "07"; "14"
+                                    "15"; "12"; "06" ] |}
                     |> createSortLanesTestData
                     
     |}

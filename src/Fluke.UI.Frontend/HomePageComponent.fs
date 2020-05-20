@@ -188,13 +188,15 @@ module HomePageComponent =
             Navbar.Item.div [][
                 props.ActiveSessions
                 |> List.map (fun (ActiveSession (task, duration)) ->
-                    let sessionType, color, duration, left = 
-                        match duration < TempData.sessionLength, TempData.sessionLength - duration with
-                        | true,  left -> "Session", "#7cca7c", duration,                          left
-                        | false, left -> "Break",   "#ca7c7c", duration - TempData.sessionLength, TempData.sessionBreakLength + left
+                    let sessionType, color, duration, left =
+                        let left = TempData.sessionLength - duration
+                        match duration < TempData.sessionLength with
+                        | true  -> "Session", "#7cca7c", duration, left
+                        | false -> "Break",   "#ca7c7c", -left,    TempData.sessionBreakLength + left
                     
                     span [ Style [ Color color ] ][
-                        sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" sessionType task.Name duration left |> str
+                        sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" sessionType task.Name duration left
+                        |> str
                     ]
                 )
                 |> List.intersperse (br [])
@@ -245,7 +247,9 @@ module HomePageComponent =
                     let comments =
                         Temp.cellComments
                         |> List.map ofCellComment
-                        |> List.filter (fun (commentAddress, _) -> commentAddress.Task = task && commentAddress.Date = address.Date)
+                        |> List.filter (fun (commentAddress, _) ->
+                            commentAddress.Task = task && commentAddress.Date = address.Date
+                        )
                         |> List.map snd
                         
                     let sessions =
@@ -531,22 +535,35 @@ module HomePageComponent =
             match view with
             | Temp.CalendarView ->
                 taskStateList
-                |> List.filter (function { Task = { Task.Scheduling = Manual WithoutSuggestion }}, [] -> false | _ -> true)
-                |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries)
+                |> List.filter (function
+                    | { Task = { Task.Scheduling = Manual WithoutSuggestion }}, [] -> false
+                    | _ -> true
+                )
+                |> List.map (fun (taskState, statusEntries) ->
+                    Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries
+                )
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByIncomingRecurrency Temp.dayStart now
                 |> Sorting.sortLanesByTimeOfDay Temp.dayStart now Temp.taskOrderList
             | Temp.GroupsView ->
                 let lanes =
                     taskStateList
-                    |> List.filter (function { Task = { Task.Scheduling = Manual WithoutSuggestion }}, [] -> true | _ -> false)
+                    |> List.filter (function
+                        | { Task = { Task.Scheduling = Manual WithoutSuggestion }}, [] -> true
+                        | _ -> false
+                    )
 //                    |> List.filter (fun (_, statusEntries) ->
 //                        statusEntries
-//                        |> List.filter (function { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true | _ -> false)
+//                        |> List.filter (function
+//                            | { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true
+//                            | _ -> false
+//                        )
 //                        |> List.tryLast
 //                        |> function Some { Status = Dismissed } -> false | _ -> true
 //                    )
-                    |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries)
+                    |> List.map (fun (taskState, statusEntries) ->
+                        Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries
+                    )
                     |> Sorting.applyManualOrder Temp.taskOrderList
                     
                 Temp.informationList
@@ -561,7 +578,9 @@ module HomePageComponent =
             | Temp.TasksView ->
                 taskStateList
                 |> List.filter (function { Task = { Task.Scheduling = Manual _ }}, _ -> true | _ -> false)
-                |> List.map (fun (taskState, statusEntries) -> Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries)
+                |> List.map (fun (taskState, statusEntries) ->
+                    Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries
+                )
                 |> Sorting.applyManualOrder Temp.taskOrderList
             
                     
@@ -598,7 +617,9 @@ module HomePageComponent =
             |> List.map (fun (ActiveSession (oldTask, oldDuration)) ->
                 let newSession =
                     activeSessions
-                    |> List.tryFind (fun (ActiveSession (task, duration)) -> task = oldTask && duration = oldDuration + 1.)
+                    |> List.tryFind (fun (ActiveSession (task, duration)) ->
+                        task = oldTask && duration = oldDuration + 1.
+                    )
                     
                 match newSession with
                 | Some (ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> playTick
@@ -641,7 +662,9 @@ module HomePageComponent =
 
 //            if not props.UIState.SharedState.Debug then
 //                PageLoader.pageLoader [ PageLoader.Color IsDark
-//                                        PageLoader.IsActive (match props.PrivateState.Connection with Client.Connected _ -> false | _ -> true) ][]
+//                                        PageLoader.IsActive (match props.PrivateState.Connection with
+//                                                             | Client.Connected _ -> false
+//                                                             | _ -> true) ][]
 
             navBar
                 {| View = state.current.View
@@ -650,10 +673,11 @@ module HomePageComponent =
                    ActiveSessions = state.current.ActiveSessions |}
                    
                 
-            match state.current.View with
-            | Temp.CalendarView -> Grid.calendarView dateSequence state.current.Now state.current.Selection state.current.Lanes
-            | Temp.GroupsView   -> Grid.groupsView dateSequence state.current.Now state.current.Selection state.current.Lanes
-            | Temp.TasksView    -> Grid.tasksView dateSequence state.current.Now state.current.Selection state.current.Lanes
+            state.current.Lanes
+            |> match state.current.View with
+               | Temp.CalendarView -> Grid.calendarView dateSequence state.current.Now state.current.Selection
+               | Temp.GroupsView   -> Grid.groupsView dateSequence state.current.Now state.current.Selection
+               | Temp.TasksView    -> Grid.tasksView dateSequence state.current.Now state.current.Selection
         ]
     , memoizeWith = equalsButFunctions)
     

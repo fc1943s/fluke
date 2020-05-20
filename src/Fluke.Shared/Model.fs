@@ -318,8 +318,9 @@ module Rendering =
                             
                         let event =
                             match cellEvent, (dayStart, now, date) with
-                            | Postponed (Some until), Today when now.GreaterEqualThan dayStart date until -> Pending
-                            | _                                                                           -> EventStatus cellEvent
+                            | Postponed (Some until), Today
+                                when now.GreaterEqualThan dayStart date until -> Pending
+                            | _                                               -> EventStatus cellEvent
                             
                         StatusCell event, renderState
                         
@@ -374,10 +375,11 @@ module Rendering =
                             
                         | Manual suggestion ->
                             match renderState, (dayStart, now, date), suggestion with
-                            | WaitingFirstEvent, Today, WithSuggestion when task.PendingAfter = None -> StatusCell Suggested, Counting 1
-                            | WaitingFirstEvent, Today, WithSuggestion                               -> TodayCell, Counting 1
-                            | WaitingFirstEvent, Today, _                                            -> StatusCell Suggested, Counting 1
-                            | _                                                                      -> 
+                            | WaitingFirstEvent, Today, WithSuggestion
+                                when task.PendingAfter = None          -> StatusCell Suggested, Counting 1
+                            | WaitingFirstEvent, Today, WithSuggestion -> TodayCell, Counting 1
+                            | WaitingFirstEvent, Today, _              -> StatusCell Suggested, Counting 1
+                            | _                                        -> 
                                 let status, renderState = getStatus renderState
 
                                 let status =
@@ -394,10 +396,12 @@ module Rendering =
                     | StatusCell status -> status
                     | TodayCell ->
                         match now, task.MissedAfter, task.PendingAfter with
-                        | now, Some missedAfter, _                 when now.GreaterEqualThan dayStart date missedAfter  -> MissedToday
-                        | now, _,                Some pendingAfter when now.GreaterEqualThan dayStart date pendingAfter -> Pending
-                        | _,   _,                None                                                                   -> Pending
-                        | _                                                                                             -> Suggested
+                        | now, Some missedAfter, _
+                            when now.GreaterEqualThan dayStart date missedAfter  -> MissedToday
+                        | now, _,                Some pendingAfter
+                            when now.GreaterEqualThan dayStart date pendingAfter -> Pending
+                        | _,   _,                None                            -> Pending
+                        | _                                                      -> Suggested
                 
                 (date, status) :: loop renderState tail
             | [] -> []
@@ -494,24 +498,27 @@ module Sorting =
                 | Postponed (Some until) when now.GreaterEqualThan dayStart address.Date until -> WasPostponed
                 | Postponed _                                                                  -> PostponedUntil
                 | _                                                                            -> NotPostponed
+                
+            let (|SchedulingRecurrency|ManualWithSuggestion|ManualWithoutSuggestion|) = function
+                | { Scheduling = Recurrency _ } -> SchedulingRecurrency
+                | { Scheduling = Manual WithSuggestion } -> ManualWithSuggestion
+                | { Scheduling = Manual WithoutSuggestion } -> ManualWithoutSuggestion
             
-            [ (function MissedToday,                _                                         -> true | _ -> false), TaskOrderList
-              (function EventStatus ManualPending,  _                                         -> true | _ -> false), TaskOrderList
-              (function (EventStatus WasPostponed
-                       | Pending),                                   _                        -> true | _ -> false), TaskOrderList
-              (function EventStatus PostponedUntil, _                                         -> true | _ -> false), TaskOrderList
-              (function Suggested,                  { Scheduling = Recurrency _ }             -> true | _ -> false), TaskOrderList
-              (function Suggested,                  { Scheduling = Manual WithSuggestion }    -> true | _ -> false), TaskOrderList
-              (function EventStatus Postponed,      _                                         -> true | _ -> false), TaskOrderList
-              (function EventStatus Completed,      _                                         -> true | _ -> false), DefaultSort
-              (function EventStatus Dismissed,      _                                         -> true | _ -> false), DefaultSort
-              (function Disabled,                   { Scheduling = Recurrency _ }             -> true | _ -> false), DefaultSort
-              (function Suggested,                  { Scheduling = Manual WithoutSuggestion } -> true | _ -> false), DefaultSort
-              (function _                                                                     -> true)             , DefaultSort ]
-            |> List.map (Tuple2.mapFst (fun orderFn -> orderFn (status, task)))
+            [ (function MissedToday,                          _                       -> Some TaskOrderList | _ -> None)
+              (function EventStatus ManualPending,            _                       -> Some TaskOrderList | _ -> None)
+              (function (EventStatus WasPostponed | Pending), _                       -> Some TaskOrderList | _ -> None)
+              (function EventStatus PostponedUntil,           _                       -> Some TaskOrderList | _ -> None)
+              (function Suggested,                            SchedulingRecurrency    -> Some TaskOrderList | _ -> None)
+              (function Suggested,                            ManualWithSuggestion    -> Some TaskOrderList | _ -> None)
+              (function EventStatus Postponed,                _                       -> Some TaskOrderList | _ -> None)
+              (function EventStatus Completed,                _                       -> Some DefaultSort   | _ -> None)
+              (function EventStatus Dismissed,                _                       -> Some DefaultSort   | _ -> None)
+              (function Disabled,                             SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
+              (function Suggested,                            ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
+              (function _                                                             -> Some DefaultSort) ]
+            |> List.map (fun orderFn -> orderFn (status, task))
             |> List.indexed
-            |> List.filter (snd >> fst)
-            |> List.map (Tuple2.mapSnd snd)
+            |> List.choose (function groupIndex, Some sortType -> Some (groupIndex, sortType) | _, None -> None)
             |> List.head
             
         lanes

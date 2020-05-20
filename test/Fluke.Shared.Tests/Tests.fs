@@ -194,34 +194,34 @@ module Tests =
                        Now = { Date = flukeDate 2020 Month.March 10
                                Time = testDayStart }
                        Data = [
-                           { Task.Default with Name = "1"; Scheduling = Manual WithSuggestion },
+                           { Task.Default with Name = "01"; Scheduling = Manual WithSuggestion },
                            [] 
                            
-                           { Task.Default with Name = "2"; Scheduling = Manual WithSuggestion },
+                           { Task.Default with Name = "02"; Scheduling = Manual WithSuggestion },
                            [ flukeDate 2020 Month.March 10, Postponed None
                              flukeDate 2020 Month.March 08, Postponed None ]
                            
-                           { Task.Default with Name = "3"; Scheduling = Manual WithoutSuggestion },
+                           { Task.Default with Name = "03"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 09, ManualPending ]
                            
-                           { Task.Default with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
+                           { Task.Default with Name = "04"; Scheduling = Recurrency (Offset (Days 1));
                                                            PendingAfter = flukeTime 20 00 |> Some },
                            []
                            
-                           { Task.Default with Name = "5"; Scheduling = Manual WithoutSuggestion },
+                           { Task.Default with Name = "05"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 10, ManualPending ]
                            
-                           { Task.Default with Name = "6"; Scheduling = Manual WithoutSuggestion },
+                           { Task.Default with Name = "06"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 04, Postponed None
                              flukeDate 2020 Month.March 06, Dismissed ]
                            
-                           { Task.Default with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
+                           { Task.Default with Name = "07"; Scheduling = Recurrency (Offset (Days 4)) },
                            [ flukeDate 2020 Month.March 08, Completed ]
                            
-                           { Task.Default with Name = "8"; Scheduling = Recurrency (Offset (Days 2)) },
+                           { Task.Default with Name = "08"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Completed ]
                            
-                           { Task.Default with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
+                           { Task.Default with Name = "09"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Dismissed ]
                            
                            { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
@@ -233,17 +233,22 @@ module Tests =
                            { Task.Default with Name = "12"; Scheduling = Manual WithoutSuggestion },
                            []
                            
-                           { Task.Default with Name = "13"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
+                           { Task.Default with Name = "13"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
                            []
                            
-                           { Task.Default with Name = "14"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
+                           { Task.Default with Name = "14"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
                            []
                            
-                           { Task.Default with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
+                           { Task.Default with Name = "15"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
                            [ flukeDate 2020 Month.March 07, Postponed None
                              flukeDate 2020 Month.March 09, Dismissed ]
                        ]
-                       Expected = [ "11"; "4"; "10"; "8"; "9"; "7"; "15"; "13"; "14"; "2"; "6"; "3"; "5"; "1"; "12" ] |}
+                       Expected = [ "11"; "04"; "10"; "08"; "09"
+                                    "07"; "15"; "13"; "14"; "02"
+                                    "06"; "03"; "05"; "01"; "12" ] |}
             }
             
             test "Sort by Time of Day: All task types mixed" {
@@ -252,34 +257,34 @@ module Tests =
                        Now = { Date = flukeDate 2020 Month.March 10
                                Time = flukeTime 14 00 }
                        Data = [
-                           { Task.Default with Name = "1"; Scheduling = Manual WithSuggestion },
+                           { Task.Default with Name = "01"; Scheduling = Manual WithSuggestion },
                            [] 
                            
-                           { Task.Default with Name = "2"; Scheduling = Manual WithSuggestion },
+                           { Task.Default with Name = "02"; Scheduling = Manual WithSuggestion },
                            [ flukeDate 2020 Month.March 10, Postponed None
                              flukeDate 2020 Month.March 08, Postponed None ]
                            
-                           { Task.Default with Name = "3"; Scheduling = Manual WithoutSuggestion },
+                           { Task.Default with Name = "03"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 09, ManualPending ]
                            
-                           { Task.Default with Name = "4"; Scheduling = Recurrency (Offset (Days 1));
+                           { Task.Default with Name = "04"; Scheduling = Recurrency (Offset (Days 1));
                                                            PendingAfter = flukeTime 20 00 |> Some },
                            []
                            
-                           { Task.Default with Name = "5"; Scheduling = Manual WithoutSuggestion },
+                           { Task.Default with Name = "05"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 10, ManualPending ]
                            
-                           { Task.Default with Name = "6"; Scheduling = Manual WithoutSuggestion },
+                           { Task.Default with Name = "06"; Scheduling = Manual WithoutSuggestion },
                            [ flukeDate 2020 Month.March 04, Postponed None
                              flukeDate 2020 Month.March 06, Dismissed ]
                            
-                           { Task.Default with Name = "7"; Scheduling = Recurrency (Offset (Days 4)) },
+                           { Task.Default with Name = "07"; Scheduling = Recurrency (Offset (Days 4)) },
                            [ flukeDate 2020 Month.March 08, Completed ]
                            
-                           { Task.Default with Name = "8"; Scheduling = Recurrency (Offset (Days 2)) },
+                           { Task.Default with Name = "08"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Completed ]
                            
-                           { Task.Default with Name = "9"; Scheduling = Recurrency (Offset (Days 2)) },
+                           { Task.Default with Name = "09"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ flukeDate 2020 Month.March 10, Dismissed ]
                            
                            { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
@@ -291,13 +296,16 @@ module Tests =
                            { Task.Default with Name = "12"; Scheduling = Manual WithoutSuggestion },
                            []
                            
-                           { Task.Default with Name = "13"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
+                           { Task.Default with Name = "13"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
                            []
                            
-                           { Task.Default with Name = "14"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
+                           { Task.Default with Name = "14"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
                            []
                            
-                           { Task.Default with Name = "15"; Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
+                           { Task.Default with Name = "15"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
                            [ flukeDate 2020 Month.March 07, Postponed None
                              flukeDate 2020 Month.March 09, Dismissed ]
                            
@@ -311,7 +319,10 @@ module Tests =
                            { Task.Default with Name = "18"; Scheduling = Recurrency (Offset (Days 1)) },
                            []
                        ]
-                       Expected = [ "16"; "5"; "3"; "11"; "13"; "18"; "17"; "4"; "1"; "2"; "10"; "8"; "9"; "7"; "14"; "15"; "12"; "6" ] |}
+                       Expected = [ "16"; "05"; "03"; "11"; "13"
+                                    "18"; "17"; "04"; "01"; "02"
+                                    "10"; "08"; "09"; "07"; "14"
+                                    "15"; "12"; "06" ] |}
             }
         ]
         
@@ -538,7 +549,8 @@ module Tests =
                            ] |}
                 }
             
-                test "Pending today after missing yesterday, then resetting the schedule with a future Completed event" {
+                test "Pending today after missing yesterday,
+                      then resetting the schedule with a future Completed event" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
                            Now = { Date = flukeDate 2020 Month.March 11
@@ -587,7 +599,8 @@ module Tests =
                            CellEvents = [] |}
                 }
             
-                test "Recurrency for the next days should work normally while today is still optional/suggested (before PendingAfter)" {
+                test "Recurrency for the next days should work normally
+                      while today is still optional/suggested (before PendingAfter)" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2))
                                                       PendingAfter = flukeTime 18 00 |> Some }
