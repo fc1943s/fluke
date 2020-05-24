@@ -114,11 +114,59 @@ module TempData =
         |> List.append oldTaskOrderList
         
            
-    type TempCellEvent =
+    type TempTaskEvent =
         | TempComment of comment:string
         | TempSession of start:FlukeDateTime
         | TempPriority of priority:TaskPriority
         | TempStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
+        
+    let createTaskState task events =
+        
+        let getPriorityValue = function
+            | Low1 -> 1
+            | Low2 -> 2
+            | Low3 -> 3
+            | Medium4 -> 4
+            | Medium5 -> 5
+            | Medium6 -> 6
+            | High7 -> 7
+            | High8 -> 8
+            | High9 -> 9
+            | Critical10 -> 10
+            
+        let eventChoices =
+            events
+            |> List.map (function
+                | TempComment comment -> Comment comment |> Choice1Of4
+                | TempSession { Date = date; Time = time } -> TaskSession { Date = date; Time = time } |> Choice2Of4
+                | TempStatusEntry (date, eventStatus) -> (date, eventStatus) |> TaskStatusEntry |> Choice3Of4
+                | TempPriority p -> getPriorityValue p |> TaskPriorityValue |> Choice4Of4
+            )
+            
+        let comments =
+            eventChoices
+            |> List.choose (function Choice1Of4 x -> Some x | _ -> None)
+            
+        let sessions =
+            eventChoices
+            |> List.choose (function Choice2Of4 x -> Some x | _ -> None)
+            |> List.sortBy (fun (TaskSession start) -> start.DateTime)
+            
+        let statusEntries =
+            eventChoices
+            |> List.choose (function Choice3Of4 x -> Some x | _ -> None)
+            
+        let priority =
+            eventChoices
+            |> List.choose (function Choice4Of4 x -> Some x | _ -> None)
+            |> List.tryHead
+            
+        { Task = task
+          Comments = comments
+          Sessions = sessions
+          StatusEntries = statusEntries
+          PriorityValue = priority }
+        
            
     let createManualTasksFromTree taskList taskTree =
         let createTaskMap taskList =
@@ -133,6 +181,7 @@ module TempData =
             
         let oldTaskMap, oldTaskOrderList = createTaskMap taskList
         
+        
         let newTaskStateList =
             taskTree
             |> List.collect (fun (information, tasks) -> 
@@ -146,49 +195,7 @@ module TempData =
                                 Name = sprintf "> %s" taskName
                                 Information = information }
                             
-                    let comments =
-                        events
-                        |> List.choose (function
-                            | TempComment comment ->
-                                TaskComment (task, Comment comment) |> Some
-                            | _ -> None
-                        )
-                        
-                    let sessions =
-                        events
-                        |> List.choose (function
-                            | TempSession { Date = date; Time = time } ->
-                                TaskSession { Date = date; Time = time } |> Some
-                            | _ -> None
-                        )
-                        |> List.sortBy (fun (TaskSession start) -> start.DateTime)
-                        
-                    let priority =
-                        let getPriorityValue = function
-                            | Low1 -> 1
-                            | Low2 -> 2
-                            | Low3 -> 3
-                            | Medium4 -> 4
-                            | Medium5 -> 5
-                            | Medium6 -> 6
-                            | High7 -> 7
-                            | High8 -> 8
-                            | High9 -> 9
-                            | Critical10 -> 10
-                            
-                        events
-                        |> List.choose (function
-                            | TempPriority p ->
-                                getPriorityValue p |> TaskPriorityValue |> Some
-                            | _ -> None
-                        )
-                        |> List.tryHead
-                        
-                    { Task = task
-                      Comments = comments |> List.map (ofTaskComment >> snd)
-                      Sessions = sessions
-                      StatusEntries = []
-                      PriorityValue = priority }
+                    createTaskState task events
                 )
             )
             
@@ -243,19 +250,11 @@ module TempData =
            GetNow = fun () -> testData.Now |}
         
         
-    let createSortLanesTestData (testData : {| Data: (Task * (FlukeDate * CellEventStatus) list) list
+    let createSortLanesTestData (testData : {| Data: (Task * TempTaskEvent list) list
                                                Expected: string list
                                                Now: FlukeDateTime |}) =
         
-        {| TaskStateList =
-               testData.Data
-               |> List.map (fun (task, entries) ->
-                   { Task = task
-                     Comments = []
-                     Sessions = []
-                     PriorityValue = None
-                     StatusEntries = entries |> List.map TaskStatusEntry }
-               )
+        {| TaskStateList = testData.Data |> List.map (fun (task, events) -> createTaskState task events)
            TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = Last })
            GetNow = fun () -> testData.Now |}
     
@@ -340,37 +339,37 @@ module TempData =
                            [] 
                            
                            { Task.Default with Name = "02"; Scheduling = Manual WithSuggestion },
-                           [ flukeDate 2020 Month.March 10, Postponed None
-                             flukeDate 2020 Month.March 08, Postponed None ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                             TempStatusEntry (flukeDate 2020 Month.March 08, Postponed None) ]
                            
                            { Task.Default with Name = "03"; Scheduling = Manual WithoutSuggestion },
-                           [ flukeDate 2020 Month.March 09, ManualPending ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 09, ManualPending) ]
                            
                            { Task.Default with Name = "04"; Scheduling = Recurrency (Offset (Days 1));
                                                            PendingAfter = flukeTime 20 00 |> Some },
                            []
                            
                            { Task.Default with Name = "05"; Scheduling = Manual WithoutSuggestion },
-                           [ flukeDate 2020 Month.March 10, ManualPending ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, ManualPending) ]
                            
                            { Task.Default with Name = "06"; Scheduling = Manual WithoutSuggestion },
-                           [ flukeDate 2020 Month.March 04, Postponed None
-                             flukeDate 2020 Month.March 06, Dismissed ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
+                             TempStatusEntry (flukeDate 2020 Month.March 06, Dismissed) ]
                            
                            { Task.Default with Name = "07"; Scheduling = Recurrency (Offset (Days 4)) },
-                           [ flukeDate 2020 Month.March 08, Completed ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 08, Completed) ]
                            
                            { Task.Default with Name = "08"; Scheduling = Recurrency (Offset (Days 2)) },
-                           [ flukeDate 2020 Month.March 10, Completed ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Completed) ]
                            
                            { Task.Default with Name = "09"; Scheduling = Recurrency (Offset (Days 2)) },
-                           [ flukeDate 2020 Month.March 10, Dismissed ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Dismissed) ]
                            
                            { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
-                           [ flukeDate 2020 Month.March 10, Postponed None ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None) ]
                            
                            { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
-                           [ flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some) ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some)) ]
                            
                            { Task.Default with Name = "12"; Scheduling = Manual WithoutSuggestion },
                            []
@@ -385,15 +384,15 @@ module TempData =
                            
                            { Task.Default with Name = "15"
                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
-                           [ flukeDate 2020 Month.March 07, Postponed None
-                             flukeDate 2020 Month.March 09, Dismissed ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
+                             TempStatusEntry (flukeDate 2020 Month.March 09, Dismissed) ]
                            
                            { Task.Default with Name = "16"; Scheduling = Recurrency (Offset (Days 1));
                                                             MissedAfter = (flukeTime 13 00 |> Some) },
                            []
                            
                            { Task.Default with Name = "17"; Scheduling = Recurrency (Offset (Days 1)) },
-                           [ flukeDate 2020 Month.March 10, Postponed (flukeTime 15 00 |> Some) ]
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 15 00 |> Some)) ]
                            
                            { Task.Default with Name = "18"; Scheduling = Recurrency (Offset (Days 1)) },
                            []
