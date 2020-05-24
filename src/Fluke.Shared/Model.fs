@@ -6,15 +6,18 @@ open FSharpPlus
 open Suigetsu.Core
 
 module Model =
-    
-    type [<StructuredFormatDisplay("{Name}")>] Area =
+
+    [<StructuredFormatDisplay("{Name}")>]
+    type Area =
         { Name: string }
         
-    type [<StructuredFormatDisplay("{Area}/{Name}")>] Project =
+    [<StructuredFormatDisplay("{Area}/{Name}")>]    
+    type Project =
         { Area: Area
           Name: string }
         
-    type [<StructuredFormatDisplay("{Area}/{Name}")>] Resource =
+    [<StructuredFormatDisplay("{Area}/{Name}")>]   
+    type Resource =
         { Area: Area
           Name: string }
         
@@ -122,6 +125,7 @@ module Model =
     type TaskSession = TaskSession of start:FlukeDateTime
     type TaskComment = TaskComment of task:Task * comment:Comment
     type CellStatusEntry = CellStatusEntry of address:CellAddress * eventStatus:CellEventStatus
+    type TaskStatusEntry = TaskStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
     type CellComment = CellComment of address:CellAddress * comment:Comment
     type CellSession = CellSession of address:CellAddress * start:FlukeTime
     
@@ -159,6 +163,7 @@ module Model =
         { Task: Task
           Comments: Comment list
           Sessions: TaskSession list
+          StatusEntries: TaskStatusEntry list
           PriorityValue: TaskPriorityValue option }
     
     
@@ -232,6 +237,14 @@ module Model =
     let ofCellComment = fun (CellComment (address, comment)) -> address, comment
     let ofCellSession = fun (CellSession (address, start)) -> address, start
     let ofTaskPriorityValue = fun (TaskPriorityValue value) -> value
+    let ofTaskStatusEntry = fun (TaskStatusEntry (date, entries)) -> date, entries
+        
+        
+    let createTaskStatusEntries task cellStatusEntries =
+        cellStatusEntries
+        |> List.filter (fun (CellStatusEntry (address, _)) -> address.Task = task)
+        |> List.map (fun (CellStatusEntry (address, entries)) -> TaskStatusEntry (address.Date, entries))
+        |> List.sortBy (fun (TaskStatusEntry (date, _)) -> date)
         
     let createCellComment task date comment =
         CellComment ({ Task = task; Date = date }, Comment comment)
@@ -292,14 +305,12 @@ module Rendering =
         | StatusCell of CellStatus
         | TodayCell
         
-    let createCellStatusEntries task (events: (FlukeDate * CellEventStatus) list) =
-        events |> List.map (fun (date, eventStatus) -> CellStatusEntry ({ Task = task; Date = date }, eventStatus))
         
-    let renderLane dayStart (now: FlukeDateTime) dateSequence task (cellStatusEntries: CellStatusEntry list) =
+    let renderLane dayStart (now: FlukeDateTime) dateSequence task (statusEntries: TaskStatusEntry list) =
             
         let cellStatusEventsByDate =
-            cellStatusEntries
-            |> List.map (fun (CellStatusEntry (address, eventStatus)) -> address.Date, eventStatus)
+            statusEntries
+            |> List.map ofTaskStatusEntry
             |> Map.ofList
             
         let rec loop renderState = function

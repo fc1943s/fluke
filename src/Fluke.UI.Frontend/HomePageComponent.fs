@@ -41,7 +41,7 @@ module Temp =
             
 
     let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
-    let taskStateList, getNow, cellStatusEntries, informationComments, taskOrderList, dayStart, informationList =
+    let taskStateList, getNow, informationComments, taskOrderList, dayStart, informationList =
         match tempDataType with
         | TempPrivate ->
             let taskData = PrivateData.Tasks.tempManualTasks
@@ -50,6 +50,9 @@ module Temp =
                 taskData.TaskStateList
                 |> List.map (fun taskState ->
                     { taskState with
+                        StatusEntries =
+                            PrivateData.CellStatusEntries.cellStatusEntries
+                            |> createTaskStatusEntries taskState.Task
                         Comments =
                             PrivateData.TaskComments.taskComments
                             |> List.filter (fun (TaskComment (task, _)) -> task = taskState.Task)
@@ -58,7 +61,6 @@ module Temp =
             
             taskStateList,
             TempData.getNow,
-            PrivateData.CellStatusEntries.cellStatusEntries,
             PrivateData.InformationComments.informationComments |> List.groupBy (fun x -> x.Information) |> Map.ofList,
             taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
             PrivateData.PrivateData.dayStart,
@@ -68,23 +70,13 @@ module Temp =
             
             taskData.TaskStateList,
             TempData.getNow,
-            [],
             Map.empty,
             taskData.TaskOrderList,
             TempData.dayStart,
             taskData.InformationList
         | Test ->
-            let taskStateList =
-                testData.TaskList
-                |> List.map (fun task ->
-                    { Task = task
-                      Comments = []
-                      Sessions = []
-                      PriorityValue = None })
-            
-            taskStateList,
+            testData.TaskStateList,
             testData.GetNow,
-            testData.CellStatusEntries,
             Map.empty,
             testData.TaskOrderList,
             TempData.testDayStart,
@@ -521,35 +513,24 @@ module HomePageComponent =
     let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
             
         let getLanes dateSequence now view =
-            let taskStateList =
-                Temp.taskStateList
-                |> List.map (fun taskState ->
-                    let events =
-                        Temp.cellStatusEntries
-                        |> List.filter (fun (CellStatusEntry (address, _)) -> address.Task = taskState.Task)
-                        |> List.sortBy (fun (CellStatusEntry (address, _)) -> address.Date)
-                        
-                    taskState, events
-                )
-                
             match view with
             | Temp.CalendarView ->
-                taskStateList
+                Temp.taskStateList
                 |> List.filter (function
-                    | { Task = { Task.Scheduling = Manual WithoutSuggestion }}, [] -> false
+                    | { Task = { Task.Scheduling = Manual WithoutSuggestion }; StatusEntries = []} -> false
                     | _ -> true
                 )
-                |> List.map (fun (taskState, statusEntries) ->
-                    Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries
+                |> List.map (fun taskState ->
+                    Rendering.renderLane Temp.dayStart now dateSequence taskState.Task taskState.StatusEntries
                 )
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByIncomingRecurrency Temp.dayStart now
                 |> Sorting.sortLanesByTimeOfDay Temp.dayStart now Temp.taskOrderList
             | Temp.GroupsView ->
                 let lanes =
-                    taskStateList
+                    Temp.taskStateList
                     |> List.filter (function
-                        | { Task = { Task.Scheduling = Manual WithoutSuggestion }}, [] -> true
+                        | { Task = { Task.Scheduling = Manual WithoutSuggestion }; StatusEntries = [] } -> true
                         | _ -> false
                     )
 //                    |> List.filter (fun (_, statusEntries) ->
@@ -561,8 +542,8 @@ module HomePageComponent =
 //                        |> List.tryLast
 //                        |> function Some { Status = Dismissed } -> false | _ -> true
 //                    )
-                    |> List.map (fun (taskState, statusEntries) ->
-                        Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries
+                    |> List.map (fun taskState ->
+                        Rendering.renderLane Temp.dayStart now dateSequence taskState.Task taskState.StatusEntries
                     )
                     |> Sorting.applyManualOrder Temp.taskOrderList
                     
@@ -576,10 +557,10 @@ module HomePageComponent =
                 )
                 |> List.collect snd
             | Temp.TasksView ->
-                taskStateList
-                |> List.filter (function { Task = { Task.Scheduling = Manual _ }}, _ -> true | _ -> false)
-                |> List.map (fun (taskState, statusEntries) ->
-                    Rendering.renderLane Temp.dayStart now dateSequence taskState.Task statusEntries
+                Temp.taskStateList
+                |> List.filter (function { Task = { Task.Scheduling = Manual _ }} -> true | _ -> false)
+                |> List.map (fun taskState ->
+                    Rendering.renderLane Temp.dayStart now dateSequence taskState.Task taskState.StatusEntries
                 )
                 |> Sorting.applyManualOrder Temp.taskOrderList
             

@@ -83,9 +83,7 @@ module Tests =
             }
         ]
         
-        
         testList "SetPriorityTests" [
-            
             test "1" {
                 let createPriorityEvents task priority taskList =
                     match taskList |> List.tryFindIndexBack ((=) task) with
@@ -175,9 +173,9 @@ module Tests =
                     |> Rendering.getDateSequence (35, 35)
                 
                 props.Data
-                |> List.map (fun (task, rawEvents) ->
-                    rawEvents
-                    |> Rendering.createCellStatusEntries task
+                |> List.map (fun (task, statusEntries) ->
+                    statusEntries
+                    |> List.map TaskStatusEntry
                     |> Rendering.renderLane testDayStart props.Now dateSequence task
                 )
                 |> fun lanes ->
@@ -331,7 +329,7 @@ module Tests =
             let testData (props: {| Task: Task
                                     Now: FlukeDateTime
                                     Data: (FlukeDate * CellStatus) list
-                                    CellEvents: (FlukeDate * CellEventStatus) list |}) =
+                                    StatusEntries: (FlukeDate * CellEventStatus) list |}) =
                    
                 let dateSequence =
                     props.Data
@@ -345,8 +343,8 @@ module Tests =
                     List.map string
                     >> String.concat Environment.NewLine
                 
-                props.CellEvents
-                |> Rendering.createCellStatusEntries props.Task
+                props.StatusEntries
+                |> List.map TaskStatusEntry
                 |> Rendering.renderLane testDayStart props.Now dateSequence props.Task
                 |> unwrapLane
                 |> toString
@@ -367,7 +365,7 @@ module Tests =
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 23 00))
                            ] |}
                 }
@@ -383,7 +381,7 @@ module Tests =
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00))
                            ] |}
                 }
@@ -399,7 +397,7 @@ module Tests =
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 23 00))
                            ] |}
                 }
@@ -415,7 +413,7 @@ module Tests =
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00))
                            ] |}
                 }
@@ -434,7 +432,7 @@ module Tests =
                                flukeDate 2020 Month.March 12, Pending
                                flukeDate 2020 Month.March 13, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 08, Completed
                                flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00))
                            ] |}
@@ -452,7 +450,7 @@ module Tests =
                                flukeDate 2020 Month.March 12, EventStatus (Postponed (Some (flukeTime 13 00)))
                                flukeDate 2020 Month.March 13, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 12, Postponed (Some (flukeTime 13 00))
                            ] |}
                 }
@@ -474,7 +472,7 @@ module Tests =
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Disabled
                            ]
-                           CellEvents = [] |}
+                           StatusEntries = [] |}
                 }
                 
                 test "Disabled today after a Completed event yesterday" {
@@ -492,7 +490,7 @@ module Tests =
                                flukeDate 2020 Month.March 14, Pending
                                flukeDate 2020 Month.March 15, Disabled
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 8, Completed
                            ] |}
                 }
@@ -509,7 +507,7 @@ module Tests =
                                flukeDate 2020 Month.March 12, Disabled
                                flukeDate 2020 Month.March 13, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 10, Postponed None
                            ] |}
                 }
@@ -527,7 +525,7 @@ module Tests =
                                flukeDate 2020 Month.March 12, Disabled
                                flukeDate 2020 Month.March 13, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 10, Postponed None
                            ] |}
                 }
@@ -544,7 +542,7 @@ module Tests =
                                flukeDate 2020 Month.March 12, Disabled
                                flukeDate 2020 Month.March 13, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 10, Postponed None
                            ] |}
                 }
@@ -565,7 +563,7 @@ module Tests =
                                flukeDate 2020 Month.March 13, Disabled
                                flukeDate 2020 Month.March 14, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 8, Completed
                                flukeDate 2020 Month.March 12, Completed
                            ] |}
@@ -582,7 +580,7 @@ module Tests =
                                flukeDate 2020 Month.March 10, Suggested
                                flukeDate 2020 Month.March 11, Pending
                            ]
-                           CellEvents = [] |}
+                           StatusEntries = [] |}
                 }
             
                 test "Recurring task Pending after PendingAfter" {
@@ -596,7 +594,7 @@ module Tests =
                                flukeDate 2020 Month.March 10, Pending
                                flukeDate 2020 Month.March 11, Pending
                            ]
-                           CellEvents = [] |}
+                           StatusEntries = [] |}
                 }
             
                 test "Recurrency for the next days should work normally
@@ -614,7 +612,7 @@ module Tests =
                                flukeDate 2020 Month.March 29, Pending
                                flukeDate 2020 Month.March 29, Disabled
                            ]
-                           CellEvents = [] |}
+                           StatusEntries = [] |}
                 }
                 
                 test "Reset counting after a future ManualPending event" {
@@ -632,7 +630,7 @@ module Tests =
                                flukeDate 2020 Month.April 02, Disabled
                                flukeDate 2020 Month.April 03, Pending
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 30, ManualPending
                                flukeDate 2020 Month.March 31, ManualPending
                            ] |}
@@ -654,7 +652,7 @@ module Tests =
                                    | 21 | 28 -> Pending
                                    | _ -> Disabled
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 14, Completed
                            ] |}
                 }
@@ -673,7 +671,7 @@ module Tests =
                                    | 20 | 25 -> Pending
                                    | _ -> Disabled
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 13, Completed
                            ] |}
                 }
@@ -692,7 +690,7 @@ module Tests =
                                    | 20 | 21 | 28 -> Pending
                                    | _ -> Disabled
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 18, Postponed None
                            ] |}
                 }
@@ -709,7 +707,7 @@ module Tests =
                                    | 25 -> Pending
                                    | _ -> Disabled
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                            ] |}
                 }
                 
@@ -725,7 +723,7 @@ module Tests =
                                    | 21 | 28 -> Pending
                                    | _ -> Disabled
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                            ] |}
                 }
             ]
@@ -744,7 +742,7 @@ module Tests =
                                flukeDate 2020 Month.March 12, Disabled
                                flukeDate 2020 Month.March 13, Disabled
                            ]
-                           CellEvents = [] |}
+                           StatusEntries = [] |}
                 }
                 
                 test "ManualPending task scheduled for today after missing" {
@@ -760,7 +758,7 @@ module Tests =
                                flukeDate 2020 Month.March 12, Disabled
                                flukeDate 2020 Month.March 13, Disabled
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 9, ManualPending
                            ] |}
                 }
@@ -776,7 +774,7 @@ module Tests =
                                flukeDate 2020 Month.March 10, Suggested
                                flukeDate 2020 Month.March 11, Suggested
                            ]
-                           CellEvents = [] |}
+                           StatusEntries = [] |}
                 }
                 
                 test "Manual Suggested task Pending after PendingAfter" {
@@ -790,7 +788,7 @@ module Tests =
                                flukeDate 2020 Month.March 10, Pending
                                flukeDate 2020 Month.March 11, Suggested
                            ]
-                           CellEvents = [] |}
+                           StatusEntries = [] |}
                 }
                 
                 test "Manual Suggested task: Missed ManualPending propagates until today" {
@@ -807,7 +805,7 @@ module Tests =
                                flukeDate 2020 Month.March 30, EventStatus ManualPending
                                flukeDate 2020 Month.March 31, Suggested
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 26, ManualPending
                                flukeDate 2020 Month.March 30, ManualPending
                            ] |}
@@ -826,7 +824,7 @@ module Tests =
                                flukeDate 2020 Month.March 28, Suggested
                                flukeDate 2020 Month.March 29, Suggested
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 25, ManualPending
                                flukeDate 2020 Month.March 26, Completed
                            ] |}
@@ -845,7 +843,7 @@ module Tests =
                                flukeDate 2020 Month.March 28, Pending
                                flukeDate 2020 Month.March 29, Suggested
                            ]
-                           CellEvents = [
+                           StatusEntries = [
                                flukeDate 2020 Month.March 25, ManualPending
                            ] |}
                 }

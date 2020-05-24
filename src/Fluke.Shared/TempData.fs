@@ -187,6 +187,7 @@ module TempData =
                     { Task = task
                       Comments = comments |> List.map (ofTaskComment >> snd)
                       Sessions = sessions
+                      StatusEntries = []
                       PriorityValue = priority }
                 )
             )
@@ -211,6 +212,7 @@ module TempData =
                 { Task = task
                   Comments = []
                   Sessions = []
+                  StatusEntries = []
                   PriorityValue = None })
             |> List.prepend newTaskStateList
         
@@ -231,8 +233,12 @@ module TempData =
                                                Now: FlukeDateTime
                                                Task: Task |}) =
         
-        {| CellStatusEntries = testData.CellEvents |> Rendering.createCellStatusEntries testData.Task
-           TaskList = [ testData.Task ]
+        {| TaskStateList =
+            [ { Task = testData.Task
+                Comments = []
+                Sessions = []
+                PriorityValue = None
+                StatusEntries = testData.CellEvents |> List.map TaskStatusEntry } ]
            TaskOrderList = [ { Task = testData.Task; Priority = First } ]
            GetNow = fun () -> testData.Now |}
         
@@ -241,12 +247,15 @@ module TempData =
                                                Expected: string list
                                                Now: FlukeDateTime |}) =
         
-        let cellStatusEntries =
-            testData.Data
-            |> List.collect (fun (task, events) -> Rendering.createCellStatusEntries task events)
-            
-        {| CellStatusEntries = cellStatusEntries
-           TaskList = testData.Data |> List.map fst
+        {| TaskStateList =
+               testData.Data
+               |> List.map (fun (task, entries) ->
+                   { Task = task
+                     Comments = []
+                     Sessions = []
+                     PriorityValue = None
+                     StatusEntries = entries |> List.map TaskStatusEntry }
+               )
            TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = Last })
            GetNow = fun () -> testData.Now |}
     

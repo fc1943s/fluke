@@ -62,9 +62,9 @@ module Tests =
                             
                             mainDirectories
                             |> List.filter (fun (_, mainName, mainSymlink) ->
-                                not symlink
-                                && mainSymlink
-                                && mainName = (sprintf "%s-%s" name otherAlias)
+                                not symlink &&
+                                mainSymlink &&
+                                mainName = (sprintf "%s-%s" name otherAlias)
                                 |> not
                             )
                             |> List.map (fun (mainPath, _mainName, _mainSymlink) ->
