@@ -248,7 +248,7 @@ module HomePageComponent =
                         taskState
                         |> Option.map (fun x -> x.Sessions)
                         |> Option.defaultValue []
-                        |> List.filter (fun (TaskSession start) -> start.Date = address.Date)
+                        |> List.filter (fun (TaskSession start) -> isToday Temp.dayStart start address.Date)
                         
                     CellComponent.``default``
                         { CellAddress = address

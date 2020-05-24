@@ -134,32 +134,32 @@ module TempData =
             | High9 -> 9
             | Critical10 -> 10
             
-        let eventChoices =
-            events
-            |> List.map (function
-                | TempComment comment -> Comment comment |> Choice1Of4
-                | TempSession { Date = date; Time = time } -> TaskSession { Date = date; Time = time } |> Choice2Of4
-                | TempStatusEntry (date, eventStatus) -> (date, eventStatus) |> TaskStatusEntry |> Choice3Of4
-                | TempPriority p -> getPriorityValue p |> TaskPriorityValue |> Choice4Of4
-            )
-            
-        let comments =
-            eventChoices
-            |> List.choose (function Choice1Of4 x -> Some x | _ -> None)
-            
-        let sessions =
-            eventChoices
-            |> List.choose (function Choice2Of4 x -> Some x | _ -> None)
-            |> List.sortBy (fun (TaskSession start) -> start.DateTime)
-            
-        let statusEntries =
-            eventChoices
-            |> List.choose (function Choice3Of4 x -> Some x | _ -> None)
-            
-        let priority =
-            eventChoices
-            |> List.choose (function Choice4Of4 x -> Some x | _ -> None)
-            |> List.tryHead
+        let comments, sessions, statusEntries, priority =
+            let rec loop comments sessions statusEntries priorities = function
+                | TempComment comment :: tail ->
+                    let item = Comment comment
+                    loop (item :: comments) sessions statusEntries priorities tail
+                    
+                | TempSession { Date = date; Time = time } :: tail ->
+                    let item = TaskSession { Date = date; Time = time }
+                    loop comments (item :: sessions) statusEntries priorities tail
+                    
+                | TempStatusEntry (date, eventStatus) :: tail ->
+                    let item = TaskStatusEntry (date, eventStatus)
+                    loop comments sessions (item :: statusEntries) priorities tail
+                    
+                | TempPriority priority :: tail ->
+                    let item = TaskPriorityValue (getPriorityValue priority)
+                    loop comments sessions statusEntries (item :: priorities) tail
+                    
+                | [] ->
+                    let sortedComments = comments |> List.rev
+                    let sortedSessions = sessions |> List.sortBy (fun (TaskSession start) -> start.DateTime)
+                    let sortedStatusEntries = statusEntries |> List.rev
+                    let priority = priorities |> List.tryHead
+                    sortedComments, sortedSessions, sortedStatusEntries, priority
+                    
+            loop [] [] [] [] events
             
         { Task = task
           Comments = comments
