@@ -212,7 +212,8 @@ module HomePageComponent =
             |> List.map (fun (Lane (task, _)) ->
                 let comments = Temp.taskStateMap.TryFind task |> Option.map (fun taskState -> taskState.Comments)
                 
-                div [ classList [ Css.tooltipContainer, match comments with Some (_ :: _) -> true | _ -> false ] ][
+                div [ classList [ Css.tooltipContainer, match comments with Some (_ :: _) -> true | _ -> false ]
+                      Style [ Height 17 ] ][
                     
                     div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
                                   WhiteSpace WhiteSpaceOptions.Nowrap
@@ -270,7 +271,7 @@ module HomePageComponent =
                 |> List.map (fun (firstDay, days) ->
                     span [ Style [ Functions.getCellSeparatorBorderLeft firstDay
                                    TextAlign TextAlignOptions.Center
-                                   Width (18 * days) ] ][
+                                   Width (17 * days) ] ][
                         str (firstDay.DateTime.Format "MMM")
                     ]
                 )
@@ -279,7 +280,7 @@ module HomePageComponent =
                 // Day of Week row
                 dateSequence
                 |> List.map (fun date ->
-                    span [ Style [ Width 18
+                    span [ Style [ Width 17
                                    Functions.getCellSeparatorBorderLeft date
                                    TextAlign TextAlignOptions.Center ] ][
                             
@@ -293,7 +294,7 @@ module HomePageComponent =
                 // Day row
                 dateSequence
                 |> List.map (fun date ->
-                    span [ Style [ Width 18
+                    span [ Style [ Width 17
                                    Functions.getCellSeparatorBorderLeft date
                                    TextAlign TextAlignOptions.Center
                                    Color (if isToday Temp.dayStart now date then "#f22" else "") ] ][
@@ -322,6 +323,7 @@ module HomePageComponent =
                             div [ classList [ Css.blueIndicator, comments.IsSome
                                               Css.tooltipContainer, comments.IsSome ]
                                   Style [ Padding 0
+                                          Height 17
                                           Color task.Information.Color
                                           WhiteSpace WhiteSpaceOptions.Nowrap ] ][
                                 
@@ -467,6 +469,7 @@ module HomePageComponent =
                             div [ classList [ Css.blueIndicator, comments.IsSome
                                               Css.tooltipContainer, comments.IsSome ]
                                   Style [ Padding 0
+                                          Height 17
                                           Color task.Information.Color
                                           WhiteSpace WhiteSpaceOptions.Nowrap ] ][
                                 
@@ -486,7 +489,7 @@ module HomePageComponent =
                         lanes
                         |> List.map (fun (Lane (task, _)) ->
                             let taskState = Temp.taskStateMap.[task]
-                            div [][
+                            div [ Style [ Height 17 ] ][
                                 taskState.PriorityValue
                                 |> Option.map ofTaskPriorityValue
                                 |> Option.defaultValue 0
@@ -510,14 +513,31 @@ module HomePageComponent =
                 ]
             ]
             
-    let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
-            
-        let getLanes dateSequence now view =
+    let getLanes (dateSequence: FlukeDate list) (now: FlukeDateTime) view =
+        match dateSequence with
+        | [] -> []
+        | dateSequence ->
+            let dateRange =
+                let head = dateSequence |> List.head |> fun x -> x.DateTime
+                let last = dateSequence |> List.last |> fun x -> x.DateTime
+                head, last
+                
             match view with
             | Temp.CalendarView ->
                 Temp.taskStateList
+                |> List.map (fun taskState ->
+                    { taskState with
+                        StatusEntries =
+                            taskState.StatusEntries
+                            |> List.filter (fun (TaskStatusEntry (date, _)) -> date.DateTime >==< dateRange)
+                        Sessions =
+                            taskState.Sessions
+                            |> List.filter (fun (TaskSession start) -> start.Date.DateTime >==< dateRange) }
+                )
                 |> List.filter (function
-                    | { Task = { Task.Scheduling = Manual WithoutSuggestion }; StatusEntries = []} -> false
+                    | { Task = { Task.Scheduling = Manual WithoutSuggestion }
+                        StatusEntries = []
+                        Sessions = [] } -> false
                     | _ -> true
                 )
                 |> List.map (fun taskState ->
@@ -530,18 +550,20 @@ module HomePageComponent =
                 let lanes =
                     Temp.taskStateList
                     |> List.filter (function
-                        | { Task = { Task.Scheduling = Manual WithoutSuggestion }; StatusEntries = [] } -> true
+                        | { Task = { Task.Scheduling = Manual WithoutSuggestion }
+                            StatusEntries = []
+                            Sessions = [] } -> true
                         | _ -> false
                     )
-//                    |> List.filter (fun (_, statusEntries) ->
-//                        statusEntries
-//                        |> List.filter (function
-//                            | { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true
-//                            | _ -> false
-//                        )
-//                        |> List.tryLast
-//                        |> function Some { Status = Dismissed } -> false | _ -> true
-//                    )
+    //                    |> List.filter (fun (_, statusEntries) ->
+    //                        statusEntries
+    //                        |> List.filter (function
+    //                            | { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true
+    //                            | _ -> false
+    //                        )
+    //                        |> List.tryLast
+    //                        |> function Some { Status = Dismissed } -> false | _ -> true
+    //                    )
                     |> List.map (fun taskState ->
                         Rendering.renderLane Temp.dayStart now dateSequence taskState.Task taskState.StatusEntries
                     )
@@ -563,59 +585,61 @@ module HomePageComponent =
                     Rendering.renderLane Temp.dayStart now dateSequence taskState.Task taskState.StatusEntries
                 )
                 |> Sorting.applyManualOrder Temp.taskOrderList
-            
-                    
-        let createState oldState =
-            let now = Temp.getNow ()
-            
-            let dateSequence = 
-                [ now.Date ]
-                |> Rendering.getDateSequence (35, 35)
-                
-            let lanes = getLanes dateSequence now oldState.View
-            
-            let selection =
-                match oldState.Selection with
-                | [] ->
-                    lanes
-                    |> List.tryHead
-                    |> Option.map (fun (Lane (_, cells)) ->
-                        cells
-                        |> List.tryFind (fun (Cell (address, _)) -> isToday Temp.dayStart now address.Date)
-                        |> Option.map (fun (Cell (address, _)) -> [ address ])
-                        |> Option.defaultValue []
-                    )
-                    |> Option.defaultValue []
-                | x -> x
-            
-            let activeSessions =
-                Temp.lastSessions
-                |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
-                |> List.filter (fun (_, length) -> length < TempData.sessionLength + TempData.sessionBreakLength)
-                |> List.map ActiveSession
-                
-            oldState.ActiveSessions
-            |> List.map (fun (ActiveSession (oldTask, oldDuration)) ->
-                let newSession =
-                    activeSessions
-                    |> List.tryFind (fun (ActiveSession (task, duration)) ->
-                        task = oldTask && duration = oldDuration + 1.
-                    )
-                    
-                match newSession with
-                | Some (ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> playTick
-                | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> playDing
-                | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> playDing
-                | _ -> fun () -> ()
-            )
-            |> List.iter (fun x -> x ())
-                
-            { oldState with
-                  Now = now
-                  Lanes = lanes
-                  Selection = selection
-                  ActiveSessions = activeSessions }
         
+                
+    let createState oldState =
+        let now = Temp.getNow ()
+        
+        let dateSequence = 
+            [ now.Date ]
+            |> Rendering.getDateSequence (35, 35)
+            
+        let lanes = getLanes dateSequence now oldState.View
+        
+        let selection =
+            match oldState.Selection with
+            | [] ->
+                lanes
+                |> List.tryHead
+                |> Option.map (fun (Lane (_, cells)) ->
+                    cells
+                    |> List.tryFind (fun (Cell (address, _)) -> isToday Temp.dayStart now address.Date)
+                    |> Option.map (fun (Cell (address, _)) -> [ address ])
+                    |> Option.defaultValue []
+                )
+                |> Option.defaultValue []
+            | x -> x
+        
+        let activeSessions =
+            Temp.lastSessions
+            |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
+            |> List.filter (fun (_, length) -> length < TempData.sessionLength + TempData.sessionBreakLength)
+            |> List.map ActiveSession
+            
+        oldState.ActiveSessions
+        |> List.map (fun (ActiveSession (oldTask, oldDuration)) ->
+            let newSession =
+                activeSessions
+                |> List.tryFind (fun (ActiveSession (task, duration)) ->
+                    task = oldTask && duration = oldDuration + 1.
+                )
+                
+            match newSession with
+            | Some (ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> playTick
+            | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> playDing
+            | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> playDing
+            | _ -> fun () -> ()
+        )
+        |> List.iter (fun x -> x ())
+            
+        { oldState with
+              Now = now
+              Lanes = lanes
+              Selection = selection
+              ActiveSessions = activeSessions }
+            
+    let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
+            
         let state =
             Hooks.useState (createState State.Default)
             

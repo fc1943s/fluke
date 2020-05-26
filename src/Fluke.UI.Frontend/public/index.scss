@@ -87,9 +87,9 @@ $color-cell-session: #a9a9a9;
   .cell {
     
     > div:first-child {
-      width: 18px;
-      height: 18px;
-      line-height: 18px;
+      width: 17px;
+      height: 17px;
+      line-height: 17px;
       text-align: center;
       font-size: 11px;
       color: #999;
@@ -107,6 +107,12 @@ $color-cell-session: #a9a9a9;
       
       &.cell-selected > div:first-child {
         border: 1px solid #ffffff55 !important;
+      }
+    }
+    
+    &.cell-completed {
+      & > div:first-child {
+        color: #ccc;
       }
     }
 
