@@ -8,10 +8,13 @@ module SharedState =
     type SharedClientMessage = unit
     type SharedServerMessage = unit
         
+        
 module UIState =
+        
     type State =
         { x: unit }
         static member inline Default = { x = () }
+
 
 module Model =
     open Model

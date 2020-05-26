@@ -13,11 +13,9 @@ open System
 open Suigetsu.UI.Frontend.ElmishBridge
 open Suigetsu.UI.Frontend.React
 open Suigetsu.Core
-
-
-module Temp =
-    open Model
     
+    
+module Temp =
     type View =
         | CalendarView
         | GroupsView
@@ -27,7 +25,7 @@ module Temp =
         | TempPrivate
         | TempPublic
         | Test
-        
+    
     let view = CalendarView
 //    let view = GroupsView
 //    let view = TasksView
@@ -36,8 +34,8 @@ module Temp =
 //    let tempDataType = Test
 //    let tempDataType = TempPublic
 
-//    let testData = TempData.tempData.RenderLaneTests
-    let testData = TempData.tempData.SortLanesTests
+    let testData = TempData.tempData.RenderLaneTests
+//    let testData = TempData.tempData.SortLanesTests
             
 
     let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
@@ -52,11 +50,11 @@ module Temp =
                     { taskState with
                         StatusEntries =
                             PrivateData.CellStatusEntries.cellStatusEntries
-                            |> createTaskStatusEntries taskState.Task
+                            |> Model.createTaskStatusEntries taskState.Task
                         Comments =
                             PrivateData.TaskComments.taskComments
-                            |> List.filter (fun (TaskComment (task, _)) -> task = taskState.Task)
-                            |> List.map (ofTaskComment >> snd)
+                            |> List.filter (fun (Model.TaskComment (task, _)) -> task = taskState.Task)
+                            |> List.map (Model.ofTaskComment >> snd)
                             |> List.prepend taskState.Comments })
             
             taskStateList,
@@ -93,17 +91,14 @@ module Temp =
         |> Seq.map (fun taskState -> taskState.Task, taskState.Sessions)
         |> Seq.map (Tuple2.mapSnd (fun sessions ->
             sessions
-            |> Seq.sortByDescending (fun (TaskSession start) -> start.DateTime)
+            |> Seq.sortByDescending (fun (Model.TaskSession start) -> start.DateTime)
             |> Seq.head
         ))
         |> Seq.toList
         
-        
-    
     
 module HomePageComponent =
     open Model
-    
     
     type Props =
         { Dispatch: SharedState.SharedServerMessage -> unit
@@ -119,12 +114,11 @@ module HomePageComponent =
           ActiveSessions: ActiveSession list
           View: Temp.View }
         static member inline Default =
-            let date = flukeDate 0000 Month.January 01
-            { Now = { Date = date; Time = Temp.dayStart }
+            { Now = { Date = flukeDate 0000 Month.January 01; Time = flukeTime 00 00 }
               Selection = []
               Lanes = []
               ActiveSessions = []
-              View = Temp.view }
+              View = Temp.CalendarView }
             
     let playDing () =
          [ 0; 1400 ]
@@ -207,10 +201,13 @@ module HomePageComponent =
         let emptyDiv =
             div [ DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
             
-        let taskNameList level lanes =
+        let taskNameList level taskStateMap lanes =
             lanes
             |> List.map (fun (Lane (task, _)) ->
-                let comments = Temp.taskStateMap.TryFind task |> Option.map (fun taskState -> taskState.Comments)
+                let comments =
+                    taskStateMap
+                    |> Map.tryFind task
+                    |> Option.map (fun taskState -> taskState.Comments)
                 
                 div [ classList [ Css.tooltipContainer, match comments with Some (_ :: _) -> true | _ -> false ]
                       Style [ Height 17 ] ][
@@ -229,16 +226,16 @@ module HomePageComponent =
                 ]
             )
             
-        let gridCells now selection lanes =
+        let gridCells dayStart now selection cellComments taskStateMap lanes =
             lanes
             |> List.map (fun (Lane (task, cells)) ->
-                let taskState = Temp.taskStateMap.TryFind task
+                let taskState = taskStateMap |> Map.tryFind task
                 
                 cells
                 |> List.map (fun (Cell (address, status)) ->
                     
                     let comments =
-                        Temp.cellComments
+                        cellComments
                         |> List.map ofCellComment
                         |> List.filter (fun (commentAddress, _) ->
                             commentAddress.Task = task && commentAddress.Date = address.Date
@@ -249,20 +246,20 @@ module HomePageComponent =
                         taskState
                         |> Option.map (fun x -> x.Sessions)
                         |> Option.defaultValue []
-                        |> List.filter (fun (TaskSession start) -> isToday Temp.dayStart start address.Date)
+                        |> List.filter (fun (TaskSession start) -> isToday dayStart start address.Date)
                         
                     CellComponent.``default``
                         { CellAddress = address
                           Comments = comments
                           Sessions = sessions
                           IsSelected = selection |> List.contains address
-                          IsToday = isToday Temp.dayStart now address.Date
+                          IsToday = isToday dayStart now address.Date
                           Status = status }
                 )
                 |> div []
             ) |> div [ Class Css.laneContainer ]
             
-        let gridHeader dateSequence (now: FlukeDateTime) =
+        let gridHeader dayStart dateSequence (now: FlukeDateTime) =
             div [][
                 // Month row
                 dateSequence
@@ -297,14 +294,14 @@ module HomePageComponent =
                     span [ Style [ Width 17
                                    Functions.getCellSeparatorBorderLeft date
                                    TextAlign TextAlignOptions.Center
-                                   Color (if isToday Temp.dayStart now date then "#f22" else "") ] ][
+                                   Color (if isToday dayStart now date then "#f22" else "") ] ][
                         str (date.Day.ToString "D2")
                     ]
                 )
                 |> div [ Style [ Display DisplayOptions.Flex ] ]
             ]
             
-        let calendarView dateSequence now selection lanes =
+        let calendarView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes =
             div [ Style [ Display DisplayOptions.Flex ] ][
                 
                 // Column: Left
@@ -318,7 +315,7 @@ module HomePageComponent =
                         // Column: Information Type
                         lanes
                         |> List.map (fun (Lane (task, _)) ->
-                            let comments = Temp.informationComments.TryFind task.Information
+                            let comments = informationComments |> Map.tryFind task.Information
                             
                             div [ classList [ Css.blueIndicator, comments.IsSome
                                               Css.tooltipContainer, comments.IsSome ]
@@ -340,19 +337,19 @@ module HomePageComponent =
                         |> div [ Style [ PaddingRight 10 ] ]
                         
                         // Column: Task Name
-                        taskNameList 0 lanes
+                        taskNameList 0 taskStateMap lanes
                         |> div [ Style [ Width 200 ] ]
                     ]
                 ]
                     
                 div [][
-                    gridHeader dateSequence now
+                    gridHeader dayStart dateSequence now
                     
-                    gridCells now selection lanes
+                    gridCells dayStart now selection cellComments taskStateMap lanes
                 ]
             ]
             
-        let groupsView dateSequence now selection lanes =
+        let groupsView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes =
             let groups =
                 lanes
                 |> List.groupBy (fun (Lane (task, _)) ->
@@ -385,7 +382,7 @@ module HomePageComponent =
                             
                             lanesGroups
                             |> List.map (fun (information, lanes) ->
-                                let comments = Temp.informationComments.TryFind information
+                                let comments = informationComments |> Map.tryFind information
                                 
                                 div [][
                                     // Information
@@ -405,7 +402,7 @@ module HomePageComponent =
                                     
                                     
                                     // Task Name
-                                    taskNameList 2 lanes
+                                    taskNameList 2 taskStateMap lanes
                                     |> div [ Style [ Width 500 ] ]
                                 ]
                             )
@@ -417,7 +414,7 @@ module HomePageComponent =
                     
                 // Column: Grid
                 div [][
-                    gridHeader dateSequence now
+                    gridHeader dayStart dateSequence now
                     
                     groups
                     |> List.map (fun (_, groupLanes) ->
@@ -432,7 +429,7 @@ module HomePageComponent =
                                 div [][
                                     
                                     emptyDiv
-                                    gridCells now selection lanes
+                                    gridCells dayStart now selection cellComments taskStateMap lanes
                                 ]
                             )
                             |> div []
@@ -442,11 +439,13 @@ module HomePageComponent =
                 ]
             ]
             
-        let tasksView dateSequence now selection lanes =
+        let tasksView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes =
             let lanes = // TODO: Duplicated
                 lanes
                 |> List.sortByDescending (fun (Lane (task, _)) ->
-                    Temp.taskStateMap.[task].PriorityValue
+                    taskStateMap
+                    |> Map.find task
+                    |> fun x -> x.PriorityValue
                     |> Option.map ofTaskPriorityValue
                     |> Option.defaultValue 0
                 )
@@ -464,7 +463,7 @@ module HomePageComponent =
                         // Column: Information Type
                         lanes
                         |> List.map (fun (Lane (task, _)) ->
-                            let comments = Temp.informationComments.TryFind task.Information
+                            let comments = informationComments |> Map.tryFind task.Information
                             
                             div [ classList [ Css.blueIndicator, comments.IsSome
                                               Css.tooltipContainer, comments.IsSome ]
@@ -488,7 +487,7 @@ module HomePageComponent =
                         // Column: Priority
                         lanes
                         |> List.map (fun (Lane (task, _)) ->
-                            let taskState = Temp.taskStateMap.[task]
+                            let taskState = taskStateMap.[task]
                             div [ Style [ Height 17 ] ][
                                 taskState.PriorityValue
                                 |> Option.map ofTaskPriorityValue
@@ -501,19 +500,19 @@ module HomePageComponent =
                                          TextAlign TextAlignOptions.Center ] ]
                 
                         // Column: Task Name
-                        taskNameList 0 lanes
+                        taskNameList 0 taskStateMap lanes
                         |> div [ Style [ Width 200 ] ]
                     ]
                 ]
                     
                 div [][
-                    gridHeader dateSequence now
+                    gridHeader dayStart dateSequence now
                     
-                    gridCells now selection lanes
+                    gridCells dayStart now selection cellComments taskStateMap lanes
                 ]
             ]
             
-    let getLanes (dateSequence: FlukeDate list) (now: FlukeDateTime) view =
+    let getLanes dayStart (dateSequence: FlukeDate list) (now: FlukeDateTime) informationList taskStateList taskOrderList view =
         match dateSequence with
         | [] -> []
         | dateSequence ->
@@ -524,8 +523,9 @@ module HomePageComponent =
                 
             match view with
             | Temp.CalendarView ->
-                Temp.taskStateList
+                taskStateList
                 |> List.map (fun taskState ->
+//                    printfn "Task: %A. LEN: %A" dateRange taskState.Sessions.Length
                     { taskState with
                         StatusEntries =
                             taskState.StatusEntries
@@ -541,14 +541,15 @@ module HomePageComponent =
                     | _ -> true
                 )
                 |> List.map (fun taskState ->
-                    Rendering.renderLane Temp.dayStart now dateSequence taskState.Task taskState.StatusEntries
+//                    printfn "Task2: %A. LEN: %A" taskState.Task.Name taskState.Sessions.Length
+                    Rendering.renderLane dayStart now dateSequence taskState.Task taskState.StatusEntries
                 )
                 |> Sorting.sortLanesByFrequency
-                |> Sorting.sortLanesByIncomingRecurrency Temp.dayStart now
-                |> Sorting.sortLanesByTimeOfDay Temp.dayStart now Temp.taskOrderList
+                |> Sorting.sortLanesByIncomingRecurrency dayStart now
+                |> Sorting.sortLanesByTimeOfDay dayStart now taskOrderList
             | Temp.GroupsView ->
                 let lanes =
-                    Temp.taskStateList
+                    taskStateList
                     |> List.filter (function
                         | { Task = { Task.Scheduling = Manual WithoutSuggestion }
                             StatusEntries = []
@@ -565,11 +566,11 @@ module HomePageComponent =
     //                        |> function Some { Status = Dismissed } -> false | _ -> true
     //                    )
                     |> List.map (fun taskState ->
-                        Rendering.renderLane Temp.dayStart now dateSequence taskState.Task taskState.StatusEntries
+                        Rendering.renderLane dayStart now dateSequence taskState.Task taskState.StatusEntries
                     )
-                    |> Sorting.applyManualOrder Temp.taskOrderList
+                    |> Sorting.applyManualOrder taskOrderList
                     
-                Temp.informationList
+                informationList
                 |> List.map (fun information ->
                     let lanes =
                         lanes
@@ -579,22 +580,22 @@ module HomePageComponent =
                 )
                 |> List.collect snd
             | Temp.TasksView ->
-                Temp.taskStateList
+                taskStateList
                 |> List.filter (function { Task = { Task.Scheduling = Manual _ }} -> true | _ -> false)
                 |> List.map (fun taskState ->
-                    Rendering.renderLane Temp.dayStart now dateSequence taskState.Task taskState.StatusEntries
+                    Rendering.renderLane dayStart now dateSequence taskState.Task taskState.StatusEntries
                 )
-                |> Sorting.applyManualOrder Temp.taskOrderList
+                |> Sorting.applyManualOrder taskOrderList
         
                 
-    let createState oldState =
-        let now = Temp.getNow ()
+    let createState (getNow: unit -> FlukeDateTime) lastSessions dayStart informationList taskStateList taskOrderList oldState =
+        let now = getNow ()
         
         let dateSequence = 
             [ now.Date ]
             |> Rendering.getDateSequence (35, 35)
             
-        let lanes = getLanes dateSequence now oldState.View
+        let lanes = getLanes dayStart dateSequence now informationList taskStateList taskOrderList oldState.View
         
         let selection =
             match oldState.Selection with
@@ -603,7 +604,7 @@ module HomePageComponent =
                 |> List.tryHead
                 |> Option.map (fun (Lane (_, cells)) ->
                     cells
-                    |> List.tryFind (fun (Cell (address, _)) -> isToday Temp.dayStart now address.Date)
+                    |> List.tryFind (fun (Cell (address, _)) -> isToday dayStart now address.Date)
                     |> Option.map (fun (Cell (address, _)) -> [ address ])
                     |> Option.defaultValue []
                 )
@@ -611,7 +612,7 @@ module HomePageComponent =
             | x -> x
         
         let activeSessions =
-            Temp.lastSessions
+            lastSessions
             |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
             |> List.filter (fun (_, length) -> length < TempData.sessionLength + TempData.sessionBreakLength)
             |> List.map ActiveSession
@@ -639,12 +640,22 @@ module HomePageComponent =
               ActiveSessions = activeSessions }
             
     let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
+        
+        let dayStart = Temp.dayStart
+        let getNow = Temp.getNow
+        let lastSessions = Temp.lastSessions
+        let taskStateList = Temp.taskStateList
+        let taskOrderList = Temp.taskOrderList
+        let taskStateMap = Temp.taskStateMap
+        let cellComments = Temp.cellComments
+        let informationComments = Temp.informationComments
+        let informationList = Temp.informationList
             
         let state =
-            Hooks.useState (createState State.Default)
+            Hooks.useState (createState getNow lastSessions dayStart informationList taskStateList taskOrderList State.Default)
             
         CustomHooks.useInterval (fun () ->
-            state.update createState
+            state.update (createState getNow lastSessions dayStart informationList taskStateList taskOrderList)
         ) (60 * 1000)
         
         let dateSequence =
@@ -655,9 +666,11 @@ module HomePageComponent =
         let events = {|
             OnViewChange = fun view ->
                 state.update (fun state ->
-                    createState { state with
-                                    View = view
-                                    Selection = [] }
+                    let newState = 
+                        { state with
+                            View = view
+                            Selection = [] }
+                    createState getNow lastSessions dayStart informationList taskStateList taskOrderList newState
                 )
         |}
         
@@ -680,9 +693,9 @@ module HomePageComponent =
                 
             state.current.Lanes
             |> match state.current.View with
-               | Temp.CalendarView -> Grid.calendarView dateSequence state.current.Now state.current.Selection
-               | Temp.GroupsView   -> Grid.groupsView dateSequence state.current.Now state.current.Selection
-               | Temp.TasksView    -> Grid.tasksView dateSequence state.current.Now state.current.Selection
+               | Temp.CalendarView -> Grid.calendarView dayStart dateSequence state.current.Now state.current.Selection informationComments cellComments taskStateMap
+               | Temp.GroupsView   -> Grid.groupsView dayStart dateSequence state.current.Now state.current.Selection informationComments cellComments taskStateMap
+               | Temp.TasksView    -> Grid.tasksView dayStart dateSequence state.current.Now state.current.Selection informationComments cellComments taskStateMap
         ]
     , memoizeWith = equalsButFunctions)
     

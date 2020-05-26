@@ -324,13 +324,8 @@ module TempData =
                                flukeDate 2020 Month.March 12, Disabled
                            ]
                            Events = [
-                               TempSession (flukeDateTime 2020 Month.February 29 23 00)
-                               TempSession (flukeDateTime 2020 Month.March 01 01 00)
+                               TempSession (flukeDateTime 2020 Month.March 01 11 00)
                                TempSession (flukeDateTime 2020 Month.March 01 13 00)
-                               TempSession (flukeDateTime 2020 Month.March 01 23 00)
-                               TempSession (flukeDateTime 2020 Month.March 02 01 00)
-                               TempSession (flukeDateTime 2020 Month.March 07 11 00)
-                               TempSession (flukeDateTime 2020 Month.March 07 23 00)
                                TempSession (flukeDateTime 2020 Month.March 08 11 00)
                                TempSession (flukeDateTime 2020 Month.March 08 13 00)
                            ] |}
