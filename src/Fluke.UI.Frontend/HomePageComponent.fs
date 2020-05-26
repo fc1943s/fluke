@@ -51,6 +51,7 @@ module Temp =
                         StatusEntries =
                             PrivateData.CellStatusEntries.cellStatusEntries
                             |> Model.createTaskStatusEntries taskState.Task
+                            |> List.prepend taskState.StatusEntries
                         Comments =
                             PrivateData.TaskComments.taskComments
                             |> List.filter (fun (Model.TaskComment (task, _)) -> task = taskState.Task)
