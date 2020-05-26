@@ -235,24 +235,19 @@ module TempData =
            InformationList = informationList |}
            
            
-    let createRenderLaneTestData (testData: {| CellEvents: (FlukeDate * CellEventStatus) list
-                                               Data: (FlukeDate * CellStatus) list
-                                               Now: FlukeDateTime
+    let createRenderLaneTestData (testData: {| Now: FlukeDateTime
+                                               Expected: (FlukeDate * CellStatus) list
+                                               Events: TempTaskEvent list
                                                Task: Task |}) =
         
-        {| TaskStateList =
-            [ { Task = testData.Task
-                Comments = []
-                Sessions = []
-                PriorityValue = None
-                StatusEntries = testData.CellEvents |> List.map TaskStatusEntry } ]
+        {| TaskStateList = [ createTaskState testData.Task testData.Events ]
            TaskOrderList = [ { Task = testData.Task; Priority = First } ]
            GetNow = fun () -> testData.Now |}
         
         
-    let createSortLanesTestData (testData : {| Data: (Task * TempTaskEvent list) list
-                                               Expected: string list
-                                               Now: FlukeDateTime |}) =
+    let createSortLanesTestData (testData : {| Now: FlukeDateTime
+                                               Data: (Task * TempTaskEvent list) list
+                                               Expected: string list |}) =
         
         {| TaskStateList = testData.Data |> List.map (fun (task, events) -> createTaskState task events)
            TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = Last })
@@ -318,16 +313,26 @@ module TempData =
             
         RenderLaneTests = 
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
-                           Now = { Date = flukeDate 2020 Month.March 11
-                                   Time = flukeTime 02 00 }
-                           Data = [
-                               flukeDate 2020 Month.March 09, Disabled
-                               flukeDate 2020 Month.March 10, Pending
+                           Now = { Date = flukeDate 2020 Month.March 04
+                                   Time = testDayStart }
+                           Expected = [
+                               flukeDate 2020 Month.March 7, Disabled
+                               flukeDate 2020 Month.March 8, Disabled
+                               flukeDate 2020 Month.March 9, Pending
+                               flukeDate 2020 Month.March 10, Disabled
                                flukeDate 2020 Month.March 11, Pending
-                               flukeDate 2020 Month.March 12, Pending
+                               flukeDate 2020 Month.March 12, Disabled
                            ]
-                           CellEvents = [
-                               flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 23 00))
+                           Events = [
+                               TempSession (flukeDateTime 2020 Month.February 29 23 00)
+                               TempSession (flukeDateTime 2020 Month.March 01 01 00)
+                               TempSession (flukeDateTime 2020 Month.March 01 13 00)
+                               TempSession (flukeDateTime 2020 Month.March 01 23 00)
+                               TempSession (flukeDateTime 2020 Month.March 02 01 00)
+                               TempSession (flukeDateTime 2020 Month.March 07 11 00)
+                               TempSession (flukeDateTime 2020 Month.March 07 23 00)
+                               TempSession (flukeDateTime 2020 Month.March 08 11 00)
+                               TempSession (flukeDateTime 2020 Month.March 08 13 00)
                            ] |}
                         |> createRenderLaneTestData
                         
