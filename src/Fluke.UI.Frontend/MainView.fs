@@ -10,9 +10,10 @@ module MainView =
             InternalUI.SharedServerMessage
             >> Client.InternalServerMessage
             >> props.ServerToClientDispatch
-            
+
         HomePageComponent.``default``
             { Dispatch = dispatch
               UIState = props.UIState
               PrivateState = props.PrivateState }
+
 

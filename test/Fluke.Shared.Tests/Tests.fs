@@ -14,7 +14,7 @@ module Data =
     let task3 = { Task.Default with Name = "3" }
     let task4 = { Task.Default with Name = "4" }
     let task5 = { Task.Default with Name = "5" }
-        
+
     let orderedEventList = [
         { Task = task1; Priority = First }
         { Task = task2; Priority = LessThan task1 }
@@ -23,18 +23,18 @@ module Data =
         { Task = task5; Priority = Last }
     ]
     let orderedList = [ task1; task2; task3; task4; task5 ]
-    
+
 module Tests =
     open Data
-    
+
     let tests = testList "Tests" [
-        
+
         testList "GetManualSortedTaskListTests" [
             test "1" {
                 orderedEventList
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" orderedList
-                
+
                 [
                     { Task = task5; Priority = Last }
                     { Task = task4; Priority = LessThan task3 }
@@ -44,7 +44,7 @@ module Tests =
                 ]
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" orderedList
-                
+
                 [
                     { Task = task3; Priority = LessThan task2 }
                     { Task = task5; Priority = Last }
@@ -54,14 +54,14 @@ module Tests =
                 ]
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" orderedList
-                
+
                 [
                     { Task = task3; Priority = First }
                 ]
                 |> List.append orderedEventList
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" [ task3; task4; task1; task2; task5 ]
-                
+
                 [
                     { Task = task3; Priority = First }
                     { Task = task4; Priority = LessThan task2 }
@@ -69,7 +69,7 @@ module Tests =
                 |> List.append orderedEventList
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" [ task3; task1; task2; task4; task5 ]
-                
+
                 [
                     { Task = task1; Priority = First }
                     { Task = task2; Priority = First }
@@ -79,10 +79,10 @@ module Tests =
                 ]
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" [ task4; task5; task3; task2; task1 ]
-                
+
             }
         ]
-        
+
         testList "SetPriorityTests" [
             test "1" {
                 let createPriorityEvents task priority taskList =
@@ -103,47 +103,47 @@ module Tests =
                         | _ -> None
                     |> Option.toList
                     |> List.append [ { Task = task; Priority = priority } ]
-                
+
                 [ task1; task2; task3; task4; task5 ]
                 |> createPriorityEvents task3 First
                 |> Expect.equal "" [
                     { Task = task3; Priority = First }
                     { Task = task4; Priority = LessThan task2 }
                 ]
-                
+
                 [ task1; task2; task3; task4; task5 ]
                 |> createPriorityEvents task1 First
                 |> Expect.equal "" [
                     { Task = task1; Priority = First }
                 ]
-                
+
                 [ task1; task2; task3; task4; task5 ]
                 |> createPriorityEvents task1 Last
                 |> Expect.equal "" [
                     { Task = task1; Priority = Last }
                     { Task = task2; Priority = First }
                 ]
-                
+
                 [ task1; task2; task3; task4; task5 ]
                 |> createPriorityEvents task5 Last
                 |> Expect.equal "" [
                     { Task = task5; Priority = Last }
                 ]
-                
+
                 [ task1; task2; task3; task4; task5 ]
                 |> createPriorityEvents task5 First
                 |> Expect.equal "" [
                     { Task = task5; Priority = First }
                     { Task = task1; Priority = LessThan task5 }
                 ]
-                
+
                 [ task1; task2; task3; task4; task5 ]
                 |> createPriorityEvents task2 First
                 |> Expect.equal "" [
                     { Task = task2; Priority = First }
                     { Task = task3; Priority = LessThan task1 }
                 ]
-                
+
                 [ task1; task2; task3; task4; task5 ]
                 |> createPriorityEvents task4 (LessThan task1)
                 |> Expect.equal "" [
@@ -152,9 +152,9 @@ module Tests =
                 ]
             }
         ]
-        
+
         testList "Lane Sorting" [
-            
+
             let (|NoSorting|TimeOfDay|Frequency|) = function
                 | Choice1Of3 -> NoSorting
                 | Choice2Of3 -> TimeOfDay
@@ -162,22 +162,22 @@ module Tests =
             let _noSorting = Choice1Of3 ()
             let sortByTimeOfDay = Choice2Of3 ()
             let sortByFrequency = Choice3Of3 ()
-            
+
             let testData (props: {| Sort: Choice<_, _, _>
                                     Data: (Task * TempTaskEvent list) list
                                     Expected: string list
                                     Now: FlukeDateTime |}) =
-                
+
                 let taskStateList =
                     props.Data
                     |> List.map (fun (task, events) -> createTaskState task events)
-                    
+
                 let dateSequence =
                     taskStateList
                     |> List.collect (fun x -> x.StatusEntries)
                     |> List.map (ofTaskStatusEntry >> fst)
                     |> Rendering.getDateSequence (35, 35)
-                
+
                 taskStateList
                 |> List.map (fun taskState ->
                     Rendering.renderLane testDayStart props.Now dateSequence taskState.Task taskState.StatusEntries
@@ -189,7 +189,7 @@ module Tests =
                     | Frequency -> Sorting.sortLanesByFrequency lanes
                 |> List.map (fun (Lane (task, _)) -> task.Name)
                 |> Expect.equal "" props.Expected
-            
+
             test "Sort by Frequency: All task types mixed" {
                 testData
                     {| Sort = sortByFrequency
@@ -197,52 +197,52 @@ module Tests =
                                Time = testDayStart }
                        Data = [
                            { Task.Default with Name = "01"; Scheduling = Manual WithSuggestion },
-                           [] 
-                           
+                           []
+
                            { Task.Default with Name = "02"; Scheduling = Manual WithSuggestion },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                              TempStatusEntry (flukeDate 2020 Month.March 08, Postponed None) ]
-                           
+
                            { Task.Default with Name = "03"; Scheduling = Manual WithoutSuggestion },
                            [ TempStatusEntry (flukeDate 2020 Month.March 09, ManualPending) ]
-                           
+
                            { Task.Default with Name = "04"; Scheduling = Recurrency (Offset (Days 1));
                                                            PendingAfter = flukeTime 20 00 |> Some },
                            []
-                           
+
                            { Task.Default with Name = "05"; Scheduling = Manual WithoutSuggestion },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, ManualPending) ]
-                           
+
                            { Task.Default with Name = "06"; Scheduling = Manual WithoutSuggestion },
                            [ TempStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
                              TempStatusEntry (flukeDate 2020 Month.March 06, Dismissed) ]
-                           
+
                            { Task.Default with Name = "07"; Scheduling = Recurrency (Offset (Days 4)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 08, Completed) ]
-                           
+
                            { Task.Default with Name = "08"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Completed) ]
-                           
+
                            { Task.Default with Name = "09"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Dismissed) ]
-                           
+
                            { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None) ]
-                           
+
                            { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
                            []
-                           
+
                            { Task.Default with Name = "12"; Scheduling = Manual WithoutSuggestion },
                            []
-                           
+
                            { Task.Default with Name = "13"
                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
                            []
-                           
+
                            { Task.Default with Name = "14"
                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
                            []
-                           
+
                            { Task.Default with Name = "15"
                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
@@ -252,7 +252,7 @@ module Tests =
                                     "07"; "15"; "13"; "14"; "02"
                                     "06"; "03"; "05"; "01"; "12" ] |}
             }
-            
+
             test "Sort by Time of Day: All task types mixed" {
                 testData
                     {| Sort = sortByTimeOfDay
@@ -260,64 +260,64 @@ module Tests =
                                Time = flukeTime 14 00 }
                        Data = [
                            { Task.Default with Name = "01"; Scheduling = Manual WithSuggestion },
-                           [] 
-                           
+                           []
+
                            { Task.Default with Name = "02"; Scheduling = Manual WithSuggestion },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                              TempStatusEntry (flukeDate 2020 Month.March 08, Postponed None) ]
-                           
+
                            { Task.Default with Name = "03"; Scheduling = Manual WithoutSuggestion },
                            [ TempStatusEntry (flukeDate 2020 Month.March 09, ManualPending) ]
-                           
+
                            { Task.Default with Name = "04"; Scheduling = Recurrency (Offset (Days 1));
                                                            PendingAfter = flukeTime 20 00 |> Some },
                            []
-                           
+
                            { Task.Default with Name = "05"; Scheduling = Manual WithoutSuggestion },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, ManualPending) ]
-                           
+
                            { Task.Default with Name = "06"; Scheduling = Manual WithoutSuggestion },
                            [ TempStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
                              TempStatusEntry (flukeDate 2020 Month.March 06, Dismissed) ]
-                           
+
                            { Task.Default with Name = "07"; Scheduling = Recurrency (Offset (Days 4)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 08, Completed) ]
-                           
+
                            { Task.Default with Name = "08"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Completed) ]
-                           
+
                            { Task.Default with Name = "09"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Dismissed) ]
-                           
+
                            { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None) ]
-                           
+
                            { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some)) ]
-                           
+
                            { Task.Default with Name = "12"; Scheduling = Manual WithoutSuggestion },
                            []
-                           
+
                            { Task.Default with Name = "13"
                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
                            []
-                           
+
                            { Task.Default with Name = "14"
                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
                            []
-                           
+
                            { Task.Default with Name = "15"
                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
                              TempStatusEntry (flukeDate 2020 Month.March 09, Dismissed) ]
-                           
+
                            { Task.Default with Name = "16"; Scheduling = Recurrency (Offset (Days 1));
                                                             MissedAfter = (flukeTime 13 00 |> Some) },
                            []
-                           
+
                            { Task.Default with Name = "17"; Scheduling = Recurrency (Offset (Days 1)) },
                            [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 15 00 |> Some)) ]
-                           
+
                            { Task.Default with Name = "18"; Scheduling = Recurrency (Offset (Days 1)) },
                            []
                        ]
@@ -327,28 +327,28 @@ module Tests =
                                     "15"; "12"; "06" ] |}
             }
         ]
-        
+
         testList "Lane Rendering" [
-            
+
             let testData (props: {| Task: Task
                                     Now: FlukeDateTime
                                     Expected: (FlukeDate * CellStatus) list
                                     Events: TempTaskEvent list |}) =
-                
+
                 let taskState = createTaskState props.Task props.Events
-                   
+
                 let dateSequence =
                     props.Expected
                     |> List.map fst
-                    
+
                 let unwrapLane (Lane (_, cells)) =
                    cells
                    |> List.map (fun (Cell (address, status)) -> string address.Date, status)
-                
+
                 let toString =
                     List.map string
                     >> String.concat Environment.NewLine
-                
+
                 taskState.StatusEntries
                 |> Rendering.renderLane testDayStart props.Now dateSequence props.Task
                 |> unwrapLane
@@ -356,9 +356,9 @@ module Tests =
                 |> Expect.equal "" (props.Expected
                                     |> List.map (fun (date, cellStatus) -> string date, cellStatus)
                                     |> toString)
-               
+
             testList "Postponed Until" [
-                
+
                 test "Postponed until later" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
@@ -374,7 +374,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 23 00)))
                            ] |}
                 }
-                
+
                 test "Postponed until after midnight" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
@@ -390,7 +390,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00)))
                            ] |}
                 }
-                
+
                 test "Pending after expiration of Postponed (before midnight)" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
@@ -406,7 +406,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 23 00)))
                            ] |}
                 }
-                
+
                 test "Pending after expiration of Postponed (after midnight)" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
@@ -422,7 +422,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00)))
                            ] |}
                 }
-                
+
                 test "Past PostponedUntil events are shown" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
@@ -442,7 +442,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (Some (flukeTime 01 00)))
                            ] |}
                 }
-                
+
                 test "Future PostponedUntil events are shown" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
@@ -459,11 +459,11 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 12, Postponed (Some (flukeTime 13 00)))
                            ] |}
                 }
-                
+
             ]
-               
+
             testList "Recurrency Offset" [
-                
+
                 test "Start scheduling today without any events" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
@@ -479,7 +479,7 @@ module Tests =
                            ]
                            Events = [] |}
                 }
-                
+
                 test "Disabled today after a Completed event yesterday" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 3)) }
@@ -499,7 +499,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 8, Completed)
                            ] |}
                 }
-                
+
                 test "Postponing today should schedule for tomorrow" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
@@ -516,7 +516,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                            ] |}
                 }
-                
+
                 test "Postponing today should schedule for tomorrow with PendingAfter" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2))
@@ -534,7 +534,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                            ] |}
                 }
-                
+
                 test "(Postponed None) yesterday schedules for today" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 2)) }
@@ -551,7 +551,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                            ] |}
                 }
-            
+
                 test "Pending today after missing yesterday,
                       then resetting the schedule with a future Completed event" {
                     testData
@@ -573,7 +573,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 12, Completed)
                            ] |}
                 }
-                
+
                 test "Recurring task only Suggested before PendingAfter" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1))
@@ -587,7 +587,7 @@ module Tests =
                            ]
                            Events = [] |}
                 }
-            
+
                 test "Recurring task Pending after PendingAfter" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1))
@@ -601,7 +601,7 @@ module Tests =
                            ]
                            Events = [] |}
                 }
-            
+
                 test "Recurrency for the next days should work normally
                       while today is still optional/suggested (before PendingAfter)" {
                     testData
@@ -619,7 +619,7 @@ module Tests =
                            ]
                            Events = [] |}
                 }
-                
+
                 test "Reset counting after a future ManualPending event" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 3)) }
@@ -641,9 +641,9 @@ module Tests =
                            ] |}
                 }
             ]
-            
+
             testList "Recurrency Fixed" [
-                
+
                 test "Weekly task, pending today, initialized by past completion" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
@@ -661,7 +661,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 14, Completed)
                            ] |}
                 }
-                
+
                 test "Weekly task, missed until today, initialized by past completion" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
@@ -680,7 +680,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 13, Completed)
                            ] |}
                 }
-                
+
                 test "Weekly task, (Postponed None) then missed until today, pending tomorrow" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
@@ -699,7 +699,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 18, Postponed None)
                            ] |}
                 }
-                
+
                 test "Weekly task, without past events, pending in a few days" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) }
@@ -715,7 +715,7 @@ module Tests =
                            Events = [
                            ] |}
                 }
-                
+
                 test "Fixed weekly task, without past events, pending tomorrow" {
                     testData
                         {| Task = { Task.Default with Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ]) }
@@ -732,9 +732,9 @@ module Tests =
                            ] |}
                 }
             ]
-            
+
             testList "Manual" [
-            
+
                 test "Empty manual task" {
                     testData
                         {| Task = { Task.Default with Scheduling = Manual WithoutSuggestion }
@@ -749,7 +749,7 @@ module Tests =
                            ]
                            Events = [] |}
                 }
-                
+
                 test "ManualPending task scheduled for today after missing" {
                     testData
                         {| Task = { Task.Default with Scheduling = Manual WithoutSuggestion }
@@ -767,7 +767,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 9, ManualPending)
                            ] |}
                 }
-                
+
                 test "Manual Suggested task Suggested before PendingAfter" {
                     testData
                         {| Task = { Task.Default with Scheduling = Manual WithSuggestion
@@ -781,7 +781,7 @@ module Tests =
                            ]
                            Events = [] |}
                 }
-                
+
                 test "Manual Suggested task Pending after PendingAfter" {
                     testData
                         {| Task = { Task.Default with Scheduling = Manual WithSuggestion
@@ -795,7 +795,7 @@ module Tests =
                            ]
                            Events = [] |}
                 }
-                
+
                 test "Manual Suggested task: Missed ManualPending propagates until today" {
                     testData
                         {| Task = { Task.Default with Scheduling = Manual WithSuggestion }
@@ -815,7 +815,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 30, ManualPending)
                            ] |}
                 }
-                
+
                 test "Manual Suggested task: Suggested mode restored after completing a forgotten ManualPending event" {
                     testData
                         {| Task = { Task.Default with Scheduling = Manual WithSuggestion }
@@ -834,7 +834,7 @@ module Tests =
                                TempStatusEntry (flukeDate 2020 Month.March 26, Completed)
                            ] |}
                 }
-                
+
                 test "Manual Suggested task: Pending today after missing a ManualPending event" {
                     testData
                         {| Task = { Task.Default with Scheduling = Manual WithSuggestion }
@@ -855,4 +855,5 @@ module Tests =
             ]
         ]
     ]
+
 

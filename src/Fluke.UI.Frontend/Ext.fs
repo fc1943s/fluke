@@ -5,6 +5,7 @@ open Browser.Types
 open Fable.Core
 open Fable.Core.JsInterop
 
+
 module Ext =
     importAll "typeface-roboto-condensed"
 
@@ -24,10 +25,11 @@ module Ext =
     let playAudio (_file: string) : unit = jsNative
 
     let reactMarkdown : obj -> obj = importDefault "react-markdown"
-    
+
     let useEventListener (_event: string) (_fn: KeyboardEvent -> unit) : unit = importDefault "@use-it/event-listener"
-    
+
     Dom.window?Ext <-
         {| reactMarkdown = reactMarkdown
            useEventListener = useEventListener |}
+
 

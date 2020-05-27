@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend
 
 open Suigetsu.UI.Frontend.ElmishBridge
 
+
 module Client =
     let inline handleClientMessage (message: SharedState.SharedServerMessage) (state: UIState.State) =
         match message with
@@ -15,4 +16,5 @@ module Client =
             false
 
     listen ()
+
 

@@ -1,8 +1,8 @@
 namespace Fluke.Shared
 
 open System.Diagnostics.CodeAnalysis
-
 open Expecto
+
 
 module Main =
 
@@ -13,4 +13,5 @@ module Main =
             Tests.tests
 //            |> Test.filter " / " (fun x -> true)
         runTestsWithArgs defaultConfig args tests
+
 

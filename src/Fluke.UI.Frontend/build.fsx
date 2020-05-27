@@ -56,11 +56,11 @@ let openBrowser url =
         |> CreateProcess.fromCommand
         |> CreateProcess.withTimeout TimeSpan.MaxValue
         |> Proc.run
-        
+
     //https://github.com/dotnet/corefx/issues/10361
     if result.ExitCode <> 0
         then failwithf "opening browser failed"
-    
+
 Target.create "Empty" (fun _ -> ())
 
 Target.create "Clean" (fun _ ->
@@ -100,11 +100,12 @@ open Fake.Core.TargetOperators
 
 "Empty"
     ==> "FastRun"
-    
+
 "Empty"
     ==> "Clean"
     ==> "InstallClient"
     ==> "Run"
-    
+
 
 Target.runOrDefault "Bundle"
+

@@ -7,10 +7,10 @@ open System
 module SharedState =
     type SharedClientMessage = unit
     type SharedServerMessage = unit
-        
-        
+
+
 module UIState =
-        
+
     type State =
         { x: unit }
         static member inline Default = { x = () }
@@ -18,22 +18,22 @@ module UIState =
 
 module Model =
     open Model
-    
+
     type Information with
-        member this.Name = 
+        member this.Name =
             match this with
             | Project project   -> project.Name
             | Area area         -> area.Name
             | Resource resource -> resource.Name
             | Archive archive   -> sprintf "[%s]" archive.Name
-            
-        member this.Color = 
+
+        member this.Color =
             match this with
             | Project _       -> "#999"
             | Area _          -> "#666"
             | Resource _      -> "#333"
             | Archive archive -> sprintf "[%s]" archive.Color
-            
+
     type CellStatus with
         member this.CellClass =
             match this with
@@ -50,11 +50,11 @@ module Model =
                 | Dismissed          -> Css.cellDismissed
                 | ManualPending      -> Css.cellManualPending
                 | Session _          -> Css.cellSession
-    
-    
+
+
 module Functions =
     open Model
-    
+
     let getCellSeparatorBorderLeft (date: FlukeDate) =
         match date with
         | { Day = 1 }                                          -> Some "#ffffff3d"
@@ -62,4 +62,5 @@ module Functions =
         | _                                                    -> None
         |> Option.map ((+) "1px solid ")
         |> fun x -> CSSProp.BorderLeft x
+
 
