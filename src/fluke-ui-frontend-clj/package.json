@@ -2,8 +2,7 @@
   "name": "fluke-ui-frontend",
   "version": "0.0.1",
   "description": "",
-  "scripts": {
-  },
+  "scripts": {},
   "author": "fc1943s",
   "license": "MIT",
   "dependencies": {

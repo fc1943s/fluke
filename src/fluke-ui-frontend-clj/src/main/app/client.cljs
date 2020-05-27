@@ -21,3 +21,4 @@
   ;; re-mounting will cause forced UI refresh, update internals, etc.
   (app/mount! app Root "app")
   (js/console.log "Hot reload"))
+
