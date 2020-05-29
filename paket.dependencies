@@ -13,7 +13,7 @@ group Main
 group Fluke.Shared
     storage: none
     source https://api.nuget.org/v3/index.json
-    
+
     nuget FSharpx.Extras ~> 2.3
 
 
@@ -26,7 +26,7 @@ group Fluke.UI.Frontend
     nuget Zanaptak.TypedCssClasses ~> 0.2
     nuget Fulma.Extensions.Wikiki.PageLoader ~> 2.0
     nuget Fulma.Extensions.Wikiki.Slider ~> 2.0
-    nuget Feliz.Bulma ~> 1.14
+    nuget Feliz.Bulma ~> 2.2
 
 
 group Testing
@@ -41,5 +41,5 @@ group Build
 
     nuget Fake.Core.Target prerelease
     nuget Fake.DotNet.Cli prerelease
-    nuget Fake.IO.FileSystem prerelease 
+    nuget Fake.IO.FileSystem prerelease
 
