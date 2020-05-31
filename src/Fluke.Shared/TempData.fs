@@ -113,12 +113,18 @@ module TempData =
         )
         |> List.append oldTaskOrderList
 
+    type TempTaskEventField =
+        | TempTaskFieldScheduling of scheduling:TaskScheduling
+        | TempTaskFieldPendingAfter of start:FlukeTime
+        | TempTaskFieldMissedAfter of start:FlukeTime
+        | TempTaskFieldDuration of minutes:int
 
     type TempTaskEvent =
         | TempComment of comment:string
         | TempSession of start:FlukeDateTime
         | TempPriority of priority:TaskPriority
         | TempStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
+        | TempTaskField of field:TempTaskEventField
 
     let createTaskState task events =
 
@@ -134,66 +140,74 @@ module TempData =
             | High9 -> 9
             | Critical10 -> 10
 
-        let comments, sessions, statusEntries, priority =
-            let rec loop comments sessions statusEntries priorities = function
+        let comments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
+            let rec loop comments sessions statusEntries priority scheduling pendingAfter
+                missedAfter duration = function
                 | TempComment comment :: tail ->
                     let item = Comment comment
-                    loop (item :: comments) sessions statusEntries priorities tail
+                    loop (item :: comments)
+                        sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                 | TempSession { Date = date; Time = time } :: tail ->
                     let item = TaskSession { Date = date; Time = time }
-                    loop comments (item :: sessions) statusEntries priorities tail
+                    loop comments (item :: sessions)
+                        statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                 | TempStatusEntry (date, eventStatus) :: tail ->
                     let item = TaskStatusEntry (date, eventStatus)
-                    loop comments sessions (item :: statusEntries) priorities tail
+                    loop comments sessions (item :: statusEntries)
+                        priority scheduling pendingAfter missedAfter duration tail
 
                 | TempPriority priority :: tail ->
-                    let item = TaskPriorityValue (getPriorityValue priority)
-                    loop comments sessions statusEntries (item :: priorities) tail
+                    loop comments sessions statusEntries (TaskPriorityValue (getPriorityValue priority) |> Some)
+                        scheduling pendingAfter missedAfter duration tail
+
+                | TempTaskField field :: tail ->
+                    match field with
+                    | TempTaskFieldScheduling scheduling ->
+                        loop comments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
+
+                    | TempTaskFieldPendingAfter start ->
+                        loop comments sessions statusEntries priority scheduling (Some start) missedAfter duration tail
+
+                    | TempTaskFieldMissedAfter start ->
+                        loop comments sessions statusEntries priority scheduling pendingAfter (Some start) duration tail
+
+                    | TempTaskFieldDuration minutes ->
+                        loop comments sessions statusEntries priority scheduling pendingAfter missedAfter (Some minutes)
+                            tail
 
                 | [] ->
                     let sortedComments = comments |> List.rev
                     let sortedSessions = sessions |> List.sortBy (fun (TaskSession start) -> start.DateTime)
                     let sortedStatusEntries = statusEntries |> List.rev
-                    let priority = priorities |> List.tryHead
-                    sortedComments, sortedSessions, sortedStatusEntries, priority
+                    sortedComments, sortedSessions, sortedStatusEntries, priority, scheduling, pendingAfter,
+                    missedAfter, duration
 
-            loop [] [] [] [] events
+            loop [] [] [] None task.Scheduling task.PendingAfter task.MissedAfter task.Duration events
 
-        { Task = task
+        { Task =
+            { task with
+                Scheduling = scheduling
+                PendingAfter = pendingAfter
+                MissedAfter = missedAfter
+                Duration = duration }
           Comments = comments
           Sessions = sessions
           StatusEntries = statusEntries
           PriorityValue = priority }
 
 
-    let createManualTasksFromTree taskList taskTree =
-        let createTaskMap taskList =
-            let map =
-                taskList
-                |> List.map (fun x -> (x.Information, x.Name), x)
-                |> Map.ofList
-
-            let taskOrderList = taskList |> List.map (fun task -> { Task = task; Priority = Last })
-
-            map, taskOrderList
-
-        let oldTaskMap, oldTaskOrderList = createTaskMap taskList
-
-
-        let newTaskStateList =
+    let createManualTasksFromTree taskTree =
+        let taskStateList =
             taskTree
             |> List.collect (fun (information, tasks) ->
                 tasks
                 |> List.map (fun (taskName, events) ->
                     let task =
-                        oldTaskMap
-                        |> Map.tryFind (information, taskName)
-                        |> Option.defaultValue
-                            { Task.Default with
-                                Name = sprintf "> %s" taskName
-                                Information = information }
+                        { Task.Default with
+                            Name = taskName
+                            Information = information }
 
                     createTaskState task events
                 )
@@ -204,34 +218,12 @@ module TempData =
             |> List.map fst
             |> List.distinct
 
-        let newTaskMap, newTaskOrderList =
-            newTaskStateList
-            |> List.map (fun x -> x.Task)
-            |> createTaskMap
-
-        let notOnNewTaskMap task =
-            not (newTaskMap.ContainsKey (task.Information, task.Name))
-
-        let taskStateList =
-            taskList
-            |> List.filter notOnNewTaskMap
-            |> List.map (fun task ->
-                { Task = task
-                  Comments = []
-                  Sessions = []
-                  StatusEntries = []
-                  PriorityValue = None })
-            |> List.prepend newTaskStateList
-
-        let initialTaskOrderList =
+        let taskOrderList =
             taskStateList
             |> List.map (fun taskState -> { Task = taskState.Task; Priority = Last })
 
-        let filteredOldTaskOrder = oldTaskOrderList |> List.filter (fun x -> notOnNewTaskMap x.Task)
-        let taskOrderList = newTaskOrderList @ filteredOldTaskOrder
-
         {| TaskStateList = taskStateList
-           TaskOrderList = initialTaskOrderList @ taskOrderList
+           TaskOrderList = taskOrderList
            InformationList = informationList |}
 
 
@@ -309,7 +301,7 @@ module TempData =
                 Resource resources.vim, []
                 Resource resources.windows, []
             ]
-            |> createManualTasksFromTree []
+            |> createManualTasksFromTree
 
         RenderLaneTests =
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
