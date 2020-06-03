@@ -308,12 +308,15 @@ module TempData =
                            Now = { Date = flukeDate 2020 Month.March 04
                                    Time = testDayStart }
                            Expected = [
-                               flukeDate 2020 Month.March 7, Disabled
+                               flukeDate 2020 Month.February 29, Disabled
+                               flukeDate 2020 Month.March 1, Disabled
+                               flukeDate 2020 Month.March 2, Disabled
+                               flukeDate 2020 Month.March 3, Disabled
+                               flukeDate 2020 Month.March 4, Pending
+                               flukeDate 2020 Month.March 5, Pending
+                               flukeDate 2020 Month.March 6, Pending
+                               flukeDate 2020 Month.March 7, Pending
                                flukeDate 2020 Month.March 8, Disabled
-                               flukeDate 2020 Month.March 9, Pending
-                               flukeDate 2020 Month.March 10, Disabled
-                               flukeDate 2020 Month.March 11, Pending
-                               flukeDate 2020 Month.March 12, Disabled
                            ]
                            Events = [
                                TempSession (flukeDateTime 2020 Month.March 01 11 00)

@@ -422,6 +422,40 @@ module Rendering =
             |> List.map (fun (date, cellStatus) -> Cell ({ Date = date; Task = task }, cellStatus))
         Lane (task, cells)
 
+    let getLanesState dayStart now selection cellComments taskStateMap lanes =
+        lanes
+        |> List.map (fun (Lane (task, cells)) ->
+            let taskState = taskStateMap |> Map.tryFind task
+
+            let laneState =
+                cells
+                |> List.map (fun (Cell (address, status)) ->
+
+                    let comments =
+                        cellComments
+                        |> List.map ofCellComment
+                        |> List.filter (fun (commentAddress, _) ->
+                            commentAddress.Task = task && commentAddress.Date = address.Date
+                        )
+                        |> List.map snd
+
+                    let sessions =
+                        taskState
+                        |> Option.map (fun x -> x.Sessions)
+                        |> Option.defaultValue []
+                        |> List.filter (fun (TaskSession start) -> isToday dayStart start address.Date)
+
+                    {| CellAddress = address
+                       Comments = comments
+                       Sessions = sessions
+                       IsSelected = selection |> List.contains address
+                       IsToday = isToday dayStart now address.Date
+                       Status = status |}
+                )
+
+            task, laneState
+        )
+
 
 module Sorting =
     open Model
