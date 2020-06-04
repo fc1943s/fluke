@@ -2,13 +2,12 @@
   "name": "fluke-ui-frontend",
   "version": "0.0.1",
   "description": "",
-  "scripts": {
-  },
+  "scripts": {},
   "author": "fc1943s",
   "license": "MIT",
   "dependencies": {
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
-    "shadow-cljs": "^2.9.4"
+    "shadow-cljs": "^2.9.10"
   }
 }
