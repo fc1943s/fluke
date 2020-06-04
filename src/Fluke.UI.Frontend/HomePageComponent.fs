@@ -212,108 +212,119 @@ module HomePageComponent =
             )
 
         let gridCells dayStart now selection cellComments taskStateMap lanes =
-            Rendering.getLanesState dayStart now selection cellComments taskStateMap lanes
-            |> List.map (fun (_, laneState) ->
-                laneState
-                |> List.map (fun laneCell ->
-                    CellComponent.``default``
-                        { CellAddress = laneCell.CellAddress
-                          Comments = laneCell.Comments
-                          Sessions = laneCell.Sessions
-                          IsSelected = laneCell.IsSelected
-                          IsToday = laneCell.IsToday
-                          Status = laneCell.Status }
+            div [ Class Css.laneContainer ][
+
+                yield! Rendering.getLanesState dayStart now selection cellComments taskStateMap lanes
+                |> List.map (fun (_, laneState) ->
+
+                    div [][
+                        yield! laneState
+                        |> List.map (fun laneCell ->
+
+                            CellComponent.``default``
+                                { CellAddress = laneCell.CellAddress
+                                  Comments = laneCell.Comments
+                                  Sessions = laneCell.Sessions
+                                  IsSelected = laneCell.IsSelected
+                                  IsToday = laneCell.IsToday
+                                  Status = laneCell.Status }
+                        )
+                    ]
                 )
-                |> div []
-            )
-            |> div [ Class Css.laneContainer ]
+            ]
 
         let gridHeader dayStart dateSequence (now: FlukeDateTime) =
             div [][
+
                 // Month row
-                dateSequence
-                |> List.groupBy (fun date -> date.Month)
-                |> List.map (fun (_, dates) -> dates.Head, dates.Length)
-                |> List.map (fun (firstDay, days) ->
-                    span [ Style [ Functions.getCellSeparatorBorderLeft firstDay
-                                   TextAlign TextAlignOptions.Center
-                                   Width (17 * days) ] ][
-                        str (firstDay.DateTime.Format "MMM")
-                    ]
-                )
-                |> div [ Style [ Display DisplayOptions.Flex ] ]
+                div [ Style [ Display DisplayOptions.Flex ] ][
+                    yield! dateSequence
+                    |> List.groupBy (fun date -> date.Month)
+                    |> List.map (fun (_, dates) -> dates.Head, dates.Length)
+                    |> List.map (fun (firstDay, days) ->
+                        span [ Style [ Functions.getCellSeparatorBorderLeft firstDay
+                                       TextAlign TextAlignOptions.Center
+                                       Width (17 * days) ] ][
+                            str (firstDay.DateTime.Format "MMM")
+                        ]
+                    )
+                ]
 
                 // Day of Week row
-                dateSequence
-                |> List.map (fun date ->
-                    span [ Style [ Width 17
-                                   Functions.getCellSeparatorBorderLeft date
-                                   TextAlign TextAlignOptions.Center ] ][
+                div [ Style [ Display DisplayOptions.Flex ] ][
+                    yield! dateSequence
+                    |> List.map (fun date ->
+                        span [ Style [ Width 17
+                                       Functions.getCellSeparatorBorderLeft date
+                                       TextAlign TextAlignOptions.Center ] ][
 
-                        date.DateTime.Format "dd"
-                        |> String.toLower
-                        |> str
-                    ]
-                )
-                |> div [ Style [ Display DisplayOptions.Flex ] ]
+                            date.DateTime.Format "dd"
+                            |> String.toLower
+                            |> str
+                        ]
+                    )
+                ]
 
                 // Day row
-                dateSequence
-                |> List.map (fun date ->
-                    span [ Style [ Width 17
-                                   Functions.getCellSeparatorBorderLeft date
-                                   TextAlign TextAlignOptions.Center
-                                   Color (if isToday dayStart now date then "#f22" else "") ] ][
-                        str (date.Day.ToString "D2")
-                    ]
-                )
-                |> div [ Style [ Display DisplayOptions.Flex ] ]
+                div [ Style [ Display DisplayOptions.Flex ] ][
+
+                    yield! dateSequence
+                    |> List.map (fun date ->
+                        span [ Style [ Width 17
+                                       Functions.getCellSeparatorBorderLeft date
+                                       TextAlign TextAlignOptions.Center
+                                       Color (if isToday dayStart now date then "#f22" else "") ] ][
+                            str (date.Day.ToString "D2")
+                        ]
+                    )
+                ]
             ]
 
         let calendarView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes =
-            let tasks =
-                lanes
-                |> List.map (fun (Lane (task, _)) ->
-                    task
-                )
+            let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
                 // Column: Left
                 div [][
+
                     // Top Padding
-                    emptyDiv
-                    |> List.replicate 3
-                    |> div []
+                    div [][
+                        yield! emptyDiv |> List.replicate 3
+                    ]
 
                     div [ Style [ Display DisplayOptions.Flex ] ][
+
                         // Column: Information Type
-                        tasks
-                        |> List.map (fun task ->
-                            let comments = informationComments |> Map.tryFind task.Information
+                        div [ Style [ PaddingRight 10 ] ] [
 
-                            div [ classList [ Css.blueIndicator, comments.IsSome
-                                              Css.tooltipContainer, comments.IsSome ]
-                                  Style [ Padding 0
-                                          Height 17
-                                          Color task.Information.Color
-                                          WhiteSpace WhiteSpaceOptions.Nowrap ] ][
+                            yield! tasks
+                            |> List.map (fun task ->
+                                let comments = informationComments |> Map.tryFind task.Information
 
-                                str task.Information.Name
+                                div [ classList [ Css.blueIndicator, comments.IsSome
+                                                  Css.tooltipContainer, comments.IsSome ]
+                                      Style [ Padding 0
+                                              Height 17
+                                              Color task.Information.Color
+                                              WhiteSpace WhiteSpaceOptions.Nowrap ] ][
 
-                                match comments with
-                                | None -> ()
-                                | Some comments ->
-                                    comments
-                                    |> List.map (fun x -> Comment x.Comment)
-                                    |> CellComponent.tooltipPopup
-                            ]
-                        )
-                        |> div [ Style [ PaddingRight 10 ] ]
+                                    str task.Information.Name
+
+                                    match comments with
+                                    | None -> ()
+                                    | Some comments ->
+                                        comments
+                                        |> List.map (fun x -> Comment x.Comment)
+                                        |> CellComponent.tooltipPopup
+                                ]
+                            )
+                        ]
 
                         // Column: Task Name
-                        taskNameList 0 taskStateMap tasks
-                        |> div [ Style [ Width 200 ] ]
+                        div [ Style [ Width 200 ] ] [
+                            yield! taskNameList 0 taskStateMap tasks
+                        ]
                     ]
                 ]
 
@@ -325,17 +336,11 @@ module HomePageComponent =
             ]
 
         let groupsView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes =
-            let tasks =
-                lanes
-                |> List.map (fun (Lane (task, _)) ->
-                    task
-                )
+            let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
 
             let groups =
                 lanes
-                |> List.groupBy (fun (Lane (task, _)) ->
-                    task.Information
-                )
+                |> List.groupBy (fun (Lane (task, _)) -> task.Information)
                 |> List.groupBy (fun (info, _) ->
                     match info with
                     | Project _  -> "projects"
@@ -348,80 +353,89 @@ module HomePageComponent =
 
                 // Column: Left
                 div [][
+
                     // Top Padding
-                    emptyDiv
-                    |> List.replicate 3
-                    |> div []
+                    div [][
+                        yield! emptyDiv |> List.replicate 3
+                    ]
 
-                    groups
-                    |> List.map (fun (informationType, lanesGroups) ->
-                        div [][
-                            // Information Type
-                            div [ Style [ Color "#444" ] ][
-                                str informationType
-                            ]
+                    div [][
 
-                            lanesGroups
-                            |> List.map (fun (information, lanes) ->
-                                let comments = informationComments |> Map.tryFind information
+                        yield! groups
+                        |> List.map (fun (informationType, lanesGroups) ->
+                            div [][
+                                // Information Type
+                                div [ Style [ Color "#444" ] ][
+                                    str informationType
+                                ]
 
                                 div [][
-                                    // Information
-                                    div [ classList [ Css.blueIndicator, comments.IsSome
-                                                      Css.tooltipContainer, comments.IsSome ]
-                                          Style [ paddingLeftLevel 1
-                                                  Color "#444" ] ][
-                                        str information.Name
 
-                                        match comments with
-                                        | None -> ()
-                                        | Some comments ->
-                                            comments
-                                            |> List.map (fun x -> Comment x.Comment)
-                                            |> CellComponent.tooltipPopup
-                                    ]
+                                    yield! lanesGroups
+                                    |> List.map (fun (information, lanes) ->
+                                        let comments = informationComments |> Map.tryFind information
+
+                                        div [][
+                                            // Information
+                                            div [ classList [ Css.blueIndicator, comments.IsSome
+                                                              Css.tooltipContainer, comments.IsSome ]
+                                                  Style [ paddingLeftLevel 1
+                                                          Color "#444" ] ][
+                                                str information.Name
+
+                                                match comments with
+                                                | None -> ()
+                                                | Some comments ->
+                                                    comments
+                                                    |> List.map (fun x -> Comment x.Comment)
+                                                    |> CellComponent.tooltipPopup
+                                            ]
 
 
-                                    // Task Name
-                                    taskNameList 2 taskStateMap tasks
-                                    |> div [ Style [ Width 500 ] ]
+                                            // Task Name
+                                            div [ Style [ Width 500 ] ][
+
+                                                yield! taskNameList 2 taskStateMap tasks
+                                            ]
+                                        ]
+                                    )
                                 ]
-                            )
-                            |> div []
-                        ]
-                    )
-                    |> div []
+                            ]
+                        )
+                    ]
                 ]
 
                 // Column: Grid
                 div [][
                     gridHeader dayStart dateSequence now
 
-                    groups
-                    |> List.map (fun (_, groupLanes) ->
+                    div [][
 
-                        div [][
-                            emptyDiv
+                        yield! groups
+                        |> List.map (fun (_, groupLanes) ->
 
+                            div [][
 
-                            groupLanes
-                            |> List.map (fun (_, lanes) ->
-
+                                emptyDiv
                                 div [][
 
-                                    emptyDiv
-                                    gridCells dayStart now selection cellComments taskStateMap lanes
+                                    yield! groupLanes
+                                    |> List.map (fun (_, lanes) ->
+
+                                        div [][
+                                            emptyDiv
+                                            gridCells dayStart now selection cellComments taskStateMap lanes
+                                        ]
+                                    )
                                 ]
-                            )
-                            |> div []
-                        ]
-                    )
-                    |> div []
+                            ]
+                        )
+                    ]
                 ]
             ]
 
         let tasksView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes =
-            let lanes = // TODO: Duplicated
+            let lanes =
                 lanes
                 |> List.sortByDescending (fun (Lane (task, _)) ->
                     taskStateMap
@@ -431,64 +445,63 @@ module HomePageComponent =
                     |> Option.defaultValue 0
                 )
 
-            let tasks =
-                lanes
-                |> List.map (fun (Lane (task, _)) ->
-                    task
-                )
+            let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
                 // Column: Left
                 div [][
                     // Top Padding
-                    emptyDiv
-                    |> List.replicate 3
-                    |> div []
+                    div [][
+                        yield! emptyDiv |> List.replicate 3
+                    ]
 
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         // Column: Information Type
-                        tasks
-                        |> List.map (fun task ->
-                            let comments = informationComments |> Map.tryFind task.Information
+                        div [ Style [ PaddingRight 10 ] ] [
+                            yield! tasks
+                            |> List.map (fun task ->
+                                let comments = informationComments |> Map.tryFind task.Information
 
-                            div [ classList [ Css.blueIndicator, comments.IsSome
-                                              Css.tooltipContainer, comments.IsSome ]
-                                  Style [ Padding 0
-                                          Height 17
-                                          Color task.Information.Color
-                                          WhiteSpace WhiteSpaceOptions.Nowrap ] ][
+                                div [ classList [ Css.blueIndicator, comments.IsSome
+                                                  Css.tooltipContainer, comments.IsSome ]
+                                      Style [ Padding 0
+                                              Height 17
+                                              Color task.Information.Color
+                                              WhiteSpace WhiteSpaceOptions.Nowrap ] ][
 
-                                str task.Information.Name
+                                    str task.Information.Name
 
-                                match comments with
-                                | None -> ()
-                                | Some comments ->
-                                    comments
-                                    |> List.map (fun x -> Comment x.Comment)
-                                    |> CellComponent.tooltipPopup
-                            ]
-                        )
-                        |> div [ Style [ PaddingRight 10 ] ]
+                                    match comments with
+                                    | None -> ()
+                                    | Some comments ->
+                                        comments
+                                        |> List.map (fun x -> Comment x.Comment)
+                                        |> CellComponent.tooltipPopup
+                                ]
+                            )
+                        ]
 
                         // Column: Priority
-                        tasks
-                        |> List.map (fun task ->
-                            let taskState = taskStateMap.[task]
-                            div [ Style [ Height 17 ] ][
-                                taskState.PriorityValue
-                                |> Option.map ofTaskPriorityValue
-                                |> Option.defaultValue 0
-                                |> string
-                                |> str
-                            ]
-                        )
-                        |> div [ Style [ PaddingRight 10
-                                         TextAlign TextAlignOptions.Center ] ]
+                        div [ Style [ PaddingRight 10
+                                      TextAlign TextAlignOptions.Center ] ] [
+                            yield! tasks
+                            |> List.map (fun task ->
+                                let taskState = taskStateMap.[task]
+                                div [ Style [ Height 17 ] ][
+                                    taskState.PriorityValue
+                                    |> Option.map ofTaskPriorityValue
+                                    |> Option.defaultValue 0
+                                    |> string
+                                    |> str
+                                ]
+                            )
+                        ]
 
                         // Column: Task Name
-                        taskNameList 0 taskStateMap tasks
-                        |> div [ Style [ Width 200 ] ]
+                        div [ Style [ Width 200 ] ] [
+                            yield! taskNameList 0 taskStateMap tasks
+                        ]
                     ]
                 ]
 
