@@ -8,13 +8,13 @@ module Client =
         match message with
         | () -> state, None
 
-    let listen () =
-        Client.listen<UIState.State, SharedState.SharedServerMessage, SharedState.SharedClientMessage>
-            UIState.State.Default
-            MainView.lazyView
-            handleClientMessage
-            false
+//    let listen () =
+//        Client.listen<UIState.State, SharedState.SharedServerMessage, SharedState.SharedClientMessage>
+//            UIState.State.Default
+//            MainView.lazyView
+//            handleClientMessage
+//            false
 
-    listen ()
+//    listen ()
 
 

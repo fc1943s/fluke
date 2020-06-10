@@ -9,10 +9,13 @@
     <Compile Include="Ext.fs" />
     <Compile Include="Element.fs" />
     <Compile Include="Model.fs" />
+    <Compile Include="Recoil.fs" />
     <Compile Include="CellComponent.fs" />
     <Compile Include="HomePageComponent.fs" />
     <Compile Include="MainView.fs" />
     <Compile Include="Client.fs" />
+    <Compile Include="Components\MainComponent.fs" />
+    <Compile Include="Main.fs" />
     <Content Include="package.json" />
     <Content Include="webpack.config.ts" />
     <Content Include="paket.references" />

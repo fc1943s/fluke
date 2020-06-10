@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend
 open Browser.Types
 open FSharpPlus
 open Fable.Core
+open Feliz
 open Fluke.Shared
 open Fluke.UI.Frontend
 open Fable.React
@@ -639,7 +640,7 @@ module HomePageComponent =
               Selection = selection
               ActiveSessions = activeSessions }
 
-    let ``default`` = FunctionComponent.Of (fun (__props: Props) ->
+    let ``default`` = React.memo (fun () ->
 
         let dayStart = Temp.dayStart
         let getNow = Temp.getNow
@@ -717,7 +718,7 @@ module HomePageComponent =
                 state.current.Selection informationComments cellComments
                 taskStateMap state.current.Lanes
         ]
-    , memoizeWith = equalsButFunctions)
+    )
 
 
 

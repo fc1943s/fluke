@@ -27,6 +27,7 @@ group Fluke.UI.Frontend
     nuget Fulma.Extensions.Wikiki.PageLoader ~> 2.0
     nuget Fulma.Extensions.Wikiki.Slider ~> 2.0
     nuget Feliz.Bulma ~> 2.2
+    nuget Feliz.Recoil ~> 0.11
 
 
 group Testing
