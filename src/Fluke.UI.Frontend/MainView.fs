@@ -1,11 +1,10 @@
 namespace Fluke.UI.Frontend
 
-open Suigetsu.UI
 open Suigetsu.UI.Frontend.ElmishBridge
 
 
 module MainView =
-    let lazyView (props: Client.MainViewProps<SharedState.SharedServerMessage, UIState.State>) =
+    let lazyView (_props: Client.MainViewProps<SharedState.SharedServerMessage, UIState.State>) =
         ()
 //        let dispatch =
 //            InternalUI.SharedServerMessage

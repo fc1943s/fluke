@@ -398,7 +398,7 @@ module HomePageComponent =
                                 div [][
 
                                     yield! lanesGroups
-                                    |> List.map (fun (information, lanes) ->
+                                    |> List.map (fun (information, _lanes) ->
                                         let comments = informationComments |> Map.tryFind information
 
                                         div [][
@@ -548,20 +548,19 @@ module HomePageComponent =
             match view with
             | Temp.CalendarView ->
                 taskStateList
-                |> List.map (fun taskState ->
-//                    printfn "Task: %A. LEN: %A" dateRange taskState.Sessions.Length
-                    { taskState with
-                        StatusEntries =
-                            taskState.StatusEntries
-                            |> List.filter (fun (TaskStatusEntry (date, _)) -> date.DateTime >==< dateRange)
-                        Sessions =
-                            taskState.Sessions
-                            |> List.filter (fun (TaskSession start) -> start.Date.DateTime >==< dateRange) }
-                )
                 |> List.filter (function
                     | { Task = { Task.Scheduling = Manual WithoutSuggestion }
-                        StatusEntries = []
-                        Sessions = [] } -> false
+                        StatusEntries = statusEntries
+                        Sessions = sessions }
+                        when
+                            statusEntries
+                            |> List.exists (fun (TaskStatusEntry (date, _)) -> date.DateTime >==< dateRange)
+                            |> not
+                        &&
+                            sessions
+                            |> List.exists (fun (TaskSession start) -> start.Date.DateTime >==< dateRange)
+                            |> not
+                        -> false
                     | _ -> true
                 )
                 |> List.map (fun taskState ->
@@ -684,7 +683,7 @@ module HomePageComponent =
             |> Seq.map (fun taskState -> taskState.Task, taskState.Sessions)
             |> Seq.map (Tuple2.mapSnd (fun sessions ->
                 sessions
-                |> Seq.sortByDescending (fun (Model.TaskSession start) -> start.DateTime)
+                |> Seq.sortByDescending (fun (TaskSession start) -> start.DateTime)
                 |> Seq.head
             ))
             |> Seq.toList

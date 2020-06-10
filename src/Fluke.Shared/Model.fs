@@ -276,16 +276,20 @@ module Rendering =
     open Model
 
     let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
-        let dates = cellDates |> List.map (fun x -> x.DateTime)
+        let dates =
+            cellDates
+            |> Seq.map (fun x -> x.DateTime)
+            |> Seq.sort
+            |> Seq.toArray
 
         let minDate =
             dates
-            |> List.min
+            |> Array.head
             |> fun x -> x.AddDays -(float paddingLeft)
 
         let maxDate =
             dates
-            |> List.max
+            |> Array.last
             |> fun x -> x.AddDays (float paddingRight)
 
         let rec loop date = seq {
@@ -312,12 +316,32 @@ module Rendering =
         | TodayCell
 
 
-    let renderLane dayStart (now: FlukeDateTime) dateSequence task (statusEntries: TaskStatusEntry list) =
+    let renderLane
+        dayStart (now: FlukeDateTime) (dateSequence: FlukeDate list) task (statusEntries: TaskStatusEntry list) =
 
         let cellStatusEventsByDate =
             statusEntries
             |> List.map ofTaskStatusEntry
             |> Map.ofList
+
+        let firstDateRange = dateSequence |> List.head
+        let lastDateRange = dateSequence |> List.last
+
+        let entriesDateSequence =
+            let dates =
+                cellStatusEventsByDate
+                |> Seq.map (fun (KeyValue (k, _)) -> k.DateTime) // Map.keys
+                |> Seq.sort
+                |> Seq.toArray
+
+            match dates with
+            | [||] -> dateSequence
+            | dates ->
+                [ dates |> Array.head |> min firstDateRange.DateTime
+                  dates |> Array.last |> max lastDateRange.DateTime ]
+                |> List.map FlukeDate.FromDateTime
+                |> getDateSequence (0, 0)
+
 
         let rec loop renderState = function
             | date :: tail ->
@@ -424,7 +448,8 @@ module Rendering =
             | [] -> []
 
         let cells =
-            loop WaitingFirstEvent dateSequence
+            loop WaitingFirstEvent entriesDateSequence
+            |> List.filter (fun (date, _) -> date >==< (firstDateRange, lastDateRange))
             |> List.map (fun (date, cellStatus) -> Cell ({ Date = date; Task = task }, cellStatus))
         Lane (task, cells)
 

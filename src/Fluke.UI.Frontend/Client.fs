@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend
 
-open Suigetsu.UI.Frontend.ElmishBridge
 
 
 module Client =
