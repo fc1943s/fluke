@@ -30,7 +30,7 @@ module CellComponent =
         div [ Class Css.tooltipPopup ][
 
             comments
-            |> List.map (fun (Comment x) -> x.Trim ())
+            |> List.map (fun (Comment (user, comment)) -> comment.Trim ())
             |> List.map ((+) Environment.NewLine)
             |> String.concat (Environment.NewLine + Environment.NewLine)
             |> fun text ->

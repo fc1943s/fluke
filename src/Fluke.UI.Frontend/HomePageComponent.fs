@@ -39,11 +39,16 @@ module Temp =
 //    let testData = TempData.tempData.SortLanesTests
 
 
-    let cellComments = PrivateData.Journal.journalComments @ PrivateData.CellComments.cellComments
+    let cellComments =
+        PrivateData.Journal.journalComments
+        |> List.append PrivateData.CellComments.cellComments
+        |> List.append SharedPrivateData.Data.cellComments
+
     let taskStateList, getNow, informationComments, taskOrderList, dayStart, informationList =
         match tempDataType with
         | TempPrivate ->
             let taskData = PrivateData.Tasks.tempManualTasks
+            let sharedTaskData = SharedPrivateData.SharedTasks.tempManualTasks
 
             let taskStateList =
                 taskData.TaskStateList
@@ -59,9 +64,30 @@ module Temp =
                             |> List.map (Model.ofTaskComment >> snd)
                             |> List.prepend taskState.Comments })
 
-            taskStateList,
+            let sharedTaskStateList =
+                sharedTaskData.TaskStateList
+                |> List.map (fun taskState ->
+                    { taskState with
+                        StatusEntries =
+                            SharedPrivateData.Data.cellStatusEntries
+                            |> Model.createTaskStatusEntries taskState.Task
+                            |> List.prepend taskState.StatusEntries
+                        Comments =
+                            SharedPrivateData.Data.taskComments
+                            |> List.filter (fun (Model.TaskComment (task, _)) -> task = taskState.Task)
+                            |> List.map (Model.ofTaskComment >> snd)
+                            |> List.prepend taskState.Comments })
+
+            let informationComments =
+                PrivateData.InformationComments.informationComments
+                |> List.append SharedPrivateData.Data.informationComments
+                |> List.groupBy (fun x -> x.Information)
+                |> List.map (Tuple2.mapSnd (List.map (fun x -> x.Comment)))
+                |> Map.ofList
+
+            taskStateList |> List.append sharedTaskStateList,
             TempData.getNow,
-            PrivateData.InformationComments.informationComments |> List.groupBy (fun x -> x.Information) |> Map.ofList,
+            informationComments,
             taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
             PrivateData.PrivateData.dayStart,
             taskData.InformationList
@@ -187,7 +213,7 @@ module HomePageComponent =
         let emptyDiv =
             div [ DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
 
-        let taskNameList level taskStateMap tasks =
+        let taskNameList level (taskStateMap: Map<Task,TaskState>) tasks =
             tasks
             |> List.map (fun task ->
                 let comments =
@@ -316,7 +342,6 @@ module HomePageComponent =
                                     | None -> ()
                                     | Some comments ->
                                         comments
-                                        |> List.map (fun x -> Comment x.Comment)
                                         |> CellComponent.tooltipPopup
                                 ]
                             )
@@ -388,7 +413,6 @@ module HomePageComponent =
                                                 | None -> ()
                                                 | Some comments ->
                                                     comments
-                                                    |> List.map (fun x -> Comment x.Comment)
                                                     |> CellComponent.tooltipPopup
                                             ]
 
@@ -477,7 +501,6 @@ module HomePageComponent =
                                     | None -> ()
                                     | Some comments ->
                                         comments
-                                        |> List.map (fun x -> Comment x.Comment)
                                         |> CellComponent.tooltipPopup
                                 ]
                             )

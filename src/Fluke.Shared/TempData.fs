@@ -89,13 +89,17 @@ module TempData =
     let dayStart = flukeTime 05 00
     let testDayStart = flukeTime 12 00
 
+    let testUser =
+        { Name = "Test"
+          Color = Blue }
+
     let getNow () =
         let rawDate = DateTime.Now
         { Date = FlukeDate.FromDateTime rawDate
           Time = FlukeTime.FromDateTime rawDate }
 
 
-    let getTaskOrderList oldTaskOrderList tasks manualTaskOrder =
+    let getTaskOrderList oldTaskOrderList (tasks: Task list) manualTaskOrder =
         let taskMap =
             tasks
             |> List.map (fun x -> (x.Information, x.Name), x)
@@ -144,7 +148,7 @@ module TempData =
             let rec loop comments sessions statusEntries priority scheduling pendingAfter
                 missedAfter duration = function
                 | TempComment comment :: tail ->
-                    let item = Comment comment
+                    let item = Comment (testUser, comment)
                     loop (item :: comments)
                         sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 

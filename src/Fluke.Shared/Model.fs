@@ -2,7 +2,6 @@ namespace Fluke.Shared
 
 open System
 open System.Collections.Generic
-open FSharpPlus
 open Suigetsu.Core
 
 module Model =
@@ -63,10 +62,6 @@ module Model =
         override this.ToString () =
             sprintf "%A %A" this.Date this.Time
 
-    type InformationComment =
-        { Information: Information
-          Comment: string }
-
     type FixedRecurrency =
         | Weekly of DayOfWeek
         | Monthly of day:int
@@ -120,14 +115,26 @@ module Model =
         { Task: Task
           Date: FlukeDate }
 
+    type UserColor =
+        | Pink
+        | Blue
+
+    type User =
+        { Name: string
+          Color: UserColor }
+
     type Cell = Cell of address:CellAddress * status:CellStatus
-    type Comment = Comment of string
+    type Comment = Comment of user:User * comment:string
     type TaskSession = TaskSession of start:FlukeDateTime
     type TaskComment = TaskComment of task:Task * comment:Comment
     type CellStatusEntry = CellStatusEntry of address:CellAddress * eventStatus:CellEventStatus
     type TaskStatusEntry = TaskStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
     type CellComment = CellComment of address:CellAddress * comment:Comment
     type CellSession = CellSession of address:CellAddress * start:FlukeTime
+
+    type InformationComment =
+        { Information: Information
+          Comment: Comment }
 
     type CellEvent =
         | StatusEvent of CellStatusEntry
@@ -231,7 +238,6 @@ module Model =
               Scheduling = Manual WithoutSuggestion
               Duration = None }
 
-    let ofComment = fun (Comment comment) -> comment
     let ofTaskSession = fun (TaskSession start) -> start
     let ofTaskComment = fun (TaskComment (task, comment)) -> task, comment
     let ofCellComment = fun (CellComment (address, comment)) -> address, comment
@@ -246,8 +252,8 @@ module Model =
         |> List.map (fun (CellStatusEntry (address, entries)) -> TaskStatusEntry (address.Date, entries))
         |> List.sortBy (fun (TaskStatusEntry (date, _)) -> date)
 
-    let createCellComment task date comment =
-        CellComment ({ Task = task; Date = date }, Comment comment)
+    let createCellComment task date user comment =
+        CellComment ({ Task = task; Date = date }, Comment (user, comment))
 
     let (|BeforeToday|Today|AfterToday|) (dayStart, now:FlukeDateTime, date:FlukeDate) =
         let dateStart = { Date = date; Time = dayStart }.DateTime
