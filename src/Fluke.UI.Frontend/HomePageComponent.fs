@@ -232,9 +232,9 @@ module HomePageComponent =
                         str task.Name
                     ]
 
-                    comments
-                    |> Option.map CellComponent.tooltipPopup
-                    |> Option.defaultValue nothing
+                    match comments with
+                    | Some comments -> CellComponent.tooltipPopup {| Comments = comments |}
+                    | None -> ()
                 ]
             )
 
@@ -248,13 +248,13 @@ module HomePageComponent =
                         yield! laneState
                         |> List.map (fun laneCell ->
 
-                            CellComponent.``default``
-                                { CellAddress = laneCell.CellAddress
-                                  Comments = laneCell.Comments
-                                  Sessions = laneCell.Sessions
-                                  IsSelected = laneCell.IsSelected
-                                  IsToday = laneCell.IsToday
-                                  Status = laneCell.Status }
+                            CellComponent.cell
+                                {| CellAddress = laneCell.CellAddress
+                                   Comments = laneCell.Comments
+                                   Sessions = laneCell.Sessions
+                                   IsSelected = laneCell.IsSelected
+                                   IsToday = laneCell.IsToday
+                                   Status = laneCell.Status |}
                         )
                     ]
                 )
@@ -339,10 +339,8 @@ module HomePageComponent =
                                     str task.Information.Name
 
                                     match comments with
+                                    | Some comments -> CellComponent.tooltipPopup {| Comments = comments |}
                                     | None -> ()
-                                    | Some comments ->
-                                        comments
-                                        |> CellComponent.tooltipPopup
                                 ]
                             )
                         ]
@@ -410,10 +408,8 @@ module HomePageComponent =
                                                 str information.Name
 
                                                 match comments with
+                                                | Some comments -> CellComponent.tooltipPopup {| Comments = comments |}
                                                 | None -> ()
-                                                | Some comments ->
-                                                    comments
-                                                    |> CellComponent.tooltipPopup
                                             ]
 
 
@@ -498,10 +494,8 @@ module HomePageComponent =
                                     str task.Information.Name
 
                                     match comments with
+                                    | Some comments -> CellComponent.tooltipPopup {| Comments = comments |}
                                     | None -> ()
-                                    | Some comments ->
-                                        comments
-                                        |> CellComponent.tooltipPopup
                                 ]
                             )
                         ]
