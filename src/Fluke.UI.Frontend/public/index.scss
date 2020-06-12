@@ -36,6 +36,13 @@ $color-corner-pink: #a91c77;
   color: #ddd;
 }
 
+.today-header {
+  color: #888;
+}
+
+.selection-highlight {
+  color: #ff5656;
+}
 
 .tooltip-container {
   position: relative;
@@ -105,7 +112,7 @@ $color-corner-pink: #a91c77;
       }
 
       &.cell-today > div:first-child {
-        background-color: $color#{cc};
+        background-color: $color#{aa};
       }
 
       &.cell-selected > div:first-child {

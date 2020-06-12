@@ -179,7 +179,6 @@ module CellComponent =
               IsToday: RecoilValue<bool, ReadWrite> }
 
 
-    // TODO: take this out of here
     let tooltipPopup = React.memo (fun (input: {| Comments: Comment list |}) ->
         Html.div [
             prop.className Css.tooltipPopup
@@ -197,6 +196,7 @@ module CellComponent =
     )
 
     let cell = React.memo (fun (input: {| CellAddress: CellAddress
+                                          OnSelect: unit -> unit
                                           Comments: Comment list
                                           Sessions: TaskSession list
                                           Status: CellStatus
@@ -221,6 +221,9 @@ module CellComponent =
                         | Some borderLeft -> borderLeft
                         | None -> ()
                     ]
+                    prop.onClick (fun (event: MouseEvent) ->
+                        input.OnSelect ()
+                    )
                     prop.children [
                         match input.Sessions.Length with
         //                | x -> str (string x)
@@ -250,12 +253,14 @@ module HomePageComponent =
           Selection: CellAddress list
           Lanes: Lane list
           ActiveSessions: ActiveSession list
+          CtrlPressed: bool
           View: Temp.View }
         static member inline Default =
             { Now = { Date = flukeDate 0000 Month.January 01; Time = flukeTime 00 00 }
               Selection = []
               Lanes = []
               ActiveSessions = []
+              CtrlPressed = false
               View = Temp.CalendarView }
 
     let playDing () =
@@ -339,7 +344,7 @@ module HomePageComponent =
         let emptyDiv =
             div [ DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
 
-        let taskNameList level (taskStateMap: Map<Task,TaskState>) tasks =
+        let taskNameList level (taskStateMap: Map<Task,TaskState>) (selection: CellAddress list) tasks =
             tasks
             |> List.map (fun task ->
                 let comments =
@@ -347,10 +352,15 @@ module HomePageComponent =
                     |> Map.tryFind task
                     |> Option.map (fun taskState -> taskState.Comments)
 
+                let isSelected =
+                    selection
+                    |> List.exists (fun address -> address.Task = task)
+
                 div [ classList [ Css.tooltipContainer, match comments with Some (_ :: _) -> true | _ -> false ]
                       Style [ Height 17 ] ][
 
-                    div [ Style [ CSSProp.Overflow OverflowOptions.Hidden
+                    div [ classList [ Css.selectionHighlight, isSelected ]
+                          Style [ CSSProp.Overflow OverflowOptions.Hidden
                                   WhiteSpace WhiteSpaceOptions.Nowrap
                                   paddingLeftLevel level
                                   TextOverflow "ellipsis" ] ][
@@ -364,7 +374,7 @@ module HomePageComponent =
                 ]
             )
 
-        let gridCells dayStart now selection cellComments taskStateMap lanes =
+        let gridCells dayStart now selection cellComments taskStateMap lanes onCellSelect =
             div [ Class Css.laneContainer ][
 
                 yield! Rendering.getLanesState dayStart now selection cellComments taskStateMap lanes
@@ -376,6 +386,7 @@ module HomePageComponent =
 
                             CellComponent.cell
                                 {| CellAddress = laneCell.CellAddress
+                                   OnSelect = fun () -> onCellSelect laneCell.CellAddress
                                    Comments = laneCell.Comments
                                    Sessions = laneCell.Sessions
                                    IsSelected = laneCell.IsSelected
@@ -386,9 +397,23 @@ module HomePageComponent =
                 )
             ]
 
-        let gridHeader dayStart dateSequence (now: FlukeDateTime) =
-            div [][
+        let gridHeader dayStart dateSequence (now: FlukeDateTime) (selection: CellAddress list) =
+            let selectionSet =
+                selection
+                |> List.map (fun address -> address.Date)
+                |> Set.ofList
 
+            let datesInfo =
+                dateSequence
+                |> List.map (fun date ->
+                    let info =
+                        {| IsSelected = selectionSet.Contains date
+                           IsToday = isToday dayStart now date |}
+                    date, info
+                )
+                |> Map.ofList
+
+            div [][
                 // Month row
                 div [ Style [ Display DisplayOptions.Flex ] ][
                     yield! dateSequence
@@ -407,7 +432,9 @@ module HomePageComponent =
                 div [ Style [ Display DisplayOptions.Flex ] ][
                     yield! dateSequence
                     |> List.map (fun date ->
-                        span [ Style [ Width 17
+                        span [ classList [ Css.todayHeader, datesInfo.[date].IsToday
+                                           Css.selectionHighlight, datesInfo.[date].IsSelected ]
+                               Style [ Width 17
                                        Functions.getCellSeparatorBorderLeft date
                                        TextAlign TextAlignOptions.Center ] ][
 
@@ -423,17 +450,18 @@ module HomePageComponent =
 
                     yield! dateSequence
                     |> List.map (fun date ->
-                        span [ Style [ Width 17
+                        span [ classList [ Css.todayHeader, datesInfo.[date].IsToday
+                                           Css.selectionHighlight, datesInfo.[date].IsSelected ]
+                               Style [ Width 17
                                        Functions.getCellSeparatorBorderLeft date
-                                       TextAlign TextAlignOptions.Center
-                                       Color (if isToday dayStart now date then "#f22" else "") ] ][
+                                       TextAlign TextAlignOptions.Center ] ][
                             str (date.Day.ToString "D2")
                         ]
                     )
                 ]
             ]
 
-        let calendarView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes =
+        let calendarView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes onCellSelect =
             let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
 
             div [ Style [ Display DisplayOptions.Flex ] ][
@@ -473,19 +501,19 @@ module HomePageComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! taskNameList 0 taskStateMap tasks
+                            yield! taskNameList 0 taskStateMap selection tasks
                         ]
                     ]
                 ]
 
                 div [][
-                    gridHeader dayStart dateSequence now
+                    gridHeader dayStart dateSequence now selection
 
-                    gridCells dayStart now selection cellComments taskStateMap lanes
+                    gridCells dayStart now selection cellComments taskStateMap lanes onCellSelect
                 ]
             ]
 
-        let groupsView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes =
+        let groupsView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes onCellSelect =
             let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
 
             let groups =
@@ -542,7 +570,7 @@ module HomePageComponent =
                                             // Task Name
                                             div [ Style [ Width 500 ] ][
 
-                                                yield! taskNameList 2 taskStateMap tasks
+                                                yield! taskNameList 2 taskStateMap selection tasks
                                             ]
                                         ]
                                     )
@@ -554,7 +582,7 @@ module HomePageComponent =
 
                 // Column: Grid
                 div [][
-                    gridHeader dayStart dateSequence now
+                    gridHeader dayStart dateSequence now selection
 
                     div [][
 
@@ -571,7 +599,7 @@ module HomePageComponent =
 
                                         div [][
                                             emptyDiv
-                                            gridCells dayStart now selection cellComments taskStateMap lanes
+                                            gridCells dayStart now selection cellComments taskStateMap lanes onCellSelect
                                         ]
                                     )
                                 ]
@@ -581,7 +609,7 @@ module HomePageComponent =
                 ]
             ]
 
-        let tasksView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes =
+        let tasksView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes onCellSelect =
             let lanes =
                 lanes
                 |> List.sortByDescending (fun (Lane (task, _)) ->
@@ -644,15 +672,15 @@ module HomePageComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! taskNameList 0 taskStateMap tasks
+                            yield! taskNameList 0 taskStateMap selection tasks
                         ]
                     ]
                 ]
 
                 div [][
-                    gridHeader dayStart dateSequence now
+                    gridHeader dayStart dateSequence now selection
 
-                    gridCells dayStart now selection cellComments taskStateMap lanes
+                    gridCells dayStart now selection cellComments taskStateMap lanes onCellSelect
                 ]
             ]
 
@@ -740,20 +768,6 @@ module HomePageComponent =
 
         let lanes = getLanes dayStart dateSequence now informationList taskStateList taskOrderList oldState.View
 
-        let selection =
-            match oldState.Selection with
-            | [] ->
-                lanes
-                |> List.tryHead
-                |> Option.map (fun (Lane (_, cells)) ->
-                    cells
-                    |> List.tryFind (fun (Cell (address, _)) -> isToday dayStart now address.Date)
-                    |> Option.map (fun (Cell (address, _)) -> [ address ])
-                    |> Option.defaultValue []
-                )
-                |> Option.defaultValue []
-            | x -> x
-
         let activeSessions =
             lastSessions
             |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
@@ -779,7 +793,6 @@ module HomePageComponent =
         { oldState with
               Now = now
               Lanes = lanes
-              Selection = selection
               ActiveSessions = activeSessions }
 
     let ``default`` = React.memo (fun () ->
@@ -816,6 +829,40 @@ module HomePageComponent =
         CustomHooks.useInterval (fun () ->
             state.update createState
         ) (60 * 1000)
+
+        let keyEvent (e: KeyboardEvent) =
+            if e.ctrlKey <> state.current.CtrlPressed then
+                state.update (fun oldState ->
+                    { oldState with
+                        CtrlPressed = e.ctrlKey }
+                )
+            if e.key = "Escape" && not state.current.Selection.IsEmpty then
+                state.update (fun oldState ->
+                    { oldState with
+                        Selection = [] }
+                )
+
+        Ext.useEventListener "keydown" keyEvent
+        Ext.useEventListener "keyup" keyEvent
+
+        let onCellSelect cell =
+            state.update (fun oldState ->
+                { oldState with
+                    Selection =
+                        if not oldState.CtrlPressed then
+                            [ cell ]
+                        else
+                            let rec loop newSelection = function
+                                | head :: tail when head = cell -> true, newSelection @ tail
+                                | head :: tail -> loop (head :: newSelection) tail
+                                | [] -> false, newSelection
+                            let removed, newSelection = loop [] oldState.Selection
+
+                            match removed with
+                            | true -> newSelection
+                            | false -> newSelection |> List.append [ cell ]
+                }
+            )
 
         let dateSequence =
             match state.current.Lanes with
@@ -858,7 +905,7 @@ module HomePageComponent =
             viewFn
                 dayStart dateSequence state.current.Now
                 state.current.Selection informationComments cellComments
-                taskStateMap state.current.Lanes
+                taskStateMap state.current.Lanes onCellSelect
         ]
     )
 
