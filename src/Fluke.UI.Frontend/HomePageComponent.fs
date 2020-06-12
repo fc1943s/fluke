@@ -22,6 +22,7 @@ module Temp =
         | CalendarView
         | GroupsView
         | TasksView
+        | WeekView
 
     type TempDataType =
         | TempPrivate
@@ -221,7 +222,7 @@ module CellComponent =
                         | Some borderLeft -> borderLeft
                         | None -> ()
                     ]
-                    prop.onClick (fun (event: MouseEvent) ->
+                    prop.onClick (fun (_event: MouseEvent) ->
                         input.OnSelect ()
                     )
                     prop.children [
@@ -286,6 +287,7 @@ module HomePageComponent =
             | _, true, "C" -> events.OnViewChange Temp.CalendarView
             | _, true, "G" -> events.OnViewChange Temp.GroupsView
             | _, true, "T" -> events.OnViewChange Temp.TasksView
+            | _, true, "W" -> events.OnViewChange Temp.WeekView
             | _            -> ()
         )
 
@@ -313,6 +315,7 @@ module HomePageComponent =
             checkbox Temp.CalendarView "calendar view"
             checkbox Temp.GroupsView "groups view"
             checkbox Temp.TasksView "tasks view"
+            checkbox Temp.WeekView "week view"
 
             Navbar.Item.div [][
                 props.ActiveSessions
@@ -420,8 +423,7 @@ module HomePageComponent =
                     |> List.groupBy (fun date -> date.Month)
                     |> List.map (fun (_, dates) -> dates.Head, dates.Length)
                     |> List.map (fun (firstDay, days) ->
-                        span [ Style [ Functions.getCellSeparatorBorderLeft firstDay
-                                       TextAlign TextAlignOptions.Center
+                        span [ Style [ TextAlign TextAlignOptions.Center
                                        Width (17 * days) ] ][
                             str (firstDay.DateTime.Format "MMM")
                         ]
@@ -461,8 +463,17 @@ module HomePageComponent =
                 ]
             ]
 
-        let calendarView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes onCellSelect =
-            let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
+        let calendarView (input: {| DayStart: FlukeTime
+                                    DateSequence: FlukeDate list
+                                    Now: FlukeDateTime
+                                    Selection: CellAddress list
+                                    InformationComments: Map<Information, Comment list>
+                                    CellComments: CellComment list
+                                    TaskStateMap: Map<Task, TaskState>
+                                    Lanes: Lane list
+                                    OnCellSelect: CellAddress -> unit |}) =
+
+            let tasks = input.Lanes |> List.map (fun (Lane (task, _)) -> task)
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
@@ -481,7 +492,7 @@ module HomePageComponent =
 
                             yield! tasks
                             |> List.map (fun task ->
-                                let comments = informationComments |> Map.tryFind task.Information
+                                let comments = input.InformationComments |> Map.tryFind task.Information
 
                                 div [ classList [ Css.blueIndicator, comments.IsSome
                                                   Css.tooltipContainer, comments.IsSome ]
@@ -501,23 +512,32 @@ module HomePageComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! taskNameList 0 taskStateMap selection tasks
+                            yield! taskNameList 0 input.TaskStateMap input.Selection tasks
                         ]
                     ]
                 ]
 
                 div [][
-                    gridHeader dayStart dateSequence now selection
+                    gridHeader input.DayStart input.DateSequence input.Now input.Selection
 
-                    gridCells dayStart now selection cellComments taskStateMap lanes onCellSelect
+                    gridCells input.DayStart input.Now input.Selection input.CellComments input.TaskStateMap input.Lanes input.OnCellSelect
                 ]
             ]
 
-        let groupsView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes onCellSelect =
-            let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
+        let groupsView (input: {| DayStart: FlukeTime
+                                  DateSequence: FlukeDate list
+                                  Now: FlukeDateTime
+                                  Selection: CellAddress list
+                                  InformationComments: Map<Information, Comment list>
+                                  CellComments: CellComment list
+                                  TaskStateMap: Map<Task, TaskState>
+                                  Lanes: Lane list
+                                  OnCellSelect: CellAddress -> unit |}) =
+
+            let tasks = input.Lanes |> List.map (fun (Lane (task, _)) -> task)
 
             let groups =
-                lanes
+                input.Lanes
                 |> List.groupBy (fun (Lane (task, _)) -> task.Information)
                 |> List.groupBy (fun (info, _) ->
                     match info with
@@ -551,7 +571,7 @@ module HomePageComponent =
 
                                     yield! lanesGroups
                                     |> List.map (fun (information, _lanes) ->
-                                        let comments = informationComments |> Map.tryFind information
+                                        let comments = input.InformationComments |> Map.tryFind information
 
                                         div [][
                                             // Information
@@ -570,7 +590,7 @@ module HomePageComponent =
                                             // Task Name
                                             div [ Style [ Width 500 ] ][
 
-                                                yield! taskNameList 2 taskStateMap selection tasks
+                                                yield! taskNameList 2 input.TaskStateMap input.Selection tasks
                                             ]
                                         ]
                                     )
@@ -582,7 +602,7 @@ module HomePageComponent =
 
                 // Column: Grid
                 div [][
-                    gridHeader dayStart dateSequence now selection
+                    gridHeader input.DayStart input.DateSequence input.Now input.Selection
 
                     div [][
 
@@ -599,7 +619,7 @@ module HomePageComponent =
 
                                         div [][
                                             emptyDiv
-                                            gridCells dayStart now selection cellComments taskStateMap lanes onCellSelect
+                                            gridCells input.DayStart input.Now input.Selection input.CellComments input.TaskStateMap lanes input.OnCellSelect
                                         ]
                                     )
                                 ]
@@ -609,11 +629,19 @@ module HomePageComponent =
                 ]
             ]
 
-        let tasksView dayStart dateSequence now selection informationComments cellComments taskStateMap lanes onCellSelect =
+        let tasksView (input: {| DayStart: FlukeTime
+                                 DateSequence: FlukeDate list
+                                 Now: FlukeDateTime
+                                 Selection: CellAddress list
+                                 InformationComments: Map<Information, Comment list>
+                                 CellComments: CellComment list
+                                 TaskStateMap: Map<Task, TaskState>
+                                 Lanes: Lane list
+                                 OnCellSelect: CellAddress -> unit |}) =
             let lanes =
-                lanes
+                input.Lanes
                 |> List.sortByDescending (fun (Lane (task, _)) ->
-                    taskStateMap
+                    input.TaskStateMap
                     |> Map.find task
                     |> fun x -> x.PriorityValue
                     |> Option.map ofTaskPriorityValue
@@ -636,7 +664,7 @@ module HomePageComponent =
                         div [ Style [ PaddingRight 10 ] ] [
                             yield! tasks
                             |> List.map (fun task ->
-                                let comments = informationComments |> Map.tryFind task.Information
+                                let comments = input.InformationComments |> Map.tryFind task.Information
 
                                 div [ classList [ Css.blueIndicator, comments.IsSome
                                                   Css.tooltipContainer, comments.IsSome ]
@@ -659,7 +687,7 @@ module HomePageComponent =
                                       TextAlign TextAlignOptions.Center ] ] [
                             yield! tasks
                             |> List.map (fun task ->
-                                let taskState = taskStateMap.[task]
+                                let taskState = input.TaskStateMap.[task]
                                 div [ Style [ Height 17 ] ][
                                     taskState.PriorityValue
                                     |> Option.map ofTaskPriorityValue
@@ -672,17 +700,28 @@ module HomePageComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! taskNameList 0 taskStateMap selection tasks
+                            yield! taskNameList 0 input.TaskStateMap input.Selection tasks
                         ]
                     ]
                 ]
 
                 div [][
-                    gridHeader dayStart dateSequence now selection
+                    gridHeader input.DayStart input.DateSequence input.Now input.Selection
 
-                    gridCells dayStart now selection cellComments taskStateMap lanes onCellSelect
+                    gridCells input.DayStart input.Now input.Selection input.CellComments input.TaskStateMap lanes input.OnCellSelect
                 ]
             ]
+
+        let weekView (input: {| DayStart: FlukeTime
+                                DateSequence: FlukeDate list
+                                Now: FlukeDateTime
+                                Selection: CellAddress list
+                                InformationComments: Map<Information, Comment list>
+                                CellComments: CellComment list
+                                TaskStateMap: Map<Task, TaskState>
+                                Lanes: Lane list
+                                OnCellSelect: CellAddress -> unit |}) =
+            nothing
 
     let getLanes dayStart (dateSequence: FlukeDate list) (now: FlukeDateTime) informationList taskStateList taskOrderList view =
         match dateSequence with
@@ -757,6 +796,8 @@ module HomePageComponent =
                     Rendering.renderLane dayStart now dateSequence taskState.Task taskState.StatusEntries
                 )
                 |> Sorting.applyManualOrder taskOrderList
+            | Temp.WeekView ->
+                []
 
 
     let createState (getNow: unit -> FlukeDateTime) lastSessions dayStart informationList taskStateList taskOrderList oldState =
@@ -896,16 +937,25 @@ module HomePageComponent =
                    Now = state.current.Now
                    ActiveSessions = state.current.ActiveSessions |}
 
+            let props =
+                {| DayStart = dayStart
+                   DateSequence = dateSequence
+                   Now = state.current.Now
+                   Selection = state.current.Selection
+                   InformationComments = informationComments
+                   CellComments = cellComments
+                   TaskStateMap = taskStateMap
+                   Lanes = state.current.Lanes
+                   OnCellSelect = onCellSelect |}
+
             let viewFn =
                 match state.current.View with
                 | Temp.CalendarView -> Grid.calendarView
                 | Temp.GroupsView   -> Grid.groupsView
                 | Temp.TasksView    -> Grid.tasksView
+                | Temp.WeekView     -> Grid.weekView
 
-            viewFn
-                dayStart dateSequence state.current.Now
-                state.current.Selection informationComments cellComments
-                taskStateMap state.current.Lanes onCellSelect
+            viewFn props
         ]
     )
 
