@@ -736,7 +736,7 @@ module HomePageComponent =
 
         let dateSequence =
             [ now.Date ]
-            |> Rendering.getDateSequence (35, 35)
+            |> Rendering.getDateSequence (45, 20)
 
         let lanes = getLanes dayStart dateSequence now informationList taskStateList taskOrderList oldState.View
 

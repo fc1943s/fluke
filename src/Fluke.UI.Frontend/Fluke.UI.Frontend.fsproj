@@ -12,7 +12,7 @@
     <Compile Include="Recoil.fs" />
     <Compile Include="HomePageComponent.fs" />
     <Compile Include="Components\MainComponent.fs" />
-    <Compile Include="Main.fs" />
+    <Compile Include="App.fs" />
     <Content Include="package.json" />
     <Content Include="webpack.config.ts" />
     <Content Include="paket.references" />

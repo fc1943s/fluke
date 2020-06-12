@@ -5,7 +5,7 @@ open Feliz.Recoil
 open Browser.Dom
 
 
-module Main =
+module App =
     let appMain = React.memo (fun () ->
         Recoil.root [
             Components.MainComponent.render ()
