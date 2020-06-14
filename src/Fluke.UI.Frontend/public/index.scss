@@ -33,7 +33,12 @@ $color-corner-pink: #a91c77;
 
 * {
   font-family: Roboto Condensed, sans-serif;
+  font-size: 12px;
   color: #ddd;
+}
+
+#app {
+  height: 100%;
 }
 
 .today-header {

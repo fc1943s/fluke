@@ -454,37 +454,6 @@ module Rendering =
             |> List.map (fun (date, cellStatus) -> Cell ({ Date = date; Task = task }, cellStatus))
         Lane (task, cells)
 
-    let getLanesState dayStart now taskStateMap lanes =
-        lanes
-        |> List.map (fun (Lane (task, cells)) ->
-            let taskState = taskStateMap |> Map.tryFind task
-
-            let laneState =
-                cells
-                |> List.map (fun (Cell (address, status)) ->
-                    let cellComments =
-                        taskState
-                        |> Option.map (fun x ->
-                            x.CellCommentsMap
-                            |> Map.tryFind address.Date
-                            |> Option.defaultValue [])
-                        |> Option.defaultValue []
-
-                    let sessions =
-                        taskState
-                        |> Option.map (fun x -> x.Sessions)
-                        |> Option.defaultValue []
-                        |> List.filter (fun (TaskSession start) -> isToday dayStart start address.Date)
-
-                    {| CellAddress = address
-                       Comments = cellComments
-                       Sessions = sessions
-                       IsToday = isToday dayStart now address.Date
-                       Status = status |}
-                )
-
-            task, laneState
-        )
 
 
 module Sorting =

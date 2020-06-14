@@ -892,24 +892,19 @@ module Tests =
 
                     let dateSequence = sessionsExpected |> List.map fst
 
-                    let lane =
-                        taskState.StatusEntries
-                        |> Rendering.renderLane testDayStart laneRenderingTestData.Now dateSequence taskState.Task
-
-                    let taskStateMap = [ taskState.Task, taskState ] |> Map.ofList
-                    let lanes = [ lane ]
-                    let lanesState =
-                        Rendering.getLanesState testDayStart laneRenderingTestData.Now [] taskStateMap lanes
-
-                    let laneState =
-                        lanesState
-                        |> List.head
-                        |> snd
+                    let sessionCountList =
+                        dateSequence
+                        |> List.map (fun date ->
+                            let sessionCount =
+                                taskState.Sessions
+                                |> List.filter (fun (TaskSession start) -> isToday testDayStart start date)
+                                |> List.length
+                            date, sessionCount
+                        )
 
                     let toString = List.map string >> String.concat Environment.NewLine
 
-                    laneState
-                    |> List.map (fun x -> x.CellAddress.Date, x.Sessions.Length)
+                    sessionCountList
                     |> toString
                     |> Expect.equal "" (toString sessionsExpected)
                 }

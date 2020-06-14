@@ -16,79 +16,10 @@ open Suigetsu.UI.Frontend.ElmishBridge
 open Suigetsu.UI.Frontend.React
 open Suigetsu.Core
 
-
-module Temp =
-
-    let testData = TempData.tempData.RenderLaneTests
-//    let testData = TempData.tempData.SortLanesTests
-
-
-    let taskStateList, informationComments, taskOrderList, informationList =
-        match Recoil.Temp.tempDataType with
-        | Recoil.Temp.TempPrivate ->
-            let taskData = PrivateData.Tasks.tempManualTasks
-            let sharedTaskData = SharedPrivateData.SharedTasks.tempManualTasks
-
-            let applyState statusEntries comments (taskState: Model.TaskState) =
-                { taskState with
-                    StatusEntries =
-                        statusEntries
-                        |> Model.createTaskStatusEntries taskState.Task
-                        |> List.prepend taskState.StatusEntries
-                    Comments =
-                        comments
-                        |> List.filter (fun (Model.TaskComment (task, _)) -> task = taskState.Task)
-                        |> List.map (Model.ofTaskComment >> snd)
-                        |> List.prepend taskState.Comments }
-
-            let cellComments =
-                PrivateData.Journal.journalComments
-                |> List.append PrivateData.CellComments.cellComments
-                |> List.append SharedPrivateData.Data.cellComments
-
-            let taskStateList =
-                taskData.TaskStateList
-                |> List.map (applyState
-                                 PrivateData.CellStatusEntries.cellStatusEntries
-                                 PrivateData.TaskComments.taskComments)
-
-            let sharedTaskStateList =
-                sharedTaskData.TaskStateList
-                |> List.map (applyState
-                                 SharedPrivateData.Data.cellStatusEntries
-                                 SharedPrivateData.Data.taskComments)
-
-            let informationComments =
-                PrivateData.InformationComments.informationComments
-                |> List.append SharedPrivateData.Data.informationComments
-                |> List.groupBy (fun x -> x.Information)
-                |> Map.ofList
-                |> Map.mapValues (List.map (fun x -> x.Comment))
-
-            taskStateList |> List.append sharedTaskStateList,
-            informationComments,
-            taskData.TaskOrderList @ PrivateData.Tasks.taskOrderList,
-            taskData.InformationList
-        | Recoil.Temp.TempPublic ->
-            let taskData = TempData.tempData.ManualTasks
-
-            taskData.TaskStateList,
-            Map.empty,
-            taskData.TaskOrderList,
-            taskData.InformationList
-        | Recoil.Temp.Test ->
-            testData.TaskStateList,
-            Map.empty,
-            testData.TaskOrderList,
-            [] // informationList
-
-
-module CellComponent =
+module TooltipPopupComponent =
     open Model
 
-
-
-    let tooltipPopup = React.memo (fun (input: {| Comments: Comment list |}) ->
+    let render = React.memo (fun (input: {| Comments: Comment list |}) ->
         Html.div [
             prop.className Css.tooltipPopup
             prop.children [
@@ -104,43 +35,33 @@ module CellComponent =
         ]
     )
 
-    let cell = React.memo (fun (input: {| CellAddress: CellAddress
-                                          Comments: Comment list
-                                          Sessions: TaskSession list
-                                          Status: CellStatus
-                                          IsToday: bool |}) ->
-        let selection, setSelection = Recoil.useState Recoil.Atoms.selection
-        let ctrlPressed = Recoil.useValue Recoil.Atoms.ctrlPressed
 
-        let oldSelection =
-            selection
-            |> Map.tryFind input.CellAddress.Task
-            |> Option.defaultValue Set.empty
+module CellComponent =
+    open Model
 
-        let isSelected = oldSelection |> Set.contains input.CellAddress.Date
 
-        let hasComments = not input.Comments.IsEmpty
+    let cell = React.memo (fun (input: {| CellAddress: CellAddress |}) ->
+        let isToday = Recoil.useValue (Recoil.Atoms.isTodayFamily input.CellAddress.Date)
+//        let selected, setSelected = Recoil.useState (Recoil.Atoms.cellSelectedFamily input.CellAddress)
+//        let comments = Recoil.useValue (Recoil.Atoms.cellCommentsFamily input.CellAddress)
+        let selected, setSelected = false, fun _ -> ()
+        let comments = []
+//        let sessions = Recoil.useValue (Recoil.Atoms.cellSessionsFamily input.CellAddress)
+        let status = Recoil.useValue (Recoil.Atoms.cellStatusFamily input.CellAddress)
 
         let events = {|
             OnCellClick = fun () ->
-                let newSelection =
-                    match ctrlPressed with
-                    | true -> input.CellAddress.Date |> Set.singleton
-                    | false -> oldSelection |> Set.toggle input.CellAddress.Date
-
-                selection
-                |> Map.add input.CellAddress.Task newSelection
-                |> setSelection
+                setSelected (not selected)
         |}
 
         Html.div [
             prop.classes [
-                input.Status.CellClass
-                if hasComments then
+                status.CellClass
+                if not comments.IsEmpty then
                     Css.tooltipContainer
-                if isSelected then
+                if selected then
                     Css.cellSelected
-                if input.IsToday then
+                if isToday then
                     Css.cellToday
             ]
             prop.children [
@@ -153,16 +74,16 @@ module CellComponent =
                     prop.onClick (fun (_event: MouseEvent) ->
                         events.OnCellClick ()
                     )
-                    prop.children [
-                        match input.Sessions.Length with
-        //                | x -> str (string x)
-                        | x when x > 0 -> str (string x)
-                        | _ -> ()
-                    ]
+//                    prop.children [
+//                        match sessions.Length with
+//        //                | x -> str (string x)
+//                        | x when x > 0 -> str (string x)
+//                        | _ -> ()
+//                    ]
                 ]
 
-                if hasComments then
-                    tooltipPopup {| Comments = input.Comments |}
+                if not comments.IsEmpty then
+                    TooltipPopupComponent.render {| Comments = comments |}
             ]
         ]
     )
@@ -178,68 +99,6 @@ module HomePageComponent =
     let playTick () =
         Ext.playAudio "./sounds/tick.wav"
 
-    let navBar = React.memo (fun () ->
-        let now = Recoil.useValue Recoil.Atoms.now
-        let view, setView = Recoil.useState Recoil.Atoms.view
-        let activeSessions = Recoil.useValue Recoil.Atoms.activeSessions
-
-        Ext.useEventListener "keydown" (fun (e: KeyboardEvent) ->
-            match e.ctrlKey, e.shiftKey, e.key with
-            | _, true, "C" -> setView View.Calendar
-            | _, true, "G" -> setView View.Groups
-            | _, true, "T" -> setView View.Tasks
-            | _, true, "W" -> setView View.Week
-            | _            -> ()
-        )
-
-        Navbar.navbar [ Navbar.Color IsBlack
-                        Navbar.Props [ Style [ Height 36
-                                               MinHeight 36
-                                               Display DisplayOptions.Flex
-                                               JustifyContent "space-around" ]]][
-
-            let checkbox newView text =
-                Navbar.Item.div [ Navbar.Item.Props [ Class "field"
-                                                      OnClick (fun _ -> setView newView)
-                                                      Style [ MarginBottom 0
-                                                              AlignSelf AlignSelfOptions.Center ] ] ][
-
-                    Checkbox.input [ CustomClass "switch is-small is-dark"
-                                     Props [ Checked (view = newView)
-                                             OnChange (fun _ -> ()) ]]
-
-                    Checkbox.checkbox [][
-                        str text
-                    ]
-                ]
-
-            checkbox View.Calendar "calendar view"
-            checkbox View.Groups "groups view"
-            checkbox View.Tasks "tasks view"
-            checkbox View.Week "week view"
-
-            Navbar.Item.div [][
-                activeSessions
-                |> List.map (fun (ActiveSession (task, duration)) ->
-                    let sessionType, color, duration, left =
-                        let left = TempData.sessionLength - duration
-                        match duration < TempData.sessionLength with
-                        | true  -> "Session", "#7cca7c", duration, left
-                        | false -> "Break",   "#ca7c7c", -left,    TempData.sessionBreakLength + left
-
-                    span [ Style [ Color color ] ][
-                        sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" sessionType task.Name duration left
-                        |> str
-                    ]
-                )
-                |> List.intersperse (br [])
-                |> function
-                    | [] -> str "No active session"
-                    | list -> ofList list
-            ]
-
-        ]
-    )
 
 
     module Grid =
@@ -249,19 +108,21 @@ module HomePageComponent =
         let emptyDiv =
             div [ DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
 
-        let taskNameList level (taskStateMap: Map<Task,TaskState>) tasks =
+        let taskNameList level tasks =
             let selection = Recoil.useValue Recoil.Atoms.selection
 
             tasks
             |> List.map (fun task ->
-                let comments =
-                    taskStateMap
+                let taskState = Recoil.useValue (Recoil.Atoms.taskStateFamily task)
+
+                let isSelected =
+                    selection
                     |> Map.tryFind task
-                    |> Option.map (fun taskState -> taskState.Comments)
+                    |> Option.defaultValue Set.empty
+                    |> Set.isEmpty
+                    |> not
 
-                let isSelected = selection |> Map.containsKey task
-
-                div [ classList [ Css.tooltipContainer, match comments with Some (_ :: _) -> true | _ -> false ]
+                div [ classList [ Css.tooltipContainer, not taskState.Comments.IsEmpty ]
                       Style [ Height 17 ] ][
 
                     div [ classList [ Css.selectionHighlight, isSelected ]
@@ -273,46 +134,46 @@ module HomePageComponent =
                         str task.Name
                     ]
 
-                    match comments with
-                    | Some comments -> CellComponent.tooltipPopup {| Comments = comments |}
-                    | None -> ()
+                    if not taskState.Comments.IsEmpty then
+                        TooltipPopupComponent.render {| Comments = taskState.Comments |}
                 ]
             )
 
-        let gridCells dayStart now taskStateMap lanes =
+        let gridCells = React.memo (fun (input: {| Tasks: Task list |}) ->
+            let dateSequence = Recoil.useValue Recoil.Atoms.dateSequence
+
             div [ Class Css.laneContainer ][
 
-                yield! Rendering.getLanesState dayStart now taskStateMap lanes
-                |> List.map (fun (_, laneState) ->
+                yield! input.Tasks
+                |> List.map (fun task ->
 
                     div [][
-                        yield! laneState
-                        |> List.map (fun laneCell ->
-
-                            CellComponent.cell
-                                {| CellAddress = laneCell.CellAddress
-                                   Comments = laneCell.Comments
-                                   Sessions = laneCell.Sessions
-                                   IsToday = laneCell.IsToday
-                                   Status = laneCell.Status |}
+                        yield! dateSequence
+                        |> List.map (fun date ->
+                            CellComponent.cell {| CellAddress = { Task = task; Date = date } |}
                         )
                     ]
                 )
             ]
+        )
 
-        let gridHeader dayStart dateSequence (now: FlukeDateTime) =
+        let gridHeader = React.memo (fun () ->
+            let dateSequence = Recoil.useValue Recoil.Atoms.dateSequence
             let selection = Recoil.useValue Recoil.Atoms.selection
+
             let selectionSet =
-                selection
-                |> Map.values
-                |> Set.unionMany
+//                selection
+//                |> Map.values
+//                |> Set.unionMany
+                Set.empty
 
             let datesInfo =
                 dateSequence
                 |> List.map (fun date ->
+                    let isToday = Recoil.useValue (Recoil.Atoms.isTodayFamily date)
                     let info =
                         {| IsSelected = selectionSet.Contains date
-                           IsToday = isToday dayStart now date |}
+                           IsToday = isToday |}
                     date, info
                 )
                 |> Map.ofList
@@ -363,266 +224,21 @@ module HomePageComponent =
                     )
                 ]
             ]
+        )
 
-        let calendarView (input: {| DayStart: FlukeTime
-                                    DateSequence: FlukeDate list
-                                    Now: FlukeDateTime
-                                    InformationComments: Map<Information, Comment list>
-                                    TaskStateMap: Map<Task, TaskState>
-                                    Lanes: Lane list|}) =
+        let calendarView = React.memo (fun () ->
+            let dayStart = Recoil.useValue Recoil.Atoms.dayStart
+            let now = Recoil.useValue Recoil.Atoms.now
+            let taskOrderList = Recoil.useValue Recoil.Atoms.taskOrderList
+            let dateSequence = Recoil.useValue Recoil.Atoms.dateSequence
+            let taskStateList = Recoil.useValue Recoil.Atoms.taskStateList
 
-            let tasks = input.Lanes |> List.map (fun (Lane (task, _)) -> task)
-
-            div [ Style [ Display DisplayOptions.Flex ] ][
-
-                // Column: Left
-                div [][
-
-                    // Top Padding
-                    div [][
-                        yield! emptyDiv |> List.replicate 3
-                    ]
-
-                    div [ Style [ Display DisplayOptions.Flex ] ][
-
-                        // Column: Information Type
-                        div [ Style [ PaddingRight 10 ] ] [
-
-                            yield! tasks
-                            |> List.map (fun task ->
-                                let comments = input.InformationComments |> Map.tryFind task.Information
-
-                                div [ classList [ Css.blueIndicator, comments.IsSome
-                                                  Css.tooltipContainer, comments.IsSome ]
-                                      Style [ Padding 0
-                                              Height 17
-                                              Color task.Information.Color
-                                              WhiteSpace WhiteSpaceOptions.Nowrap ] ][
-
-                                    str task.Information.Name
-
-                                    match comments with
-                                    | Some comments -> CellComponent.tooltipPopup {| Comments = comments |}
-                                    | None -> ()
-                                ]
-                            )
-                        ]
-
-                        // Column: Task Name
-                        div [ Style [ Width 200 ] ] [
-                            yield! taskNameList 0 input.TaskStateMap tasks
-                        ]
-                    ]
-                ]
-
-                div [][
-                    gridHeader input.DayStart input.DateSequence input.Now
-
-                    gridCells input.DayStart input.Now input.TaskStateMap input.Lanes
-                ]
-            ]
-
-        let groupsView (input: {| DayStart: FlukeTime
-                                  DateSequence: FlukeDate list
-                                  Now: FlukeDateTime
-                                  InformationComments: Map<Information, Comment list>
-                                  TaskStateMap: Map<Task, TaskState>
-                                  Lanes: Lane list |}) =
-
-            let tasks = input.Lanes |> List.map (fun (Lane (task, _)) -> task)
-
-            let groups =
-                input.Lanes
-                |> List.groupBy (fun (Lane (task, _)) -> task.Information)
-                |> List.groupBy (fun (info, _) ->
-                    match info with
-                    | Project _  -> "projects"
-                    | Area _     -> "areas"
-                    | Resource _ -> "resources"
-                    | Archive _  -> "archives"
-                )
-
-            div [ Style [ Display DisplayOptions.Flex ] ][
-
-                // Column: Left
-                div [][
-
-                    // Top Padding
-                    div [][
-                        yield! emptyDiv |> List.replicate 3
-                    ]
-
-                    div [][
-
-                        yield! groups
-                        |> List.map (fun (informationType, lanesGroups) ->
-                            div [][
-                                // Information Type
-                                div [ Style [ Color "#444" ] ][
-                                    str informationType
-                                ]
-
-                                div [][
-
-                                    yield! lanesGroups
-                                    |> List.map (fun (information, _lanes) ->
-                                        let comments = input.InformationComments |> Map.tryFind information
-
-                                        div [][
-                                            // Information
-                                            div [ classList [ Css.blueIndicator, comments.IsSome
-                                                              Css.tooltipContainer, comments.IsSome ]
-                                                  Style [ paddingLeftLevel 1
-                                                          Color "#444" ] ][
-                                                str information.Name
-
-                                                match comments with
-                                                | Some comments -> CellComponent.tooltipPopup {| Comments = comments |}
-                                                | None -> ()
-                                            ]
-
-
-                                            // Task Name
-                                            div [ Style [ Width 500 ] ][
-
-                                                yield! taskNameList 2 input.TaskStateMap tasks
-                                            ]
-                                        ]
-                                    )
-                                ]
-                            ]
-                        )
-                    ]
-                ]
-
-                // Column: Grid
-                div [][
-                    gridHeader input.DayStart input.DateSequence input.Now
-
-                    div [][
-
-                        yield! groups
-                        |> List.map (fun (_, groupLanes) ->
-
-                            div [][
-
-                                emptyDiv
-                                div [][
-
-                                    yield! groupLanes
-                                    |> List.map (fun (_, lanes) ->
-
-                                        div [][
-                                            emptyDiv
-                                            gridCells input.DayStart input.Now input.TaskStateMap lanes
-                                        ]
-                                    )
-                                ]
-                            ]
-                        )
-                    ]
-                ]
-            ]
-
-        let tasksView (input: {| DayStart: FlukeTime
-                                 DateSequence: FlukeDate list
-                                 Now: FlukeDateTime
-                                 InformationComments: Map<Information, Comment list>
-                                 TaskStateMap: Map<Task, TaskState>
-                                 Lanes: Lane list |}) =
             let lanes =
-                input.Lanes
-                |> List.sortByDescending (fun (Lane (task, _)) ->
-                    input.TaskStateMap
-                    |> Map.find task
-                    |> fun x -> x.PriorityValue
-                    |> Option.map ofTaskPriorityValue
-                    |> Option.defaultValue 0
-                )
-
-            let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
-
-            div [ Style [ Display DisplayOptions.Flex ] ][
-
-                // Column: Left
-                div [][
-                    // Top Padding
-                    div [][
-                        yield! emptyDiv |> List.replicate 3
-                    ]
-
-                    div [ Style [ Display DisplayOptions.Flex ] ][
-                        // Column: Information Type
-                        div [ Style [ PaddingRight 10 ] ] [
-                            yield! tasks
-                            |> List.map (fun task ->
-                                let comments = input.InformationComments |> Map.tryFind task.Information
-
-                                div [ classList [ Css.blueIndicator, comments.IsSome
-                                                  Css.tooltipContainer, comments.IsSome ]
-                                      Style [ Padding 0
-                                              Height 17
-                                              Color task.Information.Color
-                                              WhiteSpace WhiteSpaceOptions.Nowrap ] ][
-
-                                    str task.Information.Name
-
-                                    match comments with
-                                    | Some comments -> CellComponent.tooltipPopup {| Comments = comments |}
-                                    | None -> ()
-                                ]
-                            )
-                        ]
-
-                        // Column: Priority
-                        div [ Style [ PaddingRight 10
-                                      TextAlign TextAlignOptions.Center ] ] [
-                            yield! tasks
-                            |> List.map (fun task ->
-                                let taskState = input.TaskStateMap.[task]
-                                div [ Style [ Height 17 ] ][
-                                    taskState.PriorityValue
-                                    |> Option.map ofTaskPriorityValue
-                                    |> Option.defaultValue 0
-                                    |> string
-                                    |> str
-                                ]
-                            )
-                        ]
-
-                        // Column: Task Name
-                        div [ Style [ Width 200 ] ] [
-                            yield! taskNameList 0 input.TaskStateMap tasks
-                        ]
-                    ]
-                ]
-
-                div [][
-                    gridHeader input.DayStart input.DateSequence input.Now
-
-                    gridCells input.DayStart input.Now input.TaskStateMap lanes
-                ]
-            ]
-
-        let weekView (input: {| DayStart: FlukeTime
-                                DateSequence: FlukeDate list
-                                Now: FlukeDateTime
-                                InformationComments: Map<Information, Comment list>
-                                TaskStateMap: Map<Task, TaskState>
-                                Lanes: Lane list |}) =
-            nothing
-
-    let getLanes dayStart (dateSequence: FlukeDate list) (now: FlukeDateTime) informationList taskStateList taskOrderList view =
-        match dateSequence with
-        | [] -> []
-        | dateSequence ->
-            let dateRange =
-                let head = dateSequence |> List.head |> fun x -> x.DateTime
-                let last = dateSequence |> List.last |> fun x -> x.DateTime
-                head, last
-
-            match view with
-            | View.Calendar ->
+                let dateRange =
+                    let head = dateSequence |> List.head |> fun x -> x.DateTime
+                    let last = dateSequence |> List.last |> fun x -> x.DateTime
+                    head, last
+//
                 taskStateList
                 |> List.filter (function
                     | { Task = { Task.Scheduling = Manual WithoutSuggestion }
@@ -640,13 +256,76 @@ module HomePageComponent =
                     | _ -> true
                 )
                 |> List.map (fun taskState ->
-//                    printfn "Task2: %A. LEN: %A" taskState.Task.Name taskState.Sessions.Length
-                    Rendering.renderLane dayStart now dateSequence taskState.Task taskState.StatusEntries
+                    Recoil.useValue (Recoil.Atoms.laneFamily taskState.Task)
                 )
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByIncomingRecurrency dayStart now
                 |> Sorting.sortLanesByTimeOfDay dayStart now taskOrderList
-            | View.Groups ->
+
+            let tasks =
+                lanes
+                |> List.map (fun (Lane (task, _)) -> task)
+
+            div [ Style [ Display DisplayOptions.Flex ] ][
+
+                // Column: Left
+                div [][
+
+                    // Top Padding
+                    div [][
+                        yield! emptyDiv |> List.replicate 3
+                    ]
+
+                    div [ Style [ Display DisplayOptions.Flex ] ][
+
+                        // Column: Information Type
+                        div [ Style [ PaddingRight 10 ] ] [
+
+                            yield! tasks
+                            |> List.map (fun task ->
+//                                let comments = Recoil.useValue (Recoil.Atoms.informationCommentsFamily task.Information)
+                                let comments = []
+
+                                div [ classList [ Css.blueIndicator, not comments.IsEmpty
+                                                  Css.tooltipContainer, not comments.IsEmpty ]
+                                      Style [ Padding 0
+                                              Height 17
+                                              Color task.Information.Color
+                                              WhiteSpace WhiteSpaceOptions.Nowrap ] ][
+
+                                    str task.Information.Name
+
+                                    if not comments.IsEmpty then
+                                        TooltipPopupComponent.render {| Comments = comments |}
+                                ]
+                            )
+                        ]
+
+                        // Column: Task Name
+                        div [ Style [ Width 200 ] ] [
+                            yield! taskNameList 0 tasks
+                        ]
+                    ]
+                ]
+
+                div [][
+                    gridHeader ()
+
+                    gridCells {| Tasks = tasks |}
+                ]
+            ]
+        )
+
+        let groupsView = React.memo (fun () ->
+            let dayStart = Recoil.useValue Recoil.Atoms.dayStart
+            let now = Recoil.useValue Recoil.Atoms.now
+            let taskOrderList = Recoil.useValue Recoil.Atoms.taskOrderList
+            let dateSequence = Recoil.useValue Recoil.Atoms.dateSequence
+            let taskStateList = Recoil.useValue Recoil.Atoms.taskStateList
+            let informationList = Recoil.useValue Recoil.Atoms.informationList
+
+
+            let lanes =
                 let lanes =
                     taskStateList
                     |> List.filter (function
@@ -678,99 +357,246 @@ module HomePageComponent =
                     information, lanes
                 )
                 |> List.collect snd
-            | View.Tasks ->
+
+            let groups =
+                taskStateList
+                |> List.map (fun x -> x.Task)
+                |> List.groupBy (fun task -> task.Information)
+                |> List.groupBy (fun (info, _) ->
+                    match info with
+                    | Project _  -> "projects"
+                    | Area _     -> "areas"
+                    | Resource _ -> "resources"
+                    | Archive _  -> "archives"
+                )
+
+            div [ Style [ Display DisplayOptions.Flex ] ][
+
+                // Column: Left
+                div [][
+
+                    // Top Padding
+                    div [][
+                        yield! emptyDiv |> List.replicate 3
+                    ]
+
+                    div [][
+
+                        yield! groups
+                        |> List.map (fun (informationType, taskGroups) ->
+                            div [][
+                                // Information Type
+                                div [ Style [ Color "#444" ] ][
+                                    str informationType
+                                ]
+
+                                div [][
+
+                                    yield! taskGroups
+                                    |> List.map (fun (information, tasks) ->
+                                        let comments = Recoil.useValue (Recoil.Atoms.informationCommentsFamily information)
+
+                                        div [][
+                                            // Information
+                                            div [ classList [ Css.blueIndicator, comments.IsEmpty
+                                                              Css.tooltipContainer, comments.IsEmpty ]
+                                                  Style [ paddingLeftLevel 1
+                                                          Color "#444" ] ][
+                                                str information.Name
+
+                                                if not comments.IsEmpty then
+                                                    TooltipPopupComponent.render {| Comments = comments |}
+                                            ]
+
+
+                                            // Task Name
+                                            div [ Style [ Width 500 ] ][
+
+                                                yield! taskNameList 2 tasks
+                                            ]
+                                        ]
+                                    )
+                                ]
+                            ]
+                        )
+                    ]
+                ]
+
+                // Column: Grid
+                div [][
+                    gridHeader ()
+
+                    div [][
+
+                        yield! groups
+                        |> List.map (fun (_, taskGroups) ->
+
+                            div [][
+
+                                emptyDiv
+                                div [][
+
+                                    yield! taskGroups
+                                    |> List.map (fun (_, tasks) ->
+
+                                        div [][
+                                            emptyDiv
+                                            gridCells {| Tasks = tasks |}
+                                        ]
+                                    )
+                                ]
+                            ]
+                        )
+                    ]
+                ]
+            ]
+        )
+
+
+        let tasksView = React.memo (fun () ->
+            let dayStart = Recoil.useValue Recoil.Atoms.dayStart
+            let now = Recoil.useValue Recoil.Atoms.now
+            let taskOrderList = Recoil.useValue Recoil.Atoms.taskOrderList
+            let dateSequence = Recoil.useValue Recoil.Atoms.dateSequence
+            let taskStateList = Recoil.useValue Recoil.Atoms.taskStateList
+            let informationList = Recoil.useValue Recoil.Atoms.informationList
+
+            let tasks =
                 taskStateList
                 |> List.filter (function { Task = { Task.Scheduling = Manual _ }} -> true | _ -> false)
                 |> List.map (fun taskState ->
                     Rendering.renderLane dayStart now dateSequence taskState.Task taskState.StatusEntries
                 )
                 |> Sorting.applyManualOrder taskOrderList
-            | View.Week ->
-                []
+                |> List.map (fun (Lane (task, cells)) -> task)
+                |> List.sortByDescending (fun task ->
+                    let taskState = Recoil.useValue (Recoil.Atoms.taskStateFamily task)
 
-
-    let ``default`` = React.memo (fun () ->
-
-        let now = Recoil.useValue Recoil.Atoms.now
-        let view = Recoil.useValue Recoil.Atoms.view
-        let activeSessions, setActiveSessions = Recoil.useState Recoil.Atoms.activeSessions
-        let selection, setSelection = Recoil.useState Recoil.Atoms.selection
-        let dayStart = Recoil.useValue Recoil.Atoms.dayStart
-        let dateSequence = Recoil.useValue Recoil.Atoms.dateSequence
-        let dings, setDings = Recoil.useState (Recoil.Atoms.dingsFamily now)
-        let ctrlPressed = Recoil.useValue Recoil.Atoms.ctrlPressed
-
-        printfn "RENDER DEFAULT. NOW: %A" now
-
-        let taskStateList = Temp.taskStateList
-        let taskOrderList = Temp.taskOrderList
-        let informationComments = Temp.informationComments
-        let informationList = Temp.informationList
-
-        let taskStateMap =
-            taskStateList
-            |> List.map (fun taskState -> taskState.Task, taskState)
-            |> Map.ofList
-
-        let lastSessions =
-            taskStateList
-            |> Seq.filter (fun taskState -> not taskState.Sessions.IsEmpty)
-            |> Seq.map (fun taskState -> taskState.Task, taskState.Sessions)
-            |> Seq.map (Tuple2.mapSnd (fun sessions ->
-                sessions
-                |> Seq.sortByDescending (fun (TaskSession start) -> start.DateTime)
-                |> Seq.head
-            ))
-            |> Seq.toList
-
-        let lanes = getLanes dayStart dateSequence now informationList taskStateList taskOrderList view
-
-        let newActiveSessions =
-            lastSessions
-            |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
-            |> List.filter (fun (_, length) -> length < TempData.sessionLength + TempData.sessionBreakLength)
-            |> List.map ActiveSession
-
-        if activeSessions <> newActiveSessions then
-            setActiveSessions newActiveSessions
-
-        newActiveSessions
-        |> List.map (fun (ActiveSession (oldTask, oldDuration)) ->
-            let newSession =
-                activeSessions
-                |> List.tryFind (fun (ActiveSession (task, duration)) ->
-                    task = oldTask && duration = oldDuration + 1.
+                    taskState.PriorityValue
+                    |> Option.map ofTaskPriorityValue
+                    |> Option.defaultValue 0
                 )
 
-            match newSession with
-            | Some (ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> playTick
-            | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> playDing
-            | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> playDing
-            | _ -> fun () -> ()
+            div [ Style [ Display DisplayOptions.Flex ] ][
+
+                // Column: Left
+                div [][
+                    // Top Padding
+                    div [][
+                        yield! emptyDiv |> List.replicate 3
+                    ]
+
+                    div [ Style [ Display DisplayOptions.Flex ] ][
+                        // Column: Information Type
+                        div [ Style [ PaddingRight 10 ] ] [
+                            yield! tasks
+                            |> List.map (fun task ->
+                                let comments = Recoil.useValue (Recoil.Atoms.informationCommentsFamily task.Information)
+
+                                div [ classList [ Css.blueIndicator, comments.IsEmpty
+                                                  Css.tooltipContainer, comments.IsEmpty ]
+                                      Style [ Padding 0
+                                              Height 17
+                                              Color task.Information.Color
+                                              WhiteSpace WhiteSpaceOptions.Nowrap ] ][
+
+                                    str task.Information.Name
+
+                                    if not comments.IsEmpty then
+                                        TooltipPopupComponent.render {| Comments = comments |}
+                                ]
+                            )
+                        ]
+
+                        // Column: Priority
+                        div [ Style [ PaddingRight 10
+                                      TextAlign TextAlignOptions.Center ] ] [
+                            yield! tasks
+                            |> List.map (fun task ->
+                                let taskState = Recoil.useValue (Recoil.Atoms.taskStateFamily task)
+                                div [ Style [ Height 17 ] ][
+                                    taskState.PriorityValue
+                                    |> Option.map ofTaskPriorityValue
+                                    |> Option.defaultValue 0
+                                    |> string
+                                    |> str
+                                ]
+                            )
+                        ]
+
+                        // Column: Task Name
+                        div [ Style [ Width 200 ] ] [
+                            yield! taskNameList 0 tasks
+                        ]
+                    ]
+                ]
+
+                div [][
+                    gridHeader ()
+
+                    gridCells {| Tasks = tasks |}
+                ]
+            ]
         )
-        |> List.iter (fun x -> x ())
 
-        Text.div [ Props [ Style [ Height "100%" ] ]
-                   Modifiers [ Modifier.TextSize (Screen.All, TextSize.Is7) ] ][
+        let weekView = React.memo (fun () ->
+            nothing
+        )
 
-            navBar ()
 
-            let props =
-                {| DayStart = dayStart
-                   DateSequence = dateSequence
-                   Now = now
-                   InformationComments = informationComments
-                   TaskStateMap = taskStateMap
-                   Lanes = lanes |}
+    let render = React.memo (fun () ->
 
-            let viewFn =
-                match view with
-                | View.Calendar -> Grid.calendarView
-                | View.Groups   -> Grid.groupsView
-                | View.Tasks    -> Grid.tasksView
-                | View.Week     -> Grid.weekView
+        let view = Recoil.useValue Recoil.Atoms.view
+//        let now = Recoil.useValue Recoil.Atoms.now
+//        let activeSessions, setActiveSessions = Recoil.useState Recoil.Atoms.activeSessions
+//        let selection, setSelection = Recoil.useState Recoil.Atoms.selection
+//        let dayStart = Recoil.useValue Recoil.Atoms.dayStart
+//        let dateSequence = Recoil.useValue Recoil.Atoms.dateSequence
+//        let dings, setDings = Recoil.useState (Recoil.Atoms.dingsFamily now)
+//        let ctrlPressed = Recoil.useValue Recoil.Atoms.ctrlPressed
+//        let taskStateList = Recoil.useValue Recoil.Atoms.taskStateList
+//        let informationList = Recoil.useValue Recoil.Atoms.informationList
+//        let taskOrderList = Recoil.useValue Recoil.Atoms.taskOrderList
 
-            viewFn props
+        printfn "HomePageComponent.render"
+
+//        taskStateList
+//        |> List.iter (fun taskState ->
+//            let setTaskCells = Recoil.useSetState (Recoil.Atoms.taskCellsFamily taskState.Task)
+//            setTaskCells cells
+//        )
+
+//        let newActiveSessions =
+//            lastSessions
+//            |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
+//            |> List.filter (fun (_, length) -> length < TempData.sessionLength + TempData.sessionBreakLength)
+//            |> List.map ActiveSession
+//
+//        if activeSessions <> newActiveSessions then
+//            setActiveSessions newActiveSessions
+//
+//        newActiveSessions
+//        |> List.map (fun (ActiveSession (oldTask, oldDuration)) ->
+//            let newSession =
+//                activeSessions
+//                |> List.tryFind (fun (ActiveSession (task, duration)) ->
+//                    task = oldTask && duration = oldDuration + 1.
+//                )
+//
+//            match newSession with
+//            | Some (ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> playTick
+//            | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> playDing
+//            | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> playDing
+//            | _ -> fun () -> ()
+//        )
+//        |> List.iter (fun x -> x ())
+
+        Html.div [
+            match view with
+            | View.Calendar -> Grid.calendarView ()
+            | View.Groups   -> Grid.groupsView ()
+            | View.Tasks    -> Grid.tasksView ()
+            | View.Week     -> Grid.weekView ()
         ]
     )
 
