@@ -1,24 +1,29 @@
 namespace Fluke.UI.Frontend
 
-open Fable.React.Props
+open Fable.React
 open Feliz
 open Fluke.Shared
 open System
 
-module SharedState =
-    type SharedClientMessage = unit
-    type SharedServerMessage = unit
-
-
-module UIState =
-
-    type State =
-        { x: unit }
-        static member inline Default = { x = () }
-
 
 module Model =
     open Model
+
+    [<RequireQualifiedAccess>]
+    type View =
+        | Calendar
+        | Groups
+        | Tasks
+        | Week
+
+    [<RequireQualifiedAccess>]
+    type Hover =
+        | Cell
+        | Task
+        | Information
+        | None
+
+    type ActiveSession = ActiveSession of task:Task * duration:float
 
     type Information with
         member this.Name =
@@ -66,7 +71,7 @@ module Functions =
     let getCellSeparatorBorderLeft (date: FlukeDate) =
         tmpGetCellSeparatorBorderLeft date
         |> Option.map ((+) "1px solid ")
-        |> fun x -> CSSProp.BorderLeft x
+        |> fun x -> Props.CSSProp.BorderLeft x
 
     let getCellSeparatorBorderLeft2 (date: FlukeDate) =
         tmpGetCellSeparatorBorderLeft date

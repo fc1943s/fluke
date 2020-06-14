@@ -6,9 +6,25 @@ open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend
 open Browser.Types
+open Browser.Types
+open FSharpPlus
+open Fable.Core
+open Feliz
+open Feliz.Recoil
+open Fluke.Shared
+open Fluke.UI.Frontend
+open Fable.React
+open Fable.React.Props
+open Fable.DateFunctions
+open Fulma
+open System
+open Fulma.Extensions.Wikiki
+open Suigetsu.UI.Frontend.ElmishBridge
+open Suigetsu.UI.Frontend.React
+open Suigetsu.Core
 
 
-module MainComponent =
+module Temp =
     module CustomHooks =
         let useWindowSize () =
             let getWindowSize () =
@@ -29,11 +45,27 @@ module MainComponent =
             )
             size
 
-    let render = React.functionComponent (fun () ->
+module PageLoader =
+    let render = React.memo (fun () ->
+        PageLoader.pageLoader [ PageLoader.Color IsDark
+                                PageLoader.IsActive true ][]
+    )
+
+module MainComponent =
+    let render = React.memo (fun () ->
+        let setNow = Recoil.useSetState Recoil.Atoms.now
 //        let windowSize = CustomHooks.useWindowSize ()
 
-        Recoil.root [
+        let updateNow () =
+            Recoil.Temp.tempState.GetNow
+            |> fun x -> x ()
+            |> setNow
+
+        updateNow ()
+        CustomHooks.useInterval updateNow (60 * 1000)
+
+        React.suspense ([
             HomePageComponent.``default`` ()
-        ]
+        ], PageLoader.render ())
     )
 
