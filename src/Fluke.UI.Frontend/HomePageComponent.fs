@@ -105,20 +105,40 @@ module CellComponent =
     )
 
     let cell = React.memo (fun (input: {| CellAddress: CellAddress
-                                          OnSelect: unit -> unit
                                           Comments: Comment list
                                           Sessions: TaskSession list
                                           Status: CellStatus
-                                          IsSelected: bool
                                           IsToday: bool |}) ->
+        let selection, setSelection = Recoil.useState Recoil.Atoms.selection
+        let ctrlPressed = Recoil.useValue Recoil.Atoms.ctrlPressed
+
+        let oldSelection =
+            selection
+            |> Map.tryFind input.CellAddress.Task
+            |> Option.defaultValue Set.empty
+
+        let isSelected = oldSelection |> Set.contains input.CellAddress.Date
+
         let hasComments = not input.Comments.IsEmpty
+
+        let events = {|
+            OnCellClick = fun () ->
+                let newSelection =
+                    match ctrlPressed with
+                    | true -> input.CellAddress.Date |> Set.singleton
+                    | false -> oldSelection |> Set.toggle input.CellAddress.Date
+
+                selection
+                |> Map.add input.CellAddress.Task newSelection
+                |> setSelection
+        |}
 
         Html.div [
             prop.classes [
                 input.Status.CellClass
                 if hasComments then
                     Css.tooltipContainer
-                if input.IsSelected then
+                if isSelected then
                     Css.cellSelected
                 if input.IsToday then
                     Css.cellToday
@@ -131,7 +151,7 @@ module CellComponent =
                         | None -> ()
                     ]
                     prop.onClick (fun (_event: MouseEvent) ->
-                        input.OnSelect ()
+                        events.OnCellClick ()
                     )
                     prop.children [
                         match input.Sessions.Length with
@@ -229,7 +249,9 @@ module HomePageComponent =
         let emptyDiv =
             div [ DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
 
-        let taskNameList level (taskStateMap: Map<Task,TaskState>) (selection: CellAddress list) tasks =
+        let taskNameList level (taskStateMap: Map<Task,TaskState>) tasks =
+            let selection = Recoil.useValue Recoil.Atoms.selection
+
             tasks
             |> List.map (fun task ->
                 let comments =
@@ -237,9 +259,7 @@ module HomePageComponent =
                     |> Map.tryFind task
                     |> Option.map (fun taskState -> taskState.Comments)
 
-                let isSelected =
-                    selection
-                    |> List.exists (fun address -> address.Task = task)
+                let isSelected = selection |> Map.containsKey task
 
                 div [ classList [ Css.tooltipContainer, match comments with Some (_ :: _) -> true | _ -> false ]
                       Style [ Height 17 ] ][
@@ -259,10 +279,10 @@ module HomePageComponent =
                 ]
             )
 
-        let gridCells dayStart now selection taskStateMap lanes onCellSelect =
+        let gridCells dayStart now taskStateMap lanes =
             div [ Class Css.laneContainer ][
 
-                yield! Rendering.getLanesState dayStart now selection taskStateMap lanes
+                yield! Rendering.getLanesState dayStart now taskStateMap lanes
                 |> List.map (fun (_, laneState) ->
 
                     div [][
@@ -271,10 +291,8 @@ module HomePageComponent =
 
                             CellComponent.cell
                                 {| CellAddress = laneCell.CellAddress
-                                   OnSelect = fun () -> onCellSelect laneCell.CellAddress
                                    Comments = laneCell.Comments
                                    Sessions = laneCell.Sessions
-                                   IsSelected = laneCell.IsSelected
                                    IsToday = laneCell.IsToday
                                    Status = laneCell.Status |}
                         )
@@ -282,11 +300,12 @@ module HomePageComponent =
                 )
             ]
 
-        let gridHeader dayStart dateSequence (now: FlukeDateTime) (selection: CellAddress list) =
+        let gridHeader dayStart dateSequence (now: FlukeDateTime) =
+            let selection = Recoil.useValue Recoil.Atoms.selection
             let selectionSet =
                 selection
-                |> List.map (fun address -> address.Date)
-                |> Set.ofList
+                |> Map.values
+                |> Set.unionMany
 
             let datesInfo =
                 dateSequence
@@ -348,11 +367,9 @@ module HomePageComponent =
         let calendarView (input: {| DayStart: FlukeTime
                                     DateSequence: FlukeDate list
                                     Now: FlukeDateTime
-                                    Selection: CellAddress list
                                     InformationComments: Map<Information, Comment list>
                                     TaskStateMap: Map<Task, TaskState>
-                                    Lanes: Lane list
-                                    OnCellSelect: CellAddress -> unit |}) =
+                                    Lanes: Lane list|}) =
 
             let tasks = input.Lanes |> List.map (fun (Lane (task, _)) -> task)
 
@@ -393,26 +410,24 @@ module HomePageComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! taskNameList 0 input.TaskStateMap input.Selection tasks
+                            yield! taskNameList 0 input.TaskStateMap tasks
                         ]
                     ]
                 ]
 
                 div [][
-                    gridHeader input.DayStart input.DateSequence input.Now input.Selection
+                    gridHeader input.DayStart input.DateSequence input.Now
 
-                    gridCells input.DayStart input.Now input.Selection input.TaskStateMap input.Lanes input.OnCellSelect
+                    gridCells input.DayStart input.Now input.TaskStateMap input.Lanes
                 ]
             ]
 
         let groupsView (input: {| DayStart: FlukeTime
                                   DateSequence: FlukeDate list
                                   Now: FlukeDateTime
-                                  Selection: CellAddress list
                                   InformationComments: Map<Information, Comment list>
                                   TaskStateMap: Map<Task, TaskState>
-                                  Lanes: Lane list
-                                  OnCellSelect: CellAddress -> unit |}) =
+                                  Lanes: Lane list |}) =
 
             let tasks = input.Lanes |> List.map (fun (Lane (task, _)) -> task)
 
@@ -470,7 +485,7 @@ module HomePageComponent =
                                             // Task Name
                                             div [ Style [ Width 500 ] ][
 
-                                                yield! taskNameList 2 input.TaskStateMap input.Selection tasks
+                                                yield! taskNameList 2 input.TaskStateMap tasks
                                             ]
                                         ]
                                     )
@@ -482,7 +497,7 @@ module HomePageComponent =
 
                 // Column: Grid
                 div [][
-                    gridHeader input.DayStart input.DateSequence input.Now input.Selection
+                    gridHeader input.DayStart input.DateSequence input.Now
 
                     div [][
 
@@ -499,7 +514,7 @@ module HomePageComponent =
 
                                         div [][
                                             emptyDiv
-                                            gridCells input.DayStart input.Now input.Selection input.TaskStateMap lanes input.OnCellSelect
+                                            gridCells input.DayStart input.Now input.TaskStateMap lanes
                                         ]
                                     )
                                 ]
@@ -512,11 +527,9 @@ module HomePageComponent =
         let tasksView (input: {| DayStart: FlukeTime
                                  DateSequence: FlukeDate list
                                  Now: FlukeDateTime
-                                 Selection: CellAddress list
                                  InformationComments: Map<Information, Comment list>
                                  TaskStateMap: Map<Task, TaskState>
-                                 Lanes: Lane list
-                                 OnCellSelect: CellAddress -> unit |}) =
+                                 Lanes: Lane list |}) =
             let lanes =
                 input.Lanes
                 |> List.sortByDescending (fun (Lane (task, _)) ->
@@ -579,26 +592,24 @@ module HomePageComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! taskNameList 0 input.TaskStateMap input.Selection tasks
+                            yield! taskNameList 0 input.TaskStateMap tasks
                         ]
                     ]
                 ]
 
                 div [][
-                    gridHeader input.DayStart input.DateSequence input.Now input.Selection
+                    gridHeader input.DayStart input.DateSequence input.Now
 
-                    gridCells input.DayStart input.Now input.Selection input.TaskStateMap lanes input.OnCellSelect
+                    gridCells input.DayStart input.Now input.TaskStateMap lanes
                 ]
             ]
 
         let weekView (input: {| DayStart: FlukeTime
                                 DateSequence: FlukeDate list
                                 Now: FlukeDateTime
-                                Selection: CellAddress list
                                 InformationComments: Map<Information, Comment list>
                                 TaskStateMap: Map<Task, TaskState>
-                                Lanes: Lane list
-                                OnCellSelect: CellAddress -> unit |}) =
+                                Lanes: Lane list |}) =
             nothing
 
     let getLanes dayStart (dateSequence: FlukeDate list) (now: FlukeDateTime) informationList taskStateList taskOrderList view =
@@ -739,33 +750,6 @@ module HomePageComponent =
         )
         |> List.iter (fun x -> x ())
 
-        let onCellSelect (cell: CellAddress) =
-            let taskSelection =
-                selection
-                |> Map.tryFind cell.Task
-                |> Option.defaultValue (cell.Date |> Set.singleton)
-
-
-            selection
-            |> Map.add cell.Task taskSelection
-            |> setSelection
-//            setState
-//                { state with
-//                    Selection =
-//                        if not state.CtrlPressed then
-//                            [ cell ]
-//                        else
-//                            let rec loop newSelection = function
-//                                | head :: tail when head = cell -> true, newSelection @ tail
-//                                | head :: tail -> loop (head :: newSelection) tail
-//                                | [] -> false, newSelection
-//                            let removed, newSelection = loop [] state.Selection
-//
-//                            match removed with
-//                            | true -> newSelection
-//                            | false -> newSelection |> List.append [ cell ]
-//                }
-
         Text.div [ Props [ Style [ Height "100%" ] ]
                    Modifiers [ Modifier.TextSize (Screen.All, TextSize.Is7) ] ][
 
@@ -775,17 +759,9 @@ module HomePageComponent =
                 {| DayStart = dayStart
                    DateSequence = dateSequence
                    Now = now
-                   Selection =
-                       selection
-                       |> Seq.collect (fun (KeyValue (task, dates)) ->
-                           dates
-                           |> Seq.map (fun date -> { Task = task; Date = date })
-                       )
-                       |> Seq.toList
                    InformationComments = informationComments
                    TaskStateMap = taskStateMap
-                   Lanes = lanes
-                   OnCellSelect = onCellSelect |}
+                   Lanes = lanes |}
 
             let viewFn =
                 match view with

@@ -454,7 +454,7 @@ module Rendering =
             |> List.map (fun (date, cellStatus) -> Cell ({ Date = date; Task = task }, cellStatus))
         Lane (task, cells)
 
-    let getLanesState dayStart now selection taskStateMap lanes =
+    let getLanesState dayStart now taskStateMap lanes =
         lanes
         |> List.map (fun (Lane (task, cells)) ->
             let taskState = taskStateMap |> Map.tryFind task
@@ -479,7 +479,6 @@ module Rendering =
                     {| CellAddress = address
                        Comments = cellComments
                        Sessions = sessions
-                       IsSelected = selection |> List.contains address
                        IsToday = isToday dayStart now address.Date
                        Status = status |}
                 )
