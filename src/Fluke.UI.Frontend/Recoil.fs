@@ -67,11 +67,15 @@ module Recoil =
         }
         let view = atom {
             key "fluke/view"
-            def View.Calendar
+            def Temp.view
         }
-        let selected = atom {
-            key "fluke/selected"
+        let selection = atom {
+            key "fluke/selection"
             def (Map.empty : Map<Task, Set<FlukeDate>>)
+        }
+        let ctrlPressed = atom {
+            key "fluke/ctrlPressed"
+            def false
         }
         let hovered = atom {
             key "fluke/hovered"

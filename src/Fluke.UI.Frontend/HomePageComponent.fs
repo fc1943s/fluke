@@ -150,18 +150,6 @@ module CellComponent =
 module HomePageComponent =
     open Model
 
-
-    type State =
-        { Selection: CellAddress list
-          Lanes: Lane list
-          CtrlPressed: bool
-          View: View }
-        static member inline Default =
-            { Selection = []
-              Lanes = []
-              CtrlPressed = false
-              View = View.Calendar }
-
     let playDing () =
          [ 0; 1400 ]
          |> List.map (JS.setTimeout (fun () -> Ext.playAudio "./sounds/ding.wav"))
@@ -691,9 +679,17 @@ module HomePageComponent =
 
 
     let ``default`` = React.memo (fun () ->
+
         let now = Recoil.useValue Recoil.Atoms.now
+        let view = Recoil.useValue Recoil.Atoms.view
+        let activeSessions, setActiveSessions = Recoil.useState Recoil.Atoms.activeSessions
+        let selection, setSelection = Recoil.useState Recoil.Atoms.selection
         let dayStart = Recoil.useValue Recoil.Atoms.dayStart
+        let dateSequence = Recoil.useValue Recoil.Atoms.dateSequence
         let dings, setDings = Recoil.useState (Recoil.Atoms.dingsFamily now)
+        let ctrlPressed = Recoil.useValue Recoil.Atoms.ctrlPressed
+
+        printfn "RENDER DEFAULT. NOW: %A" now
 
         let taskStateList = Temp.taskStateList
         let taskOrderList = Temp.taskOrderList
@@ -716,79 +712,59 @@ module HomePageComponent =
             ))
             |> Seq.toList
 
-        let createState oldState =
-            printfn "CREATESTATE"
-            let lanes = getLanes dayStart dateSequence now informationList taskStateList taskOrderList oldState.View
+        let lanes = getLanes dayStart dateSequence now informationList taskStateList taskOrderList view
 
-            let activeSessions =
-                lastSessions
-                |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
-                |> List.filter (fun (_, length) -> length < TempData.sessionLength + TempData.sessionBreakLength)
-                |> List.map ActiveSession
+        let newActiveSessions =
+            lastSessions
+            |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
+            |> List.filter (fun (_, length) -> length < TempData.sessionLength + TempData.sessionBreakLength)
+            |> List.map ActiveSession
 
-            oldState.ActiveSessions
-            |> List.map (fun (ActiveSession (oldTask, oldDuration)) ->
-                let newSession =
-                    activeSessions
-                    |> List.tryFind (fun (ActiveSession (task, duration)) ->
-                        task = oldTask && duration = oldDuration + 1.
-                    )
+        if activeSessions <> newActiveSessions then
+            setActiveSessions newActiveSessions
 
-                match newSession with
-                | Some (ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> playTick
-                | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> playDing
-                | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> playDing
-                | _ -> fun () -> ()
-            )
-            |> List.iter (fun x -> x ())
+        newActiveSessions
+        |> List.map (fun (ActiveSession (oldTask, oldDuration)) ->
+            let newSession =
+                activeSessions
+                |> List.tryFind (fun (ActiveSession (task, duration)) ->
+                    task = oldTask && duration = oldDuration + 1.
+                )
 
-            { oldState with
-                  Lanes = lanes
-                  ActiveSessions = activeSessions }
+            match newSession with
+            | Some (ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> playTick
+            | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> playDing
+            | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> playDing
+            | _ -> fun () -> ()
+        )
+        |> List.iter (fun x -> x ())
 
-        let state, setState = React.useState (createState State.Default)
+        let onCellSelect (cell: CellAddress) =
+            let taskSelection =
+                selection
+                |> Map.tryFind cell.Task
+                |> Option.defaultValue (cell.Date |> Set.singleton)
 
-        let keyEvent (e: KeyboardEvent) =
-            if e.ctrlKey <> state.CtrlPressed then
-                setState { state with CtrlPressed = e.ctrlKey }
 
-            if e.key = "Escape" && not state.Selection.IsEmpty then
-                setState { state with Selection = [] }
-
-        Ext.useEventListener "keydown" keyEvent
-        Ext.useEventListener "keyup" keyEvent
-
-        let onCellSelect cell =
-            setState
-                { state with
-                    Selection =
-                        if not state.CtrlPressed then
-                            [ cell ]
-                        else
-                            let rec loop newSelection = function
-                                | head :: tail when head = cell -> true, newSelection @ tail
-                                | head :: tail -> loop (head :: newSelection) tail
-                                | [] -> false, newSelection
-                            let removed, newSelection = loop [] state.Selection
-
-                            match removed with
-                            | true -> newSelection
-                            | false -> newSelection |> List.append [ cell ]
-                }
-
-        let dateSequence =
-            match state.Lanes with
-            | Lane (_, cells) :: _ -> cells |> List.map (fun (Cell (address, _)) -> address.Date)
-            | _ -> []
-
-        let events = {|
-            OnViewChange = fun view ->
-                createState
-                    { state with
-                        View = view
-                        Selection = [] }
-                |> setState
-        |}
+            selection
+            |> Map.add cell.Task taskSelection
+            |> setSelection
+//            setState
+//                { state with
+//                    Selection =
+//                        if not state.CtrlPressed then
+//                            [ cell ]
+//                        else
+//                            let rec loop newSelection = function
+//                                | head :: tail when head = cell -> true, newSelection @ tail
+//                                | head :: tail -> loop (head :: newSelection) tail
+//                                | [] -> false, newSelection
+//                            let removed, newSelection = loop [] state.Selection
+//
+//                            match removed with
+//                            | true -> newSelection
+//                            | false -> newSelection |> List.append [ cell ]
+//                }
 
         Text.div [ Props [ Style [ Height "100%" ] ]
                    Modifiers [ Modifier.TextSize (Screen.All, TextSize.Is7) ] ][
@@ -799,14 +775,20 @@ module HomePageComponent =
                 {| DayStart = dayStart
                    DateSequence = dateSequence
                    Now = now
-                   Selection = state.Selection
+                   Selection =
+                       selection
+                       |> Seq.collect (fun (KeyValue (task, dates)) ->
+                           dates
+                           |> Seq.map (fun date -> { Task = task; Date = date })
+                       )
+                       |> Seq.toList
                    InformationComments = informationComments
                    TaskStateMap = taskStateMap
-                   Lanes = state.Lanes
+                   Lanes = lanes
                    OnCellSelect = onCellSelect |}
 
             let viewFn =
-                match state.View with
+                match view with
                 | View.Calendar -> Grid.calendarView
                 | View.Groups   -> Grid.groupsView
                 | View.Tasks    -> Grid.tasksView

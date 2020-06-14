@@ -54,15 +54,28 @@ module PageLoader =
 module MainComponent =
     let render = React.memo (fun () ->
         let setNow = Recoil.useSetState Recoil.Atoms.now
-//        let windowSize = CustomHooks.useWindowSize ()
+        let selection, setSelection = Recoil.useState Recoil.Atoms.selection
+        let ctrlPressed, setCtrlPressed = Recoil.useState Recoil.Atoms.ctrlPressed
 
-        let updateNow () =
-            Recoil.Temp.tempState.GetNow
-            |> fun x -> x ()
-            |> setNow
+        do
+            let updateNow () =
+                Recoil.Temp.tempState.GetNow
+                |> fun x -> x ()
+                |> setNow
 
-        updateNow ()
-        CustomHooks.useInterval updateNow (60 * 1000)
+            updateNow ()
+            CustomHooks.useInterval updateNow (60 * 1000)
+
+        do
+            let keyEvent (e: KeyboardEvent) =
+                if e.ctrlKey <> ctrlPressed then
+                    setCtrlPressed e.ctrlKey
+
+                if e.key = "Escape" && not selection.IsEmpty then
+                    setSelection Map.empty
+
+            Ext.useEventListener "keydown" keyEvent
+            Ext.useEventListener "keyup" keyEvent
 
         React.suspense ([
             HomePageComponent.``default`` ()

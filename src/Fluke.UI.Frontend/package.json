@@ -54,7 +54,7 @@
     "@babel/preset-react": "^7.10",
     "babel-loader": "^8.1",
     "style-loader": "^1.2",
-    "css-loader": "^3.5",
+    "css-loader": "^3.6",
     "sass-loader": "^8.0",
     "node-sass": "^4.14",
     "file-loader": "^6.0",

@@ -899,7 +899,7 @@ module Tests =
                     let taskStateMap = [ taskState.Task, taskState ] |> Map.ofList
                     let lanes = [ lane ]
                     let lanesState =
-                        Rendering.getLanesState testDayStart laneRenderingTestData.Now [] [] taskStateMap lanes
+                        Rendering.getLanesState testDayStart laneRenderingTestData.Now [] taskStateMap lanes
 
                     let laneState =
                         lanesState
