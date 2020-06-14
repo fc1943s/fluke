@@ -179,35 +179,43 @@ module Recoil =
             key (nameof activeSessions)
             def ([] : ActiveSession list)
         }
-        let rec taskStateList = atom {
-            key (nameof taskStateList)
-            def Temp.tempState.TaskStateList
-        }
-        let rec informationList = atom {
-            key (nameof informationList)
-            def Temp.tempState.InformationList
-        }
-        let rec taskOrderList = atom {
-            key (nameof taskOrderList)
-            def Temp.tempState.TaskOrderList
-        }
-        let rec lastSessions = atom {
-            key (nameof lastSessions)
-            def Temp.tempState.LastSessions
-        }
         let rec selection = atom {
             key (nameof selection)
             def (Map.empty : Map<Task, Set<FlukeDate>>)
         }
-        let rec cells = atom {
-            key (nameof cells)
-            def (Map.empty : Map<Task, Map<FlukeDate, {| Status: CellStatus
-                                                         Selected: bool |}>>)
+//        let rec cells = atom {
+//            key (nameof cells)
+//            def (Map.empty : Map<Task, Map<FlukeDate, {| Status: CellStatus
+//                                                         Selected: bool |}>>)
+//        }
+        let rec taskStateList = selector {
+            key (nameof taskStateList)
+            get (fun _getter -> async {
+                return Temp.tempState.TaskStateList
+            })
         }
-        let rec dingsFamily = atomFamily {
-            key (nameof dingsFamily)
-            def (fun (_date: FlukeDateTime) -> false)
+        let rec informationList = selector {
+            key (nameof informationList)
+            get (fun _getter -> async {
+                return Temp.tempState.InformationList
+            })
         }
+        let rec taskOrderList = selector {
+            key (nameof taskOrderList)
+            get (fun _getter -> async {
+                return Temp.tempState.TaskOrderList
+            })
+        }
+        let rec lastSessions = selector {
+            key (nameof lastSessions)
+            get (fun _getter -> async {
+                return Temp.tempState.LastSessions
+            })
+        }
+//        let rec dingsFamily = atomFamily {
+//            key (nameof dingsFamily)
+//            def (fun (_date: FlukeDateTime) -> false)
+//        }
         let rec dateSequence = selector {
             key (nameof dateSequence)
             get (fun getter ->
@@ -217,17 +225,19 @@ module Recoil =
                 |> Rendering.getDateSequence (45, 20)
             )
         }
-        let rec informationCommentsFamily = atomFamily {
+        let rec informationCommentsFamily = selectorFamily {
             key (nameof informationCommentsFamily)
-            def (fun (information: Information) ->
-                Temp.tempState.InformationCommentsMap
+            get (fun (information: Information) _getter -> async {
+                return Temp.tempState.InformationCommentsMap
                 |> Map.tryFind information
                 |> Option.defaultValue []
-            )
+            })
         }
         let rec taskStateFamily = selectorFamily {
             key (nameof taskStateFamily)
-            get (fun (task: Task) getter -> Temp.tempState.TaskStateMap.[task])
+            get (fun (task: Task) _getter -> async {
+                return Temp.tempState.TaskStateMap.[task]
+            })
         }
         let rec cellSelectedFamily = selectorFamily {
             key (nameof cellSelectedFamily)
