@@ -128,6 +128,7 @@ module TempData =
         | TempSession of start:FlukeDateTime
         | TempPriority of priority:TaskPriority
         | TempStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
+        | TempCellComment of date:FlukeDate * comment:string
         | TempTaskField of field:TempTaskEventField
 
     let createTaskState task events =
@@ -144,51 +145,56 @@ module TempData =
             | High9 -> 9
             | Critical10 -> 10
 
-        let comments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
-            let rec loop comments sessions statusEntries priority scheduling pendingAfter
-                missedAfter duration = function
+        // TODO: how the hell do i rewrite this without losing performance?
+        let comments, cellCommentsMap, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
+            let rec loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration = function
                 | TempComment comment :: tail ->
-                    let item = Comment (testUser, comment)
-                    loop (item :: comments)
-                        sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
+                    let comment = Comment (testUser, comment)
+                    loop (comment :: comments) cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
+
+                | TempCellComment (date, comment) :: tail ->
+                    let cellComment = date, Comment (testUser, comment)
+                    loop comments (cellComment :: cellComments) sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                 | TempSession { Date = date; Time = time } :: tail ->
-                    let item = TaskSession { Date = date; Time = time }
-                    loop comments (item :: sessions)
-                        statusEntries priority scheduling pendingAfter missedAfter duration tail
+                    let session = TaskSession { Date = date; Time = time }
+                    loop comments cellComments (session :: sessions) statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                 | TempStatusEntry (date, eventStatus) :: tail ->
-                    let item = TaskStatusEntry (date, eventStatus)
-                    loop comments sessions (item :: statusEntries)
-                        priority scheduling pendingAfter missedAfter duration tail
+                    let statusEntry = TaskStatusEntry (date, eventStatus)
+                    loop comments cellComments sessions (statusEntry :: statusEntries) priority scheduling pendingAfter missedAfter duration tail
 
                 | TempPriority priority :: tail ->
-                    loop comments sessions statusEntries (TaskPriorityValue (getPriorityValue priority) |> Some)
-                        scheduling pendingAfter missedAfter duration tail
+                    let priority = TaskPriorityValue (getPriorityValue priority) |> Some
+                    loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                 | TempTaskField field :: tail ->
                     match field with
                     | TempTaskFieldScheduling scheduling ->
-                        loop comments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
+                        loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                     | TempTaskFieldPendingAfter start ->
-                        loop comments sessions statusEntries priority scheduling (Some start) missedAfter duration tail
+                        loop comments cellComments sessions statusEntries priority scheduling (Some start) missedAfter duration tail
 
                     | TempTaskFieldMissedAfter start ->
-                        loop comments sessions statusEntries priority scheduling pendingAfter (Some start) duration tail
+                        loop comments cellComments sessions statusEntries priority scheduling pendingAfter (Some start) duration tail
 
                     | TempTaskFieldDuration minutes ->
-                        loop comments sessions statusEntries priority scheduling pendingAfter missedAfter (Some minutes)
-                            tail
+                        loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter (Some minutes) tail
 
                 | [] ->
                     let sortedComments = comments |> List.rev
+                    let cellCommentsMap =
+                        cellComments
+                        |> List.rev
+                        |> List.groupBy fst
+                        |> Map.ofList
+                        |> Map.mapValues (List.map snd)
                     let sortedSessions = sessions |> List.sortBy (fun (TaskSession start) -> start.DateTime)
                     let sortedStatusEntries = statusEntries |> List.rev
-                    sortedComments, sortedSessions, sortedStatusEntries, priority, scheduling, pendingAfter,
-                    missedAfter, duration
+                    sortedComments, cellCommentsMap, sortedSessions, sortedStatusEntries, priority, scheduling, pendingAfter, missedAfter, duration
 
-            loop [] [] [] None task.Scheduling task.PendingAfter task.MissedAfter task.Duration events
+            loop [] [] [] [] None task.Scheduling task.PendingAfter task.MissedAfter task.Duration events
 
         { Task =
             { task with
@@ -199,6 +205,7 @@ module TempData =
           Comments = comments
           Sessions = sessions
           StatusEntries = statusEntries
+          CellCommentsMap = cellCommentsMap
           PriorityValue = priority }
 
 

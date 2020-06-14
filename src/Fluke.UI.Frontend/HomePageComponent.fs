@@ -41,51 +41,47 @@ module Temp =
 //    let testData = TempData.tempData.SortLanesTests
 
 
-    let cellComments =
-        PrivateData.Journal.journalComments
-        |> List.append PrivateData.CellComments.cellComments
-        |> List.append SharedPrivateData.Data.cellComments
-
     let taskStateList, getNow, informationComments, taskOrderList, dayStart, informationList =
         match tempDataType with
         | TempPrivate ->
             let taskData = PrivateData.Tasks.tempManualTasks
             let sharedTaskData = SharedPrivateData.SharedTasks.tempManualTasks
 
+            let applyState statusEntries comments (taskState: Model.TaskState) =
+                { taskState with
+                    StatusEntries =
+                        statusEntries
+                        |> Model.createTaskStatusEntries taskState.Task
+                        |> List.prepend taskState.StatusEntries
+                    Comments =
+                        comments
+                        |> List.filter (fun (Model.TaskComment (task, _)) -> task = taskState.Task)
+                        |> List.map (Model.ofTaskComment >> snd)
+                        |> List.prepend taskState.Comments }
+
+            let cellComments =
+                PrivateData.Journal.journalComments
+                |> List.append PrivateData.CellComments.cellComments
+                |> List.append SharedPrivateData.Data.cellComments
+
             let taskStateList =
                 taskData.TaskStateList
-                |> List.map (fun taskState ->
-                    { taskState with
-                        StatusEntries =
-                            PrivateData.CellStatusEntries.cellStatusEntries
-                            |> Model.createTaskStatusEntries taskState.Task
-                            |> List.prepend taskState.StatusEntries
-                        Comments =
-                            PrivateData.TaskComments.taskComments
-                            |> List.filter (fun (Model.TaskComment (task, _)) -> task = taskState.Task)
-                            |> List.map (Model.ofTaskComment >> snd)
-                            |> List.prepend taskState.Comments })
+                |> List.map (applyState
+                                 PrivateData.CellStatusEntries.cellStatusEntries
+                                 PrivateData.TaskComments.taskComments)
 
             let sharedTaskStateList =
                 sharedTaskData.TaskStateList
-                |> List.map (fun taskState ->
-                    { taskState with
-                        StatusEntries =
-                            SharedPrivateData.Data.cellStatusEntries
-                            |> Model.createTaskStatusEntries taskState.Task
-                            |> List.prepend taskState.StatusEntries
-                        Comments =
-                            SharedPrivateData.Data.taskComments
-                            |> List.filter (fun (Model.TaskComment (task, _)) -> task = taskState.Task)
-                            |> List.map (Model.ofTaskComment >> snd)
-                            |> List.prepend taskState.Comments })
+                |> List.map (applyState
+                                 SharedPrivateData.Data.cellStatusEntries
+                                 SharedPrivateData.Data.taskComments)
 
             let informationComments =
                 PrivateData.InformationComments.informationComments
                 |> List.append SharedPrivateData.Data.informationComments
                 |> List.groupBy (fun x -> x.Information)
-                |> List.map (Tuple2.mapSnd (List.map (fun x -> x.Comment)))
                 |> Map.ofList
+                |> Map.mapValues (List.map (fun x -> x.Comment))
 
             taskStateList |> List.append sharedTaskStateList,
             TempData.getNow,
@@ -377,10 +373,10 @@ module HomePageComponent =
                 ]
             )
 
-        let gridCells dayStart now selection cellComments taskStateMap lanes onCellSelect =
+        let gridCells dayStart now selection taskStateMap lanes onCellSelect =
             div [ Class Css.laneContainer ][
 
-                yield! Rendering.getLanesState dayStart now selection cellComments taskStateMap lanes
+                yield! Rendering.getLanesState dayStart now selection taskStateMap lanes
                 |> List.map (fun (_, laneState) ->
 
                     div [][
@@ -468,7 +464,6 @@ module HomePageComponent =
                                     Now: FlukeDateTime
                                     Selection: CellAddress list
                                     InformationComments: Map<Information, Comment list>
-                                    CellComments: CellComment list
                                     TaskStateMap: Map<Task, TaskState>
                                     Lanes: Lane list
                                     OnCellSelect: CellAddress -> unit |}) =
@@ -520,7 +515,7 @@ module HomePageComponent =
                 div [][
                     gridHeader input.DayStart input.DateSequence input.Now input.Selection
 
-                    gridCells input.DayStart input.Now input.Selection input.CellComments input.TaskStateMap input.Lanes input.OnCellSelect
+                    gridCells input.DayStart input.Now input.Selection input.TaskStateMap input.Lanes input.OnCellSelect
                 ]
             ]
 
@@ -529,7 +524,6 @@ module HomePageComponent =
                                   Now: FlukeDateTime
                                   Selection: CellAddress list
                                   InformationComments: Map<Information, Comment list>
-                                  CellComments: CellComment list
                                   TaskStateMap: Map<Task, TaskState>
                                   Lanes: Lane list
                                   OnCellSelect: CellAddress -> unit |}) =
@@ -619,7 +613,7 @@ module HomePageComponent =
 
                                         div [][
                                             emptyDiv
-                                            gridCells input.DayStart input.Now input.Selection input.CellComments input.TaskStateMap lanes input.OnCellSelect
+                                            gridCells input.DayStart input.Now input.Selection input.TaskStateMap lanes input.OnCellSelect
                                         ]
                                     )
                                 ]
@@ -634,7 +628,6 @@ module HomePageComponent =
                                  Now: FlukeDateTime
                                  Selection: CellAddress list
                                  InformationComments: Map<Information, Comment list>
-                                 CellComments: CellComment list
                                  TaskStateMap: Map<Task, TaskState>
                                  Lanes: Lane list
                                  OnCellSelect: CellAddress -> unit |}) =
@@ -708,7 +701,7 @@ module HomePageComponent =
                 div [][
                     gridHeader input.DayStart input.DateSequence input.Now input.Selection
 
-                    gridCells input.DayStart input.Now input.Selection input.CellComments input.TaskStateMap lanes input.OnCellSelect
+                    gridCells input.DayStart input.Now input.Selection input.TaskStateMap lanes input.OnCellSelect
                 ]
             ]
 
@@ -717,7 +710,6 @@ module HomePageComponent =
                                 Now: FlukeDateTime
                                 Selection: CellAddress list
                                 InformationComments: Map<Information, Comment list>
-                                CellComments: CellComment list
                                 TaskStateMap: Map<Task, TaskState>
                                 Lanes: Lane list
                                 OnCellSelect: CellAddress -> unit |}) =
@@ -842,7 +834,6 @@ module HomePageComponent =
         let getNow = Temp.getNow
         let taskStateList = Temp.taskStateList
         let taskOrderList = Temp.taskOrderList
-        let cellComments = Temp.cellComments
         let informationComments = Temp.informationComments
         let informationList = Temp.informationList
 
@@ -943,7 +934,6 @@ module HomePageComponent =
                    Now = state.current.Now
                    Selection = state.current.Selection
                    InformationComments = informationComments
-                   CellComments = cellComments
                    TaskStateMap = taskStateMap
                    Lanes = state.current.Lanes
                    OnCellSelect = onCellSelect |}
