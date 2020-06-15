@@ -192,6 +192,7 @@ module TempData =
                         |> Map.mapValues (List.map snd)
                     let sortedSessions = sessions |> List.sortBy (fun (TaskSession start) -> start.DateTime)
                     let sortedStatusEntries = statusEntries |> List.rev
+                    let priority = priority |> Option.defaultValue (TaskPriorityValue 0)
                     sortedComments, cellCommentsMap, sortedSessions, sortedStatusEntries, priority, scheduling, pendingAfter, missedAfter, duration
 
             loop [] [] [] [] None task.Scheduling task.PendingAfter task.MissedAfter task.Duration events

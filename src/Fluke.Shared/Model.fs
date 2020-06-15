@@ -172,7 +172,7 @@ module Model =
           Sessions: TaskSession list
           StatusEntries: TaskStatusEntry list
           CellCommentsMap: Map<FlukeDate, Comment list>
-          PriorityValue: TaskPriorityValue option }
+          PriorityValue: TaskPriorityValue }
 
 
     type Area with

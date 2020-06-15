@@ -144,8 +144,7 @@ module ApplicationComponent =
             PaddingLeft (20 * level)
 
         let header = React.memo (fun () ->
-            let now = Recoil.useValue Recoil.Atoms.now
-            let dateSequence = Recoil.useValue (Recoil.Selectors.dateSequence now)
+            let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
             let selection = Recoil.useValue Recoil.Selectors.selectionTracker
 
             let selectionSet =
@@ -214,17 +213,18 @@ module ApplicationComponent =
 
         let taskName = React.memo (fun (input: {| Level: int
                                                   Task: Task |}) ->
-            let taskState = Recoil.useValue (Recoil.Selectors.taskStateFamily input.Task)
+            let taskId = Recoil.Atoms.RecoilTask.taskId input.Task
+            let comments = Recoil.useValue (Recoil.Selectors.RecoilTask.comments taskId)
             let selection = Recoil.useValue Recoil.Selectors.selectionTracker
 
             let isSelected =
                 selection
-                |> Map.tryFind input.Task
+                |> Map.tryFind taskId
                 |> Option.defaultValue Set.empty
                 |> Set.isEmpty
                 |> not
 
-            div [ classList [ Css.tooltipContainer, not taskState.Comments.IsEmpty ]
+            div [ classList [ Css.tooltipContainer, not comments.IsEmpty ]
                   Style [ Height 17 ] ][
 
                 div [ classList [ Css.selectionHighlight, isSelected ]
@@ -236,17 +236,20 @@ module ApplicationComponent =
                     str input.Task.Name
                 ]
 
-                if not taskState.Comments.IsEmpty then
-                    TooltipPopupComponent.render {| Comments = taskState.Comments |}
+                if not comments.IsEmpty then
+                    TooltipPopupComponent.render {| Comments = comments |}
             ]
         )
 
         let cell = React.memo (fun (input: {| CellAddress: CellAddress |}) ->
             let isToday = Recoil.useValue (Recoil.Selectors.isTodayFamily input.CellAddress.Date)
-            let status = Recoil.useValue (Recoil.Selectors.RecoilCell.status (input.CellAddress.Task, input.CellAddress.Date))
-            let comments = Recoil.useValue (Recoil.Selectors.RecoilCell.comments (input.CellAddress.Task, input.CellAddress.Date))
-            let sessions = Recoil.useValue (Recoil.Selectors.RecoilCell.sessions (input.CellAddress.Task, input.CellAddress.Date))
-            let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selected (input.CellAddress.Task, input.CellAddress.Date))
+            let taskId = Recoil.Atoms.RecoilTask.taskId input.CellAddress.Task
+            let cellId = Recoil.Atoms.RecoilCell.cellId taskId input.CellAddress.Date
+            let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
+            let status = Recoil.useValue cell.Status
+            let comments = Recoil.useValue cell.Comments
+            let sessions = Recoil.useValue cell.Sessions
+            let selected, setSelected = Recoil.useState cell.Selected
     //        let selected, setSelected = false, fun _ -> ()
 
             let events = {|
@@ -290,10 +293,8 @@ module ApplicationComponent =
         )
 
         let cells = React.memo (fun () ->
-            let now = Recoil.useValue Recoil.Atoms.now
-            let dateSequence = Recoil.useValue (Recoil.Selectors.dateSequence now)
-            let view = Recoil.useValue Recoil.Atoms.view
-            let sortedLaneList = Recoil.useValue (Recoil.Selectors.sortedLaneList view)
+            let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
+            let sortedLaneList = Recoil.useValue Recoil.Selectors.sortedLaneList
             let tasks = sortedLaneList |> List.map (ofLane >> fst)
 
             div [ Class Css.laneContainer ][
@@ -304,7 +305,9 @@ module ApplicationComponent =
                     div [][
                         yield! dateSequence
                         |> List.map (fun date ->
-                            cell {| CellAddress = { Task = task; Date = date } |}
+                            React.suspense ([
+                                cell {| CellAddress = { Task = task; Date = date } |}
+                            ], str "C")
                         )
                     ]
                 )
@@ -313,8 +316,7 @@ module ApplicationComponent =
 
     module CalendarViewComponent =
         let render = React.memo (fun () ->
-            let view = Recoil.useValue Recoil.Atoms.view
-            let sortedLaneList = Recoil.useValue (Recoil.Selectors.sortedLaneList view)
+            let sortedLaneList = Recoil.useValue Recoil.Selectors.sortedLaneList
             let tasks = sortedLaneList |> List.map (ofLane >> fst)
 
             div [ Style [ Display DisplayOptions.Flex ] ][
@@ -372,8 +374,8 @@ module ApplicationComponent =
 
     module GroupsViewComponent =
         let render = React.memo (fun () ->
-            let view = Recoil.useValue Recoil.Atoms.view
-            let sortedLaneList = Recoil.useValue (Recoil.Selectors.sortedLaneList view)
+            printfn "GROUPS VIEW"
+            let sortedLaneList = Recoil.useValue Recoil.Selectors.sortedLaneList
 
             let groups =
                 sortedLaneList
@@ -474,8 +476,7 @@ module ApplicationComponent =
 
     module TasksViewComponent =
         let render = React.memo (fun () ->
-            let view = Recoil.useValue Recoil.Atoms.view
-            let sortedLaneList = Recoil.useValue (Recoil.Selectors.sortedLaneList view)
+            let sortedLaneList = Recoil.useValue Recoil.Selectors.sortedLaneList
             let tasks = sortedLaneList |> List.map (ofLane >> fst)
 
             div [ Style [ Display DisplayOptions.Flex ] ][
@@ -514,11 +515,11 @@ module ApplicationComponent =
                                       TextAlign TextAlignOptions.Center ] ] [
                             yield! tasks
                             |> List.map (fun task ->
-                                let taskState = Recoil.useValue (Recoil.Selectors.taskStateFamily task)
+                                let taskId = Recoil.Atoms.RecoilTask.taskId task
+                                let priorityValue = Recoil.useValue (Recoil.Selectors.RecoilTask.priorityValue taskId)
                                 div [ Style [ Height 17 ] ][
-                                    taskState.PriorityValue
-                                    |> Option.map ofTaskPriorityValue
-                                    |> Option.defaultValue 0
+                                    priorityValue
+                                    |> ofTaskPriorityValue
                                     |> string
                                     |> str
                                 ]
@@ -562,8 +563,6 @@ module ApplicationComponent =
 //        let informationList = Recoil.useValue Recoil.Selectors.informationList
 //        let taskOrderList = Recoil.useValue Recoil.Selectors.taskOrderList
 
-        printfn "HomePageComponent.render"
-
 //        taskStateList
 //        |> List.iter (fun taskState ->
 //            let setTaskCells = Recoil.useSetState (Recoil.Selectors.taskCellsFamily taskState.Task)
@@ -594,6 +593,8 @@ module ApplicationComponent =
 //            | _ -> fun () -> ()
 //        )
 //        |> List.iter (fun x -> x ())
+
+        printfn "HomePageComponent.render. VIEW: %A" view
 
         Html.div [
             match view with
