@@ -239,6 +239,7 @@ module Model =
               Scheduling = Manual WithoutSuggestion
               Duration = None }
 
+    let ofLane = fun (Lane (task, cells)) -> task, cells
     let ofTaskSession = fun (TaskSession start) -> start
     let ofTaskComment = fun (TaskComment (task, comment)) -> task, comment
     let ofCellComment = fun (CellComment (address, comment)) -> address, comment
@@ -488,7 +489,7 @@ module Sorting =
         result |> Seq.toList
 
     let applyManualOrder (taskOrderList: TaskOrderEntry list) lanes =
-        let tasks = lanes |> List.map (fun (Lane (task, _)) -> task)
+        let tasks = lanes |> List.map (ofLane >> fst)
         let tasksSet = tasks |> Set.ofList
         let orderEntriesOfTasks = taskOrderList |> List.filter (fun orderEntry -> tasksSet.Contains orderEntry.Task)
 

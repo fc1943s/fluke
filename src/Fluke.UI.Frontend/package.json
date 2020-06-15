@@ -28,6 +28,7 @@
     "react-dom": "^16.13",
 
     "recoil": "^0.0",
+    "recoil-logger": "^0.5",
 
     "react-markdown": "^4.3",
     "@use-it/event-listener": "^0.1",

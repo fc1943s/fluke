@@ -28,8 +28,11 @@ module Ext =
 
     let useEventListener (_event: string) (_fn: KeyboardEvent -> unit) : unit = importDefault "@use-it/event-listener"
 
+    let recoilLogger  : obj -> obj = importDefault "recoil-logger"
+
     Dom.window?Ext <-
         {| reactMarkdown = reactMarkdown
-           useEventListener = useEventListener |}
+           useEventListener = useEventListener
+           recoilLogger = recoilLogger |}
 
 
