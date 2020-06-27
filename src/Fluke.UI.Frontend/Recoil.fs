@@ -15,7 +15,17 @@ open Suigetsu.Core
 module Recoil =
     open Model
 
-    module Temp =
+    module Profiling =
+        let private callCount = Dictionary<string, int>()
+        Browser.Dom.window?callCount <- callCount
+        Browser.Dom.window?callCountClear <- fun () -> callCount.Clear ()
+        let addCount id =
+            if not (callCount.ContainsKey id) then
+                callCount.[id] <- 0
+            callCount.[id] <- callCount.[id] + 1
+            mountById "diag" (str (Fable.SimpleJson.SimpleJson.stringify Browser.Dom.window?callCount))
+
+    module OldData =
         type TempDataType =
             | TempPrivate
             | TempPublic
@@ -28,14 +38,7 @@ module Recoil =
 //        let tempDataType = Test
 //        let tempDataType = TempPublic
 
-        let callCount = Dictionary<string, int>()
-        Browser.Dom.window?callCount <- callCount
-        Browser.Dom.window?callCountClear <- fun () -> callCount.Clear ()
-        let addCount id =
-            if not (callCount.ContainsKey id) then
-                callCount.[id] <- 0
-            callCount.[id] <- callCount.[id] + 1
-            mountById "diag" (str (Fable.SimpleJson.SimpleJson.stringify Browser.Dom.window?callCount))
+
 
         let tempState =
             let testData = TempData.tempData.RenderLaneTests
@@ -80,7 +83,7 @@ module Recoil =
                 match tempDataType with
                 | TempPrivate ->
                     let taskData = PrivateData.Tasks.tempManualTasks
-                    let sharedTaskData = SharedPrivateData.SharedTasks.tempManualTasks
+                    let sharedTaskData = SharedPrivateData.Data.tasks
 
                     let cellComments =
                         PrivateData.Journal.journalComments
@@ -147,6 +150,72 @@ module Recoil =
                TaskOrderList = taskOrderList
                TaskStateList = taskStateList
                LastSessions = lastSessions |}
+
+    module FakeBackend =
+        type TestTemplate =
+            | LaneSorting of string
+            | LaneRendering of string
+
+        [<RequireQualifiedAccess>]
+        type Database =
+            | Test of TestTemplate
+            | Public
+            | Private
+
+        let a = [
+            "test", [
+                "laneSorting", [
+
+                ]
+                "laneRendering", [
+
+                ]
+            ]
+            "public", [
+                "default", []
+            ]
+            "private", [
+                "default", []
+            ]
+        ]
+
+        [<RequireQualifiedAccess>]
+        type TreeAccess =
+            | Owner of user:User
+            | Admin of user:User
+            | Visitor of user:User
+
+        type TreeId = TreeId of id:string
+
+        type Tree =
+            { Id: TreeId
+              Access: TreeAccess list }
+
+        type TreePosition =
+            { Tree: Tree
+              Position: FlukeDate }
+
+        open PrivateData.PrivateData
+        let treeList = [
+            { Id = TreeId "fc1943s/default"
+              Access = [ TreeAccess.Owner Users.fc1943s ] }
+
+            { Id = TreeId "liryanne/fc1943s"
+              Access =
+                  [ TreeAccess.Owner Users.liryanne
+                    TreeAccess.Admin Users.fc1943s ] }
+        ]
+
+        let hasAccess tree user =
+            tree.Access
+            |> List.exists (function
+                | TreeAccess.Owner dbUser -> dbUser = user
+                | TreeAccess.Admin dbUser -> dbUser = user
+                | TreeAccess.Visitor dbUser -> dbUser = user)
+
+        let getTree (user: User) (treeId: TreeId) (position: FlukeDate option) =
+            treeList
+            |> List.tryFind (fun tree -> tree.Id = treeId && hasAccess tree user)
 
 
     module Atoms =
@@ -232,7 +301,7 @@ module Recoil =
             let cellId (RecoilTask.TaskId taskId) (date: FlukeDate) =
 //                let task = getter.get (RecoilTask.taskFamily task)
 //                let (RecoilTask.TaskId taskId) = RecoilTask.taskId task
-                CellId (taskId + "/" + (date.DateTime.Format ()))
+                CellId (taskId + "/" + (date.DateTime.Format "yyyy-MM-dd"))
 //                RecoilCell.Create cellId
 
             let rec cellFamily = atomFamily {
@@ -255,6 +324,7 @@ module Recoil =
         let rec view = atom {
             key (nameof view)
             def View.Calendar
+            local_storage
         }
         let rec ctrlPressed = atom {
             key (nameof ctrlPressed)
@@ -300,7 +370,7 @@ module Recoil =
 //        let rec taskSelectionFamily = selectorFamily {
 //            key (nameof taskSelectionFamily)
 //            get (fun (task: Task) getter ->
-//                Temp.addCount "taskSelectionFamily"
+//                Profiling.addCount "taskSelectionFamily"
 //                let selection = getter.get selection
 //
 //                selection
@@ -311,7 +381,7 @@ module Recoil =
 //        let rec cellSelectedFamily = selectorFamily {
 //            key (nameof cellSelectedFamily)
 //            get (fun (task: Task, date: FlukeDate) getter ->
-//                Temp.addCount "cellSelectedFamily"
+//                Profiling.addCount "cellSelectedFamily"
 //                let taskSelection = getter.get (taskSelectionFamily task)
 //
 //                taskSelection |> Set.contains date
@@ -352,7 +422,7 @@ module Recoil =
                 printfn "DATESEQUENCE. NOW: %A" now
 
 
-                Temp.addCount "dateSequence."
+                Profiling.addCount "dateSequence."
                 [ now.Date ]
                 |> Rendering.getDateSequence (45, 20)
             )
@@ -362,7 +432,7 @@ module Recoil =
             get (fun getter ->
                 let dateSequence = getter.get dateSequence
 
-                Temp.addCount "dateRange"
+                Profiling.addCount "dateRange"
                 let head = dateSequence |> List.head |> fun x -> x.DateTime
                 let last = dateSequence |> List.last |> fun x -> x.DateTime
                 head, last
@@ -422,7 +492,7 @@ module Recoil =
                         taskStateList
 
                 printfn "- RESULT: %A" result.Length
-                Temp.addCount "filteredTaskStateList"
+                Profiling.addCount "filteredTaskStateList"
                 result
             )
         }
@@ -432,7 +502,7 @@ module Recoil =
                 printfn "filteredTaskStateMap"
                 let filteredTaskStateList = getter.get filteredTaskStateList
 
-                Temp.addCount "filteredTaskStateMap"
+                Profiling.addCount "filteredTaskStateMap"
                 filteredTaskStateList
                 |> List.map (fun taskState ->
 //                    let taskId = getter.get(Atoms.RecoilTask.taskFamily taskState.Task).Id |> getter.get
@@ -451,7 +521,7 @@ module Recoil =
 //            key (nameof taskStateMap)
 //            get (fun (taskId: Atoms.RecoilTask.TaskId) getter -> async {
 //                let filteredTaskStateList = getter.get filteredTaskStateList
-//                Temp.addCount "taskStateMap"
+//                Profiling.addCount "taskStateMap"
 //                printfn "taskStateFamily. task: %A" task.Name
 //                return Temp.tempState.TaskStateMap.[task]
 //            })
@@ -466,7 +536,7 @@ module Recoil =
             get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
                 printfn "taskStateFamily"
                 let filteredTaskStateMap = getter.get filteredTaskStateMap
-                Temp.addCount "taskStateFamily"
+                Profiling.addCount "taskStateFamily"
 //                taskStateMap
 //                |> Map.find task
                 filteredTaskStateMap.[taskId]
@@ -479,7 +549,7 @@ module Recoil =
                 let dayStart = getter.get Atoms.dayStart
                 let dateSequence = getter.get dateSequence
                 let taskState = getter.get (taskStateFamily taskId)
-                Temp.addCount "laneFamily"
+                Profiling.addCount "laneFamily"
                 Rendering.renderLane dayStart now dateSequence taskState.Task taskState.StatusEntries
             )
         }
@@ -498,7 +568,7 @@ module Recoil =
                         getter.get (laneFamily taskId)
                     )
 
-                Temp.addCount "filteredLaneList"
+                Profiling.addCount "filteredLaneList"
                 result
             )
         }
@@ -507,7 +577,7 @@ module Recoil =
             get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
                 let (Lane (_, cells)) = getter.get (laneFamily taskId)
 
-                Temp.addCount "laneMapFamily"
+                Profiling.addCount "laneMapFamily"
                 cells
                 |> List.map (fun (Cell (address, status)) ->
                     address.Date, status
@@ -520,7 +590,7 @@ module Recoil =
             get (fun (date: FlukeDate) getter ->
                 let dayStart = getter.get Atoms.dayStart
                 let now = getter.get Atoms.now
-                Temp.addCount "isTodayFamily"
+                Profiling.addCount "isTodayFamily"
                 isToday dayStart now date
             )
         }
@@ -528,7 +598,7 @@ module Recoil =
             key (nameof findCell)
             get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
                 let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
-                Temp.addCount "findCell"
+                Profiling.addCount "findCell"
                 cell
             )
 //            set (fun (task: Task, date: FlukeDate) setter (newCell: RecoilCell) ->
@@ -540,7 +610,7 @@ module Recoil =
 //                    let taskId = getter.get(Atoms.RecoilTask.taskFamily taskState.Task).Id |> getter.get
 //                let taskId = Atoms.RecoilTask.taskId taskState.Task
                 let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
-                Temp.addCount "findTask"
+                Profiling.addCount "findTask"
                 task
             )
         }
@@ -548,7 +618,7 @@ module Recoil =
             key (nameof selectionTracker)
             get (fun getter ->
                 let selection = getter.get Atoms.selection
-                Temp.addCount "selectionTracker"
+                Profiling.addCount "selectionTracker"
                 selection
             )
             set (fun setter (newValue: Map<Atoms.RecoilTask.TaskId, Set<FlukeDate>>) ->
@@ -574,7 +644,7 @@ module Recoil =
                 )
 
                 setter.set (Atoms.selection, newValue)
-                Temp.addCount "selectionTracker (SET)"
+                Profiling.addCount "selectionTracker (SET)"
             )
         }
 
@@ -582,7 +652,7 @@ module Recoil =
             let rec comments = selectorFamily {
                 key (nameof RecoilInformation + "/" + nameof comments)
                 get (fun (information: Information) _getter -> async {
-                    Temp.addCount (nameof RecoilInformation + "/" + nameof comments)
+                    Profiling.addCount (nameof RecoilInformation + "/" + nameof comments)
                     return Temp.tempState.InformationCommentsMap
                     |> Map.tryFind information
                     |> Option.defaultValue []
@@ -593,14 +663,14 @@ module Recoil =
             let rec comments = selectorFamily {
                 key (nameof RecoilTask + "/" + nameof comments)
                 get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
-                    Temp.addCount (nameof RecoilTask + "/" + nameof comments)
+                    Profiling.addCount (nameof RecoilTask + "/" + nameof comments)
                     getter.get(findTask taskId).Comments |> getter.get
                 )
             }
             let rec priorityValue = selectorFamily {
                 key (nameof RecoilTask + "/" + nameof priorityValue)
                 get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
-                    Temp.addCount (nameof RecoilTask + "/" + nameof priorityValue)
+                    Profiling.addCount (nameof RecoilTask + "/" + nameof priorityValue)
                     getter.get(findTask taskId).PriorityValue |> getter.get
                 )
             }
@@ -609,21 +679,21 @@ module Recoil =
             let rec status = selectorFamily {
                 key (nameof RecoilCell + "/" + nameof status)
                 get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
-                    Temp.addCount (nameof RecoilCell + "/" + nameof status)
+                    Profiling.addCount (nameof RecoilCell + "/" + nameof status)
                     getter.get(findCell cellId).Status |> getter.get
                 )
             }
             let rec comments = selectorFamily {
                 key (nameof RecoilCell + "/" + nameof comments)
                 get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
-                    Temp.addCount (nameof RecoilCell + "/" + nameof comments)
+                    Profiling.addCount (nameof RecoilCell + "/" + nameof comments)
                     getter.get(findCell cellId).Comments |> getter.get
                 )
             }
             let rec sessions = selectorFamily {
                 key (nameof RecoilCell + "/" + nameof sessions)
                 get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
-                    Temp.addCount (nameof RecoilCell + "/" + nameof sessions)
+                    Profiling.addCount (nameof RecoilCell + "/" + nameof sessions)
                     getter.get(findCell cellId).Sessions |> getter.get
                 )
             }
@@ -636,11 +706,11 @@ module Recoil =
             let rec selected = selectorFamily {
                 key (nameof RecoilCell + "/" + nameof selected)
                 get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
-                    Temp.addCount (nameof RecoilCell + "/" + nameof selected)
+                    Profiling.addCount (nameof RecoilCell + "/" + nameof selected)
                     getter.get(findCell cellId).Selected |> getter.get
                 )
                 set (fun (cellId: Atoms.RecoilCell.CellId) setter (newValue: bool) ->
-                    Temp.addCount (nameof RecoilCell + "/" + nameof selected + " (SET)")
+                    Profiling.addCount (nameof RecoilCell + "/" + nameof selected + " (SET)")
                     let ctrlPressed = setter.get Atoms.ctrlPressed
 
                     let cell = setter.get (findCell cellId)
@@ -716,7 +786,7 @@ module Recoil =
                     | View.Week ->
                         []
 
-                Temp.addCount "sortedLaneList"
+                Profiling.addCount "sortedLaneList"
                 result
             )
         }
@@ -750,7 +820,7 @@ module Recoil =
 //        let rec cellFamily = selectorFamily {
 //            key (nameof cellFamily)
 //            get (fun (task: Task, date: FlukeDate) getter ->
-//                Temp.addCount "cellFamily"
+//                Profiling.addCount "cellFamily"
 //                let taskState = getter.get (taskStateFamily task)
 //
 //                let comments =

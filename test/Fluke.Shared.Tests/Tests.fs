@@ -16,11 +16,11 @@ module Data =
     let task5 = { Task.Default with Name = "5" }
 
     let orderedEventList = [
-        { Task = task1; Priority = First }
-        { Task = task2; Priority = LessThan task1 }
-        { Task = task3; Priority = LessThan task2 }
-        { Task = task4; Priority = LessThan task3 }
-        { Task = task5; Priority = Last }
+        { Task = task1; Priority = TaskOrderPriority.First }
+        { Task = task2; Priority = TaskOrderPriority.LessThan task1 }
+        { Task = task3; Priority = TaskOrderPriority.LessThan task2 }
+        { Task = task4; Priority = TaskOrderPriority.LessThan task3 }
+        { Task = task5; Priority = TaskOrderPriority.Last }
     ]
     let orderedList = [ task1; task2; task3; task4; task5 ]
 
@@ -36,46 +36,46 @@ module Tests =
                 |> Expect.equal "" orderedList
 
                 [
-                    { Task = task5; Priority = Last }
-                    { Task = task4; Priority = LessThan task3 }
-                    { Task = task3; Priority = LessThan task2 }
-                    { Task = task2; Priority = LessThan task1 }
-                    { Task = task1; Priority = First }
+                    { Task = task5; Priority = TaskOrderPriority.Last }
+                    { Task = task4; Priority = TaskOrderPriority.LessThan task3 }
+                    { Task = task3; Priority = TaskOrderPriority.LessThan task2 }
+                    { Task = task2; Priority = TaskOrderPriority.LessThan task1 }
+                    { Task = task1; Priority = TaskOrderPriority.First }
                 ]
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" orderedList
 
                 [
-                    { Task = task3; Priority = LessThan task2 }
-                    { Task = task5; Priority = Last }
-                    { Task = task4; Priority = LessThan task3 }
-                    { Task = task1; Priority = First }
-                    { Task = task2; Priority = LessThan task1 }
+                    { Task = task3; Priority = TaskOrderPriority.LessThan task2 }
+                    { Task = task5; Priority = TaskOrderPriority.Last }
+                    { Task = task4; Priority = TaskOrderPriority.LessThan task3 }
+                    { Task = task1; Priority = TaskOrderPriority.First }
+                    { Task = task2; Priority = TaskOrderPriority.LessThan task1 }
                 ]
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" orderedList
 
                 [
-                    { Task = task3; Priority = First }
+                    { Task = task3; Priority = TaskOrderPriority.First }
                 ]
                 |> List.append orderedEventList
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" [ task3; task4; task1; task2; task5 ]
 
                 [
-                    { Task = task3; Priority = First }
-                    { Task = task4; Priority = LessThan task2 }
+                    { Task = task3; Priority = TaskOrderPriority.First }
+                    { Task = task4; Priority = TaskOrderPriority.LessThan task2 }
                 ]
                 |> List.append orderedEventList
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" [ task3; task1; task2; task4; task5 ]
 
                 [
-                    { Task = task1; Priority = First }
-                    { Task = task2; Priority = First }
-                    { Task = task3; Priority = First }
-                    { Task = task4; Priority = First }
-                    { Task = task5; Priority = LessThan task4 }
+                    { Task = task1; Priority = TaskOrderPriority.First }
+                    { Task = task2; Priority = TaskOrderPriority.First }
+                    { Task = task3; Priority = TaskOrderPriority.First }
+                    { Task = task4; Priority = TaskOrderPriority.First }
+                    { Task = task5; Priority = TaskOrderPriority.LessThan task4 }
                 ]
                 |> Sorting.getManualSortedTaskList
                 |> Expect.equal "" [ task4; task5; task3; task2; task1 ]
@@ -96,59 +96,67 @@ module Tests =
                                 |> List.tryItem x
                             )
                         match closest, priority with
-                        | (Some _, None), First when i = 0 -> None
-                        | (Some below, None), _ -> Some { Task = below; Priority = First }
-                        | (Some below, Some above), _ -> Some { Task = below; Priority = LessThan above }
-                        | _, First when i > 0 -> Some { Task = taskList |> List.head; Priority = LessThan task }
+                        | (Some _, None),
+                            TaskOrderPriority.First when i = 0 -> None
+
+                        | (Some below, None), _ ->
+                            Some { Task = below; Priority = TaskOrderPriority.First }
+
+                        | (Some below, Some above), _ ->
+                            Some { Task = below; Priority = TaskOrderPriority.LessThan above }
+
+                        | _, TaskOrderPriority.First when i > 0 ->
+                            Some { Task = taskList |> List.head; Priority = TaskOrderPriority.LessThan task }
+
                         | _ -> None
                     |> Option.toList
                     |> List.append [ { Task = task; Priority = priority } ]
 
                 [ task1; task2; task3; task4; task5 ]
-                |> createPriorityEvents task3 First
+                |> createPriorityEvents task3 TaskOrderPriority.First
                 |> Expect.equal "" [
-                    { Task = task3; Priority = First }
-                    { Task = task4; Priority = LessThan task2 }
+                    { Task = task3; Priority = TaskOrderPriority.First }
+                    { Task = task4; Priority = TaskOrderPriority.LessThan task2 }
                 ]
 
                 [ task1; task2; task3; task4; task5 ]
-                |> createPriorityEvents task1 First
+                |> createPriorityEvents task1 TaskOrderPriority.First
                 |> Expect.equal "" [
-                    { Task = task1; Priority = First }
+                    { Task = task1; Priority = TaskOrderPriority.First }
                 ]
 
                 [ task1; task2; task3; task4; task5 ]
-                |> createPriorityEvents task1 Last
+                |> createPriorityEvents task1 TaskOrderPriority.Last
                 |> Expect.equal "" [
-                    { Task = task1; Priority = Last }
-                    { Task = task2; Priority = First }
+                    { Task = task1; Priority = TaskOrderPriority.Last }
+                    { Task = task2; Priority = TaskOrderPriority.First }
                 ]
 
                 [ task1; task2; task3; task4; task5 ]
-                |> createPriorityEvents task5 Last
+                |> createPriorityEvents task5 TaskOrderPriority.Last
                 |> Expect.equal "" [
-                    { Task = task5; Priority = Last }
+                    { Task = task5; Priority = TaskOrderPriority.Last }
                 ]
 
                 [ task1; task2; task3; task4; task5 ]
-                |> createPriorityEvents task5 First
+                |> createPriorityEvents task5 TaskOrderPriority.First
                 |> Expect.equal "" [
-                    { Task = task5; Priority = First }
-                    { Task = task1; Priority = LessThan task5 }
+                    { Task = task5; Priority = TaskOrderPriority.First }
+                    { Task = task1; Priority = TaskOrderPriority.LessThan task5 }
                 ]
 
                 [ task1; task2; task3; task4; task5 ]
-                |> createPriorityEvents task2 First
+                |> createPriorityEvents task2 TaskOrderPriority.First
                 |> Expect.equal "" [
-                    { Task = task2; Priority = First }
-                    { Task = task3; Priority = LessThan task1 }
+                    { Task = task2; Priority = TaskOrderPriority.First }
+                    { Task = task3; Priority = TaskOrderPriority.LessThan task1 }
                 ]
 
                 [ task1; task2; task3; task4; task5 ]
-                |> createPriorityEvents task4 (LessThan task1)
+                |> createPriorityEvents task4 (TaskOrderPriority.LessThan task1)
                 |> Expect.equal "" [
-                    { Task = task4; Priority = LessThan task1 }
-                    { Task = task5; Priority = LessThan task3 }
+                    { Task = task4; Priority = TaskOrderPriority.LessThan task1 }
+                    { Task = task5; Priority = TaskOrderPriority.LessThan task3 }
                 ]
             }
         ]

@@ -8,81 +8,80 @@ open Suigetsu.Core
 module TempData =
     open Model
 
-    let private areas = {|
-        car = { Name = "car" }
-        career = { Name = "career" }
-        chores = { Name = "chores" }
-        finances = { Name = "finances" }
-        fitness = { Name = "fitness" }
-        food = { Name = "food" }
-        health = { Name = "health" }
-        leisure = { Name = "leisure" }
-        programming = { Name = "programming" }
-        travel = { Name = "travel" }
-        workflow = { Name = "workflow" }
-        writing = { Name = "writing" }
-    |}
+    module private Areas =
+        let car = { Name = "car" }
+        let career = { Name = "career" }
+        let chores = { Name = "chores" }
+        let finances = { Name = "finances" }
+        let fitness = { Name = "fitness" }
+        let food = { Name = "food" }
+        let health = { Name = "health" }
+        let leisure = { Name = "leisure" }
+        let programming = { Name = "programming" }
+        let travel = { Name = "travel" }
+        let workflow = { Name = "workflow" }
+        let writing = { Name = "writing" }
 
-    let private projects = {|
-        app_fluke =
-            { Project.Area = areas.workflow
+
+    module private Projects =
+        let app_fluke =
+            { Project.Area = Areas.workflow
               Project.Name = "app_fluke" }
 
-        blog =
-            { Project.Area = areas.writing
+        let blog =
+            { Project.Area = Areas.writing
               Project.Name = "blog" }
 
-        rebuild_website =
-            { Project.Area = areas.programming
+        let rebuild_website =
+            { Project.Area = Areas.programming
               Project.Name = "rebuild_website" }
-    |}
 
-    let private resources = {|
-        agile =
-            { Resource.Area = areas.programming
+
+    module private Resources =
+        let agile =
+            { Resource.Area = Areas.programming
               Resource.Name = "agile" }
 
-        artificial_intelligence =
-            { Resource.Area = areas.programming
+        let artificial_intelligence =
+            { Resource.Area = Areas.programming
               Resource.Name = "artificial_intelligence" }
 
-        cloud =
-            { Resource.Area = areas.programming
+        let cloud =
+            { Resource.Area = Areas.programming
               Resource.Name = "cloud" }
 
-        communication =
-            { Resource.Area = areas.workflow
+        let communication =
+            { Resource.Area = Areas.workflow
               Resource.Name = "communication" }
 
-        docker =
-            { Resource.Area = areas.programming
+        let docker =
+            { Resource.Area = Areas.programming
               Resource.Name = "docker" }
 
-        fsharp =
-            { Resource.Area = areas.programming
+        let fsharp =
+            { Resource.Area = Areas.programming
               Resource.Name = "f#" }
 
-        linux =
-            { Resource.Area = areas.programming
+        let linux =
+            { Resource.Area = Areas.programming
               Resource.Name = "linux" }
 
-        music =
-            { Resource.Area = areas.leisure
+        let music =
+            { Resource.Area = Areas.leisure
               Resource.Name = "music" }
 
-        rust =
-            { Resource.Area = areas.programming
+        let rust =
+            { Resource.Area = Areas.programming
               Resource.Name = "rust" }
 
-        vim =
-            { Resource.Area = areas.programming
+        let vim =
+            { Resource.Area = Areas.programming
               Resource.Name = "vim" }
 
-        windows =
-            { Resource.Area = areas.programming
+        let windows =
+            { Resource.Area = Areas.programming
               Resource.Name = "windows" }
 
-    |}
 
     let [<Literal>] sessionLength = 25.
     let [<Literal>] sessionBreakLength = 5.
@@ -90,8 +89,8 @@ module TempData =
     let testDayStart = flukeTime 12 00
 
     let testUser =
-        { Name = "Test"
-          Color = Blue }
+        { Username = "Test"
+          Color = UserColor.Blue }
 
     let getNow () =
         let rawDate = DateTime.Now
@@ -113,7 +112,7 @@ module TempData =
                 | None -> failwithf "Invalid task: '%A/%s'" information taskName
                 | Some task ->
                     { Task = task
-                      Priority = First }
+                      Priority = TaskOrderPriority.First }
         )
         |> List.append oldTaskOrderList
 
@@ -232,7 +231,7 @@ module TempData =
 
         let taskOrderList =
             taskStateList
-            |> List.map (fun taskState -> { Task = taskState.Task; Priority = Last })
+            |> List.map (fun taskState -> { Task = taskState.Task; Priority = TaskOrderPriority.Last })
 
         {| TaskStateList = taskStateList
            TaskOrderList = taskOrderList
@@ -245,7 +244,7 @@ module TempData =
                                                Task: Task |}) =
 
         {| TaskStateList = [ createTaskState testData.Task testData.Events ]
-           TaskOrderList = [ { Task = testData.Task; Priority = First } ]
+           TaskOrderList = [ { Task = testData.Task; Priority = TaskOrderPriority.First } ]
            GetNow = fun () -> testData.Now |}
 
 
@@ -254,14 +253,16 @@ module TempData =
                                                Expected: string list |}) =
 
         {| TaskStateList = testData.Data |> List.map (fun (task, events) -> createTaskState task events)
-           TaskOrderList = testData.Data |> List.map (fun (task, _) -> { Task = task; Priority = Last })
+           TaskOrderList =
+               testData.Data
+               |> List.map (fun (task, _) -> { Task = task; Priority = TaskOrderPriority.Last })
            GetNow = fun () -> testData.Now |}
 
 
     let tempData = {|
         ManualTasks =
             [
-                Project projects.app_fluke, [
+                Project Projects.app_fluke, [
                     "data management", [
                         TempComment "mutability"
                         TempComment "initial default data (load the text first with tests)"
@@ -280,38 +281,38 @@ module TempData =
                     "mobile layout", []
                     "move fluke tasks to github issues", []
                 ]
-                Project projects.blog, []
-                Project projects.rebuild_website, [
+                Project Projects.blog, []
+                Project Projects.rebuild_website, [
                     "task1", []
                 ]
-                Area areas.car, []
-                Area areas.career, []
-                Area areas.chores, []
-                Area areas.fitness, []
-                Area areas.food, []
-                Area areas.finances, []
-                Area areas.health, []
-                Area areas.leisure, [
+                Area Areas.car, []
+                Area Areas.career, []
+                Area Areas.chores, []
+                Area Areas.fitness, []
+                Area Areas.food, []
+                Area Areas.finances, []
+                Area Areas.health, []
+                Area Areas.leisure, [
                     "watch_movie_foobar", []
                 ]
-                Area areas.programming, []
-                Area areas.travel, []
-                Area areas.workflow, []
-                Area areas.writing, []
-                Resource resources.agile, []
-                Resource resources.artificial_intelligence, []
-                Resource resources.cloud, []
-                Resource resources.communication, []
-                Resource resources.docker, []
-                Resource resources.fsharp, [
+                Area Areas.programming, []
+                Area Areas.travel, []
+                Area Areas.workflow, []
+                Area Areas.writing, []
+                Resource Resources.agile, []
+                Resource Resources.artificial_intelligence, []
+                Resource Resources.cloud, []
+                Resource Resources.communication, []
+                Resource Resources.docker, []
+                Resource Resources.fsharp, [
                     "study: [choice, computation expressions]", []
                     "organize youtube playlists", []
                 ]
-                Resource resources.linux, []
-                Resource resources.music, []
-                Resource resources.rust, []
-                Resource resources.vim, []
-                Resource resources.windows, []
+                Resource Resources.linux, []
+                Resource Resources.music, []
+                Resource Resources.rust, []
+                Resource Resources.vim, []
+                Resource Resources.windows, []
             ]
             |> createManualTasksFromTree
 

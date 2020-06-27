@@ -115,12 +115,13 @@ module Model =
         { Task: Task
           Date: FlukeDate }
 
+    [<RequireQualifiedAccess>]
     type UserColor =
         | Pink
         | Blue
 
     type User =
-        { Name: string
+        { Username: string
           Color: UserColor }
 
     type Cell = Cell of address:CellAddress * status:CellStatus
@@ -136,11 +137,12 @@ module Model =
         { Information: Information
           Comment: Comment }
 
-    type CellEvent =
-        | StatusEvent of CellStatusEntry
-        | CommentEvent of CellComment
-        | SessionEvent of CellSession
+//    type CellEvent =
+//        | StatusEvent of CellStatusEntry
+//        | CommentEvent of CellComment
+//        | SessionEvent of CellSession
 
+    [<RequireQualifiedAccess>]
     type TaskOrderPriority =
         | First
         | LessThan of Task
@@ -472,9 +474,9 @@ module Sorting =
 
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | First, None             -> result.Insert (0, task)
-            | Last, None              -> result.Add task
-            | LessThan lessThan, None ->
+            | TaskOrderPriority.First, None             -> result.Insert (0, task)
+            | TaskOrderPriority.Last, None              -> result.Add task
+            | TaskOrderPriority.LessThan lessThan, None ->
                 match result |> Seq.tryFindIndexBack ((=) lessThan) with
                 | None   -> seq { task; lessThan } |> Seq.iter (fun x -> result.Insert (0, x))
                 | Some i -> result.Insert (i + 1, task)
@@ -482,8 +484,8 @@ module Sorting =
 
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | First, None -> result.Insert (0, task)
-            | Last, None  -> result.Add task
+            | TaskOrderPriority.First, None -> result.Insert (0, task)
+            | TaskOrderPriority.Last, None  -> result.Add task
             | _ -> ()
 
         result |> Seq.toList
@@ -499,7 +501,8 @@ module Sorting =
             |> Set.ofList
 
         let tasksWithoutOrderEntry = tasks |> List.filter (fun task -> not (tasksWithOrderEntrySet.Contains task))
-        let orderEntriesMissing = tasksWithoutOrderEntry |> List.map (fun task -> { Task = task; Priority = Last })
+        let orderEntriesMissing =
+            tasksWithoutOrderEntry |> List.map (fun task -> { Task = task; Priority = TaskOrderPriority.Last })
         let newTaskOrderList = orderEntriesMissing @ orderEntriesOfTasks
 
         let taskIndexMap =

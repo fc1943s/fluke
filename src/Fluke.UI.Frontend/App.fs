@@ -10,7 +10,9 @@ open Fluke.Shared
 module App =
     let appMain = React.memo (fun () ->
         Recoil.root [
-            RecoilRoot.root.init (fun init ->
+            root.localStorage (fun hydrater -> hydrater.setAtom Recoil.Atoms.view)
+
+            root.init (fun init ->
                 init.set (Recoil.Atoms.getNow, Recoil.Temp.tempState.GetNow)
                 init.set (Recoil.Atoms.now, Recoil.Temp.tempState.GetNow ())
                 init.set (Recoil.Atoms.dayStart, Recoil.Temp.tempState.DayStart)
