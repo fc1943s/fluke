@@ -6,16 +6,16 @@ open Suigetsu.Core
 
 module Model =
 
-    [<StructuredFormatDisplay("{Name}")>]
+    [<StructuredFormatDisplay "{Name}">]
     type Area =
         { Name: string }
 
-    [<StructuredFormatDisplay("{Area}/{Name}")>]
+    [<StructuredFormatDisplay "{Area}/{Name}">]
     type Project =
         { Area: Area
           Name: string }
 
-    [<StructuredFormatDisplay("{Area}/{Name}")>]
+    [<StructuredFormatDisplay "{Area}/{Name}">]
     type Resource =
         { Area: Area
           Name: string }
@@ -40,7 +40,7 @@ module Model =
         | November = 11
         | December = 12
 
-    [<StructuredFormatDisplay("{Year}-{Month}-{Day}")>]
+    [<StructuredFormatDisplay "{Year}-{Month}-{Day}">]
     type FlukeDate =
         { Year: int
           Month: Month
@@ -48,14 +48,14 @@ module Model =
         override this.ToString () =
             sprintf "%02i-%02i-%02i" this.Year (int this.Month) this.Day
 
-    [<StructuredFormatDisplay("{Hour}h{Minute}m")>]
+    [<StructuredFormatDisplay "{Hour}h{Minute}m">]
     type FlukeTime =
         { Hour: int
           Minute: int }
         override this.ToString () =
             sprintf "%02i:%02i" this.Hour this.Minute
 
-    [<StructuredFormatDisplay("{Date} {Time}")>]
+    [<StructuredFormatDisplay "{Date} {Time}">]
     type FlukeDateTime =
         { Date: FlukeDate
           Time: FlukeTime }

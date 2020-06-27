@@ -1,21 +1,14 @@
 namespace Fluke.UI.Frontend
 
 open System.Collections.Generic
-open Browser.Types
 open FSharpPlus
-open Fable.Core
 open Fable.Core.JsInterop
 open Feliz
 open Feliz.Recoil
 open Fluke.Shared
 open Fluke.UI.Frontend
 open Fable.React
-open Fable.React.Props
 open Fable.DateFunctions
-open Fulma
-open System
-open Suigetsu.UI.Frontend.ElmishBridge
-open Suigetsu.UI.Frontend.React
 open Suigetsu.Core
 
 

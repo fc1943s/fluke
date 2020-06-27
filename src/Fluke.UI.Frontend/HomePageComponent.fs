@@ -1,20 +1,20 @@
 namespace Fluke.UI.Frontend
 
-open Browser.Types
-open FSharpPlus
-open Fable.Core
-open Feliz
-open Feliz.Recoil
-open Fluke.Shared
-open Fluke.UI.Frontend
-open Fable.React
-open Fable.React.Props
-open Fable.DateFunctions
-open Fulma
-open System
-open Suigetsu.UI.Frontend.ElmishBridge
-open Suigetsu.UI.Frontend.React
-open Suigetsu.Core
+//open Browser.Types
+//open FSharpPlus
+//open Fable.Core
+//open Feliz
+//open Feliz.Recoil
+//open Fluke.Shared
+//open Fluke.UI.Frontend
+//open Fable.React
+//open Fable.React.Props
+//open Fable.DateFunctions
+//open Fulma
+//open System
+//open Suigetsu.UI.Frontend.ElmishBridge
+//open Suigetsu.UI.Frontend.React
+//open Suigetsu.Core
 
 //module TooltipPopupComponent =
 //    open Model

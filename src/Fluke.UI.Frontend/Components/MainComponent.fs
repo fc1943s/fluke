@@ -6,20 +6,13 @@ open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend
 open Browser.Types
-open Browser.Types
 open FSharpPlus
-open Fable.Core
-open Feliz
-open Feliz.Recoil
 open Fluke.Shared
-open Fluke.UI.Frontend
 open Fable.React
 open Fable.React.Props
 open Fable.DateFunctions
 open Fulma
-open System
 open Fulma.Extensions.Wikiki
-open Suigetsu.UI.Frontend.ElmishBridge
 open Suigetsu.UI.Frontend.React
 open Suigetsu.Core
 
@@ -459,7 +452,7 @@ module ApplicationComponent =
                                 div [][
 
                                     yield! taskGroups
-                                    |> List.map (fun (_, tasks) ->
+                                    |> List.map (fun (_, _tasks) ->
 
                                         div [][
                                             Grid.emptyDiv
