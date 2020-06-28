@@ -85,7 +85,7 @@ module TempData =
 
     let [<Literal>] sessionLength = 25.
     let [<Literal>] sessionBreakLength = 5.
-    let dayStart = flukeTime 05 00
+    let dayStart = flukeTime 07 00
     let testDayStart = flukeTime 12 00
 
     let testUser =
@@ -96,6 +96,22 @@ module TempData =
         let rawDate = DateTime.Now
         { Date = FlukeDate.FromDateTime rawDate
           Time = FlukeTime.FromDateTime rawDate }
+
+    module Users =
+        let fc1943s =
+            { Username = "fc1943s"
+              Color = UserColor.Blue }
+
+        let liryanne =
+            { Username = "liryanne"
+              Color = UserColor.Pink }
+
+        let users = [
+            fc1943s
+            liryanne
+        ]
+
+        let current = fc1943s
 
 
     let getTaskOrderList oldTaskOrderList (tasks: Task list) manualTaskOrder =

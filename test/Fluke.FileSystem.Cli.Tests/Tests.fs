@@ -18,7 +18,7 @@ module Tests =
                 1
                 |> Expect.equal "" 1
 
-                let taskData = PrivateData.Tasks.tempManualTasks
+                let taskData = RootPrivateData.manualTasks
 
                 taskData.InformationList
                 |> List.map (function

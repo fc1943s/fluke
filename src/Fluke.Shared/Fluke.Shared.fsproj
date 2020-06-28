@@ -31,7 +31,7 @@
       
     <Compile Include="SharedPrivateData\Data.fs" />
       
-    <Compile Include="PrivateData.fs" />
+    <Compile Include="RootPrivateData.fs" />
       
     <Content Include="paket.references" />
   </ItemGroup>

@@ -13,26 +13,52 @@ module App =
             root.localStorage (fun hydrater -> hydrater.setAtom Recoil.Atoms.view)
 
             root.init (fun init ->
-                init.set (Recoil.Atoms.getNow, Recoil.Temp.tempState.GetNow)
-                init.set (Recoil.Atoms.now, Recoil.Temp.tempState.GetNow ())
-                init.set (Recoil.Atoms.dayStart, Recoil.Temp.tempState.DayStart)
-                init.set (Recoil.Atoms.view, Recoil.Temp.view)
-                init.set (Recoil.Atoms.taskOrderList, Recoil.Temp.tempState.TaskOrderList)
-                init.set (Recoil.Atoms.informationList, Recoil.Temp.tempState.InformationList)
-                init.set (Recoil.Atoms.lastSessions, Recoil.Temp.tempState.LastSessions)
-                init.set (Recoil.Atoms.taskStateList, Recoil.Temp.tempState.TaskStateList)
+                let now = Recoil.OldData.tempState.GetNow ()
+                let dayStart = Recoil.OldData.tempState.DayStart
+
+//                let a =
+//                    Recoil.FakeBackend.getTree
+//                        {| User = None
+//                           TreeId = TreeId ""
+//                           View = view
+//                           Position = None |}
+
+                init.set (Recoil.Atoms.getNow, Recoil.OldData.tempState.GetNow)
+                init.set (Recoil.Atoms.now, now)
+                init.set (Recoil.Atoms.dayStart, dayStart)
+                init.set (Recoil.Atoms.taskOrderList, Recoil.OldData.tempState.TaskOrderList)
+                init.set (Recoil.Atoms.informationList, Recoil.OldData.tempState.InformationList)
+                init.set (Recoil.Atoms.lastSessions, Recoil.OldData.tempState.LastSessions)
+                init.set (Recoil.Atoms.taskStateList, Recoil.OldData.tempState.TaskStateList)
+
+                Recoil.OldData.tempState.InformationCommentsMap
+                |> Map.iter (fun information comments ->
+                    let recoilInformation = Recoil.Atoms.RecoilInformation.RecoilInformation.Create information
+                    init.set (recoilInformation.WrappedInformation, information)
+                    init.set (recoilInformation.Comments, comments)
+                )
 
                 let dateSequence =
-                    [ Recoil.Temp.tempState.GetNow().Date ]
+                    [ now.Date ]
                     |> Rendering.getDateSequence (45, 20)
 
-                Recoil.Temp.tempState.TaskStateList
+                Recoil.OldData.tempState.TaskStateList
                 |> List.iter (fun taskState ->
                     let taskId = Recoil.Atoms.RecoilTask.taskId taskState.Task
                     let task = Recoil.Atoms.RecoilTask.RecoilTask.Create taskId
                     init.set (task.Id, taskId)
                     init.set (task.Comments, taskState.Comments)
                     init.set (task.PriorityValue, taskState.PriorityValue)
+
+                    let cellMap =
+                        let (Model.Lane (_, cells)) =
+                            Rendering.renderLane dayStart now dateSequence taskState.Task taskState.StatusEntries
+
+                        cells
+                        |> List.map (fun (Model.Cell (address, status)) ->
+                            address.Date, status
+                        )
+                        |> Map.ofList
 
                     dateSequence
                     |> List.iter (fun date ->
@@ -41,10 +67,9 @@ module App =
                         let cellComments = taskState.CellCommentsMap |> Map.tryFind date |> Option.defaultValue []
                         let sessions =
                             taskState.Sessions
-                            |> List.filter (fun (Model.TaskSession start) -> Model.isToday Recoil.Temp.tempState.DayStart start date)
-//                        let laneMap = laneMapFamily task
-//                        let status = laneMap.[date]
-                        let status = Model.Missed
+                            |> List.filter (fun (Model.TaskSession start) -> Model.isToday Recoil.OldData.tempState.DayStart start date)
+
+                        let status = cellMap |> Map.tryFind date |> Option.defaultValue Model.Missed
 
                         init.set (cell.Id, cellId)
                         init.set (cell.Task, task)
