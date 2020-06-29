@@ -287,12 +287,11 @@ module ApplicationComponent =
 
         let cells = React.memo (fun () ->
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
-            let sortedLaneList = Recoil.useValue Recoil.Selectors.sortedLaneList
-            let tasks = sortedLaneList |> List.map (ofLane >> fst)
+            let tree = Recoil.useValue Recoil.Selectors.tree
 
             div [ Class Css.laneContainer ][
 
-                yield! tasks
+                yield! tree.Tasks
                 |> List.map (fun task ->
 
                     div [][
@@ -309,8 +308,7 @@ module ApplicationComponent =
 
     module CalendarViewComponent =
         let render = React.memo (fun () ->
-            let sortedLaneList = Recoil.useValue Recoil.Selectors.sortedLaneList
-            let tasks = sortedLaneList |> List.map (ofLane >> fst)
+            let tree = Recoil.useValue Recoil.Selectors.tree
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
@@ -327,9 +325,10 @@ module ApplicationComponent =
                         // Column: Information Type
                         div [ Style [ PaddingRight 10 ] ] [
 
-                            yield! tasks
+                            yield! tree.Tasks
                             |> List.map (fun task ->
-                                let comments = Recoil.useValue (Recoil.Selectors.RecoilInformation.comments task.Information)
+                                let informationId = Recoil.Atoms.RecoilInformation.informationId task.Information
+                                let comments = Recoil.useValue (Recoil.Selectors.RecoilInformation.comments informationId)
 //                                let comments = []
 
                                 div [ classList [ Css.blueIndicator, not comments.IsEmpty
@@ -349,7 +348,7 @@ module ApplicationComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! tasks
+                            yield! tree.Tasks
                             |> List.map (fun task ->
                                 Grid.taskName {| Level = 0; Task = task |}
                             )
@@ -368,19 +367,12 @@ module ApplicationComponent =
     module GroupsViewComponent =
         let render = React.memo (fun () ->
             printfn "GROUPS VIEW"
-            let sortedLaneList = Recoil.useValue Recoil.Selectors.sortedLaneList
+            let tree = Recoil.useValue Recoil.Selectors.tree
 
             let groups =
-                sortedLaneList
-                |> List.map (ofLane >> fst)
+                tree.Tasks
                 |> List.groupBy (fun task -> task.Information)
-                |> List.groupBy (fun (info, _) ->
-                    match info with
-                    | Project _  -> "projects"
-                    | Area _     -> "areas"
-                    | Resource _ -> "resources"
-                    | Archive _  -> "archives"
-                )
+                |> List.groupBy (fun (info, _) -> info.KindName)
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
@@ -406,7 +398,8 @@ module ApplicationComponent =
 
                                     yield! taskGroups
                                     |> List.map (fun (information, tasks) ->
-                                        let comments = Recoil.useValue (Recoil.Selectors.RecoilInformation.comments information)
+                                        let informationId = Recoil.Atoms.RecoilInformation.informationId information
+                                        let comments = Recoil.useValue (Recoil.Selectors.RecoilInformation.comments informationId)
 
                                         div [][
                                             // Information
@@ -469,8 +462,7 @@ module ApplicationComponent =
 
     module TasksViewComponent =
         let render = React.memo (fun () ->
-            let sortedLaneList = Recoil.useValue Recoil.Selectors.sortedLaneList
-            let tasks = sortedLaneList |> List.map (ofLane >> fst)
+            let tree = Recoil.useValue Recoil.Selectors.tree
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
@@ -484,9 +476,10 @@ module ApplicationComponent =
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         // Column: Information Type
                         div [ Style [ PaddingRight 10 ] ] [
-                            yield! tasks
+                            yield! tree.Tasks
                             |> List.map (fun task ->
-                                let comments = Recoil.useValue (Recoil.Selectors.RecoilInformation.comments task.Information)
+                                let informationId = Recoil.Atoms.RecoilInformation.informationId task.Information
+                                let comments = Recoil.useValue (Recoil.Selectors.RecoilInformation.comments informationId)
 
                                 div [ classList [ Css.blueIndicator, comments.IsEmpty
                                                   Css.tooltipContainer, comments.IsEmpty ]
@@ -506,7 +499,7 @@ module ApplicationComponent =
                         // Column: Priority
                         div [ Style [ PaddingRight 10
                                       TextAlign TextAlignOptions.Center ] ] [
-                            yield! tasks
+                            yield! tree.Tasks
                             |> List.map (fun task ->
                                 let taskId = Recoil.Atoms.RecoilTask.taskId task
                                 let priorityValue = Recoil.useValue (Recoil.Selectors.RecoilTask.priorityValue taskId)
@@ -521,7 +514,7 @@ module ApplicationComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! tasks
+                            yield! tree.Tasks
                             |> List.map (fun task ->
                                 Grid.taskName {| Level = 0; Task = task |}
                             )
@@ -603,16 +596,10 @@ module ApplicationComponent =
     ()
 
 module MainComponent =
-    let nowUpdater = React.memo (fun () ->
-        let getNow = Recoil.useValue Recoil.Atoms.getNow
-        let setNow = Recoil.useSetState Recoil.Atoms.now
+    let positionUpdater = React.memo (fun () ->
+        let resetPosition = Recoil.useResetState Recoil.Selectors.position
 
-        let updateNow () =
-            getNow
-            |> fun x -> x ()
-            |> setNow
-
-        CustomHooks.useInterval updateNow (60 * 1000)
+        CustomHooks.useInterval resetPosition (60 * 1000)
 
         nothing
     )
@@ -636,7 +623,7 @@ module MainComponent =
 
     let render = React.memo (fun () ->
         React.suspense ([
-            nowUpdater ()
+            positionUpdater ()
             globalShortcutHandler ()
 
             NavBarComponent.render ()

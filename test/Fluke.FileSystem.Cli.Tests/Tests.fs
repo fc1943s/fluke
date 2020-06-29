@@ -18,13 +18,14 @@ module Tests =
                 1
                 |> Expect.equal "" 1
 
-                let taskData = RootPrivateData.manualTasks
+                let treeData = RootPrivateData.treeData
 
-                taskData.InformationList
-                |> List.map (function
-                    | Project project -> Some ("projects", project.Name)
-                    | Area area -> Some ("areas", area.Name)
-                    | Resource resource -> Some ("resources", resource.Name)
+                treeData.InformationList
+                |> List.map (fun information ->
+                    match information with
+                    | Project project -> Some (information.KindName, project.Name)
+                    | Area area -> Some (information.KindName, area.Name)
+                    | Resource resource -> Some (information.KindName, resource.Name)
                     | Archive _ -> None
                 )
                 |> List.choose id

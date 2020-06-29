@@ -88,13 +88,18 @@ module Model =
         | SameDay
         | NextDay
 
-    type Task =
-        { Name: string
-          Information: Information
-          Scheduling: TaskScheduling
-          PendingAfter: FlukeTime option
-          MissedAfter: FlukeTime option
-          Duration: int option }
+    type TaskPriority =
+        | Low1
+        | Low2
+        | Low3
+        | Medium4
+        | Medium5
+        | Medium6
+        | High7
+        | High8
+        | High9
+        | Critical10
+
 
     type CellEventStatus =
         | Postponed of until:FlukeTime option
@@ -111,10 +116,6 @@ module Model =
         | MissedToday
         | EventStatus of CellEventStatus
 
-    type CellAddress =
-        { Task: Task
-          Date: FlukeDate }
-
     [<RequireQualifiedAccess>]
     type UserColor =
         | Pink
@@ -124,12 +125,33 @@ module Model =
         { Username: string
           Color: UserColor }
 
-    type Cell = Cell of address:CellAddress * status:CellStatus
     type Comment = Comment of user:User * comment:string
     type TaskSession = TaskSession of start:FlukeDateTime
+    type TaskStatusEntry = TaskStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
+    type TaskPriorityValue = TaskPriorityValue of value:int
+
+    type Task =
+        { Name: string
+          Information: Information
+          Scheduling: TaskScheduling
+          PendingAfter: FlukeTime option
+          MissedAfter: FlukeTime option
+          Priority: TaskPriorityValue
+          Sessions: TaskSession list
+          StatusEntries: TaskStatusEntry list
+          LaneMap: Map<FlukeDate, CellStatus>
+          Comments: Comment list
+          CellCommentsMap: Map<FlukeDate, Comment list>
+          Duration: int option }
+
+    type CellAddress =
+        { Task: Task
+          Date: FlukeDate }
+
+
+    type Cell = Cell of address:CellAddress * status:CellStatus
     type TaskComment = TaskComment of task:Task * comment:Comment
     type CellStatusEntry = CellStatusEntry of address:CellAddress * eventStatus:CellEventStatus
-    type TaskStatusEntry = TaskStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
     type CellComment = CellComment of address:CellAddress * comment:Comment
     type CellSession = CellSession of address:CellAddress * start:FlukeTime
 
@@ -154,28 +176,23 @@ module Model =
 
     type Lane = Lane of task:Task * cells:Cell list
 
-    type TaskPriorityValue = TaskPriorityValue of value:int
 
-    type TaskPriority =
-        | Low1
-        | Low2
-        | Low3
-        | Medium4
-        | Medium5
-        | Medium6
-        | High7
-        | High8
-        | High9
-        | Critical10
 
-    type TaskState =
-        { Task: Task
-          Comments: Comment list
-          Sessions: TaskSession list
-          StatusEntries: TaskStatusEntry list
-          CellCommentsMap: Map<FlukeDate, Comment list>
-          PriorityValue: TaskPriorityValue }
 
+    [<RequireQualifiedAccess>]
+    type TreeAccess =
+        | Owner of user:User
+        | Admin of user:User
+        | ReadOnly of user:User
+
+    type TreeId = TreeId of id:string
+
+    type Tree =
+        { Id: TreeId
+          Access: TreeAccess list
+          Position: FlukeDateTime
+          InformationList: Information list
+          TaskList: Task list }
 
     type Area with
         static member inline Default =
@@ -230,7 +247,17 @@ module Model =
 
             this.DateTime >= dateToCompare.DateTime
 
-    let flukeDateTime year month day hour minute = { Date = flukeDate year month day; Time = flukeTime hour minute }
+    let flukeDateTime year month day hour minute =
+        { Date = flukeDate year month day; Time = flukeTime hour minute }
+
+    type Information with
+        member this.KindName =
+            match this with
+            | Project _  -> "projects"
+            | Area _     -> "areas"
+            | Resource _ -> "resources"
+            | Archive _  -> "archives"
+
 
     type Task with
         static member inline Default =
@@ -239,6 +266,12 @@ module Model =
               PendingAfter = None
               MissedAfter = None
               Scheduling = Manual WithoutSuggestion
+              Priority = TaskPriorityValue 0
+              Sessions = []
+              StatusEntries = []
+              CellCommentsMap = Map.empty
+              LaneMap = Map.empty
+              Comments = []
               Duration = None }
 
     let ofLane = fun (Lane (task, cells)) -> task, cells
@@ -320,11 +353,10 @@ module Rendering =
         | TodayCell
 
 
-    let renderLane
-        dayStart (now: FlukeDateTime) (dateSequence: FlukeDate list) task (statusEntries: TaskStatusEntry list) =
+    let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) task =
 
         let cellStatusEventsByDate =
-            statusEntries
+            task.StatusEntries
             |> List.map ofTaskStatusEntry
             |> Map.ofList
 
@@ -355,23 +387,23 @@ module Rendering =
                     match event with
                     | Some cellEvent ->
                         let renderState =
-                            match cellEvent, (dayStart, now, date) with
+                            match cellEvent, (dayStart, position, date) with
                             | Postponed (Some _),               BeforeToday -> renderState
                             | (Postponed None | ManualPending), BeforeToday -> WaitingEvent
                             | Postponed None,                   Today       -> DayMatch
                             | _                                             -> Counting 1
 
                         let event =
-                            match cellEvent, (dayStart, now, date) with
+                            match cellEvent, (dayStart, position, date) with
                             | Postponed (Some until), Today
-                                when now.GreaterEqualThan dayStart date until -> Pending
+                                when position.GreaterEqualThan dayStart date until -> Pending
                             | _                                               -> EventStatus cellEvent
 
                         StatusCell event, renderState
 
                     | None ->
                         let getStatus renderState =
-                            match renderState, (dayStart, now, date) with
+                            match renderState, (dayStart, position, date) with
                             | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
                             | DayMatch,          BeforeToday -> StatusCell Missed, WaitingEvent
                             | WaitingEvent,      BeforeToday -> StatusCell Missed, WaitingEvent
@@ -411,7 +443,7 @@ module Rendering =
                                 )
                                 |> List.exists id
 
-                            match renderState, (dayStart, now, date) with
+                            match renderState, (dayStart, position, date) with
                             | WaitingFirstEvent, BeforeToday                     -> EmptyCell, WaitingFirstEvent
                             | _,                 Today        when isDateMatched -> StatusCell Pending, Counting 1
                             | WaitingFirstEvent, Today                           -> EmptyCell, Counting 1
@@ -419,7 +451,7 @@ module Rendering =
                             | _,                 _                               -> getStatus renderState
 
                         | Manual suggestion ->
-                            match renderState, (dayStart, now, date), suggestion with
+                            match renderState, (dayStart, position, date), suggestion with
                             | WaitingFirstEvent, Today, WithSuggestion
                                 when task.PendingAfter = None          -> StatusCell Suggested, Counting 1
                             | WaitingFirstEvent, Today, WithSuggestion -> TodayCell, Counting 1
@@ -440,7 +472,7 @@ module Rendering =
                     | EmptyCell -> Disabled
                     | StatusCell status -> status
                     | TodayCell ->
-                        match now, task.MissedAfter, task.PendingAfter with
+                        match position, task.MissedAfter, task.PendingAfter with
                         | now, Some missedAfter, _
                             when now.GreaterEqualThan dayStart date missedAfter  -> MissedToday
                         | now, _,                Some pendingAfter

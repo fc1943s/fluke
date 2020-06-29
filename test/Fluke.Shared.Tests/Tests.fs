@@ -176,20 +176,18 @@ module Tests =
                                                    Expected: string list
                                                    Now: FlukeDateTime |}) =
 
-                let taskStateList =
+                let taskList =
                     props.Data
-                    |> List.map (fun (task, events) -> createTaskState task events)
+                    |> List.map (fun (task, events) -> applyTaskEvents task events)
 
                 let dateSequence =
-                    taskStateList
+                    taskList
                     |> List.collect (fun x -> x.StatusEntries)
                     |> List.map (ofTaskStatusEntry >> fst)
                     |> Rendering.getDateSequence (35, 35)
 
-                taskStateList
-                |> List.map (fun taskState ->
-                    Rendering.renderLane testDayStart props.Now dateSequence taskState.Task taskState.StatusEntries
-                )
+                taskList
+                |> List.map (Rendering.renderLane testDayStart props.Now dateSequence)
                 |> fun lanes ->
                     match props.Sort with
                     | NoSorting -> lanes
@@ -343,7 +341,7 @@ module Tests =
                                                      Expected: (FlukeDate * CellStatus) list
                                                      Events: TempTaskEvent list |}) =
 
-                let taskState = createTaskState props.Task props.Events
+                let task = applyTaskEvents props.Task props.Events
 
                 let dateSequence = props.Expected |> List.map fst
 
@@ -351,8 +349,7 @@ module Tests =
                     List.map string
                     >> String.concat Environment.NewLine
 
-                taskState.StatusEntries
-                |> Rendering.renderLane testDayStart props.Now dateSequence props.Task
+                Rendering.renderLane testDayStart props.Now dateSequence task
                 |> fun (Lane (_, cells)) ->
                     cells
                     |> List.map (fun (Cell (address, status)) -> string address.Date, status)
@@ -884,7 +881,7 @@ module Tests =
 
                     testWithLaneRenderingData laneRenderingTestData
 
-                    let taskState = createTaskState laneRenderingTestData.Task laneRenderingTestData.Events
+                    let taskState = applyTaskEvents laneRenderingTestData.Task laneRenderingTestData.Events
 
                     let sessionsExpected = [
                         flukeDate 2020 Month.February 29, 1

@@ -93,9 +93,7 @@ module TempData =
           Color = UserColor.Blue }
 
     let getNow () =
-        let rawDate = DateTime.Now
-        { Date = FlukeDate.FromDateTime rawDate
-          Time = FlukeTime.FromDateTime rawDate }
+        FlukeDateTime.FromDateTime DateTime.Now
 
     module Users =
         let fc1943s =
@@ -110,8 +108,6 @@ module TempData =
             fc1943s
             liryanne
         ]
-
-        let current = fc1943s
 
 
     let getTaskOrderList oldTaskOrderList (tasks: Task list) manualTaskOrder =
@@ -146,7 +142,7 @@ module TempData =
         | TempCellComment of date:FlukeDate * comment:string
         | TempTaskField of field:TempTaskEventField
 
-    let createTaskState task events =
+    let applyTaskEvents task events =
 
         let getPriorityValue = function
             | Low1 -> 1
@@ -212,21 +208,20 @@ module TempData =
 
             loop [] [] [] [] None task.Scheduling task.PendingAfter task.MissedAfter task.Duration events
 
-        { Task =
-            { task with
-                Scheduling = scheduling
-                PendingAfter = pendingAfter
-                MissedAfter = missedAfter
-                Duration = duration }
-          Comments = comments
-          Sessions = sessions
-          StatusEntries = statusEntries
-          CellCommentsMap = cellCommentsMap
-          PriorityValue = priority }
+        { task with
+            Scheduling = scheduling
+            PendingAfter = pendingAfter
+            MissedAfter = missedAfter
+            Duration = duration
+            Comments = comments
+            Sessions = sessions
+            StatusEntries = statusEntries
+            CellCommentsMap = cellCommentsMap
+            Priority = priority }
 
 
-    let createManualTasksFromTree taskTree =
-        let taskStateList =
+    let transformTreeData taskTree =
+        let taskList =
             taskTree
             |> List.collect (fun (information, tasks) ->
                 tasks
@@ -236,7 +231,7 @@ module TempData =
                             Name = taskName
                             Information = information }
 
-                    createTaskState task events
+                    applyTaskEvents task events
                 )
             )
 
@@ -246,10 +241,10 @@ module TempData =
             |> List.distinct
 
         let taskOrderList =
-            taskStateList
-            |> List.map (fun taskState -> { Task = taskState.Task; Priority = TaskOrderPriority.Last })
+            taskList
+            |> List.map (fun task -> { Task = task; Priority = TaskOrderPriority.Last })
 
-        {| TaskStateList = taskStateList
+        {| TaskList = taskList
            TaskOrderList = taskOrderList
            InformationList = informationList |}
 
@@ -259,7 +254,7 @@ module TempData =
                                                Events: TempTaskEvent list
                                                Task: Task |}) =
 
-        {| TaskStateList = [ createTaskState testData.Task testData.Events ]
+        {| TaskList = [ applyTaskEvents testData.Task testData.Events ]
            TaskOrderList = [ { Task = testData.Task; Priority = TaskOrderPriority.First } ]
            GetNow = fun () -> testData.Now |}
 
@@ -268,7 +263,7 @@ module TempData =
                                                Data: (Task * TempTaskEvent list) list
                                                Expected: string list |}) =
 
-        {| TaskStateList = testData.Data |> List.map (fun (task, events) -> createTaskState task events)
+        {| TaskList = testData.Data |> List.map (fun (task, events) -> applyTaskEvents task events)
            TaskOrderList =
                testData.Data
                |> List.map (fun (task, _) -> { Task = task; Priority = TaskOrderPriority.Last })
@@ -330,7 +325,7 @@ module TempData =
                 Resource Resources.vim, []
                 Resource Resources.windows, []
             ]
-            |> createManualTasksFromTree
+            |> transformTreeData
 
         RenderLaneTests =
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }

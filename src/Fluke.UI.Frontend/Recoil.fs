@@ -1,9 +1,9 @@
 namespace Fluke.UI.Frontend
 
+open System
 open System.Collections.Generic
 open FSharpPlus
 open Fable.Core.JsInterop
-open Feliz
 open Feliz.Recoil
 open Fluke.Shared
 open Fluke.UI.Frontend
@@ -26,222 +26,572 @@ module Recoil =
             mountById "diag" (str (Fable.SimpleJson.SimpleJson.stringify Browser.Dom.window?callCount))
 
     module OldData =
-        type TempDataType =
-            | TempPrivate
-            | TempPublic
-            | Test
-        let tempDataType = TempPrivate
+//        type TempDataType =
+//            | TempPrivate
+//            | TempPublic
+//            | Test
+//        let tempDataType = TempPrivate
 //        let tempDataType = Test
 //        let tempDataType = TempPublic
 
 
 
-        let tempState =
-            let testData = TempData.tempData.RenderLaneTests
+//        let tempState =
+//            let testData = TempData.tempData.RenderLaneTests
 //            let testData = TempData.tempData.SortLanesTests
 
-            let getNow =
-                match tempDataType with
-                | TempPrivate -> TempData.getNow
-                | TempPublic  -> TempData.getNow
-                | Test        -> testData.GetNow
+//            let getNow =
+//                match tempDataType with
+//                | TempPrivate -> TempData.getNow
+//                | TempPublic  -> TempData.getNow
+//                | Test        -> testData.GetNow
 
-            let dayStart =
-                match tempDataType with
-                | TempPrivate -> TempData.dayStart
-                | TempPublic  -> TempData.dayStart
-                | Test        -> TempData.testDayStart
+//            let dayStart =
+//                match tempDataType with
+//                | TempPrivate -> TempData.dayStart
+//                | TempPublic  -> TempData.dayStart
+//                | Test        -> TempData.testDayStart
 
-            let informationList =
-                match tempDataType with
-                | TempPrivate -> RootPrivateData.manualTasks.InformationList
-                | TempPublic  -> TempData.tempData.ManualTasks.InformationList
-                | Test        -> []
+//            let informationList =
+//                match tempDataType with
+//                | TempPrivate -> RootPrivateData.manualTasks.InformationList
+//                | TempPublic  -> TempData.tempData.ManualTasks.InformationList
+//                | Test        -> []
 
-            let taskOrderList =
-                match tempDataType with
-                | TempPrivate -> RootPrivateData.manualTasks.TaskOrderList @ RootPrivateData.taskOrderList
-                | TempPublic  -> TempData.tempData.ManualTasks.TaskOrderList
-                | Test        -> testData.TaskOrderList
+//            let taskOrderList =
+//                match tempDataType with
+//                | TempPrivate -> RootPrivateData.manualTasks.TaskOrderList @ RootPrivateData.taskOrderList
+//                | TempPublic  -> TempData.tempData.ManualTasks.TaskOrderList
+//                | Test        -> testData.TaskOrderList
 
-            let informationCommentsMap =
-                match tempDataType with
-                | TempPrivate ->
-                    RootPrivateData.informationComments
-                    |> List.append RootPrivateData.Shared.informationComments
-                    |> List.groupBy (fun x -> x.Information)
-                    |> Map.ofList
-                    |> Map.mapValues (List.map (fun x -> x.Comment))
-                | TempPublic  -> Map.empty
-                | Test        -> Map.empty
+//            let informationCommentsMap =
+//                match tempDataType with
+//                | TempPrivate ->
+//                    RootPrivateData.informationComments
+//                    |> List.append RootPrivateData.Shared.informationComments
+//                    |> List.groupBy (fun x -> x.Information)
+//                    |> Map.ofList
+//                    |> Map.mapValues (List.map (fun x -> x.Comment))
+//                | TempPublic  -> Map.empty
+//                | Test        -> Map.empty
 
-            let taskStateList =
-                match tempDataType with
-                | TempPrivate ->
-                    let taskData = RootPrivateData.manualTasks
-                    let sharedTaskData = RootPrivateData.Shared.manualTasks
+//            let taskStateList =
+//                match tempDataType with
+//                | TempPrivate ->
+//                    let taskData = RootPrivateData.manualTasks
+//                    let sharedTaskData = RootPrivateData.Shared.manualTasks
+//
+//                    let cellComments =
+//                        RootPrivateData.cellComments
+//                        |> List.append RootPrivateData.Shared.cellComments
+//
+//                    let applyState statusEntries comments (taskState: TaskState) =
+//                        { taskState with
+//                            StatusEntries =
+//                                statusEntries
+//                                |> createTaskStatusEntries taskState.Task
+//                                |> List.prepend taskState.StatusEntries
+//                            Comments =
+//                                comments
+//                                |> List.filter (fun (TaskComment (task, _)) -> task = taskState.Task)
+//                                |> List.map (ofTaskComment >> snd)
+//                                |> List.prepend taskState.Comments
+//                            CellCommentsMap =
+//                                cellComments
+//                                |> List.filter (fun (CellComment (address, _)) -> address.Task = taskState.Task)
+//                                |> List.map (fun (CellComment (address, comment)) -> address.Date, comment)
+//                                |> List.groupBy fst
+//                                |> Map.ofList
+//                                |> Map.mapValues (List.map snd)
+//                                |> Map.union taskState.CellCommentsMap }
+//
+//                    let taskStateList =
+//                        taskData.TaskStateList
+//                        |> List.map (applyState
+//                                         RootPrivateData.cellStatusEntries
+//                                         RootPrivateData.taskComments)
+//
+//                    let sharedTaskStateList =
+//                        sharedTaskData.TaskStateList
+//                        |> List.map (applyState
+//                                         RootPrivateData.Shared.cellStatusEntries
+//                                         RootPrivateData.Shared.taskComments)
+//
+//                    taskStateList |> List.append sharedTaskStateList
+//                | TempPublic  -> TempData.tempData.ManualTasks.TaskStateList
+//                | Test        -> testData.TaskStateList
 
-                    let cellComments =
-                        RootPrivateData.cellComments
-                        |> List.append RootPrivateData.Shared.cellComments
+//            let taskStateList =
+//                taskStateList
+//                |> List.sortByDescending (fun x -> x.StatusEntries.Length)
+//                |> List.take 10
 
-                    let applyState statusEntries comments (taskState: TaskState) =
-                        { taskState with
-                            StatusEntries =
-                                statusEntries
-                                |> createTaskStatusEntries taskState.Task
-                                |> List.prepend taskState.StatusEntries
-                            Comments =
-                                comments
-                                |> List.filter (fun (TaskComment (task, _)) -> task = taskState.Task)
-                                |> List.map (ofTaskComment >> snd)
-                                |> List.prepend taskState.Comments
-                            CellCommentsMap =
-                                cellComments
-                                |> List.filter (fun (CellComment (address, _)) -> address.Task = taskState.Task)
-                                |> List.map (fun (CellComment (address, comment)) -> address.Date, comment)
-                                |> List.groupBy fst
-                                |> Map.ofList
-                                |> Map.mapValues (List.map snd)
-                                |> Map.union taskState.CellCommentsMap }
+//            let lastSessions =
+//                taskStateList
+//                |> Seq.filter (fun taskState -> not taskState.Sessions.IsEmpty)
+//                |> Seq.map (fun taskState -> taskState.Task, taskState.Sessions)
+//                |> Seq.map (Tuple2.mapSnd (fun sessions ->
+//                    sessions
+//                    |> Seq.sortByDescending (fun (TaskSession start) -> start.DateTime)
+//                    |> Seq.head
+//                ))
+//                |> Seq.toList
 
-                    let taskStateList =
-                        taskData.TaskStateList
-                        |> List.map (applyState
-                                         RootPrivateData.cellStatusEntries
-                                         RootPrivateData.taskComments)
-
-                    let sharedTaskStateList =
-                        sharedTaskData.TaskStateList
-                        |> List.map (applyState
-                                         RootPrivateData.Shared.cellStatusEntries
-                                         RootPrivateData.Shared.taskComments)
-
-                    taskStateList |> List.append sharedTaskStateList
-                | TempPublic  -> TempData.tempData.ManualTasks.TaskStateList
-                | Test        -> testData.TaskStateList
-
-            let taskStateList =
-                taskStateList
-                |> List.sortByDescending (fun x -> x.StatusEntries.Length)
-                |> List.take 10
-
-            let lastSessions =
-                taskStateList
-                |> Seq.filter (fun taskState -> not taskState.Sessions.IsEmpty)
-                |> Seq.map (fun taskState -> taskState.Task, taskState.Sessions)
-                |> Seq.map (Tuple2.mapSnd (fun sessions ->
-                    sessions
-                    |> Seq.sortByDescending (fun (TaskSession start) -> start.DateTime)
-                    |> Seq.head
-                ))
-                |> Seq.toList
-
-            printfn "RETURNING TEMPSTATE."
-            {| GetNow = getNow
-               DayStart = dayStart
-               InformationCommentsMap = informationCommentsMap
-               InformationList = informationList
-               TaskOrderList = taskOrderList
-               TaskStateList = taskStateList
-               LastSessions = lastSessions |}
+//            printfn "RETURNING TEMPSTATE."
+//            {| GetNow = getNow
+//               DayStart = dayStart
+//               InformationCommentsMap = informationCommentsMap
+//               InformationList = informationList
+//               TaskOrderList = taskOrderList
+//               TaskStateList = taskStateList
+//               LastSessions = lastSessions |}
+        ()
 
     module FakeBackend =
-        type TestTemplate =
-            | LaneSorting of string
-            | LaneRendering of string
+//        type TestTemplate =
+//            | LaneSorting of string
+//            | LaneRendering of string
+//
+//        [<RequireQualifiedAccess>]
+//        type Database =
+//            | Test of TestTemplate
+//            | Public
+//            | Private
 
-        [<RequireQualifiedAccess>]
-        type Database =
-            | Test of TestTemplate
-            | Public
-            | Private
-
-        let a = [
-            "test", [
-                "laneSorting", [
-
-                ]
-                "laneRendering", [
-
-                ]
-            ]
-            "public", [
-                "default", []
-            ]
-            "private", [
-                "default", []
-            ]
-        ]
+//        let a = [
+//            "test", [
+//                "laneSorting", [
+//
+//                ]
+//                "laneRendering", [
+//
+//                ]
+//            ]
+//            "public", [
+//                "default", []
+//            ]
+//            "private", [
+//                "default", []
+//            ]
+//        ]
 
         [<RequireQualifiedAccess>]
         type TreeAccess =
             | Owner of user:User
             | Admin of user:User
-            | Visitor of user:User
+            | ReadOnly of user:User
 
         type TreeId = TreeId of id:string
 
         type Tree =
             { Id: TreeId
-              Access: TreeAccess list }
+              Access: TreeAccess list
+              Position: FlukeDateTime
+              InformationList: Information list
+              TaskList: Task list }
 
-        type TreePosition =
-            { Tree: Tree
-              Position: FlukeDate }
+        let getLivePosition () =
+            FlukeDateTime.FromDateTime DateTime.Now
 
+        let getCurrentUser () =
+            RootPrivateData.currentUser
+
+        let getDayStart () =
+            TempData.dayStart
 
         let hasAccess tree user =
             tree.Access
             |> List.exists (function
                 | TreeAccess.Owner dbUser -> dbUser = user
                 | TreeAccess.Admin dbUser -> dbUser = user
-                | TreeAccess.Visitor dbUser -> dbUser = user)
+                | TreeAccess.ReadOnly dbUser -> dbUser = user)
+
+        let rec filterTaskList view dateRange (taskList: Task list) =
+            match view with
+            | View.Calendar ->
+                taskList
+                |> List.filter (function
+                    | { Scheduling = Manual WithoutSuggestion
+                        StatusEntries = statusEntries
+                        Sessions = sessions }
+                        when
+                            statusEntries
+                            |> List.exists (fun (TaskStatusEntry (date, _)) -> date.DateTime >==< dateRange)
+                            |> not
+                        &&
+                            sessions
+                            |> List.exists (fun (TaskSession start) -> start.Date.DateTime >==< dateRange)
+                            |> not
+                        -> false
+                    | _ -> true
+                )
+            | View.Groups ->
+                taskList
+                |> List.filter (function
+                    | { Scheduling = Manual WithoutSuggestion
+                        StatusEntries = []
+                        Sessions = [] } -> true
+                    | _ -> false
+                )
+//                    |> List.filter (fun (_, statusEntries) ->
+//                        statusEntries
+//                        |> List.filter (function
+//                            | { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true
+//                            | _ -> false
+//                        )
+//                        |> List.tryLast
+//                        |> function Some { Status = Dismissed } -> false | _ -> true
+//                    )
+            | View.Tasks ->
+                taskList
+                |> List.filter (function { Scheduling = Manual _ } -> true | _ -> false)
+            | View.Week ->
+                taskList
+
+        let sortLanes (input: {| View: View
+                                 DayStart: FlukeTime
+                                 Position: FlukeDateTime
+                                 TaskOrderList: TaskOrderEntry list
+                                 InformationList: Information list
+                                 Lanes: Lane list |}) =
+            match input.View with
+            | View.Calendar ->
+                input.Lanes
+                |> Sorting.sortLanesByFrequency
+                |> Sorting.sortLanesByIncomingRecurrency input.DayStart input.Position
+                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
+            | View.Groups ->
+                let lanes =
+                    input.Lanes
+                    |> Sorting.applyManualOrder input.TaskOrderList
+
+                input.InformationList
+                |> List.map (fun information ->
+                    let lanes =
+                        lanes
+                        |> List.filter (fun (Lane (task, _)) -> task.Information = information)
+
+                    information, lanes
+                )
+                |> List.collect snd
+            | View.Tasks ->
+                input.Lanes
+                |> Sorting.applyManualOrder input.TaskOrderList
+                |> List.sortByDescending (fun (Lane (task, _)) ->
+                    task.Priority
+                    |> ofTaskPriorityValue
+                )
+            | View.Week ->
+                []
 
         let getTree (input: {| User: User
-                               TreeId: TreeId
+                               DayStart: FlukeTime
+                               DateSequence: FlukeDate list
                                View: View
-                               Position: FlukeDate |}) =
-            ()
+                               Position: FlukeDateTime |}) =
+
+            let informationList =
+                let commentsMap =
+                    RootPrivateData.informationComments
+                    |> List.groupBy (fun x -> x.Information)
+                    |> Map.ofList
+                    |> Map.mapValues (List.map (fun x -> x.Comment))
+
+                RootPrivateData.treeData.InformationList
+                |> List.append RootPrivateData.sharedTreeData.InformationList
+                |> List.map (fun information ->
+                    {|
+                        Information = information
+                        Comments =
+                            commentsMap
+                            |> Map.tryFind information
+                            |> Option.defaultValue []
+                    |}
+                )
+
+            {|
+                Id = TreeId "fc1943s/tree/default"
+                Access = [ TreeAccess.Owner TempData.Users.fc1943s ]
+                InformationList = informationList
+                Tasks =
+                    let taskList =
+                        let treeData = RootPrivateData.treeData
+                        let sharedTreeData = RootPrivateData.treeData
+
+                        let applyEvents statusEntries comments (task: Task) =
+                            { task with
+                                StatusEntries =
+                                    statusEntries
+                                    |> createTaskStatusEntries task
+                                    |> List.prepend task.StatusEntries
+                                Comments =
+                                    comments
+                                    |> List.filter (fun (TaskComment (commentTask, _)) -> commentTask = task)
+                                    |> List.map (ofTaskComment >> snd)
+                                    |> List.prepend task.Comments
+                                CellCommentsMap =
+                                    RootPrivateData.cellComments
+                                    |> List.filter (fun (CellComment (address, _)) -> address.Task = task)
+                                    |> List.map (fun (CellComment (address, comment)) -> address.Date, comment)
+                                    |> List.groupBy fst
+                                    |> Map.ofList
+                                    |> Map.mapValues (List.map snd)
+                                    |> Map.union task.CellCommentsMap }
+
+                        let taskList =
+                            treeData.TaskList
+                            |> List.map (applyEvents
+                                             RootPrivateData.cellStatusEntries
+                                             RootPrivateData.taskComments)
+
+                        let sharedTaskList =
+                            sharedTreeData.TaskList
+                            |> List.map (applyEvents
+                                             RootPrivateData.sharedCellStatusEntries
+                                             RootPrivateData.sharedTaskComments)
+
+                        taskList |> List.append sharedTaskList
+
+                    let taskList =
+                        taskList
+                        |> List.sortByDescending (fun x -> x.StatusEntries.Length)
+                        |> List.take 10
+
+                    let dateRange =
+                        let dateSequence = input.DateSequence
+                        let head = dateSequence |> List.head |> fun x -> x.DateTime
+                        let last = dateSequence |> List.last |> fun x -> x.DateTime
+                        head, last
+
+                    let filteredTaskList =
+                        filterTaskList input.View dateRange taskList
+
+                    let filteredLanes =
+                        filteredTaskList
+                        |> List.map (fun task ->
+                            Rendering.renderLane
+                                input.DayStart
+                                input.Position
+                                input.DateSequence
+                                task
+                        )
+
+                    let taskOrderList =
+                        RootPrivateData.treeData.TaskOrderList// @ RootPrivateData.taskOrderList
+
+                    let sortedLanesMap =
+                        sortLanes
+                            {| View = input.View
+                               DayStart = input.DayStart
+                               Position = input.Position
+                               TaskOrderList = taskOrderList
+                               InformationList = informationList |> List.map (fun x -> x.Information)
+                               Lanes = filteredLanes |}
+                        |> List.map ofLane
+                        |> Map.ofList
+                        |> Map.map (fun _task cells ->
+                            cells
+                            |> List.map (fun (Cell (address, status)) ->
+                                address.Date, status
+                            )
+                            |> Map.ofList
+                        )
+
+                    taskList
+                    |> List.map (fun task -> { task with LaneMap = sortedLanesMap.[task] })
+            |}
+//                    {|
+//                        Name = "task1"
+//                        Information = Area { Name = "area1" }
+//                        Scheduling = Recurrency (Offset (Days 1))
+//                        PendingAfter = None
+//                        MissedAfter = None
+//                        Priority = Critical10
+//                        Duration = Some 30
+//                        Sessions = [
+//                            flukeDateTime 2020 Month.May 20 02 05
+//                            flukeDateTime 2020 Month.May 31 00 09
+//                            flukeDateTime 2020 Month.May 31 23 21
+//                            flukeDateTime 2020 Month.June 04 01 16
+//                            flukeDateTime 2020 Month.June 20 15 53
+//                        ]
+//                        Lane = [
+//                            (flukeDate 2020 Month.June 13), Completed
+//                        ]
+//                        Comments = [
+//                            Comment (TempData.Users.fc1943s, "fc1943s: task1 comment")
+//                            Comment (TempData.Users.liryanne, "liryanne: task1 comment")
+//                        ]
+//                    |}
+//
+//                    {|
+//                        Name = "task2"
+//                        Information = Area { Name = "area2" }
+//                        Scheduling = Recurrency (Offset (Days 1))
+//                        PendingAfter = None
+//                        MissedAfter = flukeTime 09 00 |> Some
+//                        Priority = Critical10
+//                        Duration = Some 5
+//                        Sessions = []
+//                        Lane = []
+//                        Comments = []
+//                    |}
+//
+//                {|
+//                    Id = TreeId "liryanne/shared"
+//                    Access = [ TreeAccess.Owner TempData.Users.liryanne
+//                               TreeAccess.Admin TempData.Users.fc1943s ]
+//                    InformationList = []
+//                    Tasks = []
+//                |}
+//
+//                {|
+//                    Id = TreeId "fluke/samples/laneSorting/frequency"
+//                    Access = [ TreeAccess.ReadOnly TempData.Users.liryanne
+//                               TreeAccess.ReadOnly TempData.Users.fc1943s ]
+//                    InformationList = []
+//                    Tasks = []
+//                |}
+//
+//                {|
+//                    Id = TreeId "fluke/samples/laneSorting/timeOfDay"
+//                    Access = [ TreeAccess.ReadOnly TempData.Users.liryanne
+//                               TreeAccess.ReadOnly TempData.Users.fc1943s ]
+//                    InformationList = []
+//                    Tasks = []
+//                |}
 //            treeList
 //            |> List.tryFind (fun tree -> tree.Id = treeId && hasAccess tree user)
 
-        let state = {|
-            User = "fc1943s"
-            View = View.Calendar
-            Position = flukeDate 2020 Month.June 28
-            TreeList = [
-                { Id = TreeId "fc1943s/default"
-                  Access = [ TreeAccess.Owner TempData.Users.fc1943s ] }
 
-                { Id = TreeId "liryanne/fc1943s"
-                  Access = [ TreeAccess.Owner TempData.Users.liryanne
-                             TreeAccess.Admin TempData.Users.fc1943s ] }
-                  ]
-        |}
+//        let state = {|
+//            Input_User = TempData.Users.fc1943s
+//            Input_View = View.Calendar
+//            Input_Position = flukeDate 2020 Month.June 28
+//            TreeList = [
+//                {|
+//                    Id = TreeId "fc1943s/tree/default"
+//                    Access = [ TreeAccess.Owner TempData.Users.fc1943s ]
+//                    InformationList = [
+//                        {|
+//                            Information = Area { Name = "area1" }
+//                            Comments = [
+//                                Comment (TempData.Users.fc1943s, "fc1943s: area1 area/information comment")
+//                                Comment (TempData.Users.liryanne, "liryanne: area1 area/information comment")
+//                            ]
+//                        |}
+//
+//                        {|
+//                            Information = Area { Name = "area2" }
+//                            Comments = []
+//                        |}
+//                    ]
+//                    Tasks = [
+//                        {|
+//                            Name = "task1"
+//                            Information = Area { Name = "area1" }
+//                            Scheduling = Recurrency (Offset (Days 1))
+//                            PendingAfter = None
+//                            MissedAfter = None
+//                            Priority = Critical10
+//                            Duration = Some 30
+//                            Sessions = [
+//                                flukeDateTime 2020 Month.May 20 02 05
+//                                flukeDateTime 2020 Month.May 31 00 09
+//                                flukeDateTime 2020 Month.May 31 23 21
+//                                flukeDateTime 2020 Month.June 04 01 16
+//                                flukeDateTime 2020 Month.June 20 15 53
+//                            ]
+//                            Lane = [
+//                                (flukeDate 2020 Month.June 13), Completed
+//                            ]
+//                            Comments = [
+//                                Comment (TempData.Users.fc1943s, "fc1943s: task1 comment")
+//                                Comment (TempData.Users.liryanne, "liryanne: task1 comment")
+//                            ]
+//                        |}
+//
+//                        {|
+//                            Name = "task2"
+//                            Information = Area { Name = "area2" }
+//                            Scheduling = Recurrency (Offset (Days 1))
+//                            PendingAfter = None
+//                            MissedAfter = flukeTime 09 00 |> Some
+//                            Priority = Critical10
+//                            Duration = Some 5
+//                            Sessions = []
+//                            Lane = []
+//                            Comments = []
+//                        |}
+//                    ]
+//                |}
+//
+//                {|
+//                    Id = TreeId "liryanne/shared"
+//                    Access = [ TreeAccess.Owner TempData.Users.liryanne
+//                               TreeAccess.Admin TempData.Users.fc1943s ]
+//                    InformationList = []
+//                    Tasks = []
+//                |}
+//
+//                {|
+//                    Id = TreeId "fluke/samples/laneSorting/frequency"
+//                    Access = [ TreeAccess.ReadOnly TempData.Users.liryanne
+//                               TreeAccess.ReadOnly TempData.Users.fc1943s ]
+//                    InformationList = []
+//                    Tasks = []
+//                |}
+//
+//                {|
+//                    Id = TreeId "fluke/samples/laneSorting/timeOfDay"
+//                    Access = [ TreeAccess.ReadOnly TempData.Users.liryanne
+//                               TreeAccess.ReadOnly TempData.Users.fc1943s ]
+//                    InformationList = []
+//                    Tasks = []
+//                |}
+//            ]
+//        |}
+
 
 
     module Atoms =
 
         module RecoilInformation =
+            type InformationId = InformationId of id:string
             type RecoilInformation =
-                { WrappedInformation: RecoilValue<Information, ReadWrite>
+                { Id: RecoilValue<InformationId, ReadWrite>
+                  WrappedInformation: RecoilValue<Information, ReadWrite>
                   Comments: RecoilValue<Comment list, ReadWrite> }
+            let rec idFamily = atomFamily {
+                key (nameof RecoilInformation + "/" + nameof idFamily)
+                def (fun (_taskId: InformationId) -> InformationId "")
+            }
             let rec wrappedInformationFamily = atomFamily {
                 key (nameof RecoilInformation + "/" + nameof wrappedInformationFamily)
-                def (fun (information: Information) -> information)
+                def (fun (_taskId: InformationId) -> Area Area.Default)
             }
             let rec commentsFamily = atomFamily {
                 key (nameof RecoilInformation + "/" + nameof commentsFamily)
-                def (fun (_information: Information) -> [])
+                def (fun (_informationId: InformationId) -> [])
             }
             type RecoilInformation with
-                static member internal Create information =
-                    { WrappedInformation = wrappedInformationFamily information
-                      Comments = commentsFamily information }
+                static member internal Create informationId =
+                    { Id = idFamily informationId
+                      WrappedInformation = wrappedInformationFamily informationId
+                      Comments = commentsFamily informationId }
+
+            let rec informationId (information: Information) : InformationId =
+                match information with
+                | Project x  -> information.KindName + "/" + x.Name
+                | Area x     -> information.KindName + "/" + x.Name
+                | Resource x -> information.KindName + "/" + x.Name
+                | Archive x  ->
+                    let (InformationId archiveId) = informationId x
+                    information.KindName + "/" + archiveId
+                |> InformationId
             let rec informationFamily = atomFamily {
                 key (nameof RecoilInformation + "/" + nameof informationFamily)
-                def (fun (information: Information) -> RecoilInformation.Create information)
+                def (fun (informationId: InformationId) -> RecoilInformation.Create informationId)
             }
 
         module RecoilTask =
@@ -343,56 +693,103 @@ module Recoil =
                 key (nameof RecoilCell + "/" + nameof cellFamily)
                 def (fun (cellId: CellId) -> RecoilCell.Create cellId)
             }
+        module RecoilTree =
+            type RecoilTree =
+                { Id: RecoilValue<FakeBackend.TreeId, ReadWrite>
+                  Access: RecoilValue<FakeBackend.TreeAccess list, ReadWrite>
+                  Position: RecoilValue<FlukeDateTime, ReadWrite>
+                  InformationList: RecoilValue<RecoilInformation.InformationId list, ReadWrite>
+                  TaskList: RecoilValue<RecoilTask.TaskId list, ReadWrite> }
+            let rec idFamily = atomFamily {
+                key (nameof RecoilTree + "/" + nameof idFamily)
+                def (fun (_treeId: FakeBackend.TreeId) -> FakeBackend.TreeId "")
+            }
+            let rec accessFamily = atomFamily {
+                key (nameof RecoilInformation + "/" + nameof accessFamily)
+                def (fun (_treeId: FakeBackend.TreeId) -> [])
+            }
+            let rec positionFamily = atomFamily {
+                key (nameof RecoilInformation + "/" + nameof positionFamily)
+                def (fun (_treeId: FakeBackend.TreeId) -> flukeDateTime 0000 Month.January 01 00 00)
+            }
+            let rec informationListFamily = atomFamily {
+                key (nameof RecoilInformation + "/" + nameof informationListFamily)
+                def (fun (_treeId: FakeBackend.TreeId) -> [])
+            }
+            let rec taskListFamily = atomFamily {
+                key (nameof RecoilInformation + "/" + nameof taskListFamily)
+                def (fun (_treeId: FakeBackend.TreeId) -> [])
+            }
+            type RecoilTree with
+                static member internal Create treeId =
+                    { Id = idFamily treeId
+                      Access = accessFamily treeId
+                      Position = positionFamily treeId
+                      InformationList = informationListFamily treeId
+                      TaskList = taskListFamily treeId }
 
-        let rec getNow = atom {
-            key (nameof getNow)
-            def (fun () -> flukeDateTime 0000 Month.January 01 00 00)
-        }
-        let rec dayStart = atom {
-            key (nameof dayStart)
-            def (flukeTime 00 00)
-        }
-        let rec now = atom {
-            key (nameof now)
-            def (flukeDateTime 0000 Month.January 01 00 00)
+            let rec treeFamily = atomFamily {
+                key (nameof RecoilTree + "/" + nameof treeFamily)
+                def (fun (treeId: FakeBackend.TreeId) -> RecoilTree.Create treeId)
+            }
+
+        let rec user = atom {
+            key (nameof user)
+            def (async {
+                return FakeBackend.getCurrentUser ()
+            })
         }
         let rec view = atom {
             key (nameof view)
             def View.Calendar
             local_storage
         }
-        let rec ctrlPressed = atom {
-            key (nameof ctrlPressed)
-            def false
-        }
-        let rec hovered = atom {
-            key (nameof hovered)
-            def Hover.None
-        }
-        let rec activeSessions = atom {
-            key (nameof activeSessions)
-            def ([] : ActiveSession list)
+        let rec dayStart = atom {
+            key (nameof dayStart)
+            def (async {
+                return FakeBackend.getDayStart ()
+            })
         }
         let rec selection = atom {
             key (nameof selection)
             def (Map.empty : Map<RecoilTask.TaskId, Set<FlukeDate>>)
         }
-        let rec taskOrderList = atom {
-            key (nameof taskOrderList)
-            def ([] : TaskOrderEntry list)
+        let rec ctrlPressed = atom {
+            key (nameof ctrlPressed)
+            def false
         }
-        let rec informationList = atom {
-            key (nameof informationList)
-            def ([] : Information list)
+        let rec activeSessions = atom {
+            key (nameof activeSessions)
+            def ([] : ActiveSession list)
         }
-        let rec lastSessions = atom {
-            key (nameof lastSessions)
-            def ([] : (Task * TaskSession) list)
-        }
-        let rec taskStateList = atom {
-            key (nameof taskStateList)
-            def ([] : TaskState list)
-        }
+//        let rec dayStart = atom {
+//            key (nameof dayStart)
+//            def (flukeTime 00 00)
+//        }
+//        let rec now = atom {
+//            key (nameof now)
+//            def (flukeDateTime 0000 Month.January 01 00 00)
+//        }
+//        let rec hovered = atom {
+//            key (nameof hovered)
+//            def Hover.None
+//        }
+//        let rec taskOrderList = atom {
+//            key (nameof taskOrderList)
+//            def ([] : TaskOrderEntry list)
+//        }
+//        let rec informationList = atom {
+//            key (nameof informationList)
+//            def ([] : Information list)
+//        }
+//        let rec lastSessions = atom {
+//            key (nameof lastSessions)
+//            def ([] : (Task * TaskSession) list)
+//        }
+//        let rec taskStateList = atom {
+//            key (nameof taskStateList)
+//            def ([] : TaskState list)
+//        }
 
 //        let rec dingsFamily = atomFamily {
 //            key (nameof dingsFamily)
@@ -447,106 +844,124 @@ module Recoil =
 //                setter.set (selection, newSelection)
 //            )
 //        }
+        let rec positionTrigger = atom {
+            key (nameof positionTrigger)
+            def 0
+        }
 
     module Selectors =
-        let rec dateSequence = selector {
-            key (nameof dateSequence)
-            get (fun getter ->
-                let now = getter.get Atoms.now
 
-                printfn "DATESEQUENCE. NOW: %A" now
+//        let rec treeMap = recoil {
+//            let! user = Atoms.user
+//            let! view = Atoms.view
+//            let! position = Atoms.position
+//
+//            let treeMap =
+//                FakeBackend.getTreeMap
+//                    {| User = user
+//                       View = view
+//                       Position = position |}
+//
+//            Profiling.addCount (nameof treeMap)
+//            return treeMap
+//        }
 
 
-                Profiling.addCount (nameof dateSequence)
-                [ now.Date ]
-                |> Rendering.getDateSequence (45, 20)
+        let rec position = selector {
+            key (nameof position)
+            get (fun getter -> async {
+                getter.get Atoms.positionTrigger |> ignore
+                Profiling.addCount (nameof position)
+                return FakeBackend.getLivePosition ()
+            })
+            set (fun setter _newValue ->
+                setter.set (Atoms.positionTrigger, fun x -> x + 1)
             )
         }
-        let rec dateRange = selector {
-            key (nameof dateRange)
-            get (fun getter ->
-                let dateSequence = getter.get dateSequence
+        let rec dateSequence = recoil {
+            let! position = position
 
-                Profiling.addCount (nameof dateRange)
-                let head = dateSequence |> List.head |> fun x -> x.DateTime
-                let last = dateSequence |> List.last |> fun x -> x.DateTime
-                head, last
-            )
+            printfn "DATESEQUENCE. position: %A" position
+
+            Profiling.addCount (nameof dateSequence)
+            return [ position.Date ] |> Rendering.getDateSequence (45, 20)
         }
-        let rec filteredTaskStateList = selector {
-            key (nameof filteredTaskStateList)
-            get (fun getter ->
-                printfn "filteredTaskStateList"
+        let rec dateRange = recoil {
+            let! dateSequence = dateSequence
 
-                let view = getter.get Atoms.view
-                let taskStateList = getter.get Atoms.taskStateList
-
-                printfn "- before len: %A" taskStateList.Length
-
-                let result =
-                    match view with
-                    | View.Calendar ->
-                        let dateRange = getter.get dateRange
-                        taskStateList
-                        |> List.filter (function
-                            | { Task = { Task.Scheduling = Manual WithoutSuggestion }
-                                StatusEntries = statusEntries
-                                Sessions = sessions }
-                                when
-                                    statusEntries
-                                    |> List.exists (fun (TaskStatusEntry (date, _)) -> date.DateTime >==< dateRange)
-                                    |> not
-                                &&
-                                    sessions
-                                    |> List.exists (fun (TaskSession start) -> start.Date.DateTime >==< dateRange)
-                                    |> not
-                                -> false
-                            | _ -> true
-                        )
-                    | View.Groups ->
-                        taskStateList
-                        |> List.filter (function
-                            | { Task = { Task.Scheduling = Manual WithoutSuggestion }
-                                StatusEntries = []
-                                Sessions = [] } -> true
-                            | _ -> false
-                        )
-    //                    |> List.filter (fun (_, statusEntries) ->
-    //                        statusEntries
-    //                        |> List.filter (function
-    //                            | { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true
-    //                            | _ -> false
-    //                        )
-    //                        |> List.tryLast
-    //                        |> function Some { Status = Dismissed } -> false | _ -> true
-    //                    )
-                    | View.Tasks ->
-                        taskStateList
-                        |> List.filter (function { Task = { Task.Scheduling = Manual _ }} -> true | _ -> false)
-                    | View.Week ->
-                        taskStateList
-
-                printfn "- RESULT: %A" result.Length
-                Profiling.addCount (nameof filteredTaskStateList)
-                result
-            )
+            Profiling.addCount (nameof dateRange)
+            let head = dateSequence |> List.head |> fun x -> x.DateTime
+            let last = dateSequence |> List.last |> fun x -> x.DateTime
+            return head, last
         }
-        let rec filteredTaskStateMap = selector {
-            key (nameof filteredTaskStateMap)
-            get (fun getter ->
-                printfn "filteredTaskStateMap"
-                let filteredTaskStateList = getter.get filteredTaskStateList
+        let rec tree = recoil {
+            let! user = Atoms.user
+            let! dayStart = Atoms.dayStart
+            let! dateSequence = dateSequence
+            let! view = Atoms.view
+            let! position = position
 
-                Profiling.addCount (nameof filteredTaskStateMap)
-                filteredTaskStateList
-                |> List.map (fun taskState ->
-//                    let taskId = getter.get(Atoms.RecoilTask.taskFamily taskState.Task).Id |> getter.get
-                    let taskId = Atoms.RecoilTask.taskId taskState.Task
-                    taskId, taskState
-                )
-                |> Map.ofList
-            )
+            let tree =
+                FakeBackend.getTree
+                    {| User = user
+                       DayStart = dayStart
+                       DateSequence = dateSequence
+                       View = view
+                       Position = position |}
+            return tree
         }
+        let rec informationMap = recoil {
+            let! tree = tree
+            return tree.InformationList
+            |> List.map (fun information ->
+                let informationId = Atoms.RecoilInformation.informationId information.Information
+                informationId, information
+            )
+            |> Map.ofList
+        }
+        let rec taskMap = recoil {
+            let! tree = tree
+            return tree.Tasks
+            |> List.map (fun task ->
+                let taskId = Atoms.RecoilTask.taskId task
+                taskId, task
+            )
+            |> Map.ofList
+        }
+
+
+//        let rec filteredTaskStateList = recoil {
+//            printfn "filteredTaskStateList"
+//
+//            let! view = Atoms.view
+//            let! taskStateList = Atoms.taskStateList
+//            let! dateRange = dateRange
+//
+//            printfn "- before len: %A" taskStateList.Length
+//
+//            let result =
+//                FakeBackend.filterTaskStateList view dateRange taskStateList
+//
+//            printfn "- RESULT: %A" result.Length
+//            Profiling.addCount (nameof filteredTaskStateList)
+//            return result
+//        }
+
+//        let rec filteredTaskStateMap = recoil {
+//            printfn "filteredTaskStateMap"
+//            let! filteredTaskStateList = filteredTaskStateList
+//
+//            Profiling.addCount (nameof filteredTaskStateMap)
+//            return
+//                filteredTaskStateList
+//                |> List.map (fun taskState ->
+//    //                    let taskId = getter.get(Atoms.RecoilTask.taskFamily taskState.Task).Id |> getter.get
+//                    let taskId = Atoms.RecoilTask.taskId taskState.Task
+//                    taskId, taskState
+//                )
+//                |> Map.ofList
+//        }
+
 //                return Temp.tempState.TaskStateMap.[task]
 //            let taskStateMap =
 //                taskStateList
@@ -566,17 +981,17 @@ module Recoil =
 //                |> List.map (fun taskState -> taskState.Task, taskState)
 //                |> Map.ofList
 //
-        let rec taskStateFamily = selectorFamily {
-            key (nameof taskStateFamily)
-            get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
-                printfn "taskStateFamily"
-                let filteredTaskStateMap = getter.get filteredTaskStateMap
-                Profiling.addCount (nameof taskStateFamily)
-//                taskStateMap
-//                |> Map.find task
-                filteredTaskStateMap.[taskId]
-            )
-        }
+//        let rec taskStateFamily = selectorFamily {
+//            key (nameof taskStateFamily)
+//            get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
+//                printfn "taskStateFamily"
+//                let filteredTaskStateMap = getter.get filteredTaskStateMap
+//                Profiling.addCount (nameof taskStateFamily)
+////                taskStateMap
+////                |> Map.find task
+//                filteredTaskStateMap.[taskId]
+//            )
+//        }
 //        let rec filteredLaneList = selector {
 //            key (nameof filteredLaneList)
 //            get (fun getter ->
@@ -613,20 +1028,20 @@ module Recoil =
             key (nameof isTodayFamily)
             get (fun (date: FlukeDate) getter ->
                 let dayStart = getter.get Atoms.dayStart
-                let now = getter.get Atoms.now
+                let position = getter.get position
                 Profiling.addCount (nameof isTodayFamily)
-                isToday dayStart now date
+                isToday dayStart position date
             )
         }
-        let rec findCell = selectorFamily {
-            key (nameof findCell)
-            get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
-                let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
-                Profiling.addCount (nameof findCell)
-                cell
+        let rec findInformation = selectorFamily {
+            key (nameof findInformation)
+            get (fun (informationId: Atoms.RecoilInformation.InformationId) getter ->
+//                    let taskId = getter.get(Atoms.RecoilTask.taskFamily taskState.Task).Id |> getter.get
+//                let taskId = Atoms.RecoilTask.taskId taskState.Task
+                let information = getter.get (Atoms.RecoilInformation.informationFamily informationId)
+                Profiling.addCount (nameof findInformation)
+                information
             )
-//            set (fun (task: Task, date: FlukeDate) setter (newCell: RecoilCell) ->
-//                setter.set(cellFamily (task, date), newCell))
         }
         let rec findTask = selectorFamily {
             key (nameof findTask)
@@ -638,15 +1053,15 @@ module Recoil =
                 task
             )
         }
-        let rec findInformation = selectorFamily {
-            key (nameof findInformation)
-            get (fun (information: Information) getter ->
-//                    let taskId = getter.get(Atoms.RecoilTask.taskFamily taskState.Task).Id |> getter.get
-//                let taskId = Atoms.RecoilTask.taskId taskState.Task
-                let information = getter.get (Atoms.RecoilInformation.informationFamily information)
-                Profiling.addCount (nameof findInformation)
-                information
+        let rec findCell = selectorFamily {
+            key (nameof findCell)
+            get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
+                let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
+                Profiling.addCount (nameof findCell)
+                cell
             )
+//            set (fun (task: Task, date: FlukeDate) setter (newCell: RecoilCell) ->
+//                setter.set(cellFamily (task, date), newCell))
         }
         let rec selectionTracker = selector {
             key (nameof selectionTracker)
@@ -685,13 +1100,13 @@ module Recoil =
         module rec RecoilInformation =
             let rec comments = selectorFamily {
                 key (nameof RecoilInformation + "/" + nameof comments)
-                get (fun (information: Information) getter ->
+                get (fun (informationId: Atoms.RecoilInformation.InformationId) getter ->
                     Profiling.addCount (nameof RecoilInformation + "/" + nameof comments)
-                    getter.get(findInformation information).Comments |> getter.get
-//
-//                    return Temp.tempState.InformationCommentsMap
-//                    |> Map.tryFind information
-//                    |> Option.defaultValue []
+                    let informationMap = getter.get informationMap
+
+                    informationMap
+                    |> Map.find informationId
+                    |> fun x -> x.Comments
                 )
             }
 
@@ -779,63 +1194,64 @@ module Recoil =
                 )
             }
 
-        let rec sortedLaneList = selector {
-            key (nameof sortedLaneList)
-            get (fun getter ->
-                printfn "sortedLaneList"
-                let view = getter.get Atoms.view
-                let dayStart = getter.get Atoms.dayStart
-                let now = getter.get Atoms.now
-                let taskOrderList = getter.get Atoms.taskOrderList
-                let filteredTaskStateList = getter.get filteredTaskStateList
-
-                let cellId = Atoms.RecoilCell.cellId taskId input.CellAddress.Date
-                let cell = Recoil.useValue (Atoms.RecoilCell.cellFamily cellId)
-                let status = Recoil.useValue cell.Status
-
-                let filteredLaneList =
-                    filteredTaskStateList
-                    |> List.map (fun taskState ->
-                        Lane (taskState.Task, None)
-                    )
-
-                let result =
-                    match view with
-                    | View.Calendar ->
-                        filteredTaskStateList
-                        |> Sorting.sortLanesByFrequency
-                        |> Sorting.sortLanesByIncomingRecurrency dayStart now
-                        |> Sorting.sortLanesByTimeOfDay dayStart now taskOrderList
-                    | View.Groups ->
-                        let lanes =
-                            filteredLaneList
-                            |> Sorting.applyManualOrder taskOrderList
-
-                        getter.get Atoms.informationList
-                        |> List.map (fun information ->
-                            let lanes =
-                                lanes
-                                |> List.filter (fun (Lane (task, _)) -> task.Information = information)
-
-                            information, lanes
-                        )
-                        |> List.collect snd
-                    | View.Tasks ->
-                        filteredLaneList
-                        |> Sorting.applyManualOrder taskOrderList
-                        |> List.sortByDescending (fun (Lane (task, _)) ->
-                            let taskId = Atoms.RecoilTask.taskId task
-                            let priorityValue = Recoil.useValue (RecoilTask.priorityValue taskId)
-
-                            priorityValue |> ofTaskPriorityValue
-                        )
-                    | View.Week ->
-                        []
-
-                Profiling.addCount "sortedLaneList"
-                result
-            )
-        }
+//        let rec sortedLaneList = selector {
+//            key (nameof sortedLaneList)
+//            get (fun getter ->
+//                printfn "sortedLaneList"
+//                let view = getter.get Atoms.view
+//                let dayStart = getter.get Atoms.dayStart
+//                let now = getter.get Atoms.now
+//                let taskOrderList = getter.get Atoms.taskOrderList
+//                let filteredTaskStateList = getter.get filteredTaskStateList
+//
+//                let filteredLaneList =
+//                    filteredTaskStateList
+//                    |> List.map (fun taskState ->
+//                        let taskId = Atoms.RecoilTask.taskId taskState.Task
+//                        let cellId = Atoms.RecoilCell.cellId taskState.Task date
+//                        let cell = Recoil.useValue (Atoms.RecoilCell.cellFamily cellId)
+//                        let status = Recoil.useValue cell.Status
+//
+//                        Lane (taskState.Task, None)
+//                    )
+//
+//                let result =
+//                    match view with
+//                    | View.Calendar ->
+//                        filteredTaskStateList
+//                        |> Sorting.sortLanesByFrequency
+//                        |> Sorting.sortLanesByIncomingRecurrency dayStart now
+//                        |> Sorting.sortLanesByTimeOfDay dayStart now taskOrderList
+//                    | View.Groups ->
+//                        let lanes =
+//                            filteredLaneList
+//                            |> Sorting.applyManualOrder taskOrderList
+//
+//                        getter.get Atoms.informationList
+//                        |> List.map (fun information ->
+//                            let lanes =
+//                                lanes
+//                                |> List.filter (fun (Lane (task, _)) -> task.Information = information)
+//
+//                            information, lanes
+//                        )
+//                        |> List.collect snd
+//                    | View.Tasks ->
+//                        filteredLaneList
+//                        |> Sorting.applyManualOrder taskOrderList
+//                        |> List.sortByDescending (fun (Lane (task, _)) ->
+//                            let taskId = Atoms.RecoilTask.taskId task
+//                            let priorityValue = Recoil.useValue (RecoilTask.priorityValue taskId)
+//
+//                            priorityValue |> ofTaskPriorityValue
+//                        )
+//                    | View.Week ->
+//                        []
+//
+//                Profiling.addCount "sortedLaneList"
+//                result
+//            )
+//        }
 //            set (fun (task: Task, date: FlukeDate) setter (newValue:bool) ->
 //                let ctrlPressed = setter.get ctrlPressed
 //
@@ -974,3 +1390,105 @@ module Recoil =
 //              Selected: RecoilValue<bool, ReadWrite>
 //              IsSelected: RecoilValue<bool, ReadWrite>
 //              IsToday: RecoilValue<bool, ReadWrite> }
+
+    let initState (_initializer: MutableSnapshot) =
+//        let user = FakeBackend.getCurrentUser ()
+//        let dayStart = FakeBackend.getDayStart ()
+//        let dateSequence = dateSequence
+//        let view = View.Calendar
+//        let position = position
+//
+//        let tree =
+//            FakeBackend.getTree
+//                {| User = user
+//                   DayStart = dayStart
+//                   DateSequence = dateSequence
+//                   View = view
+//                   Position = position |}
+        ()
+//            initializer.set (Atoms.user, Some RootPrivateData.currentUser)
+//
+//        OldData.tempState.InformationList
+//        |> List.iter (fun information ->
+//            let comments =
+//                OldData.tempState.InformationCommentsMap
+//                |> Map.tryFind information
+//                |> Option.defaultValue []
+//
+//            let informationId = Atoms.RecoilInformation.informationId information
+//            let recoilInformation = Atoms.RecoilInformation.RecoilInformation.Create informationId
+//
+//            initializer.set (recoilInformation.Id, informationId)
+//            initializer.set (recoilInformation.WrappedInformation, information)
+//            initializer.set (recoilInformation.Comments, comments)
+//        )
+//
+////            initializer.set (Atoms.informationList, OldData.tempState.InformationList)
+////            OldData.tempState.InformationCommentsMap
+////            |> Map.iter (fun information comments ->
+////                let recoilInformation = Atoms.RecoilInformation.RecoilInformation.Create information
+////                initializer.set (recoilInformation.WrappedInformation, information)
+////                initializer.set (recoilInformation.Comments, comments)
+////            )
+//
+//
+//
+//        let now = OldData.tempState.GetNow ()
+//        let dayStart = OldData.tempState.DayStart
+//
+////                let a =
+////                    FakeBackend.getTree
+////                        {| User = None
+////                           TreeId = TreeId ""
+////                           View = view
+////                           Position = None |}
+//
+//        initializer.set (Atoms.getNow, OldData.tempState.GetNow)
+//        initializer.set (Atoms.now, now)
+//        initializer.set (Atoms.dayStart, dayStart)
+//        initializer.set (Atoms.taskOrderList, OldData.tempState.TaskOrderList)
+//        initializer.set (Atoms.lastSessions, OldData.tempState.LastSessions)
+//        initializer.set (Atoms.taskStateList, OldData.tempState.TaskStateList)
+//
+//
+//        let dateSequence =
+//            [ now.Date ]
+//            |> Rendering.getDateSequence (45, 20)
+//
+//        OldData.tempState.TaskStateList
+//        |> List.iter (fun taskState ->
+//            let taskId = Atoms.RecoilTask.taskId taskState.Task
+//            let task = Atoms.RecoilTask.RecoilTask.Create taskId
+//            initializer.set (task.Id, taskId)
+//            initializer.set (task.Comments, taskState.Comments)
+//            initializer.set (task.PriorityValue, taskState.PriorityValue)
+//
+//            let cellMap =
+//                let (Lane (_, cells)) =
+//                    Rendering.renderLane dayStart now dateSequence taskState.Task taskState.StatusEntries
+//
+//                cells
+//                |> List.map (fun (Cell (address, status)) ->
+//                    address.Date, status
+//                )
+//                |> Map.ofList
+//
+//            dateSequence
+//            |> List.iter (fun date ->
+//                let cellId = Atoms.RecoilCell.cellId taskId date
+//                let cell = Atoms.RecoilCell.RecoilCell.Create cellId
+//                let cellComments = taskState.CellCommentsMap |> Map.tryFind date |> Option.defaultValue []
+//                let sessions =
+//                    taskState.Sessions
+//                    |> List.filter (fun (TaskSession start) -> isToday OldData.tempState.DayStart start date)
+//
+//                let status = cellMap |> Map.tryFind date |> Option.defaultValue Missed
+//
+//                initializer.set (cell.Id, cellId)
+//                initializer.set (cell.Task, task)
+//                initializer.set (cell.Date, date)
+//                initializer.set (cell.Status, status)
+//                initializer.set (cell.Comments, cellComments)
+//                initializer.set (cell.Sessions, sessions)
+//            )
+//        )
