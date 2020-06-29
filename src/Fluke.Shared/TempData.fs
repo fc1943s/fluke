@@ -208,15 +208,22 @@ module TempData =
 
             loop [] [] [] [] None task.Scheduling task.PendingAfter task.MissedAfter task.Duration events
 
+        let laneMap =
+            cellCommentsMap
+            |> Map.mapValues (fun comments ->
+                { Comments = comments
+                  Status = Disabled }
+            )
+
         { task with
             Scheduling = scheduling
             PendingAfter = pendingAfter
             MissedAfter = missedAfter
             Duration = duration
             Comments = comments
+            LaneMap = laneMap
             Sessions = sessions
             StatusEntries = statusEntries
-            CellCommentsMap = cellCommentsMap
             Priority = priority }
 
 

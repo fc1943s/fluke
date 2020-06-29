@@ -213,7 +213,8 @@ module Recoil =
                 |> List.filter (function
                     | { Scheduling = Manual WithoutSuggestion
                         StatusEntries = statusEntries
-                        Sessions = sessions }
+                        Sessions = sessions
+                        LaneMap = laneMap }
                         when
                             statusEntries
                             |> List.exists (fun (TaskStatusEntry (date, _)) -> date.DateTime >==< dateRange)
@@ -253,7 +254,7 @@ module Recoil =
                                  Position: FlukeDateTime
                                  TaskOrderList: TaskOrderEntry list
                                  InformationList: Information list
-                                 Lanes: Lane list |}) =
+                                 Lanes: OldLane list |}) =
             match input.View with
             | View.Calendar ->
                 input.Lanes
@@ -269,7 +270,7 @@ module Recoil =
                 |> List.map (fun information ->
                     let lanes =
                         lanes
-                        |> List.filter (fun (Lane (task, _)) -> task.Information = information)
+                        |> List.filter (fun (OldLane (task, _)) -> task.Information = information)
 
                     information, lanes
                 )
@@ -277,7 +278,7 @@ module Recoil =
             | View.Tasks ->
                 input.Lanes
                 |> Sorting.applyManualOrder input.TaskOrderList
-                |> List.sortByDescending (fun (Lane (task, _)) ->
+                |> List.sortByDescending (fun (OldLane (task, _)) ->
                     task.Priority
                     |> ofTaskPriorityValue
                 )
@@ -319,6 +320,13 @@ module Recoil =
                         let sharedTreeData = RootPrivateData.treeData
 
                         let applyEvents statusEntries comments (task: Task) =
+                            let newLaneCommentMap =
+                                RootPrivateData.cellComments
+                                |> List.filter (fun (CellComment (address, _)) -> address.Task = task)
+                                |> List.map (fun (CellComment (address, comment)) -> address.Date, comment)
+                                |> List.groupBy fst
+                                |> Map.ofList
+                                |> Map.mapValues (List.map snd)
                             { task with
                                 StatusEntries =
                                     statusEntries
@@ -329,14 +337,18 @@ module Recoil =
                                     |> List.filter (fun (TaskComment (commentTask, _)) -> commentTask = task)
                                     |> List.map (ofTaskComment >> snd)
                                     |> List.prepend task.Comments
-                                CellCommentsMap =
-                                    RootPrivateData.cellComments
-                                    |> List.filter (fun (CellComment (address, _)) -> address.Task = task)
-                                    |> List.map (fun (CellComment (address, comment)) -> address.Date, comment)
-                                    |> List.groupBy fst
-                                    |> Map.ofList
-                                    |> Map.mapValues (List.map snd)
-                                    |> Map.union task.CellCommentsMap }
+                                LaneMap =
+                                    task.LaneMap
+                                    |> Map.map (fun date lane ->
+                                        let newComments =
+                                            newLaneCommentMap
+                                            |> Map.tryFind date
+                                            |> Option.defaultValue []
+                                        { lane with
+                                            Comments =
+                                                lane.Comments
+                                                |> List.append newComments }
+                                    ) }
 
                         let taskList =
                             treeData.TaskList
@@ -379,7 +391,7 @@ module Recoil =
                     let taskOrderList =
                         RootPrivateData.treeData.TaskOrderList// @ RootPrivateData.taskOrderList
 
-                    let sortedLanesMap =
+                    let sortedLaneStatusMap =
                         sortLanes
                             {| View = input.View
                                DayStart = input.DayStart
@@ -398,7 +410,37 @@ module Recoil =
                         )
 
                     taskList
-                    |> List.map (fun task -> { task with LaneMap = sortedLanesMap.[task] })
+                    |> List.map (fun task ->
+                        let mergedLaneMap =
+                            sortedLaneStatusMap
+                            |> Map.tryFind task
+                            |> Option.defaultValue Map.empty
+                            |> Map.map (fun date status ->
+                                let lane =
+                                    task.LaneMap
+                                    |> Map.tryFind date
+                                    |> Option.defaultValue
+                                        { Comments = []
+                                          Status = Disabled }
+                                { lane with Status = status }
+                            )
+                        let newLaneMap =
+                            task.LaneMap
+                            |> Map.union mergedLaneMap
+
+                        { task with LaneMap = newLaneMap }
+//                        let newStatus =
+//                            sortedLaneStatusMap
+//                            |> Map.tryFind task
+//                            |> Option.defaultValue Map.empty
+//                        { task with
+//                            LaneMap =
+//
+//                                |> Option.defaultValue
+//                                    { Comments = []
+//                                      Sessions = []
+//                                      Status = Disabled } }
+                    )
             |}
 //                    {|
 //                        Name = "task1"
@@ -736,6 +778,7 @@ module Recoil =
         let rec user = atom {
             key (nameof user)
             def (async {
+                Profiling.addCount (nameof user)
                 return FakeBackend.getCurrentUser ()
             })
         }
@@ -747,6 +790,7 @@ module Recoil =
         let rec dayStart = atom {
             key (nameof dayStart)
             def (async {
+                Profiling.addCount (nameof dayStart)
                 return FakeBackend.getDayStart ()
             })
         }
@@ -870,11 +914,14 @@ module Recoil =
         let rec position = selector {
             key (nameof position)
             get (fun getter -> async {
-                getter.get Atoms.positionTrigger |> ignore
+                let positionTrigger = getter.get Atoms.positionTrigger
                 Profiling.addCount (nameof position)
-                return FakeBackend.getLivePosition ()
+                let newPosition = FakeBackend.getLivePosition ()
+                printfn "NEWPOSITION: %A. TRIGGER: %A" newPosition positionTrigger
+                return newPosition
             })
             set (fun setter _newValue ->
+                Profiling.addCount (nameof position + " (SET)")
                 setter.set (Atoms.positionTrigger, fun x -> x + 1)
             )
         }
@@ -894,39 +941,127 @@ module Recoil =
             let last = dateSequence |> List.last |> fun x -> x.DateTime
             return head, last
         }
-        let rec tree = recoil {
-            let! user = Atoms.user
-            let! dayStart = Atoms.dayStart
-            let! dateSequence = dateSequence
-            let! view = Atoms.view
-            let! position = position
+        let rec treeFamily = selectorFamily {
+            key (nameof treeFamily)
+            get (fun (position: FlukeDateTime) getter ->
+                let user = getter.get Atoms.user
+                let dayStart = getter.get Atoms.dayStart
+                let dateSequence = getter.get dateSequence
+                let view = getter.get Atoms.view
 
-            let tree =
-                FakeBackend.getTree
-                    {| User = user
-                       DayStart = dayStart
-                       DateSequence = dateSequence
-                       View = view
-                       Position = position |}
-            return tree
-        }
-        let rec informationMap = recoil {
-            let! tree = tree
-            return tree.InformationList
-            |> List.map (fun information ->
-                let informationId = Atoms.RecoilInformation.informationId information.Information
-                informationId, information
+                printfn "TREE: %A" (user.Username, dayStart, dateSequence.Length, view, position)
+
+                Profiling.addCount (nameof treeFamily)
+                let tree =
+                    FakeBackend.getTree
+                        {| User = user
+                           DayStart = dayStart
+                           DateSequence = dateSequence
+                           View = view
+                           Position = position |}
+                tree
             )
-            |> Map.ofList
         }
-        let rec taskMap = recoil {
-            let! tree = tree
-            return tree.Tasks
-            |> List.map (fun task ->
-                let taskId = Atoms.RecoilTask.taskId task
-                taskId, task
+//        let rec tree position = recoil {
+//            let! user = Atoms.user
+//            let! dayStart = Atoms.dayStart
+//            let! dateSequence = dateSequence
+//            let! view = Atoms.view
+//
+//            printfn "TREE: %A" (user.Username, dayStart, dateSequence.Length, view, position)
+//
+//            Profiling.addCount (nameof tree)
+//            let tree =
+//                FakeBackend.getTree
+//                    {| User = user
+//                       DayStart = dayStart
+//                       DateSequence = dateSequence
+//                       View = view
+//                       Position = position |}
+//            return tree
+//        }
+        let rec informationMapFamily = selectorFamily {
+            key (nameof informationMapFamily)
+            get (fun (position: FlukeDateTime) getter ->
+                let tree = getter.get (treeFamily position)
+                Profiling.addCount (nameof informationMapFamily)
+                tree.InformationList
+                |> List.map (fun information ->
+                    let informationId = Atoms.RecoilInformation.informationId information.Information
+                    informationId, information
+                )
+                |> Map.ofList
             )
-            |> Map.ofList
+        }
+//        let rec informationMap = recoil {
+//            let! position = position
+//            let! tree = treeFamily position
+//            Profiling.addCount (nameof informationMap)
+//            return tree.InformationList
+//            |> List.map (fun information ->
+//                let informationId = Atoms.RecoilInformation.informationId information.Information
+//                informationId, information
+//            )
+//            |> Map.ofList
+//        }
+        let rec taskIdListFamily = selectorFamily {
+            key (nameof taskIdListFamily)
+            get (fun (position: FlukeDateTime) getter ->
+                let tree = getter.get (treeFamily position)
+                Profiling.addCount (nameof taskIdListFamily)
+                tree.Tasks |> List.map Atoms.RecoilTask.taskId
+            )
+        }
+//        let rec taskIdList = recoil {
+//            let! position = position
+//            let! tree = treeFamily position
+//            Profiling.addCount (nameof taskIdList)
+//            return tree.Tasks |> List.map Atoms.RecoilTask.taskId
+//        }
+        let rec taskMapFamily = selectorFamily {
+            key (nameof taskMapFamily)
+            get (fun (position: FlukeDateTime) getter ->
+                let tree = getter.get (treeFamily position)
+                Profiling.addCount (nameof taskMapFamily)
+                tree.Tasks
+                |> List.map (fun task ->
+                    let taskId = Atoms.RecoilTask.taskId task
+                    taskId, task
+                )
+                |> Map.ofList
+            )
+        }
+//        let rec taskMap = recoil {
+//            let! position = position
+//            let! tree = treeFamily position
+//            Profiling.addCount (nameof taskMap)
+//            return tree.Tasks
+//            |> List.map (fun task ->
+//                let taskId = Atoms.RecoilTask.taskId task
+//                taskId, task
+//            )
+//            |> Map.ofList
+//        }
+        let rec taskFamily = selectorFamily {
+            key (nameof taskFamily)
+            get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
+                let position = getter.get position
+                let taskMap = getter.get (taskMapFamily position)
+                Profiling.addCount (nameof taskFamily)
+                taskMap.[taskId]
+            )
+        }
+        let rec laneFamily = selectorFamily {
+            key (nameof laneFamily)
+            get (fun (taskId: Atoms.RecoilTask.TaskId, date: FlukeDate) getter ->
+                let task = getter.get (taskFamily taskId)
+                Profiling.addCount (nameof laneFamily)
+                task.LaneMap
+                |> Map.tryFind date
+                |> Option.defaultValue
+                    { Comments = []
+                      Status = Disabled }
+            )
         }
 
 
@@ -1102,11 +1237,13 @@ module Recoil =
                 key (nameof RecoilInformation + "/" + nameof comments)
                 get (fun (informationId: Atoms.RecoilInformation.InformationId) getter ->
                     Profiling.addCount (nameof RecoilInformation + "/" + nameof comments)
-                    let informationMap = getter.get informationMap
+                    let position = getter.get position
+                    let informationMap = getter.get (informationMapFamily position)
 
                     informationMap
-                    |> Map.find informationId
-                    |> fun x -> x.Comments
+                    |> Map.tryFind informationId
+                    |> Option.map (fun x -> x.Comments)
+                    |> Option.defaultValue []
                 )
             }
 
