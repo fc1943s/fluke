@@ -28,7 +28,7 @@
     "react-dom": "^16.13",
 
     "recoil": "^0",
-    "recoil-logger": "^0.5",
+    "recoil-logger": "^1.0",
 
     "react-markdown": "^4.3",
     "@use-it/event-listener": "^0.1",

@@ -5727,10 +5727,10 @@ readdirp@^2.2.1:
     micromatch "^3.1.10"
     readable-stream "^2.0.2"
 
-recoil-logger@^0.5:
-  version "0.5.0"
-  resolved "https://registry.yarnpkg.com/recoil-logger/-/recoil-logger-0.5.0.tgz#c71969cff66a566965490d57931015079dea97cc"
-  integrity sha512-zpad+t1Jj1G8DAT6azf6c0eIJ7a5zzJenQA2MO2Y/+hSYFIvL79JF8kf2lorakKlyOYpscOdpNDz1uIZiHy1ZQ==
+recoil-logger@^1.0:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/recoil-logger/-/recoil-logger-1.0.1.tgz#a7f66293d474c895a1d0c6a5cb231cfd2f5cebc9"
+  integrity sha512-deUy1T8Dwx/Ji6RIFCtk6NNIxu/7boxvhwjTLvLqI7kiAc4sXR+EtY3wKphrjhEnZwJcyh50aWme6dK78lKUyg==
 
 recoil@^0:
   version "0.0.10"
