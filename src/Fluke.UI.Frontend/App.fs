@@ -14,8 +14,8 @@ module App =
             root.init Recoil.initState
 
             root.children [
-                ReactBindings.React.createElement
-                    (Ext.recoilLogger, (), [])
+//                ReactBindings.React.createElement
+//                    (Ext.recoilLogger, (), [])
 
                 Components.MainComponent.render ()
             ]

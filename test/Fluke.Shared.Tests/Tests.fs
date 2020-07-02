@@ -193,7 +193,7 @@ module Tests =
                     | NoSorting -> lanes
                     | TimeOfDay -> Sorting.sortLanesByTimeOfDay testDayStart props.Now [] lanes
                     | Frequency -> Sorting.sortLanesByFrequency lanes
-                |> List.map (fun (Lane (task, _)) -> task.Name)
+                |> List.map (fun (OldLane (task, _)) -> task.Name)
                 |> Expect.equal "" props.Expected
 
             test "Sort by Frequency: All task types mixed" {
@@ -350,7 +350,7 @@ module Tests =
                     >> String.concat Environment.NewLine
 
                 Rendering.renderLane testDayStart props.Now dateSequence task
-                |> fun (Lane (_, cells)) ->
+                |> fun (OldLane (_, cells)) ->
                     cells
                     |> List.map (fun (Cell (address, status)) -> string address.Date, status)
                 |> toString

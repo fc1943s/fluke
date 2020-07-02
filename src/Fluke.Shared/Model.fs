@@ -130,7 +130,7 @@ module Model =
     type TaskStatusEntry = TaskStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
     type TaskPriorityValue = TaskPriorityValue of value:int
 
-    type Lane =
+    type CellState =
         { Status: CellStatus
           Comments: Comment list }
 
@@ -143,7 +143,7 @@ module Model =
           Priority: TaskPriorityValue
           StatusEntries: TaskStatusEntry list
           Sessions: TaskSession list
-          LaneMap: Map<FlukeDate, Lane>
+          CellStateMap: Map<FlukeDate, CellState>
           Comments: Comment list
           Duration: int option }
 
@@ -188,14 +188,13 @@ module Model =
         | Admin of user:User
         | ReadOnly of user:User
 
-    type TreeId = TreeId of id:string
-
     type Tree =
-        { Id: TreeId
-          Access: TreeAccess list
+        { Access: TreeAccess list
           Position: FlukeDateTime
           InformationList: Information list
           TaskList: Task list }
+
+
 
     type Area with
         static member inline Default =
@@ -272,7 +271,7 @@ module Model =
               Priority = TaskPriorityValue 0
               StatusEntries = []
               Sessions = []
-              LaneMap = Map.empty
+              CellStateMap = Map.empty
               Comments = []
               Duration = None }
 
@@ -294,17 +293,17 @@ module Model =
     let createCellComment task date user comment =
         CellComment ({ Task = task; Date = date }, Comment (user, comment))
 
-    let (|BeforeToday|Today|AfterToday|) (dayStart, now:FlukeDateTime, date:FlukeDate) =
+    let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position:FlukeDateTime, date:FlukeDate) =
         let dateStart = { Date = date; Time = dayStart }.DateTime
         let dateEnd = dateStart.AddDays 1.
 
-        match now.DateTime with
-        | now when now >=< (dateStart, dateEnd) -> Today
-        | now when dateStart < now -> BeforeToday
+        match position.DateTime with
+        | position when position >=< (dateStart, dateEnd) -> Today
+        | position when dateStart < position -> BeforeToday
         | _ -> AfterToday
 
-    let isToday dayStart now date =
-        match (dayStart, now, date) with
+    let isToday dayStart position date =
+        match (dayStart, position, date) with
         | Today -> true
         | _ -> false
 
@@ -475,12 +474,12 @@ module Rendering =
                     | StatusCell status -> status
                     | TodayCell ->
                         match position, task.MissedAfter, task.PendingAfter with
-                        | now, Some missedAfter, _
-                            when now.GreaterEqualThan dayStart date missedAfter  -> MissedToday
-                        | now, _,                Some pendingAfter
-                            when now.GreaterEqualThan dayStart date pendingAfter -> Pending
-                        | _,   _,                None                            -> Pending
-                        | _                                                      -> Suggested
+                        | position, Some missedAfter, _
+                            when position.GreaterEqualThan dayStart date missedAfter  -> MissedToday
+                        | position, _,                Some pendingAfter
+                            when position.GreaterEqualThan dayStart date pendingAfter -> Pending
+                        | _,   _,                     None                            -> Pending
+                        | _                                                           -> Suggested
 
                 (date, status) :: loop renderState tail
             | [] -> []
@@ -555,11 +554,11 @@ module Sorting =
             |> List.length
         )
 
-    let sortLanesByIncomingRecurrency dayStart now lanes =
+    let sortLanesByIncomingRecurrency dayStart position lanes =
         lanes
         |> List.sortBy (fun (OldLane (_, cells)) ->
             cells
-            |> List.exists (fun (Cell (address, status)) -> isToday dayStart now address.Date && status = Disabled)
+            |> List.exists (fun (Cell (address, status)) -> isToday dayStart position address.Date && status = Disabled)
             |> function
                 | true ->
                     cells
@@ -572,14 +571,14 @@ module Sorting =
         | TaskOrderList
         | DefaultSort
 
-    let sortLanesByTimeOfDay dayStart (now: FlukeDateTime) taskOrderList lanes =
+    let sortLanesByTimeOfDay dayStart (position: FlukeDateTime) taskOrderList lanes =
 
         let getGroup task (Cell (address, status)) =
             let (|PostponedUntil|Postponed|WasPostponed|NotPostponed|) = function
-                | Postponed None                                                               -> Postponed
-                | Postponed (Some until) when now.GreaterEqualThan dayStart address.Date until -> WasPostponed
-                | Postponed _                                                                  -> PostponedUntil
-                | _                                                                            -> NotPostponed
+                | Postponed None                                                                    -> Postponed
+                | Postponed (Some until) when position.GreaterEqualThan dayStart address.Date until -> WasPostponed
+                | Postponed _                                                                       -> PostponedUntil
+                | _                                                                                 -> NotPostponed
 
             let (|SchedulingRecurrency|ManualWithSuggestion|ManualWithoutSuggestion|) = function
                 | { Scheduling = Recurrency _ } -> SchedulingRecurrency
@@ -607,7 +606,7 @@ module Sorting =
         |> List.indexed
         |> List.groupBy (fun (_, OldLane (task, cells)) ->
             cells
-            |> List.filter (fun (Cell (address, _)) -> isToday dayStart now address.Date)
+            |> List.filter (fun (Cell (address, _)) -> isToday dayStart position address.Date)
             |> List.map (getGroup task)
             |> List.minBy fst
         )

@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open System
 open Browser
+open Fable.Core
 open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend
@@ -206,10 +207,13 @@ module ApplicationComponent =
 
         let taskName = React.memo (fun (input: {| Level: int
                                                   TaskId: Recoil.Atoms.RecoilTask.TaskId |}) ->
-            let task = Recoil.useValue (Recoil.Selectors.taskFamily input.TaskId)
-            let comments = task.Comments
-//            let comments = Recoil.useValue (Recoil.Selectors.RecoilTask.comments input.TaskId)
             let selection = Recoil.useValue Recoil.Selectors.selectionTracker
+
+            let task = Recoil.useValue (Recoil.Selectors.findTask input.TaskId)
+
+            let taskName = Recoil.useValue task.Name
+            let taskComments = Recoil.useValue task.Comments
+
 
             let isSelected =
                 selection
@@ -218,7 +222,7 @@ module ApplicationComponent =
                 |> Set.isEmpty
                 |> not
 
-            div [ classList [ Css.tooltipContainer, not comments.IsEmpty ]
+            div [ classList [ Css.tooltipContainer, not taskComments.IsEmpty ]
                   Style [ Height 17 ] ][
 
                 div [ classList [ Css.selectionHighlight, isSelected ]
@@ -227,26 +231,30 @@ module ApplicationComponent =
                               paddingLeftLevel input.Level
                               TextOverflow "ellipsis" ] ][
 
-                    str task.Name
+                    str taskName
                 ]
 
-                if not comments.IsEmpty then
-                    TooltipPopupComponent.render {| Comments = comments |}
+                if not taskComments.IsEmpty then
+                    TooltipPopupComponent.render {| Comments = taskComments |}
             ]
         )
 
-        let cell = React.memo (fun (input: {| TaskId: Recoil.Atoms.RecoilTask.TaskId; Date: FlukeDate |}) ->
-            let isToday = Recoil.useValue (Recoil.Selectors.isTodayFamily input.Date)
-
-            let lane = Recoil.useValue (Recoil.Selectors.laneFamily (input.TaskId, input.Date))
-
+        let cell = React.memo (fun (input: {| TaskId: Recoil.Atoms.RecoilTask.TaskId
+                                              Date: FlukeDate |}) ->
             let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId input.Date
+            let cell = Recoil.useValue (Recoil.Selectors.findCell cellId)
 
-            let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
-//            let status = Recoil.useValue cell.Status
+            let task = Recoil.useValue cell.Task
+            let taskId = Recoil.useValue task.Id
+            let date = Recoil.useValue cell.Date
             let comments = Recoil.useValue cell.Comments
             let sessions = Recoil.useValue cell.Sessions
+            let status = Recoil.useValue cell.Status
             let selected, setSelected = Recoil.useState cell.Selected
+
+            let isToday = Recoil.useValue (Recoil.Selectors.isTodayFamily date)
+
+//            let status = Recoil.useValue cell.Status
 
     //        let selected, setSelected = false, fun _ -> ()
 
@@ -258,7 +266,7 @@ module ApplicationComponent =
 
             Html.div [
                 prop.classes [
-                    lane.Status.CellClass
+                    status.CellClass
                     if not comments.IsEmpty then
                         Css.tooltipContainer
                     if selected then
@@ -269,7 +277,7 @@ module ApplicationComponent =
                 prop.children [
                     Html.div [
                         prop.style [
-                            match Functions.getCellSeparatorBorderLeft2 input.Date with
+                            match Functions.getCellSeparatorBorderLeft2 date with
                             | Some borderLeft -> borderLeft
                             | None -> ()
                         ]
@@ -292,8 +300,7 @@ module ApplicationComponent =
 
         let cells = React.memo (fun () ->
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
-            let position = Recoil.useValue Recoil.Selectors.position
-            let taskIdList = Recoil.useValue (Recoil.Selectors.taskIdListFamily position)
+            let taskIdList = Recoil.useValue Recoil.Atoms.taskIdList
 
             div [ Class Css.laneContainer ][
 
@@ -303,11 +310,7 @@ module ApplicationComponent =
                     div [][
                         yield! dateSequence
                         |> List.map (fun date ->
-                            React.suspense ([
-                                cell
-                                    {| TaskId = taskId
-                                       Date = date |}
-                            ], str "C")
+                            cell {| TaskId = taskId; Date = date |}
                         )
                     ]
                 )
@@ -316,10 +319,22 @@ module ApplicationComponent =
 
     module CalendarViewComponent =
         let render = React.memo (fun () ->
-            let position = Recoil.useValue Recoil.Selectors.position
-            let taskIdList = Recoil.useValue (Recoil.Selectors.taskIdListFamily position)
+            let taskIdList = Recoil.useValue Recoil.Atoms.taskIdList
 
-//            let tree = Recoil.useValue Recoil.Selectors.tree
+            let taskList =
+                taskIdList
+                |> List.map (fun taskId ->
+                    let task = Recoil.useValue (Recoil.Selectors.findTask taskId)
+
+                    let information = Recoil.useValue task.Information
+                    let wrappedInformation = Recoil.useValue information.WrappedInformation
+                    let informationComments = Recoil.useValue information.Comments
+
+                    {| TaskId = taskId
+                       Information = wrappedInformation
+                       InformationComments = informationComments |}
+                )
+
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
@@ -336,15 +351,12 @@ module ApplicationComponent =
                         // Column: Information Type
                         div [ Style [ PaddingRight 10 ] ] [
 
-                            yield! taskIdList
-                            |> List.map (fun taskId ->
-                                let task = Recoil.useValue (Recoil.Selectors.taskFamily taskId)
-                                let informationId = Recoil.Atoms.RecoilInformation.informationId task.Information
-                                let comments = Recoil.useValue (Recoil.Selectors.RecoilInformation.comments informationId)
+                            yield! taskList
+                            |> List.map (fun task ->
 //                                let comments = []
 
-                                div [ classList [ Css.blueIndicator, not comments.IsEmpty
-                                                  Css.tooltipContainer, not comments.IsEmpty ]
+                                div [ classList [ Css.blueIndicator, not task.InformationComments.IsEmpty
+                                                  Css.tooltipContainer, not task.InformationComments.IsEmpty ]
                                       Style [ Padding 0
                                               Height 17
                                               Color task.Information.Color
@@ -352,8 +364,8 @@ module ApplicationComponent =
 
                                     str task.Information.Name
 
-                                    if not comments.IsEmpty then
-                                        TooltipPopupComponent.render {| Comments = comments |}
+                                    if not task.InformationComments.IsEmpty then
+                                        TooltipPopupComponent.render {| Comments = task.InformationComments |}
                                 ]
                             )
                         ]
@@ -379,16 +391,29 @@ module ApplicationComponent =
     module GroupsViewComponent =
         let render = React.memo (fun () ->
             printfn "GROUPS VIEW"
-            let position = Recoil.useValue Recoil.Selectors.position
-            let taskIdList = Recoil.useValue (Recoil.Selectors.taskIdListFamily position)
+            let taskIdList = Recoil.useValue Recoil.Atoms.taskIdList
 //            let tree = Recoil.useValue Recoil.Selectors.tree
 
-            let groups =
+            let groupList =
                 taskIdList
                 |> List.map (fun taskId ->
-                    Recoil.useValue (Recoil.Selectors.taskFamily taskId)
+                    let task = Recoil.useValue (Recoil.Selectors.findTask taskId)
+                    let information = Recoil.useValue task.Information
+                    let wrappedInformation = Recoil.useValue information.WrappedInformation
+                    let informationComments = Recoil.useValue information.Comments
+                    {| TaskId = taskId
+                       Information = wrappedInformation
+                       InformationComments = informationComments |}
                 )
-                |> List.groupBy (fun task -> task.Information)
+
+            let groupMap =
+                groupList
+                |> List.map (fun x -> x.Information, x)
+                |> Map.ofList
+
+            let groups =
+                groupList
+                |> List.groupBy (fun group -> group.Information)
                 |> List.groupBy (fun (info, _) -> info.KindName)
 
             div [ Style [ Display DisplayOptions.Flex ] ][
@@ -404,41 +429,38 @@ module ApplicationComponent =
                     div [][
 
                         yield! groups
-                        |> List.map (fun (informationType, taskGroups) ->
+                        |> List.map (fun (informationKindName, taskGroups) ->
                             div [][
                                 // Information Type
                                 div [ Style [ Color "#444" ] ][
-                                    str informationType
+                                    str informationKindName
                                 ]
 
                                 div [][
 
                                     yield! taskGroups
-                                    |> List.map (fun (information, tasks) ->
-                                        let informationId = Recoil.Atoms.RecoilInformation.informationId information
-                                        let comments = Recoil.useValue (Recoil.Selectors.RecoilInformation.comments informationId)
+                                    |> List.map (fun (information, group) ->
+                                        let informationComments = groupMap.[information].InformationComments
 
                                         div [][
                                             // Information
-                                            div [ classList [ Css.blueIndicator, comments.IsEmpty
-                                                              Css.tooltipContainer, comments.IsEmpty ]
+                                            div [ classList [ Css.blueIndicator, informationComments.IsEmpty
+                                                              Css.tooltipContainer, informationComments.IsEmpty ]
                                                   Style [ Grid.paddingLeftLevel 1
                                                           Color "#444" ] ][
                                                 str information.Name
 
-                                                if not comments.IsEmpty then
-                                                    TooltipPopupComponent.render {| Comments = comments |}
+                                                if not informationComments.IsEmpty then
+                                                    TooltipPopupComponent.render {| Comments = informationComments |}
                                             ]
-
 
                                             // Task Name
                                             div [ Style [ Width 500 ] ][
 
-                                                yield! tasks
-                                                |> List.map (fun task ->
-                                                    let taskId = Recoil.Atoms.RecoilTask.taskId task
+                                                yield! group
+                                                |> List.map (fun groupTask ->
                                                     Grid.taskName
-                                                        {| Level = 2; TaskId = taskId |}
+                                                        {| Level = 2; TaskId = groupTask.TaskId |}
                                                 )
                                             ]
                                         ]
@@ -481,9 +503,23 @@ module ApplicationComponent =
 
     module TasksViewComponent =
         let render = React.memo (fun () ->
-            let position = Recoil.useValue Recoil.Selectors.position
-            let taskIdList = Recoil.useValue (Recoil.Selectors.taskIdListFamily position)
-//            let tree = Recoil.useValue Recoil.Selectors.tree
+            let taskIdList = Recoil.useValue Recoil.Atoms.taskIdList
+
+            let taskList =
+                taskIdList
+                |> List.map (fun taskId ->
+                    let task = Recoil.useValue (Recoil.Selectors.findTask taskId)
+
+                    let information = Recoil.useValue task.Information
+                    let priorityValue = Recoil.useValue task.PriorityValue
+                    let wrappedInformation = Recoil.useValue information.WrappedInformation
+                    let informationComments = Recoil.useValue information.Comments
+
+                    {| TaskId = taskId
+                       PriorityValue = priorityValue
+                       Information = wrappedInformation
+                       InformationComments = informationComments |}
+                )
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
@@ -497,14 +533,11 @@ module ApplicationComponent =
                     div [ Style [ Display DisplayOptions.Flex ] ][
                         // Column: Information Type
                         div [ Style [ PaddingRight 10 ] ] [
-                            yield! taskIdList
-                            |> List.map (fun taskId ->
-                                let task = Recoil.useValue (Recoil.Selectors.taskFamily taskId)
-                                let informationId = Recoil.Atoms.RecoilInformation.informationId task.Information
-                                let comments = Recoil.useValue (Recoil.Selectors.RecoilInformation.comments informationId)
+                            yield! taskList
+                            |> List.map (fun task ->
 
-                                div [ classList [ Css.blueIndicator, comments.IsEmpty
-                                                  Css.tooltipContainer, comments.IsEmpty ]
+                                div [ classList [ Css.blueIndicator, task.InformationComments.IsEmpty
+                                                  Css.tooltipContainer, task.InformationComments.IsEmpty ]
                                       Style [ Padding 0
                                               Height 17
                                               Color task.Information.Color
@@ -512,8 +545,8 @@ module ApplicationComponent =
 
                                     str task.Information.Name
 
-                                    if not comments.IsEmpty then
-                                        TooltipPopupComponent.render {| Comments = comments |}
+                                    if not task.InformationComments.IsEmpty then
+                                        TooltipPopupComponent.render {| Comments = task.InformationComments |}
                                 ]
                             )
                         ]
@@ -521,11 +554,10 @@ module ApplicationComponent =
                         // Column: Priority
                         div [ Style [ PaddingRight 10
                                       TextAlign TextAlignOptions.Center ] ] [
-                            yield! taskIdList
-                            |> List.map (fun taskId ->
-                                let priorityValue = Recoil.useValue (Recoil.Selectors.RecoilTask.priorityValue taskId)
+                            yield! taskList
+                            |> List.map (fun task ->
                                 div [ Style [ Height 17 ] ][
-                                    priorityValue
+                                    task.PriorityValue
                                     |> ofTaskPriorityValue
                                     |> string
                                     |> str
@@ -625,6 +657,40 @@ module MainComponent =
         nothing
     )
 
+    let useTimeout fn timeout =
+        let savedCallback = Hooks.useRef fn
+
+        Hooks.useEffect (fun () ->
+            savedCallback.current <- fn
+        , [| fn |])
+
+        Hooks.useEffectDisposable (fun () ->
+            let id =
+                JS.setTimeout (fun () ->
+                    savedCallback.current ()
+                ) timeout
+
+            { new IDisposable with
+                member _.Dispose () =
+                    JS.clearTimeout id }
+        , [| timeout |])
+
+    let dataLoader = React.memo (fun () ->
+        let updateTree = Recoil.useSetState Recoil.Selectors.treeUpdater
+
+        let updateTree =
+            Recoil.useCallback (fun _ ->
+                async {
+                    updateTree ()
+                }
+                |> Async.StartImmediate
+            )
+
+        updateTree ()
+
+        nothing
+    )
+
     let globalShortcutHandler = React.memo (fun () ->
         let selection, setSelection = Recoil.useState Recoil.Selectors.selectionTracker
         let ctrlPressed, setCtrlPressed = Recoil.useState Recoil.Atoms.ctrlPressed
@@ -643,8 +709,10 @@ module MainComponent =
     )
 
     let render = React.memo (fun () ->
+
         React.suspense ([
             positionUpdater ()
+            dataLoader ()
             globalShortcutHandler ()
 
             NavBarComponent.render ()
