@@ -192,11 +192,13 @@ module Recoil =
             TempData.dayStart
 
         let hasAccess tree user =
-            tree.Access
-            |> List.exists (function
-                | TreeAccess.Owner dbUser -> dbUser = user
-                | TreeAccess.Admin dbUser -> dbUser = user
-                | TreeAccess.ReadOnly dbUser -> dbUser = user)
+            match tree with
+            | tree when tree.Owner = user -> true
+            | tree ->
+                tree.SharedWith
+                |> List.exists (function
+                    | TreeAccess.Admin dbUser -> dbUser = user
+                    | TreeAccess.ReadOnly dbUser -> dbUser = user)
 
         let rec filterTaskList view dateRange (taskList: Task list) =
             match view with
@@ -302,7 +304,8 @@ module Recoil =
                 )
 
             {|
-                Access = [ TreeAccess.Owner TempData.Users.fc1943s ]
+                Owner = TempData.Users.fc1943s
+                SharedWith = []
                 InformationList = informationList
                 TaskList =
                     let taskList =
@@ -742,7 +745,8 @@ module Recoil =
             type TreeId = TreeId of id:string
             type RecoilTree =
                 { Id: RecoilValue<TreeId, ReadWrite>
-                  Access: RecoilValue<TreeAccess list, ReadWrite>
+                  Owner: RecoilValue<User, ReadWrite>
+                  SharedWith: RecoilValue<TreeAccess list, ReadWrite>
                   Position: RecoilValue<FlukeDateTime, ReadWrite>
                   InformationList: RecoilValue<RecoilInformation.RecoilInformation list, ReadWrite>
                   TaskList: RecoilValue<RecoilTask.RecoilTask list, ReadWrite> }
@@ -750,8 +754,12 @@ module Recoil =
                 key (nameof RecoilTree + "/" + nameof idFamily)
                 def (fun (_treeId: TreeId) -> TreeId "")
             }
-            let rec accessFamily = atomFamily {
-                key (nameof RecoilInformation + "/" + nameof accessFamily)
+            let rec ownerFamily = atomFamily {
+                key (nameof RecoilInformation + "/" + nameof ownerFamily)
+                def (fun (_treeId: TreeId) -> TempData.testUser)
+            }
+            let rec sharedWithFamily = atomFamily {
+                key (nameof RecoilInformation + "/" + nameof sharedWithFamily)
                 def (fun (_treeId: TreeId) -> [])
             }
             let rec positionFamily = atomFamily {
@@ -769,13 +777,14 @@ module Recoil =
             type RecoilTree with
                 static member internal Create treeId =
                     { Id = idFamily treeId
-                      Access = accessFamily treeId
+                      Owner = ownerFamily treeId
+                      SharedWith = sharedWithFamily treeId
                       Position = positionFamily treeId
                       InformationList = informationListFamily treeId
                       TaskList = taskListFamily treeId }
 
-            let treeId () =
-                TreeId "temp_tree_id"
+            let treeId owner name =
+                TreeId (sprintf "%s/%s" owner.Username name)
 //                Id = TreeId "fc1943s/tree/default"
             let rec treeFamily = atomFamily {
                 key (nameof RecoilTree + "/" + nameof treeFamily)
@@ -1263,9 +1272,10 @@ module Recoil =
 
                 setter.set (Atoms.taskIdList, taskIdList)
 
-                let treeId = Atoms.RecoilTree.treeId ()
+                let treeId = Atoms.RecoilTree.treeId tree.Owner "default"
                 let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeId)
-                setter.set (recoilTree.Access, tree.Access)
+                setter.set (recoilTree.Owner, tree.Owner)
+                setter.set (recoilTree.SharedWith, tree.SharedWith)
                 setter.set (recoilTree.InformationList, recoilInformationList |> List.map snd)
                 setter.set (recoilTree.TaskList, recoilTaskList)
 

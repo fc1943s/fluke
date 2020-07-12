@@ -184,12 +184,12 @@ module Model =
 
     [<RequireQualifiedAccess>]
     type TreeAccess =
-        | Owner of user:User
         | Admin of user:User
         | ReadOnly of user:User
 
     type Tree =
-        { Access: TreeAccess list
+        { Owner: User
+          SharedWith: TreeAccess list
           Position: FlukeDateTime
           InformationList: Information list
           TaskList: Task list }
