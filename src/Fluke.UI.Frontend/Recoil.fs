@@ -809,10 +809,9 @@ module Recoil =
         let rec position = selector {
             key ("selector/" + nameof position)
             get (fun getter ->
-                let positionTrigger = getter.get Atoms.positionTrigger
+                let _positionTrigger = getter.get Atoms.positionTrigger
                 let newPosition = FakeBackend.getLivePosition ()
 
-                printfn "NEWPOSITION: %A. TRIGGER: %A" newPosition positionTrigger
                 Profiling.addCount (nameof position)
 
                 newPosition
@@ -826,8 +825,6 @@ module Recoil =
             key ("selector/" + nameof dateSequence)
             get (fun getter ->
                 let position = getter.get position
-
-                printfn "DATESEQUENCE. position: %A" position
 
                 Profiling.addCount (nameof dateSequence)
                 [ position.Date ] |> Rendering.getDateSequence (45, 20)
@@ -851,9 +848,6 @@ module Recoil =
             )
             set (fun setter (newSelection: Map<Atoms.RecoilTask.TaskId, Set<FlukeDate>>) ->
                 let selection = setter.get Atoms.selection
-
-                printfn "Old selection:\n%A\nNew selection:\n%A" selection newSelection
-
 
                 selection
                 |> Seq.iter (fun (KeyValue (taskId, dates)) ->
@@ -970,8 +964,6 @@ module Recoil =
                     let date = setter.get cell.Date
                     let taskId = setter.get cell.TaskId
 
-                    printfn "selecting: %A; %A; %A" cellId taskId date
-
                     let newSelection =
                         match ctrlPressed with
                         | false ->
@@ -1005,8 +997,6 @@ module Recoil =
                 let dateSequence = getter.get dateSequence
                 let position = getter.get position
                 let view = getter.get Atoms.view
-
-                printfn "TREE: %A" (user.Username, dayStart, dateSequence.Length, view, position)
 
                 let tree =
                     FakeBackend.getTree

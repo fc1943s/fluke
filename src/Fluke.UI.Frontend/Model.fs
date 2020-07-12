@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend
 
-open Fable.React
 open Feliz
 open Fluke.Shared
 open System
@@ -61,20 +60,11 @@ module Model =
 module Functions =
     open Model
 
-
-    let tmpGetCellSeparatorBorderLeft (date: FlukeDate) =
+    let getCellSeparatorBorderLeft (date: FlukeDate) =
         match date with
         | { Day = 1 }                                          -> Some "#ffffff3d"
         | date when date.DateTime.DayOfWeek = DayOfWeek.Monday -> Some "#222"
         | _                                                    -> None
-
-    let getCellSeparatorBorderLeft (date: FlukeDate) =
-        tmpGetCellSeparatorBorderLeft date
-        |> Option.map ((+) "1px solid ")
-        |> fun x -> Props.CSSProp.BorderLeft x
-
-    let getCellSeparatorBorderLeft2 (date: FlukeDate) =
-        tmpGetCellSeparatorBorderLeft date
         |> Option.map (fun color -> style.borderLeft (1, borderStyle.solid, color))
 
 

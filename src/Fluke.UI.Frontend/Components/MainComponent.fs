@@ -3,8 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open System
 open Browser
 open Fable.Core
-open Feliz
-open Feliz.Recoil
 open Fluke.UI.Frontend
 open Browser.Types
 open FSharpPlus
@@ -16,6 +14,9 @@ open Fulma
 open Fulma.Extensions.Wikiki
 open Suigetsu.UI.Frontend.React
 open Suigetsu.Core
+open Feliz
+open Feliz.Recoil
+open Feliz.Bulma
 
 
 module SuigetsuTemp =
@@ -60,6 +61,11 @@ module NavBarComponent =
             | _            -> ()
         )
 
+//        Bulma.navbar [
+//            prop.children [
+//            ]
+//
+//        ]
         Navbar.navbar [ Navbar.Color IsBlack
                         Navbar.Props [ Style [ Height 36
                                                MinHeight 36
@@ -67,17 +73,21 @@ module NavBarComponent =
                                                JustifyContent "space-around" ]]][
 
             let checkbox newView text =
-                Navbar.Item.div [ Navbar.Item.Props [ Class "field"
-                                                      OnClick (fun _ -> setView newView)
-                                                      Style [ MarginBottom 0
-                                                              AlignSelf AlignSelfOptions.Center ] ] ][
+                Bulma.navbarItem.div [
+                    prop.className "field"
+                    prop.onClick (fun _ -> setView newView)
+                    prop.style [
+                        style.marginBottom 0
+                        style.alignSelf.center
+                    ]
+                    prop.children [
+                        Checkbox.input [ CustomClass "switch is-small is-dark"
+                                         Props [ Checked (view = newView)
+                                                 OnChange (fun _ -> ()) ]]
 
-                    Checkbox.input [ CustomClass "switch is-small is-dark"
-                                     Props [ Checked (view = newView)
-                                             OnChange (fun _ -> ()) ]]
-
-                    Checkbox.checkbox [][
-                        str text
+                        Checkbox.checkbox [][
+                            str text
+                        ]
                     ]
                 ]
 
@@ -86,7 +96,7 @@ module NavBarComponent =
             checkbox View.Tasks "tasks view"
             checkbox View.Week "week view"
 
-            Navbar.Item.div [][
+            Bulma.navbarItem.div [
                 activeSessions
                 |> List.map (fun (ActiveSession (task, duration)) ->
                     let sessionType, color, duration, left =
@@ -95,9 +105,14 @@ module NavBarComponent =
                         | true  -> "Session", "#7cca7c", duration, left
                         | false -> "Break",   "#ca7c7c", -left,    TempData.sessionBreakLength + left
 
-                    span [ Style [ Color color ] ][
-                        sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" sessionType task.Name duration left
-                        |> str
+                    Html.span [
+                        prop.style [
+                            style.color color
+                        ]
+                        prop.children [
+                            sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" sessionType task.Name duration left
+                            |> str
+                        ]
                     ]
                 )
                 |> List.intersperse (br [])
@@ -132,59 +147,98 @@ module ApplicationComponent =
 
     module Grid =
         let emptyDiv =
-            div [ DangerouslySetInnerHTML { __html = "&nbsp;" } ][]
+            Html.div [
+                prop.dangerouslySetInnerHTML "&nbsp;"
+            ]
 
         let paddingLeftLevel level =
-            PaddingLeft (20 * level)
+            style.paddingLeft (20 * level)
 
         let header = React.memo (fun () ->
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
             let dateMap = Recoil.useValue Recoil.Selectors.dateMap
 
-            div [][
+            Html.div [
                 // Month row
-                div [ Style [ Display DisplayOptions.Flex ] ][
-                    yield! dateSequence
-                    |> List.groupBy (fun date -> date.Month)
-                    |> List.map (fun (_, dates) -> dates.Head, dates.Length)
-                    |> List.map (fun (firstDay, days) ->
-                        span [ Style [ TextAlign TextAlignOptions.Center
-                                       Width (17 * days) ] ][
-                            str (firstDay.DateTime.Format "MMM")
-                        ]
-                    )
+                Html.div [
+                    prop.style [
+                        style.display.flex
+                    ]
+                    prop.children [
+                        yield! dateSequence
+                        |> List.groupBy (fun date -> date.Month)
+                        |> List.map (fun (_, dates) -> dates.Head, dates.Length)
+                        |> List.map (fun (firstDay, days) ->
+                            Html.span [
+                                prop.style [
+                                    style.textAlign.center
+                                    style.width (17 * days)
+
+                                ]
+                                prop.children [
+                                    str (firstDay.DateTime.Format "MMM")
+                                ]
+                            ]
+                        )
+                    ]
                 ]
 
                 // Day of Week row
-                div [ Style [ Display DisplayOptions.Flex ] ][
-                    yield! dateSequence
-                    |> List.map (fun date ->
-                        span [ classList [ Css.todayHeader, dateMap.[date].IsToday
-                                           Css.selectionHighlight, dateMap.[date].IsSelected ]
-                               Style [ Width 17
-                                       Functions.getCellSeparatorBorderLeft date
-                                       TextAlign TextAlignOptions.Center ] ][
-
-                            date.DateTime.Format "EEEEEE"
-                            |> String.toLower
-                            |> str
-                        ]
-                    )
+                Html.div [
+                    prop.style [
+                        style.display.flex
+                    ]
+                    prop.children [
+                        yield! dateSequence
+                        |> List.map (fun date ->
+                            Html.span [
+                                prop.classes [
+                                    if dateMap.[date].IsToday then Css.todayHeader
+                                    if dateMap.[date].IsSelected then Css.selectionHighlight
+                                ]
+                                prop.style [
+                                    style.width 17
+                                    style.textAlign.center
+                                    match Functions.getCellSeparatorBorderLeft date with
+                                    | Some borderLeft -> borderLeft
+                                    | None -> ()
+                                ]
+                                prop.children [
+                                    date.DateTime.Format "EEEEEE"
+                                    |> String.toLower
+                                    |> str
+                                ]
+                            ]
+                        )
+                    ]
                 ]
 
                 // Day row
-                div [ Style [ Display DisplayOptions.Flex ] ][
-
-                    yield! dateSequence
-                    |> List.map (fun date ->
-                        span [ classList [ Css.todayHeader, dateMap.[date].IsToday
-                                           Css.selectionHighlight, dateMap.[date].IsSelected ]
-                               Style [ Width 17
-                                       Functions.getCellSeparatorBorderLeft date
-                                       TextAlign TextAlignOptions.Center ] ][
-                            str (date.Day.ToString "D2")
-                        ]
-                    )
+                Html.div [
+                    prop.style [
+                        style.display.flex
+                    ]
+                    prop.children [
+                        yield! dateSequence
+                        |> List.map (fun date ->
+                            Html.span [
+                                prop.classes [
+                                    if dateMap.[date].IsToday then Css.todayHeader
+                                    if dateMap.[date].IsSelected then Css.selectionHighlight
+                                ]
+                                prop.style [
+                                    style.width 17
+                                    style.textAlign.center
+                                    match Functions.getCellSeparatorBorderLeft date with
+                                    | Some borderLeft -> borderLeft
+                                    | None -> ()
+                                ]
+                                prop.children [
+                                    str (date.Day.ToString "D2")
+                                ]
+                            ]
+                        )
+                    ]
                 ]
             ]
         )
@@ -206,20 +260,31 @@ module ApplicationComponent =
                 |> Set.isEmpty
                 |> not
 
-            div [ classList [ Css.tooltipContainer, not taskComments.IsEmpty ]
-                  Style [ Height 17 ] ][
-
-                div [ classList [ Css.selectionHighlight, isSelected ]
-                      Style [ CSSProp.Overflow OverflowOptions.Hidden
-                              WhiteSpace WhiteSpaceOptions.Nowrap
-                              paddingLeftLevel input.Level
-                              TextOverflow "ellipsis" ] ][
-
-                    str taskName
+            Html.div [
+                prop.classes [
+                    if not taskComments.IsEmpty then Css.tooltipContainer
                 ]
-
-                if not taskComments.IsEmpty then
-                    TooltipPopupComponent.render {| Comments = taskComments |}
+                prop.style [
+                    style.height 17
+                ]
+                prop.children [
+                    Html.div [
+                        prop.classes [
+                            if isSelected then Css.selectionHighlight
+                        ]
+                        prop.style [
+                            style.overflow.hidden
+                            style.whitespace.nowrap
+                            style.textOverflow.ellipsis
+                            paddingLeftLevel input.Level
+                        ]
+                        prop.children [
+                            str taskName
+                        ]
+                    ]
+                    if not taskComments.IsEmpty then
+                        TooltipPopupComponent.render {| Comments = taskComments |}
+                ]
             ]
         )
 
@@ -247,7 +312,6 @@ module ApplicationComponent =
                     setSelected (not selected)
             |}
 
-
             Html.div [
                 prop.classes [
                     status.CellClass
@@ -261,7 +325,7 @@ module ApplicationComponent =
                 prop.children [
                     Html.div [
                         prop.style [
-                            match Functions.getCellSeparatorBorderLeft2 input.Date with
+                            match Functions.getCellSeparatorBorderLeft input.Date with
                             | Some borderLeft -> borderLeft
                             | None -> ()
                         ]
@@ -286,18 +350,19 @@ module ApplicationComponent =
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
             let taskIdList = Recoil.useValue Recoil.Atoms.taskIdList
 
-            div [ Class Css.laneContainer ][
-
-                yield! taskIdList
-                |> List.map (fun taskId ->
-
-                    div [][
-                        yield! dateSequence
-                        |> List.map (fun date ->
-                            cell {| TaskId = taskId; Date = date |}
-                        )
-                    ]
-                )
+            Html.div [
+                prop.className Css.laneContainer
+                prop.children [
+                    yield! taskIdList
+                    |> List.map (fun taskId ->
+                        Html.div [
+                            yield! dateSequence
+                            |> List.map (fun date ->
+                                cell {| TaskId = taskId; Date = date |}
+                            )
+                        ]
+                    )
+                ]
             ]
         )
 
@@ -305,61 +370,76 @@ module ApplicationComponent =
         let render = React.memo (fun () ->
             let taskList = Recoil.useValue Recoil.Selectors.taskList
 
-            div [ Style [ Display DisplayOptions.Flex ] ][
-
-                // Column: Left
-                div [][
-
-                    // Top Padding
-                    div [][
-                        yield! Grid.emptyDiv |> List.replicate 3
-                    ]
-
-                    div [ Style [ Display DisplayOptions.Flex ] ][
-
-                        // Column: Information Type
-                        div [ Style [ PaddingRight 10 ] ] [
-
-                            yield! taskList
-                            |> List.map (fun task ->
-//                                let comments = []
-
-                                div [ classList [ Css.blueIndicator, not task.InformationComments.IsEmpty
-                                                  Css.tooltipContainer, not task.InformationComments.IsEmpty ]
-                                      Style [ Padding 0
-                                              Height 17
-                                              Color task.Information.Color
-                                              WhiteSpace WhiteSpaceOptions.Nowrap ] ][
-
-                                    str task.Information.Name
-
-                                    if not task.InformationComments.IsEmpty then
-                                        TooltipPopupComponent.render {| Comments = task.InformationComments |}
-                                ]
-                            )
-                        ]
-
-                        // Column: Task Name
-                        div [ Style [ Width 200 ] ] [
-                            yield! taskList
-                            |> List.map (fun task ->
-                                Grid.taskName {| Level = 0; TaskId = task.Id |}
-                            )
-                        ]
-                    ]
+            Html.div [
+                prop.style [
+                    style.display.flex
                 ]
-
-                div [][
-                    Grid.header ()
-
-                    Grid.cells ()
+                prop.children [
+                    // Column: Left
+                    Html.div [
+                        // Top Padding
+                        Html.div [
+                            yield! Grid.emptyDiv |> List.replicate 3
+                        ]
+                        Html.div [
+                            prop.style [
+                                style.display.flex
+                            ]
+                            prop.children [
+                                // Column: Information Type
+                                Html.div [
+                                    prop.style [
+                                        style.paddingRight 10
+                                    ]
+                                    prop.children [
+                                        yield! taskList
+                                        |> List.map (fun task ->
+                                            Html.div [
+                                                prop.classes [
+                                                    if not task.InformationComments.IsEmpty then
+                                                        Css.blueIndicator
+                                                        Css.tooltipContainer
+                                                ]
+                                                prop.style [
+                                                    style.padding 0
+                                                    style.height 17
+                                                    style.color task.Information.Color
+                                                    style.whitespace.nowrap
+                                                ]
+                                                prop.children [
+                                                    str task.Information.Name
+                                                    if not task.InformationComments.IsEmpty then
+                                                        TooltipPopupComponent.render {| Comments = task.InformationComments |}
+                                                ]
+                                            ]
+                                        )
+                                    ]
+                                ]
+                                // Column: Task Name
+                                Html.div [
+                                    prop.style [
+                                        style.width 200
+                                    ]
+                                    prop.children [
+                                        yield! taskList
+                                        |> List.map (fun task ->
+                                            Grid.taskName {| Level = 0; TaskId = task.Id |}
+                                        )
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                    Html.div [
+                        Grid.header ()
+                        Grid.cells ()
+                    ]
                 ]
             ]
         )
 
     module GroupsViewComponent =
         let render = React.memo (fun () ->
-            printfn "GROUPS VIEW"
             let taskList = Recoil.useValue Recoil.Selectors.taskList
 
             let groupMap =
@@ -372,86 +452,93 @@ module ApplicationComponent =
                 |> List.groupBy (fun group -> group.Information)
                 |> List.groupBy (fun (info, _) -> info.KindName)
 
-            div [ Style [ Display DisplayOptions.Flex ] ][
-
-                // Column: Left
-                div [][
-
-                    // Top Padding
-                    div [][
-                        yield! Grid.emptyDiv |> List.replicate 3
-                    ]
-
-                    div [][
-
-                        yield! groups
-                        |> List.map (fun (informationKindName, taskGroups) ->
-                            div [][
-                                // Information Type
-                                div [ Style [ Color "#444" ] ][
-                                    str informationKindName
-                                ]
-
-                                div [][
-
-                                    yield! taskGroups
-                                    |> List.map (fun (information, group) ->
-                                        let informationComments = groupMap.[information].InformationComments
-
-                                        div [][
-                                            // Information
-                                            div [ classList [ Css.blueIndicator, informationComments.IsEmpty
-                                                              Css.tooltipContainer, informationComments.IsEmpty ]
-                                                  Style [ Grid.paddingLeftLevel 1
-                                                          Color "#444" ] ][
-                                                str information.Name
-
-                                                if not informationComments.IsEmpty then
-                                                    TooltipPopupComponent.render {| Comments = informationComments |}
-                                            ]
-
-                                            // Task Name
-                                            div [ Style [ Width 500 ] ][
-
-                                                yield! group
-                                                |> List.map (fun groupTask ->
-                                                    Grid.taskName
-                                                        {| Level = 2; TaskId = groupTask.Id |}
-                                                )
-                                            ]
-                                        ]
-                                    )
-                                ]
-                            ]
-                        )
-                    ]
+            Html.div [
+                prop.style [
+                    style.display.flex
                 ]
-
-                // Column: Grid
-                div [][
-                    Grid.header ()
-
-                    div [][
-
-                        yield! groups
-                        |> List.map (fun (_, taskGroups) ->
-
-                            div [][
-
-                                Grid.emptyDiv
-                                div [][
-
-                                    yield! taskGroups
-                                    |> List.map (fun (_, _tasks) ->
-
-                                        div [][
-                                            Grid.emptyDiv
-                                            Grid.cells ()
+                prop.children [
+                    // Column: Left
+                    Html.div [
+                        // Top Padding
+                        Html.div [
+                            yield! Grid.emptyDiv |> List.replicate 3
+                        ]
+                        Html.div [
+                            yield! groups
+                            |> List.map (fun (informationKindName, taskGroups) ->
+                                Html.div [
+                                    // Information Type
+                                    Html.div [
+                                        prop.style [
+                                            style.color "#444"
                                         ]
-                                    )
+                                        prop.children [
+                                            str informationKindName
+                                        ]
+                                    ]
+                                    Html.div [
+                                        yield! taskGroups
+                                        |> List.map (fun (information, group) ->
+                                            let informationComments = groupMap.[information].InformationComments
+                                            Html.div [
+                                                // Information
+                                                Html.div [
+                                                    prop.classes [
+                                                        if informationComments.IsEmpty then
+                                                            Css.blueIndicator
+                                                            Css.tooltipContainer
+                                                    ]
+                                                    prop.style [
+                                                        style.color "#444"
+                                                        Grid.paddingLeftLevel 1
+                                                    ]
+                                                    prop.children [
+                                                        str information.Name
+                                                        if not informationComments.IsEmpty then
+                                                            TooltipPopupComponent.render {| Comments = informationComments |}
+                                                    ]
+                                                ]
+
+                                                // Task Name
+                                                Html.div [
+                                                    prop.style [
+                                                        style.width 500
+                                                    ]
+                                                    prop.children [
+                                                        yield! group
+                                                        |> List.map (fun groupTask ->
+                                                            Grid.taskName
+                                                                {| Level = 2; TaskId = groupTask.Id |}
+                                                        )
+                                                    ]
+                                                ]
+                                            ]
+                                        )
+                                    ]
                                 ]
-                            ]
-                        )
+                            )
+                        ]
+                    ]
+                    // Column: Grid
+                    Html.div [
+                        Grid.header ()
+                        Html.div [
+                            yield! groups
+                            |> List.map (fun (_, taskGroups) ->
+                                Html.div [
+                                    Grid.emptyDiv
+                                    Html.div [
+                                        yield! taskGroups
+                                        |> List.map (fun (_, _tasks) ->
+                                            Html.div [
+                                                Grid.emptyDiv
+                                                Grid.cells ()
+                                            ]
+                                        )
+                                    ]
+                                ]
+                            )
+                        ]
                     ]
                 ]
             ]
@@ -461,64 +548,95 @@ module ApplicationComponent =
         let render = React.memo (fun () ->
             let taskList = Recoil.useValue Recoil.Selectors.taskList
 
-            div [ Style [ Display DisplayOptions.Flex ] ][
-
-                // Column: Left
-                div [][
-                    // Top Padding
-                    div [][
-                        yield! Grid.emptyDiv |> List.replicate 3
-                    ]
-
-                    div [ Style [ Display DisplayOptions.Flex ] ][
-                        // Column: Information Type
-                        div [ Style [ PaddingRight 10 ] ] [
-                            yield! taskList
-                            |> List.map (fun task ->
-
-                                div [ classList [ Css.blueIndicator, task.InformationComments.IsEmpty
-                                                  Css.tooltipContainer, task.InformationComments.IsEmpty ]
-                                      Style [ Padding 0
-                                              Height 17
-                                              Color task.Information.Color
-                                              WhiteSpace WhiteSpaceOptions.Nowrap ] ][
-
-                                    str task.Information.Name
-
-                                    if not task.InformationComments.IsEmpty then
-                                        TooltipPopupComponent.render {| Comments = task.InformationComments |}
-                                ]
-                            )
-                        ]
-
-                        // Column: Priority
-                        div [ Style [ PaddingRight 10
-                                      TextAlign TextAlignOptions.Center ] ] [
-                            yield! taskList
-                            |> List.map (fun task ->
-                                div [ Style [ Height 17 ] ][
-                                    task.Priority
-                                    |> ofTaskPriorityValue
-                                    |> string
-                                    |> str
-                                ]
-                            )
-                        ]
-
-                        // Column: Task Name
-                        div [ Style [ Width 200 ] ] [
-                            yield! taskList
-                            |> List.map (fun task ->
-                                Grid.taskName {| Level = 0; TaskId = task.Id |}
-                            )
-                        ]
-                    ]
+            Html.div [
+                prop.style [
+                    style.display.flex
                 ]
+                prop.children [
+                    // Column: Left
+                    Html.div [
+                        // Top Padding
+                        Html.div [
+                            yield! Grid.emptyDiv |> List.replicate 3
+                        ]
+                        Html.div [
+                            prop.style [
+                                style.display.flex
+                            ]
+                            prop.children [
+                                // Column: Information Type
+                                Html.div [
+                                    prop.style [
+                                        style.paddingRight 10
+                                    ]
+                                    prop.children [
+                                        yield! taskList
+                                        |> List.map (fun task ->
+                                            Html.div [
+                                                prop.classes [
+                                                    if task.InformationComments.IsEmpty then
+                                                        Css.blueIndicator
+                                                        Css.tooltipContainer
+                                                ]
+                                                prop.style [
+                                                    style.padding 0
+                                                    style.height 17
+                                                    style.color task.Information.Color
+                                                    style.whitespace.nowrap
+                                                ]
+                                                prop.children [
+                                                    str task.Information.Name
 
-                div [][
-                    Grid.header ()
-
-                    Grid.cells ()
+                                                    if not task.InformationComments.IsEmpty then
+                                                        TooltipPopupComponent.render
+                                                            {| Comments = task.InformationComments |}
+                                                ]
+                                            ]
+                                        )
+                                    ]
+                                ]
+                                // Column: Priority
+                                Html.div [
+                                    prop.style [
+                                        style.paddingRight 10
+                                        style.textAlign.center
+                                    ]
+                                    prop.children [
+                                        yield! taskList
+                                        |> List.map (fun task ->
+                                            Html.div [
+                                                prop.style [
+                                                    style.height 17
+                                                ]
+                                                prop.children [
+                                                    task.Priority
+                                                    |> ofTaskPriorityValue
+                                                    |> string
+                                                    |> str
+                                                ]
+                                            ]
+                                        )
+                                    ]
+                                ]
+                                // Column: Task Name
+                                Html.div [
+                                    prop.style [
+                                        style.width 200
+                                    ]
+                                    prop.children [
+                                        yield! taskList
+                                        |> List.map (fun task ->
+                                            Grid.taskName {| Level = 0; TaskId = task.Id |}
+                                        )
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ]
+                    Html.div [
+                        Grid.header ()
+                        Grid.cells ()
+                    ]
                 ]
             ]
         )
@@ -572,8 +690,6 @@ module ApplicationComponent =
 //            | _ -> fun () -> ()
 //        )
 //        |> List.iter (fun x -> x ())
-
-        printfn "HomePageComponent.render. VIEW: %A" view
 
         Html.div [
             match view with
