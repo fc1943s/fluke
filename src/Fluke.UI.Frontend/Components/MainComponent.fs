@@ -139,23 +139,7 @@ module ApplicationComponent =
 
         let header = React.memo (fun () ->
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
-            let selection = Recoil.useValue Recoil.Selectors.selection
-
-            let selectionSet =
-                selection
-                |> Map.values
-                |> Set.unionMany
-
-            let datesInfo =
-                dateSequence
-                |> List.map (fun date ->
-                    let isToday = Recoil.useValue (Recoil.Selectors.isTodayFamily date)
-                    let info =
-                        {| IsSelected = selectionSet.Contains date
-                           IsToday = isToday |}
-                    date, info
-                )
-                |> Map.ofList
+            let dateMap = Recoil.useValue Recoil.Selectors.dateMap
 
             div [][
                 // Month row
@@ -175,8 +159,8 @@ module ApplicationComponent =
                 div [ Style [ Display DisplayOptions.Flex ] ][
                     yield! dateSequence
                     |> List.map (fun date ->
-                        span [ classList [ Css.todayHeader, datesInfo.[date].IsToday
-                                           Css.selectionHighlight, datesInfo.[date].IsSelected ]
+                        span [ classList [ Css.todayHeader, dateMap.[date].IsToday
+                                           Css.selectionHighlight, dateMap.[date].IsSelected ]
                                Style [ Width 17
                                        Functions.getCellSeparatorBorderLeft date
                                        TextAlign TextAlignOptions.Center ] ][
@@ -193,8 +177,8 @@ module ApplicationComponent =
 
                     yield! dateSequence
                     |> List.map (fun date ->
-                        span [ classList [ Css.todayHeader, datesInfo.[date].IsToday
-                                           Css.selectionHighlight, datesInfo.[date].IsSelected ]
+                        span [ classList [ Css.todayHeader, dateMap.[date].IsToday
+                                           Css.selectionHighlight, dateMap.[date].IsSelected ]
                                Style [ Width 17
                                        Functions.getCellSeparatorBorderLeft date
                                        TextAlign TextAlignOptions.Center ] ][
@@ -319,22 +303,7 @@ module ApplicationComponent =
 
     module CalendarViewComponent =
         let render = React.memo (fun () ->
-            let taskIdList = Recoil.useValue Recoil.Atoms.taskIdList
-
-            let taskList =
-                taskIdList
-                |> List.map (fun taskId ->
-                    let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily taskId)
-
-                    let information = Recoil.useValue task.Information
-                    let wrappedInformation = Recoil.useValue information.WrappedInformation
-                    let informationComments = Recoil.useValue information.Comments
-
-                    {| TaskId = taskId
-                       Information = wrappedInformation
-                       InformationComments = informationComments |}
-                )
-
+            let taskList = Recoil.useValue Recoil.Selectors.taskList
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
@@ -372,9 +341,9 @@ module ApplicationComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! taskIdList
-                            |> List.map (fun taskId ->
-                                Grid.taskName {| Level = 0; TaskId = taskId |}
+                            yield! taskList
+                            |> List.map (fun task ->
+                                Grid.taskName {| Level = 0; TaskId = task.Id |}
                             )
                         ]
                     ]
@@ -391,28 +360,15 @@ module ApplicationComponent =
     module GroupsViewComponent =
         let render = React.memo (fun () ->
             printfn "GROUPS VIEW"
-            let taskIdList = Recoil.useValue Recoil.Atoms.taskIdList
-//            let tree = Recoil.useValue Recoil.Selectors.tree
-
-            let groupList =
-                taskIdList
-                |> List.map (fun taskId ->
-                    let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily taskId)
-                    let information = Recoil.useValue task.Information
-                    let wrappedInformation = Recoil.useValue information.WrappedInformation
-                    let informationComments = Recoil.useValue information.Comments
-                    {| TaskId = taskId
-                       Information = wrappedInformation
-                       InformationComments = informationComments |}
-                )
+            let taskList = Recoil.useValue Recoil.Selectors.taskList
 
             let groupMap =
-                groupList
+                taskList
                 |> List.map (fun x -> x.Information, x)
                 |> Map.ofList
 
             let groups =
-                groupList
+                taskList
                 |> List.groupBy (fun group -> group.Information)
                 |> List.groupBy (fun (info, _) -> info.KindName)
 
@@ -460,7 +416,7 @@ module ApplicationComponent =
                                                 yield! group
                                                 |> List.map (fun groupTask ->
                                                     Grid.taskName
-                                                        {| Level = 2; TaskId = groupTask.TaskId |}
+                                                        {| Level = 2; TaskId = groupTask.Id |}
                                                 )
                                             ]
                                         ]
@@ -503,23 +459,7 @@ module ApplicationComponent =
 
     module TasksViewComponent =
         let render = React.memo (fun () ->
-            let taskIdList = Recoil.useValue Recoil.Atoms.taskIdList
-
-            let taskList =
-                taskIdList
-                |> List.map (fun taskId ->
-                    let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily taskId)
-
-                    let information = Recoil.useValue task.Information
-                    let priorityValue = Recoil.useValue task.PriorityValue
-                    let wrappedInformation = Recoil.useValue information.WrappedInformation
-                    let informationComments = Recoil.useValue information.Comments
-
-                    {| TaskId = taskId
-                       PriorityValue = priorityValue
-                       Information = wrappedInformation
-                       InformationComments = informationComments |}
-                )
+            let taskList = Recoil.useValue Recoil.Selectors.taskList
 
             div [ Style [ Display DisplayOptions.Flex ] ][
 
@@ -557,7 +497,7 @@ module ApplicationComponent =
                             yield! taskList
                             |> List.map (fun task ->
                                 div [ Style [ Height 17 ] ][
-                                    task.PriorityValue
+                                    task.Priority
                                     |> ofTaskPriorityValue
                                     |> string
                                     |> str
@@ -567,9 +507,9 @@ module ApplicationComponent =
 
                         // Column: Task Name
                         div [ Style [ Width 200 ] ] [
-                            yield! taskIdList
-                            |> List.map (fun taskId ->
-                                Grid.taskName {| Level = 0; TaskId = taskId |}
+                            yield! taskList
+                            |> List.map (fun task ->
+                                Grid.taskName {| Level = 0; TaskId = task.Id |}
                             )
                         ]
                     ]
@@ -710,13 +650,15 @@ module MainComponent =
 
     let render = React.memo (fun () ->
 
-        React.suspense ([
+        Html.div [
             globalShortcutHandler ()
             positionUpdater ()
             dataLoader ()
 
-            NavBarComponent.render ()
-            ApplicationComponent.render ()
-        ], PageLoaderComponent.render ())
+            React.suspense ([
+                NavBarComponent.render ()
+                ApplicationComponent.render ()
+            ], PageLoaderComponent.render ())
+        ]
     )
 
