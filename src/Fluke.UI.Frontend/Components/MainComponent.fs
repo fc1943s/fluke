@@ -225,18 +225,18 @@ module ApplicationComponent =
 
         let cell = React.memo (fun (input: {| TaskId: Recoil.Atoms.RecoilTask.TaskId
                                               Date: FlukeDate |}) ->
+            let isToday = Recoil.useValue (Recoil.Selectors.isTodayFamily input.Date)
+
             let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId input.Date
             let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
 
-            let task = Recoil.useValue cell.Task
-            let taskId = Recoil.useValue task.Id
-            let date = Recoil.useValue cell.Date
             let comments = Recoil.useValue cell.Comments
             let sessions = Recoil.useValue cell.Sessions
             let status = Recoil.useValue cell.Status
             let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selected cellId)
 
-            let isToday = Recoil.useValue (Recoil.Selectors.isTodayFamily date)
+
+//            printfn "R: %A\t%A\t%A" cellId taskId date
 
 //            let status = Recoil.useValue cell.Status
 
@@ -261,7 +261,7 @@ module ApplicationComponent =
                 prop.children [
                     Html.div [
                         prop.style [
-                            match Functions.getCellSeparatorBorderLeft2 date with
+                            match Functions.getCellSeparatorBorderLeft2 input.Date with
                             | Some borderLeft -> borderLeft
                             | None -> ()
                         ]
