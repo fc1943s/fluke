@@ -11,7 +11,7 @@ module App =
         Recoil.root [
             root.localStorage (fun hydrater -> hydrater.setAtom Recoil.Atoms.view)
 
-            root.init Recoil.initState
+//            root.init Recoil.initState
 
             root.children [
 //                ReactBindings.React.createElement

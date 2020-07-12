@@ -99,7 +99,7 @@ NUGET
     FParsec (1.1.1) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.3.4) - restriction: || (>= net45) (>= netstandard2.0)
       System.ValueTuple (>= 4.4) - restriction: >= net45
-    FSharp.Control.Reactive (4.4.1) - restriction: >= netstandard2.0
+    FSharp.Control.Reactive (4.4.2) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7.2) - restriction: || (>= net46) (>= netstandard2.0)
       System.Reactive (>= 4.4.1) - restriction: || (>= net46) (>= netstandard2.0)
     FSharp.Core (4.7.2) - restriction: >= netstandard2.0
@@ -512,7 +512,7 @@ NUGET
       FSharp.Core (>= 4.5.2) - restriction: >= netstandard2.0
     Fable.Core (3.1.5)
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
-    Fable.DateFunctions (3.0.1)
+    Fable.DateFunctions (3.0.2)
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.6.2) - restriction: >= netstandard2.0
     Fable.FontAwesome (2.0) - restriction: >= netstandard2.0
@@ -536,10 +536,10 @@ NUGET
       Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
       Fable.Parsimmon (>= 4.0) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
-    Feliz (1.5)
+    Feliz (1.6)
       Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
-      Fable.React (>= 6.0) - restriction: >= netstandard2.0
-      FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
+      Fable.React (>= 6.2) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
     Feliz.Bulma (2.3)
       Feliz (>= 0.68.2) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0

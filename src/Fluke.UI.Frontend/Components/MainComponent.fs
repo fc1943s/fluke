@@ -139,7 +139,7 @@ module ApplicationComponent =
 
         let header = React.memo (fun () ->
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
-            let selection = Recoil.useValue Recoil.Selectors.selectionTracker
+            let selection = Recoil.useValue Recoil.Selectors.selection
 
             let selectionSet =
                 selection
@@ -207,9 +207,9 @@ module ApplicationComponent =
 
         let taskName = React.memo (fun (input: {| Level: int
                                                   TaskId: Recoil.Atoms.RecoilTask.TaskId |}) ->
-            let selection = Recoil.useValue Recoil.Selectors.selectionTracker
+            let selection = Recoil.useValue Recoil.Selectors.selection
 
-            let task = Recoil.useValue (Recoil.Selectors.findTask input.TaskId)
+            let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily input.TaskId)
 
             let taskName = Recoil.useValue task.Name
             let taskComments = Recoil.useValue task.Comments
@@ -242,7 +242,7 @@ module ApplicationComponent =
         let cell = React.memo (fun (input: {| TaskId: Recoil.Atoms.RecoilTask.TaskId
                                               Date: FlukeDate |}) ->
             let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId input.Date
-            let cell = Recoil.useValue (Recoil.Selectors.findCell cellId)
+            let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
 
             let task = Recoil.useValue cell.Task
             let taskId = Recoil.useValue task.Id
@@ -250,7 +250,7 @@ module ApplicationComponent =
             let comments = Recoil.useValue cell.Comments
             let sessions = Recoil.useValue cell.Sessions
             let status = Recoil.useValue cell.Status
-            let selected, setSelected = Recoil.useState cell.Selected
+            let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selected cellId)
 
             let isToday = Recoil.useValue (Recoil.Selectors.isTodayFamily date)
 
@@ -324,7 +324,7 @@ module ApplicationComponent =
             let taskList =
                 taskIdList
                 |> List.map (fun taskId ->
-                    let task = Recoil.useValue (Recoil.Selectors.findTask taskId)
+                    let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily taskId)
 
                     let information = Recoil.useValue task.Information
                     let wrappedInformation = Recoil.useValue information.WrappedInformation
@@ -397,7 +397,7 @@ module ApplicationComponent =
             let groupList =
                 taskIdList
                 |> List.map (fun taskId ->
-                    let task = Recoil.useValue (Recoil.Selectors.findTask taskId)
+                    let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily taskId)
                     let information = Recoil.useValue task.Information
                     let wrappedInformation = Recoil.useValue information.WrappedInformation
                     let informationComments = Recoil.useValue information.Comments
@@ -508,7 +508,7 @@ module ApplicationComponent =
             let taskList =
                 taskIdList
                 |> List.map (fun taskId ->
-                    let task = Recoil.useValue (Recoil.Selectors.findTask taskId)
+                    let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily taskId)
 
                     let information = Recoil.useValue task.Information
                     let priorityValue = Recoil.useValue task.PriorityValue
@@ -692,7 +692,7 @@ module MainComponent =
     )
 
     let globalShortcutHandler = React.memo (fun () ->
-        let selection, setSelection = Recoil.useState Recoil.Selectors.selectionTracker
+        let selection, setSelection = Recoil.useState Recoil.Selectors.selection
         let ctrlPressed, setCtrlPressed = Recoil.useState Recoil.Atoms.ctrlPressed
 
         let keyEvent (e: KeyboardEvent) =
@@ -711,12 +711,11 @@ module MainComponent =
     let render = React.memo (fun () ->
 
         React.suspense ([
+            globalShortcutHandler ()
             positionUpdater ()
             dataLoader ()
-            globalShortcutHandler ()
 
             NavBarComponent.render ()
-
             ApplicationComponent.render ()
         ], PageLoaderComponent.render ())
     )
