@@ -346,14 +346,13 @@ module ApplicationComponent =
             ]
         )
 
-        let cells = React.memo (fun () ->
+        let cells = React.memo (fun (input: {| TaskIdList: Recoil.Atoms.RecoilTask.TaskId list |}) ->
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
-            let taskIdList = Recoil.useValue Recoil.Atoms.taskIdList
 
             Html.div [
                 prop.className Css.laneContainer
                 prop.children [
-                    yield! taskIdList
+                    yield! input.TaskIdList
                     |> List.map (fun taskId ->
                         Html.div [
                             yield! dateSequence
@@ -369,6 +368,7 @@ module ApplicationComponent =
     module CalendarViewComponent =
         let render = React.memo (fun () ->
             let taskList = Recoil.useValue Recoil.Selectors.taskList
+            let taskIdList = taskList |> List.map (fun x -> x.Id)
 
             Html.div [
                 prop.style [
@@ -432,7 +432,7 @@ module ApplicationComponent =
                     ]
                     Html.div [
                         Grid.header ()
-                        Grid.cells ()
+                        Grid.cells {| TaskIdList = taskIdList |}
                     ]
                 ]
             ]
@@ -484,7 +484,7 @@ module ApplicationComponent =
                                                 // Information
                                                 Html.div [
                                                     prop.classes [
-                                                        if informationComments.IsEmpty then
+                                                        if not informationComments.IsEmpty then
                                                             Css.blueIndicator
                                                             Css.tooltipContainer
                                                     ]
@@ -498,11 +498,10 @@ module ApplicationComponent =
                                                             TooltipPopupComponent.render {| Comments = informationComments |}
                                                     ]
                                                 ]
-
                                                 // Task Name
                                                 Html.div [
                                                     prop.style [
-                                                        style.width 500
+                                                        style.width 400
                                                     ]
                                                     prop.children [
                                                         yield! group
@@ -529,10 +528,10 @@ module ApplicationComponent =
                                     Grid.emptyDiv
                                     Html.div [
                                         yield! taskGroups
-                                        |> List.map (fun (_, _tasks) ->
+                                        |> List.map (fun (_, groupTask) ->
                                             Html.div [
                                                 Grid.emptyDiv
-                                                Grid.cells ()
+                                                Grid.cells {| TaskIdList = groupTask |> List.map (fun x -> x.Id) |}
                                             ]
                                         )
                                     ]
@@ -547,6 +546,7 @@ module ApplicationComponent =
     module TasksViewComponent =
         let render = React.memo (fun () ->
             let taskList = Recoil.useValue Recoil.Selectors.taskList
+            let taskIdList = taskList |> List.map (fun x -> x.Id)
 
             Html.div [
                 prop.style [
@@ -574,7 +574,7 @@ module ApplicationComponent =
                                         |> List.map (fun task ->
                                             Html.div [
                                                 prop.classes [
-                                                    if task.InformationComments.IsEmpty then
+                                                    if not task.InformationComments.IsEmpty then
                                                         Css.blueIndicator
                                                         Css.tooltipContainer
                                                 ]
@@ -635,7 +635,7 @@ module ApplicationComponent =
                     ]
                     Html.div [
                         Grid.header ()
-                        Grid.cells ()
+                        Grid.cells {| TaskIdList = taskIdList |}
                     ]
                 ]
             ]
