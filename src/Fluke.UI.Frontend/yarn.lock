@@ -900,10 +900,10 @@
     lodash "^4.17.13"
     to-fast-properties "^2.0.0"
 
-"@fortawesome/fontawesome-free@^5.13":
-  version "5.13.1"
-  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.13.1.tgz#c53b4066edae16cd1fd669f687baf031b45fb9d6"
-  integrity sha512-D819f34FLHeBN/4xvw0HR0u7U2G7RqjPSggXqf7LktsxWQ48VAfGwvMrhcVuaZV2fF069c/619RdgCCms0DHhw==
+"@fortawesome/fontawesome-free@^5.14":
+  version "5.14.0"
+  resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-free/-/fontawesome-free-5.14.0.tgz#a371e91029ebf265015e64f81bfbf7d228c9681f"
+  integrity sha512-OfdMsF+ZQgdKHP9jUbmDcRrP0eX90XXrsXIdyjLbkmSBzmMXPABB8eobUJtivaupucYaByz6WNe1PI1JuYm3qA==
 
 "@nodelib/fs.scandir@2.1.3":
   version "2.1.3"
@@ -2335,10 +2335,10 @@ dashdash@^1.12.0:
   dependencies:
     assert-plus "^1.0.0"
 
-date-fns@^2.14:
-  version "2.14.0"
-  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.14.0.tgz#359a87a265bb34ef2e38f93ecf63ac453f9bc7ba"
-  integrity sha512-1zD+68jhFgDIM0rF05rcwYO8cExdNqxjq4xP1QKM60Q45mnO6zaMWB4tOzrIr4M4GSLntsKeE4c9Bdl2jhL/yw==
+date-fns@^2.15:
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-2.15.0.tgz#424de6b3778e4e69d3ff27046ec136af58ae5d5f"
+  integrity sha512-ZCPzAMJZn3rNUvvQIMlXhDr4A+Ar07eLeGsGREoWU19a3Pqf5oYa+ccd+B3F6XVtQY6HANMFdOQ8A+ipFnvJdQ==
 
 debug@2.6.9, debug@^2.2.0, debug@^2.3.3:
   version "2.6.9"
@@ -5457,10 +5457,10 @@ readdirp@~3.4.0:
   dependencies:
     picomatch "^2.2.1"
 
-recoil-logger@^1.0:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/recoil-logger/-/recoil-logger-1.0.1.tgz#a7f66293d474c895a1d0c6a5cb231cfd2f5cebc9"
-  integrity sha512-deUy1T8Dwx/Ji6RIFCtk6NNIxu/7boxvhwjTLvLqI7kiAc4sXR+EtY3wKphrjhEnZwJcyh50aWme6dK78lKUyg==
+recoil-logger@^1.1:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/recoil-logger/-/recoil-logger-1.1.0.tgz#d60f25f676c407b1db066a067b04dd40514edb78"
+  integrity sha512-0YaNE7yM3+duaZkkGwqcMal2Ujk1HRPCuoDtOPnES6uhGom9+zlcBiuT+/0EPfNdK3yFsExjg2swL6tVrJyCzw==
 
 recoil@^0:
   version "0.0.10"

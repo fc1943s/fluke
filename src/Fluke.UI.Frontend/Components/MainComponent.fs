@@ -19,26 +19,14 @@ open Feliz.Recoil
 open Feliz.Bulma
 
 
-module SuigetsuTemp =
-    module CustomHooks =
-        let useWindowSize () =
-            let getWindowSize () =
-                {| Width = window.innerWidth
-                   Height = window.innerHeight |}
-            let size, setSize = React.useState (getWindowSize ())
+module Sound =
+    let playDing () =
+         [ 0; 1400 ]
+         |> List.map (JS.setTimeout (fun () -> Ext.playSound "../sounds/ding.wav"))
+         |> ignore
 
-            React.useLayoutEffect (fun () ->
-                let updateSize (_event: Event) =
-                    setSize (getWindowSize ())
-
-                window.addEventListener ("resize", updateSize)
-
-                { new IDisposable with
-                    member _.Dispose () =
-                        window.removeEventListener ("resize", updateSize)
-                }
-            )
-            size
+    let playTick () =
+        Ext.playSound "../sounds/tick.wav"
 
 module PageLoaderComponent =
     let render = React.memo (fun () ->
@@ -50,7 +38,7 @@ module NavBarComponent =
     open Model
     let render = React.memo (fun () ->
         let view, setView = Recoil.useState Recoil.Atoms.view
-        let activeSessions = Recoil.useValue Recoil.Atoms.activeSessions
+        let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
 
         Ext.useEventListener "keydown" (fun (e: KeyboardEvent) ->
             match e.ctrlKey, e.shiftKey, e.key with
@@ -98,7 +86,7 @@ module NavBarComponent =
 
             Bulma.navbarItem.div [
                 activeSessions
-                |> List.map (fun (ActiveSession (task, duration)) ->
+                |> List.map (fun (ActiveSession (taskName, duration)) ->
                     let sessionType, color, duration, left =
                         let left = TempData.sessionLength - duration
                         match duration < TempData.sessionLength with
@@ -110,7 +98,7 @@ module NavBarComponent =
                             style.color color
                         ]
                         prop.children [
-                            sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" sessionType task.Name duration left
+                            sprintf "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]" sessionType taskName duration left
                             |> str
                         ]
                     ]
@@ -705,48 +693,6 @@ module ApplicationComponent =
     ()
 
 module MainComponent =
-    let positionUpdater = React.memo (fun () ->
-        let resetPosition = Recoil.useResetState Recoil.Selectors.position
-
-        CustomHooks.useInterval resetPosition (60 * 1000)
-
-        nothing
-    )
-
-    let useTimeout fn timeout =
-        let savedCallback = Hooks.useRef fn
-
-        Hooks.useEffect (fun () ->
-            savedCallback.current <- fn
-        , [| fn |])
-
-        Hooks.useEffectDisposable (fun () ->
-            let id =
-                JS.setTimeout (fun () ->
-                    savedCallback.current ()
-                ) timeout
-
-            { new IDisposable with
-                member _.Dispose () =
-                    JS.clearTimeout id }
-        , [| timeout |])
-
-    let dataLoader = React.memo (fun () ->
-        let updateTree = Recoil.useSetState Recoil.Selectors.treeUpdater
-
-        let updateTree =
-            Recoil.useCallback (fun _ ->
-                async {
-                    updateTree ()
-                }
-                |> Async.StartImmediate
-            )
-
-        updateTree ()
-
-        nothing
-    )
-
     let globalShortcutHandler = React.memo (fun () ->
         let selection, setSelection = Recoil.useState Recoil.Selectors.selection
         let ctrlPressed, setCtrlPressed = Recoil.useState Recoil.Atoms.ctrlPressed
@@ -763,6 +709,65 @@ module MainComponent =
 
         nothing
     )
+    let positionUpdater = React.memo (fun () ->
+        let resetPosition = Recoil.useResetState Recoil.Selectors.position
+
+        Scheduling.useScheduling Scheduling.Interval resetPosition (60 * 1000)
+//        Scheduling.useScheduling Scheduling.Interval resetPosition (10 * 1000)
+
+        nothing
+    )
+    let dataLoader = React.memo (fun () ->
+        let updateTree = Recoil.useSetState Recoil.Selectors.treeUpdater
+
+        let updateTree =
+            Recoil.useCallback (fun _ ->
+                async {
+                    updateTree ()
+                }
+                |> Async.StartImmediate
+            )
+
+        updateTree ()
+
+        nothing
+    )
+    let soundPlayer = React.memo (fun () ->
+        let oldActiveSessions = React.useRef []
+
+        let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
+
+        React.useEffect (fun () ->
+            oldActiveSessions.current
+            |> List.map (fun (Model.ActiveSession (oldTaskName, oldDuration)) ->
+                let newSession =
+                    activeSessions
+                    |> List.tryFind (fun (Model.ActiveSession (taskName, duration)) ->
+                        taskName = oldTaskName && duration = oldDuration + 1.
+                    )
+
+                match newSession with
+                | Some (Model.ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> Sound.playTick
+                | Some (Model.ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> Sound.playDing
+                | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> Sound.playDing
+                | _ -> fun () -> ()
+            )
+            |> List.iter (fun x -> printfn "CALLING"; x ())
+
+            oldActiveSessions.current <- activeSessions
+        , [| activeSessions :> obj |])
+
+        nothing
+    )
+    let autoReload_TEMP = React.memo (fun () ->
+        let reload () =
+            Dom.window.location.reload true
+
+        printfn "Starting auto reload timer."
+        Scheduling.useScheduling Scheduling.Timeout reload (60 * 60 * 1000)
+
+        nothing
+    )
 
     let render = React.memo (fun () ->
 
@@ -770,6 +775,8 @@ module MainComponent =
             globalShortcutHandler ()
             positionUpdater ()
             dataLoader ()
+            soundPlayer ()
+            autoReload_TEMP ()
 
             React.suspense ([
                 NavBarComponent.render ()

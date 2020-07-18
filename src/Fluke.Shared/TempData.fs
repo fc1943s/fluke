@@ -129,7 +129,7 @@ module TempData =
         |> List.append oldTaskOrderList
 
     type TempTaskEventField =
-        | TempTaskFieldScheduling of scheduling:TaskScheduling
+        | TempTaskFieldScheduling of scheduling:TaskScheduling * start:FlukeDate option
         | TempTaskFieldPendingAfter of start:FlukeTime
         | TempTaskFieldMissedAfter of start:FlukeTime
         | TempTaskFieldDuration of minutes:int
@@ -181,7 +181,7 @@ module TempData =
 
                 | TempTaskField field :: tail ->
                     match field with
-                    | TempTaskFieldScheduling scheduling ->
+                    | TempTaskFieldScheduling (scheduling, _start) ->
                         loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                     | TempTaskFieldPendingAfter start ->

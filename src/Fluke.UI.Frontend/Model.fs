@@ -22,7 +22,7 @@ module Model =
         | Information
         | None
 
-    type ActiveSession = ActiveSession of task:Task * duration:float
+    type ActiveSession = ActiveSession of taskName:string * duration:float
 
     type Information with
         member this.Name =

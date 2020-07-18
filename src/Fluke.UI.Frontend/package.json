@@ -17,7 +17,7 @@
     "electron-builder": "electron-builder"
   },
   "dependencies": {
-    "@fortawesome/fontawesome-free": "^5.13",
+    "@fortawesome/fontawesome-free": "^5.14",
     "typeface-roboto-condensed": "^0.0",
 
     "bulma": "^0.9",
@@ -28,11 +28,11 @@
     "react-dom": "^16.13",
 
     "recoil": "^0",
-    "recoil-logger": "^1.0",
+    "recoil-logger": "^1.1",
 
     "react-markdown": "^4.3",
     "@use-it/event-listener": "^0.1",
-    "date-fns": "^2.14"
+    "date-fns": "^2.15"
   },
   "devDependencies": {
     "webpack": "^4.43",

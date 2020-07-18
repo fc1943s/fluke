@@ -5,7 +5,7 @@ NUGET
     FSharp.Core (4.7.2)
 GIT
   remote: https://github.com/fc1943s/Suigetsu.git
-     (2d3bfbf3de33469100c1988e77288e77e31ef43f)
+     (711444d77cd0d57452a23bac521844d92d58a4c3)
       build: powershell –ExecutionPolicy Bypass ./build.ps1
 GROUP Build
 STORAGE: NONE
@@ -536,14 +536,14 @@ NUGET
       Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
       Fable.Parsimmon (>= 4.0) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
-    Feliz (1.6)
+    Feliz (1.7)
       Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
       Fable.React (>= 6.2) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
     Feliz.Bulma (2.3)
       Feliz (>= 0.68.2) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
-    Feliz.Recoil (0.16.2)
+    Feliz.Recoil (0.17)
       Fable.Core (>= 3.1.5 < 4.0)
       Fable.Promise (>= 2.1 < 3.0)
       Fable.SimpleJson (>= 3.9 < 4.0)
@@ -561,8 +561,8 @@ NUGET
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
       Fable.React (>= 5.1) - restriction: >= netstandard2.0
       Fulma (>= 2.1.1) - restriction: >= netstandard2.0
-    Zanaptak.TypedCssClasses (0.2)
-      FSharp.Core (>= 4.3.4) - restriction: || (>= net452) (>= netstandard2.0)
+    Zanaptak.TypedCssClasses (0.3.1)
+      FSharp.Core (>= 4.3.4) - restriction: >= netstandard2.0
 
 GROUP Testing
 STORAGE: NONE
