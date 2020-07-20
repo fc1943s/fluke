@@ -17,6 +17,7 @@ open Suigetsu.Core
 open Feliz
 open Feliz.Recoil
 open Feliz.Bulma
+open Feliz.UseListener
 
 
 module Sound =
@@ -40,7 +41,7 @@ module NavBarComponent =
         let view, setView = Recoil.useState Recoil.Atoms.view
         let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
 
-        Ext.useEventListener "keydown" (fun (e: KeyboardEvent) ->
+        React.useListener.onKeyDown (fun (e: KeyboardEvent) ->
             match e.ctrlKey, e.shiftKey, e.key with
             | _, true, "C" -> setView View.Calendar
             | _, true, "G" -> setView View.Groups
@@ -637,47 +638,6 @@ module ApplicationComponent =
     let render = React.memo (fun () ->
 
         let view = Recoil.useValue Recoil.Atoms.view
-//        let now = Recoil.useValue Recoil.Selectors.now
-//        let activeSessions, setActiveSessions = Recoil.useState Recoil.Selectors.activeSessions
-//        let selection, setSelection = Recoil.useState Recoil.Selectors.selection
-//        let dayStart = Recoil.useValue Recoil.Selectors.dayStart
-//        let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
-//        let dings, setDings = Recoil.useState (Recoil.Selectors.dingsFamily now)
-//        let ctrlPressed = Recoil.useValue Recoil.Selectors.ctrlPressed
-//        let taskStateList = Recoil.useValue Recoil.Selectors.taskStateList
-//        let informationList = Recoil.useValue Recoil.Selectors.informationList
-//        let taskOrderList = Recoil.useValue Recoil.Selectors.taskOrderList
-
-//        taskStateList
-//        |> List.iter (fun taskState ->
-//            let setTaskCells = Recoil.useSetState (Recoil.Selectors.taskCellsFamily taskState.Task)
-//            setTaskCells cells
-//        )
-
-//        let newActiveSessions =
-//            lastSessions
-//            |> List.map (Tuple2.mapSnd (fun (TaskSession start) -> (now.DateTime - start.DateTime).TotalMinutes))
-//            |> List.filter (fun (_, length) -> length < TempData.sessionLength + TempData.sessionBreakLength)
-//            |> List.map ActiveSession
-//
-//        if activeSessions <> newActiveSessions then
-//            setActiveSessions newActiveSessions
-//
-//        newActiveSessions
-//        |> List.map (fun (ActiveSession (oldTask, oldDuration)) ->
-//            let newSession =
-//                activeSessions
-//                |> List.tryFind (fun (ActiveSession (task, duration)) ->
-//                    task = oldTask && duration = oldDuration + 1.
-//                )
-//
-//            match newSession with
-//            | Some (ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> playTick
-//            | Some (ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> playDing
-//            | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> playDing
-//            | _ -> fun () -> ()
-//        )
-//        |> List.iter (fun x -> x ())
 
         Html.div [
             match view with
@@ -687,10 +647,6 @@ module ApplicationComponent =
             | View.Week     -> WeekViewComponent.render ()
         ]
     )
-
-
-
-    ()
 
 module MainComponent =
     let globalShortcutHandler = React.memo (fun () ->
@@ -704,8 +660,8 @@ module MainComponent =
             if e.key = "Escape" && not selection.IsEmpty then
                 setSelection Map.empty
 
-        Ext.useEventListener "keydown" keyEvent
-        Ext.useEventListener "keyup" keyEvent
+        React.useListener.onKeyDown keyEvent
+        React.useListener.onKeyUp keyEvent
 
         nothing
     )
@@ -720,15 +676,9 @@ module MainComponent =
     let dataLoader = React.memo (fun () ->
         let updateTree = Recoil.useSetState Recoil.Selectors.treeUpdater
 
-        let updateTree =
-            Recoil.useCallback (fun _ ->
-                async {
-                    updateTree ()
-                }
-                |> Async.StartImmediate
-            )
-
-        updateTree ()
+        React.useEffectOnce (fun () ->
+            updateTree ()
+        )
 
         nothing
     )

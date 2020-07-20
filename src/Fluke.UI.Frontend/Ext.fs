@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend
 
 open Browser
-open Browser.Types
 open Fable.Core
 open Fable.Core.JsInterop
 
@@ -26,13 +25,13 @@ module Ext =
 
     let reactMarkdown : obj -> obj = importDefault "react-markdown"
 
-    let useEventListener (_event: string) (_fn: KeyboardEvent -> unit) : unit = importDefault "@use-it/event-listener"
+//    let useEventListener (_event: string) (_fn: KeyboardEvent -> unit) : unit = importDefault "@use-it/event-listener"
 
     let recoilLogger  : obj -> obj = importDefault "recoil-logger"
 
     Dom.window?Ext <-
         {| reactMarkdown = reactMarkdown
-           useEventListener = useEventListener
+//           useEventListener = useEventListener
            recoilLogger = recoilLogger |}
 
 
