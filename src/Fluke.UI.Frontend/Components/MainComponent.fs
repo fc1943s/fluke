@@ -289,17 +289,9 @@ module ApplicationComponent =
             let status = Recoil.useValue cell.Status
             let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selected cellId)
 
-
-//            printfn "R: %A\t%A\t%A" cellId taskId date
-
-//            let status = Recoil.useValue cell.Status
-
-    //        let selected, setSelected = false, fun _ -> ()
-
-            let events = {|
-                OnCellClick = fun () ->
-                    setSelected (not selected)
-            |}
+            let onCellClick = React.useCallbackRef (fun () ->
+                setSelected (not selected)
+            )
 
             Html.div [
                 prop.classes [
@@ -319,11 +311,10 @@ module ApplicationComponent =
                             | None -> ()
                         ]
                         prop.onClick (fun (_event: MouseEvent) ->
-                            events.OnCellClick ()
+                            onCellClick ()
                         )
                         prop.children [
                             match sessions.Length with
-            //                | x -> str (string x)
                             | x when x > 0 -> str (string x)
                             | _ -> ()
                         ]
@@ -702,7 +693,7 @@ module MainComponent =
                 | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> Sound.playDing
                 | _ -> fun () -> ()
             )
-            |> List.iter (fun x -> printfn "CALLING"; x ())
+            |> List.iter (fun x -> x ())
 
             oldActiveSessions.current <- activeSessions
         , [| activeSessions :> obj |])
