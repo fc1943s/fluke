@@ -125,6 +125,7 @@ module Model =
         { Username: string
           Color: UserColor }
 
+    type DateId = DateId of FlukeDate
     type Comment = Comment of user:User * comment:string
     type TaskSession = TaskSession of start:FlukeDateTime
     type TaskStatusEntry = TaskStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
@@ -132,7 +133,8 @@ module Model =
 
     type CellState =
         { Status: CellStatus
-          Comments: Comment list }
+          Comments: Comment list
+          Sessions: TaskSession list }
 
     type Task =
         { Name: string
@@ -143,7 +145,8 @@ module Model =
           Priority: TaskPriorityValue
           StatusEntries: TaskStatusEntry list
           Sessions: TaskSession list
-          CellStateMap: Map<FlukeDate, CellState>
+          CellComments: (FlukeDate * Comment) list
+          CellStateMap: Map<DateId, CellState>
           Comments: Comment list
           Duration: int option }
 
@@ -271,6 +274,7 @@ module Model =
               Priority = TaskPriorityValue 0
               StatusEntries = []
               Sessions = []
+              CellComments = []
               CellStateMap = Map.empty
               Comments = []
               Duration = None }
@@ -307,8 +311,11 @@ module Model =
         | Today -> true
         | _ -> false
 
-
-
+    let dateId dayStart position =
+        match isToday dayStart position position.Date with
+        | true -> position.Date
+        | false -> position.Date.DateTime.AddDays -1. |> FlukeDate.FromDateTime
+        |> DateId
 
 module Rendering =
     open Model

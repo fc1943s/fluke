@@ -225,19 +225,20 @@ module Recoil =
                 taskList
                 |> List.filter (function
                     | { Scheduling = Manual WithoutSuggestion
-                        StatusEntries = []
-                        Sessions = [] } -> true
+//                        StatusEntries = []
+//                        Sessions = []
+                        } -> true
                     | _ -> false
                 )
-//                    |> List.filter (fun (_, statusEntries) ->
-//                        statusEntries
-//                        |> List.filter (function
-//                            | { Cell = { Date = date } } when date.DateTime <= now.Date.DateTime -> true
-//                            | _ -> false
-//                        )
-//                        |> List.tryLast
-//                        |> function Some { Status = Dismissed } -> false | _ -> true
+//                |> List.filter (fun task ->
+//                    task.StatusEntries
+//                    |> List.filter (function
+//                        | TaskStatusEntry (date, _) when date.DateTime >==< dateRange -> true
+//                        | _ -> false
 //                    )
+//                    |> List.tryLast
+//                    |> function Some (TaskStatusEntry (_, Dismissed)) -> false | _ -> true
+//                )
             | View.Tasks ->
                 taskList
                 |> List.filter (function { Scheduling = Manual _ } -> true | _ -> false)
@@ -260,12 +261,15 @@ module Recoil =
                 let lanes =
                     input.Lanes
                     |> Sorting.applyManualOrder input.TaskOrderList
+                    |> List.groupBy (fun (OldLane (task, _)) -> task.Information)
+                    |> Map.ofList
 
                 input.InformationList
                 |> List.map (fun information ->
                     let lanes =
                         lanes
-                        |> List.filter (fun (OldLane (task, _)) -> task.Information = information)
+                        |> Map.tryFind information
+                        |> Option.defaultValue []
 
                     information, lanes
                 )
@@ -309,38 +313,62 @@ module Recoil =
                 let treeData = RootPrivateData.treeData
                 let sharedTreeData = RootPrivateData.sharedTreeData
 
-                let applyEvents statusEntries comments (task: Task) =
-                    let newCellCommentMap =
-                        RootPrivateData.cellComments
-                        |> List.filter (fun (CellComment (address, _)) -> address.Task = task)
-                        |> List.map (fun (CellComment (address, comment)) -> address.Date, comment)
+                let applyEvents statusEntries taskComments (task: Task) =
+                    let newStatusEntries =
+                        statusEntries
+                        |> createTaskStatusEntries task
+                        |> List.prepend task.StatusEntries
+                    let newTaskComments =
+                        taskComments
+                        |> List.filter (fun (TaskComment (commentTask, _)) -> commentTask = task)
+                        |> List.map (ofTaskComment >> snd)
+                        |> List.prepend task.Comments
+                    let cellCommentsMap =
+                        let externalCellComments =
+                            RootPrivateData.cellComments
+                            |> List.filter (fun (CellComment (address, _)) -> address.Task = task)
+                            |> List.map (fun (CellComment (address, comment)) ->
+                                address.Date, comment
+                            )
+                        task.CellComments
+                        |> List.append externalCellComments
+                        |> List.map (Tuple2.mapFst DateId)
                         |> List.groupBy fst
                         |> Map.ofList
                         |> Map.mapValues (List.map snd)
+                    let sessionsMap =
+                        task.Sessions
+                        |> List.map (fun (TaskSession start) -> dateId input.DayStart start, TaskSession start)
+                        |> List.groupBy fst
+                        |> Map.ofList
+                        |> Map.mapValues (List.map snd)
+                    let cellStateMap =
+                        cellCommentsMap
+                        |> Map.keys
+                        |> Seq.append (sessionsMap |> Map.keys)
+                        |> Seq.distinct
+                        |> Seq.map (fun dateId ->
+                            let sessions =
+                                sessionsMap
+                                |> Map.tryFind dateId
+                                |> Option.defaultValue []
+                            let cellComments =
+                                cellCommentsMap
+                                |> Map.tryFind dateId
+                                |> Option.defaultValue []
+                            let cellState =
+                                { Status = Disabled
+                                  Sessions = sessions
+                                  Comments = cellComments }
+                            dateId, cellState
+                        )
+                        |> Map.ofSeq
                     { task with
-                        StatusEntries =
-                            statusEntries
-                            |> createTaskStatusEntries task
-                            |> List.prepend task.StatusEntries
-                        Comments =
-                            comments
-                            |> List.filter (fun (TaskComment (commentTask, _)) -> commentTask = task)
-                            |> List.map (ofTaskComment >> snd)
-                            |> List.prepend task.Comments
-                        CellStateMap =
-                            task.CellStateMap
-                            |> Map.map (fun date cellState ->
-                                let newComments =
-                                    newCellCommentMap
-                                    |> Map.tryFind date
-                                    |> Option.defaultValue []
-                                { cellState with
-                                    Comments =
-                                        cellState.Comments
-                                        |> List.append newComments }
-                            ) }
+                        StatusEntries = newStatusEntries
+                        Comments = newTaskComments
+                        CellStateMap = cellStateMap }
 
-                let taskList =
+                let privateTaskList =
                     treeData.TaskList
                     |> List.map (applyEvents
                                      RootPrivateData.cellStatusEntries
@@ -352,7 +380,7 @@ module Recoil =
                                      RootPrivateData.sharedCellStatusEntries
                                      RootPrivateData.sharedTaskComments)
 
-                taskList |> List.append sharedTaskList
+                sharedTaskList @ privateTaskList
 
             let dateRange =
                 let head = input.DateSequence |> List.head |> fun x -> x.DateTime
@@ -387,7 +415,7 @@ module Recoil =
                 |> List.map (Tuple2.mapSnd (fun cells ->
                     cells
                     |> List.map (fun (Cell (address, status)) ->
-                        address.Date, status
+                        DateId address.Date, status
                     )
                     |> Map.ofList
                 ))
@@ -397,53 +425,47 @@ module Recoil =
 ////                        |> List.sortByDescending (fun x -> x.StatusEntries.Length)
 //                        |> List.take 50
 
-            let taskList =
+            let newTaskList =
                 sortedTaskList
                 |> List.map (fun (task, statusMap) ->
-                    let mergedCellStateMap =
-                        statusMap
-                        |> Map.map (fun date status ->
-                            let cellState =
-                                task.CellStateMap
-                                |> Map.tryFind date
-                                |> Option.defaultValue
-                                    { Comments = []
-                                      Status = Disabled }
-                            { cellState with Status = status }
-                        )
                     let newCellStateMap =
-                        task.CellStateMap
-                        |> Map.union mergedCellStateMap
+                        statusMap
+                        |> Map.keys
+                        |> Seq.append (task.CellStateMap |> Map.keys)
+                        |> Seq.distinct
+                        |> Seq.map (fun dateId ->
+                            let status =
+                                statusMap
+                                |> Map.tryFind dateId
+                                |> Option.defaultValue Disabled
+                            let state =
+                                task.CellStateMap
+                                |> Map.tryFind dateId
+                                |> Option.defaultValue
+                                    { Status = Disabled
+                                      Sessions = []
+                                      Comments = [] }
+                            dateId, { state with Status = status }
+                        )
+                        |> Map.ofSeq
 
                     { task with CellStateMap = newCellStateMap }
-    //                        let newStatus =
-    //                            sortedLaneStatusMap
-    //                            |> Map.tryFind task
-    //                            |> Option.defaultValue Map.empty
-    //                        { task with
-    //                            LaneMap =
-    //
-    //                                |> Option.defaultValue
-    //                                    { Comments = []
-    //                                      Sessions = []
-    //                                      Status = Disabled } }
                 )
-//            let lastSessions =
-//                taskList
-//                |> List.filter (fun task -> not task.Sessions.IsEmpty)
-//                |> List.map (fun task -> task, task.Sessions)
-//                |> List.map (Tuple2.mapSnd (fun sessions ->
-//                    sessions
-//                    |> List.sortByDescending (fun (TaskSession start) -> start.DateTime)
-//                    |> List.head
-//                ))
-
             {|
                 Owner = input.User
                 SharedWith = []
                 InformationList = informationList
-                TaskList = taskList
+                TaskList = newTaskList
             |}
+
+
+
+
+
+
+
+
+
 //                    {|
 //                        Name = "task1"
 //                        Information = Area { Name = "area1" }
@@ -1128,12 +1150,12 @@ module Recoil =
                     setter.set (recoilTask.Priority, task.Priority)
 
                     task.CellStateMap
-                    |> Map.iter (fun date cellState ->
+                    |> Map.iter (fun (DateId date) cellState ->
                         let cellId = Atoms.RecoilCell.cellId taskId date
                         let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
                         setter.set (recoilCell.Status, cellState.Status)
                         setter.set (recoilCell.Comments, cellState.Comments)
-                        setter.set (recoilCell.Sessions, [])
+                        setter.set (recoilCell.Sessions, cellState.Sessions)
                         setter.set (recoilCell.Selected, false)
                     )
                 )

@@ -157,7 +157,7 @@ module TempData =
             | Critical10 -> 10
 
         // TODO: how the hell do i rewrite this without losing performance?
-        let comments, cellCommentsMap, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
+        let comments, cellComments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
             let rec loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration = function
                 | TempComment comment :: tail ->
                     let comment = Comment (testUser, comment)
@@ -195,25 +195,13 @@ module TempData =
 
                 | [] ->
                     let sortedComments = comments |> List.rev
-                    let cellCommentsMap =
-                        cellComments
-                        |> List.rev
-                        |> List.groupBy fst
-                        |> Map.ofList
-                        |> Map.mapValues (List.map snd)
+                    let sortedCellComments = cellComments |> List.rev
                     let sortedSessions = sessions |> List.sortBy (fun (TaskSession start) -> start.DateTime)
                     let sortedStatusEntries = statusEntries |> List.rev
                     let priority = priority |> Option.defaultValue (TaskPriorityValue 0)
-                    sortedComments, cellCommentsMap, sortedSessions, sortedStatusEntries, priority, scheduling, pendingAfter, missedAfter, duration
+                    sortedComments, sortedCellComments, sortedSessions, sortedStatusEntries, priority, scheduling, pendingAfter, missedAfter, duration
 
             loop [] [] [] [] None task.Scheduling task.PendingAfter task.MissedAfter task.Duration events
-
-        let cellStateMap =
-            cellCommentsMap
-            |> Map.mapValues (fun comments ->
-                { Comments = comments
-                  Status = Disabled }
-            )
 
         { task with
             Scheduling = scheduling
@@ -221,7 +209,7 @@ module TempData =
             MissedAfter = missedAfter
             Duration = duration
             Comments = comments
-            CellStateMap = cellStateMap
+            CellComments = cellComments
             Sessions = sessions
             StatusEntries = statusEntries
             Priority = priority }
