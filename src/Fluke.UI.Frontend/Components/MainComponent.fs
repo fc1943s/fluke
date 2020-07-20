@@ -430,7 +430,9 @@ module ApplicationComponent =
             let groups =
                 taskList
                 |> List.groupBy (fun group -> group.Information)
-                |> List.groupBy (fun (info, _) -> info.KindName)
+                |> List.sortBy (fun (information, _) -> information.Name)
+                |> List.groupBy (fun (information, _) -> information.KindName)
+                |> List.sortBy (snd >> List.head >> fst >> fun information -> information.Order)
 
             Html.div [
                 prop.style [

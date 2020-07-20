@@ -164,9 +164,9 @@ module Tests =
         testList "Lane Sorting" [
 
             let (|NoSorting|TimeOfDay|Frequency|) = function
-                | Choice1Of3 -> NoSorting
-                | Choice2Of3 -> TimeOfDay
-                | Choice3Of3 -> Frequency
+                | Choice1Of3 _ -> NoSorting
+                | Choice2Of3 _ -> TimeOfDay
+                | Choice3Of3 _ -> Frequency
             let _noSorting = Choice1Of3 ()
             let sortByTimeOfDay = Choice2Of3 ()
             let sortByFrequency = Choice3Of3 ()

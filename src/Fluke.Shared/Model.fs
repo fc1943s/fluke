@@ -262,6 +262,12 @@ module Model =
             | Area _     -> "areas"
             | Resource _ -> "resources"
             | Archive _  -> "archives"
+        member this.Order =
+            match this with
+            | Project _  -> 1
+            | Area _     -> 2
+            | Resource _ -> 3
+            | Archive  _ -> 4
 
 
     type Task with
