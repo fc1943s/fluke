@@ -468,13 +468,13 @@ module ApplicationComponent =
                                             Html.div [
                                                 // Information
                                                 Html.div [
-                                                    prop.style [
-                                                        style.position.relative
-                                                        style.color "#444"
-                                                        yield! Grid.paddingLeftLevel 1
-                                                    ]
+                                                    prop.className Css.cellRectangle
                                                     prop.children [
                                                         Html.div [
+                                                            prop.style [
+                                                                style.color "#444"
+                                                                yield! Grid.paddingLeftLevel 1
+                                                            ]
                                                             prop.children [
                                                                 str information.Name
                                                             ]
@@ -738,5 +738,4 @@ module MainComponent =
             ], PageLoaderComponent.render ())
         ]
     )
-
 
