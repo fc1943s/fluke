@@ -35,6 +35,11 @@ module PageLoaderComponent =
                                 PageLoader.IsActive true ][]
     )
 
+module SpinnerComponent =
+    let render = React.memo (fun () ->
+        str "(S)"
+    )
+
 module NavBarComponent =
     open Model
     let render = React.memo (fun () ->
@@ -55,11 +60,7 @@ module NavBarComponent =
 //            ]
 //
 //        ]
-        Navbar.navbar [ Navbar.Color IsBlack
-                        Navbar.Props [ Style [ Height 36
-                                               MinHeight 36
-                                               Display DisplayOptions.Flex
-                                               JustifyContent "space-around" ]]][
+        Navbar.navbar [ Navbar.Color IsBlack ][
 
             let checkbox newView text =
                 Bulma.navbarItem.div [
@@ -117,18 +118,37 @@ module TooltipPopupComponent =
     open Model
 
     let render = React.memo (fun (input: {| Comments: Comment list |}) ->
-        Html.div [
-            prop.className Css.tooltipPopup
-            prop.children [
-                input.Comments
-                |> List.map (fun (Comment (_user, comment)) -> comment.Trim ())
-                |> List.map ((+) Environment.NewLine)
-                |> String.concat (Environment.NewLine + Environment.NewLine)
-                |> fun text ->
-                    ReactBindings.React.createElement
-                        (Ext.reactMarkdown, {| source = text |}, [])
+        match input.Comments with
+        | [] -> nothing
+        | _ ->
+            let user = // TODO: 2+ different users in the same day. what to show? smooth transition between them?
+                input.Comments.Head
+                |> (ofComment >> fst)
+
+            Html.div [
+                prop.classes [
+                    Css.tooltipContainer
+                    match user with
+                    | { Color = UserColor.Blue } -> Css.blueIndicator
+                    | { Color = UserColor.Pink } -> Css.pinkIndicator
+                ]
+                prop.children [
+                    Html.div [
+                        prop.className Css.tooltipPopup
+                        prop.children [
+                            input.Comments
+                            |> List.map (fun (Comment (user, comment)) ->
+                                sprintf "%s:%s%s" user.Username Environment.NewLine (comment.Trim ())
+                            )
+                            |> List.map ((+) Environment.NewLine)
+                            |> String.concat (Environment.NewLine + Environment.NewLine)
+                            |> fun text ->
+                                ReactBindings.React.createElement
+                                    (Ext.reactMarkdown, {| source = text |}, [])
+                        ]
+                    ]
+                ]
             ]
-        ]
     )
 
 module ApplicationComponent =
@@ -139,10 +159,11 @@ module ApplicationComponent =
             Html.div [
                 prop.dangerouslySetInnerHTML "&nbsp;"
             ]
-
         let paddingLeftLevel level =
-            style.paddingLeft (20 * level)
-
+            match level with
+            | 0 -> []
+            | level -> [ style.paddingLeft (20 * level) ]
+        let cellSize = 17
         let header = React.memo (fun () ->
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
             let dateMap = Recoil.useValue Recoil.Selectors.dateMap
@@ -161,7 +182,7 @@ module ApplicationComponent =
                             Html.span [
                                 prop.style [
                                     style.textAlign.center
-                                    style.width (17 * days)
+                                    style.width (cellSize * days)
 
                                 ]
                                 prop.children [
@@ -182,15 +203,13 @@ module ApplicationComponent =
                         |> List.map (fun date ->
                             Html.span [
                                 prop.classes [
+                                    Css.cellSquare
                                     if dateMap.[date].IsToday then Css.todayHeader
                                     if dateMap.[date].IsSelected then Css.selectionHighlight
-                                ]
-                                prop.style [
-                                    style.width 17
-                                    style.textAlign.center
-                                    match Functions.getCellSeparatorBorderLeft date with
-                                    | Some borderLeft -> borderLeft
-                                    | None -> ()
+                                    match date with
+                                    | StartOfMonth -> Css.cellStartMonth
+                                    | StartOfWeek -> Css.cellStartWeek
+                                    | _ -> ()
                                 ]
                                 prop.children [
                                     date.DateTime.Format "EEEEEE"
@@ -212,15 +231,13 @@ module ApplicationComponent =
                         |> List.map (fun date ->
                             Html.span [
                                 prop.classes [
+                                    Css.cellSquare
                                     if dateMap.[date].IsToday then Css.todayHeader
                                     if dateMap.[date].IsSelected then Css.selectionHighlight
-                                ]
-                                prop.style [
-                                    style.width 17
-                                    style.textAlign.center
-                                    match Functions.getCellSeparatorBorderLeft date with
-                                    | Some borderLeft -> borderLeft
-                                    | None -> ()
+                                    match date with
+                                    | StartOfMonth -> Css.cellStartMonth
+                                    | StartOfWeek -> Css.cellStartWeek
+                                    | _ -> ()
                                 ]
                                 prop.children [
                                     str (date.Day.ToString "D2")
@@ -250,12 +267,7 @@ module ApplicationComponent =
                 |> not
 
             Html.div [
-                prop.classes [
-                    if not taskComments.IsEmpty then Css.tooltipContainer
-                ]
-                prop.style [
-                    style.height 17
-                ]
+                prop.className Css.cellRectangle
                 prop.children [
                     Html.div [
                         prop.classes [
@@ -265,14 +277,13 @@ module ApplicationComponent =
                             style.overflow.hidden
                             style.whitespace.nowrap
                             style.textOverflow.ellipsis
-                            paddingLeftLevel input.Level
+                            yield! paddingLeftLevel input.Level
                         ]
                         prop.children [
                             str taskName
                         ]
                     ]
-                    if not taskComments.IsEmpty then
-                        TooltipPopupComponent.render {| Comments = taskComments |}
+                    TooltipPopupComponent.render {| Comments = taskComments |}
                 ]
             ]
         )
@@ -296,32 +307,31 @@ module ApplicationComponent =
             Html.div [
                 prop.classes [
                     status.CellClass
-                    if not comments.IsEmpty then
-                        Css.tooltipContainer
                     if selected then
                         Css.cellSelected
                     if isToday then
                         Css.cellToday
                 ]
+                prop.onClick (fun (_event: MouseEvent) ->
+                    onCellClick ()
+                )
                 prop.children [
                     Html.div [
-                        prop.style [
-                            match Functions.getCellSeparatorBorderLeft input.Date with
-                            | Some borderLeft -> borderLeft
-                            | None -> ()
+                        prop.classes [
+                            Css.cellSquare
+                            Css.sessionLengthIndicator
+                            match input.Date with
+                            | StartOfMonth -> Css.cellStartMonth
+                            | StartOfWeek -> Css.cellStartWeek
+                            | _ -> ()
                         ]
-                        prop.onClick (fun (_event: MouseEvent) ->
-                            onCellClick ()
-                        )
                         prop.children [
                             match sessions.Length with
                             | x when x > 0 -> str (string x)
                             | _ -> ()
                         ]
                     ]
-
-                    if not comments.IsEmpty then
-                        TooltipPopupComponent.render {| Comments = comments |}
+                    TooltipPopupComponent.render {| Comments = comments |}
                 ]
             ]
         )
@@ -351,9 +361,7 @@ module ApplicationComponent =
             let taskIdList = taskList |> List.map (fun x -> x.Id)
 
             Html.div [
-                prop.style [
-                    style.display.flex
-                ]
+                prop.className Css.lanesPanel
                 prop.children [
                     // Column: Left
                     Html.div [
@@ -375,21 +383,18 @@ module ApplicationComponent =
                                         yield! taskList
                                         |> List.map (fun task ->
                                             Html.div [
-                                                prop.classes [
-                                                    if not task.InformationComments.IsEmpty then
-                                                        Css.blueIndicator
-                                                        Css.tooltipContainer
-                                                ]
-                                                prop.style [
-                                                    style.padding 0
-                                                    style.height 17
-                                                    style.color task.Information.Color
-                                                    style.whitespace.nowrap
-                                                ]
+                                                prop.className Css.cellRectangle
                                                 prop.children [
-                                                    str task.Information.Name
-                                                    if not task.InformationComments.IsEmpty then
-                                                        TooltipPopupComponent.render {| Comments = task.InformationComments |}
+                                                    Html.div [
+                                                        prop.style [
+                                                            style.color task.Information.Color
+                                                            style.whitespace.nowrap
+                                                        ]
+                                                        prop.children [
+                                                            str task.Information.Name
+                                                        ]
+                                                    ]
+                                                    TooltipPopupComponent.render {| Comments = task.InformationComments |}
                                                 ]
                                             ]
                                         )
@@ -435,9 +440,7 @@ module ApplicationComponent =
                 |> List.sortBy (snd >> List.head >> fst >> fun information -> information.Order)
 
             Html.div [
-                prop.style [
-                    style.display.flex
-                ]
+                prop.className Css.lanesPanel
                 prop.children [
                     // Column: Left
                     Html.div [
@@ -465,19 +468,18 @@ module ApplicationComponent =
                                             Html.div [
                                                 // Information
                                                 Html.div [
-                                                    prop.classes [
-                                                        if not informationComments.IsEmpty then
-                                                            Css.blueIndicator
-                                                            Css.tooltipContainer
-                                                    ]
                                                     prop.style [
+                                                        style.position.relative
                                                         style.color "#444"
-                                                        Grid.paddingLeftLevel 1
+                                                        yield! Grid.paddingLeftLevel 1
                                                     ]
                                                     prop.children [
-                                                        str information.Name
-                                                        if not informationComments.IsEmpty then
-                                                            TooltipPopupComponent.render {| Comments = informationComments |}
+                                                        Html.div [
+                                                            prop.children [
+                                                                str information.Name
+                                                            ]
+                                                        ]
+                                                        TooltipPopupComponent.render {| Comments = informationComments |}
                                                     ]
                                                 ]
                                                 // Task Name
@@ -531,9 +533,7 @@ module ApplicationComponent =
             let taskIdList = taskList |> List.map (fun x -> x.Id)
 
             Html.div [
-                prop.style [
-                    style.display.flex
-                ]
+                prop.className Css.lanesPanel
                 prop.children [
                     // Column: Left
                     Html.div [
@@ -555,23 +555,20 @@ module ApplicationComponent =
                                         yield! taskList
                                         |> List.map (fun task ->
                                             Html.div [
-                                                prop.classes [
-                                                    if not task.InformationComments.IsEmpty then
-                                                        Css.blueIndicator
-                                                        Css.tooltipContainer
-                                                ]
-                                                prop.style [
-                                                    style.padding 0
-                                                    style.height 17
-                                                    style.color task.Information.Color
-                                                    style.whitespace.nowrap
-                                                ]
+                                                prop.className Css.cellRectangle
                                                 prop.children [
-                                                    str task.Information.Name
+                                                    Html.div [
+                                                        prop.style [
+                                                            style.color task.Information.Color
+                                                            style.whitespace.nowrap
+                                                        ]
+                                                        prop.children [
+                                                            str task.Information.Name
+                                                        ]
+                                                    ]
 
-                                                    if not task.InformationComments.IsEmpty then
-                                                        TooltipPopupComponent.render
-                                                            {| Comments = task.InformationComments |}
+                                                    TooltipPopupComponent.render
+                                                        {| Comments = task.InformationComments |}
                                                 ]
                                             ]
                                         )
@@ -587,9 +584,7 @@ module ApplicationComponent =
                                         yield! taskList
                                         |> List.map (fun task ->
                                             Html.div [
-                                                prop.style [
-                                                    style.height 17
-                                                ]
+                                                prop.className Css.cellRectangle
                                                 prop.children [
                                                     task.Priority
                                                     |> ofTaskPriorityValue
@@ -628,16 +623,33 @@ module ApplicationComponent =
             nothing
         )
 
+    module PropertiesPanelComponent =
+        let render = React.memo (fun () ->
+//            let selectedCells = Recoil.useValue Recoil.Selectors.selectedCells
+
+
+            Html.div [
+                prop.className Css.detailsPanel
+                prop.children [
+                    str "Details"
+                ]
+            ]
+        )
+
     let render = React.memo (fun () ->
 
         let view = Recoil.useValue Recoil.Atoms.view
 
         Html.div [
-            match view with
-            | View.Calendar -> CalendarViewComponent.render ()
-            | View.Groups   -> GroupsViewComponent.render ()
-            | View.Tasks    -> TasksViewComponent.render ()
-            | View.Week     -> WeekViewComponent.render ()
+            prop.className Css.panels
+            prop.children [
+                match view with
+                | View.Calendar -> CalendarViewComponent.render ()
+                | View.Groups   -> GroupsViewComponent.render ()
+                | View.Tasks    -> TasksViewComponent.render ()
+                | View.Week     -> WeekViewComponent.render ()
+                PropertiesPanelComponent.render ()
+            ]
         ]
     )
 
@@ -713,8 +725,7 @@ module MainComponent =
     )
 
     let render = React.memo (fun () ->
-
-        Html.div [
+        React.fragment [
             globalShortcutHandler ()
             positionUpdater ()
             dataLoader ()
@@ -727,4 +738,5 @@ module MainComponent =
             ], PageLoaderComponent.render ())
         ]
     )
+
 

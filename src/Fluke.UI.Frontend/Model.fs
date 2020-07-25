@@ -1,8 +1,6 @@
 namespace Fluke.UI.Frontend
 
-open Feliz
 open Fluke.Shared
-open System
 
 
 module Model =
@@ -55,16 +53,5 @@ module Model =
                 | Dismissed          -> Css.cellDismissed
                 | ManualPending      -> Css.cellManualPending
                 | Session _          -> Css.cellSession
-
-
-module Functions =
-    open Model
-
-    let getCellSeparatorBorderLeft (date: FlukeDate) =
-        match date with
-        | { Day = 1 }                                          -> Some "#ffffff3d"
-        | date when date.DateTime.DayOfWeek = DayOfWeek.Monday -> Some "#222"
-        | _                                                    -> None
-        |> Option.map (fun color -> style.borderLeft (1, borderStyle.solid, color))
 
 

@@ -287,6 +287,7 @@ module Model =
 
     let ofLane = fun (OldLane (task, cells)) -> task, cells
     let ofTaskSession = fun (TaskSession start) -> start
+    let ofComment = fun (Comment (user, comment)) -> user, comment
     let ofTaskComment = fun (TaskComment (task, comment)) -> task, comment
     let ofCellComment = fun (CellComment (address, comment)) -> address, comment
     let ofCellSession = fun (CellSession (address, start)) -> address, start
@@ -311,6 +312,11 @@ module Model =
         | position when position >=< (dateStart, dateEnd) -> Today
         | position when dateStart < position -> BeforeToday
         | _ -> AfterToday
+
+    let (|StartOfMonth|StartOfWeek|NormalDay|) = function
+        | { Day = 1 } -> StartOfMonth
+        | date when date.DateTime.DayOfWeek = DayOfWeek.Monday -> StartOfWeek
+        | _ -> NormalDay
 
     let isToday dayStart position date =
         match (dayStart, position, date) with

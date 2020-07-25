@@ -1,7 +1,23 @@
+.tooltip-container,
 .blue-indicator,
+.pink-indicator,
 .tooltip-popup,
+
+.lanes-panel,
+.today-header,
+.selection-highlight,
+.lane-container,
+
+.details-panel,
+
+.cell-square,
+.cell-rectangle,
+.cell-start-week,
+.cell-start-month,
 .cell-selected,
 .cell-today,
+.session-length-indicator,
+
 .cell-disabled,
 .cell-suggested,
 .cell-pending,
@@ -12,8 +28,26 @@
 .cell-completed,
 .cell-dismissed,
 .cell-manual-pending,
-.cell-session
-{} // https://github.com/zanaptak/TypedCssClasses/issues/4
+.cell-session {
+} // https://github.com/zanaptak/TypedCssClasses/issues/4
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 $color-cell-disabled: #595959;
 $color-cell-suggested: #4c664e;
@@ -30,6 +64,7 @@ $color-cell-session: #a9a9a9;
 $color-corner-blue: #005688;
 $color-corner-pink: #a91c77;
 
+$cell-size: 17px;
 
 * {
   font-family: Roboto Condensed, sans-serif;
@@ -41,155 +76,200 @@ $color-corner-pink: #a91c77;
   height: 100%;
 }
 
-.today-header {
-  color: #888;
+.navbar {
+  height: 36px;
+  min-height: 36px;
+  display: flex;
+  justify-content: space-around;
 }
 
-.selection-highlight {
-  color: #ff5656;
-}
+.panels {
+  display: flex;
 
-.tooltip-container {
-  position: relative;
+  .lanes-panel {
 
-  &::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    border-top: 8px solid $color-corner-pink;
-    border-left: 8px solid transparent;
-  }
-
-  &.blue-indicator::after {
-    border-top: 8px solid #005688;
-  }
-
-  .tooltip-popup {
-    padding: 20px 40px;
-    //min-width: 200px;
-    //max-width: 600px;
-    width: 600px;
-    left: 70px;
-    top: 70px;
-    white-space: pre-wrap;
-    position: absolute;
-    display: none;
-    z-index: 1;
-    background-color: #000c;
-
-    h1 {
-      border-bottom: 1px solid #777;
-      margin-bottom: 3px;
-    }
-
-    li {
-      list-style-type: square;
-    }
-
-    ul, p {
-      padding: 5px 0;
-    }
-  }
-
-  &:hover .tooltip-popup {
-    display: block;
-  }
-}
-
-.lane-container {
-
-  .cell {
-
-    > div:first-child {
-      width: 17px;
-      height: 17px;
-      line-height: 17px;
-      text-align: center;
-      font-size: 11px;
-      color: #999;
-      text-shadow: 0 0 2px #000;
-    }
-
-    @mixin cell-bgcolor($color) {
-      & > div:first-child {
-        background-color: $color;
-      }
-
-      &.cell-today > div:first-child {
-        background-color: $color#{aa};
-      }
-
-      &.cell-selected > div:first-child {
-        border: 1px solid #ffffff55 !important;
-      }
-    }
-
-    &.cell-completed {
-      & > div:first-child {
-        color: #ccc;
-      }
-    }
-
-    &.cell-disabled {
-      @include cell-bgcolor($color-cell-disabled);
-    }
-
-    &.cell-suggested {
-      @include cell-bgcolor($color-cell-suggested);
-    }
-
-    &.cell-pending {
-      @include cell-bgcolor($color-cell-pending);
-    }
-
-    &.cell-missed {
-      @include cell-bgcolor($color-cell-missed);
-    }
-
-    &.cell-missed-today {
-      @include cell-bgcolor($color-cell-missed-today);
-    }
-
-    &.cell-postponed {
-      @include cell-bgcolor($color-cell-postponed);
-    }
-
-    &.cell-postponed-until {
-      @include cell-bgcolor($color-cell-postponed-until);
-    }
-
-    &.cell-completed {
-      @include cell-bgcolor($color-cell-completed);
-    }
-
-    &.cell-dismissed {
-      @include cell-bgcolor($color-cell-dismissed);
-    }
-
-    &.cell-manual-pending {
-      @include cell-bgcolor($color-cell-manual-pending);
-    }
-
-    &.cell-session {
-      @include cell-bgcolor($color-cell-session);
-    }
-  }
-
-  .lane {
     display: flex;
 
-    > div {
-      @extend .cell;
+    @mixin cell-rectangle() {
+      position: relative;
+      height: $cell-size;
+      line-height: $cell-size;
     }
 
-    &:nth-child(even) > div > div:first-child {
-      opacity: 0.85;
+    @mixin square-cell() {
+      @include cell-rectangle();
+      width: $cell-size;
+      text-align: center;
+    }
+
+    .cell-rectangle {
+      @include cell-rectangle();
+    }
+
+    .cell-square {
+      @include square-cell();
+    }
+
+    .today-header {
+      color: #888;
+    }
+
+    .selection-highlight {
+      color: #ff5656;
+    }
+
+    .cell-start-week {
+      border-left: 1px solid #222;
+    }
+
+    .cell-start-month {
+      border-left: 1px solid #ffffff3d;
+    }
+
+    .lane-container {
+      > div {
+        display: flex;
+
+        &:nth-child(even) > div > .cell-square {
+          opacity: 0.85;
+        }
+      }
+
+      .session-length-indicator {
+        font-size: 11px;
+        color: #999;
+        text-shadow: 0 0 2px #000;
+      }
+
+      @mixin cell($bgcolor) {
+        @include square-cell();
+        position: relative;
+
+        > .cell-square {
+          background-color: $bgcolor;
+        }
+
+        &.cell-today > .cell-square {
+          background-color: $bgcolor#{aa};
+        }
+
+        &.cell-selected > .cell-square {
+          border: 1px solid #ffffff55 !important;
+        }
+      }
+
+      .cell-disabled {
+        @include cell($color-cell-disabled);
+      }
+
+      .cell-suggested {
+        @include cell($color-cell-suggested);
+      }
+
+      .cell-pending {
+        @include cell($color-cell-pending);
+      }
+
+      .cell-missed {
+        @include cell($color-cell-missed);
+      }
+
+      .cell-missed-today {
+        @include cell($color-cell-missed-today);
+      }
+
+      .cell-postponed {
+        @include cell($color-cell-postponed);
+      }
+
+      .cell-postponed-until {
+        @include cell($color-cell-postponed-until);
+      }
+
+      .cell-completed {
+        @include cell($color-cell-completed);
+
+        > .cell-square {
+          color: #ccc;
+        }
+      }
+
+      .cell-dismissed {
+        @include cell($color-cell-dismissed);
+      }
+
+      .cell-manual-pending {
+        @include cell($color-cell-manual-pending);
+      }
+
+      .cell-session {
+        @include cell($color-cell-session);
+      }
+    }
+
+    .tooltip-container {
+      @include cell-rectangle();
+      position: absolute;
+      top: 0;
+      width: 100%;
+
+      &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        border-top: 8px solid #000;
+        border-left: 8px solid transparent;
+      }
+
+      &.blue-indicator::after {
+        border-top-color: $color-corner-blue;
+      }
+
+      &.pink-indicator::after {
+        border-top-color: $color-corner-pink;
+      }
+
+      .tooltip-popup {
+        padding: 20px 40px;
+        //min-width: 200px;
+        //max-width: 600px;
+        width: 600px;
+        left: 70px;
+        top: 70px;
+        white-space: pre-wrap;
+        position: absolute;
+        display: none;
+        z-index: 1;
+        background-color: #000c;
+        text-align: left;
+
+        h1 {
+          border-bottom: 1px solid #777;
+          margin-bottom: 3px;
+        }
+
+        li {
+          list-style-type: square;
+        }
+
+        ul, p {
+          padding: 5px 0;
+        }
+      }
+
+      &:hover .tooltip-popup {
+        display: block;
+      }
     }
   }
 
-  > div {
-    @extend .lane;
+  .details-panel {
+    width: 100%;
+    padding: 5px;
   }
 }
+
+
+
 
