@@ -42,7 +42,12 @@ module Recoil =
             let json = Fable.SimpleJson.SimpleJson.stringify state
 
             if json <> Browser.Dom.window?oldJson then
-                mountById "diag" (str json)
+                match Browser.Dom.window.localStorage.getItem "__recoil__/atom/debug" with
+                | "true" -> json
+                | _ -> ""
+                |> str
+                |> mountById "diag"
+
                 Browser.Dom.window?oldJson <- json
 
         ) 100 |> ignore
@@ -833,6 +838,11 @@ module Recoil =
                 def (fun (treeId: TreeId) -> RecoilTree.Create treeId)
             }
 
+        let rec debug = atom {
+            key ("atom/" + nameof debug)
+            def true
+            local_storage
+        }
         let rec user = atom {
             key ("atom/" + nameof user)
             def (FakeBackend.getCurrentUser ())

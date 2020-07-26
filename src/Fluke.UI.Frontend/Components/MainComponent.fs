@@ -44,6 +44,7 @@ module SpinnerComponent =
 module NavBarComponent =
     open Model
     let render = React.memo (fun () ->
+        let debug, setDebug = Recoil.useState Recoil.Atoms.debug
         let view, setView = Recoil.useState Recoil.Atoms.view
         let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
 
@@ -63,17 +64,17 @@ module NavBarComponent =
 //        ]
         Navbar.navbar [ Navbar.Color IsBlack ][
 
-            let checkbox newView text =
+            let checkbox isChecked text onClick =
                 Bulma.navbarItem.div [
                     prop.className "field"
-                    prop.onClick (fun _ -> setView newView)
+                    prop.onClick (fun _ -> onClick ())
                     prop.style [
                         style.marginBottom 0
                         style.alignSelf.center
                     ]
                     prop.children [
                         Checkbox.input [ CustomClass "switch is-small is-dark"
-                                         Props [ Checked (view = newView)
+                                         Props [ Checked isChecked
                                                  OnChange (fun _ -> ()) ]]
 
                         Checkbox.checkbox [][
@@ -82,10 +83,14 @@ module NavBarComponent =
                     ]
                 ]
 
-            checkbox View.Calendar "calendar view"
-            checkbox View.Groups "groups view"
-            checkbox View.Tasks "tasks view"
-            checkbox View.Week "week view"
+            let viewCheckbox newView text =
+                checkbox (view = newView) text (fun () -> setView newView)
+
+            viewCheckbox View.Calendar "calendar view"
+            viewCheckbox View.Groups "groups view"
+            viewCheckbox View.Tasks "tasks view"
+            viewCheckbox View.Week "week view"
+            checkbox debug "debug" (fun () -> setDebug (not debug))
 
             Bulma.navbarItem.div [
                 activeSessions
