@@ -417,7 +417,7 @@ module Rendering =
                             match cellEvent, (dayStart, position, date) with
                             | Postponed (Some until), Today
                                 when position.GreaterEqualThan dayStart date until -> Pending
-                            | _                                               -> EventStatus cellEvent
+                            | _                                                    -> EventStatus cellEvent
 
                         StatusCell event, renderState
 

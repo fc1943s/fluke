@@ -8,6 +8,8 @@ open Browser.Dom
 
 module App =
     let appMain = React.memo (fun () ->
+
+        Recoil.Profiling.addTimestamp "appMain.render"
         Recoil.root [
             root.localStorage (fun hydrater -> hydrater.setAtom Recoil.Atoms.view)
 

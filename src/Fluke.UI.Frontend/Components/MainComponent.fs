@@ -7,6 +7,7 @@ open Fluke.UI.Frontend
 open Browser.Types
 open FSharpPlus
 open Fluke.Shared
+open Fable.Core.JsInterop
 open Fable.React
 open Fable.React.Props
 open Fable.DateFunctions
@@ -114,10 +115,24 @@ module NavBarComponent =
         ]
     )
 
+module UseListener =
+    let onElementHover (elemRef: IRefValue<#HTMLElement option>) =
+        let isHovered, setIsHovered = React.useState false
+
+        React.useElementListener.onMouseEnter(elemRef, (fun _ -> setIsHovered true), passive = true)
+        React.useElementListener.onMouseLeave(elemRef, (fun _ -> setIsHovered false), passive = true)
+
+        React.useMemo((fun () ->
+            isHovered
+        ), [| isHovered :> obj |])
+
 module TooltipPopupComponent =
     open Model
 
     let render = React.memo (fun (input: {| Comments: Comment list |}) ->
+        let tooltipContainerRef = React.useElementRef ()
+        let hovered = UseListener.onElementHover tooltipContainerRef
+
         match input.Comments with
         | [] -> nothing
         | _ ->
@@ -126,6 +141,7 @@ module TooltipPopupComponent =
                 |> (ofComment >> fst)
 
             Html.div [
+                prop.ref tooltipContainerRef
                 prop.classes [
                     Css.tooltipContainer
                     match user with
@@ -143,8 +159,11 @@ module TooltipPopupComponent =
                             |> List.map ((+) Environment.NewLine)
                             |> String.concat (Environment.NewLine + Environment.NewLine)
                             |> fun text ->
-                                ReactBindings.React.createElement
-                                    (Ext.reactMarkdown, {| source = text |}, [])
+                                match hovered with
+                                | false -> nothing
+                                | true ->
+                                    ReactBindings.React.createElement
+                                        (Ext.reactMarkdown, {| source = text |}, [])
                         ]
                     ]
                 ]
@@ -298,7 +317,7 @@ module ApplicationComponent =
             let comments = Recoil.useValue cell.Comments
             let sessions = Recoil.useValue cell.Sessions
             let status = Recoil.useValue cell.Status
-            let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selected cellId)
+            let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selectedFamily cellId)
 
             let onCellClick = React.useCallbackRef (fun () ->
                 setSelected (not selected)
@@ -337,6 +356,7 @@ module ApplicationComponent =
         )
 
         let cells = React.memo (fun (input: {| TaskIdList: Recoil.Atoms.RecoilTask.TaskId list |}) ->
+            Recoil.Profiling.addTimestamp "cells.render"
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
             Html.div [
@@ -344,12 +364,14 @@ module ApplicationComponent =
                 prop.children [
                     yield! input.TaskIdList
                     |> List.map (fun taskId ->
-                        Html.div [
-                            yield! dateSequence
-                            |> List.map (fun date ->
-                                cell {| TaskId = taskId; Date = date |}
-                            )
-                        ]
+                        React.suspense ([
+                            Html.div [
+                                yield! dateSequence
+                                |> List.map (fun date ->
+                                    cell {| TaskId = taskId; Date = date |}
+                                )
+                            ]
+                        ], SpinnerComponent.render ())
                     )
                 ]
             ]
@@ -357,8 +379,8 @@ module ApplicationComponent =
 
     module CalendarViewComponent =
         let render = React.memo (fun () ->
-            let taskList = Recoil.useValue Recoil.Selectors.taskList
-            let taskIdList = taskList |> List.map (fun x -> x.Id)
+            let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
+            let taskIdList = currentTaskList |> List.map (fun x -> x.Id)
 
             Html.div [
                 prop.className Css.lanesPanel
@@ -380,7 +402,7 @@ module ApplicationComponent =
                                         style.paddingRight 10
                                     ]
                                     prop.children [
-                                        yield! taskList
+                                        yield! currentTaskList
                                         |> List.map (fun task ->
                                             Html.div [
                                                 prop.className Css.cellRectangle
@@ -406,7 +428,7 @@ module ApplicationComponent =
                                         style.width 200
                                     ]
                                     prop.children [
-                                        yield! taskList
+                                        yield! currentTaskList
                                         |> List.map (fun task ->
                                             Grid.taskName {| Level = 0; TaskId = task.Id |}
                                         )
@@ -425,15 +447,15 @@ module ApplicationComponent =
 
     module GroupsViewComponent =
         let render = React.memo (fun () ->
-            let taskList = Recoil.useValue Recoil.Selectors.taskList
+            let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
 
             let groupMap =
-                taskList
+                currentTaskList
                 |> List.map (fun x -> x.Information, x)
                 |> Map.ofList
 
             let groups =
-                taskList
+                currentTaskList
                 |> List.groupBy (fun group -> group.Information)
                 |> List.sortBy (fun (information, _) -> information.Name)
                 |> List.groupBy (fun (information, _) -> information.KindName)
@@ -529,8 +551,8 @@ module ApplicationComponent =
 
     module TasksViewComponent =
         let render = React.memo (fun () ->
-            let taskList = Recoil.useValue Recoil.Selectors.taskList
-            let taskIdList = taskList |> List.map (fun x -> x.Id)
+            let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
+            let taskIdList = currentTaskList |> List.map (fun x -> x.Id)
 
             Html.div [
                 prop.className Css.lanesPanel
@@ -552,7 +574,7 @@ module ApplicationComponent =
                                         style.paddingRight 10
                                     ]
                                     prop.children [
-                                        yield! taskList
+                                        yield! currentTaskList
                                         |> List.map (fun task ->
                                             Html.div [
                                                 prop.className Css.cellRectangle
@@ -581,7 +603,7 @@ module ApplicationComponent =
                                         style.textAlign.center
                                     ]
                                     prop.children [
-                                        yield! taskList
+                                        yield! currentTaskList
                                         |> List.map (fun task ->
                                             Html.div [
                                                 prop.className Css.cellRectangle
@@ -601,7 +623,7 @@ module ApplicationComponent =
                                         style.width 200
                                     ]
                                     prop.children [
-                                        yield! taskList
+                                        yield! currentTaskList
                                         |> List.map (fun task ->
                                             Grid.taskName {| Level = 0; TaskId = task.Id |}
                                         )
@@ -679,10 +701,22 @@ module MainComponent =
         nothing
     )
     let dataLoader = React.memo (fun () ->
-        let updateTree = Recoil.useSetState Recoil.Selectors.treeUpdater
+        let loadTree = Recoil.useCallbackRef (fun setter ->
+            async {
+                Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[0]"
+                let! view = setter.snapshot.getAsync Recoil.Atoms.view
+                let! treeAsync = setter.snapshot.getAsync (Recoil.Selectors.treeAsync view)
+                Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[1]"
+                setter.set (Recoil.Selectors.currentTree, Some treeAsync)
+                Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[2]"
+            }
+            |> Async.StartImmediate
+        )
 
+        Recoil.Profiling.addTimestamp "dataLoader render"
         React.useEffectOnce (fun () ->
-            updateTree ()
+            Recoil.Profiling.addTimestamp "dataLoader effect"
+            loadTree ()
         )
 
         nothing
@@ -728,11 +762,12 @@ module MainComponent =
         React.fragment [
             globalShortcutHandler ()
             positionUpdater ()
-            dataLoader ()
-            soundPlayer ()
             autoReload_TEMP ()
 
             React.suspense ([
+                dataLoader ()
+                soundPlayer ()
+
                 NavBarComponent.render ()
                 ApplicationComponent.render ()
             ], PageLoaderComponent.render ())

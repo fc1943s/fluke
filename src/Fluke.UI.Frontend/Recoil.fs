@@ -17,21 +17,34 @@ open Suigetsu.Core
 module Recoil =
     open Model
 
-    module private Profiling =
-        let private callCount = Dictionary<string, int>()
-        Browser.Dom.window?callCount <- callCount
-//        Browser.Dom.window?callCountClear <- fun () -> callCount.Clear ()
+    module Profiling =
+        let private initialTicks = DateTime.Now.Ticks
+        let private ticksDiff ticks =
+            int64 (TimeSpan(ticks - initialTicks).TotalMilliseconds)
+
+        let private state =
+            {| CallCount = Dictionary()
+               Timestamps = new List<string * int64>() |}
+        let internal addCount id =
+            match state.CallCount.ContainsKey id with
+            | false -> state.CallCount.[id] <- 1
+            | true -> state.CallCount.[id] <- state.CallCount.[id] + 1
+
+        let addTimestamp id =
+            state.Timestamps.Add (id, ticksDiff DateTime.Now.Ticks)
+
+        addTimestamp "Init"
+
+        Browser.Dom.window?profilingState <- state
         Browser.Dom.window?oldJson <- ""
-        let addCount id =
-            if not (callCount.ContainsKey id) then
-                callCount.[id] <- 0
-            callCount.[id] <- callCount.[id] + 1
 
         Fable.Core.JS.setInterval (fun () ->
-            let json = Fable.SimpleJson.SimpleJson.stringify Browser.Dom.window?callCount
+            let json = Fable.SimpleJson.SimpleJson.stringify state
+
             if json <> Browser.Dom.window?oldJson then
                 mountById "diag" (str json)
                 Browser.Dom.window?oldJson <- json
+
         ) 100 |> ignore
 
     module private OldData =
@@ -156,7 +169,7 @@ module Recoil =
 //               LastSessions = lastSessions |}
         ()
 
-    module private FakeBackend =
+    module FakeBackend =
 //        type TestTemplate =
 //            | LaneSorting of string
 //            | LaneRendering of string
@@ -183,6 +196,16 @@ module Recoil =
 //                "default", []
 //            ]
 //        ]
+
+        type FakeInformation =
+            { Comments: Comment list
+              Information: Information }
+
+        type FakeTree =
+            { InformationList: FakeInformation list
+              Owner: User
+              SharedWith: TreeAccess list
+              TaskList: Task list }
 
         let getLivePosition () =
             FlukeDateTime.FromDateTime DateTime.Now
@@ -300,13 +323,11 @@ module Recoil =
                 RootPrivateData.treeData.InformationList
                 |> List.append RootPrivateData.sharedTreeData.InformationList
                 |> List.map (fun information ->
-                    {|
-                        Information = information
-                        Comments =
-                            commentsMap
-                            |> Map.tryFind information
-                            |> Option.defaultValue []
-                    |}
+                    { Information = information
+                      Comments =
+                          commentsMap
+                          |> Map.tryFind information
+                          |> Option.defaultValue [] }
                 )
 
             let taskList =
@@ -451,12 +472,12 @@ module Recoil =
 
                     { task with CellStateMap = newCellStateMap }
                 )
-            {|
+            {
                 Owner = input.User
                 SharedWith = []
                 InformationList = informationList
                 TaskList = newTaskList
-            |}
+            }
 
 
 
@@ -837,9 +858,9 @@ module Recoil =
             key ("atom/" + nameof positionTrigger)
             def 0
         }
-        let rec taskIdList = atom {
-            key ("atom/" + nameof taskIdList)
-            def ([] : RecoilTask.TaskId list)
+        let rec tree = atom {
+            key ("atom/" + nameof tree)
+            def (None : FakeBackend.FakeTree option)
         }
 
     module Selectors =
@@ -892,13 +913,13 @@ module Recoil =
                 Profiling.addCount (nameof selection)
                 selection
             )
-            set (fun setter (newSelection: Map<Atoms.RecoilTask.TaskId, Set<FlukeDate>>) ->
+            set (fun setter (newValue: Map<Atoms.RecoilTask.TaskId, Set<FlukeDate>>) ->
                 let selection = setter.get Atoms.selection
 
                 selection
                 |> Seq.iter (fun (KeyValue (taskId, dates)) ->
                     let newSelectionTask =
-                        newSelection
+                        newValue
                         |> Map.tryFind taskId
                         |> Option.defaultValue Set.empty
                     dates
@@ -913,7 +934,7 @@ module Recoil =
                     )
                 )
 
-                newSelection
+                newValue
                 |> Seq.iter (fun (KeyValue (taskId, dates)) ->
                     let selectionTask =
                         selection
@@ -931,8 +952,25 @@ module Recoil =
                     )
                 )
 
-                setter.set (Atoms.selection, newSelection)
+                setter.set (Atoms.selection, newValue)
                 Profiling.addCount (nameof selection + "(SET)")
+            )
+        }
+        let rec selectedCells = selector {
+            key ("selector/" + nameof selectedCells)
+            get (fun getter ->
+                let selection = Recoil.useValue selection
+
+                let selectionCellIds =
+                    selection
+                    |> Seq.collect (fun (KeyValue (taskId, dates)) ->
+                        dates
+                        |> Seq.map (Atoms.RecoilCell.cellId taskId)
+                    )
+
+                selectionCellIds
+                |> Seq.map (Atoms.RecoilCell.cellFamily >> getter.get)
+                |> Seq.toList
             )
         }
         let rec dateMap = selector {
@@ -959,34 +997,6 @@ module Recoil =
 
                 Profiling.addCount (nameof dateMap)
                 dateMap
-            )
-        }
-        let rec taskList = selector {
-            key ("selector/" + nameof taskList)
-            get (fun getter ->
-                let taskIdList = getter.get Atoms.taskIdList
-
-                let taskList =
-                    taskIdList
-                    |> List.map (fun taskId ->
-                        let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
-                        let informationId = getter.get task.InformationId
-                        let priority = getter.get task.Priority
-                        let name = getter.get task.Name
-
-                        let information = getter.get (Atoms.RecoilInformation.informationFamily informationId)
-                        let wrappedInformation = getter.get information.WrappedInformation
-                        let informationComments = getter.get information.Comments
-
-                        {| Id = taskId
-                           Name = name
-                           Priority = priority
-                           Information = wrappedInformation
-                           InformationComments = informationComments |}
-                    )
-
-                Profiling.addCount (nameof taskList)
-                taskList
             )
         }
 
@@ -1026,12 +1036,12 @@ module Recoil =
             }
 
         module rec RecoilCell =
-            let rec selected = selectorFamily {
-                key (sprintf "%s/%s" (nameof RecoilCell) (nameof selected))
+            let rec selectedFamily = selectorFamily {
+                key (sprintf "%s/%s" (nameof RecoilCell) (nameof selectedFamily))
                 get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
                     let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
 
-                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilCell) (nameof selected))
+                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilCell) (nameof selectedFamily))
                     getter.get cell.Selected
                 )
                 set (fun (cellId: Atoms.RecoilCell.CellId) setter (newValue: bool) ->
@@ -1062,14 +1072,55 @@ module Recoil =
                             oldSelection |> Map.add taskId newTaskSelection
 
                     setter.set (selection, newSelection)
-                    Profiling.addCount (sprintf "%s/%s (SET)" (nameof RecoilCell) (nameof selected))
+                    Profiling.addCount (sprintf "%s/%s (SET)" (nameof RecoilCell) (nameof selectedFamily))
                 )
             }
 
+        module rec RecoilTree =
+            let rec taskListFamily = selectorFamily {
+                key ("selector/" + nameof taskListFamily)
+                get (fun (treeId: Atoms.RecoilTree.TreeId) getter ->
+                    let taskIdList = getter.get (Atoms.RecoilTree.taskIdListFamily treeId)
+
+                    let taskList =
+                        taskIdList
+                        |> List.map (fun taskId ->
+                            let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
+                            let informationId = getter.get task.InformationId
+                            let priority = getter.get task.Priority
+                            let name = getter.get task.Name
+
+                            let information = getter.get (Atoms.RecoilInformation.informationFamily informationId)
+                            let wrappedInformation = getter.get information.WrappedInformation
+                            let informationComments = getter.get information.Comments
+
+                            {| Id = taskId
+                               Name = name
+                               Priority = priority
+                               Information = wrappedInformation
+                               InformationComments = informationComments |}
+                        )
+
+                    Profiling.addCount (nameof taskList)
+                    taskList
+                )
+            }
+
+        let rec currentTaskList = selector {
+            key ("selector/" + nameof currentTaskList)
+            get (fun getter ->
+                let user = getter.get Atoms.user
+
+                let treeId = Atoms.RecoilTree.treeId user "default"
+                let taskList = getter.get (RecoilTree.taskListFamily treeId)
+
+                taskList
+            )
+        }
         let rec activeSessions = selector {
             key ("selector/" + nameof activeSessions)
             get (fun getter ->
-                let taskList = getter.get taskList
+                let taskList = getter.get currentTaskList
                 taskList
                 |> List.map (fun task ->
                     let duration = getter.get (RecoilTask.activeSessionFamily task.Id)
@@ -1079,14 +1130,16 @@ module Recoil =
                 |> List.choose id
             )
         }
-        let rec private tree = selector {
-            key ("selector/" + nameof tree)
-            get (fun getter ->
-                let user = getter.get Atoms.user
+        let rec treeAsync = selectorFamily {
+            key ("selector/" + nameof treeAsync)
+            get (fun view getter -> async {
+                Profiling.addTimestamp "treeAsync.get[0]"
                 let dayStart = getter.get Atoms.dayStart
                 let dateSequence = getter.get dateSequence
                 let position = getter.get position
-                let view = getter.get Atoms.view
+                let user = getter.get Atoms.user
+
+                Profiling.addTimestamp "treeAsync.get[1]"
 
                 let tree =
                     FakeBackend.getTree
@@ -1096,78 +1149,92 @@ module Recoil =
                            View = view
                            Position = position |}
 
-                Profiling.addCount (nameof tree)
-                tree
-            )
+                Profiling.addTimestamp "treeAsync.get[2]"
+                printfn "TREE COUNT: %A" tree.TaskList.Length
+                Profiling.addCount (nameof treeAsync)
+                return tree
+            })
         }
-        let rec treeUpdater = selector {
-            key ("selector/" + nameof treeUpdater)
-            get (fun _ -> ())
-            set (fun setter _ ->
+        let rec currentTree = selector {
+            key ("selector/" + nameof currentTree)
+            get (fun getter ->
+                getter.get Atoms.tree
+            )
+            set (fun setter (newValue: FakeBackend.FakeTree option) ->
                 let dateSequence = setter.get dateSequence
-                let tree = setter.get tree
 
-                let recoilInformationList =
-                    tree.InformationList
-                    |> List.map (fun information ->
-                        let informationId = Atoms.RecoilInformation.informationId information.Information
-                        let recoilInformation = setter.get (Atoms.RecoilInformation.informationFamily informationId)
-                        setter.set (recoilInformation.Id, informationId)
-                        setter.set (recoilInformation.WrappedInformation, information.Information)
-                        setter.set (recoilInformation.Comments, information.Comments)
-                        information.Information, informationId
+                Profiling.addTimestamp "currentTree.set[0]"
+
+                match newValue with
+                | None -> ()
+                | Some tree ->
+//                    let tree =
+//                        { tree with TaskList = tree.TaskList |> List.take 3 }
+
+                    let recoilInformationList =
+                        tree.InformationList
+                        |> List.map (fun information ->
+                            let informationId = Atoms.RecoilInformation.informationId information.Information
+                            let recoilInformation = setter.get (Atoms.RecoilInformation.informationFamily informationId)
+                            setter.set (recoilInformation.Id, informationId)
+                            setter.set (recoilInformation.WrappedInformation, information.Information)
+                            setter.set (recoilInformation.Comments, information.Comments)
+                            information.Information, informationId
+                        )
+
+                    let recoilInformationMap =
+                        recoilInformationList
+                        |> Map.ofList
+
+                    let taskIdList = tree.TaskList |> List.map Atoms.RecoilTask.taskId
+
+                    Profiling.addTimestamp "currentTree.set[1]"
+
+                    taskIdList
+                    |> List.iter (fun taskId ->
+                        dateSequence
+                        |> List.iter (fun date ->
+                            let cellId = Atoms.RecoilCell.cellId taskId date
+                            let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
+                            setter.set (recoilCell.Id, cellId)
+                            setter.set (recoilCell.TaskId, taskId)
+                            setter.set (recoilCell.Date, date)
+                        )
                     )
 
-                let recoilInformationMap =
-                    recoilInformationList
-                    |> Map.ofList
+                    tree.TaskList
+                    |> List.iter (fun task ->
+                        let taskId = Atoms.RecoilTask.taskId task
+                        let recoilTask = setter.get (Atoms.RecoilTask.taskFamily taskId)
+                        setter.set (recoilTask.Id, taskId)
+                        setter.set (recoilTask.Name, task.Name)
+                        setter.set (recoilTask.InformationId, recoilInformationMap.[task.Information])
+                        setter.set (recoilTask.Comments, task.Comments)
+                        setter.set (recoilTask.Sessions, task.Sessions)
+                        setter.set (recoilTask.Priority, task.Priority)
 
-                let taskIdList = tree.TaskList |> List.map Atoms.RecoilTask.taskId
-
-                setter.set (Atoms.taskIdList, taskIdList)
-
-                taskIdList
-                |> List.iter (fun taskId ->
-                    dateSequence
-                    |> List.iter (fun date ->
-                        let cellId = Atoms.RecoilCell.cellId taskId date
-                        let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
-                        setter.set (recoilCell.Id, cellId)
-                        setter.set (recoilCell.TaskId, taskId)
-                        setter.set (recoilCell.Date, date)
+                        task.CellStateMap
+                        |> Map.iter (fun (DateId date) cellState ->
+                            let cellId = Atoms.RecoilCell.cellId taskId date
+                            let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
+                            setter.set (recoilCell.Status, cellState.Status)
+                            setter.set (recoilCell.Comments, cellState.Comments)
+                            setter.set (recoilCell.Sessions, cellState.Sessions)
+                            setter.set (recoilCell.Selected, false)
+                        )
                     )
-                )
 
-                tree.TaskList
-                |> List.iter (fun task ->
-                    let taskId = Atoms.RecoilTask.taskId task
-                    let recoilTask = setter.get (Atoms.RecoilTask.taskFamily taskId)
-                    setter.set (recoilTask.Id, taskId)
-                    setter.set (recoilTask.Name, task.Name)
-                    setter.set (recoilTask.InformationId, recoilInformationMap.[task.Information])
-                    setter.set (recoilTask.Comments, task.Comments)
-                    setter.set (recoilTask.Sessions, task.Sessions)
-                    setter.set (recoilTask.Priority, task.Priority)
+                    let treeId = Atoms.RecoilTree.treeId tree.Owner "default"
+                    let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeId)
+                    setter.set (recoilTree.Owner, tree.Owner)
+                    setter.set (recoilTree.SharedWith, tree.SharedWith)
+                    setter.set (recoilTree.InformationIdList, recoilInformationList |> List.map snd) // TODO: use it
+                    setter.set (recoilTree.TaskIdList, taskIdList)
 
-                    task.CellStateMap
-                    |> Map.iter (fun (DateId date) cellState ->
-                        let cellId = Atoms.RecoilCell.cellId taskId date
-                        let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
-                        setter.set (recoilCell.Status, cellState.Status)
-                        setter.set (recoilCell.Comments, cellState.Comments)
-                        setter.set (recoilCell.Sessions, cellState.Sessions)
-                        setter.set (recoilCell.Selected, false)
-                    )
-                )
+                setter.set (Atoms.tree, newValue)
 
-                let treeId = Atoms.RecoilTree.treeId tree.Owner "default"
-                let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeId)
-                setter.set (recoilTree.Owner, tree.Owner)
-                setter.set (recoilTree.SharedWith, tree.SharedWith)
-                setter.set (recoilTree.InformationIdList, recoilInformationList |> List.map snd)
-                setter.set (recoilTree.TaskIdList, taskIdList)
-
-                Profiling.addCount (nameof treeUpdater)
+                Profiling.addTimestamp "currentTree.set[2]"
+                Profiling.addCount (nameof currentTree)
             )
         }
 
