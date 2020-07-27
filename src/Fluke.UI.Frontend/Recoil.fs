@@ -219,7 +219,7 @@ module Recoil =
             RootPrivateData.currentUser
 
         let getDayStart () =
-            TempData.dayStart
+            TempData.Consts.dayStart
 
         let hasAccess tree user =
             match tree with
@@ -395,15 +395,17 @@ module Recoil =
                         CellStateMap = cellStateMap }
 
                 let privateTaskList =
+                    let oldEvents, newEvents = RootPrivateData.cellStatusEntries
                     treeData.TaskList
                     |> List.map (applyEvents
-                                     RootPrivateData.cellStatusEntries
+                                     oldEvents
                                      RootPrivateData.taskComments)
 
                 let sharedTaskList =
+                    let oldEvents, newEvents = RootPrivateData.sharedCellStatusEntries
                     sharedTreeData.TaskList
                     |> List.map (applyEvents
-                                     RootPrivateData.sharedCellStatusEntries
+                                     oldEvents
                                      RootPrivateData.sharedTaskComments)
 
                 sharedTaskList @ privateTaskList
@@ -805,7 +807,7 @@ module Recoil =
             }
             let rec ownerFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilInformation) (nameof ownerFamily))
-                def (fun (_treeId: TreeId) -> TempData.testUser)
+                def (fun (_treeId: TreeId) -> TempData.Users.testUser)
             }
             let rec sharedWithFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilInformation) (nameof sharedWithFamily))
@@ -1037,7 +1039,7 @@ module Recoil =
                     lastSession
                     |> Option.bind (fun (TaskSession start) ->
                         let durationMinutes = (position.DateTime - start.DateTime).TotalMinutes
-                        let active = durationMinutes < TempData.sessionLength + TempData.sessionBreakLength
+                        let active = durationMinutes < TempData.Consts.sessionLength + TempData.Consts.sessionBreakLength
                         match active with
                         | true -> Some durationMinutes
                         | false -> None

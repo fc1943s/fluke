@@ -100,6 +100,15 @@ module Model =
         | High9
         | Critical10
 
+    [<RequireQualifiedAccess>]
+    type UserColor =
+        | Pink
+        | Blue
+
+    type User =
+        { Username: string
+          Color: UserColor }
+
 
     type CellEventStatus =
         | Postponed of until:FlukeTime option
@@ -114,16 +123,7 @@ module Model =
         | Pending
         | Missed
         | MissedToday
-        | EventStatus of CellEventStatus
-
-    [<RequireQualifiedAccess>]
-    type UserColor =
-        | Pink
-        | Blue
-
-    type User =
-        { Username: string
-          Color: UserColor }
+        | EventStatus of status:CellEventStatus
 
     type DateId = DateId of FlukeDate
     type Comment = Comment of user:User * comment:string
@@ -149,6 +149,10 @@ module Model =
           CellStateMap: Map<DateId, CellState>
           Comments: Comment list
           Duration: int option }
+
+    [<RequireQualifiedAccess>]
+    type TempEvent =
+        | CellStatus of user:User * date:FlukeDateTime * task:Task * status:CellEventStatus
 
     type CellAddress =
         { Task: Task
@@ -615,7 +619,7 @@ module Sorting =
               (function EventStatus Dismissed,                _                       -> Some DefaultSort   | _ -> None)
               (function Disabled,                             SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
               (function Suggested,                            ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
-              (function _                                                             -> Some DefaultSort) ]
+              (function _                                                                  -> Some DefaultSort) ]
             |> List.map (fun orderFn -> orderFn (status, task))
             |> List.indexed
             |> List.choose (function groupIndex, Some sortType -> Some (groupIndex, sortType) | _, None -> None)

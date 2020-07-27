@@ -83,18 +83,6 @@ module TempData =
               Resource.Name = "windows" }
 
 
-    let [<Literal>] sessionLength = 25.
-    let [<Literal>] sessionBreakLength = 5.
-    let dayStart = flukeTime 07 00
-    let testDayStart = flukeTime 12 00
-
-    let testUser =
-        { Username = "Test"
-          Color = UserColor.Blue }
-
-    let getNow () =
-        FlukeDateTime.FromDateTime DateTime.Now
-
     module Users =
         let fc1943s =
             { Username = "fc1943s"
@@ -104,11 +92,49 @@ module TempData =
             { Username = "liryanne"
               Color = UserColor.Pink }
 
+        let testUser =
+            { Username = "Test"
+              Color = UserColor.Blue }
+
         let users = [
             fc1943s
             liryanne
         ]
 
+
+    module Consts =
+        let [<Literal>] sessionLength = 25.
+        let [<Literal>] sessionBreakLength = 5.
+        let dayStart = flukeTime 07 00
+        let testDayStart = flukeTime 12 00
+
+
+    module Events =
+        let eventsFromStatusEntries user (entries: (FlukeDate * (Task * CellEventStatus) list) list) =
+            let newEvents =
+                entries
+                |> List.collect (fun (date, events) ->
+                    events
+                    |> List.map (fun (task, userStatus) ->
+                        TempEvent.CellStatus
+                            (user, { Date = date; Time = Consts.testDayStart }, task, userStatus)
+                    )
+                )
+
+            let oldEvents =
+                entries
+                |> List.collect (fun (date, events) ->
+                    events
+                    |> List.map (fun (task, eventStatus) ->
+                        CellStatusEntry ({ Task = task; Date = date }, eventStatus)
+                    )
+                )
+
+            oldEvents, newEvents
+
+
+    let getNow () =
+        FlukeDateTime.FromDateTime DateTime.Now
 
     let getTaskOrderList oldTaskOrderList (tasks: Task list) manualTaskOrder =
         let taskMap =
@@ -160,11 +186,11 @@ module TempData =
         let comments, cellComments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
             let rec loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration = function
                 | TempComment comment :: tail ->
-                    let comment = Comment (testUser, comment)
+                    let comment = Comment (Users.testUser, comment)
                     loop (comment :: comments) cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                 | TempCellComment (date, comment) :: tail ->
-                    let cellComment = date, Comment (testUser, comment)
+                    let cellComment = date, Comment (Users.testUser, comment)
                     loop comments (cellComment :: cellComments) sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                 | TempSession { Date = date; Time = time } :: tail ->
@@ -325,7 +351,7 @@ module TempData =
         RenderLaneTests =
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
                            Now = { Date = flukeDate 2020 Month.March 04
-                                   Time = testDayStart }
+                                   Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.February 29, Disabled
                                flukeDate 2020 Month.March 1, Disabled

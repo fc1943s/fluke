@@ -96,10 +96,10 @@ module NavBarComponent =
                 activeSessions
                 |> List.map (fun (ActiveSession (taskName, duration)) ->
                     let sessionType, color, duration, left =
-                        let left = TempData.sessionLength - duration
-                        match duration < TempData.sessionLength with
+                        let left = TempData.Consts.sessionLength - duration
+                        match duration < TempData.Consts.sessionLength with
                         | true  -> "Session", "#7cca7c", duration, left
-                        | false -> "Break",   "#ca7c7c", -left,    TempData.sessionBreakLength + left
+                        | false -> "Break",   "#ca7c7c", -left,    TempData.Consts.sessionBreakLength + left
 
                     Html.span [
                         prop.style [
@@ -742,8 +742,8 @@ module MainComponent =
 
                 match newSession with
                 | Some (Model.ActiveSession (_, newDuration)) when oldDuration = -1. && newDuration = 0. -> Sound.playTick
-                | Some (Model.ActiveSession (_, newDuration)) when newDuration = TempData.sessionLength -> Sound.playDing
-                | None when oldDuration = TempData.sessionLength + TempData.sessionBreakLength - 1. -> Sound.playDing
+                | Some (Model.ActiveSession (_, newDuration)) when newDuration = TempData.Consts.sessionLength -> Sound.playDing
+                | None when oldDuration = TempData.Consts.sessionLength + TempData.Consts.sessionBreakLength - 1. -> Sound.playDing
                 | _ -> fun () -> ()
             )
             |> List.iter (fun x -> x ())
