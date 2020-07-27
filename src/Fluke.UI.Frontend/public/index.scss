@@ -207,12 +207,7 @@ $cell-size: 17px;
       }
     }
 
-    .tooltip-container {
-      @include cell-rectangle();
-      position: absolute;
-      top: 0;
-      width: 100%;
-
+    @mixin top-left-indicator() {
       &::after {
         content: '';
         position: absolute;
@@ -229,6 +224,15 @@ $cell-size: 17px;
       &.pink-indicator::after {
         border-top-color: $color-corner-pink;
       }
+    }
+
+    .tooltip-container {
+      @include cell-rectangle();
+      @include top-left-indicator();
+
+      position: absolute;
+      top: 0;
+      width: 100%;
 
       .tooltip-popup {
         padding: 20px 40px;
