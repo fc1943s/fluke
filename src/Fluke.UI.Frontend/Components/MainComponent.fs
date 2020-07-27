@@ -426,7 +426,8 @@ module PanelsComponent =
                                                                 str task.Information.Name
                                                             ]
                                                         ]
-                                                        TooltipPopupComponent.render {| Comments = task.InformationComments |}
+                                                        TooltipPopupComponent.render
+                                                            {| Comments = task.InformationComments |}
                                                     ]
                                                 ]
                                             )
@@ -513,7 +514,8 @@ module PanelsComponent =
                                                                     str information.Name
                                                                 ]
                                                             ]
-                                                            TooltipPopupComponent.render {| Comments = informationComments |}
+                                                            TooltipPopupComponent.render
+                                                                {| Comments = informationComments |}
                                                         ]
                                                     ]
                                                     // Task Name
@@ -553,7 +555,8 @@ module PanelsComponent =
                                                     Html.div [
                                                         prop.className Css.cellRectangle
                                                     ]
-                                                    CellsComponent.render {| TaskIdList = groupTask |> List.map (fun x -> x.Id) |}
+                                                    CellsComponent.render
+                                                        {| TaskIdList = groupTask |> List.map (fun x -> x.Id) |}
                                                 ]
                                             )
                                         ]
