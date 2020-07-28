@@ -126,14 +126,15 @@ module Model =
         | EventStatus of status:CellEventStatus
 
     type DateId = DateId of FlukeDate
-    type Comment = Comment of user:User * comment:string
+    type Comment = Comment of comment:string
+    type UserComment = UserComment of user:User * comment:string
     type TaskSession = TaskSession of start:FlukeDateTime
     type TaskStatusEntry = TaskStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
     type TaskPriorityValue = TaskPriorityValue of value:int
 
     type CellState =
         { Status: CellStatus
-          Comments: Comment list
+          Comments: UserComment list
           Sessions: TaskSession list }
 
     type Task =
@@ -145,29 +146,24 @@ module Model =
           Priority: TaskPriorityValue
           StatusEntries: TaskStatusEntry list
           Sessions: TaskSession list
-          CellComments: (FlukeDate * Comment) list
+          CellComments: (FlukeDate * UserComment) list
           CellStateMap: Map<DateId, CellState>
-          Comments: Comment list
+          Comments: UserComment list
           Duration: int option }
-
-    [<RequireQualifiedAccess>]
-    type TempEvent =
-        | CellStatus of user:User * date:FlukeDateTime * task:Task * status:CellEventStatus
 
     type CellAddress =
         { Task: Task
           Date: FlukeDate }
 
-
     type Cell = Cell of address:CellAddress * status:CellStatus
-    type TaskComment = TaskComment of task:Task * comment:Comment
+    type TaskComment = TaskComment of task:Task * comment:UserComment
     type CellStatusEntry = CellStatusEntry of address:CellAddress * eventStatus:CellEventStatus
-    type CellComment = CellComment of address:CellAddress * comment:Comment
+    type CellComment = CellComment of address:CellAddress * comment:UserComment
     type CellSession = CellSession of address:CellAddress * start:FlukeTime
 
     type InformationComment =
         { Information: Information
-          Comment: Comment }
+          Comment: UserComment }
 
 //    type CellEvent =
 //        | StatusEvent of CellStatusEntry
@@ -291,7 +287,7 @@ module Model =
 
     let ofLane = fun (OldLane (task, cells)) -> task, cells
     let ofTaskSession = fun (TaskSession start) -> start
-    let ofComment = fun (Comment (user, comment)) -> user, comment
+    let ofUserComment = fun (UserComment (user, comment)) -> user, comment
     let ofTaskComment = fun (TaskComment (task, comment)) -> task, comment
     let ofCellComment = fun (CellComment (address, comment)) -> address, comment
     let ofCellSession = fun (CellSession (address, start)) -> address, start
@@ -306,7 +302,7 @@ module Model =
         |> List.sortBy (fun (TaskStatusEntry (date, _)) -> date)
 
     let createCellComment task date user comment =
-        CellComment ({ Task = task; Date = date }, Comment (user, comment))
+        CellComment ({ Task = task; Date = date }, UserComment (user, comment))
 
     let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position:FlukeDateTime, date:FlukeDate) =
         let dateStart = { Date = date; Time = dayStart }.DateTime

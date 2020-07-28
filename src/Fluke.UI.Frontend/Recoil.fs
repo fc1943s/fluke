@@ -203,7 +203,7 @@ module Recoil =
 //        ]
 
         type FakeInformation =
-            { Comments: Comment list
+            { Comments: UserComment list
               Information: Information }
 
         type FakeTree =
@@ -655,7 +655,7 @@ module Recoil =
             type RecoilInformation =
                 { Id: RecoilValue<InformationId, ReadWrite>
                   WrappedInformation: RecoilValue<Information, ReadWrite>
-                  Comments: RecoilValue<Comment list, ReadWrite> }
+                  Comments: RecoilValue<UserComment list, ReadWrite> }
             let rec idFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilInformation) (nameof idFamily))
                 def (fun (_taskId: InformationId) -> InformationId "")
@@ -694,7 +694,7 @@ module Recoil =
                 { Id: RecoilValue<TaskId, ReadWrite>
                   InformationId: RecoilValue<RecoilInformation.InformationId, ReadWrite>
                   Name: RecoilValue<string, ReadWrite>
-                  Comments: RecoilValue<Comment list, ReadWrite>
+                  Comments: RecoilValue<UserComment list, ReadWrite>
                   Sessions: RecoilValue<TaskSession list, ReadWrite>
                   Priority: RecoilValue<TaskPriorityValue, ReadWrite> }
             let rec idFamily = atomFamily {
@@ -744,7 +744,7 @@ module Recoil =
                   TaskId: RecoilValue<RecoilTask.TaskId, ReadWrite>
                   Date: RecoilValue<FlukeDate, ReadWrite>
                   Status: RecoilValue<CellStatus, ReadWrite>
-                  Comments: RecoilValue<Comment list, ReadWrite>
+                  Comments: RecoilValue<UserComment list, ReadWrite>
                   Sessions: RecoilValue<TaskSession list, ReadWrite>
                   Selected: RecoilValue<bool, ReadWrite> }
 
@@ -766,7 +766,7 @@ module Recoil =
             }
             let rec commentsFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilCell) (nameof commentsFamily))
-                def (fun (_cellId: CellId) -> [] : Comment list)
+                def (fun (_cellId: CellId) -> [] : UserComment list)
             }
             let rec sessionsFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilCell) (nameof sessionsFamily))

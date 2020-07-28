@@ -110,6 +110,11 @@ module TempData =
 
 
     module Events =
+        [<RequireQualifiedAccess>]
+        type TempEvent =
+            | CellStatus of user:User * date:FlukeDateTime * task:Task * status:CellEventStatus
+            | CellComment of user:User * date:FlukeDateTime * task:Task * comment:Comment
+
         let eventsFromStatusEntries user (entries: (FlukeDate * (Task * CellEventStatus) list) list) =
             let newEvents =
                 entries
@@ -131,6 +136,9 @@ module TempData =
                 )
 
             oldEvents, newEvents
+
+        let eventsFromCellComments user =
+            ()
 
 
     let getNow () =
@@ -186,11 +194,11 @@ module TempData =
         let comments, cellComments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
             let rec loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration = function
                 | TempComment comment :: tail ->
-                    let comment = Comment (Users.testUser, comment)
+                    let comment = UserComment (Users.testUser, comment)
                     loop (comment :: comments) cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                 | TempCellComment (date, comment) :: tail ->
-                    let cellComment = date, Comment (Users.testUser, comment)
+                    let cellComment = date, UserComment (Users.testUser, comment)
                     loop comments (cellComment :: cellComments) sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                 | TempSession { Date = date; Time = time } :: tail ->

@@ -136,7 +136,7 @@ module NavBarComponent =
 module TooltipPopupComponent =
     open Model
 
-    let render = React.memo (fun (input: {| Comments: Comment list |}) ->
+    let render = React.memo (fun (input: {| Comments: UserComment list |}) ->
         let tooltipContainerRef = React.useElementRef ()
         let hovered = Temp.UseListener.onElementHover tooltipContainerRef
 
@@ -145,7 +145,7 @@ module TooltipPopupComponent =
         | _ ->
             let user = // TODO: 2+ different users in the same day. what to show? smooth transition between them?
                 input.Comments.Head
-                |> (ofComment >> fst)
+                |> (ofUserComment >> fst)
 
             Html.div [
                 prop.ref tooltipContainerRef
@@ -160,7 +160,7 @@ module TooltipPopupComponent =
                         prop.className Css.tooltipPopup
                         prop.children [
                             input.Comments
-                            |> List.map (fun (Comment (user, comment)) ->
+                            |> List.map (fun (UserComment (user, comment)) ->
                                 sprintf "%s:%s%s" user.Username Environment.NewLine (comment.Trim ())
                             )
                             |> List.map ((+) Environment.NewLine)
@@ -725,10 +725,11 @@ module MainComponent =
         nothing
     )
     let dataLoader = React.memo (fun () ->
+        let view = Recoil.useValue Recoil.Atoms.view
+
         let loadTree = Recoil.useCallbackRef (fun setter ->
             async {
                 Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[0]"
-                let! view = setter.snapshot.getAsync Recoil.Atoms.view
                 let! treeAsync = setter.snapshot.getAsync (Recoil.Selectors.treeAsync view)
                 Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[1]"
                 setter.set (Recoil.Selectors.currentTree, Some treeAsync)
@@ -738,10 +739,10 @@ module MainComponent =
         )
 
         Recoil.Profiling.addTimestamp "dataLoader render"
-        React.useEffectOnce (fun () ->
+        React.useEffect (fun () ->
             Recoil.Profiling.addTimestamp "dataLoader effect"
             loadTree ()
-        )
+        , [| view :> obj |])
 
         nothing
     )
