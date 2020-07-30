@@ -845,6 +845,11 @@ module Recoil =
             def true
             local_storage
         }
+        let rec treeName = atom {
+            key ("atom/" + nameof treeName)
+            def "default"
+            local_storage
+        }
         let rec user = atom {
             key ("atom/" + nameof user)
             def (FakeBackend.getCurrentUser ())
@@ -1122,8 +1127,9 @@ module Recoil =
             key ("selector/" + nameof currentTaskList)
             get (fun getter ->
                 let user = getter.get Atoms.user
+                let treeName = getter.get Atoms.treeName
 
-                let treeId = Atoms.RecoilTree.treeId user "default"
+                let treeId = Atoms.RecoilTree.treeId user treeName
                 let taskList = getter.get (RecoilTree.taskListFamily treeId)
 
                 taskList
@@ -1236,7 +1242,8 @@ module Recoil =
                         )
                     )
 
-                    let treeId = Atoms.RecoilTree.treeId tree.Owner "default"
+                    let treeName = setter.get Atoms.treeName
+                    let treeId = Atoms.RecoilTree.treeId tree.Owner treeName
                     let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeId)
                     setter.set (recoilTree.Owner, tree.Owner)
                     setter.set (recoilTree.SharedWith, tree.SharedWith)
