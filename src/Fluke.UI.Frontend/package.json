@@ -12,9 +12,7 @@
   "private": true,
   "scripts": {
     "webpack": "webpack",
-    "webpack-dev-server": "webpack-dev-server",
-    "electron-webpack": "electron-webpack",
-    "electron-builder": "electron-builder"
+    "webpack-dev-server": "webpack-dev-server"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.14",
@@ -48,13 +46,13 @@
     "copy-webpack-plugin": "^6.0",
     "mini-css-extract-plugin": "^0.9",
 
-    "@babel/core": "^7.10",
-    "@babel/preset-env": "^7.10",
+    "@babel/core": "^7.11",
+    "@babel/preset-env": "^7.11",
     "@babel/preset-typescript": "^7.10",
     "@babel/preset-react": "^7.10",
     "babel-loader": "^8.1",
     "style-loader": "^1.2",
-    "css-loader": "^4.0",
+    "css-loader": "^4.2",
     "sass-loader": "^9.0",
     "node-sass": "^4.14",
     "file-loader": "^6.0",
