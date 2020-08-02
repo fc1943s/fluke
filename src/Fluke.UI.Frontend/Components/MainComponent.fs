@@ -207,7 +207,6 @@ module PanelsComponent =
                                     prop.style [
                                         style.textAlign.center
                                         style.width (cellSize * days)
-
                                     ]
                                     prop.children [
                                         str (firstDay.DateTime.Format "MMM")
@@ -372,14 +371,12 @@ module PanelsComponent =
                     prop.children [
                         yield! input.TaskIdList
                         |> List.map (fun taskId ->
-                            React.suspense ([
-                                Html.div [
-                                    yield! dateSequence
-                                    |> List.map (fun date ->
-                                        CellComponent.render {| TaskId = taskId; Date = date |}
-                                    )
-                                ]
-                            ], SpinnerComponent.render ())
+                            Html.div [
+                                yield! dateSequence
+                                |> List.map (fun date ->
+                                    CellComponent.render {| TaskId = taskId; Date = date |}
+                                )
+                            ]
                         )
                     ]
                 ]
@@ -731,6 +728,7 @@ module MainComponent =
             async {
                 Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[0]"
                 let! treeAsync = setter.snapshot.getAsync (Recoil.Selectors.treeAsync view)
+                //Uncaught (in promise) Promise {<fulfilled>: List}
                 Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[1]"
                 setter.set (Recoil.Selectors.currentTree, Some treeAsync)
                 Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[2]"
@@ -742,6 +740,8 @@ module MainComponent =
         React.useEffect (fun () ->
             Recoil.Profiling.addTimestamp "dataLoader effect"
             loadTree ()
+
+            // TODO: return a cleanup?
         , [| view :> obj |])
 
         nothing
@@ -774,10 +774,10 @@ module MainComponent =
         nothing
     )
     let autoReload_TEMP = React.memo (fun () ->
-        let reload () =
+        let reload = React.useCallback (fun () ->
             Dom.window.location.reload true
+        )
 
-        printfn "Starting auto reload timer."
         Scheduling.useScheduling Scheduling.Timeout reload (60 * 60 * 1000)
 
         nothing

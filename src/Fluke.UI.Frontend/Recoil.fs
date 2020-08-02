@@ -411,6 +411,7 @@ module Recoil =
                 sharedTaskList @ privateTaskList
 
             let dateRange =
+                // TODO: handle
                 let head = input.DateSequence |> List.head |> fun x -> x.DateTime
                 let last = input.DateSequence |> List.last |> fun x -> x.DateTime
                 head, last
@@ -1153,8 +1154,8 @@ module Recoil =
             get (fun view getter -> async {
                 Profiling.addTimestamp "treeAsync.get[0]"
                 let dayStart = getter.get Atoms.dayStart
-                let dateSequence = getter.get dateSequence
                 let position = getter.get position
+                let dateSequence = getter.get dateSequence
                 let user = getter.get Atoms.user
 
                 Profiling.addTimestamp "treeAsync.get[1]"
