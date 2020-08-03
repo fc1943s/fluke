@@ -1,6 +1,9 @@
 .tooltip-container,
-.blue-indicator,
-.pink-indicator,
+.top-right-blue-indicator,
+.top-right-pink-indicator,
+.bottom-right-blue-indicator,
+.bottom-right-pink-indicator,
+.user-indicator,
 .tooltip-popup,
 
 .lanes-panel,
@@ -143,13 +146,18 @@ $cell-size: 17px;
 
       @mixin cell($bgcolor) {
         @include square-cell();
-        position: relative;
 
-        > .cell-square {
+        > .cell-square:not(first-child) {
+          position: absolute;
+          top: 0;
+          left: 0;
+        }
+
+        > .cell-square:first-child {
           background-color: $bgcolor;
         }
 
-        &.cell-today > .cell-square {
+        &.cell-today > .cell-square:first-child {
           background-color: $bgcolor#{aa};
         }
 
@@ -207,32 +215,63 @@ $cell-size: 17px;
       }
     }
 
-    @mixin top-left-indicator() {
+    @mixin cell-indicator() {
+      @include cell-rectangle();
+
+      position: absolute;
+      top: 0;
+      width: 100%;
+
       &::after {
         content: '';
         position: absolute;
+      }
+
+      &.top-right-blue-indicator::after {
+        border-top-color: $color-corner-blue;
+      }
+
+      &.top-right-pink-indicator::after {
+        border-top-color: $color-corner-pink;
+      }
+
+      &.bottom-right-blue-indicator::after {
+        border-bottom-color: $color-corner-blue;
+      }
+
+      &.bottom-right-pink-indicator::after {
+        border-bottom-color: $color-corner-pink;
+      }
+    }
+
+    @mixin top-right-indicator() {
+      @include cell-indicator();
+
+      &::after {
         top: 0;
         right: 0;
         border-top: 8px solid #000;
         border-left: 8px solid transparent;
       }
+    }
 
-      &.blue-indicator::after {
-        border-top-color: $color-corner-blue;
-      }
+    @mixin bottom-right-indicator() {
+      @include cell-indicator();
 
-      &.pink-indicator::after {
-        border-top-color: $color-corner-pink;
+      &::after {
+        bottom: 0;
+        right: 0;
+        border-bottom: 8px solid #000;
+        border-left: 8px solid transparent;
       }
     }
 
-    .tooltip-container {
-      @include cell-rectangle();
-      @include top-left-indicator();
+    .user-indicator {
+      @include bottom-right-indicator();
+    }
 
-      position: absolute;
-      top: 0;
-      width: 100%;
+    .tooltip-container {
+      @include top-right-indicator();
 
       .tooltip-popup {
         padding: 20px 40px;

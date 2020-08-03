@@ -152,8 +152,8 @@ module TooltipPopupComponent =
                 prop.classes [
                     Css.tooltipContainer
                     match user with
-                    | { Color = UserColor.Blue } -> Css.blueIndicator
-                    | { Color = UserColor.Pink } -> Css.pinkIndicator
+                    | { Color = UserColor.Blue } -> Css.topRightBlueIndicator
+                    | { Color = UserColor.Pink } -> Css.topRightPinkIndicator
                 ]
                 prop.children [
                     Html.div [
@@ -307,7 +307,52 @@ module PanelsComponent =
                                 str taskName
                             ]
                         ]
-                        TooltipPopupComponent.render {| Comments = taskComments |}
+                        TooltipPopupComponent.render
+                            {| Comments = taskComments |}
+                    ]
+                ]
+            )
+
+        module UserStatusIndicatorComponent =
+            let render = React.memo (fun (input: {| User: User |}) ->
+                Html.div [
+                    prop.classes [
+                        Css.userIndicator
+                        match input.User with
+                        | { Color = UserColor.Blue } -> Css.bottomRightBlueIndicator
+                        | { Color = UserColor.Pink } -> Css.bottomRightPinkIndicator
+                    ]
+                ]
+            )
+
+        module CellBorderComponent =
+            let render = React.memo (fun (input: {| Date: FlukeDate |}) ->
+                match input.Date with
+                | StartOfMonth -> Some Css.cellStartMonth
+                | StartOfWeek -> Some Css.cellStartWeek
+                | _ -> None
+                |> Option.map (fun className ->
+                    Html.div [
+                        prop.classes [
+                            Css.cellSquare
+                            className
+                        ]
+                    ]
+                )
+                |> Option.defaultValue nothing
+            )
+
+        module CellSessionIndicatorComponent =
+            let render = React.memo (fun (input: {| Sessions: TaskSession list |}) ->
+                Html.div [
+                    prop.classes [
+                        Css.cellSquare
+                        Css.sessionLengthIndicator
+                    ]
+                    prop.children [
+                        match input.Sessions.Length with
+                        | x when x > 0 -> str (string x)
+                        | _ -> ()
                     ]
                 ]
             )
@@ -319,6 +364,8 @@ module PanelsComponent =
 
                 let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId input.Date
                 let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
+
+                let showUser = Recoil.useValue (Recoil.Selectors.showUserFamily input.TaskId)
 
                 let comments = Recoil.useValue cell.Comments
                 let sessions = Recoil.useValue cell.Sessions
@@ -332,31 +379,25 @@ module PanelsComponent =
                 Html.div [
                     prop.classes [
                         status.CellClass
-                        if selected then
-                            Css.cellSelected
-                        if isToday then
-                            Css.cellToday
+                        if selected then Css.cellSelected
+                        if isToday then Css.cellToday
                     ]
                     prop.onClick (fun (_event: MouseEvent) ->
                         onCellClick ()
                     )
                     prop.children [
-                        Html.div [
-                            prop.classes [
-                                Css.cellSquare
-                                Css.sessionLengthIndicator
-                                match input.Date with
-                                | StartOfMonth -> Css.cellStartMonth
-                                | StartOfWeek -> Css.cellStartWeek
-                                | _ -> ()
-                            ]
-                            prop.children [
-                                match sessions.Length with
-                                | x when x > 0 -> str (string x)
-                                | _ -> ()
-                            ]
-                        ]
-                        TooltipPopupComponent.render {| Comments = comments |}
+                        CellBorderComponent.render
+                            {| Date = input.Date |}
+                        CellSessionIndicatorComponent.render
+                            {| Sessions = sessions |}
+                        if showUser then
+                            match status with
+                            | UserStatus (user, manualCellStatus) ->
+                                UserStatusIndicatorComponent.render
+                                    {| User = user |}
+                            | _ -> ()
+                        TooltipPopupComponent.render
+                            {| Comments = comments |}
                     ]
                 ]
             )
@@ -374,7 +415,9 @@ module PanelsComponent =
                             Html.div [
                                 yield! dateSequence
                                 |> List.map (fun date ->
-                                    CellComponent.render {| TaskId = taskId; Date = date |}
+                                    CellComponent.render
+                                        {| TaskId = taskId
+                                           Date = date |}
                                 )
                             ]
                         )
@@ -438,7 +481,9 @@ module PanelsComponent =
                                         prop.children [
                                             yield! currentTaskList
                                             |> List.map (fun task ->
-                                                TaskNameComponent.render {| Level = 0; TaskId = task.Id |}
+                                                TaskNameComponent.render
+                                                    {| Level = 0
+                                                       TaskId = task.Id |}
                                             )
                                         ]
                                     ]
@@ -447,7 +492,8 @@ module PanelsComponent =
                         ]
                         Html.div [
                             HeaderComponent.render ()
-                            CellsComponent.render {| TaskIdList = taskIdList |}
+                            CellsComponent.render
+                                {| TaskIdList = taskIdList |}
                         ]
                     ]
                 ]
@@ -524,7 +570,8 @@ module PanelsComponent =
                                                             yield! group
                                                             |> List.map (fun groupTask ->
                                                                 TaskNameComponent.render
-                                                                    {| Level = 2; TaskId = groupTask.Id |}
+                                                                    {| Level = 2
+                                                                       TaskId = groupTask.Id |}
                                                             )
                                                         ]
                                                     ]
@@ -643,7 +690,9 @@ module PanelsComponent =
                                         prop.children [
                                             yield! currentTaskList
                                             |> List.map (fun task ->
-                                                TaskNameComponent.render {| Level = 0; TaskId = task.Id |}
+                                                TaskNameComponent.render
+                                                    {| Level = 0
+                                                       TaskId = task.Id |}
                                             )
                                         ]
                                     ]
@@ -652,7 +701,8 @@ module PanelsComponent =
                         ]
                         Html.div [
                             HeaderComponent.render ()
-                            CellsComponent.render {| TaskIdList = taskIdList |}
+                            CellsComponent.render
+                                {| TaskIdList = taskIdList |}
                         ]
                     ]
                 ]
