@@ -36,6 +36,10 @@ group Testing
     storage: none
     source https://api.nuget.org/v3/index.json
 
+    nuget altcover ~> 7.1
+    nuget Microsoft.NET.Test.Sdk ~> 16.7 prerelease
+    nuget YoloDev.Expecto.TestSdk ~> 0.9
+
 
 
 group Build

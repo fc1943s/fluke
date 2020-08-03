@@ -9,6 +9,8 @@ bin/
 obj/
 .paket/
 paket-files/
+coverage/
+coverage.xml
 
 ### DevOps
 .fake/

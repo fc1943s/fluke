@@ -27,6 +27,7 @@ module Data =
 module Tests =
     open Data
 
+    [<Tests>]
     let tests = testList "Tests" [
 
         testList "GetManualSortedTaskListTests" [
