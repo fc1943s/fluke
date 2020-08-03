@@ -156,3 +156,84 @@ module RootPrivateData =
 ////            InformationList = []
 ////            Tasks = []
 ////        |}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/// Tasks.fs
+
+//    let private manualTaskOrderList : (Information * string) list = []
+//
+//    let treeData, tasks =
+//        let treeData =
+//            rawTreeData
+//            |> treeDataWithUser currentUser
+//            |> transformTreeData Consts.dayStart
+////        let taskList = treeData.TaskStateList |> List.map (fun x -> x.Task)
+//        let taskList = treeData.TaskList
+//
+//        let duplicated =
+//            taskList
+//            |> List.map (fun x -> x.Name)
+//            |> List.groupBy id
+//            |> List.filter (snd >> List.length >> fun n -> n > 1)
+//            |> List.map fst
+//
+//        if not duplicated.IsEmpty then
+//            failwithf "Duplicated task names: %A" duplicated
+//
+//        let taskMap =
+//            taskList
+//            |> List.map (fun x -> x.Name, x)
+//            |> Map.ofList
+//
+//        let getTask name =
+//            taskMap.[name]
+//
+//        let tasks = getTaskLinks getTask
+//
+//        let taskOrderList = getTaskOrderList [] taskList manualTaskOrderList
+//
+//        let newTreeData = {| treeData with TaskOrderList = taskOrderList |}
+//
+//        newTreeData, tasks
+//
+//
+//
+//
+//
+//
+//
+//
+
+/// InformationComments.fs
+//        |> List.map (fun (information, comment) ->
+//            { Information = information
+//              Comment = UserComment (currentUser, comment) }
+//        )
+
+
+/// TaskComments.fs
+//        |> List.map (fun (task, comment) -> TaskComment (task, UserComment (currentUser, comment)))
+
+/// CellComments.fs
+//    let comment comment task date =
+//        createCellComment task { Date = date; Time = TempData.Consts.dayStart } PrivateData.currentUser comment
+
+/// CellStatusEntries.fs
+//    let entry date task manualCellStatus =
+//        CellStatusEntry (PrivateData.currentUser, task, { Date = date; Time = TempData.Consts.dayStart }, manualCellStatus)
+//
+//    let createEvents oldCellStatusEntries entries =
+//        let oldEvents, newEvents = TempData.Events.eventsFromStatusEntries PrivateData.currentUser entries
+//        oldEvents |> List.append oldCellStatusEntries, newEvents
