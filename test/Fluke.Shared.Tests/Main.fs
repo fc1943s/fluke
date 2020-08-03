@@ -11,7 +11,7 @@ module Main =
     let main args =
         let tests =
             Tests.tests
-//            |> Test.filter " / " (fun x -> true)
+//            |> Test.filter " / " (List.exists (fun x -> x.Contains "schedule for tomorrow with PendingAfter"))
         runTestsWithArgs defaultConfig args tests
 
 

@@ -23,13 +23,6 @@ module Model =
     type ActiveSession = ActiveSession of taskName:string * duration:float
 
     type Information with
-        member this.Name =
-            match this with
-            | Project project   -> project.Name
-            | Area area         -> area.Name
-            | Resource resource -> resource.Name
-            | Archive archive   -> sprintf "[%s]" archive.Name
-
         member this.Color =
             match this with
             | Project _       -> "#999"
@@ -45,13 +38,13 @@ module Model =
             | Pending     -> Css.cellPending
             | Missed      -> Css.cellMissed
             | MissedToday -> Css.cellMissedToday
-            | EventStatus eventStatus ->
-                match eventStatus with
-                | Postponed (Some _) -> Css.cellPostponedUntil
-                | Postponed _        -> Css.cellPostponed
-                | Completed          -> Css.cellCompleted
-                | Dismissed          -> Css.cellDismissed
-                | ManualPending      -> Css.cellManualPending
-                | Session _          -> Css.cellSession
+            | UserStatus (user, manualCellStatus) ->
+                match manualCellStatus with
+                | Postponed (Some _)  -> Css.cellPostponedUntil
+                | Postponed _         -> Css.cellPostponed
+                | Completed           -> Css.cellCompleted
+                | Dismissed           -> Css.cellDismissed
+                | ManualPending       -> Css.cellManualPending
+                | SessionDeprecated _ -> Css.cellSession
 
 

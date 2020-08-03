@@ -110,12 +110,12 @@ module Model =
           Color: UserColor }
 
 
-    type CellEventStatus =
+    type ManualCellStatus =
         | Postponed of until:FlukeTime option
         | Completed
         | Dismissed
         | ManualPending
-        | Session of start:FlukeTime
+        | SessionDeprecated of start:FlukeTime
 
     type CellStatus =
         | Disabled
@@ -123,13 +123,14 @@ module Model =
         | Pending
         | Missed
         | MissedToday
-        | EventStatus of status:CellEventStatus
+        | UserStatus of user:User * status:ManualCellStatus
 
-    type DateId = DateId of FlukeDate
+    type DateId = DateId of referenceDay:FlukeDate
+    type TaskId = TaskId of informationName:string * taskName:string
     type Comment = Comment of comment:string
     type UserComment = UserComment of user:User * comment:string
     type TaskSession = TaskSession of start:FlukeDateTime
-    type TaskStatusEntry = TaskStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
+    type TaskStatusEntry = TaskStatusEntry of user:User * moment:FlukeDateTime * manualCellStatus:ManualCellStatus
     type TaskPriorityValue = TaskPriorityValue of value:int
 
     type CellState =
@@ -153,13 +154,13 @@ module Model =
 
     type CellAddress =
         { Task: Task
-          Date: FlukeDate }
+          DateId: DateId }
 
     type Cell = Cell of address:CellAddress * status:CellStatus
     type TaskComment = TaskComment of task:Task * comment:UserComment
-    type CellStatusEntry = CellStatusEntry of address:CellAddress * eventStatus:CellEventStatus
-    type CellComment = CellComment of address:CellAddress * comment:UserComment
-    type CellSession = CellSession of address:CellAddress * start:FlukeTime
+    type CellStatusEntry = CellStatusEntry of user:User * task:Task * moment:FlukeDateTime * manualCellStatus:ManualCellStatus
+    type CellComment = CellComment of task:Task * moment:FlukeDateTime * comment:UserComment
+    type CellSession = CellSession of task:Task * start:FlukeDateTime
 
     type InformationComment =
         { Information: Information
@@ -239,14 +240,14 @@ module Model =
         static member inline FromDateTime (date: DateTime) =
             { Date = FlukeDate.FromDateTime date
               Time = FlukeTime.FromDateTime date }
-        member this.GreaterEqualThan (dayStart: FlukeTime) (date: FlukeDate) time =
+        member this.GreaterEqualThan (dayStart: FlukeTime) (DateId referenceDate) time =
             let testingAfterMidnight = dayStart.GreaterEqualThan time
             let currentlyBeforeMidnight = this.Time.GreaterEqualThan dayStart
 
             let newDate =
                 if testingAfterMidnight && currentlyBeforeMidnight
-                then date.DateTime.AddDays 1. |> FlukeDate.FromDateTime
-                else date
+                then referenceDate.DateTime.AddDays 1. |> FlukeDate.FromDateTime
+                else referenceDate
 
             let dateToCompare = { Date = newDate; Time = time }
 
@@ -256,6 +257,12 @@ module Model =
         { Date = flukeDate year month day; Time = flukeTime hour minute }
 
     type Information with
+        member this.Name =
+            match this with
+            | Project project   -> project.Name
+            | Area area         -> area.Name
+            | Resource resource -> resource.Name
+            | Archive archive   -> sprintf "[%s]" archive.Name
         member this.KindName =
             match this with
             | Project _  -> "projects"
@@ -288,24 +295,15 @@ module Model =
     let ofLane = fun (OldLane (task, cells)) -> task, cells
     let ofTaskSession = fun (TaskSession start) -> start
     let ofUserComment = fun (UserComment (user, comment)) -> user, comment
-    let ofTaskComment = fun (TaskComment (task, comment)) -> task, comment
-    let ofCellComment = fun (CellComment (address, comment)) -> address, comment
-    let ofCellSession = fun (CellSession (address, start)) -> address, start
+    let ofTaskComment = fun (TaskComment (task, userComment)) -> task, userComment
+    let ofCellComment = fun (CellComment (task, moment, userComment)) -> task, moment, userComment
+    let ofCellSession = fun (CellSession (task, start)) -> task, start
     let ofTaskPriorityValue = fun (TaskPriorityValue value) -> value
-    let ofTaskStatusEntry = fun (TaskStatusEntry (date, entries)) -> date, entries
+    let ofTaskStatusEntry = fun (TaskStatusEntry (user, moment, manualCellStatus)) -> user, moment, manualCellStatus
 
 
-    let createTaskStatusEntries task cellStatusEntries =
-        cellStatusEntries
-        |> List.filter (fun (CellStatusEntry (address, _)) -> address.Task = task)
-        |> List.map (fun (CellStatusEntry (address, entries)) -> TaskStatusEntry (address.Date, entries))
-        |> List.sortBy (fun (TaskStatusEntry (date, _)) -> date)
-
-    let createCellComment task date user comment =
-        CellComment ({ Task = task; Date = date }, UserComment (user, comment))
-
-    let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position:FlukeDateTime, date:FlukeDate) =
-        let dateStart = { Date = date; Time = dayStart }.DateTime
+    let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position:FlukeDateTime, DateId referenceDate) =
+        let dateStart = { Date = referenceDate; Time = dayStart }.DateTime
         let dateEnd = dateStart.AddDays 1.
 
         match position.DateTime with
@@ -318,16 +316,30 @@ module Model =
         | date when date.DateTime.DayOfWeek = DayOfWeek.Monday -> StartOfWeek
         | _ -> NormalDay
 
-    let isToday dayStart position date =
-        match (dayStart, position, date) with
+    let isToday dayStart position dateId =
+        match (dayStart, position, dateId) with
         | Today -> true
         | _ -> false
 
     let dateId dayStart position =
-        match isToday dayStart position position.Date with
+        match isToday dayStart position (DateId position.Date) with
         | true -> position.Date
         | false -> position.Date.DateTime.AddDays -1. |> FlukeDate.FromDateTime
         |> DateId
+
+    let taskId (task: Task) =
+        TaskId (task.Information.Name, task.Name)
+
+    let createTaskStatusEntries task cellStatusEntries =
+        cellStatusEntries
+        |> List.filter (fun (CellStatusEntry (user, task', moment, manualCellStatus)) -> task' = task)
+        |> List.map (fun (CellStatusEntry (user, task', moment, entries)) -> TaskStatusEntry (user, moment, entries))
+        |> List.sortBy (fun (TaskStatusEntry (user, date, _)) -> date)
+
+    let createCellComment task moment user comment =
+        CellComment (task, moment, UserComment (user, comment))
+
+
 
 module Rendering =
     open Model
@@ -375,18 +387,30 @@ module Rendering =
 
     let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) task =
 
-        let cellStatusEventsByDate =
+        let cellStatusEventsByDateId =
             task.StatusEntries
             |> List.map ofTaskStatusEntry
+            |> List.map (fun (user, moment, manualCellStatus) -> dateId dayStart moment, (user, moment, manualCellStatus))
             |> Map.ofList
 
-        let firstDateRange = dateSequence |> List.head
-        let lastDateRange = dateSequence |> List.last
+        let firstDateRange, lastDateRange =
+//            let x x =
+//                let rec loop x = function
+//                    | () -> ()
+//                loop x
+//            let a = x dateSequence
+//            a |> ignore
 
-        let entriesDateSequence =
+            let firstDateRange = dateSequence |> List.head |> fun date -> { Date = date; Time = dayStart }
+            let lastDateRange = dateSequence |> List.last |> fun date -> { Date = date; Time = dayStart }
+            firstDateRange, lastDateRange
+
+        let dateSequenceWithEntries =
             let dates =
-                cellStatusEventsByDate
-                |> Seq.map (fun (KeyValue (k, _)) -> k.DateTime) // Map.keys
+                cellStatusEventsByDateId
+                |> Seq.map (fun (KeyValue ((DateId referenceDate), (user, moment, manualCellStatus))) ->
+                    referenceDate.DateTime
+                ) // Map.keys
                 |> Seq.sort
                 |> Seq.toArray
 
@@ -397,33 +421,37 @@ module Rendering =
                   dates |> Array.last |> max lastDateRange.DateTime ]
                 |> List.map FlukeDate.FromDateTime
                 |> getDateSequence (0, 0)
+            |> List.map (fun date -> { Date = date; Time = dayStart })
 
 
         let rec loop renderState = function
-            | date :: tail ->
-                let event = cellStatusEventsByDate |> Map.tryFind date
+            | moment :: tail ->
+                let dateId = dateId dayStart moment
+                let cellStatus = cellStatusEventsByDateId |> Map.tryFind dateId
 
+                let group = dayStart, position, dateId
                 let status, renderState =
-                    match event with
-                    | Some cellEvent ->
+                    match cellStatus with
+                    | Some (user, moment, manualCellStatus) ->
                         let renderState =
-                            match cellEvent, (dayStart, position, date) with
+                            match manualCellStatus, group with
                             | Postponed (Some _),               BeforeToday -> renderState
                             | (Postponed None | ManualPending), BeforeToday -> WaitingEvent
                             | Postponed None,                   Today       -> DayMatch
                             | _                                             -> Counting 1
 
                         let event =
-                            match cellEvent, (dayStart, position, date) with
+                            match manualCellStatus, group with
                             | Postponed (Some until), Today
-                                when position.GreaterEqualThan dayStart date until -> Pending
-                            | _                                                    -> EventStatus cellEvent
+                                when position.GreaterEqualThan dayStart dateId until
+                                -> Pending
+                            | _ -> UserStatus (user, manualCellStatus)
 
                         StatusCell event, renderState
 
                     | None ->
                         let getStatus renderState =
-                            match renderState, (dayStart, position, date) with
+                            match renderState, group with
                             | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
                             | DayMatch,          BeforeToday -> StatusCell Missed, WaitingEvent
                             | WaitingEvent,      BeforeToday -> StatusCell Missed, WaitingEvent
@@ -457,13 +485,13 @@ module Rendering =
                             let isDateMatched =
                                 recurrencyList
                                 |> List.map (function
-                                    | Weekly dayOfWeek    -> dayOfWeek = date.DateTime.DayOfWeek
-                                    | Monthly day         -> day = date.Day
-                                    | Yearly (day, month) -> day = date.Day && month = date.Month
+                                    | Weekly dayOfWeek    -> dayOfWeek = moment.DateTime.DayOfWeek
+                                    | Monthly day         -> day = moment.Date.Day
+                                    | Yearly (day, month) -> day = moment.Date.Day && month = moment.Date.Month
                                 )
                                 |> List.exists id
 
-                            match renderState, (dayStart, position, date) with
+                            match renderState, group with
                             | WaitingFirstEvent, BeforeToday                     -> EmptyCell, WaitingFirstEvent
                             | _,                 Today        when isDateMatched -> StatusCell Pending, Counting 1
                             | WaitingFirstEvent, Today                           -> EmptyCell, Counting 1
@@ -471,7 +499,7 @@ module Rendering =
                             | _,                 _                               -> getStatus renderState
 
                         | Manual suggestion ->
-                            match renderState, (dayStart, position, date), suggestion with
+                            match renderState, group, suggestion with
                             | WaitingFirstEvent, Today, WithSuggestion
                                 when task.PendingAfter = None          -> StatusCell Suggested, Counting 1
                             | WaitingFirstEvent, Today, WithSuggestion -> TodayCell, Counting 1
@@ -494,19 +522,19 @@ module Rendering =
                     | TodayCell ->
                         match position, task.MissedAfter, task.PendingAfter with
                         | position, Some missedAfter, _
-                            when position.GreaterEqualThan dayStart date missedAfter  -> MissedToday
+                            when position.GreaterEqualThan dayStart dateId missedAfter  -> MissedToday
                         | position, _,                Some pendingAfter
-                            when position.GreaterEqualThan dayStart date pendingAfter -> Pending
-                        | _,   _,                     None                            -> Pending
-                        | _                                                           -> Suggested
+                            when position.GreaterEqualThan dayStart dateId pendingAfter -> Pending
+                        | _,   _,                     None                                                -> Pending
+                        | _                                                                               -> Suggested
 
-                (date, status) :: loop renderState tail
+                (moment, status) :: loop renderState tail
             | [] -> []
 
         let cells =
-            loop WaitingFirstEvent entriesDateSequence
-            |> List.filter (fun (date, _) -> date >==< (firstDateRange, lastDateRange))
-            |> List.map (fun (date, cellStatus) -> Cell ({ Date = date; Task = task }, cellStatus))
+            loop WaitingFirstEvent dateSequenceWithEntries
+            |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
+            |> List.map (fun (moment, cellStatus) -> Cell ({ DateId = dateId dayStart moment; Task = task }, cellStatus))
         OldLane (task, cells)
 
 
@@ -577,7 +605,7 @@ module Sorting =
         lanes
         |> List.sortBy (fun (OldLane (_, cells)) ->
             cells
-            |> List.exists (fun (Cell (address, status)) -> isToday dayStart position address.Date && status = Disabled)
+            |> List.exists (fun (Cell (address, status)) -> isToday dayStart position address.DateId && status = Disabled)
             |> function
                 | true ->
                     cells
@@ -595,7 +623,7 @@ module Sorting =
         let getGroup task (Cell (address, status)) =
             let (|PostponedUntil|Postponed|WasPostponed|NotPostponed|) = function
                 | Postponed None                                                                    -> Postponed
-                | Postponed (Some until) when position.GreaterEqualThan dayStart address.Date until -> WasPostponed
+                | Postponed (Some until) when position.GreaterEqualThan dayStart address.DateId until -> WasPostponed
                 | Postponed _                                                                       -> PostponedUntil
                 | _                                                                                 -> NotPostponed
 
@@ -604,18 +632,18 @@ module Sorting =
                 | { Scheduling = Manual WithSuggestion } -> ManualWithSuggestion
                 | { Scheduling = Manual WithoutSuggestion } -> ManualWithoutSuggestion
 
-            [ (function MissedToday,                          _                       -> Some TaskOrderList | _ -> None)
-              (function EventStatus ManualPending,            _                       -> Some TaskOrderList | _ -> None)
-              (function (EventStatus WasPostponed | Pending), _                       -> Some TaskOrderList | _ -> None)
-              (function EventStatus PostponedUntil,           _                       -> Some TaskOrderList | _ -> None)
-              (function Suggested,                            SchedulingRecurrency    -> Some TaskOrderList | _ -> None)
-              (function Suggested,                            ManualWithSuggestion    -> Some TaskOrderList | _ -> None)
-              (function EventStatus Postponed,                _                       -> Some TaskOrderList | _ -> None)
-              (function EventStatus Completed,                _                       -> Some DefaultSort   | _ -> None)
-              (function EventStatus Dismissed,                _                       -> Some DefaultSort   | _ -> None)
-              (function Disabled,                             SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
-              (function Suggested,                            ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
-              (function _                                                                  -> Some DefaultSort) ]
+            [ (function MissedToday,                                _                       -> Some TaskOrderList | _ -> None)
+              (function UserStatus (user, ManualPending),           _                       -> Some TaskOrderList | _ -> None)
+              (function ((UserStatus (_, WasPostponed)) | Pending), _                       -> Some TaskOrderList | _ -> None)
+              (function UserStatus (user, PostponedUntil),          _                       -> Some TaskOrderList | _ -> None)
+              (function Suggested,                                  SchedulingRecurrency    -> Some TaskOrderList | _ -> None)
+              (function Suggested,                                  ManualWithSuggestion    -> Some TaskOrderList | _ -> None)
+              (function UserStatus (user, Postponed),               _                       -> Some TaskOrderList | _ -> None)
+              (function UserStatus (user, Completed),               _                       -> Some DefaultSort   | _ -> None)
+              (function UserStatus (user, Dismissed),               _                       -> Some DefaultSort   | _ -> None)
+              (function Disabled,                                   SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
+              (function Suggested,                                  ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
+              (function _                                                                   -> Some DefaultSort) ]
             |> List.map (fun orderFn -> orderFn (status, task))
             |> List.indexed
             |> List.choose (function groupIndex, Some sortType -> Some (groupIndex, sortType) | _, None -> None)
@@ -625,7 +653,7 @@ module Sorting =
         |> List.indexed
         |> List.groupBy (fun (_, OldLane (task, cells)) ->
             cells
-            |> List.filter (fun (Cell (address, _)) -> isToday dayStart position address.Date)
+            |> List.filter (fun (Cell (address, _)) -> isToday dayStart position address.DateId)
             |> List.map (getGroup task)
             |> List.minBy fst
         )

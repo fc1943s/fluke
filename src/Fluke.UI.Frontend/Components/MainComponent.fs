@@ -274,7 +274,7 @@ module PanelsComponent =
 
         module TaskNameComponent =
             let render = React.memo (fun (input: {| Level: int
-                                                    TaskId: Recoil.Atoms.RecoilTask.TaskId |}) ->
+                                                    TaskId: TaskId |}) ->
                 let selection = Recoil.useValue Recoil.Selectors.selection
 
                 let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily input.TaskId)
@@ -313,7 +313,7 @@ module PanelsComponent =
             )
 
         module CellComponent =
-            let render = React.memo (fun (input: {| TaskId: Recoil.Atoms.RecoilTask.TaskId
+            let render = React.memo (fun (input: {| TaskId: TaskId
                                                     Date: FlukeDate |}) ->
                 let isToday = Recoil.useValue (Recoil.Selectors.isTodayFamily input.Date)
 
@@ -362,7 +362,7 @@ module PanelsComponent =
             )
 
         module CellsComponent =
-            let render = React.memo (fun (input: {| TaskIdList: Recoil.Atoms.RecoilTask.TaskId list |}) ->
+            let render = React.memo (fun (input: {| TaskIdList: TaskId list |}) ->
                 Recoil.Profiling.addTimestamp "cells.render"
                 let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 

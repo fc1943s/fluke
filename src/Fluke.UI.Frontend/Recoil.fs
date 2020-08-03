@@ -240,7 +240,7 @@ module Recoil =
                         Sessions = sessions }
                         when
                             statusEntries
-                            |> List.exists (fun (TaskStatusEntry (date, _)) -> date.DateTime >==< dateRange)
+                            |> List.exists (fun (TaskStatusEntry (user, date, _)) -> date.DateTime >==< dateRange)
                             |> not
                         &&
                             sessions
@@ -352,8 +352,8 @@ module Recoil =
                     let cellCommentsMap =
                         let externalCellComments =
                             RootPrivateData.cellComments
-                            |> List.filter (fun (CellComment (address, _)) -> address.Task = task)
-                            |> List.map (fun (CellComment (address, comment)) ->
+                            |> List.filter (fun (CellComment (task', moment, comment)) -> task' = task)
+                            |> List.map (fun (CellComment (user, address, comment)) ->
                                 address.Date, comment
                             )
                         task.CellComments
@@ -444,7 +444,7 @@ module Recoil =
                 |> List.map (Tuple2.mapSnd (fun cells ->
                     cells
                     |> List.map (fun (Cell (address, status)) ->
-                        DateId address.Date, status
+                        address.DateId, status
                     )
                     |> Map.ofList
                 ))
@@ -690,7 +690,6 @@ module Recoil =
             }
 
         module RecoilTask =
-            type TaskId = TaskId of id:string
             type RecoilTask =
                 { Id: RecoilValue<TaskId, ReadWrite>
                   InformationId: RecoilValue<RecoilInformation.InformationId, ReadWrite>
@@ -700,7 +699,7 @@ module Recoil =
                   Priority: RecoilValue<TaskPriorityValue, ReadWrite> }
             let rec idFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof idFamily))
-                def (fun (_taskId: TaskId) -> TaskId "")
+                def (fun (_taskId: TaskId) -> TaskId ("", ""))
             }
             let rec informationIdFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof informationIdFamily))
@@ -732,7 +731,7 @@ module Recoil =
                       Sessions = sessionsFamily taskId
                       Priority = priorityFamily taskId }
             let taskId (task: Task) =
-                TaskId (sprintf "%s/%s" task.Information.Name task.Name)
+                TaskId (task.Information.Name, task.Name)
             let rec taskFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof taskFamily))
                 def (fun (taskId: TaskId) -> RecoilTask.Create taskId)
@@ -742,7 +741,7 @@ module Recoil =
             type CellId = CellId of id:string
             type RecoilCell =
                 { Id: RecoilValue<CellId, ReadWrite>
-                  TaskId: RecoilValue<RecoilTask.TaskId, ReadWrite>
+                  TaskId: RecoilValue<TaskId, ReadWrite>
                   Date: RecoilValue<FlukeDate, ReadWrite>
                   Status: RecoilValue<CellStatus, ReadWrite>
                   Comments: RecoilValue<UserComment list, ReadWrite>
@@ -755,7 +754,7 @@ module Recoil =
             }
             let rec taskIdFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilCell) (nameof taskIdFamily))
-                def (fun (_cellId: CellId) -> RecoilTask.TaskId "")
+                def (fun (_cellId: CellId) -> TaskId ("", ""))
             }
             let rec dateFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilCell) (nameof dateFamily))
@@ -786,8 +785,8 @@ module Recoil =
                       Comments = commentsFamily cellId
                       Sessions = sessionsFamily cellId
                       Selected = selectedFamily cellId }
-            let cellId (RecoilTask.TaskId taskId) (date: FlukeDate) =
-                CellId (sprintf "%s/%s" taskId (date.DateTime.Format "yyyy-MM-dd"))
+            let cellId (TaskId (informationName, taskName)) (date: FlukeDate) =
+                CellId (sprintf "%s/%s/%s" informationName taskName (date.DateTime.Format "yyyy-MM-dd"))
 
             let rec cellFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilCell) (nameof cellFamily))
@@ -801,7 +800,7 @@ module Recoil =
                   SharedWith: RecoilValue<TreeAccess list, ReadWrite>
                   Position: RecoilValue<FlukeDateTime, ReadWrite>
                   InformationIdList: RecoilValue<RecoilInformation.InformationId list, ReadWrite>
-                  TaskIdList: RecoilValue<RecoilTask.TaskId list, ReadWrite> }
+                  TaskIdList: RecoilValue<TaskId list, ReadWrite> }
             let rec idFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTree) (nameof idFamily))
                 def (fun (_treeId: TreeId) -> TreeId "")
@@ -866,7 +865,7 @@ module Recoil =
         }
         let rec selection = atom {
             key ("atom/" + nameof selection)
-            def (Map.empty : Map<RecoilTask.TaskId, Set<FlukeDate>>)
+            def (Map.empty : Map<TaskId, Set<FlukeDate>>)
         }
         let rec ctrlPressed = atom {
             key ("atom/" + nameof ctrlPressed)
@@ -912,16 +911,7 @@ module Recoil =
                 let dayStart = getter.get Atoms.dayStart
                 let position = getter.get position
                 Profiling.addCount (nameof isTodayFamily)
-                isToday dayStart position date
-            )
-        }
-        let rec dateIdFamily = selectorFamily { // dateReferenceFamily
-            key ("selectorFamily/" + nameof dateIdFamily)
-            get (fun (date: FlukeDate) getter ->
-                let dayStart = getter.get Atoms.dayStart
-                let position = getter.get position
-                Profiling.addCount (nameof dateIdFamily)
-                isToday dayStart position date
+                isToday dayStart position (DateId date)
             )
         }
         let rec selection = selector {
@@ -931,7 +921,7 @@ module Recoil =
                 Profiling.addCount (nameof selection)
                 selection
             )
-            set (fun setter (newValue: Map<Atoms.RecoilTask.TaskId, Set<FlukeDate>>) ->
+            set (fun setter (newValue: Map<TaskId, Set<FlukeDate>>) ->
                 let selection = setter.get Atoms.selection
 
                 selection
@@ -1024,7 +1014,7 @@ module Recoil =
         module private rec RecoilTask =
             let rec lastSessionFamily = selectorFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof lastSessionFamily))
-                get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
+                get (fun (taskId: TaskId) getter ->
                     let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
                     let sessions = getter.get task.Sessions
 
@@ -1036,7 +1026,7 @@ module Recoil =
             }
             let rec activeSessionFamily = selectorFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof activeSessionFamily))
-                get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
+                get (fun (taskId: TaskId) getter ->
                     let position = getter.get position
                     let lastSession = getter.get (lastSessionFamily taskId)
 

@@ -178,12 +178,15 @@ module Tests =
 
                 let taskList =
                     props.Data
-                    |> List.map (fun (task, events) -> applyTaskEvents task events)
+                    |> List.map (fun (task, events) ->
+                        applyTaskEvents Consts.testDayStart task (events |> List.map (fun x -> x, Users.testUser))
+                    )
 
                 let dateSequence =
                     taskList
                     |> List.collect (fun x -> x.StatusEntries)
-                    |> List.map (ofTaskStatusEntry >> fst)
+                    |> List.map ofTaskStatusEntry
+                    |> List.map (fun (user, moment, manualCellStatus) -> moment.Date)
                     |> Rendering.getDateSequence (35, 35)
 
                 taskList
@@ -341,7 +344,11 @@ module Tests =
                                                      Expected: (FlukeDate * CellStatus) list
                                                      Events: TempTaskEvent list |}) =
 
-                let task = applyTaskEvents props.Task props.Events
+                let task =
+                    applyTaskEvents
+                        Consts.testDayStart
+                        props.Task
+                        (props.Events |> List.map (fun x -> x, Users.testUser))
 
                 let dateSequence = props.Expected |> List.map fst
 
@@ -350,12 +357,12 @@ module Tests =
                     >> String.concat Environment.NewLine
 
                 Rendering.renderLane Consts.testDayStart props.Now dateSequence task
-                |> fun (OldLane (_, cells)) ->
+                |> fun (OldLane (task, cells)) ->
                     cells
-                    |> List.map (fun (Cell (address, status)) -> string address.Date, status)
+                    |> List.map (fun (Cell (address, status)) -> string address.DateId, status)
                 |> toString
                 |> Expect.equal "" (props.Expected
-                                    |> List.map (fun (date, cellStatus) -> string date, cellStatus)
+                                    |> List.map (fun (date, cellStatus) -> string (DateId date), cellStatus)
                                     |> toString)
 
             testList "Postponed Until" [
@@ -367,7 +374,7 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 09, Disabled
-                               flukeDate 2020 Month.March 10, EventStatus (Postponed (Some (flukeTime 23 00)))
+                               flukeDate 2020 Month.March 10, UserStatus (Users.testUser, Postponed (Some (flukeTime 23 00)))
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Pending
                            ]
@@ -383,7 +390,7 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 09, Disabled
-                               flukeDate 2020 Month.March 10, EventStatus (Postponed (Some (flukeTime 01 00)))
+                               flukeDate 2020 Month.March 10, UserStatus (Users.testUser, Postponed (Some (flukeTime 01 00)))
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Pending
                            ]
@@ -431,9 +438,9 @@ module Tests =
                                    Time = flukeTime 02 00 }
                            Expected = [
                                flukeDate 2020 Month.March 07, Disabled
-                               flukeDate 2020 Month.March 08, EventStatus Completed
+                               flukeDate 2020 Month.March 08, UserStatus (Users.testUser, Completed)
                                flukeDate 2020 Month.March 09, Missed
-                               flukeDate 2020 Month.March 10, EventStatus (Postponed (Some (flukeTime 01 00)))
+                               flukeDate 2020 Month.March 10, UserStatus (Users.testUser, Postponed (Some (flukeTime 01 00)))
                                flukeDate 2020 Month.March 11, Missed
                                flukeDate 2020 Month.March 12, Pending
                                flukeDate 2020 Month.March 13, Pending
@@ -453,7 +460,7 @@ module Tests =
                                flukeDate 2020 Month.March 09, Disabled
                                flukeDate 2020 Month.March 10, Pending
                                flukeDate 2020 Month.March 11, Pending
-                               flukeDate 2020 Month.March 12, EventStatus (Postponed (Some (flukeTime 13 00)))
+                               flukeDate 2020 Month.March 12, UserStatus (Users.testUser, Postponed (Some (flukeTime 13 00)))
                                flukeDate 2020 Month.March 13, Pending
                            ]
                            Events = [
@@ -487,7 +494,7 @@ module Tests =
                            Now = { Date = flukeDate 2020 Month.March 9
                                    Time = Consts.testDayStart }
                            Expected = [
-                               flukeDate 2020 Month.March 8, EventStatus Completed
+                               flukeDate 2020 Month.March 8, UserStatus (Users.testUser, Completed)
                                flukeDate 2020 Month.March 9, Disabled
                                flukeDate 2020 Month.March 10, Disabled
                                flukeDate 2020 Month.March 11, Pending
@@ -508,7 +515,7 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 9, Disabled
-                               flukeDate 2020 Month.March 10, EventStatus (Postponed None)
+                               flukeDate 2020 Month.March 10, UserStatus (Users.testUser, Postponed None)
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Disabled
                                flukeDate 2020 Month.March 13, Pending
@@ -526,7 +533,7 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 9, Disabled
-                               flukeDate 2020 Month.March 10, EventStatus (Postponed None)
+                               flukeDate 2020 Month.March 10, UserStatus (Users.testUser, Postponed None)
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Disabled
                                flukeDate 2020 Month.March 13, Pending
@@ -543,7 +550,7 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 9, Disabled
-                               flukeDate 2020 Month.March 10, EventStatus (Postponed None)
+                               flukeDate 2020 Month.March 10, UserStatus (Users.testUser, Postponed None)
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Disabled
                                flukeDate 2020 Month.March 13, Pending
@@ -561,11 +568,11 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 7, Disabled
-                               flukeDate 2020 Month.March 8, EventStatus Completed
+                               flukeDate 2020 Month.March 8, UserStatus (Users.testUser, Completed)
                                flukeDate 2020 Month.March 9, Disabled
                                flukeDate 2020 Month.March 10, Missed
                                flukeDate 2020 Month.March 11, Pending
-                               flukeDate 2020 Month.March 12, EventStatus Completed
+                               flukeDate 2020 Month.March 12, UserStatus (Users.testUser, Completed)
                                flukeDate 2020 Month.March 13, Disabled
                                flukeDate 2020 Month.March 14, Pending
                            ]
@@ -630,8 +637,8 @@ module Tests =
                                flukeDate 2020 Month.March 27, Disabled
                                flukeDate 2020 Month.March 28, Pending
                                flukeDate 2020 Month.March 29, Disabled
-                               flukeDate 2020 Month.March 30, EventStatus ManualPending
-                               flukeDate 2020 Month.March 31, EventStatus ManualPending
+                               flukeDate 2020 Month.March 30, UserStatus (Users.testUser, ManualPending)
+                               flukeDate 2020 Month.March 31, UserStatus (Users.testUser, ManualPending)
                                flukeDate 2020 Month.April 01, Disabled
                                flukeDate 2020 Month.April 02, Disabled
                                flukeDate 2020 Month.April 03, Pending
@@ -654,7 +661,7 @@ module Tests =
                                for d in 13 .. 29 do
                                    flukeDate 2020 Month.March d,
                                    match d with
-                                   | 14 -> EventStatus Completed
+                                   | 14 -> UserStatus (Users.testUser, Completed)
                                    | 21 | 28 -> Pending
                                    | _ -> Disabled
                            ]
@@ -672,7 +679,7 @@ module Tests =
                                for d in 10 .. 26 do
                                    flukeDate 2020 Month.March d,
                                    match d with
-                                   | 13 -> EventStatus Completed
+                                   | 13 -> UserStatus (Users.testUser, Completed)
                                    | 18 | 19 -> Missed
                                    | 20 | 25 -> Pending
                                    | _ -> Disabled
@@ -691,7 +698,7 @@ module Tests =
                                for d in 13 .. 29 do
                                    flukeDate 2020 Month.March d,
                                    match d with
-                                   | 18 -> EventStatus (Postponed None)
+                                   | 18 -> UserStatus (Users.testUser, Postponed None)
                                    | 19 -> Missed
                                    | 20 | 21 | 28 -> Pending
                                    | _ -> Disabled
@@ -758,7 +765,7 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 8, Disabled
-                               flukeDate 2020 Month.March 9, EventStatus ManualPending
+                               flukeDate 2020 Month.March 9, UserStatus (Users.testUser, ManualPending)
                                flukeDate 2020 Month.March 10, Missed
                                flukeDate 2020 Month.March 11, Pending
                                flukeDate 2020 Month.March 12, Disabled
@@ -804,11 +811,11 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 25, Suggested
-                               flukeDate 2020 Month.March 26, EventStatus ManualPending
+                               flukeDate 2020 Month.March 26, UserStatus (Users.testUser, ManualPending)
                                flukeDate 2020 Month.March 27, Missed
                                flukeDate 2020 Month.March 28, Pending
                                flukeDate 2020 Month.March 29, Suggested
-                               flukeDate 2020 Month.March 30, EventStatus ManualPending
+                               flukeDate 2020 Month.March 30, UserStatus (Users.testUser, ManualPending)
                                flukeDate 2020 Month.March 31, Suggested
                            ]
                            Events = [
@@ -824,8 +831,8 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 24, Suggested
-                               flukeDate 2020 Month.March 25, EventStatus ManualPending
-                               flukeDate 2020 Month.March 26, EventStatus Completed
+                               flukeDate 2020 Month.March 25, UserStatus (Users.testUser, ManualPending)
+                               flukeDate 2020 Month.March 26, UserStatus (Users.testUser, Completed)
                                flukeDate 2020 Month.March 27, Suggested
                                flukeDate 2020 Month.March 28, Suggested
                                flukeDate 2020 Month.March 29, Suggested
@@ -843,7 +850,7 @@ module Tests =
                                    Time = Consts.testDayStart }
                            Expected = [
                                flukeDate 2020 Month.March 24, Suggested
-                               flukeDate 2020 Month.March 25, EventStatus ManualPending
+                               flukeDate 2020 Month.March 25, UserStatus (Users.testUser, ManualPending)
                                flukeDate 2020 Month.March 26, Missed
                                flukeDate 2020 Month.March 27, Missed
                                flukeDate 2020 Month.March 28, Pending
@@ -881,7 +888,11 @@ module Tests =
 
                     testWithLaneRenderingData laneRenderingTestData
 
-                    let taskState = applyTaskEvents laneRenderingTestData.Task laneRenderingTestData.Events
+                    let taskState =
+                        applyTaskEvents
+                            Consts.testDayStart
+                            laneRenderingTestData.Task
+                            (laneRenderingTestData.Events |> List.map (fun x -> x, Users.testUser))
 
                     let sessionsExpected = [
                         flukeDate 2020 Month.February 29, 1
@@ -902,7 +913,9 @@ module Tests =
                         |> List.map (fun date ->
                             let sessionCount =
                                 taskState.Sessions
-                                |> List.filter (fun (TaskSession start) -> isToday Consts.testDayStart start date)
+                                |> List.filter (fun (TaskSession start) ->
+                                    isToday Consts.testDayStart start (DateId date)
+                                )
                                 |> List.length
                             date, sessionCount
                         )

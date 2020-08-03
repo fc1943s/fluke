@@ -110,19 +110,19 @@ module TempData =
 
 
     module Events =
+
         [<RequireQualifiedAccess>]
         type TempEvent =
-            | CellStatus of user:User * date:FlukeDateTime * task:Task * status:CellEventStatus
+            | CellStatus of user:User * date:FlukeDateTime * task:Task * manualCellStatus:ManualCellStatus
             | CellComment of user:User * date:FlukeDateTime * task:Task * comment:Comment
 
-        let eventsFromStatusEntries user (entries: (FlukeDate * (Task * CellEventStatus) list) list) =
+        let eventsFromStatusEntries user (entries: (FlukeDate * (Task * ManualCellStatus) list) list) =
             let newEvents =
                 entries
                 |> List.collect (fun (date, events) ->
                     events
                     |> List.map (fun (task, userStatus) ->
-                        TempEvent.CellStatus
-                            (user, { Date = date; Time = Consts.testDayStart }, task, userStatus)
+                        TempEvent.CellStatus (user, { Date = date; Time = Consts.dayStart }, task, userStatus)
                     )
                 )
 
@@ -130,8 +130,8 @@ module TempData =
                 entries
                 |> List.collect (fun (date, events) ->
                     events
-                    |> List.map (fun (task, eventStatus) ->
-                        CellStatusEntry ({ Task = task; Date = date }, eventStatus)
+                    |> List.map (fun (task, manualCellStatus) ->
+                        CellStatusEntry (user, task, { Date = date; Time = Consts.dayStart }, manualCellStatus)
                     )
                 )
 
@@ -139,6 +139,55 @@ module TempData =
 
         let eventsFromCellComments user =
             ()
+
+        module Temp =
+            type Command =
+                | CompleteCell of user:User * task:Task * date:FlukeDateTime
+            type Event =
+                | CellCompleted of user:User * task:Task * date:FlukeDateTime
+            type State =
+                { DayStart: FlukeTime
+                  TaskMap: Map<TaskId, Map<DateId, CellStatus>>
+                  TaskIdList: TaskId list }
+            let initialState =
+                { DayStart = Consts.dayStart
+                  TaskMap = Map.empty
+                  TaskIdList = [] }
+            let private apply (state: State) (event: Event) : State = // Apply/Evolve
+                match event with
+                | CellCompleted (user, task, moment) ->
+                    { state with
+                        TaskMap =
+                            let taskId = taskId task
+                            let dateId = dateId state.DayStart moment
+                            let newStatus = UserStatus (user, Completed)
+                            let cellMap =
+                                state.TaskMap
+                                |> Map.tryFind taskId
+                                |> Option.defaultValue Map.empty
+                                |> Map.add dateId newStatus
+                            state.TaskMap
+                            |> Map.add taskId cellMap
+                    }
+            let execute (state: State) (command: Command) : Event list = [ // Execute/Decide
+                match command, state with
+                | CompleteCell (user, task, moment), state
+                    when
+                        state.TaskMap
+                        |> Map.tryFind (taskId task)
+                        |> Option.defaultValue Map.empty
+                        |> Map.tryFind (dateId state.DayStart moment)
+                        |> Option.defaultValue Disabled
+                        |> (=) Missed ->
+                    CellCompleted (user, task, moment)
+
+                | CompleteCell (user, task, eventDate), state ->
+                    CellCompleted (user, task, eventDate)
+
+                | _ -> ()
+            ]
+            let build = List.fold apply
+            let rebuld = build initialState
 
 
     let getNow () =
@@ -172,11 +221,11 @@ module TempData =
         | TempComment of comment:string
         | TempSession of start:FlukeDateTime
         | TempPriority of priority:TaskPriority
-        | TempStatusEntry of date:FlukeDate * eventStatus:CellEventStatus
+        | TempStatusEntry of date:FlukeDate * manualCellStatus:ManualCellStatus
         | TempCellComment of date:FlukeDate * comment:string
         | TempTaskField of field:TempTaskEventField
 
-    let applyTaskEvents task events =
+    let applyTaskEvents dayStart task (events: (TempTaskEvent * User) list) =
 
         let getPriorityValue = function
             | Low1 -> 1
@@ -193,29 +242,29 @@ module TempData =
         // TODO: how the hell do i rewrite this without losing performance?
         let comments, cellComments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
             let rec loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration = function
-                | TempComment comment :: tail ->
-                    let comment = UserComment (Users.testUser, comment)
+                | (TempComment comment, user) :: tail ->
+                    let comment = UserComment (user, comment)
                     loop (comment :: comments) cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
-                | TempCellComment (date, comment) :: tail ->
-                    let cellComment = date, UserComment (Users.testUser, comment)
+                | (TempCellComment (date, comment), user) :: tail ->
+                    let cellComment = date, UserComment (user, comment)
                     loop comments (cellComment :: cellComments) sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
-                | TempSession { Date = date; Time = time } :: tail ->
+                | (TempSession { Date = date; Time = time }, user) :: tail ->
                     let session = TaskSession { Date = date; Time = time }
                     loop comments cellComments (session :: sessions) statusEntries priority scheduling pendingAfter missedAfter duration tail
 
-                | TempStatusEntry (date, eventStatus) :: tail ->
-                    let statusEntry = TaskStatusEntry (date, eventStatus)
+                | (TempStatusEntry (date, manualCellStatus), user) :: tail ->
+                    let statusEntry = TaskStatusEntry (user, { Date = date; Time = dayStart }, manualCellStatus)
                     loop comments cellComments sessions (statusEntry :: statusEntries) priority scheduling pendingAfter missedAfter duration tail
 
-                | TempPriority priority :: tail ->
+                | (TempPriority priority, user) :: tail ->
                     let priority = TaskPriorityValue (getPriorityValue priority) |> Some
                     loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
-                | TempTaskField field :: tail ->
+                | (TempTaskField field, user) :: tail ->
                     match field with
-                    | TempTaskFieldScheduling (scheduling, _start) ->
+                    | TempTaskFieldScheduling (scheduling, start) ->
                         loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
 
                     | TempTaskFieldPendingAfter start ->
@@ -249,18 +298,21 @@ module TempData =
             Priority = priority }
 
 
-    let transformTreeData taskTree =
+    let treeDataWithUser user taskTree =
+        taskTree |> List.map (Tuple2.mapSnd (List.map (Tuple2.mapSnd (List.map (fun event -> event, user)))))
+
+    let transformTreeData dayStart taskTree =
         let taskList =
             taskTree
             |> List.collect (fun (information, tasks) ->
                 tasks
-                |> List.map (fun (taskName, events) ->
+                |> List.map (fun (taskName, (events: (TempTaskEvent * User) list)) ->
                     let task =
                         { Task.Default with
                             Name = taskName
                             Information = information }
 
-                    applyTaskEvents task events
+                    applyTaskEvents dayStart task events
                 )
             )
 
@@ -282,8 +334,8 @@ module TempData =
                                                Expected: (FlukeDate * CellStatus) list
                                                Events: TempTaskEvent list
                                                Task: Task |}) =
-
-        {| TaskList = [ applyTaskEvents testData.Task testData.Events ]
+        let eventsWithUser = testData.Events |> List.map (fun x -> x, Users.testUser)
+        {| TaskList = [ applyTaskEvents Consts.testDayStart testData.Task eventsWithUser ]
            TaskOrderList = [ { Task = testData.Task; Priority = TaskOrderPriority.First } ]
            GetNow = fun () -> testData.Now |}
 
@@ -291,11 +343,16 @@ module TempData =
     let createSortLanesTestData (testData : {| Now: FlukeDateTime
                                                Data: (Task * TempTaskEvent list) list
                                                Expected: string list |}) =
-
-        {| TaskList = testData.Data |> List.map (fun (task, events) -> applyTaskEvents task events)
+        {| TaskList =
+               testData.Data
+               |> List.map (fun (task, events) ->
+                   events
+                   |> List.map (fun x -> x, Users.testUser)
+                   |> applyTaskEvents Consts.testDayStart task
+                )
            TaskOrderList =
                testData.Data
-               |> List.map (fun (task, _) -> { Task = task; Priority = TaskOrderPriority.Last })
+               |> List.map (fun (task, events) -> { Task = task; Priority = TaskOrderPriority.Last })
            GetNow = fun () -> testData.Now |}
 
 
@@ -304,18 +361,18 @@ module TempData =
             [
                 Project Projects.app_fluke, [
                     "data management", [
-                        TempComment "mutability"
-                        TempComment "initial default data (load the text first with tests)"
+                        TempComment "mutability", Users.testUser
+                        TempComment "initial default data (load the text first with tests)", Users.testUser
                     ]
                     "cell selection (mouse, vim navigation)", []
                     "data structures performance", []
                     "side panel (journal, comments)", []
                     "add task priority (for randomization)", []
                     "persistence", [
-                        TempComment "data encryption"
+                        TempComment "data encryption", Users.testUser
                     ]
                     "vivaldi or firefox bookmark integration", [
-                        TempComment "browser.html javascript injection or browser extension"
+                        TempComment "browser.html javascript injection or browser extension", Users.testUser
                     ]
                     "telegram integration (fast link sharing)", []
                     "mobile layout", []
@@ -354,7 +411,7 @@ module TempData =
                 Resource Resources.vim, []
                 Resource Resources.windows, []
             ]
-            |> transformTreeData
+            |> transformTreeData Consts.testDayStart
 
         RenderLaneTests =
                         {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
