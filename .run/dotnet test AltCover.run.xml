@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="dotnet test AltCover" type="RunNativeExe" factoryName="Native Executable">
+  <configuration default="false" name="Fluke.Shared.Tests - dotnet test AltCover" type="RunNativeExe" factoryName="Native Executable">
     <option name="EXE_PATH" value="$PROJECT_DIR$/../../../../Program Files/dotnet/dotnet.exe" />
     <option name="PROGRAM_PARAMETERS" value="test /p:AltCover=true -- --opencover --linecover" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/Fluke.Shared.Tests" />

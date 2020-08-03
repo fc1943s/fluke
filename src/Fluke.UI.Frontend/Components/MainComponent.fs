@@ -188,9 +188,38 @@ module PanelsComponent =
         let cellSize = 17
 
         module HeaderComponent =
+
+            module DayComponent =
+                let render = React.memo (fun (input: {| Date: FlukeDate
+                                                        Label: string |}) ->
+                    let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
+                    let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.hasSelectionFamily input.Date)
+
+                    Html.span [
+                        prop.classes [
+                            Css.cellSquare
+                            if isToday then Css.todayHeader
+                            if hasSelection then Css.selectionHighlight
+                            match input.Date with
+                            | StartOfMonth -> Css.cellStartMonth
+                            | StartOfWeek -> Css.cellStartWeek
+                            | _ -> ()
+                        ]
+                        prop.children [
+                            input.Label
+                            |> String.toLower
+                            |> str
+                        ]
+                    ]
+                )
+
             let render = React.memo (fun () ->
                 let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
-                let dateMap = Recoil.useValue Recoil.Selectors.dateMap
+
+                let datesByMonth =
+                    dateSequence
+                    |> List.groupBy (fun date -> date.Month)
+                    |> List.map snd
 
                 Html.div [
                     // Month row
@@ -199,17 +228,22 @@ module PanelsComponent =
                             style.display.flex
                         ]
                         prop.children [
-                            yield! dateSequence
-                            |> List.groupBy (fun date -> date.Month)
-                            |> List.map (fun (_, dates) -> dates.Head, dates.Length)
-                            |> List.map (fun (firstDay, days) ->
+                            yield! datesByMonth
+                            |> List.map (fun dates ->
+                                let firstDate =
+                                    dates
+                                    |> List.tryHead
+                                    |> Option.defaultValue TempData.Consts.defaultDate
+                                let month = firstDate.DateTime.Format "MMM"
+                                let cellWidth = cellSize * dates.Length
+
                                 Html.span [
                                     prop.style [
                                         style.textAlign.center
-                                        style.width (cellSize * days)
+                                        style.width cellWidth
                                     ]
                                     prop.children [
-                                        str (firstDay.DateTime.Format "MMM")
+                                        str month
                                     ]
                                 ]
                             )
@@ -224,22 +258,9 @@ module PanelsComponent =
                         prop.children [
                             yield! dateSequence
                             |> List.map (fun date ->
-                                Html.span [
-                                    prop.classes [
-                                        Css.cellSquare
-                                        if dateMap.[date].IsToday then Css.todayHeader
-                                        if dateMap.[date].IsSelected then Css.selectionHighlight
-                                        match date with
-                                        | StartOfMonth -> Css.cellStartMonth
-                                        | StartOfWeek -> Css.cellStartWeek
-                                        | _ -> ()
-                                    ]
-                                    prop.children [
-                                        date.DateTime.Format "EEEEEE"
-                                        |> String.toLower
-                                        |> str
-                                    ]
-                                ]
+                                DayComponent.render
+                                    {| Date = date
+                                       Label = date.DateTime.Format "EEEEEE" |}
                             )
                         ]
                     ]
@@ -252,20 +273,9 @@ module PanelsComponent =
                         prop.children [
                             yield! dateSequence
                             |> List.map (fun date ->
-                                Html.span [
-                                    prop.classes [
-                                        Css.cellSquare
-                                        if dateMap.[date].IsToday then Css.todayHeader
-                                        if dateMap.[date].IsSelected then Css.selectionHighlight
-                                        match date with
-                                        | StartOfMonth -> Css.cellStartMonth
-                                        | StartOfWeek -> Css.cellStartWeek
-                                        | _ -> ()
-                                    ]
-                                    prop.children [
-                                        str (date.Day.ToString "D2")
-                                    ]
-                                ]
+                                DayComponent.render
+                                    {| Date = date
+                                       Label = date.Day.ToString "D2" |}
                             )
                         ]
                     ]
@@ -275,27 +285,20 @@ module PanelsComponent =
         module TaskNameComponent =
             let render = React.memo (fun (input: {| Level: int
                                                     TaskId: TaskId |}) ->
-                let selection = Recoil.useValue Recoil.Selectors.selection
+                // TODO: put inside RecoilTask object?
+                let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilTask.hasSelectionFamily input.TaskId)
 
                 let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily input.TaskId)
 
                 let taskName = Recoil.useValue task.Name
                 let taskComments = Recoil.useValue task.Comments
 
-
-                let isSelected =
-                    selection
-                    |> Map.tryFind input.TaskId
-                    |> Option.defaultValue Set.empty
-                    |> Set.isEmpty
-                    |> not
-
                 Html.div [
                     prop.className Css.cellRectangle
                     prop.children [
                         Html.div [
                             prop.classes [
-                                if isSelected then Css.selectionHighlight
+                                if hasSelection then Css.selectionHighlight
                             ]
                             prop.style [
                                 style.overflow.hidden
@@ -360,12 +363,12 @@ module PanelsComponent =
         module CellComponent =
             let render = React.memo (fun (input: {| TaskId: TaskId
                                                     Date: FlukeDate |}) ->
-                let isToday = Recoil.useValue (Recoil.Selectors.isTodayFamily input.Date)
+                let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
 
                 let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId input.Date
                 let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
 
-                let showUser = Recoil.useValue (Recoil.Selectors.showUserFamily input.TaskId)
+                let showUser = Recoil.useValue (Recoil.Selectors.RecoilTask.showUserFamily input.TaskId)
 
                 let comments = Recoil.useValue cell.Comments
                 let sessions = Recoil.useValue cell.Sessions

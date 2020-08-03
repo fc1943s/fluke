@@ -758,7 +758,7 @@ module Recoil =
             }
             let rec dateFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilCell) (nameof dateFamily))
-                def (fun (_cellId: CellId) -> flukeDate 0000 Month.January 01)
+                def (fun (_cellId: CellId) -> TempData.Consts.defaultDate)
             }
             let rec statusFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilCell) (nameof statusFamily))
@@ -815,7 +815,7 @@ module Recoil =
             }
             let rec positionFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilInformation) (nameof positionFamily))
-                def (fun (_treeId: TreeId) -> flukeDateTime 0000 Month.January 01 00 00)
+                def (fun (_treeId: TreeId) -> { Date = TempData.Consts.defaultDate; Time = TempData.Consts.dayStart })
             }
             let rec informationIdListFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilInformation) (nameof informationIdListFamily))
@@ -840,42 +840,42 @@ module Recoil =
                 def (fun (treeId: TreeId) -> RecoilTree.Create treeId)
             }
 
-        let rec debug = atom {
+        let rec internal debug = atom {
             key ("atom/" + nameof debug)
             def true
             local_storage
         }
-        let rec treeName = atom {
+        let rec internal treeName = atom {
             key ("atom/" + nameof treeName)
             def "default"
             local_storage
         }
-        let rec user = atom {
+        let rec internal user = atom {
             key ("atom/" + nameof user)
             def (FakeBackend.getCurrentUser ())
         }
-        let rec view = atom {
+        let rec internal view = atom {
             key ("atom/" + nameof view)
             def View.Calendar
             local_storage
         }
-        let rec dayStart = atom {
+        let rec internal dayStart = atom {
             key ("atom/" + nameof dayStart)
             def (FakeBackend.getDayStart ())
         }
-        let rec selection = atom {
+        let rec internal selection = atom {
             key ("atom/" + nameof selection)
             def (Map.empty : Map<TaskId, Set<FlukeDate>>)
         }
-        let rec ctrlPressed = atom {
+        let rec internal ctrlPressed = atom {
             key ("atom/" + nameof ctrlPressed)
             def false
         }
-        let rec positionTrigger = atom {
+        let rec internal positionTrigger = atom {
             key ("atom/" + nameof positionTrigger)
             def 0
         }
-        let rec tree = atom {
+        let rec internal tree = atom {
             key ("atom/" + nameof tree)
             def (None : FakeBackend.FakeTree option)
         }
@@ -1002,24 +1002,6 @@ module Recoil =
                     |> Map.ofList
             )
         }
-        let rec showUserFamily = selectorFamily {
-            key ("selectorFamily/" + nameof showUserFamily)
-            get (fun (taskId: TaskId) getter ->
-                let taskMap = getter.get currentTaskMap
-
-                Profiling.addCount (nameof showUserFamily)
-                taskMap
-                |> Map.tryFind taskId
-                |> Option.map (fun task ->
-                    task.StatusEntries
-                    |> Seq.map (fun (TaskStatusEntry (user, moment, manualCellStatus)) -> user)
-                    |> Seq.distinct
-                    |> Seq.length
-                    |> fun x -> x > 1
-                )
-                |> Option.defaultValue false
-            )
-        }
         /// [1]
         let rec selection = selector {
             key ("selector/" + nameof selection)
@@ -1028,13 +1010,13 @@ module Recoil =
                 Profiling.addCount (nameof selection)
                 selection
             )
-            set (fun setter (newValue: Map<TaskId, Set<FlukeDate>>) ->
+            set (fun setter (newSelection: Map<TaskId, Set<FlukeDate>>) ->
                 let selection = setter.get Atoms.selection
 
                 selection
                 |> Seq.iter (fun (KeyValue (taskId, dates)) ->
                     let newSelectionTask =
-                        newValue
+                        newSelection
                         |> Map.tryFind taskId
                         |> Option.defaultValue Set.empty
                     dates
@@ -1049,7 +1031,7 @@ module Recoil =
                     )
                 )
 
-                newValue
+                newSelection
                 |> Seq.iter (fun (KeyValue (taskId, dates)) ->
                     let selectionTask =
                         selection
@@ -1067,43 +1049,8 @@ module Recoil =
                     )
                 )
 
-                setter.set (Atoms.selection, newValue)
+                setter.set (Atoms.selection, newSelection)
                 Profiling.addCount (nameof selection + "(SET)")
-            )
-        }
-        let rec isTodayFamily = selectorFamily {
-            key ("selectorFamily/" + nameof isTodayFamily)
-            get (fun (date: FlukeDate) getter ->
-                let dayStart = getter.get Atoms.dayStart
-                let position = getter.get position
-                Profiling.addCount (nameof isTodayFamily)
-                isToday dayStart position (DateId date)
-            )
-        }
-        let rec dateMap = selector {
-            key ("selector/" + nameof dateMap)
-            get (fun getter ->
-                let dateSequence = getter.get dateSequence
-                let selection = getter.get selection
-
-                let selectionSet =
-                    selection
-                    |> Map.values
-                    |> Set.unionMany
-
-                let newDateMap =
-                    dateSequence
-                    |> List.map (fun date ->
-                        let isToday = getter.get (isTodayFamily date)
-                        let info =
-                            {| IsSelected = selectionSet.Contains date
-                               IsToday = isToday |}
-                        date, info
-                    )
-                    |> Map.ofList
-
-                Profiling.addCount (nameof dateMap)
-                newDateMap
             )
         }
         /// [3]
@@ -1126,6 +1073,7 @@ module Recoil =
             )
         }
         /// [4]
+        // TODO: Remove View and check performance
         let rec treeAsync = selectorFamily {
             key ("selectorFamily/" + nameof treeAsync)
             get (fun (view: View) getter -> async {
@@ -1152,17 +1100,39 @@ module Recoil =
             })
         }
 
-        module private rec RecoilInformation =
+        module rec RecoilFlukeDate =
+            let rec isTodayFamily = selectorFamily {
+                key (sprintf "%s/%s" (nameof RecoilFlukeDate) (nameof isTodayFamily))
+                get (fun (date: FlukeDate) getter ->
+                    let dayStart = getter.get Atoms.dayStart
+                    let position = getter.get position
+                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilFlukeDate) (nameof isTodayFamily))
+                    isToday dayStart position (DateId date)
+                )
+            }
+            let rec hasSelectionFamily = selectorFamily {
+                key (sprintf "%s/%s" (nameof RecoilFlukeDate) (nameof hasSelectionFamily))
+                get (fun (date: FlukeDate) getter ->
+                    let selection = getter.get selection
+
+                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilFlukeDate) (nameof hasSelectionFamily))
+                    selection
+                    |> Map.values
+                    |> Seq.exists (fun dateSequence -> dateSequence |> Set.contains date)
+                )
+            }
+
+        module rec RecoilInformation =
             ()
 
-        module private rec RecoilTask =
+        module rec RecoilTask =
             let rec lastSessionFamily = selectorFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof lastSessionFamily))
                 get (fun (taskId: TaskId) getter ->
                     let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
                     let sessions = getter.get task.Sessions
 
-                    Profiling.addCount (nameof lastSessionFamily)
+                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilTask) (nameof lastSessionFamily))
                     sessions
                     |> List.sortByDescending (fun (TaskSession start) -> start.DateTime)
                     |> List.tryHead
@@ -1174,7 +1144,7 @@ module Recoil =
                     let position = getter.get position
                     let lastSession = getter.get (lastSessionFamily taskId)
 
-                    Profiling.addCount (nameof activeSessionFamily)
+                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilTask) (nameof activeSessionFamily))
 
                     lastSession
                     |> Option.bind (fun (TaskSession start) ->
@@ -1184,6 +1154,37 @@ module Recoil =
                         | true -> Some durationMinutes
                         | false -> None
                     )
+                )
+            }
+            let rec showUserFamily = selectorFamily {
+                key (sprintf "%s/%s" (nameof RecoilTask) (nameof showUserFamily))
+                get (fun (taskId: TaskId) getter ->
+                    let taskMap = getter.get currentTaskMap
+
+                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilTask) (nameof showUserFamily))
+                    taskMap
+                    |> Map.tryFind taskId
+                    |> Option.map (fun task ->
+                        task.StatusEntries
+                        |> Seq.map (fun (TaskStatusEntry (user, moment, manualCellStatus)) -> user)
+                        |> Seq.distinct
+                        |> Seq.length
+                        |> fun x -> x > 1
+                    )
+                    |> Option.defaultValue false
+                )
+            }
+            let rec hasSelectionFamily = selectorFamily {
+                key (sprintf "%s/%s" (nameof RecoilTask) (nameof hasSelectionFamily))
+                get (fun (taskId: TaskId) getter ->
+                    let selection = getter.get selection
+
+                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilTask) (nameof hasSelectionFamily))
+                    selection
+                    |> Map.tryFind taskId
+                    |> Option.defaultValue Set.empty
+                    |> Set.isEmpty
+                    |> not
                 )
             }
 
@@ -1206,22 +1207,18 @@ module Recoil =
                     let newSelection =
                         match ctrlPressed with
                         | false ->
-                            let newTaskSelection =
-                                match newValue with
-                                | true -> date |> Set.singleton
-                                | false -> Set.empty
+                            let newTaskSelection = if newValue then Set.singleton date else Set.empty
                             Map.empty |> Map.add taskId newTaskSelection
                         | true ->
                             let oldSelection = setter.get Atoms.selection
-                            let newTaskSelection =
+                            let oldSet =
                                 oldSelection
                                 |> Map.tryFind taskId
                                 |> Option.defaultValue Set.empty
-                                |> fun oldSet ->
-                                    match newValue with
-                                    | true -> oldSet |> Set.add date
-                                    | false -> oldSet |> Set.remove date
-                            oldSelection |> Map.add taskId newTaskSelection
+                            let newSet =
+                                let fn = if newValue then Set.add else Set.remove
+                                fn date oldSet
+                            oldSelection |> Map.add taskId newSet
 
                     setter.set (selection, newSelection)
                     Profiling.addCount (sprintf "%s/%s (SET)" (nameof RecoilCell) (nameof selectedFamily))
@@ -1230,7 +1227,7 @@ module Recoil =
 
         module rec RecoilTree =
             let rec taskListFamily = selectorFamily {
-                key ("selectorFamily/" + nameof taskListFamily)
+                key (sprintf "%s/%s" (nameof RecoilTree) (nameof taskListFamily))
                 get (fun (treeId: Atoms.RecoilTree.TreeId) getter ->
                     let taskIdList = getter.get (Atoms.RecoilTree.taskIdListFamily treeId)
 
@@ -1253,7 +1250,7 @@ module Recoil =
                                InformationComments = informationComments |}
                         )
 
-                    Profiling.addCount (nameof taskListFamily)
+                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilTree) (nameof taskListFamily))
                     taskList
                 )
             }

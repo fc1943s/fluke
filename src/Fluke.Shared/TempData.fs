@@ -105,6 +105,7 @@ module TempData =
     module Consts =
         let [<Literal>] sessionLength = 25.
         let [<Literal>] sessionBreakLength = 5.
+        let defaultDate = flukeDate 0001 Month.January 01
         let dayStart = flukeTime 07 00
         let testDayStart = flukeTime 12 00
 

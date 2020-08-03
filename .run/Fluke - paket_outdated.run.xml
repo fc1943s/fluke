@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Fluke - paket/outdated" type="RunNativeExe" factoryName="Native Executable">
+  <configuration default="false" name="Fluke - paket/outdated --include-prereleases" type="RunNativeExe" factoryName="Native Executable">
     <option name="EXE_PATH" value="$PROJECT_DIR$/../../../../Program Files/dotnet/dotnet.exe" />
     <option name="PROGRAM_PARAMETERS" value="paket outdated --include-prereleases" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
