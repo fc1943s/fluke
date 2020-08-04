@@ -871,6 +871,10 @@ module Recoil =
             key ("atom/" + nameof ctrlPressed)
             def false
         }
+        let rec internal shiftPressed = atom {
+            key ("atom/" + nameof shiftPressed)
+            def false
+        }
         let rec internal positionTrigger = atom {
             key ("atom/" + nameof positionTrigger)
             def 0

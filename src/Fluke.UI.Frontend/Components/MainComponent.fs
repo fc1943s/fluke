@@ -753,10 +753,14 @@ module MainComponent =
     let globalShortcutHandler = React.memo (fun () ->
         let selection, setSelection = Recoil.useState Recoil.Selectors.selection
         let ctrlPressed, setCtrlPressed = Recoil.useState Recoil.Atoms.ctrlPressed
+        let shiftPressed, setShiftPressed = Recoil.useState Recoil.Atoms.shiftPressed
 
         let keyEvent (e: KeyboardEvent) =
             if e.ctrlKey <> ctrlPressed then
                 setCtrlPressed e.ctrlKey
+
+            if e.shiftKey <> shiftPressed then
+                setShiftPressed e.shiftKey
 
             if e.key = "Escape" && not selection.IsEmpty then
                 setSelection Map.empty

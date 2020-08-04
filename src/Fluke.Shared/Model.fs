@@ -345,6 +345,13 @@ module Rendering =
     open Model
 
     let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
+
+        let rec dateLoop (date: DateTime) (maxDate: DateTime) = seq {
+            if date <= maxDate then
+                yield date
+                yield! dateLoop maxDate (date.AddDays 1.)
+        }
+
         let dates =
             cellDates
             |> Seq.map (fun x -> x.DateTime)
@@ -361,14 +368,8 @@ module Rendering =
             |> Array.last
             |> fun x -> x.AddDays (float paddingRight)
 
-        let rec loop date = seq {
-            if date <= maxDate then
-                yield date
-                yield! loop (date.AddDays 1.)
-        }
-
         minDate
-        |> loop
+        |> dateLoop maxDate
         |> Seq.map FlukeDate.FromDateTime
         |> Seq.toList
 
