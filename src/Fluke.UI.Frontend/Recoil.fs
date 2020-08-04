@@ -1189,42 +1189,6 @@ module Recoil =
                 )
             }
 
-        module rec RecoilCell =
-            let rec selectedFamily = selectorFamily {
-                key (sprintf "%s/%s" (nameof RecoilCell) (nameof selectedFamily))
-                get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
-                    let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
-
-                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilCell) (nameof selectedFamily))
-                    getter.get cell.Selected
-                )
-                set (fun (cellId: Atoms.RecoilCell.CellId) setter (newValue: bool) ->
-                    let ctrlPressed = setter.get Atoms.ctrlPressed
-
-                    let cell = setter.get (Atoms.RecoilCell.cellFamily cellId)
-                    let date = setter.get cell.Date
-                    let taskId = setter.get cell.TaskId
-
-                    let newSelection =
-                        match ctrlPressed with
-                        | false ->
-                            let newTaskSelection = if newValue then Set.singleton date else Set.empty
-                            Map.empty |> Map.add taskId newTaskSelection
-                        | true ->
-                            let oldSelection = setter.get Atoms.selection
-                            let oldSet =
-                                oldSelection
-                                |> Map.tryFind taskId
-                                |> Option.defaultValue Set.empty
-                            let newSet =
-                                let fn = if newValue then Set.add else Set.remove
-                                fn date oldSet
-                            oldSelection |> Map.add taskId newSet
-
-                    setter.set (selection, newSelection)
-                    Profiling.addCount (sprintf "%s/%s (SET)" (nameof RecoilCell) (nameof selectedFamily))
-                )
-            }
 
         module rec RecoilTree =
             let rec taskListFamily = selectorFamily {
@@ -1256,7 +1220,7 @@ module Recoil =
                 )
             }
 
-        /// [0]
+
         let rec currentTaskList = selector {
             key ("selector/" + nameof currentTaskList)
             get (fun getter ->
@@ -1284,5 +1248,106 @@ module Recoil =
                 |> List.choose id
             )
         }
+
+
+        module rec RecoilCell =
+            let rec selectedFamily = selectorFamily {
+                key (sprintf "%s/%s" (nameof RecoilCell) (nameof selectedFamily))
+                get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
+                    let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
+
+                    Profiling.addCount (sprintf "%s/%s" (nameof RecoilCell) (nameof selectedFamily))
+                    getter.get cell.Selected
+                )
+                set (fun (cellId: Atoms.RecoilCell.CellId) setter (newValue: bool) ->
+                    let ctrlPressed = setter.get Atoms.ctrlPressed
+                    let shiftPressed = setter.get Atoms.shiftPressed
+
+                    let cell = setter.get (Atoms.RecoilCell.cellFamily cellId)
+                    let date = setter.get cell.Date
+                    let taskId = setter.get cell.TaskId
+
+                    let newSelection =
+                        let swapSelection oldSelection taskId date =
+                            let oldSet =
+                                oldSelection
+                                |> Map.tryFind taskId
+                                |> Option.defaultValue Set.empty
+                            let newSet =
+                                let fn = if newValue then Set.add else Set.remove
+                                fn date oldSet
+                            oldSelection |> Map.add taskId newSet
+
+                        match shiftPressed, ctrlPressed with
+                        | true, _ ->
+                            let taskList = setter.get currentTaskList
+                            let oldSelection = setter.get Atoms.selection
+
+                            let selectionTaskList =
+                                taskList
+                                |> List.mapi (fun i task ->
+                                    match oldSelection |> Map.tryFind task.Id with
+                                    | Some oldSelectionDates ->
+                                        let selectionDates =
+                                            match oldSelectionDates.IsEmpty, task.Id = taskId with
+                                            | _, true -> oldSelectionDates |> Set.add date
+                                            | true, _ -> Set.empty
+                                            | false, _ -> oldSelectionDates
+                                        {| Index = i
+                                           TaskId = task.Id
+                                           Range = Set.minElement selectionDates, Set.maxElement selectionDates |}
+                                        |> Some
+                                    | _ -> None
+                                )
+                                |> List.choose id
+
+                            let minDates, maxDates =
+                                selectionTaskList
+                                |> List.map (fun selectionTask -> selectionTask.Range)
+                                |> List.unzip
+
+                            let minDate =
+                                match minDates with
+                                | [] -> None
+                                | x -> Some (List.min x)
+
+                            let maxDate =
+                                match maxDates with
+                                | [] -> None
+                                | x -> Some (List.max x)
+
+                            match minDate, maxDate with
+                            | Some minDate, Some maxDate ->
+                                let newSet =
+                                    [ minDate; maxDate ]
+                                    |> Rendering.getDateSequence (0, 0)
+                                    |> Set.ofList
+
+                                taskList
+                                |> List.indexed
+                                |> List.skipWhile (fun (i, task) ->
+                                    i < (selectionTaskList |> List.tryHead |> Option.map (fun x -> x.Index) |> Option.defaultValue 0)
+                                )
+                                |> List.takeWhile (fun (i, task) ->
+                                    i <= (selectionTaskList |> List.tryLast |> Option.map (fun x -> x.Index) |> Option.defaultValue 0)
+                                )
+                                |> List.map (fun (i, task) ->
+                                    task.Id, newSet
+                                )
+                                |> Map.ofList
+                            | _ -> Map.empty
+
+                        | false, false ->
+                            let newTaskSelection = if newValue then Set.singleton date else Set.empty
+                            Map.empty |> Map.add taskId newTaskSelection
+                        | false, true ->
+                            let oldSelection = setter.get Atoms.selection
+                            swapSelection oldSelection taskId date
+
+                    setter.set (selection, newSelection)
+                    Profiling.addCount (sprintf "%s/%s (SET)" (nameof RecoilCell) (nameof selectedFamily))
+                )
+            }
+
         /// [1]
 
