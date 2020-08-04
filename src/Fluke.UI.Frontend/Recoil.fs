@@ -325,8 +325,7 @@ module Recoil =
                     |> Map.ofList
                     |> Map.mapValues (List.map (fun x -> x.Comment))
 
-                RootPrivateData.treeData.InformationList
-                |> List.append RootPrivateData.sharedTreeData.InformationList
+                RootPrivateData.sharedTreeData.InformationList @ RootPrivateData.treeData.InformationList
                 |> List.map (fun information ->
                     { Information = information
                       Comments =
@@ -356,8 +355,7 @@ module Recoil =
                             |> List.map (fun (CellComment (user, address, userComment)) ->
                                 address.Date, userComment
                             )
-                        task.CellComments
-                        |> List.append externalCellComments
+                        externalCellComments @ task.CellComments
                         |> List.map (Tuple2.mapFst DateId)
                         |> List.groupBy fst
                         |> Map.ofList
@@ -369,9 +367,10 @@ module Recoil =
                         |> Map.ofList
                         |> Map.mapValues (List.map snd)
                     let cellStateMap =
-                        cellCommentsMap
-                        |> Map.keys
-                        |> Seq.append (sessionsMap |> Map.keys)
+                        seq {
+                            yield! sessionsMap |> Map.keys
+                            yield! cellCommentsMap |> Map.keys
+                        }
                         |> Seq.distinct
                         |> Seq.map (fun dateId ->
                             let sessions =
@@ -430,7 +429,7 @@ module Recoil =
                 )
 
             let taskOrderList =
-                RootPrivateData.treeData.TaskOrderList// @ RootPrivateData.taskOrderList
+                RootPrivateData.treeData.TaskOrderList // @ RootPrivateData.taskOrderList
 
             let sortedTaskList =
                 sortLanes
@@ -458,9 +457,10 @@ module Recoil =
                 sortedTaskList
                 |> List.map (fun (task, statusMap) ->
                     let newCellStateMap =
-                        statusMap
-                        |> Map.keys
-                        |> Seq.append (task.CellStateMap |> Map.keys)
+                        seq {
+                            yield! task.CellStateMap |> Map.keys
+                            yield! statusMap |> Map.keys
+                        }
                         |> Seq.distinct
                         |> Seq.map (fun dateId ->
                             let status =
@@ -1014,23 +1014,30 @@ module Recoil =
                 let selection = setter.get Atoms.selection
 
                 let operationsByTask =
-                    (selection, newSelection)
-                    ||> Map.mapValues2 (fun taskSelection newTaskSelection ->
-                        let datesToIgnore =
-                            Set.intersect taskSelection newTaskSelection
+                    let taskIdSet =
+                        seq {
+                            yield! selection |> Map.keys
+                            yield! newSelection |> Map.keys
+                        }
+                        |> Set.ofSeq
+                    taskIdSet
+                    |> Seq.map (fun taskId ->
+                        let taskSelection = selection |> Map.tryFind taskId |> Option.defaultValue Set.empty
+                        let newTaskSelection = newSelection |> Map.tryFind taskId |> Option.defaultValue Set.empty
+                        let datesToIgnore = Set.intersect taskSelection newTaskSelection
                         let datesToUnselect =
                             datesToIgnore
                             |> Set.difference taskSelection
+                            |> Seq.map (fun date -> date, false)
                         let datesToSelect =
                             datesToIgnore
                             |> Set.difference newTaskSelection
-
-                        datesToUnselect |> Seq.map (fun date -> date, false)
-                        |> Seq.append (datesToSelect |> Seq.map (fun date -> date, true))
+                            |> Seq.map (fun date -> date, true)
+                        taskId, Seq.append datesToSelect datesToUnselect
                     )
 
                 operationsByTask
-                |> Map.iter (fun taskId operations ->
+                |> Seq.iter (fun (taskId, operations) ->
                     operations
                     |> Seq.iter (fun (date, selected) ->
                         let cellId = Atoms.RecoilCell.cellId taskId date

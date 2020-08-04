@@ -200,17 +200,18 @@ module TempData =
             |> List.map (fun x -> (x.Information, x.Name), x)
             |> Map.ofList
 
-        manualTaskOrder
-        |> List.map (fun (information, taskName) ->
-            taskMap
-            |> Map.tryFind (information, taskName)
-            |> function
-                | None -> failwithf "Invalid task: '%A/%s'" information taskName
-                | Some task ->
-                    { Task = task
-                      Priority = TaskOrderPriority.First }
-        )
-        |> List.append oldTaskOrderList
+        let newTaskOrderList =
+            manualTaskOrder
+            |> List.map (fun (information, taskName) ->
+                taskMap
+                |> Map.tryFind (information, taskName)
+                |> function
+                    | None -> failwithf "Invalid task: '%A/%s'" information taskName
+                    | Some task ->
+                        { Task = task
+                          Priority = TaskOrderPriority.First }
+            )
+        oldTaskOrderList @ newTaskOrderList
 
     type TempTaskEventField =
         | TempTaskFieldScheduling of scheduling:TaskScheduling * start:FlukeDate option

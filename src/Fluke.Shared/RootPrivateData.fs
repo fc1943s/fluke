@@ -8,13 +8,9 @@ open Suigetsu.Core
 
 module RootPrivateData =
     let informationComments =
-        PrivateData.InformationComments.informationComments
-        |> List.append SharedPrivateData.Data.informationComments
-
+        SharedPrivateData.Data.informationComments @ PrivateData.InformationComments.informationComments
     let cellComments =
-        PrivateData.Journal.journalComments
-        |> List.append PrivateData.CellComments.cellComments
-        |> List.append SharedPrivateData.Data.cellComments
+        SharedPrivateData.Data.cellComments @ PrivateData.CellComments.cellComments @ PrivateData.Journal.journalComments
 
     let taskComments = PrivateData.TaskComments.taskComments
     let sharedTaskComments = SharedPrivateData.Data.taskComments
