@@ -1013,39 +1013,29 @@ module Recoil =
             set (fun setter (newSelection: Map<TaskId, Set<FlukeDate>>) ->
                 let selection = setter.get Atoms.selection
 
-                selection
-                |> Seq.iter (fun (KeyValue (taskId, dates)) ->
-                    let newSelectionTask =
-                        newSelection
-                        |> Map.tryFind taskId
-                        |> Option.defaultValue Set.empty
-                    dates
-                    |> Seq.filter (fun date ->
-                        newSelectionTask.Contains date
-                        |> not
-                    )
-                    |> Seq.iter (fun date ->
-                        let cellId = Atoms.RecoilCell.cellId taskId date
-                        let cell = setter.get (Atoms.RecoilCell.cellFamily cellId)
-                        setter.set (cell.Selected, false)
-                    )
-                )
+                let operationsByTask =
+                    (selection, newSelection)
+                    ||> Map.mapValues2 (fun taskSelection newTaskSelection ->
+                        let datesToIgnore =
+                            Set.intersect taskSelection newTaskSelection
+                        let datesToUnselect =
+                            datesToIgnore
+                            |> Set.difference taskSelection
+                        let datesToSelect =
+                            datesToIgnore
+                            |> Set.difference newTaskSelection
 
-                newSelection
-                |> Seq.iter (fun (KeyValue (taskId, dates)) ->
-                    let selectionTask =
-                        selection
-                        |> Map.tryFind taskId
-                        |> Option.defaultValue Set.empty
-                    dates
-                    |> Seq.filter (fun date ->
-                        selectionTask.Contains date
-                        |> not
+                        datesToUnselect |> Seq.map (fun date -> date, false)
+                        |> Seq.append (datesToSelect |> Seq.map (fun date -> date, true))
                     )
-                    |> Seq.iter (fun date ->
+
+                operationsByTask
+                |> Map.iter (fun taskId operations ->
+                    operations
+                    |> Seq.iter (fun (date, selected) ->
                         let cellId = Atoms.RecoilCell.cellId taskId date
                         let cell = setter.get (Atoms.RecoilCell.cellFamily cellId)
-                        setter.set (cell.Selected, true)
+                        setter.set (cell.Selected, selected)
                     )
                 )
 
