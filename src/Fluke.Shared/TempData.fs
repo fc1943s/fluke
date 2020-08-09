@@ -114,8 +114,9 @@ module TempData =
 
         [<RequireQualifiedAccess>]
         type TempEvent =
-            | CellStatus of user:User * date:FlukeDateTime * task:Task * manualCellStatus:ManualCellStatus
-            | CellComment of user:User * date:FlukeDateTime * task:Task * comment:Comment
+            | CellStatus of user:User * task:Task * date:FlukeDateTime * manualCellStatus:ManualCellStatus
+            | CellCompleted of user:User * task:Task * date:FlukeDateTime
+            | CellCommented of user:User * task:Task * date:FlukeDateTime * comment:Comment
 
         let eventsFromStatusEntries user (entries: (FlukeDate * (Task * ManualCellStatus) list) list) =
             let newEvents =
@@ -123,7 +124,7 @@ module TempData =
                 |> List.collect (fun (date, events) ->
                     events
                     |> List.map (fun (task, userStatus) ->
-                        TempEvent.CellStatus (user, { Date = date; Time = Consts.dayStart }, task, userStatus)
+                        TempEvent.CellStatus (user, task, { Date = date; Time = Consts.dayStart }, userStatus)
                     )
                 )
 

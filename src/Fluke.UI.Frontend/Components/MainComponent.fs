@@ -773,8 +773,8 @@ module MainComponent =
     let positionUpdater = React.memo (fun () ->
         let resetPosition = Recoil.useResetState Recoil.Selectors.position
 
-        Scheduling.useScheduling Scheduling.Interval resetPosition (60 * 1000)
-//        Scheduling.useScheduling Scheduling.Interval resetPosition (10 * 1000)
+        Scheduling.useScheduling Scheduling.Interval (60 * 1000) resetPosition
+//        Scheduling.useScheduling Scheduling.Interval (10 * 1000) resetPosition
 
         nothing
     )
@@ -835,7 +835,7 @@ module MainComponent =
             Dom.window.location.reload true
         )
 
-        Scheduling.useScheduling Scheduling.Timeout reload (60 * 60 * 1000)
+        Scheduling.useScheduling Scheduling.Timeout (60 * 60 * 1000) reload
 
         nothing
     )
@@ -843,8 +843,8 @@ module MainComponent =
     let render = React.memo (fun () ->
         React.fragment [
             globalShortcutHandler ()
-            positionUpdater ()
-            autoReload_TEMP ()
+//            positionUpdater ()
+//            autoReload_TEMP ()
 
             React.suspense ([
                 dataLoader ()

@@ -10,7 +10,6 @@
     <Compile Include="Element.fs" />
     <Compile Include="Model.fs" />
     <Compile Include="Recoil.fs" />
-    <Compile Include="HomePageComponent.fs" />
     <Compile Include="Components\MainComponent.fs" />
     <Compile Include="App.fs" />
     <Content Include="package.json" />

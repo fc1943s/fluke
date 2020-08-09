@@ -857,7 +857,7 @@ module Recoil =
         let rec internal view = atom {
             key ("atom/" + nameof view)
             def View.Calendar
-            local_storage
+//            local_storage
         }
         let rec internal dayStart = atom {
             key ("atom/" + nameof dayStart)
@@ -968,6 +968,11 @@ module Recoil =
                         setter.set (recoilTask.Priority, task.Priority)
 
                         task.CellStateMap
+                        |> Map.filter (fun _ cellState ->
+                            cellState.Status <> Disabled
+                            || not cellState.Comments.IsEmpty
+                            || not cellState.Sessions.IsEmpty
+                        )
                         |> Map.iter (fun (DateId date) cellState ->
                             let cellId = Atoms.RecoilCell.cellId taskId date
                             let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
