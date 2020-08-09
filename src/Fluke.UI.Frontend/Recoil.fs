@@ -1,17 +1,19 @@
 namespace Fluke.UI.Frontend
 
+open Feliz.Router
+
+
 #nowarn "40"
 
 open System
 open System.Collections.Generic
 open FSharpPlus
-open Fable.Core.JsInterop
 open Feliz.Recoil
 open Fluke.Shared
 open Fluke.UI.Frontend
-open Fable.React
 open Fable.DateFunctions
 open Suigetsu.Core
+open Fable.Core.JsInterop
 
 
 module Recoil =
@@ -22,9 +24,10 @@ module Recoil =
         let private ticksDiff ticks =
             int64 (TimeSpan(ticks - initialTicks).TotalMilliseconds)
 
-        let private state =
+        let state =
             {| CallCount = Dictionary()
-               Timestamps = new List<string * int64>() |}
+               Timestamps = List<string * int64>() |}
+        Browser.Dom.window?profilingState <- state
         let internal addCount id =
             match state.CallCount.ContainsKey id with
             | false -> state.CallCount.[id] <- 1
@@ -35,22 +38,6 @@ module Recoil =
 
         addTimestamp "Init"
 
-        Browser.Dom.window?profilingState <- state
-        Browser.Dom.window?oldJson <- ""
-
-        Fable.Core.JS.setInterval (fun () ->
-            let json = Fable.SimpleJson.SimpleJson.stringify state
-
-            if json <> Browser.Dom.window?oldJson then
-                match Browser.Dom.window.localStorage.getItem "__recoil__/atom/debug" with
-                | "true" -> json
-                | _ -> ""
-                |> str
-                |> mountById "diag"
-
-                Browser.Dom.window?oldJson <- json
-
-        ) 100 |> ignore
 
     module private OldData =
 //        type TempDataType =
@@ -842,8 +829,12 @@ module Recoil =
 
         let rec internal debug = atom {
             key ("atom/" + nameof debug)
-            def true
+            def false
             local_storage
+        }
+        let rec internal path = atom {
+            key ("atom/" + nameof path)
+            def (Router.currentPath ())
         }
         let rec internal treeName = atom {
             key ("atom/" + nameof treeName)
@@ -854,11 +845,11 @@ module Recoil =
             key ("atom/" + nameof user)
             def (FakeBackend.getCurrentUser ())
         }
-        let rec internal view = atom {
-            key ("atom/" + nameof view)
-            def View.Calendar
-//            local_storage
-        }
+//        let rec internal view = atom {
+//            key ("atom/" + nameof view)
+//            def View.Calendar
+////            local_storage
+//        }
         let rec internal dayStart = atom {
             key ("atom/" + nameof dayStart)
             def (FakeBackend.getDayStart ())
@@ -885,6 +876,22 @@ module Recoil =
         }
 
     module Selectors =
+        let rec view = selector {
+            key ("selector/" + nameof view)
+            get (fun getter ->
+                let path = getter.get Atoms.path
+                let view =
+                    match path with
+                    | [ "view"; "Calendar" ] -> View.Calendar
+                    | [ "view"; "Groups" ] -> View.Groups
+                    | [ "view"; "Tasks" ] -> View.Tasks
+                    | [ "view"; "Week" ] -> View.Week
+                    | _ -> View.Calendar
+
+                Profiling.addCount (nameof view)
+                view
+            )
+        }
         let rec position = selector {
             key ("selector/" + nameof position)
             get (fun getter ->

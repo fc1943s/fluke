@@ -435,6 +435,9 @@ NUGET
     Fable.DateFunctions (3.0.2)
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.6.2) - restriction: >= netstandard2.0
+    Fable.Elmish (3.1) - restriction: >= netstandard2.0
+      Fable.Core (>= 3.0) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.6.2) - restriction: >= netstandard2.0
     Fable.FontAwesome (2.0) - restriction: >= netstandard2.0
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
       Fable.React (>= 5.1) - restriction: >= netstandard2.0
@@ -469,6 +472,12 @@ NUGET
       Fable.SimpleJson (>= 3.10 < 4.0)
       Feliz (>= 1.7 < 2.0)
       FSharp.Core (>= 4.7.2 < 5.0)
+    Feliz.Router (3.0.1)
+      Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
+      Fable.Elmish (>= 3.0.6) - restriction: >= netstandard2.0
+      Feliz (>= 1.6) - restriction: >= netstandard2.0
+      Feliz.UseListener (>= 0.3) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
     Feliz.UseListener (0.5)
       Fable.Core (>= 3.1.5 < 4.0)
       Feliz (>= 1.5 < 2.0)

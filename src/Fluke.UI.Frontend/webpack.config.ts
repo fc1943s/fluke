@@ -93,6 +93,7 @@ module.exports = {
     // Add a hash to the output file name in production
     // to prevent browser caching if code changes
     output: {
+        publicPath: "/",
         path: path.join(__dirname, CONFIG.outputDir),
         filename: isProduction ? '[name].[hash].js' : '[name].js',
         devtoolModuleFilenameTemplate: info =>
@@ -132,6 +133,7 @@ module.exports = {
         contentBase: CONFIG.assetsDir,
         port: CONFIG.devServerPort,
         proxy: CONFIG.devServerProxy,
+        historyApiFallback: true,
         hot: true,
         inline: true
     },

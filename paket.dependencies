@@ -30,6 +30,7 @@ group Fluke.UI.Frontend
     nuget Feliz.Bulma ~> 2.3
     nuget Feliz.Recoil ~> 0.16
     nuget Feliz.UseListener ~> 0.5
+    nuget Feliz.Router ~> 3.0
 
 
 group Testing

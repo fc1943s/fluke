@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open System
 open Browser
 open Fable.Core
+open Feliz.Router
 open Fluke.UI.Frontend
 open Browser.Types
 open FSharpPlus
@@ -57,8 +58,13 @@ module NavBarComponent =
     open Model
     let render = React.memo (fun () ->
         let debug, setDebug = Recoil.useState Recoil.Atoms.debug
-        let view, setView = Recoil.useState Recoil.Atoms.view
+        let view = Recoil.useValue Recoil.Selectors.view
         let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
+
+        let setView view =
+            let path = Router.formatPath [| "view"; string view |]
+            Dom.window.location.href <- path
+
 
         React.useListener.onKeyDown (fun (e: KeyboardEvent) ->
             match e.ctrlKey, e.shiftKey, e.key with
@@ -363,17 +369,18 @@ module PanelsComponent =
         module CellComponent =
             let render = React.memo (fun (input: {| TaskId: TaskId
                                                     Date: FlukeDate |}) ->
-                let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
-
                 let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId input.Date
                 let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
+
+                let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
 
                 let showUser = Recoil.useValue (Recoil.Selectors.RecoilTask.showUserFamily input.TaskId)
 
                 let comments = Recoil.useValue cell.Comments
                 let sessions = Recoil.useValue cell.Sessions
-                let status = Recoil.useValue cell.Status
                 let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selectedFamily cellId)
+
+                let status = Recoil.useValue cell.Status
 
                 let onCellClick = React.useCallbackRef (fun () ->
                     setSelected (not selected)
@@ -733,7 +740,7 @@ module PanelsComponent =
 
     let render = React.memo (fun () ->
 
-        let view = Recoil.useValue Recoil.Atoms.view
+        let view = Recoil.useValue Recoil.Selectors.view
 
         Html.div [
             prop.className Css.panels
@@ -779,7 +786,7 @@ module MainComponent =
         nothing
     )
     let dataLoader = React.memo (fun () ->
-        let view = Recoil.useValue Recoil.Atoms.view
+        let view = Recoil.useValue Recoil.Selectors.view
 
         let loadTree = Recoil.useCallbackRef (fun setter ->
             async {
@@ -840,8 +847,75 @@ module MainComponent =
         nothing
     )
 
+    let diag = React.memo (fun () ->
+        let text, setText = React.useState ""
+        let oldJson, setOldJson = React.useState ""
+        let debug = Recoil.useValue Recoil.Atoms.debug
+
+        Scheduling.useScheduling Scheduling.Interval 100 (fun () ->
+            if not debug
+            then ()
+            else
+                let indent n = String (' ', n)
+                let json =
+                    Recoil.Profiling.state
+                    |> Fable.SimpleJson.SimpleJson.stringify
+                    |> JS.JSON.parse
+                    |> fun obj -> JS.JSON.stringify (obj, unbox null, 4)
+                    |> String.replace (sprintf ",\n%s" (indent 3)) ""
+                    |> String.replace (indent 1) ""
+                    |> String.replace "][\n" ""
+                    |> String.replace "\"" " "
+
+                if json = oldJson
+                then ()
+                else
+                    setText json
+                    setOldJson json
+        )
+
+        if not debug
+        then nothing
+        else
+            React.fragment [
+                Html.pre [
+                    prop.id "diag"
+                    prop.style [
+                        style.custom ("width", "min-content")
+                        style.custom ("height", "80%")
+                        style.position.fixedRelativeToWindow
+                        style.right 0
+                        style.bottom 0
+                        style.fontSize 9
+                        style.backgroundColor "#44444488"
+                        style.zIndex 100
+                    ]
+                    prop.children [
+                        str text
+                    ]
+                ]
+
+                Html.div [
+                    prop.id "test1"
+                    prop.style [
+                        style.position.absolute
+                        style.width 100
+                        style.height 100
+                        style.top 0
+                        style.right 0
+                        style.backgroundColor "#ccc3"
+                        style.zIndex 100
+                    ]
+                    prop.children [
+                        str "test1"
+                    ]
+                ]
+            ]
+    )
+
     let render = React.memo (fun () ->
         React.fragment [
+            diag ()
             globalShortcutHandler ()
 //            positionUpdater ()
 //            autoReload_TEMP ()
