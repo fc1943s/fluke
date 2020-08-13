@@ -917,8 +917,8 @@ module MainComponent =
         React.fragment [
             diag ()
             globalShortcutHandler ()
-//            positionUpdater ()
-//            autoReload_TEMP ()
+            positionUpdater ()
+            autoReload_TEMP ()
 
             React.suspense ([
                 dataLoader ()

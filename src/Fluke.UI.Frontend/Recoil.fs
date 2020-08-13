@@ -256,7 +256,11 @@ module Recoil =
 //                )
             | View.Tasks ->
                 taskList
-                |> List.filter (function { Scheduling = Manual _ } -> true | _ -> false)
+                |> List.filter (function
+                    | { Information = Archive _ } -> false
+                    | { Scheduling = Manual _ } -> true
+
+                    | _ -> false)
             | View.Week ->
                 taskList
 
