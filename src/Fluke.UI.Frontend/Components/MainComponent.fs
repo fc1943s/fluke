@@ -4,11 +4,11 @@ open System
 open Browser
 open Fable.Core
 open Feliz.Router
+open Feliz.MaterialUI
 open Fluke.UI.Frontend
 open Browser.Types
 open FSharpPlus
 open Fluke.Shared
-open Fable.Core.JsInterop
 open Fable.React
 open Fable.React.Props
 open Fable.DateFunctions
@@ -289,8 +289,29 @@ module PanelsComponent =
             )
 
         module TaskNameComponent =
+            let useStyles = Styles.makeStyles (fun (styles: StyleCreator<{| hovered:bool |}>) _theme ->
+                {|
+                    root = styles.create (fun props -> [
+                        if props.hovered then
+                            style.zIndex 1
+                    ])
+
+                    name = styles.create (fun props -> [
+                        style.overflow.hidden
+                        if props.hovered then
+                            style.backgroundColor "#222"
+                        else
+                            style.whitespace.nowrap
+                            style.textOverflow.ellipsis
+                    ])
+                |}
+            )
             let render = React.memo (fun (input: {| Level: int
                                                     TaskId: TaskId |}) ->
+                let ref = React.useElementRef ()
+                let hovered = Temp.UseListener.onElementHover ref
+                let classes = useStyles {| hovered = hovered |}
+
                 // TODO: put inside RecoilTask object?
                 let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilTask.hasSelectionFamily input.TaskId)
 
@@ -300,16 +321,18 @@ module PanelsComponent =
                 let taskComments = Recoil.useValue task.Comments
 
                 Html.div [
-                    prop.className Css.cellRectangle
+                    prop.ref ref
+                    prop.classes [
+                        classes.root
+                        Css.cellRectangle
+                    ]
                     prop.children [
                         Html.div [
                             prop.classes [
+                                classes.name
                                 if hasSelection then Css.selectionHighlight
                             ]
                             prop.style [
-                                style.overflow.hidden
-                                style.whitespace.nowrap
-                                style.textOverflow.ellipsis
                                 yield! paddingLeftLevel input.Level
                             ]
                             prop.children [

@@ -45,6 +45,5 @@ module Model =
                 | Completed           -> Css.cellCompleted
                 | Dismissed           -> Css.cellDismissed
                 | ManualPending       -> Css.cellManualPending
-                | SessionDeprecated _ -> Css.cellSession
 
 

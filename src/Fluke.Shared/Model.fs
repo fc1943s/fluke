@@ -115,7 +115,6 @@ module Model =
         | Completed
         | Dismissed
         | ManualPending
-        | SessionDeprecated of start:FlukeTime
 
     type CellStatus =
         | Disabled
@@ -124,6 +123,7 @@ module Model =
         | Missed
         | MissedToday
         | UserStatus of user:User * status:ManualCellStatus
+
 
     type DateId = DateId of referenceDay:FlukeDate
     type TaskId = TaskId of informationName:string * taskName:string

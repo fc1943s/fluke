@@ -258,8 +258,9 @@ module Recoil =
                 taskList
                 |> List.filter (function
                     | { Information = Archive _ } -> false
+                    | { Sessions = []
+                        Priority = priority } when ofTaskPriorityValue priority < 5 -> false
                     | { Scheduling = Manual _ } -> true
-
                     | _ -> false)
             | View.Week ->
                 taskList
