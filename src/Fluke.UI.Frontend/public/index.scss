@@ -103,6 +103,7 @@ $cell-size: 17px;
       @include cell-rectangle();
       width: $cell-size;
       text-align: center;
+      display: table;
     }
 
     .cell-rectangle {
@@ -137,82 +138,82 @@ $cell-size: 17px;
           opacity: 0.85;
         }
       }
+    }
 
-      .session-length-indicator {
-        font-size: 11px;
-        color: #999;
-        text-shadow: 0 0 2px #000;
+    .session-length-indicator {
+      font-size: 11px;
+      color: #999;
+      text-shadow: 0 0 2px #000;
+    }
+
+    @mixin cell($bgcolor) {
+      @include square-cell();
+
+      > .cell-square:not(first-child) {
+        position: absolute;
+        top: 0;
+        left: 0;
       }
 
-      @mixin cell($bgcolor) {
-        @include square-cell();
-
-        > .cell-square:not(first-child) {
-          position: absolute;
-          top: 0;
-          left: 0;
-        }
-
-        > .cell-square:first-child {
-          background-color: $bgcolor;
-        }
-
-        &.cell-today > .cell-square:first-child {
-          background-color: $bgcolor#{aa};
-        }
-
-        &.cell-selected > .cell-square {
-          border: 1px solid #ffffff55 !important;
-        }
+      > .cell-square:first-child {
+        background-color: $bgcolor;
       }
 
-      .cell-disabled {
-        @include cell($color-cell-disabled);
+      &.cell-today > .cell-square:first-child {
+        background-color: $bgcolor#{aa};
       }
 
-      .cell-suggested {
-        @include cell($color-cell-suggested);
+      &.cell-selected > .cell-square {
+        border: 1px solid #ffffff55 !important;
       }
+    }
 
-      .cell-pending {
-        @include cell($color-cell-pending);
+    .cell-disabled {
+      @include cell($color-cell-disabled);
+    }
+
+    .cell-suggested {
+      @include cell($color-cell-suggested);
+    }
+
+    .cell-pending {
+      @include cell($color-cell-pending);
+    }
+
+    .cell-missed {
+      @include cell($color-cell-missed);
+    }
+
+    .cell-missed-today {
+      @include cell($color-cell-missed-today);
+    }
+
+    .cell-postponed {
+      @include cell($color-cell-postponed);
+    }
+
+    .cell-postponed-until {
+      @include cell($color-cell-postponed-until);
+    }
+
+    .cell-completed {
+      @include cell($color-cell-completed);
+
+      > .cell-square {
+        color: #ccc;
       }
+    }
 
-      .cell-missed {
-        @include cell($color-cell-missed);
-      }
+    .cell-dismissed {
+      @include cell($color-cell-dismissed);
+    }
 
-      .cell-missed-today {
-        @include cell($color-cell-missed-today);
-      }
+    .cell-manual-pending {
+      @include cell($color-cell-manual-pending);
+    }
 
-      .cell-postponed {
-        @include cell($color-cell-postponed);
-      }
-
-      .cell-postponed-until {
-        @include cell($color-cell-postponed-until);
-      }
-
-      .cell-completed {
-        @include cell($color-cell-completed);
-
-        > .cell-square {
-          color: #ccc;
-        }
-      }
-
-      .cell-dismissed {
-        @include cell($color-cell-dismissed);
-      }
-
-      .cell-manual-pending {
-        @include cell($color-cell-manual-pending);
-      }
-
-      .cell-session {
-        @include cell($color-cell-session);
-      }
+    .cell-session {
+      @include cell($color-cell-session);
     }
 
     @mixin cell-indicator() {

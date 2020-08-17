@@ -3,6 +3,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "repo", "repo", "{AC1CE2EB-7
 	ProjectSection(SolutionItems) = preProject
 		paket.dependencies = paket.dependencies
 		README.md = README.md
+		.config/dotnet-tools.json = .config/dotnet-tools.json
+		.gitignore = .gitignore
 	EndProjectSection
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.Shared", "src\Fluke.Shared\Fluke.Shared.fsproj", "{1BC0C538-C979-4F53-AE78-01857D7AB278}"

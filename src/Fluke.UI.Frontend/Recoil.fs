@@ -219,7 +219,8 @@ module Recoil =
 
         let rec filterTaskList view dateRange (taskList: Task list) =
             match view with
-            | View.Calendar ->
+            | View.Calendar
+            | View.Week ->
                 taskList
                 |> List.filter (function
                     | { Scheduling = Manual WithoutSuggestion
@@ -262,8 +263,6 @@ module Recoil =
                         Priority = priority } when ofTaskPriorityValue priority < 5 -> false
                     | { Scheduling = Manual _ } -> true
                     | _ -> false)
-            | View.Week ->
-                taskList
 
         let sortLanes (input: {| View: View
                                  DayStart: FlukeTime
@@ -302,7 +301,7 @@ module Recoil =
                     |> ofTaskPriorityValue
                 )
             | View.Week ->
-                []
+                input.Lanes
 
         let getTree (input: {| User: User
                                DayStart: FlukeTime
@@ -682,48 +681,72 @@ module Recoil =
             }
 
         module RecoilTask =
+            let taskId (task: Task) =
+                TaskId (task.Information.Name, task.Name)
             type RecoilTask =
                 { Id: RecoilValue<TaskId, ReadWrite>
                   InformationId: RecoilValue<RecoilInformation.InformationId, ReadWrite>
                   Name: RecoilValue<string, ReadWrite>
-                  Comments: RecoilValue<UserComment list, ReadWrite>
+                  Scheduling: RecoilValue<TaskScheduling, ReadWrite>
+                  PendingAfter: RecoilValue<FlukeTime option, ReadWrite>
+                  MissedAfter: RecoilValue<FlukeTime option, ReadWrite>
+                  Priority: RecoilValue<TaskPriorityValue, ReadWrite>
                   Sessions: RecoilValue<TaskSession list, ReadWrite>
-                  Priority: RecoilValue<TaskPriorityValue, ReadWrite> }
+                  Comments: RecoilValue<UserComment list, ReadWrite>
+                  Duration: RecoilValue<int option, ReadWrite> }
             let rec idFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof idFamily))
-                def (fun (_taskId: TaskId) -> TaskId ("", ""))
+                def (fun (_taskId: TaskId) -> taskId Task.Default)
             }
             let rec informationIdFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof informationIdFamily))
                 def (fun (_taskId: TaskId) ->
-                    RecoilInformation.InformationId "")
+                    RecoilInformation.informationId Task.Default.Information)
             }
             let rec nameFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof nameFamily))
-                def (fun (_taskId: TaskId) -> "")
+                def (fun (_taskId: TaskId) -> Task.Default.Name)
             }
-            let rec commentsFamily = atomFamily {
-                key (sprintf "%s/%s" (nameof RecoilTask) (nameof commentsFamily))
-                def (fun (_taskId: TaskId) -> [])
+            let rec schedulingFamily = atomFamily {
+                key (sprintf "%s/%s" (nameof RecoilTask) (nameof schedulingFamily))
+                def (fun (_taskId: TaskId) -> Task.Default.Scheduling)
             }
-            let rec sessionsFamily = atomFamily {
-                key (sprintf "%s/%s" (nameof RecoilTask) (nameof sessionsFamily))
-                def (fun (_taskId: TaskId) -> [])
+            let rec pendingAfterFamily = atomFamily {
+                key (sprintf "%s/%s" (nameof RecoilTask) (nameof pendingAfterFamily))
+                def (fun (_taskId: TaskId) -> Task.Default.PendingAfter)
+            }
+            let rec missedAfterFamily = atomFamily {
+                key (sprintf "%s/%s" (nameof RecoilTask) (nameof missedAfterFamily))
+                def (fun (_taskId: TaskId) -> Task.Default.MissedAfter)
             }
             let rec priorityFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof priorityFamily))
-                def (fun (_taskId: TaskId) -> TaskPriorityValue 0)
+                def (fun (_taskId: TaskId) -> Task.Default.Priority)
+            }
+            let rec sessionsFamily = atomFamily {
+                key (sprintf "%s/%s" (nameof RecoilTask) (nameof sessionsFamily))
+                def (fun (_taskId: TaskId) -> Task.Default.Sessions)
+            }
+            let rec commentsFamily = atomFamily {
+                key (sprintf "%s/%s" (nameof RecoilTask) (nameof commentsFamily))
+                def (fun (_taskId: TaskId) -> Task.Default.Comments)
+            }
+            let rec durationFamily = atomFamily {
+                key (sprintf "%s/%s" (nameof RecoilTask) (nameof durationFamily))
+                def (fun (_taskId: TaskId) -> Task.Default.Duration)
             }
             type RecoilTask with
                 static member internal Create taskId =
                     { Id = idFamily taskId
                       InformationId = informationIdFamily taskId
                       Name = nameFamily taskId
-                      Comments = commentsFamily taskId
+                      Scheduling = schedulingFamily taskId
+                      PendingAfter = pendingAfterFamily taskId
+                      MissedAfter = missedAfterFamily taskId
+                      Priority = priorityFamily taskId
                       Sessions = sessionsFamily taskId
-                      Priority = priorityFamily taskId }
-            let taskId (task: Task) =
-                TaskId (task.Information.Name, task.Name)
+                      Comments = commentsFamily taskId
+                      Duration = durationFamily taskId }
             let rec taskFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof taskFamily))
                 def (fun (taskId: TaskId) -> RecoilTask.Create taskId)
@@ -777,8 +800,8 @@ module Recoil =
                       Comments = commentsFamily cellId
                       Sessions = sessionsFamily cellId
                       Selected = selectedFamily cellId }
-            let cellId (TaskId (informationName, taskName)) (date: FlukeDate) =
-                CellId (sprintf "%s/%s/%s" informationName taskName (date.DateTime.Format "yyyy-MM-dd"))
+            let cellId (TaskId (informationName, taskName)) (DateId referenceDay) =
+                CellId (sprintf "%s/%s/%s" informationName taskName (referenceDay.DateTime.Format "yyyy-MM-dd"))
 
             let rec cellFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilCell) (nameof cellFamily))
@@ -960,7 +983,7 @@ module Recoil =
                     |> List.iter (fun taskId ->
                         dateSequence
                         |> List.iter (fun date ->
-                            let cellId = Atoms.RecoilCell.cellId taskId date
+                            let cellId = Atoms.RecoilCell.cellId taskId (DateId date)
                             let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
                             setter.set (recoilCell.Id, cellId)
                             setter.set (recoilCell.TaskId, taskId)
@@ -975,9 +998,13 @@ module Recoil =
                         setter.set (recoilTask.Id, taskId)
                         setter.set (recoilTask.Name, task.Name)
                         setter.set (recoilTask.InformationId, recoilInformationMap.[task.Information])
-                        setter.set (recoilTask.Comments, task.Comments)
-                        setter.set (recoilTask.Sessions, task.Sessions)
+                        setter.set (recoilTask.PendingAfter, task.PendingAfter)
+                        setter.set (recoilTask.MissedAfter, task.MissedAfter)
+                        setter.set (recoilTask.Scheduling, task.Scheduling)
                         setter.set (recoilTask.Priority, task.Priority)
+                        setter.set (recoilTask.Sessions, task.Sessions)
+                        setter.set (recoilTask.Comments, task.Comments)
+                        setter.set (recoilTask.Duration, task.Duration)
 
                         task.CellStateMap
                         |> Map.filter (fun _ cellState ->
@@ -985,8 +1012,8 @@ module Recoil =
                             || not cellState.Comments.IsEmpty
                             || not cellState.Sessions.IsEmpty
                         )
-                        |> Map.iter (fun (DateId date) cellState ->
-                            let cellId = Atoms.RecoilCell.cellId taskId date
+                        |> Map.iter (fun dateId cellState ->
+                            let cellId = Atoms.RecoilCell.cellId taskId dateId
                             let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
                             setter.set (recoilCell.Status, cellState.Status)
                             setter.set (recoilCell.Comments, cellState.Comments)
@@ -1061,7 +1088,7 @@ module Recoil =
                 |> Seq.iter (fun (taskId, operations) ->
                     operations
                     |> Seq.iter (fun (date, selected) ->
-                        let cellId = Atoms.RecoilCell.cellId taskId date
+                        let cellId = Atoms.RecoilCell.cellId taskId (DateId date)
                         let cell = setter.get (Atoms.RecoilCell.cellFamily cellId)
                         setter.set (cell.Selected, selected)
                     )
@@ -1081,6 +1108,7 @@ module Recoil =
                     selection
                     |> Seq.collect (fun (KeyValue (taskId, dates)) ->
                         dates
+                        |> Seq.map DateId
                         |> Seq.map (Atoms.RecoilCell.cellId taskId)
                     )
 
@@ -1217,19 +1245,21 @@ module Recoil =
                         taskIdList
                         |> List.map (fun taskId ->
                             let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
-                            let informationId = getter.get task.InformationId
-                            let priority = getter.get task.Priority
-                            let name = getter.get task.Name
 
+                            let informationId = getter.get task.InformationId
                             let information = getter.get (Atoms.RecoilInformation.informationFamily informationId)
-                            let wrappedInformation = getter.get information.WrappedInformation
-                            let informationComments = getter.get information.Comments
 
                             {| Id = taskId
-                               Name = name
-                               Priority = priority
-                               Information = wrappedInformation
-                               InformationComments = informationComments |}
+                               Name = getter.get task.Name
+                               Information = getter.get information.WrappedInformation
+                               InformationComments = getter.get information.Comments
+                               Scheduling = getter.get task.Scheduling
+                               PendingAfter = getter.get task.PendingAfter
+                               MissedAfter = getter.get task.MissedAfter
+                               Priority = getter.get task.Priority
+                               Sessions = getter.get task.Sessions
+                               Comments = getter.get task.Comments
+                               Duration = getter.get task.Duration |}
                         )
 
                     Profiling.addCount (sprintf "%s/%s" (nameof RecoilTree) (nameof taskListFamily))
@@ -1263,6 +1293,89 @@ module Recoil =
                     |> Option.map (fun duration -> ActiveSession (task.Name, duration))
                 )
                 |> List.choose id
+            )
+        }
+
+        let rec weekCellsMap = selector {
+            key ("selector/" + nameof weekCellsMap)
+            get (fun getter ->
+                let dayStart = getter.get Atoms.dayStart
+                let position = getter.get position
+                let taskList = getter.get currentTaskList
+
+                let dateIdSequence =
+                    let rec getStartDate (date:DateTime) =
+                        if date.DayOfWeek = TempData.Consts.weekStart
+                        then date
+                        else getStartDate (date.AddDays -1)
+                    let startDate = getStartDate position.DateTime
+
+                    [ 0 .. 6 ]
+                    |> List.map startDate.AddDays
+                    |> List.map FlukeDateTime.FromDateTime
+                    |> List.map (dateId dayStart)
+
+                let result =
+                    taskList
+                    |> List.collect (fun task ->
+                        dateIdSequence
+                        |> List.map (fun dateId ->
+                            let cellId = Atoms.RecoilCell.cellId task.Id dateId
+                            let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
+                            let status = getter.get cell.Status
+                            let sessions = getter.get cell.Sessions
+                            let comments = getter.get cell.Comments
+
+                            match status, sessions, comments with
+                            | (Disabled | Suggested), [], [] -> None
+                            | _ ->
+                                {| DateId = dateId
+                                   Task = task
+                                   Status = status
+                                   Sessions = sessions
+                                   Comments = comments |}
+                                |> Some
+                        )
+                        |> List.choose id
+                    )
+                    |> List.groupBy (fun x -> x.DateId)
+                    |> List.map (fun (dateId, cells) ->
+
+//                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
+
+                        let sortedTasksMap =
+                            cells
+                            |> List.map (fun cell ->
+                                let task =
+                                    { Task.Default with
+                                        Name = cell.Task.Name
+                                        Information = cell.Task.Information
+                                        Scheduling = cell.Task.Scheduling
+                                        PendingAfter = cell.Task.PendingAfter
+                                        MissedAfter = cell.Task.MissedAfter
+                                        Priority = cell.Task.Priority
+                                        Sessions = cell.Task.Sessions
+                                        Comments = cell.Task.Comments
+                                        Duration = cell.Task.Duration }
+                                OldLane (task, [ Cell ({ Task = task; DateId = dateId }, cell.Status) ])
+                            )
+                            |> Sorting.sortLanesByTimeOfDay dayStart { Date = ofDateId dateId; Time = dayStart } []
+                            |> List.indexed
+                            |> List.map (fun (i, OldLane (task, _)) ->
+                                Atoms.RecoilTask.taskId task, i
+                            )
+                            |> Map.ofList
+
+                        let newCells =
+                            cells
+                            |> List.sortBy (fun cell -> sortedTasksMap.[cell.Task.Id])
+
+                        dateId, newCells
+                    )
+                    |> Map.ofList
+
+                Profiling.addCount (nameof weekCellsMap)
+                result
             )
         }
 

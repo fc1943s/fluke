@@ -294,6 +294,7 @@ module Model =
 
     let ofLane = fun (OldLane (task, cells)) -> task, cells
     let ofTaskSession = fun (TaskSession start) -> start
+    let ofDateId = fun (DateId referenceDay) -> referenceDay
     let ofUserComment = fun (UserComment (user, comment)) -> user, comment
     let ofTaskComment = fun (TaskComment (task, userComment)) -> task, userComment
     let ofCellComment = fun (CellComment (task, moment, userComment)) -> task, moment, userComment

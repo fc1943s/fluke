@@ -390,9 +390,26 @@ module PanelsComponent =
             )
 
         module CellComponent =
+            let useStyles = Styles.makeStyles (fun (styles: StyleCreator<{| hovered:bool |}>) _theme ->
+                {|
+                    root = styles.create (fun props -> [
+                        if props.hovered then
+                            style.zIndex 1
+                    ])
+
+                    name = styles.create (fun props -> [
+                        style.overflow.hidden
+                        if props.hovered then
+                            style.backgroundColor "#222"
+                        else
+                            style.whitespace.nowrap
+                            style.textOverflow.ellipsis
+                    ])
+                |}
+            )
             let render = React.memo (fun (input: {| TaskId: TaskId
                                                     Date: FlukeDate |}) ->
-                let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId input.Date
+                let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId (DateId input.Date)
                 let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
 
                 let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
@@ -743,7 +760,55 @@ module PanelsComponent =
 
         module WeekViewComponent =
             let render = React.memo (fun () ->
-                nothing
+                let weekCellsMap = Recoil.useValue Recoil.Selectors.weekCellsMap
+
+                Html.div [
+                    prop.className Css.lanesPanel
+                    prop.style [
+                        style.display.flex
+                        style.custom ("width", "300%")
+                    ]
+                    prop.children [
+                        yield! weekCellsMap
+                        |> Map.keys
+                        |> Seq.map (fun dateId ->
+                            let cells = weekCellsMap.[dateId]
+
+                            Html.div [
+                                prop.style [
+                                    style.paddingLeft 10
+                                    style.paddingRight 10
+                                    style.custom ("width", "100%")
+                                ]
+                                prop.children [
+                                    (ofDateId dateId).DateTime.Format "EEEE, dd MMM yyyy"
+                                    |> String.toLower
+                                    |> str
+
+                                    yield! cells
+                                    |> List.map (fun cell ->
+                                        Html.div [
+                                            prop.style [
+                                                style.display.flex
+                                            ]
+                                            prop.children [
+                                                CellComponent.render {| Date = dateId |> ofDateId; TaskId = cell.Task.Id |}
+                                                Html.div [
+                                                    prop.style [
+                                                        style.paddingLeft 4
+                                                    ]
+                                                    prop.children [
+                                                        str cell.Task.Name
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
+                                    )
+                                ]
+                            ]
+                        )
+                    ]
+                ]
             )
 
     module DetailsPanel =

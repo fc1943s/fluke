@@ -108,6 +108,7 @@ module TempData =
         let defaultDate = FlukeDate.FromDateTime DateTime.MinValue
         let dayStart = flukeTime 07 00
         let defaultPosition = { Date = defaultDate; Time = dayStart }
+        let weekStart = DayOfWeek.Monday
 
 
     module Events =
