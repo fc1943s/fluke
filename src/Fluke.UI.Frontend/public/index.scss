@@ -103,7 +103,6 @@ $cell-size: 17px;
       @include cell-rectangle();
       width: $cell-size;
       text-align: center;
-      display: table;
     }
 
     .cell-rectangle {
@@ -115,7 +114,7 @@ $cell-size: 17px;
     }
 
     .today-header {
-      color: #888;
+      color: #777;
     }
 
     .selection-highlight {

@@ -1303,79 +1303,90 @@ module Recoil =
                 let position = getter.get position
                 let taskList = getter.get currentTaskList
 
-                let dateIdSequence =
-                    let rec getStartDate (date:DateTime) =
-                        if date.DayOfWeek = TempData.Consts.weekStart
-                        then date
-                        else getStartDate (date.AddDays -1)
-                    let startDate = getStartDate position.DateTime
+                let weeks =
+                    [ -1 .. 1 ]
+                    |> List.map (fun weekOffset ->
+                        let dateIdSequence =
+                            let rec getStartDate (date:DateTime) =
+                                if date.DayOfWeek = TempData.Consts.weekStart
+                                then date
+                                else getStartDate (date.AddDays -1)
+                            let startDate =
+                                position.DateTime
+                                |> fun x -> x.AddDays (7 * weekOffset)
+                                |> getStartDate
 
-                    [ 0 .. 6 ]
-                    |> List.map startDate.AddDays
-                    |> List.map FlukeDateTime.FromDateTime
-                    |> List.map (dateId dayStart)
+                            [ 0 .. 6 ]
+                            |> List.map startDate.AddDays
+                            |> List.map FlukeDateTime.FromDateTime
+                            |> List.map (dateId dayStart)
 
-                let result =
-                    taskList
-                    |> List.collect (fun task ->
-                        dateIdSequence
-                        |> List.map (fun dateId ->
-                            let cellId = Atoms.RecoilCell.cellId task.Id dateId
-                            let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
-                            let status = getter.get cell.Status
-                            let sessions = getter.get cell.Sessions
-                            let comments = getter.get cell.Comments
+                        let result =
+                            taskList
+                            |> List.collect (fun task ->
+                                dateIdSequence
+                                |> List.map (fun dateId ->
+                                    let cellId = Atoms.RecoilCell.cellId task.Id dateId
+                                    let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
+                                    let status = getter.get cell.Status
+                                    let sessions = getter.get cell.Sessions
+                                    let comments = getter.get cell.Comments
 
-                            match status, sessions, comments with
-                            | (Disabled | Suggested), [], [] -> None
-                            | _ ->
-                                {| DateId = dateId
-                                   Task = task
-                                   Status = status
-                                   Sessions = sessions
-                                   Comments = comments |}
-                                |> Some
-                        )
-                        |> List.choose id
-                    )
-                    |> List.groupBy (fun x -> x.DateId)
-                    |> List.map (fun (dateId, cells) ->
+                                    let isToday = getter.get (RecoilFlukeDate.isTodayFamily (ofDateId dateId))
 
-//                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
-
-                        let sortedTasksMap =
-                            cells
-                            |> List.map (fun cell ->
-                                let task =
-                                    { Task.Default with
-                                        Name = cell.Task.Name
-                                        Information = cell.Task.Information
-                                        Scheduling = cell.Task.Scheduling
-                                        PendingAfter = cell.Task.PendingAfter
-                                        MissedAfter = cell.Task.MissedAfter
-                                        Priority = cell.Task.Priority
-                                        Sessions = cell.Task.Sessions
-                                        Comments = cell.Task.Comments
-                                        Duration = cell.Task.Duration }
-                                OldLane (task, [ Cell ({ Task = task; DateId = dateId }, cell.Status) ])
+                                    match status, sessions, comments with
+                                    | (Disabled | Suggested), [], [] -> None
+                                    | _ ->
+                                        {| DateId = dateId
+                                           Task = task
+                                           Status = status
+                                           Sessions = sessions
+                                           IsToday = isToday
+                                           Comments = comments |}
+                                        |> Some
+                                )
+                                |> List.choose id
                             )
-                            |> Sorting.sortLanesByTimeOfDay dayStart { Date = ofDateId dateId; Time = dayStart } []
-                            |> List.indexed
-                            |> List.map (fun (i, OldLane (task, _)) ->
-                                Atoms.RecoilTask.taskId task, i
+                            |> List.groupBy (fun x -> x.DateId)
+                            |> List.map (fun (dateId, cells) ->
+
+        //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
+
+                                let sortedTasksMap =
+                                    cells
+                                    |> List.map (fun cell ->
+                                        let task =
+                                            { Task.Default with
+                                                Name = cell.Task.Name
+                                                Information = cell.Task.Information
+                                                Scheduling = cell.Task.Scheduling
+                                                PendingAfter = cell.Task.PendingAfter
+                                                MissedAfter = cell.Task.MissedAfter
+                                                Priority = cell.Task.Priority
+                                                Sessions = cell.Task.Sessions
+                                                Comments = cell.Task.Comments
+                                                Duration = cell.Task.Duration }
+                                        OldLane (task, [ Cell ({ Task = task; DateId = dateId }, cell.Status) ])
+                                    )
+                                    |> Sorting.sortLanesByTimeOfDay dayStart { Date = ofDateId dateId; Time = dayStart } []
+                                    |> List.indexed
+                                    |> List.map (fun (i, OldLane (task, _)) ->
+                                        Atoms.RecoilTask.taskId task, i
+                                    )
+                                    |> Map.ofList
+
+                                let newCells =
+                                    cells
+                                    |> List.sortBy (fun cell -> sortedTasksMap.[cell.Task.Id])
+
+                                dateId, newCells
                             )
                             |> Map.ofList
-
-                        let newCells =
-                            cells
-                            |> List.sortBy (fun cell -> sortedTasksMap.[cell.Task.Id])
-
-                        dateId, newCells
+                        result
                     )
-                    |> Map.ofList
 
                 Profiling.addCount (nameof weekCellsMap)
-                result
+                weeks
             )
         }
 
