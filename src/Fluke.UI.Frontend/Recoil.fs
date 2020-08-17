@@ -1312,8 +1312,9 @@ module Recoil =
                                 then date
                                 else getStartDate (date.AddDays -1)
                             let startDate =
-                                position.DateTime
-                                |> fun x -> x.AddDays (7 * weekOffset)
+                                dateId dayStart position
+                                |> ofDateId
+                                |> fun referenceDay -> referenceDay.DateTime.AddDays (7 * weekOffset)
                                 |> getStartDate
 
                             [ 0 .. 6 ]
