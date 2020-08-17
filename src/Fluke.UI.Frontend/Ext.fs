@@ -8,11 +8,11 @@ open Fable.Core.JsInterop
 module Ext =
     importAll "typeface-roboto-condensed"
 
-    importAll "./node_modules/@fortawesome/fontawesome-free/css/all.css"
+//    importAll "./node_modules/@fortawesome/fontawesome-free/css/all.css"
 
-    importAll "./node_modules/bulma/bulma.sass"
-    importAll "./node_modules/bulma-extensions/dist/css/bulma-extensions.min.css"
-    importAll "./node_modules/bulmaswatch/cyborg/bulmaswatch.scss"
+//    importAll "./node_modules/bulma/bulma.sass"
+//    importAll "./node_modules/bulma-extensions/dist/css/bulma-extensions.min.css"
+//    importAll "./node_modules/bulmaswatch/cyborg/bulmaswatch.scss"
 
     importAll "./public/index.scss"
     importAll "./public/index.ts"

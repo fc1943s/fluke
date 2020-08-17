@@ -69,10 +69,19 @@ $color-corner-pink: #a91c77;
 
 $cell-size: 17px;
 
+
 * {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+
   font-family: Roboto Condensed, sans-serif;
   font-size: 12px;
   color: #ddd;
+}
+
+body {
+  background-color: #212121;
 }
 
 #app {
@@ -278,8 +287,8 @@ $cell-size: 17px;
         //min-width: 200px;
         //max-width: 600px;
         width: 600px;
-        left: 70px;
-        top: 70px;
+        left: 20px;
+        top: 20px;
         white-space: pre-wrap;
         position: absolute;
         display: none;

@@ -144,7 +144,7 @@ module Recoil =
 //                taskStateList
 //                |> Seq.filter (fun taskState -> not taskState.Sessions.IsEmpty)
 //                |> Seq.map (fun taskState -> taskState.Task, taskState.Sessions)
-//                |> Seq.map (Tuple2.mapSnd (fun sessions ->
+//                |> Seq.map (Tuple2.mapItem2 (fun sessions ->
 //                    sessions
 //                    |> Seq.sortByDescending (fun (TaskSession start) -> start.DateTime)
 //                    |> Seq.head
@@ -347,7 +347,7 @@ module Recoil =
                                 address.Date, userComment
                             )
                         externalCellComments @ task.CellComments
-                        |> List.map (Tuple2.mapFst DateId)
+                        |> List.map (Tuple2.mapItem1 DateId)
                         |> List.groupBy fst
                         |> Map.ofList
                         |> Map.mapValues (List.map snd)
@@ -431,7 +431,7 @@ module Recoil =
                        InformationList = informationList |> List.map (fun x -> x.Information)
                        Lanes = filteredLanes |}
                 |> List.map ofLane
-                |> List.map (Tuple2.mapSnd (fun cells ->
+                |> List.map (Tuple2.mapItem2 (fun cells ->
                     cells
                     |> List.map (fun (Cell (address, status)) ->
                         address.DateId, status

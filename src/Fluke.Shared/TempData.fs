@@ -346,7 +346,7 @@ module TempData =
 
 
     let treeDataWithUser user taskTree =
-        taskTree |> List.map (Tuple2.mapSnd (List.map (Tuple2.mapSnd (List.map (fun event -> event, user)))))
+        taskTree |> List.map (Tuple2.mapItem2 (List.map (Tuple2.mapItem2 (List.map (fun event -> event, user)))))
 
     let transformTreeData dayStart taskTree =
         let taskList =
