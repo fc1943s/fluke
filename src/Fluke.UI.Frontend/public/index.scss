@@ -78,6 +78,7 @@ $cell-size: 17px;
   font-family: Roboto Condensed, sans-serif;
   font-size: 12px;
   color: #ddd;
+  user-select: none;
 }
 
 body {
@@ -287,8 +288,8 @@ body {
         //min-width: 200px;
         //max-width: 600px;
         width: 600px;
-        left: 20px;
-        top: 20px;
+        left: 100%;
+        top: 0;
         white-space: pre-wrap;
         position: absolute;
         display: none;

@@ -299,7 +299,7 @@ module PanelsComponent =
                     name = styles.create (fun props -> [
                         style.overflow.hidden
                         if props.hovered then
-                            style.backgroundColor "#222"
+                            style.backgroundColor "#333"
                         else
                             style.whitespace.nowrap
                             style.textOverflow.ellipsis
