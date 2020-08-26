@@ -1,6 +1,7 @@
 namespace Fluke.Shared
 
 open System
+open System.IO
 open FSharpPlus
 open Suigetsu.Core
 
@@ -103,6 +104,8 @@ module TempData =
 
 
     module Consts =
+        let rootPath = """M:\Dropbox\home_encrypted\projects\app-fluke"""
+        let dbPath = rootPath + """\db_v1"""
         let [<Literal>] sessionLength = 25.
         let [<Literal>] sessionBreakLength = 5.
         let defaultDate = FlukeDate.FromDateTime DateTime.MinValue
@@ -114,6 +117,19 @@ module TempData =
     module Events =
         module Temp =
 
+
+            type SortBlock =
+                | Top
+                | Middle
+                | Bottom
+
+            type SortBlock2 =
+                | Top of unit option
+                | Middle of unit
+                | Bottom of unit option
+
+            // Link: Auto:[Title, Favicon, Screenshot]
+            // Image: Embed
             [<RequireQualifiedAccess>]
             type Attachment =
                 | Comment

@@ -521,13 +521,13 @@ module Rendering =
                     | EmptyCell -> Disabled
                     | StatusCell status -> status
                     | TodayCell ->
-                        match position, task.MissedAfter, task.PendingAfter with
-                        | position, Some missedAfter, _
+                        match task.MissedAfter, task.PendingAfter with
+                        | Some missedAfter, _
                             when position.GreaterEqualThan dayStart dateId missedAfter  -> MissedToday
-                        | position, _,                Some pendingAfter
+                        | _,                Some pendingAfter
                             when position.GreaterEqualThan dayStart dateId pendingAfter -> Pending
-                        | _,   _,                     None                                                -> Pending
-                        | _                                                                               -> Suggested
+                        | _,                     None                                   -> Pending
+                        | _                                                             -> Suggested
 
                 (moment, status) :: loop renderState tail
             | [] -> []
@@ -596,10 +596,12 @@ module Sorting =
 
     let sortLanesByFrequency lanes =
         lanes
-        |> List.sortBy (fun (OldLane (_, cells)) ->
-            cells
-            |> List.filter (function Cell (_, (Disabled | Suggested)) -> true | _ -> false)
-            |> List.length
+        |> List.sortBy (fun (OldLane (task, cells)) ->
+            let disabledCellsCount =
+                cells
+                |> List.filter (function Cell (_, (Disabled | Suggested)) -> true | _ -> false)
+                |> List.length
+            disabledCellsCount - task.Sessions.Length
         )
 
     let sortLanesByIncomingRecurrency dayStart position lanes =
@@ -642,8 +644,8 @@ module Sorting =
               (function UserStatus (user, Postponed),               _                       -> Some TaskOrderList | _ -> None)
               (function UserStatus (user, Completed),               _                       -> Some DefaultSort   | _ -> None)
               (function UserStatus (user, Dismissed),               _                       -> Some DefaultSort   | _ -> None)
-              (function Disabled,                                   SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
-              (function Suggested,                                  ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
+//                  (function Disabled,                                   SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
+//                  (function Suggested,                                  ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
               (function _                                                                   -> Some DefaultSort) ]
             |> List.map (fun orderFn -> orderFn (status, task))
             |> List.indexed
