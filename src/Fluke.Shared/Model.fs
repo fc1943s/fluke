@@ -607,14 +607,23 @@ module Sorting =
     let sortLanesByIncomingRecurrency dayStart position lanes =
         lanes
         |> List.sortBy (fun (OldLane (_, cells)) ->
-            cells
-            |> List.exists (fun (Cell (address, status)) -> isToday dayStart position address.DateId && status = Disabled)
-            |> function
-                | true ->
-                    cells
-                    |> List.tryFindIndex (fun (Cell (_, status)) -> status = Pending)
-                    |> Option.defaultValue cells.Length
-                | false -> cells.Length
+            let lowPriority =
+                cells
+                |> List.exists (fun (Cell (address, status)) ->
+                    let today = isToday dayStart position address.DateId
+                    match today, status with
+                    | true, (Disabled | Suggested) -> true
+                    | _ -> false
+                )
+            if not lowPriority
+            then cells.Length
+            else
+                cells
+                |> List.tryFindIndex (function
+                    | Cell (_, (Pending | UserStatus (_, ManualPending))) -> true
+                    | _ -> false
+                )
+                |> Option.defaultValue cells.Length
         )
 
     type LaneSortType =
