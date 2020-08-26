@@ -631,31 +631,46 @@ module Sorting =
         | DefaultSort
 
     let sortLanesByTimeOfDay dayStart (position: FlukeDateTime) taskOrderList lanes =
+        let currentDateId = dateId dayStart position
 
         let getGroup task (Cell (address, status)) =
             let (|PostponedUntil|Postponed|WasPostponed|NotPostponed|) = function
-                | Postponed None                                                                    -> Postponed
-                | Postponed (Some until) when position.GreaterEqualThan dayStart address.DateId until -> WasPostponed
-                | Postponed _                                                                       -> PostponedUntil
-                | _                                                                                 -> NotPostponed
+                | Postponed None                                                 -> Postponed
+                | Postponed (Some until)
+                    when position.GreaterEqualThan dayStart address.DateId until -> WasPostponed
+                | Postponed _                                                    -> PostponedUntil
+                | _                                                              -> NotPostponed
 
-            let (|SchedulingRecurrency|ManualWithSuggestion|ManualWithoutSuggestion|) = function
-                | { Scheduling = Recurrency _ } -> SchedulingRecurrency
-                | { Scheduling = Manual WithSuggestion } -> ManualWithSuggestion
+            let getSessionsTodayCount task =
+                task.CellStateMap
+                |> Map.tryFind currentDateId
+                |> Option.map (fun cellState -> cellState.Sessions)
+                |> Option.defaultValue []
+                |> fun sessions -> sessions.Length
+
+            let (|SchedulingRecurrency|ManualWithSuggestion|ManualWithoutSuggestion|HasSessionToday|) = function
+                | { Scheduling = Recurrency _ }             -> SchedulingRecurrency
+                | task when getSessionsTodayCount task > 0  -> HasSessionToday
+                | { Scheduling = Manual WithSuggestion }    -> ManualWithSuggestion
                 | { Scheduling = Manual WithoutSuggestion } -> ManualWithoutSuggestion
 
-            [ (function MissedToday,                                _                       -> Some TaskOrderList | _ -> None)
-              (function UserStatus (user, ManualPending),           _                       -> Some TaskOrderList | _ -> None)
-              (function ((UserStatus (_, WasPostponed)) | Pending), _                       -> Some TaskOrderList | _ -> None)
-              (function UserStatus (user, PostponedUntil),          _                       -> Some TaskOrderList | _ -> None)
-              (function Suggested,                                  SchedulingRecurrency    -> Some TaskOrderList | _ -> None)
-              (function Suggested,                                  ManualWithSuggestion    -> Some TaskOrderList | _ -> None)
-              (function UserStatus (user, Postponed),               _                       -> Some TaskOrderList | _ -> None)
-              (function UserStatus (user, Completed),               _                       -> Some DefaultSort   | _ -> None)
-              (function UserStatus (user, Dismissed),               _                       -> Some DefaultSort   | _ -> None)
-//                  (function Disabled,                                   SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
-//                  (function Suggested,                                  ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
-              (function _                                                                   -> Some DefaultSort) ]
+
+            let groupsIndexList =
+                [ (function MissedToday,                                _                       -> Some TaskOrderList | _ -> None)
+                  (function UserStatus (user, ManualPending),           _                       -> Some TaskOrderList | _ -> None)
+                  (function ((UserStatus (_, WasPostponed)) | Pending), _                       -> Some TaskOrderList | _ -> None)
+                  (function UserStatus (user, PostponedUntil),          _                       -> Some TaskOrderList | _ -> None)
+                  (function Suggested,                                  SchedulingRecurrency    -> Some TaskOrderList | _ -> None)
+                  (function Suggested,                                  ManualWithSuggestion    -> Some TaskOrderList | _ -> None)
+                  (function UserStatus (user, Postponed),               _                       -> Some TaskOrderList | _ -> None)
+                  (function UserStatus (user, Completed),               _                       -> Some DefaultSort   | _ -> None)
+                  (function UserStatus (user, Dismissed),               _                       -> Some DefaultSort   | _ -> None)
+                  (function _,                                          HasSessionToday         -> Some DefaultSort   | _ -> None)
+    //                  (function Disabled,                                   SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
+    //                  (function Suggested,                                  ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
+                  (function _                                                                   -> Some DefaultSort) ]
+
+            groupsIndexList
             |> List.map (fun orderFn -> orderFn (status, task))
             |> List.indexed
             |> List.choose (function groupIndex, Some sortType -> Some (groupIndex, sortType) | _, None -> None)
