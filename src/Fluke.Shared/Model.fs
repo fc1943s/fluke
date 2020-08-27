@@ -494,7 +494,7 @@ module Rendering =
 
                             match renderState, group with
                             | WaitingFirstEvent, BeforeToday                     -> EmptyCell, WaitingFirstEvent
-                            | _,                 Today        when isDateMatched -> StatusCell Pending, Counting 1
+                            | _,                 Today        when isDateMatched -> TodayCell, Counting 1
                             | WaitingFirstEvent, Today                           -> EmptyCell, Counting 1
                             | _,                 _            when isDateMatched -> getStatus WaitingEvent
                             | _,                 _                               -> getStatus renderState
@@ -524,9 +524,12 @@ module Rendering =
                         match task.MissedAfter, task.PendingAfter with
                         | Some missedAfter, _
                             when position.GreaterEqualThan dayStart dateId missedAfter  -> MissedToday
+
                         | _,                Some pendingAfter
                             when position.GreaterEqualThan dayStart dateId pendingAfter -> Pending
-                        | _,                     None                                   -> Pending
+
+                        | _,                None                                        -> Pending
+
                         | _                                                             -> Suggested
 
                 (moment, status) :: loop renderState tail

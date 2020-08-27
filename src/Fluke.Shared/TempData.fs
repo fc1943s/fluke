@@ -248,7 +248,7 @@ module TempData =
             let rebuld = build initialState
 
 
-    let getNow () =
+    let getLivePosition () =
         FlukeDateTime.FromDateTime DateTime.Now
 
     let getTaskOrderList oldTaskOrderList (tasks: Task list) manualTaskOrder =
@@ -390,37 +390,41 @@ module TempData =
 
         {| TaskList = taskList
            TaskOrderList = taskOrderList
-           InformationList = informationList |}
+           InformationList = informationList
+           GetLivePosition = getLivePosition |}
 
 
 
     module Testing =
         module Consts =
             let testDayStart = flukeTime 12 00
-        let createRenderLaneTestData (testData: {| Now: FlukeDateTime
+        let createRenderLaneTestData (testData: {| Position: FlukeDateTime
                                                    Expected: (FlukeDate * CellStatus) list
                                                    Events: TempTaskEvent list
                                                    Task: Task |}) =
             let eventsWithUser = testData.Events |> List.map (fun x -> x, Users.testUser)
             {| TaskList = [ applyTaskEvents Consts.testDayStart testData.Task eventsWithUser ]
                TaskOrderList = [ { Task = testData.Task; Priority = TaskOrderPriority.First } ]
-               GetNow = fun () -> testData.Now |}
+               GetLivePosition = fun () -> testData.Position
+               InformationList = [ testData.Task.Information ] |}
 
 
-        let createSortLanesTestData (testData : {| Now: FlukeDateTime
+        let createSortLanesTestData (testData : {| Position: FlukeDateTime
                                                    Data: (Task * TempTaskEvent list) list
                                                    Expected: string list |}) =
-            {| TaskList =
-                   testData.Data
-                   |> List.map (fun (task, events) ->
-                       events
-                       |> List.map (fun x -> x, Users.testUser)
-                       |> applyTaskEvents Consts.testDayStart task
-                    )
+            let taskList =
+               testData.Data
+               |> List.map (fun (task, events) ->
+                   events
+                   |> List.map (fun x -> x, Users.testUser)
+                   |> applyTaskEvents Consts.testDayStart task
+                )
+            {| TaskList = taskList
                TaskOrderList =
                    testData.Data
                    |> List.map (fun (task, events) -> { Task = task; Priority = TaskOrderPriority.Last })
-               GetNow = fun () -> testData.Now |}
+               GetLivePosition = fun () -> testData.Position
+               InformationList = taskList |> List.map (fun x -> x.Information) |> List.distinct |}
         let tempData = {|
             ManualTasks =
                 [
@@ -479,98 +483,97 @@ module TempData =
                 |> transformTreeData Consts.testDayStart
 
             RenderLaneTests =
-                            {| Task = { Task.Default with Scheduling = Recurrency (Offset (Days 1)) }
-                               Now = { Date = flukeDate 2020 Month.March 04
-                                       Time = Consts.testDayStart }
-                               Expected = [
-                                   flukeDate 2020 Month.February 29, Disabled
-                                   flukeDate 2020 Month.March 1, Disabled
-                                   flukeDate 2020 Month.March 2, Disabled
-                                   flukeDate 2020 Month.March 3, Disabled
-                                   flukeDate 2020 Month.March 4, Pending
-                                   flukeDate 2020 Month.March 5, Pending
-                                   flukeDate 2020 Month.March 6, Pending
-                                   flukeDate 2020 Month.March 7, Pending
-                                   flukeDate 2020 Month.March 8, Disabled
-                               ]
-                               Events = [
-                                   TempSession (flukeDateTime 2020 Month.March 01 11 00)
-                                   TempSession (flukeDateTime 2020 Month.March 01 13 00)
-                                   TempSession (flukeDateTime 2020 Month.March 08 11 00)
-                                   TempSession (flukeDateTime 2020 Month.March 08 13 00)
-                               ] |}
+                        {| Task =
+                            { Task.Default with
+                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Monday
+                                                                 Weekly DayOfWeek.Tuesday
+                                                                 Weekly DayOfWeek.Wednesday
+                                                                 Weekly DayOfWeek.Thursday
+                                                                 Weekly DayOfWeek.Friday ])
+                                PendingAfter = Some (flukeTime 19 00) }
+                           Position = { Date = flukeDate 2020 Month.August 26
+                                        Time = Consts.testDayStart }
+                           Expected = [
+                               flukeDate 2020 Month.August 25, Disabled
+                               flukeDate 2020 Month.August 26, Suggested
+                               flukeDate 2020 Month.August 27, Pending
+                           ]
+                           Events = [
+                           ] |}
                             |> createRenderLaneTestData
 
             SortLanesTests =
-                        {| Now = { Date = flukeDate 2020 Month.March 10
-                                   Time = flukeTime 14 00 }
-                           Data = [
-                               { Task.Default with Name = "01"; Scheduling = Manual WithSuggestion },
-                               []
 
-                               { Task.Default with Name = "02"; Scheduling = Manual WithSuggestion },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
-                                 TempStatusEntry (flukeDate 2020 Month.March 08, Postponed None) ]
+                    {| Position = { Date = flukeDate 2020 Month.March 10
+                                    Time = flukeTime 14 00 }
+                       Data = [
+                           { Task.Default with Name = "01"; Scheduling = Manual WithSuggestion },
+                           []
 
-                               { Task.Default with Name = "03"; Scheduling = Manual WithoutSuggestion },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 09, ManualPending) ]
+                           { Task.Default with Name = "02"; Scheduling = Manual WithSuggestion },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                             TempStatusEntry (flukeDate 2020 Month.March 08, Postponed None) ]
 
-                               { Task.Default with Name = "04"; Scheduling = Recurrency (Offset (Days 1));
-                                                               PendingAfter = flukeTime 20 00 |> Some },
-                               []
+                           { Task.Default with Name = "03"; Scheduling = Manual WithoutSuggestion },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 09, ManualPending) ]
 
-                               { Task.Default with Name = "05"; Scheduling = Manual WithoutSuggestion },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 10, ManualPending) ]
+                           { Task.Default with Name = "04"; Scheduling = Recurrency (Offset (Days 1));
+                                                           PendingAfter = flukeTime 20 00 |> Some },
+                           []
 
-                               { Task.Default with Name = "06"; Scheduling = Manual WithoutSuggestion },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
-                                 TempStatusEntry (flukeDate 2020 Month.March 06, Dismissed) ]
+                           { Task.Default with Name = "05"; Scheduling = Manual WithoutSuggestion },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, ManualPending) ]
 
-                               { Task.Default with Name = "07"; Scheduling = Recurrency (Offset (Days 4)) },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 08, Completed) ]
+                           { Task.Default with Name = "06"; Scheduling = Manual WithoutSuggestion },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
+                             TempStatusEntry (flukeDate 2020 Month.March 06, Dismissed) ]
 
-                               { Task.Default with Name = "08"; Scheduling = Recurrency (Offset (Days 2)) },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 10, Completed) ]
+                           { Task.Default with Name = "07"; Scheduling = Recurrency (Offset (Days 4)) },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 08, Completed) ]
 
-                               { Task.Default with Name = "09"; Scheduling = Recurrency (Offset (Days 2)) },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 10, Dismissed) ]
+                           { Task.Default with Name = "08"; Scheduling = Recurrency (Offset (Days 2)) },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Completed) ]
 
-                               { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None) ]
+                           { Task.Default with Name = "09"; Scheduling = Recurrency (Offset (Days 2)) },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Dismissed) ]
 
-                               { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some)) ]
+                           { Task.Default with Name = "10"; Scheduling = Recurrency (Offset (Days 2)) },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed None) ]
 
-                               { Task.Default with Name = "12"; Scheduling = Manual WithoutSuggestion },
-                               []
+                           { Task.Default with Name = "11"; Scheduling = Recurrency (Offset (Days 1)) },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some)) ]
 
-                               { Task.Default with Name = "13"
-                                                   Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
-                               []
+                           { Task.Default with Name = "12"; Scheduling = Manual WithoutSuggestion },
+                           []
 
-                               { Task.Default with Name = "14"
-                                                   Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
-                               []
+                           { Task.Default with Name = "13"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ]) },
+                           []
 
-                               { Task.Default with Name = "15"
-                                                   Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
-                                 TempStatusEntry (flukeDate 2020 Month.March 09, Dismissed) ]
+                           { Task.Default with Name = "14"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ]) },
+                           []
 
-                               { Task.Default with Name = "16"; Scheduling = Recurrency (Offset (Days 1));
-                                                                MissedAfter = (flukeTime 13 00 |> Some) },
-                               []
+                           { Task.Default with Name = "15"
+                                               Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ]) },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
+                             TempStatusEntry (flukeDate 2020 Month.March 09, Dismissed) ]
 
-                               { Task.Default with Name = "17"; Scheduling = Recurrency (Offset (Days 1)) },
-                               [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 15 00 |> Some)) ]
+                           { Task.Default with Name = "16"; Scheduling = Recurrency (Offset (Days 1));
+                                                            MissedAfter = (flukeTime 13 00 |> Some) },
+                           []
 
-                               { Task.Default with Name = "18"; Scheduling = Recurrency (Offset (Days 1)) },
-                               []
-                           ]
-                           Expected = [ "16"; "05"; "03"; "11"; "13"
-                                        "18"; "17"; "04"; "01"; "02"
-                                        "10"; "08"; "09"; "07"; "14"
-                                        "15"; "12"; "06" ] |}
+                           { Task.Default with Name = "17"; Scheduling = Recurrency (Offset (Days 1)) },
+                           [ TempStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 15 00 |> Some)) ]
+
+                           { Task.Default with Name = "18"; Scheduling = Recurrency (Offset (Days 1)) },
+                           []
+                       ]
+                       Expected = [ "16"; "05"; "03"; "11"; "13"
+                                    "18"; "17"; "04"; "01"; "02"
+                                    "10"; "08"; "09"; "06"; "07"
+                                    "12"; "14"; "15" ] |}
+
                         |> createSortLanesTestData
 
         |}

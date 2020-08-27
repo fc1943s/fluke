@@ -7,21 +7,106 @@ open Suigetsu.Core
 
 
 module RootPrivateData =
+    type TempDataType =
+        | TempPrivate
+        | TempPublic
+        | Test
+    let tempDataType = TempPrivate
+//    let tempDataType = Test
+//    let tempDataType = TempPublic
+
+    let testData = TempData.Testing.tempData.RenderLaneTests
+//    let testData = TempData.Testing.tempData.SortLanesTests
+
+    let getLivePosition =
+        match tempDataType with
+        | TempPrivate -> TempData.getLivePosition
+        | TempPublic  -> TempData.getLivePosition
+        | Test        -> testData.GetLivePosition
+
+    let dayStart =
+        match tempDataType with
+        | TempPrivate -> TempData.Consts.dayStart
+        | TempPublic  -> TempData.Consts.dayStart
+        | Test        -> TempData.Testing.Consts.testDayStart
+
+
     let informationComments =
-        SharedPrivateData.Data.informationComments @ PrivateData.InformationComments.informationComments
+        match tempDataType with
+        | TempPrivate -> SharedPrivateData.Data.informationComments @ PrivateData.InformationComments.informationComments
+        | TempPublic  -> []
+        | Test        -> []
+
     let cellComments =
-        SharedPrivateData.Data.cellComments @ PrivateData.CellComments.cellComments @ PrivateData.Journal.journalComments
+        match tempDataType with
+        | TempPrivate -> SharedPrivateData.Data.cellComments @ PrivateData.CellComments.cellComments @ PrivateData.Journal.journalComments
+        | TempPublic  -> []
+        | Test        -> []
 
-    let taskComments = PrivateData.TaskComments.taskComments
-    let sharedTaskComments = SharedPrivateData.Data.taskComments
+    let taskComments =
+        match tempDataType with
+        | TempPrivate -> PrivateData.TaskComments.taskComments
+        | TempPublic  -> []
+        | Test        -> []
 
-    let cellStatusEntries = PrivateData.CellStatusEntries.cellStatusEntries
-    let sharedCellStatusEntries = SharedPrivateData.Data.cellStatusEntries
+    let sharedTaskComments =
+        match tempDataType with
+        | TempPrivate -> SharedPrivateData.Data.taskComments
+        | TempPublic  -> []
+        | Test        -> []
 
-    let treeData = PrivateData.Tasks.treeData
-    let sharedTreeData = SharedPrivateData.SharedTasks.treeData
+    let cellStatusEntries =
+        match tempDataType with
+        | TempPrivate -> PrivateData.CellStatusEntries.cellStatusEntries
+        | TempPublic  -> [], []
+        | Test        -> [], []
 
-    let currentUser = PrivateData.PrivateData.currentUser
+    let sharedCellStatusEntries =
+        match tempDataType with
+        | TempPrivate -> SharedPrivateData.Data.cellStatusEntries
+        | TempPublic  -> [], []
+        | Test        -> [], []
+
+    let treeData =
+        match tempDataType with
+        | TempPrivate -> PrivateData.Tasks.treeData
+        | TempPublic  -> TempData.Testing.tempData.ManualTasks
+        | Test        -> testData
+
+    let sharedTreeData =
+        match tempDataType with
+        | TempPrivate -> SharedPrivateData.SharedTasks.treeData
+        | TempPublic  -> {| treeData with TaskList = []; InformationList = []; TaskOrderList = [] |}
+        | Test        -> {| treeData with TaskList = []; InformationList = []; TaskOrderList = [] |}
+
+    let currentUser =
+        PrivateData.PrivateData.currentUser
+
+
+//    module Tmp =
+//        let informationList =
+//            match tempDataType with
+//            | TempPrivate -> treeData.InformationList
+//            | TempPublic  -> TempData.Testing.tempData.ManualTasks.InformationList
+//            | Test        -> []
+//
+//        let taskOrderList =
+//            match tempDataType with
+//            | TempPrivate -> treeData.TaskOrderList
+//            | TempPublic  -> TempData.Testing.tempData.ManualTasks.TaskOrderList
+//            | Test        -> testData.TaskOrderList
+//
+//        let informationCommentsMap =
+//            match tempDataType with
+//            | TempPrivate ->
+//                informationComments
+//                |> List.groupBy (fun x -> x.Information)
+//                |> Map.ofList
+//                |> Map.mapValues (List.map (fun x -> x.Comment))
+//            | TempPublic  -> Map.empty
+//            | Test        -> Map.empty
+
+
 
 //
 //    open Model

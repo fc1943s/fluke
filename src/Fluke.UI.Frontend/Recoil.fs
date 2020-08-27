@@ -200,13 +200,13 @@ module Recoil =
               TaskList: Task list }
 
         let getLivePosition () =
-            FlukeDateTime.FromDateTime DateTime.Now
+            RootPrivateData.getLivePosition ()
 
         let getCurrentUser () =
             RootPrivateData.currentUser
 
         let getDayStart () =
-            TempData.Consts.dayStart
+            RootPrivateData.dayStart
 
         let hasAccess tree user =
             match tree with
