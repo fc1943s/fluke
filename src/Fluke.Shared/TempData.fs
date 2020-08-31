@@ -173,6 +173,13 @@ module TempData =
             | CellCompleted of user:User * task:Task * date:FlukeDateTime
             | CellCommented of user:User * task:Task * date:FlukeDateTime * comment:Comment
 
+        type TaskName = TaskName of string
+        type HashedTaskId = HashedTaskId of string
+
+        type EventX =
+            | TaskCreated of information:Information * name:TaskName
+            | TaskRenamed of taskId:HashedTaskId * newName:TaskName
+
         let eventsFromStatusEntries user (entries: (FlukeDate * (Task * ManualCellStatus) list) list) =
             let newEvents =
                 entries
