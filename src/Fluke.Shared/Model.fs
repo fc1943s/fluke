@@ -91,49 +91,64 @@ module Model =
         | Months of int
     and TaskPriorityValue = TaskPriorityValue of value:int
 
+    type Comment = Comment of comment:string
 
-    module V2 =
-        // Link: Auto:[Title, Favicon, Screenshot]
-        // Image: Embed
-        [<RequireQualifiedAccess>]
-        type Attachment =
-            | Comment
-            | Link
-            | Video
-            | Image
-            | Attachment of Attachment
+    type DateId = DateId of referenceDay:FlukeDate
 
-        [<RequireQualifiedAccess>]
-        type InformationInteraction =
-            | Attachment of attachment:Attachment
-            | Sort of top:Information option * bottom:Information option
+    type CellAddress =
+        { Task: Task
+          DateId: DateId }
 
-        [<RequireQualifiedAccess>]
-        type TaskInteraction =
-            | Attachment of attachment:Attachment
-            | Archive
-            | Session
-            | Sort of top:Task option * bottom:Task option
+    [<RequireQualifiedAccess>]
+    type UserColor =
+        | Pink
+        | Blue
 
-        [<RequireQualifiedAccess>]
-        type CellInteraction =
-            | Attachment of attachment:Attachment
-            | StatusChange of cellStatusChange:CellStatusChange
+    type User =
+        { Username: string
+          Color: UserColor }
+
+    // Link: Auto:[Title, Favicon, Screenshot]
+    // Image: Embed
+    [<RequireQualifiedAccess>]
+    type Attachment =
+        | AttachmentComment of comment:Comment
+        | Link
+        | Video
+        | Image
+        | Attachment of attachment:Attachment
+
+    [<RequireQualifiedAccess>]
+    type InformationInteraction =
+        | Attachment of attachment:Attachment
+        | Sort of top:Information option * bottom:Information option
+
+    [<RequireQualifiedAccess>]
+    type TaskInteraction =
+        | Attachment of attachment:Attachment
+        | Archive
+        | Session
+        | Sort of top:Task option * bottom:Task option
+
+    [<RequireQualifiedAccess>]
+    type CellInteraction =
+        | Attachment of attachment:Attachment
+        | StatusChange of cellStatusChange:CellStatusChange
 //            | Sort of top:Cell option * bottom:Cell option
-        and [<RequireQualifiedAccess>]
-             CellStatusChange =
-            | Postpone of until:FlukeTime option
-            | Complete
-            | Dismiss
-            | Schedule
+    and [<RequireQualifiedAccess>]
+         CellStatusChange =
+        | Postpone of until:FlukeTime option
+        | Complete
+        | Dismiss
+        | Schedule
 
-        [<RequireQualifiedAccess>]
-        type Interaction =
-            | Information of information:Information * interaction:InformationInteraction
-            | Task of task:Task * interaction:TaskInteraction
-//            | Cell of cell:Cell * interaction:CellInteraction
+    [<RequireQualifiedAccess>]
+    type Interaction =
+        | Information of information:Information * interaction:InformationInteraction
+        | Task of task:Task * interaction:TaskInteraction
+        | Cell of cellAddress:CellAddress * interaction:CellInteraction
 
-//        type UserInteraction = UserInteraction of user:User * interaction:Interaction
+    type UserInteraction = UserInteraction of user:User * moment:FlukeDateTime * interaction:Interaction
 
 
 
@@ -159,14 +174,6 @@ module Model =
         | High9
         | Critical10
 
-    [<RequireQualifiedAccess>]
-    type UserColor =
-        | Pink
-        | Blue
-
-    type User =
-        { Username: string
-          Color: UserColor }
 
 
     type ManualCellStatus =
@@ -184,9 +191,7 @@ module Model =
         | UserStatus of user:User * status:ManualCellStatus
 
 
-    type DateId = DateId of referenceDay:FlukeDate
     type TaskId = TaskId of informationName:string * taskName:string
-    type Comment = Comment of comment:string
     type UserComment = UserComment of user:User * comment:string
     type TaskSession = TaskSession of start:FlukeDateTime
     type TaskStatusEntry = TaskStatusEntry of user:User * moment:FlukeDateTime * manualCellStatus:ManualCellStatus
@@ -197,9 +202,6 @@ module Model =
           Sessions: TaskSession list }
 
 
-    type CellAddress =
-        { Task: Task
-          DateId: DateId }
 
     type Cell = Cell of address:CellAddress * status:CellStatus
     type TaskComment = TaskComment of task:Task * comment:UserComment
@@ -292,14 +294,14 @@ module Model =
         static member inline FromDateTime (date: DateTime) =
             { Date = FlukeDate.FromDateTime date
               Time = FlukeTime.FromDateTime date }
-        member this.GreaterEqualThan (dayStart: FlukeTime) (DateId referenceDate) time =
+        member this.GreaterEqualThan (dayStart: FlukeTime) (DateId referenceDay) time =
             let testingAfterMidnight = dayStart.GreaterEqualThan time
             let currentlyBeforeMidnight = this.Time.GreaterEqualThan dayStart
 
             let newDate =
                 if testingAfterMidnight && currentlyBeforeMidnight
-                then referenceDate.DateTime.AddDays 1. |> FlukeDate.FromDateTime
-                else referenceDate
+                then referenceDay.DateTime.AddDays 1. |> FlukeDate.FromDateTime
+                else referenceDay
 
             let dateToCompare = { Date = newDate; Time = time }
 
@@ -350,8 +352,8 @@ module Model =
     let ofTaskStatusEntry = fun (TaskStatusEntry (user, moment, manualCellStatus)) -> user, moment, manualCellStatus
 
 
-    let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position:FlukeDateTime, DateId referenceDate) =
-        let dateStart = { Date = referenceDate; Time = dayStart }.DateTime
+    let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position:FlukeDateTime, DateId referenceDay) =
+        let dateStart = { Date = referenceDay; Time = dayStart }.DateTime
         let dateEnd = dateStart.AddDays 1.
 
         match position.DateTime with
@@ -385,8 +387,17 @@ module Model =
         |> List.map (fun (CellStatusEntry (user, task', moment, entries)) -> TaskStatusEntry (user, moment, entries))
         |> List.sortBy (fun (TaskStatusEntry (user, date, _)) -> date)
 
-    let createCellComment task moment user comment =
-        CellComment (task, moment, UserComment (user, comment))
+    let createCellComment dayStart task moment user (comment: string) =
+        let cellInteraction =
+            comment
+            |> Comment
+            |> Attachment.AttachmentComment
+            |> CellInteraction.Attachment
+        let cellAddress = { Task = task; DateId = dateId dayStart moment }
+        let interaction = Interaction.Cell (cellAddress, cellInteraction)
+        let userInteraction = UserInteraction (user, moment, interaction)
+        userInteraction
+//        CellComment (task, moment, UserComment (user, comment))
 
 
 
@@ -457,8 +468,8 @@ module Rendering =
         let dateSequenceWithEntries =
             let dates =
                 cellStatusEventsByDateId
-                |> Seq.map (fun (KeyValue ((DateId referenceDate), (user, moment, manualCellStatus))) ->
-                    referenceDate.DateTime
+                |> Seq.map (fun (KeyValue ((DateId referenceDay), (user, moment, manualCellStatus))) ->
+                    referenceDay.DateTime
                 ) // Map.keys
                 |> Seq.sort
                 |> Seq.toArray

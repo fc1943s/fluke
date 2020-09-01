@@ -346,9 +346,20 @@ module Recoil =
                     let cellCommentsMap =
                         let externalCellComments =
                             RootPrivateData.cellComments
-                            |> List.filter (fun (CellComment (task', moment, userCcomment)) -> task' = taskState.Task)
-                            |> List.map (fun (CellComment (user, address, userComment)) ->
-                                address.Date, userComment
+                            |> List.filter (fun (UserInteraction (user, moment, interaction)) ->
+                                match interaction with
+                                | Interaction.Cell ({ Task = task' }, _) when task' = taskState.Task -> true
+                                | _ -> false
+                            )
+                            |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
+                                match interaction with
+                                | Interaction.Cell
+                                    ({ Task = task'
+                                       DateId = (DateId referenceDay) },
+                                     CellInteraction.Attachment (Attachment.AttachmentComment (Comment comment)))
+                                    when task' = taskState.Task ->
+                                        Some (referenceDay, UserComment (user, comment))
+                                | _ -> None
                             )
                         externalCellComments @ taskState.CellComments
                         |> List.map (Tuple2.mapItem1 DateId)
