@@ -197,7 +197,7 @@ module Tests =
                     | NoSorting -> lanes
                     | TimeOfDay -> Sorting.sortLanesByTimeOfDay Testing.Consts.testDayStart props.Position [] lanes
                     | Frequency -> Sorting.sortLanesByFrequency lanes
-                |> List.map (fun (OldLane (task, _)) -> task.Name)
+                |> List.map (fun (OldLane (taskState, _)) -> taskState.Task.Name)
                 |> Expect.equal "" props.Expected
 
             test "Sort by Frequency: All task types mixed" {
@@ -345,7 +345,7 @@ module Tests =
                                                      Expected: (FlukeDate * CellStatus) list
                                                      Events: TempTaskEvent list |}) =
 
-                let task =
+                let taskState =
                     applyTaskEvents
                         Testing.Consts.testDayStart
                         props.Task
@@ -357,8 +357,8 @@ module Tests =
                     List.map string
                     >> String.concat Environment.NewLine
 
-                Rendering.renderLane Testing.Consts.testDayStart props.Position dateSequence task
-                |> fun (OldLane (task, cells)) ->
+                Rendering.renderLane Testing.Consts.testDayStart props.Position dateSequence taskState
+                |> fun (OldLane (taskState, cells)) ->
                     cells
                     |> List.map (fun (Cell (address, status)) -> string address.DateId, status)
                 |> toString

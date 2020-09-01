@@ -83,8 +83,8 @@ module RootPrivateData =
     let sharedTreeData =
         match tempDataType with
         | TempPrivate -> SharedPrivateData.SharedTasks.treeData
-        | TempPublic  -> {| treeData with TaskList = []; InformationList = []; TaskOrderList = [] |}
-        | Test        -> {| treeData with TaskList = []; InformationList = []; TaskOrderList = [] |}
+        | TempPublic  -> {| treeData with TaskStateList = []; InformationList = []; TaskOrderList = [] |}
+        | Test        -> {| treeData with TaskStateList = []; InformationList = []; TaskOrderList = [] |}
 
     let currentUser =
         PrivateData.PrivateData.Consts.currentUser

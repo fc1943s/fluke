@@ -40,6 +40,7 @@ module Model =
         | November = 11
         | December = 12
 
+
     [<StructuredFormatDisplay "{Year}-{Month}-{Day}">]
     type FlukeDate =
         { Year: int
@@ -62,27 +63,85 @@ module Model =
         override this.ToString () =
             sprintf "%A %A" this.Date this.Time
 
-    type FixedRecurrency =
+
+    type Task =
+        { Name: string
+          Information: Information
+          Scheduling: TaskScheduling
+          PendingAfter: FlukeTime option
+          MissedAfter: FlukeTime option
+          Priority: TaskPriorityValue
+          Duration: int option }
+    and TaskScheduling =
+        | Manual of TaskManualScheduling
+        | Recurrency of TaskRecurrency
+    and TaskManualScheduling =
+        | WithSuggestion
+        | WithoutSuggestion
+    and TaskRecurrency =
+        | Offset of TaskRecurrencyOffset
+        | Fixed of FixedRecurrency list
+    and FixedRecurrency =
         | Weekly of DayOfWeek
         | Monthly of day:int
         | Yearly of day:int * month:Month
-
-    type TaskRecurrencyOffset =
+    and TaskRecurrencyOffset =
         | Days of int
         | Weeks of int
         | Months of int
+    and TaskPriorityValue = TaskPriorityValue of value:int
 
-    type TaskRecurrency =
-        | Offset of TaskRecurrencyOffset
-        | Fixed of FixedRecurrency list
 
-    type TaskManualScheduling =
-        | WithSuggestion
-        | WithoutSuggestion
+    module V2 =
+        // Link: Auto:[Title, Favicon, Screenshot]
+        // Image: Embed
+        [<RequireQualifiedAccess>]
+        type Attachment =
+            | Comment
+            | Link
+            | Video
+            | Image
+            | Attachment of Attachment
 
-    type TaskScheduling =
-        | Manual of TaskManualScheduling
-        | Recurrency of TaskRecurrency
+        [<RequireQualifiedAccess>]
+        type InformationInteraction =
+            | Attachment of attachment:Attachment
+            | Sort of top:Information option * bottom:Information option
+
+        [<RequireQualifiedAccess>]
+        type TaskInteraction =
+            | Attachment of attachment:Attachment
+            | Archive
+            | Session
+            | Sort of top:Task option * bottom:Task option
+
+        [<RequireQualifiedAccess>]
+        type CellInteraction =
+            | Attachment of attachment:Attachment
+            | StatusChange of cellStatusChange:CellStatusChange
+//            | Sort of top:Cell option * bottom:Cell option
+        and [<RequireQualifiedAccess>]
+             CellStatusChange =
+            | Postpone of until:FlukeTime option
+            | Complete
+            | Dismiss
+            | Schedule
+
+        [<RequireQualifiedAccess>]
+        type Interaction =
+            | Information of information:Information * interaction:InformationInteraction
+            | Task of task:Task * interaction:TaskInteraction
+//            | Cell of cell:Cell * interaction:CellInteraction
+
+//        type UserInteraction = UserInteraction of user:User * interaction:Interaction
+
+
+
+
+
+
+
+
 
     type X =
         | SameDay
@@ -131,26 +190,12 @@ module Model =
     type UserComment = UserComment of user:User * comment:string
     type TaskSession = TaskSession of start:FlukeDateTime
     type TaskStatusEntry = TaskStatusEntry of user:User * moment:FlukeDateTime * manualCellStatus:ManualCellStatus
-    type TaskPriorityValue = TaskPriorityValue of value:int
 
     type CellState =
         { Status: CellStatus
           Comments: UserComment list
           Sessions: TaskSession list }
 
-    type Task =
-        { Name: string
-          Information: Information
-          Scheduling: TaskScheduling
-          PendingAfter: FlukeTime option
-          MissedAfter: FlukeTime option
-          Priority: TaskPriorityValue
-          StatusEntries: TaskStatusEntry list
-          Sessions: TaskSession list
-          CellComments: (FlukeDate * UserComment) list
-          CellStateMap: Map<DateId, CellState>
-          Comments: UserComment list
-          Duration: int option }
 
     type CellAddress =
         { Task: Task
@@ -181,7 +226,14 @@ module Model =
         { Task: Task
           Priority: TaskOrderPriority }
 
-    type OldLane = OldLane of task:Task * cells:Cell list
+    type TaskState =
+        { Task: Task
+          StatusEntries: TaskStatusEntry list
+          Comments: UserComment list
+          Sessions: TaskSession list
+          CellComments: (FlukeDate * UserComment) list
+          CellStateMap: Map<DateId, CellState> }
+    type OldLane = OldLane of task:TaskState * cells:Cell list
 
 
 
@@ -196,7 +248,7 @@ module Model =
           SharedWith: TreeAccess list
           Position: FlukeDateTime
           InformationList: Information list
-          TaskList: Task list }
+          TaskStateList: TaskState list }
 
 
 
@@ -285,14 +337,9 @@ module Model =
               MissedAfter = None
               Scheduling = Manual WithoutSuggestion
               Priority = TaskPriorityValue 0
-              StatusEntries = []
-              Sessions = []
-              CellComments = []
-              CellStateMap = Map.empty
-              Comments = []
               Duration = None }
 
-    let ofLane = fun (OldLane (task, cells)) -> task, cells
+    let ofLane = fun (OldLane (taskState, cells)) -> taskState, cells
     let ofTaskSession = fun (TaskSession start) -> start
     let ofDateId = fun (DateId referenceDay) -> referenceDay
     let ofUserComment = fun (UserComment (user, comment)) -> user, comment
@@ -387,10 +434,10 @@ module Rendering =
         | TodayCell
 
 
-    let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) task =
+    let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) (taskState: TaskState) =
 
         let cellStatusEventsByDateId =
-            task.StatusEntries
+            taskState.StatusEntries
             |> List.map ofTaskStatusEntry
             |> List.map (fun (user, moment, manualCellStatus) -> dateId dayStart moment, (user, moment, manualCellStatus))
             |> Map.ofList
@@ -468,7 +515,7 @@ module Rendering =
 
                             | Counting count,    _           -> EmptyCell, Counting (count + 1)
 
-                        match task.Scheduling with
+                        match taskState.Task.Scheduling with
                         | Recurrency (Offset offset) ->
                             let days =
                                 match offset with
@@ -503,10 +550,10 @@ module Rendering =
                         | Manual suggestion ->
                             match renderState, group, suggestion with
                             | WaitingFirstEvent, Today, WithSuggestion
-                                when task.PendingAfter = None          -> StatusCell Suggested, Counting 1
-                            | WaitingFirstEvent, Today, WithSuggestion -> TodayCell, Counting 1
-                            | WaitingFirstEvent, Today, _              -> StatusCell Suggested, Counting 1
-                            | _                                        ->
+                                when taskState.Task.PendingAfter = None          -> StatusCell Suggested, Counting 1
+                            | WaitingFirstEvent, Today, WithSuggestion           -> TodayCell, Counting 1
+                            | WaitingFirstEvent, Today, _                        -> StatusCell Suggested, Counting 1
+                            | _                                                  ->
                                 let status, renderState = getStatus renderState
 
                                 let status =
@@ -522,7 +569,7 @@ module Rendering =
                     | EmptyCell -> Disabled
                     | StatusCell status -> status
                     | TodayCell ->
-                        match task.MissedAfter, task.PendingAfter with
+                        match taskState.Task.MissedAfter, taskState.Task.PendingAfter with
                         | Some missedAfter, _
                             when position.GreaterEqualThan dayStart dateId missedAfter  -> MissedToday
 
@@ -539,8 +586,10 @@ module Rendering =
         let cells =
             loop WaitingFirstEvent dateSequenceWithEntries
             |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
-            |> List.map (fun (moment, cellStatus) -> Cell ({ DateId = dateId dayStart moment; Task = task }, cellStatus))
-        OldLane (task, cells)
+            |> List.map (fun (moment, cellStatus) ->
+                Cell ({ DateId = dateId dayStart moment; Task = taskState.Task }, cellStatus)
+            )
+        OldLane (taskState, cells)
 
 
 
@@ -576,7 +625,7 @@ module Sorting =
         result |> Seq.toList
 
     let applyManualOrder (taskOrderList: TaskOrderEntry list) lanes =
-        let tasks = lanes |> List.map (ofLane >> fst)
+        let tasks = lanes |> List.map (ofLane >> fst >> fun taskState -> taskState.Task)
         let tasksSet = tasks |> Set.ofList
         let orderEntriesOfTasks = taskOrderList |> List.filter (fun orderEntry -> tasksSet.Contains orderEntry.Task)
 
@@ -596,16 +645,16 @@ module Sorting =
             |> List.mapi (fun i task -> task, i)
             |> Map.ofList
 
-        lanes |> List.sortBy (fun (OldLane (task, _)) -> taskIndexMap.[task])
+        lanes |> List.sortBy (fun (OldLane (taskState, _)) -> taskIndexMap.[taskState.Task])
 
     let sortLanesByFrequency lanes =
         lanes
-        |> List.sortBy (fun (OldLane (task, cells)) ->
+        |> List.sortBy (fun (OldLane (taskState, cells)) ->
             let disabledCellsCount =
                 cells
                 |> List.filter (function Cell (_, (Disabled | Suggested)) -> true | _ -> false)
                 |> List.length
-            disabledCellsCount - task.Sessions.Length
+            disabledCellsCount - taskState.Sessions.Length
         )
 
     let sortLanesByIncomingRecurrency dayStart position lanes =
@@ -637,7 +686,7 @@ module Sorting =
     let sortLanesByTimeOfDay dayStart (position: FlukeDateTime) taskOrderList lanes =
         let currentDateId = dateId dayStart position
 
-        let getGroup task (Cell (address, status)) =
+        let getGroup taskState (Cell (address, status)) =
             let (|PostponedUntil|Postponed|WasPostponed|NotPostponed|) = function
                 | Postponed None                                                 -> Postponed
                 | Postponed (Some until)
@@ -645,18 +694,24 @@ module Sorting =
                 | Postponed _                                                    -> PostponedUntil
                 | _                                                              -> NotPostponed
 
-            let getSessionsTodayCount task =
-                task.CellStateMap
+            let getSessionsTodayCount (cellStateMap: Map<DateId, CellState>) =
+                cellStateMap
                 |> Map.tryFind currentDateId
                 |> Option.map (fun cellState -> cellState.Sessions)
                 |> Option.defaultValue []
                 |> fun sessions -> sessions.Length
 
-            let (|SchedulingRecurrency|ManualWithSuggestion|ManualWithoutSuggestion|HasSessionToday|) = function
-                | { Scheduling = Recurrency _ }             -> SchedulingRecurrency
-                | task when getSessionsTodayCount task > 0  -> HasSessionToday
-                | { Scheduling = Manual WithSuggestion }    -> ManualWithSuggestion
-                | { Scheduling = Manual WithoutSuggestion } -> ManualWithoutSuggestion
+            let (|SchedulingRecurrency|ManualWithSuggestion|ManualWithoutSuggestion|HasSessionToday|)
+                    (taskState: TaskState) =
+                match taskState with
+                | { Task = { Scheduling = Recurrency _ } } ->
+                    SchedulingRecurrency
+                | { CellStateMap = cellStateMap } when getSessionsTodayCount cellStateMap > 0 ->
+                    HasSessionToday
+                | { Task = { Scheduling = Manual WithSuggestion } } ->
+                    ManualWithSuggestion
+                | { Task = { Scheduling = Manual WithoutSuggestion } } ->
+                    ManualWithoutSuggestion
 
 
             let groupsIndexList =
@@ -675,17 +730,17 @@ module Sorting =
                   (function _                                                                   -> Some DefaultSort) ]
 
             groupsIndexList
-            |> List.map (fun orderFn -> orderFn (status, task))
+            |> List.map (fun orderFn -> orderFn (status, taskState))
             |> List.indexed
             |> List.choose (function groupIndex, Some sortType -> Some (groupIndex, sortType) | _, None -> None)
             |> List.head
 
         lanes
         |> List.indexed
-        |> List.groupBy (fun (_, OldLane (task, cells)) ->
+        |> List.groupBy (fun (_, OldLane (taskState, cells)) ->
             cells
             |> List.filter (fun (Cell (address, _)) -> isToday dayStart position address.DateId)
-            |> List.map (getGroup task)
+            |> List.map (getGroup taskState)
             |> List.minBy fst
         )
         |> List.collect (fun ((groupIndex, sortType), indexedLanes) ->

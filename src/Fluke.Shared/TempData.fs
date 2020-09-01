@@ -114,57 +114,6 @@ module TempData =
 
 
     module Events =
-        module Temp =
-
-
-            type SortBlock =
-                | Top
-                | Middle
-                | Bottom
-
-            type SortBlock2 =
-                | Top of unit option
-                | Middle of unit
-                | Bottom of unit option
-
-            // Link: Auto:[Title, Favicon, Screenshot]
-            // Image: Embed
-            [<RequireQualifiedAccess>]
-            type Attachment =
-                | Comment
-                | Link
-                | Video
-                | Image
-                | Attachment of Attachment
-
-            [<RequireQualifiedAccess>]
-            type InformationInteraction =
-                | Attachment of attachment:Attachment
-
-            [<RequireQualifiedAccess>]
-            type TaskInteraction =
-                | Attachment of attachment:Attachment
-                | Session
-
-            [<RequireQualifiedAccess>]
-            type CellStatusChange =
-                | Postpone of until:FlukeTime option
-                | Complete
-                | Dismiss
-                | Schedule
-
-            [<RequireQualifiedAccess>]
-            type CellInteraction =
-                | Attachment of attachment:Attachment
-                | StatusChange of cellStatusChange:CellStatusChange
-
-            [<RequireQualifiedAccess>]
-            type Interaction =
-                | Information of InformationInteraction
-                | Task of TaskInteraction
-                | Cell of CellInteraction
-
-            type UserInteraction = UserInteraction of user:User * interaction:Interaction
 
 
         [<RequireQualifiedAccess>]
@@ -258,10 +207,10 @@ module TempData =
     let getLivePosition () =
         FlukeDateTime.FromDateTime DateTime.Now
 
-    let getTaskOrderList oldTaskOrderList (tasks: Task list) manualTaskOrder =
+    let getTaskOrderList oldTaskOrderList (taskStateList: TaskState list) manualTaskOrder =
         let taskMap =
-            tasks
-            |> List.map (fun x -> (x.Information, x.Name), x)
+            taskStateList
+            |> List.map (fun x -> (x.Task.Information, x.Task.Name), x)
             |> Map.ofList
 
         let newTaskOrderList =
@@ -271,8 +220,8 @@ module TempData =
                 |> Map.tryFind (information, taskName)
                 |> function
                     | None -> failwithf "Invalid task: '%A/%s'" information taskName
-                    | Some task ->
-                        { Task = task
+                    | Some taskState ->
+                        { Task = taskState.Task
                           Priority = TaskOrderPriority.First }
             )
         oldTaskOrderList @ newTaskOrderList
@@ -356,23 +305,27 @@ module TempData =
 
             loop [] [] [] [] None task.Scheduling task.PendingAfter task.MissedAfter task.Duration events
 
-        { task with
-            Scheduling = scheduling
-            PendingAfter = pendingAfter
-            MissedAfter = missedAfter
-            Duration = duration
-            Comments = comments
-            CellComments = cellComments
-            Sessions = sessions
-            StatusEntries = statusEntries
-            Priority = priority }
+        { Task =
+            { task with
+                Scheduling = scheduling
+                PendingAfter = pendingAfter
+                MissedAfter = missedAfter
+                Duration = duration
+                Priority = priority }
+          Comments = comments
+          Sessions = sessions
+          StatusEntries = statusEntries
+          CellComments = cellComments
+          CellStateMap = Map.empty }
+
+
 
 
     let treeDataWithUser user taskTree =
         taskTree |> List.map (Tuple2.mapItem2 (List.map (Tuple2.mapItem2 (List.map (fun event -> event, user)))))
 
     let transformTreeData dayStart taskTree =
-        let taskList =
+        let taskStateList =
             taskTree
             |> List.collect (fun (information, tasks) ->
                 tasks
@@ -392,10 +345,10 @@ module TempData =
             |> List.distinct
 
         let taskOrderList =
-            taskList
-            |> List.map (fun task -> { Task = task; Priority = TaskOrderPriority.Last })
+            taskStateList
+            |> List.map (fun taskState -> { Task = taskState.Task; Priority = TaskOrderPriority.Last })
 
-        {| TaskList = taskList
+        {| TaskStateList = taskStateList
            TaskOrderList = taskOrderList
            InformationList = informationList
            GetLivePosition = getLivePosition |}
@@ -410,7 +363,7 @@ module TempData =
                                                    Events: TempTaskEvent list
                                                    Task: Task |}) =
             let eventsWithUser = testData.Events |> List.map (fun x -> x, Users.testUser)
-            {| TaskList = [ applyTaskEvents Consts.testDayStart testData.Task eventsWithUser ]
+            {| TaskStateList = [ applyTaskEvents Consts.testDayStart testData.Task eventsWithUser ]
                TaskOrderList = [ { Task = testData.Task; Priority = TaskOrderPriority.First } ]
                GetLivePosition = fun () -> testData.Position
                InformationList = [ testData.Task.Information ] |}
@@ -419,19 +372,19 @@ module TempData =
         let createSortLanesTestData (testData : {| Position: FlukeDateTime
                                                    Data: (Task * TempTaskEvent list) list
                                                    Expected: string list |}) =
-            let taskList =
+            let taskStateList =
                testData.Data
                |> List.map (fun (task, events) ->
                    events
                    |> List.map (fun x -> x, Users.testUser)
                    |> applyTaskEvents Consts.testDayStart task
                 )
-            {| TaskList = taskList
+            {| TaskStateList = taskStateList
                TaskOrderList =
                    testData.Data
                    |> List.map (fun (task, events) -> { Task = task; Priority = TaskOrderPriority.Last })
                GetLivePosition = fun () -> testData.Position
-               InformationList = taskList |> List.map (fun x -> x.Information) |> List.distinct |}
+               InformationList = taskStateList |> List.map (fun x -> x.Task.Information) |> List.distinct |}
         let tempData = {|
             ManualTasks =
                 [
