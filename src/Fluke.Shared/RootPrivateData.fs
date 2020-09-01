@@ -3,6 +3,7 @@ namespace Fluke.Shared
 
 open FSharpPlus
 open Fluke.Shared
+open Fluke.Shared.PrivateData
 open Suigetsu.Core
 
 
@@ -29,6 +30,12 @@ module RootPrivateData =
         | TempPrivate -> TempData.Consts.dayStart
         | TempPublic  -> TempData.Consts.dayStart
         | Test        -> TempData.Testing.Consts.testDayStart
+
+    let weekStart =
+        match tempDataType with
+        | TempPrivate -> PrivateData.Consts.weekStart
+        | TempPublic  -> PrivateData.Consts.weekStart
+        | Test        -> PrivateData.Consts.weekStart
 
 
     let informationComments =
@@ -80,7 +87,7 @@ module RootPrivateData =
         | Test        -> {| treeData with TaskList = []; InformationList = []; TaskOrderList = [] |}
 
     let currentUser =
-        PrivateData.PrivateData.currentUser
+        PrivateData.PrivateData.Consts.currentUser
 
 
 //    module Tmp =

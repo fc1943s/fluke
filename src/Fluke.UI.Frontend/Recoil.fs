@@ -208,6 +208,9 @@ module Recoil =
         let getDayStart () =
             RootPrivateData.dayStart
 
+        let getWeekStart () =
+            RootPrivateData.weekStart
+
         let hasAccess tree user =
             match tree with
             | tree when tree.Owner = user -> true
@@ -882,6 +885,10 @@ module Recoil =
             key ("atom/" + nameof dayStart)
             def (FakeBackend.getDayStart ())
         }
+        let rec internal weekStart = atom {
+            key ("atom/" + nameof weekStart)
+            def (FakeBackend.getWeekStart ())
+        }
         let rec internal selection = atom {
             key ("atom/" + nameof selection)
             def (Map.empty : Map<TaskId, Set<FlukeDate>>)
@@ -1300,6 +1307,7 @@ module Recoil =
             key ("selector/" + nameof weekCellsMap)
             get (fun getter ->
                 let dayStart = getter.get Atoms.dayStart
+                let weekStart = getter.get Atoms.weekStart
                 let position = getter.get position
                 let taskList = getter.get currentTaskList
 
@@ -1308,7 +1316,7 @@ module Recoil =
                     |> List.map (fun weekOffset ->
                         let dateIdSequence =
                             let rec getStartDate (date:DateTime) =
-                                if date.DayOfWeek = TempData.Consts.weekStart
+                                if date.DayOfWeek = weekStart
                                 then date
                                 else getStartDate (date.AddDays -1)
                             let startDate =

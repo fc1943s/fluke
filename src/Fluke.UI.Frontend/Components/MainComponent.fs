@@ -198,6 +198,7 @@ module PanelsComponent =
             module DayComponent =
                 let render = React.memo (fun (input: {| Date: FlukeDate
                                                         Label: string |}) ->
+                    let weekStart = Recoil.useValue Recoil.Atoms.weekStart
                     let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
                     let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.hasSelectionFamily input.Date)
 
@@ -206,7 +207,7 @@ module PanelsComponent =
                             Css.cellSquare
                             if isToday then Css.todayHeader
                             if hasSelection then Css.selectionHighlight
-                            match input.Date with
+                            match (weekStart, input.Date) with
                             | StartOfMonth -> Css.cellStartMonth
                             | StartOfWeek -> Css.cellStartWeek
                             | _ -> ()
@@ -359,7 +360,9 @@ module PanelsComponent =
 
         module CellBorderComponent =
             let render = React.memo (fun (input: {| Date: FlukeDate |}) ->
-                match input.Date with
+                let weekStart = Recoil.useValue Recoil.Atoms.weekStart
+
+                match (weekStart, input.Date) with
                 | StartOfMonth -> Some Css.cellStartMonth
                 | StartOfWeek -> Some Css.cellStartWeek
                 | _ -> None

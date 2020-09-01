@@ -312,9 +312,10 @@ module Model =
         | position when dateStart < position -> BeforeToday
         | _ -> AfterToday
 
-    let (|StartOfMonth|StartOfWeek|NormalDay|) = function
+    let (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, date) =
+        match date with
         | { Day = 1 } -> StartOfMonth
-        | date when date.DateTime.DayOfWeek = DayOfWeek.Monday -> StartOfWeek
+        | date when date.DateTime.DayOfWeek = weekStart -> StartOfWeek
         | _ -> NormalDay
 
     let isToday dayStart position dateId =
