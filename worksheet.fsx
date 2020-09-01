@@ -21,48 +21,65 @@ let rawTreeData =
             ]
     ]
 
-type TaskClass () =
-    do ()
-
-let ``task name 1`` = TaskClass ()
-
-module Validate =
-    let name (name : string) =
-//        if String.IsNullOrWhiteSpace name then
-//            failwith "Server name can not be null, empty, or blank"
-        if name.Length > 63 || name.Length < 3 then
-            failwithf "Server name must have a length between 3 and 63, was %d" name.Length
-        if name.[0] = '-' || name.[name.Length-1] = '-' then
-            failwith "Server name must not start or end with a hyphen ('-')"
-//        if isAsciiDigit name.[0] then
-//            failwith "Server name must not start with a digit"
-//        if not (Seq.forall isLegalServernameChar name) then
-//            failwithf "Server name can only consist of ASCII lowercase letters, digits, or hyphens. Was '%s'" name
-
+type InformationName = InformationName of name:string
 type TaskName = TaskName of name:string
+type InformationId = InformationId of id:string
+
+let rec informationId (information: Information) : InformationId =
+    match information with
+    | Project x  -> sprintf "%s/%s" information.KindName x.Name
+    | Area x     -> sprintf "%s/%s" information.KindName x.Name
+    | Resource x -> sprintf "%s/%s" information.KindName x.Name
+    | Archive x  ->
+        let (InformationId archiveId) = informationId x
+        sprintf "%s/%s" information.KindName archiveId
+    |> InformationId
+
+
+
+[<RequireQualifiedAccess>]
+type InformationKind =
+    | Project
+    | Area
+    | Resource
+    | Archive of InformationKind
+    member this.Name =
+        match this with
+        | Project  -> "project"
+        | Area     -> "area"
+        | Resource -> "resource"
+        | Archive kind  -> sprintf "[%s]" kind.Name
+    static member FromInformation = function
+        | Information.Project _            -> InformationKind.Project
+        | Information.Area _               -> InformationKind.Area
+        | Information.Resource _           -> InformationKind.Resource
+        | Information.Archive information  -> InformationKind.Archive (InformationKind.FromInformation information)
+
+type Event =
+    | AddInformation of id:InformationId * kind:InformationKind * name:InformationName
+    | AddTask of informationId:InformationId * name:TaskName
+
 
 type TaskState =
     { Name: TaskName }
 
-type TaskBuilder () =
-    member _.Yield _ =
-        { Name = TaskName "" }
-
-    [<CustomOperation "name">]
-    member _.SetName(state:TaskState, name) =
-        let (TaskName nameStr) = name
-        Validate.name nameStr
-        { state with Name = name }
-
-let task = TaskBuilder ()
-
-
-let ``random selected tasks`` = task {
-    name (TaskName "b")
-}
-
 
 let a = 3
+
+let b =
+    rawTreeData
+    |> List.map (fun (information, tasks) -> [
+        let informationId = informationId information
+        [ AddInformation (
+            informationId,
+            InformationKind.FromInformation information,
+            InformationName information.Name) ]
+
+        tasks
+        |> List.map (fun (taskName, events) ->
+            AddTask (informationId, TaskName taskName)
+        )
+    ])
 
 ()
 //printfn "AA: %A" a

@@ -135,6 +135,7 @@ module TempData =
                 | Link
                 | Video
                 | Image
+                | Attachment of Attachment
 
             [<RequireQualifiedAccess>]
             type InformationInteraction =
