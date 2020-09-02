@@ -1395,6 +1395,7 @@ module Recoil =
                                               Sessions = cell.Task.Sessions
                                               Comments = cell.Task.Comments
                                               CellComments = []
+                                              UserInteractions = []
                                               CellStateMap = Map.empty
                                               StatusEntries = [] }
                                         OldLane (taskState, [ Cell ({ Task = taskState.Task; DateId = dateId }, cell.Status) ])

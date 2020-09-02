@@ -233,6 +233,7 @@ module Model =
           StatusEntries: TaskStatusEntry list
           Comments: UserComment list
           Sessions: TaskSession list
+          UserInteractions: UserInteraction list
           CellComments: (FlukeDate * UserComment) list
           CellStateMap: Map<DateId, CellState> }
     type OldLane = OldLane of task:TaskState * cells:Cell list

@@ -240,6 +240,7 @@ module TempData =
         | TempStatusEntry of date:FlukeDate * manualCellStatus:ManualCellStatus
         | TempCellComment of date:FlukeDate * comment:string
         | TempTaskField of field:TempTaskEventField
+        | TempInteraction of interaction:TaskInteraction
 
     let applyTaskEvents dayStart task (events: (TempTaskEvent * User) list) =
 
@@ -256,54 +257,91 @@ module TempData =
             | Critical10 -> 10
 
         // TODO: how the hell do i rewrite this without losing performance?
-        let comments, cellComments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
-            let rec loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration = function
+        let userInteractions, comments, cellComments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
+            let rec loop (state: {| CellComments: (FlukeDate * UserComment) list
+                                    Comments: UserComment list
+                                    Duration: int option
+                                    MissedAfter: FlukeTime option
+                                    PendingAfter: FlukeTime option
+                                    Priority: TaskPriorityValue option
+                                    Scheduling: TaskScheduling
+                                    Sessions: TaskSession list
+                                    StatusEntries: TaskStatusEntry list
+                                    UserInteractions: UserInteraction list |}) = function
+                | (TempInteraction interaction, user) :: tail ->
+                    let moment = FlukeDateTime.FromDateTime DateTime.Now
+                    let interaction = Interaction.Task (task, interaction)
+                    let userInteraction = UserInteraction (user, moment, interaction)
+                    loop {| state with UserInteractions = userInteraction :: state.UserInteractions |} tail
+
                 | (TempComment comment, user) :: tail ->
                     let comment = UserComment (user, comment)
-                    loop (comment :: comments) cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
+                    loop {| state with Comments = comment :: state.Comments |} tail
 
                 | (TempCellComment (date, comment), user) :: tail ->
                     let cellComment = date, UserComment (user, comment)
-                    loop comments (cellComment :: cellComments) sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
+                    loop {| state with CellComments = cellComment :: state.CellComments |} tail
 
                 | (TempSession { Date = date; Time = time }, user) :: tail ->
                     let session = TaskSession { Date = date; Time = time }
-                    loop comments cellComments (session :: sessions) statusEntries priority scheduling pendingAfter missedAfter duration tail
+                    loop {| state with Sessions = session :: state.Sessions |} tail
 
                 | (TempStatusEntry (date, manualCellStatus), user) :: tail ->
                     let statusEntry = TaskStatusEntry (user, { Date = date; Time = dayStart }, manualCellStatus)
-                    loop comments cellComments sessions (statusEntry :: statusEntries) priority scheduling pendingAfter missedAfter duration tail
+                    loop {| state with StatusEntries = statusEntry :: state.StatusEntries |} tail
 
                 | (TempPriority priority, user) :: tail ->
                     let priority = TaskPriorityValue (getPriorityValue priority) |> Some
-                    loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
+                    loop {| state with Priority = priority |} tail
 
                 | (TempTag information, user) :: tail ->
-                    loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
+                    loop state tail
 
                 | (TempTaskField field, user) :: tail ->
                     match field with
                     | TempTaskFieldScheduling (scheduling, start) ->
-                        loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter duration tail
+                        loop {| state with Scheduling = scheduling |} tail
 
                     | TempTaskFieldPendingAfter start ->
-                        loop comments cellComments sessions statusEntries priority scheduling (Some start) missedAfter duration tail
+                        loop {| state with PendingAfter = Some start |} tail
 
                     | TempTaskFieldMissedAfter start ->
-                        loop comments cellComments sessions statusEntries priority scheduling pendingAfter (Some start) duration tail
+                        loop {| state with MissedAfter = Some start |} tail
 
                     | TempTaskFieldDuration minutes ->
-                        loop comments cellComments sessions statusEntries priority scheduling pendingAfter missedAfter (Some minutes) tail
+                        loop {| state with Duration = Some minutes |} tail
 
                 | [] ->
-                    let sortedComments = comments |> List.rev
-                    let sortedCellComments = cellComments |> List.rev
-                    let sortedSessions = sessions |> List.sortBy (fun (TaskSession start) -> start.DateTime)
-                    let sortedStatusEntries = statusEntries |> List.rev
-                    let priority = priority |> Option.defaultValue (TaskPriorityValue 0)
-                    sortedComments, sortedCellComments, sortedSessions, sortedStatusEntries, priority, scheduling, pendingAfter, missedAfter, duration
+                    let sortedComments = state.Comments |> List.rev
+                    let sortedCellComments = state.CellComments |> List.rev
+                    let sortedSessions = state.Sessions |> List.sortBy (fun (TaskSession start) -> start.DateTime)
+                    let sortedStatusEntries = state.StatusEntries |> List.rev
+                    let priority = state.Priority |> Option.defaultValue (TaskPriorityValue 0)
 
-            loop [] [] [] [] None task.Scheduling task.PendingAfter task.MissedAfter task.Duration events
+                    state.UserInteractions,
+                    sortedComments,
+                    sortedCellComments,
+                    sortedSessions,
+                    sortedStatusEntries,
+                    priority,
+                    state.Scheduling,
+                    state.PendingAfter,
+                    state.MissedAfter,
+                    state.Duration
+
+            let state =
+                {| UserInteractions = []
+                   Comments = []
+                   CellComments = []
+                   Sessions = []
+                   StatusEntries = []
+                   Priority = None
+                   Scheduling = task.Scheduling
+                   PendingAfter = task.PendingAfter
+                   MissedAfter = task.MissedAfter
+                   Duration = task.Duration |}
+
+            loop state events
 
         { Task =
             { task with
@@ -316,6 +354,7 @@ module TempData =
           Sessions = sessions
           StatusEntries = statusEntries
           CellComments = cellComments
+          UserInteractions = userInteractions
           CellStateMap = Map.empty }
 
 
@@ -352,6 +391,62 @@ module TempData =
            TaskOrderList = taskOrderList
            InformationList = informationList
            GetLivePosition = getLivePosition |}
+
+    // How the HELL will I rewrite this? 🤦
+    let transformTasks currentUser rawTreeData getTaskLinks =
+        let mutable taskStateMap : Map<string, TaskState> = Map.empty
+        let mutable taskStateList = []
+        let mutable treeDataMaybe : {| GetLivePosition: unit -> Model.FlukeDateTime
+                                       InformationList: Model.Information list
+                                       TaskOrderList: Model.TaskOrderEntry list
+                                       TaskStateList: Model.TaskState list |} option = None
+
+        let getTask name =
+            taskStateMap
+            |> Map.tryFind name
+            |> Option.map (fun x -> x.Task)
+            |> Option.defaultValue Task.Default
+
+        for _ in [0; 1] do
+            let treeData =
+                rawTreeData getTask
+                |> treeDataWithUser currentUser
+                |> transformTreeData Consts.dayStart
+    //        let taskList = treeData.TaskStateList |> List.map (fun x -> x.Task)
+            let taskStateList = treeData.TaskStateList
+
+            let duplicated =
+                taskStateList
+                |> List.map (fun x -> x.Task.Name)
+                |> List.groupBy id
+                |> List.filter (snd >> List.length >> fun n -> n > 1)
+                |> List.map fst
+
+            if not duplicated.IsEmpty then
+                failwithf "Duplicated task names: %A" duplicated
+
+            taskStateMap <-
+                taskStateList
+                |> List.map (fun x -> x.Task.Name, x)
+                |> Map.ofList
+
+            treeDataMaybe <- Some treeData
+
+
+
+        let tasks = getTaskLinks getTask
+
+        let taskOrderList = getTaskOrderList [] taskStateList []
+
+        let newTreeData =
+            treeDataMaybe
+            |> Option.map (fun treeData ->
+                {| treeData with TaskOrderList = taskOrderList |}
+            )
+
+        newTreeData.Value, tasks
+
+
 
 
 
