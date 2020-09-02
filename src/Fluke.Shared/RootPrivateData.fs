@@ -50,15 +50,15 @@ module RootPrivateData =
         | TempPublic  -> []
         | Test        -> []
 
-    let taskComments =
+    let taskCommentInteractions =
         match tempDataType with
-        | TempPrivate -> PrivateData.TaskComments.taskComments
+        | TempPrivate -> PrivateData.TaskComments.taskCommentInteractions
         | TempPublic  -> []
         | Test        -> []
 
-    let sharedTaskComments =
+    let sharedTaskCommentInteractions =
         match tempDataType with
-        | TempPrivate -> SharedPrivateData.Data.taskComments
+        | TempPrivate -> SharedPrivateData.Data.taskCommentInteractions
         | TempPublic  -> []
         | Test        -> []
 

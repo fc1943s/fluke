@@ -1,7 +1,6 @@
 namespace Fluke.Shared
 
 open System
-open System.IO
 open FSharpPlus
 open Suigetsu.Core
 
@@ -120,7 +119,7 @@ module TempData =
         type TempEvent =
             | CellStatus of user:User * task:Task * date:FlukeDateTime * manualCellStatus:ManualCellStatus
             | CellCompleted of user:User * task:Task * date:FlukeDateTime
-            | CellCommented of user:User * task:Task * date:FlukeDateTime * comment:Comment
+//            | CellCommented of user:User * task:Task * date:FlukeDateTime * comment:Comment
 
         type TaskName = TaskName of string
         type HashedTaskId = HashedTaskId of string
@@ -226,11 +225,6 @@ module TempData =
             )
         oldTaskOrderList @ newTaskOrderList
 
-    type TempTaskEventField =
-        | TempTaskFieldScheduling of scheduling:TaskScheduling * start:FlukeDate option
-        | TempTaskFieldPendingAfter of start:FlukeTime
-        | TempTaskFieldMissedAfter of start:FlukeTime
-        | TempTaskFieldDuration of minutes:int
 
     type TempTaskEvent =
         | TempComment of comment:string
@@ -241,6 +235,11 @@ module TempData =
         | TempCellComment of date:FlukeDate * comment:string
         | TempTaskField of field:TempTaskEventField
         | TempInteraction of interaction:TaskInteraction
+    and TempTaskEventField =
+        | TempTaskFieldScheduling of scheduling:TaskScheduling * start:FlukeDate option
+        | TempTaskFieldPendingAfter of start:FlukeTime
+        | TempTaskFieldMissedAfter of start:FlukeTime
+        | TempTaskFieldDuration of minutes:int
 
     let applyTaskEvents dayStart task (events: (TempTaskEvent * User) list) =
 
@@ -257,9 +256,8 @@ module TempData =
             | Critical10 -> 10
 
         // TODO: how the hell do i rewrite this without losing performance?
-        let userInteractions, comments, cellComments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
+        let userInteractions, cellComments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
             let rec loop (state: {| CellComments: (FlukeDate * UserComment) list
-                                    Comments: UserComment list
                                     Duration: int option
                                     MissedAfter: FlukeTime option
                                     PendingAfter: FlukeTime option
@@ -269,14 +267,17 @@ module TempData =
                                     StatusEntries: TaskStatusEntry list
                                     UserInteractions: UserInteraction list |}) = function
                 | (TempInteraction interaction, user) :: tail ->
-                    let moment = FlukeDateTime.FromDateTime DateTime.Now
+                    let moment = Consts.defaultPosition
                     let interaction = Interaction.Task (task, interaction)
                     let userInteraction = UserInteraction (user, moment, interaction)
                     loop {| state with UserInteractions = userInteraction :: state.UserInteractions |} tail
 
                 | (TempComment comment, user) :: tail ->
-                    let comment = UserComment (user, comment)
-                    loop {| state with Comments = comment :: state.Comments |} tail
+                    let moment = Consts.defaultPosition
+                    let interaction = Interaction.Task (task, TaskInteraction.Attachment (Attachment.Comment (Comment comment)))
+                    let userInteraction = UserInteraction (user, moment, interaction)
+
+                    loop {| state with UserInteractions = state.UserInteractions @ [ userInteraction ] |} tail
 
                 | (TempCellComment (date, comment), user) :: tail ->
                     let cellComment = date, UserComment (user, comment)
@@ -312,14 +313,12 @@ module TempData =
                         loop {| state with Duration = Some minutes |} tail
 
                 | [] ->
-                    let sortedComments = state.Comments |> List.rev
                     let sortedCellComments = state.CellComments |> List.rev
                     let sortedSessions = state.Sessions |> List.sortBy (fun (TaskSession start) -> start.DateTime)
                     let sortedStatusEntries = state.StatusEntries |> List.rev
                     let priority = state.Priority |> Option.defaultValue (TaskPriorityValue 0)
 
                     state.UserInteractions,
-                    sortedComments,
                     sortedCellComments,
                     sortedSessions,
                     sortedStatusEntries,
@@ -331,7 +330,6 @@ module TempData =
 
             let state =
                 {| UserInteractions = []
-                   Comments = []
                    CellComments = []
                    Sessions = []
                    StatusEntries = []
@@ -350,7 +348,6 @@ module TempData =
                 MissedAfter = missedAfter
                 Duration = duration
                 Priority = priority }
-          Comments = comments
           Sessions = sessions
           StatusEntries = statusEntries
           CellComments = cellComments
@@ -396,10 +393,10 @@ module TempData =
     let transformTasks currentUser rawTreeData getTaskLinks =
         let mutable taskStateMap : Map<string, TaskState> = Map.empty
         let mutable taskStateList = []
-        let mutable treeDataMaybe : {| GetLivePosition: unit -> Model.FlukeDateTime
-                                       InformationList: Model.Information list
-                                       TaskOrderList: Model.TaskOrderEntry list
-                                       TaskStateList: Model.TaskState list |} option = None
+        let mutable treeDataMaybe : {| GetLivePosition: unit -> FlukeDateTime
+                                       InformationList: Information list
+                                       TaskOrderList: TaskOrderEntry list
+                                       TaskStateList: TaskState list |} option = None
 
         let getTask name =
             taskStateMap

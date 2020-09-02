@@ -112,7 +112,7 @@ module Model =
     // Image: Embed
     [<RequireQualifiedAccess>]
     type Attachment =
-        | AttachmentComment of comment:Comment
+        | Comment of comment:Comment
         | Link
         | Video
         | Image
@@ -231,7 +231,6 @@ module Model =
     type TaskState =
         { Task: Task
           StatusEntries: TaskStatusEntry list
-          Comments: UserComment list
           Sessions: TaskSession list
           UserInteractions: UserInteraction list
           CellComments: (FlukeDate * UserComment) list
@@ -392,7 +391,7 @@ module Model =
         let cellInteraction =
             comment
             |> Comment
-            |> Attachment.AttachmentComment
+            |> Attachment.Comment
             |> CellInteraction.Attachment
         let cellAddress = { Task = task; DateId = dateId dayStart moment }
         let interaction = Interaction.Cell (cellAddress, cellInteraction)

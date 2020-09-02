@@ -333,16 +333,19 @@ module Recoil =
                 let treeData = RootPrivateData.treeData
                 let sharedTreeData = RootPrivateData.sharedTreeData
 
-                let applyEvents statusEntries taskComments (taskState: TaskState) =
+                let applyEvents statusEntries (taskCommentInteractions:UserInteraction list) (taskState: TaskState) =
                     let newStatusEntries =
                         statusEntries
                         |> createTaskStatusEntries taskState.Task
                         |> List.prepend taskState.StatusEntries
-                    let newTaskComments =
-                        taskComments
-                        |> List.filter (fun (TaskComment (commentTask, _)) -> commentTask = taskState.Task)
-                        |> List.map (ofTaskComment >> snd)
-                        |> List.prepend taskState.Comments
+                    let newUserInteractions =
+                        taskCommentInteractions
+                        |> List.filter (fun (UserInteraction (user, moment, interaction)) ->
+                            match interaction with
+                            | Interaction.Cell ({ Task = task' }, _) when task' = taskState.Task -> true
+                            | _ -> false
+                        )
+                        |> List.prepend taskState.UserInteractions
                     let cellCommentsMap =
                         let externalCellComments =
                             RootPrivateData.cellComments
@@ -356,7 +359,7 @@ module Recoil =
                                 | Interaction.Cell
                                     ({ Task = task'
                                        DateId = (DateId referenceDay) },
-                                     CellInteraction.Attachment (Attachment.AttachmentComment (Comment comment)))
+                                     CellInteraction.Attachment (Attachment.Comment (Comment comment)))
                                     when task' = taskState.Task ->
                                         Some (referenceDay, UserComment (user, comment))
                                 | _ -> None
@@ -396,7 +399,7 @@ module Recoil =
                         |> Map.ofSeq
                     { taskState with
                           StatusEntries = newStatusEntries
-                          Comments = newTaskComments
+                          UserInteractions = newUserInteractions
                           CellStateMap = cellStateMap }
 
 
@@ -405,14 +408,14 @@ module Recoil =
                     treeData.TaskStateList
                     |> List.map (applyEvents
                                      oldEvents
-                                     RootPrivateData.taskComments)
+                                     RootPrivateData.taskCommentInteractions)
 
                 let sharedTaskStateList =
                     let oldEvents, newEvents = RootPrivateData.sharedCellStatusEntries
                     sharedTreeData.TaskStateList
                     |> List.map (applyEvents
                                      oldEvents
-                                     RootPrivateData.sharedTaskComments)
+                                     RootPrivateData.sharedTaskCommentInteractions)
 
                 sharedTaskStateList @ privateTaskStateList
 
@@ -708,7 +711,8 @@ module Recoil =
                   MissedAfter: RecoilValue<FlukeTime option, ReadWrite>
                   Priority: RecoilValue<TaskPriorityValue, ReadWrite>
                   Sessions: RecoilValue<TaskSession list, ReadWrite>
-                  Comments: RecoilValue<UserComment list, ReadWrite>
+//                  Comments: RecoilValue<UserComment list, ReadWrite>
+                  UserInteractions: RecoilValue<UserInteraction list, ReadWrite>
                   Duration: RecoilValue<int option, ReadWrite> }
             let rec idFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof idFamily))
@@ -743,8 +747,12 @@ module Recoil =
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof sessionsFamily))
                 def (fun (_taskId: TaskId) -> []) // TODO: move from here?
             }
-            let rec commentsFamily = atomFamily {
-                key (sprintf "%s/%s" (nameof RecoilTask) (nameof commentsFamily))
+//            let rec commentsFamily = atomFamily {
+//                key (sprintf "%s/%s" (nameof RecoilTask) (nameof commentsFamily))
+//                def (fun (_taskId: TaskId) -> []) // TODO: move from here?
+//            }
+            let rec userInteractionsFamily = atomFamily {
+                key (sprintf "%s/%s" (nameof RecoilTask) (nameof userInteractionsFamily))
                 def (fun (_taskId: TaskId) -> []) // TODO: move from here?
             }
             let rec durationFamily = atomFamily {
@@ -761,7 +769,8 @@ module Recoil =
                       MissedAfter = missedAfterFamily taskId
                       Priority = priorityFamily taskId
                       Sessions = sessionsFamily taskId
-                      Comments = commentsFamily taskId
+//                      Comments = commentsFamily taskId
+                      UserInteractions = userInteractionsFamily taskId
                       Duration = durationFamily taskId }
             let rec taskFamily = atomFamily {
                 key (sprintf "%s/%s" (nameof RecoilTask) (nameof taskFamily))
@@ -1028,7 +1037,7 @@ module Recoil =
                         setter.set (recoilTask.Scheduling, task.Scheduling)
                         setter.set (recoilTask.Priority, task.Priority)
                         setter.set (recoilTask.Sessions, taskState.Sessions) // TODO: move from here
-                        setter.set (recoilTask.Comments, taskState.Comments)
+                        setter.set (recoilTask.UserInteractions, taskState.UserInteractions)
                         setter.set (recoilTask.Duration, task.Duration)
 
                         taskState.CellStateMap
@@ -1283,7 +1292,7 @@ module Recoil =
                                MissedAfter = getter.get task.MissedAfter
                                Priority = getter.get task.Priority
                                Sessions = getter.get task.Sessions
-                               Comments = getter.get task.Comments
+                               UserInteractions = getter.get task.UserInteractions
                                Duration = getter.get task.Duration |}
                         )
 
@@ -1383,7 +1392,7 @@ module Recoil =
                                     cells
                                     |> List.map (fun cell ->
                                         let taskState =
-                                            { Task =
+                                            let task =
                                                 { Task.Default with
                                                     Name = cell.Task.Name
                                                     Information = cell.Task.Information
@@ -1392,10 +1401,10 @@ module Recoil =
                                                     MissedAfter = cell.Task.MissedAfter
                                                     Priority = cell.Task.Priority
                                                     Duration = cell.Task.Duration }
+                                            { Task = task
                                               Sessions = cell.Task.Sessions
-                                              Comments = cell.Task.Comments
                                               CellComments = []
-                                              UserInteractions = []
+                                              UserInteractions = cell.Task.UserInteractions
                                               CellStateMap = Map.empty
                                               StatusEntries = [] }
                                         OldLane (taskState, [ Cell ({ Task = taskState.Task; DateId = dateId }, cell.Status) ])

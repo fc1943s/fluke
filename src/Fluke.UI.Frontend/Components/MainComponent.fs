@@ -319,7 +319,15 @@ module PanelsComponent =
                 let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily input.TaskId)
 
                 let taskName = Recoil.useValue task.Name
-                let taskComments = Recoil.useValue task.Comments
+                let userInteractions = Recoil.useValue task.UserInteractions
+                let taskComments =
+                    userInteractions
+                    |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
+                        match interaction with
+                        | Interaction.Cell (_, CellInteraction.Attachment (Attachment.Comment (Comment comment))) ->
+                            Some (UserComment (user, comment))
+                        | _ -> None
+                    )
 
                 Html.div [
                     prop.ref ref
