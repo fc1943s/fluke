@@ -65,14 +65,14 @@ module RootPrivateData =
     let cellStatusEntries =
         match tempDataType with
         | TempPrivate -> PrivateData.CellStatusEntries.cellStatusEntries
-        | TempPublic  -> [], []
-        | Test        -> [], []
+        | TempPublic  -> []
+        | Test        -> []
 
     let sharedCellStatusEntries =
         match tempDataType with
         | TempPrivate -> SharedPrivateData.Data.cellStatusEntries
-        | TempPublic  -> [], []
-        | Test        -> [], []
+        | TempPublic  -> []
+        | Test        -> []
 
     let treeData =
         match tempDataType with

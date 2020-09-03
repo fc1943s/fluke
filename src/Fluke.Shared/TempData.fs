@@ -129,25 +129,28 @@ module TempData =
             | TaskRenamed of taskId:HashedTaskId * newName:TaskName
 
         let eventsFromStatusEntries user (entries: (FlukeDate * (Task * ManualCellStatus) list) list) =
-            let newEvents =
-                entries
-                |> List.collect (fun (date, events) ->
-                    events
-                    |> List.map (fun (task, userStatus) ->
-                        TempEvent.CellStatus (user, task, { Date = date; Time = Consts.dayStart }, userStatus)
-                    )
-                )
-
             let oldEvents =
                 entries
                 |> List.collect (fun (date, events) ->
                     events
                     |> List.map (fun (task, manualCellStatus) ->
-                        CellStatusEntry (user, task, { Date = date; Time = Consts.dayStart }, manualCellStatus)
+                        let cellStatusChange =
+                            match manualCellStatus with
+                            | Completed -> CellStatusChange.Complete
+                            | Dismissed -> CellStatusChange.Dismiss
+                            | Postponed until -> CellStatusChange.Postpone until
+                            | ManualPending -> CellStatusChange.Schedule
+                        let cellInteraction =
+                            CellInteraction.StatusChange cellStatusChange
+                        let cellAddress = { Task = task; DateId = DateId date }
+                        let interaction = Interaction.Cell (cellAddress, cellInteraction)
+                        let moment = { Date = date; Time = Consts.dayStart }
+                        let userInteraction = UserInteraction (user, moment, interaction)
+                        userInteraction
                     )
                 )
 
-            oldEvents, newEvents
+            oldEvents
 
         let eventsFromCellComments user =
             ()
@@ -241,6 +244,21 @@ module TempData =
         | TempTaskFieldMissedAfter of start:FlukeTime
         | TempTaskFieldDuration of minutes:int
 
+    let getCellStatusChangeUserInteraction dayStart user task date manualCellStatus =
+        let cellStatusChange =
+            match manualCellStatus with
+            | Completed -> CellStatusChange.Complete
+            | Dismissed -> CellStatusChange.Dismiss
+            | Postponed until -> CellStatusChange.Postpone until
+            | ManualPending -> CellStatusChange.Schedule
+        let cellInteraction =
+            CellInteraction.StatusChange cellStatusChange
+        let cellAddress = { Task = task; DateId = DateId date }
+        let interaction = Interaction.Cell (cellAddress, cellInteraction)
+        let moment = { Date = date; Time = dayStart }
+        let userInteraction = UserInteraction (user, moment, interaction)
+        userInteraction
+
     let applyTaskEvents dayStart task (events: (TempTaskEvent * User) list) =
 
         let getPriorityValue = function
@@ -256,7 +274,7 @@ module TempData =
             | Critical10 -> 10
 
         // TODO: how the hell do i rewrite this without losing performance?
-        let userInteractions, cellComments, sessions, statusEntries, priority, scheduling, pendingAfter, missedAfter, duration =
+        let userInteractions, cellComments, sessions, priority, scheduling, pendingAfter, missedAfter, duration =
             let rec loop (state: {| CellComments: (FlukeDate * UserComment) list
                                     Duration: int option
                                     MissedAfter: FlukeTime option
@@ -264,7 +282,6 @@ module TempData =
                                     Priority: TaskPriorityValue option
                                     Scheduling: TaskScheduling
                                     Sessions: TaskSession list
-                                    StatusEntries: TaskStatusEntry list
                                     UserInteractions: UserInteraction list |}) = function
                 | (TempInteraction interaction, user) :: tail ->
                     let moment = Consts.defaultPosition
@@ -288,8 +305,9 @@ module TempData =
                     loop {| state with Sessions = session :: state.Sessions |} tail
 
                 | (TempStatusEntry (date, manualCellStatus), user) :: tail ->
-                    let statusEntry = TaskStatusEntry (user, { Date = date; Time = dayStart }, manualCellStatus)
-                    loop {| state with StatusEntries = statusEntry :: state.StatusEntries |} tail
+                    let userInteraction =
+                        getCellStatusChangeUserInteraction Consts.dayStart user task date manualCellStatus
+                    loop {| state with UserInteractions = state.UserInteractions @ [ userInteraction ] |} tail
 
                 | (TempPriority priority, user) :: tail ->
                     let priority = TaskPriorityValue (getPriorityValue priority) |> Some
@@ -315,13 +333,11 @@ module TempData =
                 | [] ->
                     let sortedCellComments = state.CellComments |> List.rev
                     let sortedSessions = state.Sessions |> List.sortBy (fun (TaskSession start) -> start.DateTime)
-                    let sortedStatusEntries = state.StatusEntries |> List.rev
                     let priority = state.Priority |> Option.defaultValue (TaskPriorityValue 0)
 
                     state.UserInteractions,
                     sortedCellComments,
                     sortedSessions,
-                    sortedStatusEntries,
                     priority,
                     state.Scheduling,
                     state.PendingAfter,
@@ -332,7 +348,6 @@ module TempData =
                 {| UserInteractions = []
                    CellComments = []
                    Sessions = []
-                   StatusEntries = []
                    Priority = None
                    Scheduling = task.Scheduling
                    PendingAfter = task.PendingAfter
@@ -349,7 +364,6 @@ module TempData =
                 Duration = duration
                 Priority = priority }
           Sessions = sessions
-          StatusEntries = statusEntries
           CellComments = cellComments
           UserInteractions = userInteractions
           CellStateMap = Map.empty }

@@ -230,7 +230,6 @@ module Model =
 
     type TaskState =
         { Task: Task
-          StatusEntries: TaskStatusEntry list
           Sessions: TaskSession list
           UserInteractions: UserInteraction list
           CellComments: (FlukeDate * UserComment) list
@@ -446,11 +445,23 @@ module Rendering =
 
 
     let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) (taskState: TaskState) =
+        let convertManualCellStatus cellStatusChange =
+            match cellStatusChange with
+            | CellStatusChange.Complete -> Completed
+            | CellStatusChange.Dismiss -> Dismissed
+            | CellStatusChange.Postpone until -> Postponed until
+            | CellStatusChange.Schedule -> ManualPending
 
         let cellStatusEventsByDateId =
-            taskState.StatusEntries
-            |> List.map ofTaskStatusEntry
-            |> List.map (fun (user, moment, manualCellStatus) -> dateId dayStart moment, (user, moment, manualCellStatus))
+            taskState.UserInteractions
+            |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
+                match interaction with
+                | Interaction.Cell
+                    ({ DateId = (DateId referenceDay) },
+                     CellInteraction.StatusChange statusChange) ->
+                        Some (dateId dayStart moment, (user, moment, convertManualCellStatus statusChange))
+                | _ -> None
+            )
             |> Map.ofList
 
         let firstDateRange, lastDateRange =

@@ -228,11 +228,13 @@ module Recoil =
                 taskStateList
                 |> List.filter (function
                     | { Task = { Scheduling = Manual WithoutSuggestion }
-                        StatusEntries = statusEntries
+                        UserInteractions = userInteractions
                         Sessions = sessions }
                         when
-                            statusEntries
-                            |> List.exists (fun (TaskStatusEntry (user, date, _)) -> date.DateTime >==< dateRange)
+                            userInteractions
+                            |> List.exists (fun (UserInteraction (user, moment, interaction)) ->
+                                moment.Date.DateTime >==< dateRange
+                            )
                             |> not
                         &&
                             sessions
@@ -333,11 +335,7 @@ module Recoil =
                 let treeData = RootPrivateData.treeData
                 let sharedTreeData = RootPrivateData.sharedTreeData
 
-                let applyEvents statusEntries (taskCommentInteractions:UserInteraction list) (taskState: TaskState) =
-                    let newStatusEntries =
-                        statusEntries
-                        |> createTaskStatusEntries taskState.Task
-                        |> List.prepend taskState.StatusEntries
+                let applyEvents (taskCommentInteractions:UserInteraction list) (taskState: TaskState) =
                     let newUserInteractions =
                         taskCommentInteractions
                         |> List.filter (fun (UserInteraction (user, moment, interaction)) ->
@@ -397,25 +395,25 @@ module Recoil =
                             dateId, cellState
                         )
                         |> Map.ofSeq
+//                    let newStatusEntries =
+//                        statusEntries
+//                        |> createTaskStatusEntries taskState.Task
+//                        |> List.prepend taskState.StatusEntries
                     { taskState with
-                          StatusEntries = newStatusEntries
+//TODO: @@                          StatusEntries = newStatusEntries
                           UserInteractions = newUserInteractions
                           CellStateMap = cellStateMap }
 
 
                 let privateTaskStateList =
-                    let oldEvents, newEvents = RootPrivateData.cellStatusEntries
+                    let oldEvents = RootPrivateData.cellStatusEntries
                     treeData.TaskStateList
-                    |> List.map (applyEvents
-                                     oldEvents
-                                     RootPrivateData.taskCommentInteractions)
+                    |> List.map (applyEvents (oldEvents @ RootPrivateData.taskCommentInteractions))
 
                 let sharedTaskStateList =
-                    let oldEvents, newEvents = RootPrivateData.sharedCellStatusEntries
+                    let oldEvents = RootPrivateData.sharedCellStatusEntries
                     sharedTreeData.TaskStateList
-                    |> List.map (applyEvents
-                                     oldEvents
-                                     RootPrivateData.sharedTaskCommentInteractions)
+                    |> List.map (applyEvents (oldEvents @ RootPrivateData.sharedTaskCommentInteractions))
 
                 sharedTaskStateList @ privateTaskStateList
 
@@ -1245,8 +1243,10 @@ module Recoil =
                     taskStateMap
                     |> Map.tryFind taskId
                     |> Option.map (fun taskState ->
-                        taskState.StatusEntries
-                        |> Seq.map (fun (TaskStatusEntry (user, moment, manualCellStatus)) -> user)
+                        taskState.UserInteractions
+                        |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
+                            Some user
+                        )
                         |> Seq.distinct
                         |> Seq.length
                         |> fun x -> x > 1
@@ -1405,8 +1405,7 @@ module Recoil =
                                               Sessions = cell.Task.Sessions
                                               CellComments = []
                                               UserInteractions = cell.Task.UserInteractions
-                                              CellStateMap = Map.empty
-                                              StatusEntries = [] }
+                                              CellStateMap = Map.empty }
                                         OldLane (taskState, [ Cell ({ Task = taskState.Task; DateId = dateId }, cell.Status) ])
                                     )
                                     |> Sorting.sortLanesByTimeOfDay dayStart { Date = ofDateId dateId; Time = dayStart } []
