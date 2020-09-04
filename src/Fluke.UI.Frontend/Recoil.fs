@@ -192,12 +192,12 @@ module Recoil =
 //            ]
 //        ]
 
-        type FakeInformation =
-            { Comments: UserComment list
-              Information: Information }
+        type InformationState =
+            { Information: Information
+              InformationInteractions: InformationInteraction list }
 
-        type FakeTree =
-            { InformationList: FakeInformation list
+        type TreeState =
+            { InformationStateList: InformationState list
               Owner: User
               SharedWith: TreeAccess list
               TaskStateList: TaskState list }
@@ -262,7 +262,7 @@ module Recoil =
                                  DayStart: FlukeTime
                                  Position: FlukeDateTime
                                  TaskOrderList: TaskOrderEntry list
-                                 InformationList: Information list
+                                 InformationStateList: InformationState list
                                  Lanes: OldLane list |}) =
             match input.View with
             | View.Calendar ->
@@ -277,14 +277,14 @@ module Recoil =
                     |> List.groupBy (fun (OldLane (taskState, _)) -> taskState.Task.Information)
                     |> Map.ofList
 
-                input.InformationList
-                |> List.map (fun information ->
+                input.InformationStateList
+                |> List.map (fun informationState ->
                     let lanes =
                         lanes
-                        |> Map.tryFind information
+                        |> Map.tryFind informationState.Information
                         |> Option.defaultValue []
 
-                    information, lanes)
+                    informationState.Information, lanes)
                 |> List.collect snd
             | View.Tasks ->
                 input.Lanes
@@ -298,27 +298,23 @@ module Recoil =
                                View: View
                                Position: FlukeDateTime |}) =
 
-            let informationList =
-                let commentsMap =
+            let informationStateList =
+                let interactionsMap =
                     RootPrivateData.informationCommentInteractions
                     |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
                         match interaction with
-                        | Interaction.Information (information,
-                                                   InformationInteraction.Attachment (Attachment.Comment (Comment comment))) ->
-                            Some
-                                ({ Information = information
-                                   Comment = UserComment(user, comment) })
+                        | Interaction.Information (information, interaction) -> Some(information, interaction)
                         | _ -> None)
-                    |> List.groupBy (fun x -> x.Information)
+                    |> List.groupBy fst
                     |> Map.ofList
-                    |> Map.mapValues (List.map (fun x -> x.Comment))
+                    |> Map.mapValues (List.map snd)
 
                 RootPrivateData.sharedTreeData.InformationList
                 @ RootPrivateData.treeData.InformationList
                 |> List.map (fun information ->
                     { Information = information
-                      Comments =
-                          commentsMap
+                      InformationInteractions =
+                          interactionsMap
                           |> Map.tryFind information
                           |> Option.defaultValue [] })
 
@@ -335,8 +331,8 @@ module Recoil =
                             | _ -> false)
                         |> List.prepend taskState.UserInteractions
 
-                    let cellCommentsMap =
-                        let externalCellComments =
+                    let cellInteractionsMap =
+                        let externalCellInteractions =
                             RootPrivateData.cellComments
                             |> List.filter (fun (UserInteraction (user, moment, interaction)) ->
                                 match interaction with
@@ -344,14 +340,13 @@ module Recoil =
                                 | _ -> false)
                             |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
                                 match interaction with
-                                | Interaction.Cell ({ Task = task'; DateId = (DateId referenceDay) },
-                                                    CellInteraction.Attachment (Attachment.Comment (Comment comment))) when task' =
+                                | Interaction.Cell ({ Task = task'; DateId = (DateId referenceDay) }, cellInteraction) when task' =
                                                                                                                                 taskState.Task ->
-                                    Some(referenceDay, UserComment(user, comment))
+                                    Some(referenceDay, cellInteraction)
                                 | _ -> None)
 
-                        externalCellComments
-                        @ taskState.CellComments
+                        externalCellInteractions
+                        @ taskState.CellInteractions
                         |> List.map (Tuple2.mapItem1 DateId)
                         |> List.groupBy fst
                         |> Map.ofList
@@ -367,7 +362,7 @@ module Recoil =
                     let cellStateMap =
                         seq {
                             yield! sessionsMap |> Map.keys
-                            yield! cellCommentsMap |> Map.keys
+                            yield! cellInteractionsMap |> Map.keys
                         }
                         |> Seq.distinct
                         |> Seq.map (fun dateId ->
@@ -376,15 +371,15 @@ module Recoil =
                                 |> Map.tryFind dateId
                                 |> Option.defaultValue []
 
-                            let cellComments =
-                                cellCommentsMap
+                            let cellInteractions =
+                                cellInteractionsMap
                                 |> Map.tryFind dateId
                                 |> Option.defaultValue []
 
                             let cellState =
                                 { Status = Disabled
                                   Sessions = sessions
-                                  Comments = cellComments }
+                                  CellInteractions = cellInteractions }
 
                             dateId, cellState)
                         |> Map.ofSeq
@@ -446,9 +441,7 @@ module Recoil =
                        DayStart = input.DayStart
                        Position = input.Position
                        TaskOrderList = taskOrderList
-                       InformationList =
-                           informationList
-                           |> List.map (fun x -> x.Information)
+                       InformationStateList = informationStateList
                        Lanes = filteredLanes |}
                 |> List.map ofLane
                 |> List.map
@@ -483,7 +476,7 @@ module Recoil =
                                 |> Option.defaultValue
                                     { Status = Disabled
                                       Sessions = []
-                                      Comments = [] }
+                                      CellInteractions = [] }
 
                             dateId, { state with Status = status })
                         |> Map.ofSeq
@@ -493,7 +486,7 @@ module Recoil =
 
             { Owner = input.User
               SharedWith = []
-              InformationList = informationList
+              InformationStateList = informationStateList
               TaskStateList = newTaskStateList }
 
 
@@ -666,7 +659,7 @@ module Recoil =
             type RecoilInformation =
                 { Id: RecoilValue<InformationId, ReadWrite>
                   WrappedInformation: RecoilValue<Information, ReadWrite>
-                  Comments: RecoilValue<UserComment list, ReadWrite> }
+                  InformationInteractions: RecoilValue<InformationInteraction list, ReadWrite> }
 
             let rec idFamily =
                 atomFamily {
@@ -680,9 +673,9 @@ module Recoil =
                     def (fun (_taskId: InformationId) -> Area Area.Default)
                 }
 
-            let rec commentsFamily =
+            let rec informationInteractionsFamily =
                 atomFamily {
-                    key (sprintf "%s/%s" (nameof RecoilInformation) (nameof commentsFamily))
+                    key (sprintf "%s/%s" (nameof RecoilInformation) (nameof informationInteractionsFamily))
                     def (fun (_informationId: InformationId) -> [])
                 }
 
@@ -690,7 +683,7 @@ module Recoil =
                 static member internal Create informationId =
                     { Id = idFamily informationId
                       WrappedInformation = wrappedInformationFamily informationId
-                      Comments = commentsFamily informationId }
+                      InformationInteractions = informationInteractionsFamily informationId }
 
             let rec informationId (information: Information): InformationId =
                 match information with
@@ -815,7 +808,7 @@ module Recoil =
                   TaskId: RecoilValue<TaskId, ReadWrite>
                   Date: RecoilValue<FlukeDate, ReadWrite>
                   Status: RecoilValue<CellStatus, ReadWrite>
-                  Comments: RecoilValue<UserComment list, ReadWrite>
+                  CellInteractions: RecoilValue<CellInteraction list, ReadWrite>
                   Sessions: RecoilValue<TaskSession list, ReadWrite>
                   Selected: RecoilValue<bool, ReadWrite> }
 
@@ -843,10 +836,10 @@ module Recoil =
                     def (fun (_cellId: CellId) -> Disabled)
                 }
 
-            let rec commentsFamily =
+            let rec cellInteractionsFamily =
                 atomFamily {
-                    key (sprintf "%s/%s" (nameof RecoilCell) (nameof commentsFamily))
-                    def (fun (_cellId: CellId) -> []: UserComment list)
+                    key (sprintf "%s/%s" (nameof RecoilCell) (nameof cellInteractionsFamily))
+                    def (fun (_cellId: CellId) -> []: CellInteraction list)
                 }
 
             let rec sessionsFamily =
@@ -867,7 +860,7 @@ module Recoil =
                       TaskId = taskIdFamily cellId
                       Date = dateFamily cellId
                       Status = statusFamily cellId
-                      Comments = commentsFamily cellId
+                      CellInteractions = cellInteractionsFamily cellId
                       Sessions = sessionsFamily cellId
                       Selected = selectedFamily cellId }
 
@@ -1016,7 +1009,7 @@ module Recoil =
         let rec internal tree =
             atom {
                 key ("atom/" + nameof tree)
-                def (None: FakeBackend.FakeTree option)
+                def (None: FakeBackend.TreeState option)
             }
 
     module Selectors =
@@ -1069,7 +1062,7 @@ module Recoil =
                 get (fun getter ->
                         Profiling.addCount (nameof currentTree)
                         getter.get Atoms.tree)
-                set (fun setter (newValue: FakeBackend.FakeTree option) ->
+                set (fun setter (newValue: FakeBackend.TreeState option) ->
                         let dateSequence = setter.get dateSequence
 
                         Profiling.addTimestamp "currentTree.set[0]"
@@ -1080,8 +1073,8 @@ module Recoil =
                             //                    let tree =
 //                        { tree with TaskList = tree.TaskList |> List.take 3 }
 
-                            let recoilInformationList =
-                                tree.InformationList
+                            let recoilInformationIdList =
+                                tree.InformationStateList
                                 |> List.map (fun information ->
                                     let informationId =
                                         Atoms.RecoilInformation.informationId information.Information
@@ -1091,10 +1084,10 @@ module Recoil =
 
                                     setter.set (recoilInformation.Id, informationId)
                                     setter.set (recoilInformation.WrappedInformation, information.Information)
-                                    setter.set (recoilInformation.Comments, information.Comments)
+                                    setter.set (recoilInformation.InformationInteractions, information.InformationInteractions)
                                     information.Information, informationId)
 
-                            let recoilInformationMap = recoilInformationList |> Map.ofList
+                            let recoilInformationMap = recoilInformationIdList |> Map.ofList
 
                             let taskIdList =
                                 tree.TaskStateList
@@ -1139,7 +1132,7 @@ module Recoil =
                                 |> Map.filter (fun _ cellState ->
                                     cellState.Status
                                     <> Disabled
-                                    || not cellState.Comments.IsEmpty
+                                    || not cellState.CellInteractions.IsEmpty
                                     || not cellState.Sessions.IsEmpty)
                                 |> Map.iter (fun dateId cellState ->
                                     let cellId = Atoms.RecoilCell.cellId taskId dateId
@@ -1148,7 +1141,7 @@ module Recoil =
                                         setter.get (Atoms.RecoilCell.cellFamily cellId)
 
                                     setter.set (recoilCell.Status, cellState.Status)
-                                    setter.set (recoilCell.Comments, cellState.Comments)
+                                    setter.set (recoilCell.CellInteractions, cellState.CellInteractions)
                                     setter.set (recoilCell.Sessions, cellState.Sessions)
                                     setter.set (recoilCell.Selected, false)))
 
@@ -1162,7 +1155,7 @@ module Recoil =
 
                             setter.set (recoilTree.Owner, tree.Owner)
                             setter.set (recoilTree.SharedWith, tree.SharedWith)
-                            setter.set (recoilTree.InformationIdList, recoilInformationList |> List.map snd) // TODO: use it
+                            setter.set (recoilTree.InformationIdList, recoilInformationIdList |> List.map snd) // TODO: use it
                             setter.set (recoilTree.TaskIdList, taskIdList)
 
                         setter.set (Atoms.tree, newValue)
@@ -1415,7 +1408,7 @@ module Recoil =
                                     {| Id = taskId
                                        Name = getter.get task.Name
                                        Information = getter.get information.WrappedInformation
-                                       InformationComments = getter.get information.Comments
+                                       InformationInteractions = getter.get information.InformationInteractions
                                        Scheduling = getter.get task.Scheduling
                                        PendingAfter = getter.get task.PendingAfter
                                        MissedAfter = getter.get task.MissedAfter
@@ -1500,12 +1493,12 @@ module Recoil =
 
                                             let status = getter.get cell.Status
                                             let sessions = getter.get cell.Sessions
-                                            let comments = getter.get cell.Comments
+                                            let cellInteractions = getter.get cell.CellInteractions
 
                                             let isToday =
                                                 getter.get (RecoilFlukeDate.isTodayFamily (ofDateId dateId))
 
-                                            match status, sessions, comments with
+                                            match status, sessions, cellInteractions with
                                             | (Disabled
                                               | Suggested),
                                               [],
@@ -1516,7 +1509,7 @@ module Recoil =
                                                    Status = status
                                                    Sessions = sessions
                                                    IsToday = isToday
-                                                   Comments = comments |}
+                                                   CellInteractions = cellInteractions |}
                                                 |> Some)
                                         |> List.choose id)
                                     |> List.groupBy (fun x -> x.DateId)
@@ -1540,7 +1533,7 @@ module Recoil =
 
                                                     { Task = task
                                                       Sessions = cell.Task.Sessions
-                                                      CellComments = []
+                                                      CellInteractions = []
                                                       UserInteractions = cell.Task.UserInteractions
                                                       CellStateMap = Map.empty }
 

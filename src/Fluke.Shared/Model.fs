@@ -108,7 +108,7 @@ module Model =
     // Image: Embed
     [<RequireQualifiedAccess>]
     type Attachment =
-        | Comment of comment: Comment
+        | Comment of user:User * comment: Comment
         | Link
         | Video
         | Image
@@ -147,6 +147,8 @@ module Model =
         | Cell of cellAddress: CellAddress * interaction: CellInteraction
 
     type UserInteraction = UserInteraction of user: User * moment: FlukeDateTime * interaction: Interaction
+
+    type UserComment_ = UserComment_ of user: User * comment: string
 
 
 
@@ -190,28 +192,27 @@ module Model =
 
 
     type TaskId = TaskId of informationName: string * taskName: string
-    type UserComment = UserComment of user: User * comment: string
     type TaskSession = TaskSession of start: FlukeDateTime
     type TaskStatusEntry = TaskStatusEntry of user: User * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
 
     type CellState =
         { Status: CellStatus
-          Comments: UserComment list
+          CellInteractions: CellInteraction list
           Sessions: TaskSession list }
 
 
 
     type Cell = Cell of address: CellAddress * status: CellStatus
-    type TaskComment = TaskComment of task: Task * comment: UserComment
+//    type TaskComment = TaskComment of task: Task * comment: UserComment
 
     type CellStatusEntry = CellStatusEntry of user: User * task: Task * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
 
-    type CellComment = CellComment of task: Task * moment: FlukeDateTime * comment: UserComment
+//    type CellComment = CellComment of task: Task * moment: FlukeDateTime * comment: UserComment
     type CellSession = CellSession of task: Task * start: FlukeDateTime
 
-    type InformationComment =
-        { Information: Information
-          Comment: UserComment }
+//    type InformationComment =
+//        { Information: Information
+//          Comment: InformationInteraction }
 
     //    type CellEvent =
 //        | StatusEvent of CellStatusEntry
@@ -232,7 +233,7 @@ module Model =
         { Task: Task
           Sessions: TaskSession list
           UserInteractions: UserInteraction list
-          CellComments: (FlukeDate * UserComment) list
+          CellInteractions: (FlukeDate * CellInteraction) list
           CellStateMap: Map<DateId, CellState> }
 
     type OldLane = OldLane of task: TaskState * cells: Cell list
@@ -357,14 +358,18 @@ module Model =
     let ofDateId =
         fun (DateId referenceDay) -> referenceDay
 
-    let ofUserComment =
-        fun (UserComment (user, comment)) -> user, comment
+    let ofAttachmentComment = function
+        | Attachment.Comment (user, comment) -> Some (user, comment)
+        | _ -> None
 
-    let ofTaskComment =
-        fun (TaskComment (task, userComment)) -> task, userComment
-
-    let ofCellComment =
-        fun (CellComment (task, moment, userComment)) -> task, moment, userComment
+//    let ofUserComment =
+//        fun (UserComment (user, comment)) -> user, comment
+//
+//    let ofTaskComment =
+//        fun (TaskComment (task, userComment)) -> task, userComment
+//
+//    let ofCellComment =
+//        fun (CellComment (task, moment, userComment)) -> task, moment, userComment
 
     let ofCellSession =
         fun (CellSession (task, start)) -> task, start
@@ -415,10 +420,7 @@ module Model =
 
     let createCellComment dayStart task moment user (comment: string) =
         let cellInteraction =
-            comment
-            |> Comment
-            |> Attachment.Comment
-            |> CellInteraction.Attachment
+            CellInteraction.Attachment <| Attachment.Comment (user, Comment comment)
 
         let cellAddress =
             { Task = task

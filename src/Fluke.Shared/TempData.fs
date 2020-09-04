@@ -290,9 +290,8 @@ module TempData =
             | Critical10 -> 10
 
         // TODO: how the hell do i rewrite this without losing performance?
-        let userInteractions, cellComments, sessions, priority, scheduling, pendingAfter, missedAfter, duration =
-            let rec loop (state: {| CellComments: (FlukeDate * UserComment) list
-                                    Duration: int option
+        let userInteractions, sessions, priority, scheduling, pendingAfter, missedAfter, duration =
+            let rec loop (state: {| Duration: int option
                                     MissedAfter: FlukeTime option
                                     PendingAfter: FlukeTime option
                                     Priority: TaskPriorityValue option
@@ -309,14 +308,14 @@ module TempData =
 
                     loop
                         {| state with
-                               UserInteractions = userInteraction :: state.UserInteractions |}
+                               UserInteractions = state.UserInteractions @ [ userInteraction ] |}
                         tail
 
                 | (TempComment comment, user) :: tail ->
                     let moment = Consts.defaultPosition
 
                     let interaction =
-                        Interaction.Task(task, TaskInteraction.Attachment(Attachment.Comment(Comment comment)))
+                        Interaction.Task(task, TaskInteraction.Attachment(Attachment.Comment(user, Comment comment)))
 
                     let userInteraction =
                         UserInteraction(user, moment, interaction)
@@ -327,10 +326,18 @@ module TempData =
                         tail
 
                 | (TempCellComment (date, comment), user) :: tail ->
-                    let cellComment = date, UserComment(user, comment)
+                    let moment = Consts.defaultPosition
+
+                    let interaction =
+                        Interaction.Cell({Task = task; DateId = DateId date},
+                                         CellInteraction.Attachment(Attachment.Comment(user, Comment comment)))
+
+                    let userInteraction =
+                        UserInteraction(user, moment, interaction)
+
                     loop
                         {| state with
-                               CellComments = cellComment :: state.CellComments |}
+                               UserInteractions = state.UserInteractions @ [ userInteraction ] |}
                         tail
 
                 | (TempSession { Date = date; Time = time }, user) :: tail ->
@@ -377,8 +384,6 @@ module TempData =
                     | TempTaskFieldDuration minutes -> loop {| state with Duration = Some minutes |} tail
 
                 | [] ->
-                    let sortedCellComments = state.CellComments |> List.rev
-
                     let sortedSessions =
                         state.Sessions
                         |> List.sortBy (fun (TaskSession start) -> start.DateTime)
@@ -388,7 +393,6 @@ module TempData =
                         |> Option.defaultValue (TaskPriorityValue 0)
 
                     state.UserInteractions,
-                    sortedCellComments,
                     sortedSessions,
                     priority,
                     state.Scheduling,
@@ -398,7 +402,6 @@ module TempData =
 
             let state =
                 {| UserInteractions = []
-                   CellComments = []
                    Sessions = []
                    Priority = None
                    Scheduling = task.Scheduling
@@ -416,7 +419,7 @@ module TempData =
                     Duration = duration
                     Priority = priority }
           Sessions = sessions
-          CellComments = cellComments
+          CellInteractions = []
           UserInteractions = userInteractions
           CellStateMap = Map.empty }
 
