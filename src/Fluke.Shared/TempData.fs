@@ -148,12 +148,13 @@ module TempData =
                         let cellInteraction =
                             CellInteraction.StatusChange cellStatusChange
 
-                        let cellAddress = { Task = task; DateId = DateId date }
+                        let moment = { Date = date; Time = Consts.dayStart }
+
+                        let cellAddress = { Task = task; DateId = dateId Consts.dayStart moment }
 
                         let interaction =
                             Interaction.Cell(cellAddress, cellInteraction)
 
-                        let moment = { Date = date; Time = Consts.dayStart }
 
                         let userInteraction =
                             UserInteraction(user, moment, interaction)

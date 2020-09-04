@@ -2,6 +2,7 @@ namespace Fluke.Shared
 
 open System
 open Expecto
+open FSharpPlus
 open Fluke.Shared
 open Fluke.Shared.Model
 open Expecto.Flip
@@ -185,9 +186,9 @@ module Tests =
 
                 let dateSequence =
                     taskList
-                    |> List.collect (fun x -> x.StatusEntries)
-                    |> List.map ofTaskStatusEntry
-                    |> List.map (fun (user, moment, manualCellStatus) -> moment.Date)
+                    |> Seq.collect (fun x -> x.CellStateMap |> Map.keys)
+                    |> Seq.toList
+                    |> List.map (fun (DateId referenceDay) -> referenceDay)
                     |> Rendering.getDateSequence (35, 35)
 
                 taskList
