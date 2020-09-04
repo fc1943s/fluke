@@ -12,79 +12,94 @@ module RootPrivateData =
         | TempPrivate
         | TempPublic
         | Test
+
     let tempDataType = TempPrivate
-//    let tempDataType = Test
+    //    let tempDataType = Test
 //    let tempDataType = TempPublic
 
-    let testData = TempData.Testing.tempData.RenderLaneTests
-//    let testData = TempData.Testing.tempData.SortLanesTests
+    let testData =
+        TempData.Testing.tempData.RenderLaneTests
+    //    let testData = TempData.Testing.tempData.SortLanesTests
 
     let getLivePosition =
         match tempDataType with
         | TempPrivate -> TempData.getLivePosition
-        | TempPublic  -> TempData.getLivePosition
-        | Test        -> testData.GetLivePosition
+        | TempPublic -> TempData.getLivePosition
+        | Test -> testData.GetLivePosition
 
     let dayStart =
         match tempDataType with
         | TempPrivate -> TempData.Consts.dayStart
-        | TempPublic  -> TempData.Consts.dayStart
-        | Test        -> TempData.Testing.Consts.testDayStart
+        | TempPublic -> TempData.Consts.dayStart
+        | Test -> TempData.Testing.Consts.testDayStart
 
     let weekStart =
         match tempDataType with
         | TempPrivate -> PrivateData.Consts.weekStart
-        | TempPublic  -> PrivateData.Consts.weekStart
-        | Test        -> PrivateData.Consts.weekStart
+        | TempPublic -> PrivateData.Consts.weekStart
+        | Test -> PrivateData.Consts.weekStart
 
 
-    let informationComments =
+    let informationCommentInteractions =
         match tempDataType with
-        | TempPrivate -> SharedPrivateData.Data.informationComments @ PrivateData.InformationComments.informationComments
-        | TempPublic  -> []
-        | Test        -> []
+        | TempPrivate ->
+            SharedPrivateData.Data.informationCommentInteractions
+            @ PrivateData.InformationComments.informationCommentInteractions
+        | TempPublic -> []
+        | Test -> []
 
     let cellComments =
         match tempDataType with
-        | TempPrivate -> SharedPrivateData.Data.cellComments @ PrivateData.CellComments.cellComments @ PrivateData.Journal.journalComments
-        | TempPublic  -> []
-        | Test        -> []
+        | TempPrivate ->
+            SharedPrivateData.Data.cellComments
+            @ PrivateData.CellComments.cellComments
+            @ PrivateData.Journal.journalComments
+        | TempPublic -> []
+        | Test -> []
 
     let taskCommentInteractions =
         match tempDataType with
         | TempPrivate -> PrivateData.TaskComments.taskCommentInteractions
-        | TempPublic  -> []
-        | Test        -> []
+        | TempPublic -> []
+        | Test -> []
 
     let sharedTaskCommentInteractions =
         match tempDataType with
         | TempPrivate -> SharedPrivateData.Data.taskCommentInteractions
-        | TempPublic  -> []
-        | Test        -> []
+        | TempPublic -> []
+        | Test -> []
 
     let cellStatusEntries =
         match tempDataType with
         | TempPrivate -> PrivateData.CellStatusEntries.cellStatusEntries
-        | TempPublic  -> []
-        | Test        -> []
+        | TempPublic -> []
+        | Test -> []
 
     let sharedCellStatusEntries =
         match tempDataType with
         | TempPrivate -> SharedPrivateData.Data.cellStatusEntries
-        | TempPublic  -> []
-        | Test        -> []
+        | TempPublic -> []
+        | Test -> []
 
     let treeData =
         match tempDataType with
         | TempPrivate -> PrivateData.Tasks.treeData
-        | TempPublic  -> TempData.Testing.tempData.ManualTasks
-        | Test        -> testData
+        | TempPublic -> TempData.Testing.tempData.ManualTasks
+        | Test -> testData
 
     let sharedTreeData =
         match tempDataType with
         | TempPrivate -> SharedPrivateData.SharedTasks.treeData
-        | TempPublic  -> {| treeData with TaskStateList = []; InformationList = []; TaskOrderList = [] |}
-        | Test        -> {| treeData with TaskStateList = []; InformationList = []; TaskOrderList = [] |}
+        | TempPublic ->
+            {| treeData with
+                   TaskStateList = []
+                   InformationList = []
+                   TaskOrderList = [] |}
+        | Test ->
+            {| treeData with
+                   TaskStateList = []
+                   InformationList = []
+                   TaskOrderList = [] |}
 
     let currentUser =
         PrivateData.PrivateData.Consts.currentUser

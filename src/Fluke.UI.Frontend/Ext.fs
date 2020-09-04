@@ -20,7 +20,8 @@ module Ext =
     importAll "./public/index.js"
     importAll "./public/index.jsx"
 
-    [<Emit "(new Audio($0)).play();">]
+//    [<Emit "(new Audio($0)).play();">]
+    [<Emit "(() => { var audio = new Audio($0); audio.volume = 0.5; return audio; })().play();">]
     let playSound (_file: string) : unit = jsNative
 
     let reactMarkdown : obj -> obj = importDefault "react-markdown"
@@ -32,6 +33,7 @@ module Ext =
     Dom.window?Ext <-
         {| reactMarkdown = reactMarkdown
 //           useEventListener = useEventListener
+           playSound = playSound
            recoilLogger = recoilLogger |}
 
 
