@@ -7,21 +7,44 @@ open Suigetsu.Core
 module Model =
 
     [<StructuredFormatDisplay "{Name}">]
-    type Area = { Name: string }
+    type Area = { Name: AreaName }
+
+    and AreaName = AreaName of name: string
 
     [<StructuredFormatDisplay "{Area}/{Name}">]
-    type Project = { Area: Area; Name: string }
+    type Project = { Area: Area; Name: ProjectName }
+
+    and ProjectName = ProjectName of name: string
 
     [<StructuredFormatDisplay "{Area}/{Name}">]
-    type Resource = { Area: Area; Name: string }
+    type Resource = { Area: Area; Name: ResourceName }
+
+    and ResourceName = ResourceName of name: string
 
     type Information =
         | Project of Project
         | Area of Area
         | Resource of Resource
         | Archive of Information
+    and InformationName = InformationName of name: string
 
-    type Month =
+
+    [<StructuredFormatDisplay "{Year}-{Month}-{Day}">]
+    type FlukeDate =
+        {
+            Year: Year
+            Month: Month
+            Day: Day
+        }
+
+        override this.ToString() =
+            let (Year year) = this.Year
+            let (Day day) = this.Day
+            sprintf "%02i-%02i-%02i" year (int this.Month) day
+
+    and Year = Year of int
+
+    and Month =
         | January = 1
         | February = 2
         | March = 3
@@ -35,61 +58,96 @@ module Model =
         | November = 11
         | December = 12
 
+    and Day = Day of int
 
-    [<StructuredFormatDisplay "{Year}-{Month}-{Day}">]
-    type FlukeDate =
-        { Year: int
-          Month: Month
-          Day: int }
-        override this.ToString() =
-            sprintf "%02i-%02i-%02i" this.Year (int this.Month) this.Day
 
     [<StructuredFormatDisplay "{Hour}h{Minute}m">]
     type FlukeTime =
-        { Hour: int
-          Minute: int }
+        {
+            Hour: Hour
+            Minute: Minute
+        }
+
         override this.ToString() =
-            sprintf "%02i:%02i" this.Hour this.Minute
+            let (Hour hour) = this.Hour
+            let (Minute minute) = this.Minute
+            sprintf "%02f:%02f" hour minute
+
+    and Hour = Hour of float
+
+    and Minute = Minute of float
+
+
 
     [<StructuredFormatDisplay "{Date} {Time}">]
     type FlukeDateTime =
-        { Date: FlukeDate
-          Time: FlukeTime }
+        {
+            Date: FlukeDate
+            Time: FlukeTime
+        }
+
         override this.ToString() = sprintf "%A %A" this.Date this.Time
 
 
     type Task =
-        { Name: string
-          Information: Information
-          Scheduling: TaskScheduling
-          PendingAfter: FlukeTime option
-          MissedAfter: FlukeTime option
-          Priority: TaskPriorityValue
-          Duration: int option }
+        {
+            Name: TaskName
+            Information: Information
+            Scheduling: Scheduling
+            PendingAfter: FlukeTime option
+            MissedAfter: FlukeTime option
+            Priority: Priority option
+            Duration: Minute option
+        }
 
-    and TaskScheduling =
-        | Manual of TaskManualScheduling
-        | Recurrency of TaskRecurrency
+    and TaskName = TaskName of name: string
 
-    and TaskManualScheduling =
+    and Scheduling =
+        | Manual of ManualScheduling
+        | Recurrency of Recurrency
+
+    and ManualScheduling =
         | WithSuggestion
         | WithoutSuggestion
 
-    and TaskRecurrency =
-        | Offset of TaskRecurrencyOffset
+    and Recurrency =
+        | Offset of RecurrencyOffset
         | Fixed of FixedRecurrency list
 
     and FixedRecurrency =
-        | Weekly of DayOfWeek
-        | Monthly of day: int
-        | Yearly of day: int * month: Month
+        | Weekly of dayOfWeek: DayOfWeek
+        | Monthly of day: Day
+        | Yearly of day: Day * month: Month
 
-    and TaskRecurrencyOffset =
-        | Days of int
-        | Weeks of int
-        | Months of int
+    and RecurrencyOffset =
+        | Days of length: int
+        | Weeks of length: int
+        | Months of length: int
 
-    and TaskPriorityValue = TaskPriorityValue of value: int
+    and Priority =
+        | Low1
+        | Low2
+        | Low3
+        | Medium4
+        | Medium5
+        | Medium6
+        | High7
+        | High8
+        | High9
+        | Critical10
+
+        member this.Value =
+            match this with
+            | Low1 -> 1
+            | Low2 -> 2
+            | Low3 -> 3
+            | Medium4 -> 4
+            | Medium5 -> 5
+            | Medium6 -> 6
+            | High7 -> 7
+            | High8 -> 8
+            | High9 -> 9
+            | Critical10 -> 10
 
     type Comment = Comment of comment: string
 
@@ -97,18 +155,18 @@ module Model =
 
     type CellAddress = { Task: Task; DateId: DateId }
 
-    [<RequireQualifiedAccess>]
-    type UserColor =
-        | Pink
-        | Blue
 
     type User = { Username: string; Color: UserColor }
+
+    and [<RequireQualifiedAccess>] UserColor =
+        | Pink
+        | Blue
 
     // Link: Auto:[Title, Favicon, Screenshot]
     // Image: Embed
     [<RequireQualifiedAccess>]
     type Attachment =
-        | Comment of user:User * comment: Comment
+        | Comment of user: User * comment: Comment
         | Link
         | Video
         | Image
@@ -126,7 +184,7 @@ module Model =
     type TaskInteraction =
         | Attachment of attachment: Attachment
         | Archive
-        | Session
+        | Session of start: FlukeDateTime * duration: Minute * breakDuration: Minute
         | Sort of top: Task option * bottom: Task option
 
     [<RequireQualifiedAccess>]
@@ -158,29 +216,12 @@ module Model =
 
 
 
-    type X =
-        | SameDay
-        | NextDay
-
-    type TaskPriority =
-        | Low1
-        | Low2
-        | Low3
-        | Medium4
-        | Medium5
-        | Medium6
-        | High7
-        | High8
-        | High9
-        | Critical10
+    //    type X =
+//        | SameDay
+//        | NextDay
 
 
 
-    type ManualCellStatus =
-        | Postponed of until: FlukeTime option
-        | Completed
-        | Dismissed
-        | ManualPending
 
     type CellStatus =
         | Disabled
@@ -190,27 +231,36 @@ module Model =
         | MissedToday
         | UserStatus of user: User * status: ManualCellStatus
 
+    and ManualCellStatus =
+        | Postponed of until: FlukeTime option
+        | Completed
+        | Dismissed
+        | ManualPending
 
-    type TaskId = TaskId of informationName: string * taskName: string
-    type TaskSession = TaskSession of start: FlukeDateTime
+
+    type TaskId = TaskId of informationName: InformationName * taskName: TaskName
+    //    type TaskSession = TaskSession of start: FlukeDateTime * duration: Minute * breakDuration: Minute
+//    type TaskSession = TaskSession of TaskInteraction
     type TaskStatusEntry = TaskStatusEntry of user: User * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
 
     type CellState =
-        { Status: CellStatus
-          CellInteractions: CellInteraction list
-          Sessions: TaskSession list }
+        {
+            Status: CellStatus
+            CellInteractions: CellInteraction list
+            Sessions: TaskInteraction list
+        }
 
 
 
     type Cell = Cell of address: CellAddress * status: CellStatus
-//    type TaskComment = TaskComment of task: Task * comment: UserComment
+    //    type TaskComment = TaskComment of task: Task * comment: UserComment
 
     type CellStatusEntry = CellStatusEntry of user: User * task: Task * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
 
-//    type CellComment = CellComment of task: Task * moment: FlukeDateTime * comment: UserComment
-    type CellSession = CellSession of task: Task * start: FlukeDateTime
+    //    type CellComment = CellComment of task: Task * moment: FlukeDateTime * comment: UserComment
+    type CellSession = CellSession of task: Task * start: FlukeDateTime * duration: Minute
 
-//    type InformationComment =
+    //    type InformationComment =
 //        { Information: Information
 //          Comment: InformationInteraction }
 
@@ -226,15 +276,20 @@ module Model =
         | Last
 
     type TaskOrderEntry =
-        { Task: Task
-          Priority: TaskOrderPriority }
+        {
+            Task: Task
+            Priority: TaskOrderPriority
+        }
 
     type TaskState =
-        { Task: Task
-          Sessions: TaskSession list
-          UserInteractions: UserInteraction list
-          CellInteractions: (FlukeDate * CellInteraction) list
-          CellStateMap: Map<DateId, CellState> }
+        {
+            Task: Task
+            Sessions: TaskInteraction list
+            UserInteractions: UserInteraction list
+            CellInteractions: (FlukeDate * CellInteraction) list
+            InformationMap: Map<Information, bool>
+            CellStateMap: Map<DateId, CellState>
+        }
 
     type OldLane = OldLane of task: TaskState * cells: Cell list
 
@@ -247,56 +302,84 @@ module Model =
         | ReadOnly of user: User
 
     type Tree =
-        { Owner: User
-          SharedWith: TreeAccess list
-          Position: FlukeDateTime
-          InformationList: Information list
-          TaskStateList: TaskState list }
+        {
+            Owner: User
+            SharedWith: TreeAccess list
+            Position: FlukeDateTime
+            InformationList: Information list
+            TaskStateList: TaskState list
+        }
 
 
 
     type Area with
-        static member inline Default = { Name = "<null>" }
+
+        static member inline Default = { Name = AreaName "<null>" }
 
     type Project with
-        static member inline Default = { Name = "<null>"; Area = Area.Default }
+
+        static member inline Default =
+            {
+                Name = ProjectName "<null>"
+                Area = Area.Default
+            }
 
     type Resource with
-        static member inline Default = { Name = "<null>"; Area = Area.Default }
+
+        static member inline Default =
+            {
+                Name = ResourceName "<null>"
+                Area = Area.Default
+            }
 
     type FlukeDate with
+
         member this.DateTime =
-            DateTime(this.Year, int this.Month, this.Day, 12, 0, 0)
+            let Year year, Day day = this.Year, this.Day
+            DateTime(year, int this.Month, day, 12, 0, 0)
 
         static member inline FromDateTime(date: DateTime) =
-            { Year = date.Year
-              Month = Enum.Parse(typeof<Month>, string date.Month) :?> Month
-              Day = date.Day }
+            {
+                Year = Year date.Year
+                Month = Enum.Parse(typeof<Month>, string date.Month) :?> Month
+                Day = Day date.Day
+            }
 
     let flukeDate year month day =
-        { Year = year
-          Month = month
-          Day = day }
+        {
+            Year = Year year
+            Month = month
+            Day = Day day
+        }
 
     type FlukeTime with
+
         static member inline FromDateTime(date: DateTime) =
-            { Hour = date.Hour
-              Minute = date.Minute }
+            {
+                Hour = float date.Hour |> Hour
+                Minute = float date.Minute |> Minute
+            }
 
         member this.GreaterEqualThan time =
             this.Hour > time.Hour
             || this.Hour = time.Hour
                && this.Minute >= time.Minute
 
-    let flukeTime hour minute = { Hour = hour; Minute = minute }
+    let flukeTime hour minute = { Hour = Hour (float hour); Minute = Minute (float minute) }
 
     type FlukeDateTime with
+
         member this.DateTime =
-            DateTime(this.Date.Year, int this.Date.Month, this.Date.Day, this.Time.Hour, this.Time.Minute, 0)
+            let Year year, Day day, Hour hour, Minute minute =
+                this.Date.Year, this.Date.Day, this.Time.Hour, this.Time.Minute
+
+            DateTime(year, int this.Date.Month, day, int hour, int minute, 0)
 
         static member inline FromDateTime(date: DateTime) =
-            { Date = FlukeDate.FromDateTime date
-              Time = FlukeTime.FromDateTime date }
+            {
+                Date = FlukeDate.FromDateTime date
+                Time = FlukeTime.FromDateTime date
+            }
 
         member this.GreaterEqualThan (dayStart: FlukeTime) (DateId referenceDay) time =
             let testingAfterMidnight = dayStart.GreaterEqualThan time
@@ -314,16 +397,22 @@ module Model =
             this.DateTime >= dateToCompare.DateTime
 
     let flukeDateTime year month day hour minute =
-        { Date = flukeDate year month day
-          Time = flukeTime hour minute }
+        {
+            Date = flukeDate year month day
+            Time = flukeTime hour minute
+        }
 
     type Information with
+
         member this.Name =
             match this with
-            | Project project -> project.Name
-            | Area area -> area.Name
-            | Resource resource -> resource.Name
-            | Archive archive -> sprintf "[%s]" archive.Name
+            | Project { Name = ProjectName name } -> InformationName name
+            | Area { Name = AreaName name } -> InformationName name
+            | Resource { Name = ResourceName name } -> InformationName name
+            | Archive information ->
+                let (InformationName name) = information.Name
+                sprintf "[%s]" name
+                |> InformationName
 
         member this.KindName =
             match this with
@@ -340,29 +429,35 @@ module Model =
             | Archive _ -> 4
 
 
+
     type Task with
+
         static member inline Default =
-            { Name = "<null>"
-              Information = Area Area.Default
-              PendingAfter = None
-              MissedAfter = None
-              Scheduling = Manual WithoutSuggestion
-              Priority = TaskPriorityValue 0
-              Duration = None }
+            {
+                Name = TaskName "<null>"
+                Information = Area Area.Default
+                PendingAfter = None
+                MissedAfter = None
+                Scheduling = Manual WithoutSuggestion
+                Priority = None
+                Duration = None
+            }
 
     let ofLane =
         fun (OldLane (taskState, cells)) -> taskState, cells
 
-    let ofTaskSession = fun (TaskSession start) -> start
+    //    let ofTaskSession =
+//        fun (TaskInteraction (start, duration, breakDuration)) -> start, duration, breakDuration
 
     let ofDateId =
         fun (DateId referenceDay) -> referenceDay
 
-    let ofAttachmentComment = function
-        | Attachment.Comment (user, comment) -> Some (user, comment)
+    let ofAttachmentComment =
+        function
+        | Attachment.Comment (user, comment) -> Some(user, comment)
         | _ -> None
 
-//    let ofUserComment =
+    //    let ofUserComment =
 //        fun (UserComment (user, comment)) -> user, comment
 //
 //    let ofTaskComment =
@@ -372,9 +467,8 @@ module Model =
 //        fun (CellComment (task, moment, userComment)) -> task, moment, userComment
 
     let ofCellSession =
-        fun (CellSession (task, start)) -> task, start
+        fun (CellSession (task, start, duration)) -> task, start, duration
 
-    let ofTaskPriorityValue = fun (TaskPriorityValue value) -> value
 
     let ofTaskStatusEntry =
         fun (TaskStatusEntry (user, moment, manualCellStatus)) -> user, moment, manualCellStatus
@@ -393,7 +487,7 @@ module Model =
 
     let (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, date) =
         match date with
-        | { Day = 1 } -> StartOfMonth
+        | { Day = Day 1 } -> StartOfMonth
         | date when date.DateTime.DayOfWeek = weekStart -> StartOfWeek
         | _ -> NormalDay
 
@@ -420,11 +514,14 @@ module Model =
 
     let createCellComment dayStart task moment user (comment: string) =
         let cellInteraction =
-            CellInteraction.Attachment <| Attachment.Comment (user, Comment comment)
+            Attachment.Comment(user, Comment comment)
+            |> CellInteraction.Attachment
 
         let cellAddress =
-            { Task = task
-              DateId = dateId dayStart moment }
+            {
+                Task = task
+                DateId = dateId dayStart moment
+            }
 
         let interaction =
             Interaction.Cell(cellAddress, cellInteraction)
@@ -530,8 +627,10 @@ module Rendering =
             match dates with
             | [||] -> dateSequence
             | dates ->
-                [ dates |> Array.head |> min firstDateRange.DateTime
-                  dates |> Array.last |> max lastDateRange.DateTime ]
+                [
+                    dates |> Array.head |> min firstDateRange.DateTime
+                    dates |> Array.last |> max lastDateRange.DateTime
+                ]
                 |> List.map FlukeDate.FromDateTime
                 |> getDateSequence (0, 0)
             |> List.map (fun date -> { Date = date; Time = dayStart })
@@ -654,8 +753,10 @@ module Rendering =
             |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
             |> List.map (fun (moment, cellStatus) ->
                 Cell
-                    ({ DateId = dateId dayStart moment
-                       Task = taskState.Task },
+                    ({
+                         DateId = dateId dayStart moment
+                         Task = taskState.Task
+                     },
                      cellStatus))
 
         OldLane(taskState, cells)
@@ -724,8 +825,10 @@ module Sorting =
         let orderEntriesMissing =
             tasksWithoutOrderEntry
             |> List.map (fun task ->
-                { Task = task
-                  Priority = TaskOrderPriority.Last })
+                {
+                    Task = task
+                    Priority = TaskOrderPriority.Last
+                })
 
         let newTaskOrderList =
             orderEntriesMissing @ orderEntriesOfTasks
@@ -808,42 +911,44 @@ module Sorting =
 
 
             let groupsIndexList =
-                [ (function
-                  | MissedToday, _ -> Some TaskOrderList
-                  | _ -> None)
-                  (function
-                  | UserStatus (user, ManualPending), _ -> Some TaskOrderList
-                  | _ -> None)
-                  (function
-                  | ((UserStatus (_, WasPostponed))
-                    | Pending),
-                    _ -> Some TaskOrderList
-                  | _ -> None)
-                  (function
-                  | UserStatus (user, PostponedUntil), _ -> Some TaskOrderList
-                  | _ -> None)
-                  (function
-                  | Suggested, SchedulingRecurrency -> Some TaskOrderList
-                  | _ -> None)
-                  (function
-                  | Suggested, ManualWithSuggestion -> Some TaskOrderList
-                  | _ -> None)
-                  (function
-                  | UserStatus (user, Completed), _ -> Some DefaultSort
-                  | _ -> None)
-                  (function
-                  | UserStatus (user, Dismissed), _ -> Some DefaultSort
-                  | _ -> None)
-                  (function
-                  | UserStatus (user, Postponed), _ -> Some TaskOrderList
-                  | _ -> None)
-                  (function
-                  | _, HasSessionToday -> Some DefaultSort
-                  | _ -> None)
-                  //                  (function Disabled,                                   SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
-                  //                  (function Suggested,                                  ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
-                  (function
-                  | _ -> Some DefaultSort) ]
+                [
+                    (function
+                    | MissedToday, _ -> Some TaskOrderList
+                    | _ -> None)
+                    (function
+                    | UserStatus (user, ManualPending), _ -> Some TaskOrderList
+                    | _ -> None)
+                    (function
+                    | ((UserStatus (_, WasPostponed))
+                      | Pending),
+                      _ -> Some TaskOrderList
+                    | _ -> None)
+                    (function
+                    | UserStatus (user, PostponedUntil), _ -> Some TaskOrderList
+                    | _ -> None)
+                    (function
+                    | Suggested, SchedulingRecurrency -> Some TaskOrderList
+                    | _ -> None)
+                    (function
+                    | Suggested, ManualWithSuggestion -> Some TaskOrderList
+                    | _ -> None)
+                    (function
+                    | UserStatus (user, Completed), _ -> Some DefaultSort
+                    | _ -> None)
+                    (function
+                    | UserStatus (user, Dismissed), _ -> Some DefaultSort
+                    | _ -> None)
+                    (function
+                    | UserStatus (user, Postponed), _ -> Some TaskOrderList
+                    | _ -> None)
+                    (function
+                    | _, HasSessionToday -> Some DefaultSort
+                    | _ -> None)
+                    //                  (function Disabled,                                   SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
+                    //                  (function Suggested,                                  ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
+                    (function
+                    | _ -> Some DefaultSort)
+                ]
 
             groupsIndexList
             |> List.map (fun orderFn -> orderFn (status, taskState))

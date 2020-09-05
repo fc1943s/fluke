@@ -9,92 +9,126 @@ module TempData =
     open Model
 
     module private Areas =
-        let car = { Name = "car" }
-        let career = { Name = "career" }
-        let chores = { Name = "chores" }
-        let finances = { Name = "finances" }
-        let fitness = { Name = "fitness" }
-        let food = { Name = "food" }
-        let health = { Name = "health" }
-        let leisure = { Name = "leisure" }
-        let programming = { Name = "programming" }
-        let travel = { Name = "travel" }
-        let workflow = { Name = "workflow" }
-        let writing = { Name = "writing" }
+        let car = { Name = AreaName "car" }
+        let career = { Name = AreaName "career" }
+        let chores = { Name = AreaName "chores" }
+        let finances = { Name = AreaName "finances" }
+        let fitness = { Name = AreaName "fitness" }
+        let food = { Name = AreaName "food" }
+        let health = { Name = AreaName "health" }
+        let leisure = { Name = AreaName "leisure" }
+        let programming = { Name = AreaName "programming" }
+        let travel = { Name = AreaName "travel" }
+        let workflow = { Name = AreaName "workflow" }
+        let writing = { Name = AreaName "writing" }
 
 
     module private Projects =
         let app_fluke =
-            { Project.Area = Areas.workflow
-              Project.Name = "app_fluke" }
+            {
+                Project.Area = Areas.workflow
+                Project.Name = ProjectName "app_fluke"
+            }
 
         let blog =
-            { Project.Area = Areas.writing
-              Project.Name = "blog" }
+            {
+                Project.Area = Areas.writing
+                Project.Name = ProjectName "blog"
+            }
 
         let rebuild_website =
-            { Project.Area = Areas.programming
-              Project.Name = "rebuild_website" }
+            {
+                Project.Area = Areas.programming
+                Project.Name = ProjectName "rebuild_website"
+            }
 
 
     module private Resources =
         let agile =
-            { Resource.Area = Areas.programming
-              Resource.Name = "agile" }
+            {
+                Area = Areas.programming
+                Name = ResourceName "agile"
+            }
 
         let artificial_intelligence =
-            { Resource.Area = Areas.programming
-              Resource.Name = "artificial_intelligence" }
+            {
+                Area = Areas.programming
+                Name = ResourceName "artificial_intelligence"
+            }
 
         let cloud =
-            { Resource.Area = Areas.programming
-              Resource.Name = "cloud" }
+            {
+                Area = Areas.programming
+                Name = ResourceName "cloud"
+            }
 
         let communication =
-            { Resource.Area = Areas.workflow
-              Resource.Name = "communication" }
+            {
+                Area = Areas.workflow
+                Name = ResourceName "communication"
+            }
 
         let docker =
-            { Resource.Area = Areas.programming
-              Resource.Name = "docker" }
+            {
+                Area = Areas.programming
+                Name = ResourceName "docker"
+            }
 
         let fsharp =
-            { Resource.Area = Areas.programming
-              Resource.Name = "f#" }
+            {
+                Area = Areas.programming
+                Name = ResourceName "f#"
+            }
 
         let linux =
-            { Resource.Area = Areas.programming
-              Resource.Name = "linux" }
+            {
+                Area = Areas.programming
+                Name = ResourceName "linux"
+            }
 
         let music =
-            { Resource.Area = Areas.leisure
-              Resource.Name = "music" }
+            {
+                Area = Areas.leisure
+                Name = ResourceName "music"
+            }
 
         let rust =
-            { Resource.Area = Areas.programming
-              Resource.Name = "rust" }
+            {
+                Area = Areas.programming
+                Name = ResourceName "rust"
+            }
 
         let vim =
-            { Resource.Area = Areas.programming
-              Resource.Name = "vim" }
+            {
+                Area = Areas.programming
+                Name = ResourceName "vim"
+            }
 
         let windows =
-            { Resource.Area = Areas.programming
-              Resource.Name = "windows" }
+            {
+                Area = Areas.programming
+                Name = ResourceName "windows"
+            }
 
 
     module Users =
         let fc1943s =
-            { Username = "fc1943s"
-              Color = UserColor.Blue }
+            {
+                Username = "fc1943s"
+                Color = UserColor.Blue
+            }
 
         let liryanne =
-            { Username = "liryanne"
-              Color = UserColor.Pink }
+            {
+                Username = "liryanne"
+                Color = UserColor.Pink
+            }
 
         let testUser =
-            { Username = "Test"
-              Color = UserColor.Blue }
+            {
+                Username = "Test"
+                Color = UserColor.Blue
+            }
 
         let users = [ fc1943s; liryanne ]
 
@@ -150,7 +184,11 @@ module TempData =
 
                         let moment = { Date = date; Time = Consts.dayStart }
 
-                        let cellAddress = { Task = task; DateId = dateId Consts.dayStart moment }
+                        let cellAddress =
+                            {
+                                Task = task
+                                DateId = dateId Consts.dayStart moment
+                            }
 
                         let interaction =
                             Interaction.Cell(cellAddress, cellInteraction)
@@ -171,44 +209,51 @@ module TempData =
             type Event = CellCompleted of user: User * task: Task * date: FlukeDateTime
 
             type State =
-                { DayStart: FlukeTime
-                  TaskMap: Map<TaskId, Map<DateId, CellStatus>>
-                  TaskIdList: TaskId list }
+                {
+                    DayStart: FlukeTime
+                    TaskMap: Map<TaskId, Map<DateId, CellStatus>>
+                    TaskIdList: TaskId list
+                }
 
             let initialState =
-                { DayStart = Consts.dayStart
-                  TaskMap = Map.empty
-                  TaskIdList = [] }
+                {
+                    DayStart = Consts.dayStart
+                    TaskMap = Map.empty
+                    TaskIdList = []
+                }
 
             let private apply (state: State) (event: Event): State =
                 match event with
                 | CellCompleted (user, task, moment) ->
                     { state with
-                          TaskMap =
-                              let taskId = taskId task
-                              let dateId = dateId state.DayStart moment
-                              let newStatus = UserStatus(user, Completed)
+                        TaskMap =
+                            let taskId = taskId task
+                            let dateId = dateId state.DayStart moment
+                            let newStatus = UserStatus(user, Completed)
 
-                              let cellMap =
-                                  state.TaskMap
-                                  |> Map.tryFind taskId
-                                  |> Option.defaultValue Map.empty
-                                  |> Map.add dateId newStatus
+                            let cellMap =
+                                state.TaskMap
+                                |> Map.tryFind taskId
+                                |> Option.defaultValue Map.empty
+                                |> Map.add dateId newStatus
 
-                              state.TaskMap |> Map.add taskId cellMap }
+                            state.TaskMap |> Map.add taskId cellMap
+                    }
 
             let execute (state: State) (command: Command): Event list =
-                [ match command, state with
-                  | CompleteCell (user, task, moment), state when state.TaskMap
-                                                                  |> Map.tryFind (taskId task)
-                                                                  |> Option.defaultValue Map.empty
-                                                                  |> Map.tryFind (dateId state.DayStart moment)
-                                                                  |> Option.defaultValue Disabled
-                                                                  |> (=) Missed -> CellCompleted(user, task, moment)
+                [
+                    match command, state with
+                    | CompleteCell (user, task, moment), state when state.TaskMap
+                                                                    |> Map.tryFind (taskId task)
+                                                                    |> Option.defaultValue Map.empty
+                                                                    |> Map.tryFind (dateId state.DayStart moment)
+                                                                    |> Option.defaultValue Disabled
+                                                                    |> (=) Missed -> CellCompleted(user, task, moment)
 
-                  | CompleteCell (user, task, eventDate), state -> CellCompleted(user, task, eventDate)
+                    | CompleteCell (user, task, eventDate), state -> CellCompleted(user, task, eventDate)
 
-                  | _ -> () ]
+                    | _ -> ()
+                ]
 
             let build = List.fold apply
             let rebuld = build initialState
@@ -226,31 +271,33 @@ module TempData =
             manualTaskOrder
             |> List.map (fun (information, taskName) ->
                 taskMap
-                |> Map.tryFind (information, taskName)
+                |> Map.tryFind (information, TaskName taskName)
                 |> function
                 | None -> failwithf "Invalid task: '%A/%s'" information taskName
                 | Some taskState ->
-                    { Task = taskState.Task
-                      Priority = TaskOrderPriority.First })
+                    {
+                        Task = taskState.Task
+                        Priority = TaskOrderPriority.First
+                    })
 
         oldTaskOrderList @ newTaskOrderList
 
 
     type TempTaskEvent =
-        | TempComment of comment: string
-        | TempSession of start: FlukeDateTime
-        | TempPriority of priority: TaskPriority
-        | TempTag of information: Information
-        | TempStatusEntry of date: FlukeDate * manualCellStatus: ManualCellStatus
-        | TempCellComment of date: FlukeDate * comment: string
-        | TempTaskField of field: TempTaskEventField
-        | TempInteraction of interaction: TaskInteraction
+        | DslTaskComment of comment: string
+        | DslSession of start: FlukeDateTime
+        | DslPriority of priority: Priority
+        | DslInformationReferenceToggle of information: Information
+        | DslStatusEntry of date: FlukeDate * manualCellStatus: ManualCellStatus
+        | DslCellComment of date: FlukeDate * comment: string
+        | DslTaskSet of taskSet: DslTaskSet
+        | DslTaskInteraction of interaction: TaskInteraction
 
-    and TempTaskEventField =
-        | TempTaskFieldScheduling of scheduling: TaskScheduling * start: FlukeDate option
-        | TempTaskFieldPendingAfter of start: FlukeTime
-        | TempTaskFieldMissedAfter of start: FlukeTime
-        | TempTaskFieldDuration of minutes: int
+    and DslTaskSet =
+        | DslSetScheduling of scheduling: Scheduling * start: FlukeDate option
+        | DslSetPendingAfter of start: FlukeTime
+        | DslSetMissedAfter of start: FlukeTime
+        | DslSetDuration of duration: int
 
     let getCellStatusChangeUserInteraction dayStart user task date manualCellStatus =
         let cellStatusChange =
@@ -276,154 +323,117 @@ module TempData =
         userInteraction
 
     let applyTaskEvents dayStart task (events: (TempTaskEvent * User) list) =
+        let defaultTaskState =
+            {
+                Task = Task.Default
+                Sessions = []
+                CellInteractions = []
+                UserInteractions = []
+                InformationMap = Map.empty
+                CellStateMap = Map.empty
+            }
 
-        let getPriorityValue =
-            function
-            | Low1 -> 1
-            | Low2 -> 2
-            | Low3 -> 3
-            | Medium4 -> 4
-            | Medium5 -> 5
-            | Medium6 -> 6
-            | High7 -> 7
-            | High8 -> 8
-            | High9 -> 9
-            | Critical10 -> 10
+        let interactions =
+            let moment = Consts.defaultPosition
+            (defaultTaskState, events)
+            ||> List.fold (fun taskState (event, user) -> // TODO: Why start?
+                    match event with
+                    | DslTaskInteraction taskInteraction ->
+                        let interaction = Interaction.Task(task, taskInteraction)
 
-        // TODO: how the hell do i rewrite this without losing performance?
-        let userInteractions, sessions, priority, scheduling, pendingAfter, missedAfter, duration =
-            let rec loop (state: {| Duration: int option
-                                    MissedAfter: FlukeTime option
-                                    PendingAfter: FlukeTime option
-                                    Priority: TaskPriorityValue option
-                                    Scheduling: TaskScheduling
-                                    Sessions: TaskSession list
-                                    UserInteractions: UserInteraction list |}) =
-                function
-                | (TempInteraction interaction, user) :: tail ->
-                    let moment = Consts.defaultPosition
-                    let interaction = Interaction.Task(task, interaction)
+                        let userInteraction =
+                            UserInteraction(user, moment, interaction)
 
-                    let userInteraction =
-                        UserInteraction(user, moment, interaction)
+                        { taskState with
+                            UserInteractions = taskState.UserInteractions @ [ userInteraction ]
+                        }
+                    | DslTaskComment comment ->
+                        let interaction =
+                            Interaction.Task
+                                (task, TaskInteraction.Attachment(Attachment.Comment(user, Comment comment)))
 
-                    loop
-                        {| state with
-                               UserInteractions = state.UserInteractions @ [ userInteraction ] |}
-                        tail
+                        let userInteraction =
+                            UserInteraction(user, moment, interaction)
 
-                | (TempComment comment, user) :: tail ->
-                    let moment = Consts.defaultPosition
+                        { taskState with
+                            UserInteractions = taskState.UserInteractions @ [ userInteraction ]
+                        }
+                    | DslCellComment (date, comment) ->
+                        let interaction =
+                            Interaction.Cell
+                                ({ Task = task; DateId = DateId date },
+                                 CellInteraction.Attachment(Attachment.Comment(user, Comment comment)))
 
-                    let interaction =
-                        Interaction.Task(task, TaskInteraction.Attachment(Attachment.Comment(user, Comment comment)))
+                        let userInteraction =
+                            UserInteraction(user, moment, interaction)
 
-                    let userInteraction =
-                        UserInteraction(user, moment, interaction)
+                        { taskState with
+                            UserInteractions = taskState.UserInteractions @ [ userInteraction ]
+                        }
+                    | (DslSession ({ Date = date; Time = time })) ->
+                        let session =
+                            TaskInteraction.Session
+                                ({ Date = date; Time = time },
+                                 Minute Consts.sessionLength,
+                                 Minute Consts.sessionBreakLength)
 
-                    loop
-                        {| state with
-                               UserInteractions = state.UserInteractions @ [ userInteraction ] |}
-                        tail
+                        { taskState with
+                            Sessions = taskState.Sessions @ [ session ]
+                        }
+                    | DslStatusEntry (date, manualCellStatus) ->
+                        let userInteraction =
+                            getCellStatusChangeUserInteraction Consts.dayStart user task date manualCellStatus
 
-                | (TempCellComment (date, comment), user) :: tail ->
-                    let moment = Consts.defaultPosition
+                        { taskState with
+                            UserInteractions = taskState.UserInteractions @ [ userInteraction ]
+                        }
+                    | DslPriority priority ->
+                        { taskState with
+                            Task =
+                                { taskState.Task with
+                                    Priority = Some priority
+                                }
+                        }
+                    | DslInformationReferenceToggle information ->
+                        { taskState with
+                            InformationMap =
+                                taskState.InformationMap
+                                |> Map.add information true
+                        }
 
-                    let interaction =
-                        Interaction.Cell({Task = task; DateId = DateId date},
-                                         CellInteraction.Attachment(Attachment.Comment(user, Comment comment)))
+                    | DslTaskSet set ->
+                        match set with
+                        | DslSetScheduling (scheduling, start) ->
+                            { taskState with
+                                Task =
+                                    { taskState.Task with
+                                        Scheduling = scheduling
+                                    }
+                            }
+                        | DslSetPendingAfter start ->
+                            { taskState with
+                                Task =
+                                    { taskState.Task with
+                                        PendingAfter = Some start
+                                    }
+                            }
+                        | DslSetMissedAfter start ->
+                            { taskState with
+                                Task =
+                                    { taskState.Task with
+                                        MissedAfter = Some start
+                                    }
+                            }
 
-                    let userInteraction =
-                        UserInteraction(user, moment, interaction)
+                        | DslSetDuration minutes ->
+                            { taskState with
+                                Task =
+                                    { taskState.Task with
+                                        Duration = Some(Minute(float minutes))
+                                    }
+                            })
 
-                    loop
-                        {| state with
-                               UserInteractions = state.UserInteractions @ [ userInteraction ] |}
-                        tail
-
-                | (TempSession { Date = date; Time = time }, user) :: tail ->
-                    let session = TaskSession { Date = date; Time = time }
-                    loop
-                        {| state with
-                               Sessions = session :: state.Sessions |}
-                        tail
-
-                | (TempStatusEntry (date, manualCellStatus), user) :: tail ->
-                    let userInteraction =
-                        getCellStatusChangeUserInteraction Consts.dayStart user task date manualCellStatus
-
-                    loop
-                        {| state with
-                               UserInteractions = state.UserInteractions @ [ userInteraction ] |}
-                        tail
-
-                | (TempPriority priority, user) :: tail ->
-                    let priority =
-                        TaskPriorityValue(getPriorityValue priority)
-                        |> Some
-
-                    loop {| state with Priority = priority |} tail
-
-                | (TempTag information, user) :: tail -> loop state tail
-
-                | (TempTaskField field, user) :: tail ->
-                    match field with
-                    | TempTaskFieldScheduling (scheduling, start) -> loop {| state with Scheduling = scheduling |} tail
-
-                    | TempTaskFieldPendingAfter start ->
-                        loop
-                            {| state with
-                                   PendingAfter = Some start |}
-                            tail
-
-                    | TempTaskFieldMissedAfter start ->
-                        loop
-                            {| state with
-                                   MissedAfter = Some start |}
-                            tail
-
-                    | TempTaskFieldDuration minutes -> loop {| state with Duration = Some minutes |} tail
-
-                | [] ->
-                    let sortedSessions =
-                        state.Sessions
-                        |> List.sortBy (fun (TaskSession start) -> start.DateTime)
-
-                    let priority =
-                        state.Priority
-                        |> Option.defaultValue (TaskPriorityValue 0)
-
-                    state.UserInteractions,
-                    sortedSessions,
-                    priority,
-                    state.Scheduling,
-                    state.PendingAfter,
-                    state.MissedAfter,
-                    state.Duration
-
-            let state =
-                {| UserInteractions = []
-                   Sessions = []
-                   Priority = None
-                   Scheduling = task.Scheduling
-                   PendingAfter = task.PendingAfter
-                   MissedAfter = task.MissedAfter
-                   Duration = task.Duration |}
-
-            loop state events
-
-        { Task =
-              { task with
-                    Scheduling = scheduling
-                    PendingAfter = pendingAfter
-                    MissedAfter = missedAfter
-                    Duration = duration
-                    Priority = priority }
-          Sessions = sessions
-          CellInteractions = []
-          UserInteractions = userInteractions
-          CellStateMap = Map.empty }
-
+        interactions
 
 
 
@@ -439,8 +449,9 @@ module TempData =
                 |> List.map (fun (taskName, events: (TempTaskEvent * User) list) ->
                     let task =
                         { Task.Default with
-                              Name = taskName
-                              Information = information }
+                            Name = TaskName taskName
+                            Information = information
+                        }
 
                     applyTaskEvents dayStart task events))
 
@@ -450,17 +461,21 @@ module TempData =
         let taskOrderList =
             taskStateList
             |> List.map (fun taskState ->
-                { Task = taskState.Task
-                  Priority = TaskOrderPriority.Last })
+                {
+                    Task = taskState.Task
+                    Priority = TaskOrderPriority.Last
+                })
 
-        {| TaskStateList = taskStateList
-           TaskOrderList = taskOrderList
-           InformationList = informationList
-           GetLivePosition = getLivePosition |}
+        {|
+            TaskStateList = taskStateList
+            TaskOrderList = taskOrderList
+            InformationList = informationList
+            GetLivePosition = getLivePosition
+        |}
 
     // How the HELL will I rewrite this? 🤦
     let transformTasks currentUser rawTreeData getTaskLinks =
-        let mutable taskStateMap: Map<string, TaskState> = Map.empty
+        let mutable taskStateMap: Map<TaskName, TaskState> = Map.empty
         let mutable taskStateList = []
 
         let mutable treeDataMaybe: {| GetLivePosition: unit -> FlukeDateTime
@@ -470,7 +485,7 @@ module TempData =
 
         let getTask name =
             taskStateMap
-            |> Map.tryFind name
+            |> Map.tryFind (TaskName name)
             |> Option.map (fun x -> x.Task)
             |> Option.defaultValue Task.Default
 
@@ -512,7 +527,8 @@ module TempData =
             treeDataMaybe
             |> Option.map (fun treeData ->
                 {| treeData with
-                       TaskOrderList = taskOrderList |})
+                    TaskOrderList = taskOrderList
+                |})
 
         newTreeData.Value, tasks
 
@@ -532,12 +548,21 @@ module TempData =
                 testData.Events
                 |> List.map (fun x -> x, Users.testUser)
 
-            {| TaskStateList = [ applyTaskEvents Consts.testDayStart testData.Task eventsWithUser ]
-               TaskOrderList =
-                   [ { Task = testData.Task
-                       Priority = TaskOrderPriority.First } ]
-               GetLivePosition = fun () -> testData.Position
-               InformationList = [ testData.Task.Information ] |}
+            {|
+                TaskStateList =
+                    [
+                        applyTaskEvents Consts.testDayStart testData.Task eventsWithUser
+                    ]
+                TaskOrderList =
+                    [
+                        {
+                            Task = testData.Task
+                            Priority = TaskOrderPriority.First
+                        }
+                    ]
+                GetLivePosition = fun () -> testData.Position
+                InformationList = [ testData.Task.Information ]
+            |}
 
 
         let createSortLanesTestData (testData: {| Position: FlukeDateTime
@@ -550,202 +575,281 @@ module TempData =
                     |> List.map (fun x -> x, Users.testUser)
                     |> applyTaskEvents Consts.testDayStart task)
 
-            {| TaskStateList = taskStateList
-               TaskOrderList =
-                   testData.Data
-                   |> List.map (fun (task, events) ->
-                       { Task = task
-                         Priority = TaskOrderPriority.Last })
-               GetLivePosition = fun () -> testData.Position
-               InformationList =
-                   taskStateList
-                   |> List.map (fun x -> x.Task.Information)
-                   |> List.distinct |}
+            {|
+                TaskStateList = taskStateList
+                TaskOrderList =
+                    testData.Data
+                    |> List.map (fun (task, events) ->
+                        {
+                            Task = task
+                            Priority = TaskOrderPriority.Last
+                        })
+                GetLivePosition = fun () -> testData.Position
+                InformationList =
+                    taskStateList
+                    |> List.map (fun x -> x.Task.Information)
+                    |> List.distinct
+            |}
 
         let tempData =
-            {| ManualTasks =
-                   [ Project Projects.app_fluke,
-                     [ "data management",
-                       [ TempComment "mutability", Users.testUser
-                         TempComment "initial default data (load the text first with tests)", Users.testUser ]
-                       "cell selection (mouse, vim navigation)", []
-                       "data structures performance", []
-                       "side panel (journal, comments)", []
-                       "add task priority (for randomization)", []
-                       "persistence", [ TempComment "data encryption", Users.testUser ]
-                       "vivaldi or firefox bookmark integration",
-                       [ TempComment "browser.html javascript injection or browser extension", Users.testUser ]
-                       "telegram integration (fast link sharing)", []
-                       "mobile layout", []
-                       "move fluke tasks to github issues", [] ]
-                     Project Projects.blog, []
-                     Project Projects.rebuild_website, [ "task1", [] ]
-                     Area Areas.car, []
-                     Area Areas.career, []
-                     Area Areas.chores, []
-                     Area Areas.fitness, []
-                     Area Areas.food, []
-                     Area Areas.finances, []
-                     Area Areas.health, []
-                     Area Areas.leisure, [ "watch_movie_foobar", [] ]
-                     Area Areas.programming, []
-                     Area Areas.travel, []
-                     Area Areas.workflow, []
-                     Area Areas.writing, []
-                     Resource Resources.agile, []
-                     Resource Resources.artificial_intelligence, []
-                     Resource Resources.cloud, []
-                     Resource Resources.communication, []
-                     Resource Resources.docker, []
-                     Resource Resources.fsharp,
-                     [ "study: [choice, computation expressions]", []
-                       "organize youtube playlists", [] ]
-                     Resource Resources.linux, []
-                     Resource Resources.music, []
-                     Resource Resources.rust, []
-                     Resource Resources.vim, []
-                     Resource Resources.windows, [] ]
-                   |> transformTreeData Consts.testDayStart
-               RenderLaneTests =
-                   {| Task =
-                          { Task.Default with
+            {|
+                ManualTasks =
+                    [
+                        Project Projects.app_fluke,
+                        [
+                            "data management",
+                            [
+                                DslTaskComment "mutability", Users.testUser
+                                DslTaskComment "initial default data (load the text first with tests)", Users.testUser
+                            ]
+                            "cell selection (mouse, vim navigation)", []
+                            "data structures performance", []
+                            "side panel (journal, comments)", []
+                            "add task priority (for randomization)", []
+                            "persistence",
+                            [
+                                DslTaskComment "data encryption", Users.testUser
+                            ]
+                            "vivaldi or firefox bookmark integration",
+                            [
+                                DslTaskComment "browser.html javascript injection or browser extension", Users.testUser
+                            ]
+                            "telegram integration (fast link sharing)", []
+                            "mobile layout", []
+                            "move fluke tasks to github issues", []
+                        ]
+                        Project Projects.blog, []
+                        Project Projects.rebuild_website, [ "task1", [] ]
+                        Area Areas.car, []
+                        Area Areas.career, []
+                        Area Areas.chores, []
+                        Area Areas.fitness, []
+                        Area Areas.food, []
+                        Area Areas.finances, []
+                        Area Areas.health, []
+                        Area Areas.leisure, [ "watch_movie_foobar", [] ]
+                        Area Areas.programming, []
+                        Area Areas.travel, []
+                        Area Areas.workflow, []
+                        Area Areas.writing, []
+                        Resource Resources.agile, []
+                        Resource Resources.artificial_intelligence, []
+                        Resource Resources.cloud, []
+                        Resource Resources.communication, []
+                        Resource Resources.docker, []
+                        Resource Resources.fsharp,
+                        [
+                            "study: [choice, computation expressions]", []
+                            "organize youtube playlists", []
+                        ]
+                        Resource Resources.linux, []
+                        Resource Resources.music, []
+                        Resource Resources.rust, []
+                        Resource Resources.vim, []
+                        Resource Resources.windows, []
+                    ]
+                    |> transformTreeData Consts.testDayStart
+                RenderLaneTests =
+                    {|
+                        Task =
+                            { Task.Default with
                                 Scheduling =
                                     Recurrency
-                                        (Fixed [ Weekly DayOfWeek.Monday
-                                                 Weekly DayOfWeek.Tuesday
-                                                 Weekly DayOfWeek.Wednesday
-                                                 Weekly DayOfWeek.Thursday
-                                                 Weekly DayOfWeek.Friday ])
-                                PendingAfter = Some(flukeTime 19 00) }
-                      Position =
-                          { Date = flukeDate 2020 Month.August 26
-                            Time = Consts.testDayStart }
-                      Expected =
-                          [ flukeDate 2020 Month.August 25, Disabled
-                            flukeDate 2020 Month.August 26, Suggested
-                            flukeDate 2020 Month.August 27, Pending ]
-                      Events = [] |}
-                   |> createRenderLaneTestData
-               SortLanesTests =
-
-                   {| Position =
-                          { Date = flukeDate 2020 Month.March 10
-                            Time = flukeTime 14 00 }
-                      Data =
-                          [ { Task.Default with
-                                  Name = "01"
-                                  Scheduling = Manual WithSuggestion },
-                            []
-
-                            { Task.Default with
-                                  Name = "02"
-                                  Scheduling = Manual WithSuggestion },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
-                              TempStatusEntry(flukeDate 2020 Month.March 08, Postponed None) ]
-
-                            { Task.Default with
-                                  Name = "03"
-                                  Scheduling = Manual WithoutSuggestion },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 09, ManualPending) ]
-
-                            { Task.Default with
-                                  Name = "04"
-                                  Scheduling = Recurrency(Offset(Days 1))
-                                  PendingAfter = flukeTime 20 00 |> Some },
-                            []
-
-                            { Task.Default with
-                                  Name = "05"
-                                  Scheduling = Manual WithoutSuggestion },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 10, ManualPending) ]
-
-                            { Task.Default with
-                                  Name = "06"
-                                  Scheduling = Manual WithoutSuggestion },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 04, Postponed None)
-                              TempStatusEntry(flukeDate 2020 Month.March 06, Dismissed) ]
-
-                            { Task.Default with
-                                  Name = "07"
-                                  Scheduling = Recurrency(Offset(Days 4)) },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 08, Completed) ]
-
-                            { Task.Default with
-                                  Name = "08"
-                                  Scheduling = Recurrency(Offset(Days 2)) },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 10, Completed) ]
-
-                            { Task.Default with
-                                  Name = "09"
-                                  Scheduling = Recurrency(Offset(Days 2)) },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 10, Dismissed) ]
-
-                            { Task.Default with
-                                  Name = "10"
-                                  Scheduling = Recurrency(Offset(Days 2)) },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 10, Postponed None) ]
-
-                            { Task.Default with
-                                  Name = "11"
-                                  Scheduling = Recurrency(Offset(Days 1)) },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 10, Postponed(flukeTime 13 00 |> Some)) ]
-
-                            { Task.Default with
-                                  Name = "12"
-                                  Scheduling = Manual WithoutSuggestion },
-                            []
-
-                            { Task.Default with
-                                  Name = "13"
-                                  Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Tuesday ]) },
-                            []
-
-                            { Task.Default with
-                                  Name = "14"
-                                  Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Wednesday ]) },
-                            []
-
-                            { Task.Default with
-                                  Name = "15"
-                                  Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Friday ]) },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 07, Postponed None)
-                              TempStatusEntry(flukeDate 2020 Month.March 09, Dismissed) ]
-
-                            { Task.Default with
-                                  Name = "16"
-                                  Scheduling = Recurrency(Offset(Days 1))
-                                  MissedAfter = (flukeTime 13 00 |> Some) },
-                            []
-
-                            { Task.Default with
-                                  Name = "17"
-                                  Scheduling = Recurrency(Offset(Days 1)) },
-                            [ TempStatusEntry(flukeDate 2020 Month.March 10, Postponed(flukeTime 15 00 |> Some)) ]
-
-                            { Task.Default with
-                                  Name = "18"
-                                  Scheduling = Recurrency(Offset(Days 1)) },
-                            [] ]
-                      Expected =
-                          [ "16"
-                            "05"
-                            "03"
-                            "11"
-                            "13"
-                            "18"
-                            "17"
-                            "04"
-                            "01"
-                            "02"
-                            "10"
-                            "08"
-                            "09"
-                            "06"
-                            "07"
-                            "12"
-                            "14"
-                            "15" ] |}
-
-                   |> createSortLanesTestData
-
+                                        (Fixed [
+                                            Weekly DayOfWeek.Monday
+                                            Weekly DayOfWeek.Tuesday
+                                            Weekly DayOfWeek.Wednesday
+                                            Weekly DayOfWeek.Thursday
+                                            Weekly DayOfWeek.Friday
+                                         ])
+                                PendingAfter = Some(flukeTime 19 00)
+                            }
+                        Position =
+                            {
+                                Date = flukeDate 2020 Month.August 26
+                                Time = Consts.testDayStart
+                            }
+                        Expected =
+                            [
+                                flukeDate 2020 Month.August 25, Disabled
+                                flukeDate 2020 Month.August 26, Suggested
+                                flukeDate 2020 Month.August 27, Pending
+                            ]
+                        Events = []
                     |}
+                    |> createRenderLaneTestData
+                SortLanesTests =
+
+                    {|
+                        Position =
+                            {
+                                Date = flukeDate 2020 Month.March 10
+                                Time = flukeTime 14 00
+                            }
+                        Data =
+                            [
+                                { Task.Default with
+                                    Name = TaskName "01"
+                                    Scheduling = Manual WithSuggestion
+                                },
+                                []
+
+                                { Task.Default with
+                                    Name = TaskName "02"
+                                    Scheduling = Manual WithSuggestion
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
+                                    DslStatusEntry(flukeDate 2020 Month.March 08, Postponed None)
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "03"
+                                    Scheduling = Manual WithoutSuggestion
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 09, ManualPending)
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "04"
+                                    Scheduling = Recurrency(Offset(Days 1))
+                                    PendingAfter = flukeTime 20 00 |> Some
+                                },
+                                []
+
+                                { Task.Default with
+                                    Name = TaskName "05"
+                                    Scheduling = Manual WithoutSuggestion
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 10, ManualPending)
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "06"
+                                    Scheduling = Manual WithoutSuggestion
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 04, Postponed None)
+                                    DslStatusEntry(flukeDate 2020 Month.March 06, Dismissed)
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "07"
+                                    Scheduling = Recurrency(Offset(Days 4))
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 08, Completed)
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "08"
+                                    Scheduling = Recurrency(Offset(Days 2))
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 10, Completed)
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "09"
+                                    Scheduling = Recurrency(Offset(Days 2))
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 10, Dismissed)
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "10"
+                                    Scheduling = Recurrency(Offset(Days 2))
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "11"
+                                    Scheduling = Recurrency(Offset(Days 1))
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed(flukeTime 13 00 |> Some))
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "12"
+                                    Scheduling = Manual WithoutSuggestion
+                                },
+                                []
+
+                                { Task.Default with
+                                    Name = TaskName "13"
+                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Tuesday ])
+                                },
+                                []
+
+                                { Task.Default with
+                                    Name = TaskName "14"
+                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Wednesday ])
+                                },
+                                []
+
+                                { Task.Default with
+                                    Name = TaskName "15"
+                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Friday ])
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 07, Postponed None)
+                                    DslStatusEntry(flukeDate 2020 Month.March 09, Dismissed)
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "16"
+                                    Scheduling = Recurrency(Offset(Days 1))
+                                    MissedAfter = (flukeTime 13 00 |> Some)
+                                },
+                                []
+
+                                { Task.Default with
+                                    Name = TaskName "17"
+                                    Scheduling = Recurrency(Offset(Days 1))
+                                },
+                                [
+                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed(flukeTime 15 00 |> Some))
+                                ]
+
+                                { Task.Default with
+                                    Name = TaskName "18"
+                                    Scheduling = Recurrency(Offset(Days 1))
+                                },
+                                []
+                            ]
+                        Expected =
+                            [
+                                "16"
+                                "05"
+                                "03"
+                                "11"
+                                "13"
+                                "18"
+                                "17"
+                                "04"
+                                "01"
+                                "02"
+                                "10"
+                                "08"
+                                "09"
+                                "06"
+                                "07"
+                                "12"
+                                "14"
+                                "15"
+                            ]
+                    |}
+
+                    |> createSortLanesTestData
+
+
+
+
+
+            |}

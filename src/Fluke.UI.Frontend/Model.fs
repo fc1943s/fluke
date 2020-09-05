@@ -20,7 +20,7 @@ module Model =
         | Information
         | None
 
-    type ActiveSession = ActiveSession of taskName:string * duration:float
+    type ActiveSession = ActiveSession of taskName:string * duration:Minute * totalDuration:Minute * totalBreakDuration:Minute
 
     type Information with
         member this.Color =
