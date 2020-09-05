@@ -26,6 +26,7 @@ module Model =
         | Area of Area
         | Resource of Resource
         | Archive of Information
+
     and InformationName = InformationName of name: string
 
 
@@ -37,7 +38,7 @@ module Model =
             Day: Day
         }
 
-        override this.ToString() =
+        override this.ToString () =
             let (Year year) = this.Year
             let (Day day) = this.Day
             sprintf "%02i-%02i-%02i" year (int this.Month) day
@@ -68,7 +69,7 @@ module Model =
             Minute: Minute
         }
 
-        override this.ToString() =
+        override this.ToString () =
             let (Hour hour) = this.Hour
             let (Minute minute) = this.Minute
             sprintf "%02f:%02f" hour minute
@@ -86,7 +87,7 @@ module Model =
             Time: FlukeTime
         }
 
-        override this.ToString() = sprintf "%A %A" this.Date this.Time
+        override this.ToString () = sprintf "%A %A" this.Date this.Time
 
 
     type Task =
@@ -336,12 +337,12 @@ module Model =
 
         member this.DateTime =
             let Year year, Day day = this.Year, this.Day
-            DateTime(year, int this.Month, day, 12, 0, 0)
+            DateTime (year, int this.Month, day, 12, 0, 0)
 
-        static member inline FromDateTime(date: DateTime) =
+        static member inline FromDateTime (date: DateTime) =
             {
                 Year = Year date.Year
-                Month = Enum.Parse(typeof<Month>, string date.Month) :?> Month
+                Month = Enum.Parse (typeof<Month>, string date.Month) :?> Month
                 Day = Day date.Day
             }
 
@@ -354,7 +355,7 @@ module Model =
 
     type FlukeTime with
 
-        static member inline FromDateTime(date: DateTime) =
+        static member inline FromDateTime (date: DateTime) =
             {
                 Hour = float date.Hour |> Hour
                 Minute = float date.Minute |> Minute
@@ -365,7 +366,11 @@ module Model =
             || this.Hour = time.Hour
                && this.Minute >= time.Minute
 
-    let flukeTime hour minute = { Hour = Hour (float hour); Minute = Minute (float minute) }
+    let flukeTime hour minute =
+        {
+            Hour = Hour (float hour)
+            Minute = Minute (float minute)
+        }
 
     type FlukeDateTime with
 
@@ -373,9 +378,9 @@ module Model =
             let Year year, Day day, Hour hour, Minute minute =
                 this.Date.Year, this.Date.Day, this.Time.Hour, this.Time.Minute
 
-            DateTime(year, int this.Date.Month, day, int hour, int minute, 0)
+            DateTime (year, int this.Date.Month, day, int hour, int minute, 0)
 
-        static member inline FromDateTime(date: DateTime) =
+        static member inline FromDateTime (date: DateTime) =
             {
                 Date = FlukeDate.FromDateTime date
                 Time = FlukeTime.FromDateTime date
@@ -411,8 +416,7 @@ module Model =
             | Resource { Name = ResourceName name } -> InformationName name
             | Archive information ->
                 let (InformationName name) = information.Name
-                sprintf "[%s]" name
-                |> InformationName
+                sprintf "[%s]" name |> InformationName
 
         member this.KindName =
             match this with
@@ -454,7 +458,7 @@ module Model =
 
     let ofAttachmentComment =
         function
-        | Attachment.Comment (user, comment) -> Some(user, comment)
+        | Attachment.Comment (user, comment) -> Some (user, comment)
         | _ -> None
 
     //    let ofUserComment =
@@ -504,33 +508,15 @@ module Model =
             |> FlukeDate.FromDateTime
         |> DateId
 
-    let taskId (task: Task) = TaskId(task.Information.Name, task.Name)
+    let taskId (task: Task) =
+        TaskId (task.Information.Name, task.Name)
 
     let createTaskStatusEntries task cellStatusEntries =
         cellStatusEntries
         |> List.filter (fun (CellStatusEntry (user, task', moment, manualCellStatus)) -> task' = task)
-        |> List.map (fun (CellStatusEntry (user, task', moment, entries)) -> TaskStatusEntry(user, moment, entries))
+        |> List.map (fun (CellStatusEntry (user, task', moment, entries)) -> TaskStatusEntry (user, moment, entries))
         |> List.sortBy (fun (TaskStatusEntry (user, date, _)) -> date)
 
-    let createCellComment dayStart task moment user (comment: string) =
-        let cellInteraction =
-            Attachment.Comment(user, Comment comment)
-            |> CellInteraction.Attachment
-
-        let cellAddress =
-            {
-                Task = task
-                DateId = dateId dayStart moment
-            }
-
-        let interaction =
-            Interaction.Cell(cellAddress, cellInteraction)
-
-        let userInteraction =
-            UserInteraction(user, moment, interaction)
-
-        userInteraction
-//        CellComment (task, moment, UserComment (user, comment))
 
 
 
@@ -560,7 +546,7 @@ module Rendering =
         let maxDate =
             dates
             |> Array.last
-            |> fun x -> x.AddDays(float paddingRight)
+            |> fun x -> x.AddDays (float paddingRight)
 
         dateLoop minDate maxDate
         |> Seq.map FlukeDate.FromDateTime
@@ -592,7 +578,7 @@ module Rendering =
             |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
                 match interaction with
                 | Interaction.Cell ({ DateId = (DateId referenceDay) }, CellInteraction.StatusChange statusChange) ->
-                    Some(dateId dayStart moment, (user, moment, convertManualCellStatus statusChange))
+                    Some (dateId dayStart moment, (user, moment, convertManualCellStatus statusChange))
                 | _ -> None)
             |> Map.ofList
 
@@ -662,7 +648,7 @@ module Rendering =
                             match manualCellStatus, group with
                             | Postponed (Some until), Today when position.GreaterEqualThan dayStart dateId until ->
                                 Pending
-                            | _ -> UserStatus(user, manualCellStatus)
+                            | _ -> UserStatus (user, manualCellStatus)
 
                         StatusCell event, renderState
 
@@ -681,7 +667,7 @@ module Rendering =
                             | DayMatch, AfterToday -> StatusCell Pending, Counting 1
                             | WaitingEvent, AfterToday -> StatusCell Pending, Counting 1
 
-                            | Counting count, _ -> EmptyCell, Counting(count + 1)
+                            | Counting count, _ -> EmptyCell, Counting (count + 1)
 
                         match taskState.Task.Scheduling with
                         | Recurrency (Offset offset) ->
@@ -759,7 +745,7 @@ module Rendering =
                      },
                      cellStatus))
 
-        OldLane(taskState, cells)
+        OldLane (taskState, cells)
 
 
 
@@ -767,7 +753,7 @@ module Sorting =
     open Model
 
     let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
-        let result = List<Task>()
+        let result = List<Task> ()
 
         let taskOrderList =
             taskOrderList
@@ -778,7 +764,7 @@ module Sorting =
 
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | TaskOrderPriority.First, None -> result.Insert(0, task)
+            | TaskOrderPriority.First, None -> result.Insert (0, task)
             | TaskOrderPriority.Last, None -> result.Add task
             | TaskOrderPriority.LessThan lessThan, None ->
                 match result |> Seq.tryFindIndexBack ((=) lessThan) with
@@ -787,13 +773,13 @@ module Sorting =
                         task
                         lessThan
                     }
-                    |> Seq.iter (fun x -> result.Insert(0, x))
-                | Some i -> result.Insert(i + 1, task)
+                    |> Seq.iter (fun x -> result.Insert (0, x))
+                | Some i -> result.Insert (i + 1, task)
             | _ -> ()
 
         for { Priority = priority; Task = task } in taskOrderList do
             match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | TaskOrderPriority.First, None -> result.Insert(0, task)
+            | TaskOrderPriority.First, None -> result.Insert (0, task)
             | TaskOrderPriority.Last, None -> result.Add task
             | _ -> ()
 
@@ -954,7 +940,7 @@ module Sorting =
             |> List.map (fun orderFn -> orderFn (status, taskState))
             |> List.indexed
             |> List.choose (function
-                | groupIndex, Some sortType -> Some(groupIndex, sortType)
+                | groupIndex, Some sortType -> Some (groupIndex, sortType)
                 | _, None -> None)
             |> List.head
 

@@ -166,40 +166,6 @@ module TempData =
             | TaskCreated of information: Information * name: TaskName
             | TaskRenamed of taskId: HashedTaskId * newName: TaskName
 
-        let eventsFromStatusEntries user (entries: (FlukeDate * (Task * ManualCellStatus) list) list) =
-            let oldEvents =
-                entries
-                |> List.collect (fun (date, events) ->
-                    events
-                    |> List.map (fun (task, manualCellStatus) ->
-                        let cellStatusChange =
-                            match manualCellStatus with
-                            | Completed -> CellStatusChange.Complete
-                            | Dismissed -> CellStatusChange.Dismiss
-                            | Postponed until -> CellStatusChange.Postpone until
-                            | ManualPending -> CellStatusChange.Schedule
-
-                        let cellInteraction =
-                            CellInteraction.StatusChange cellStatusChange
-
-                        let moment = { Date = date; Time = Consts.dayStart }
-
-                        let cellAddress =
-                            {
-                                Task = task
-                                DateId = dateId Consts.dayStart moment
-                            }
-
-                        let interaction =
-                            Interaction.Cell(cellAddress, cellInteraction)
-
-
-                        let userInteraction =
-                            UserInteraction(user, moment, interaction)
-
-                        userInteraction))
-
-            oldEvents
 
         let eventsFromCellComments user = ()
 
@@ -229,7 +195,7 @@ module TempData =
                         TaskMap =
                             let taskId = taskId task
                             let dateId = dateId state.DayStart moment
-                            let newStatus = UserStatus(user, Completed)
+                            let newStatus = UserStatus (user, Completed)
 
                             let cellMap =
                                 state.TaskMap
@@ -248,9 +214,9 @@ module TempData =
                                                                     |> Option.defaultValue Map.empty
                                                                     |> Map.tryFind (dateId state.DayStart moment)
                                                                     |> Option.defaultValue Disabled
-                                                                    |> (=) Missed -> CellCompleted(user, task, moment)
+                                                                    |> (=) Missed -> CellCompleted (user, task, moment)
 
-                    | CompleteCell (user, task, eventDate), state -> CellCompleted(user, task, eventDate)
+                    | CompleteCell (user, task, eventDate), state -> CellCompleted (user, task, eventDate)
 
                     | _ -> ()
                 ]
@@ -283,7 +249,7 @@ module TempData =
         oldTaskOrderList @ newTaskOrderList
 
 
-    type TempTaskEvent =
+    type DslTask =
         | DslTaskComment of comment: string
         | DslSession of start: FlukeDateTime
         | DslPriority of priority: Priority
@@ -299,7 +265,45 @@ module TempData =
         | DslSetMissedAfter of start: FlukeTime
         | DslSetDuration of duration: int
 
-    let getCellStatusChangeUserInteraction dayStart user task date manualCellStatus =
+    let createTaskCommentInteraction user moment task comment =
+        let interaction =
+            Interaction.Task (task, TaskInteraction.Attachment (Attachment.Comment (user, Comment comment)))
+
+        let userInteraction =
+            UserInteraction (user, moment, interaction)
+
+        userInteraction
+
+    let createInformationCommentInteraction user moment information comment =
+        let interaction =
+            Interaction.Information
+                (information, InformationInteraction.Attachment (Attachment.Comment (user, Comment comment)))
+
+        let userInteraction =
+            UserInteraction (user, moment, interaction)
+
+        userInteraction
+
+    let createCellCommentInteraction dayStart task moment user comment =
+        let cellInteraction =
+            Attachment.Comment (user, Comment comment)
+            |> CellInteraction.Attachment
+
+        let cellAddress =
+            {
+                Task = task
+                DateId = dateId dayStart moment
+            }
+
+        let interaction =
+            Interaction.Cell (cellAddress, cellInteraction)
+
+        let userInteraction =
+            UserInteraction (user, moment, interaction)
+
+        userInteraction
+
+    let createCellStatusChangeInteraction dayStart user task date manualCellStatus =
         let cellStatusChange =
             match manualCellStatus with
             | Completed -> CellStatusChange.Complete
@@ -310,19 +314,29 @@ module TempData =
         let cellInteraction =
             CellInteraction.StatusChange cellStatusChange
 
-        let cellAddress = { Task = task; DateId = DateId date }
+        let dateId = DateId date
+
+        let cellAddress = { Task = task; DateId = dateId }
 
         let interaction =
-            Interaction.Cell(cellAddress, cellInteraction)
+            Interaction.Cell (cellAddress, cellInteraction)
 
         let moment = { Date = date; Time = dayStart }
 
         let userInteraction =
-            UserInteraction(user, moment, interaction)
+            UserInteraction (user, moment, interaction)
 
         userInteraction
 
-    let applyTaskEvents dayStart task (events: (TempTaskEvent * User) list) =
+    let createCellStatusChangeInteractions dayStart user (entries: (FlukeDate * (Task * ManualCellStatus) list) list) =
+        entries
+        |> List.collect (fun (date, events) ->
+            events
+            |> List.map (fun (task, manualCellStatus) ->
+                createCellStatusChangeInteraction dayStart user task date manualCellStatus))
+
+
+    let applyTaskEvents dayStart task (events: (DslTask * User) list) =
         let defaultTaskState =
             {
                 Task = Task.Default
@@ -339,10 +353,10 @@ module TempData =
             ||> List.fold (fun taskState (event, user) -> // TODO: Why start?
                     match event with
                     | DslTaskInteraction taskInteraction ->
-                        let interaction = Interaction.Task(task, taskInteraction)
+                        let interaction = Interaction.Task (task, taskInteraction)
 
                         let userInteraction =
-                            UserInteraction(user, moment, interaction)
+                            UserInteraction (user, moment, interaction)
 
                         { taskState with
                             UserInteractions = taskState.UserInteractions @ [ userInteraction ]
@@ -350,10 +364,10 @@ module TempData =
                     | DslTaskComment comment ->
                         let interaction =
                             Interaction.Task
-                                (task, TaskInteraction.Attachment(Attachment.Comment(user, Comment comment)))
+                                (task, TaskInteraction.Attachment (Attachment.Comment (user, Comment comment)))
 
                         let userInteraction =
-                            UserInteraction(user, moment, interaction)
+                            UserInteraction (user, moment, interaction)
 
                         { taskState with
                             UserInteractions = taskState.UserInteractions @ [ userInteraction ]
@@ -362,10 +376,10 @@ module TempData =
                         let interaction =
                             Interaction.Cell
                                 ({ Task = task; DateId = DateId date },
-                                 CellInteraction.Attachment(Attachment.Comment(user, Comment comment)))
+                                 CellInteraction.Attachment (Attachment.Comment (user, Comment comment)))
 
                         let userInteraction =
-                            UserInteraction(user, moment, interaction)
+                            UserInteraction (user, moment, interaction)
 
                         { taskState with
                             UserInteractions = taskState.UserInteractions @ [ userInteraction ]
@@ -382,7 +396,7 @@ module TempData =
                         }
                     | DslStatusEntry (date, manualCellStatus) ->
                         let userInteraction =
-                            getCellStatusChangeUserInteraction Consts.dayStart user task date manualCellStatus
+                            createCellStatusChangeInteraction Consts.dayStart user task date manualCellStatus
 
                         { taskState with
                             UserInteractions = taskState.UserInteractions @ [ userInteraction ]
@@ -429,7 +443,7 @@ module TempData =
                             { taskState with
                                 Task =
                                     { taskState.Task with
-                                        Duration = Some(Minute(float minutes))
+                                        Duration = Some (Minute (float minutes))
                                     }
                             })
 
@@ -446,7 +460,9 @@ module TempData =
             taskTree
             |> List.collect (fun (information, tasks) ->
                 tasks
-                |> List.map (fun (taskName, events: (TempTaskEvent * User) list) ->
+                |> List.map (fun (taskName, events: (DslTask * User) list) ->
+                    printfn "TASKNAME %A" taskName
+
                     let task =
                         { Task.Default with
                             Name = TaskName taskName
@@ -474,7 +490,7 @@ module TempData =
         |}
 
     // How the HELL will I rewrite this? 🤦
-    let transformTasks currentUser rawTreeData getTaskLinks =
+    let treeDataFactory taskContainerFactory dslTree =
         let mutable taskStateMap: Map<TaskName, TaskState> = Map.empty
         let mutable taskStateList = []
 
@@ -483,23 +499,33 @@ module TempData =
                                       TaskOrderList: TaskOrderEntry list
                                       TaskStateList: TaskState list |} option = None
 
-        let getTask name =
-            taskStateMap
-            |> Map.tryFind (TaskName name)
-            |> Option.map (fun x -> x.Task)
-            |> Option.defaultValue Task.Default
+        let getTask fail name =
+            let taskState =
+                taskStateMap |> Map.tryFind (TaskName name)
 
-        for _ in [ 0; 1 ] do
+            let result =
+                match taskState, fail with
+                | Some taskState, _ when taskState.Task <> Task.Default -> taskState.Task
+                | None, false -> Task.Default
+                | _ -> failwithf "error searching task %A" name
+
+            printfn "getTask %A; result: %A" name result.Name
+            result
+
+        for n in [ 0; 1 ] do
+            printfn "loop %A" n
+            printfn "taskStateMap %A" taskStateMap
+
             let treeData =
-                rawTreeData getTask
-                |> treeDataWithUser currentUser
+                dslTree (getTask (n = 1))
                 |> transformTreeData Consts.dayStart
-            //        let taskList = treeData.TaskStateList |> List.map (fun x -> x.Task)
-            let taskStateList = treeData.TaskStateList
+
+            printfn "treeData %A" treeData
 
             let duplicated =
-                taskStateList
-                |> List.map (fun x -> x.Task.Name)
+                treeData.TaskStateList
+                |> List.filter (fun taskState -> taskState.Task <> Task.Default)
+                |> List.map (fun taskState -> taskState.Task.Name)
                 |> List.groupBy id
                 |> List.filter
                     (snd
@@ -507,19 +533,19 @@ module TempData =
                      >> fun n -> n > 1)
                 |> List.map fst
 
-            if not duplicated.IsEmpty
-            then failwithf "Duplicated task names: %A" duplicated
+            if not duplicated.IsEmpty then
+                failwithf "Duplicated task names: %A" duplicated
 
             taskStateMap <-
-                taskStateList
-                |> List.map (fun x -> x.Task.Name, x)
+                treeData.TaskStateList
+                |> List.map (fun taskState -> taskState.Task.Name, taskState)
                 |> Map.ofList
 
             treeDataMaybe <- Some treeData
 
 
 
-        let tasks = getTaskLinks getTask
+        let tasks = taskContainerFactory (getTask true)
 
         let taskOrderList = getTaskOrderList [] taskStateList []
 
@@ -542,7 +568,7 @@ module TempData =
 
         let createRenderLaneTestData (testData: {| Position: FlukeDateTime
                                                    Expected: (FlukeDate * CellStatus) list
-                                                   Events: TempTaskEvent list
+                                                   Events: DslTask list
                                                    Task: Task |}) =
             let eventsWithUser =
                 testData.Events
@@ -566,7 +592,7 @@ module TempData =
 
 
         let createSortLanesTestData (testData: {| Position: FlukeDateTime
-                                                  Data: (Task * TempTaskEvent list) list
+                                                  Data: (Task * DslTask list) list
                                                   Expected: string list |}) =
             let taskStateList =
                 testData.Data
@@ -662,7 +688,7 @@ module TempData =
                                             Weekly DayOfWeek.Thursday
                                             Weekly DayOfWeek.Friday
                                          ])
-                                PendingAfter = Some(flukeTime 19 00)
+                                PendingAfter = Some (flukeTime 19 00)
                             }
                         Position =
                             {
@@ -699,8 +725,8 @@ module TempData =
                                     Scheduling = Manual WithSuggestion
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
-                                    DslStatusEntry(flukeDate 2020 Month.March 08, Postponed None)
+                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                                    DslStatusEntry (flukeDate 2020 Month.March 08, Postponed None)
                                 ]
 
                                 { Task.Default with
@@ -708,12 +734,12 @@ module TempData =
                                     Scheduling = Manual WithoutSuggestion
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 09, ManualPending)
+                                    DslStatusEntry (flukeDate 2020 Month.March 09, ManualPending)
                                 ]
 
                                 { Task.Default with
                                     Name = TaskName "04"
-                                    Scheduling = Recurrency(Offset(Days 1))
+                                    Scheduling = Recurrency (Offset (Days 1))
                                     PendingAfter = flukeTime 20 00 |> Some
                                 },
                                 []
@@ -723,7 +749,7 @@ module TempData =
                                     Scheduling = Manual WithoutSuggestion
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 10, ManualPending)
+                                    DslStatusEntry (flukeDate 2020 Month.March 10, ManualPending)
                                 ]
 
                                 { Task.Default with
@@ -731,48 +757,48 @@ module TempData =
                                     Scheduling = Manual WithoutSuggestion
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 04, Postponed None)
-                                    DslStatusEntry(flukeDate 2020 Month.March 06, Dismissed)
+                                    DslStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
+                                    DslStatusEntry (flukeDate 2020 Month.March 06, Dismissed)
                                 ]
 
                                 { Task.Default with
                                     Name = TaskName "07"
-                                    Scheduling = Recurrency(Offset(Days 4))
+                                    Scheduling = Recurrency (Offset (Days 4))
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 08, Completed)
+                                    DslStatusEntry (flukeDate 2020 Month.March 08, Completed)
                                 ]
 
                                 { Task.Default with
                                     Name = TaskName "08"
-                                    Scheduling = Recurrency(Offset(Days 2))
+                                    Scheduling = Recurrency (Offset (Days 2))
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 10, Completed)
+                                    DslStatusEntry (flukeDate 2020 Month.March 10, Completed)
                                 ]
 
                                 { Task.Default with
                                     Name = TaskName "09"
-                                    Scheduling = Recurrency(Offset(Days 2))
+                                    Scheduling = Recurrency (Offset (Days 2))
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 10, Dismissed)
+                                    DslStatusEntry (flukeDate 2020 Month.March 10, Dismissed)
                                 ]
 
                                 { Task.Default with
                                     Name = TaskName "10"
-                                    Scheduling = Recurrency(Offset(Days 2))
+                                    Scheduling = Recurrency (Offset (Days 2))
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
+                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                                 ]
 
                                 { Task.Default with
                                     Name = TaskName "11"
-                                    Scheduling = Recurrency(Offset(Days 1))
+                                    Scheduling = Recurrency (Offset (Days 1))
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed(flukeTime 13 00 |> Some))
+                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some))
                                 ]
 
                                 { Task.Default with
@@ -783,43 +809,43 @@ module TempData =
 
                                 { Task.Default with
                                     Name = TaskName "13"
-                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Tuesday ])
+                                    Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ])
                                 },
                                 []
 
                                 { Task.Default with
                                     Name = TaskName "14"
-                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Wednesday ])
+                                    Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ])
                                 },
                                 []
 
                                 { Task.Default with
                                     Name = TaskName "15"
-                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Friday ])
+                                    Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ])
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 07, Postponed None)
-                                    DslStatusEntry(flukeDate 2020 Month.March 09, Dismissed)
+                                    DslStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
+                                    DslStatusEntry (flukeDate 2020 Month.March 09, Dismissed)
                                 ]
 
                                 { Task.Default with
                                     Name = TaskName "16"
-                                    Scheduling = Recurrency(Offset(Days 1))
+                                    Scheduling = Recurrency (Offset (Days 1))
                                     MissedAfter = (flukeTime 13 00 |> Some)
                                 },
                                 []
 
                                 { Task.Default with
                                     Name = TaskName "17"
-                                    Scheduling = Recurrency(Offset(Days 1))
+                                    Scheduling = Recurrency (Offset (Days 1))
                                 },
                                 [
-                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed(flukeTime 15 00 |> Some))
+                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed (flukeTime 15 00 |> Some))
                                 ]
 
                                 { Task.Default with
                                     Name = TaskName "18"
-                                    Scheduling = Recurrency(Offset(Days 1))
+                                    Scheduling = Recurrency (Offset (Days 1))
                                 },
                                 []
                             ]
@@ -847,6 +873,14 @@ module TempData =
                     |}
 
                     |> createSortLanesTestData
+
+
+
+
+
+
+
+
 
 
 

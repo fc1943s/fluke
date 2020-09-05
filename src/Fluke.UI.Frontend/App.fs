@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend
 
-open Fable.React
 open Feliz
 open Feliz.Recoil
 open Feliz.Router
@@ -9,27 +8,23 @@ open Fluke.UI.Frontend
 
 
 module App =
-    let router = React.memo (fun () ->
-        React.router [
-            router.children [
-                Components.MainComponent.render ()
-            ]
-        ]
-    )
-    let appMain = React.memo (fun () ->
+    let router =
+        React.memo (fun () ->
+            React.router
+                [
+                    router.children [ Components.MainComponent.render () ]
+                ])
 
-        Recoil.Profiling.addTimestamp "appMain.render"
-        Recoil.root [
-            root.localStorage (fun hydrater ->
-                hydrater.setAtom Recoil.Atoms.debug
-                hydrater.setAtom Recoil.Atoms.treeName
-            )
+    let appMain =
+        React.memo (fun () ->
 
-            root.children [
-                router ()
-            ]
-        ]
-    )
+            Recoil.Profiling.addTimestamp "appMain.render"
+            Recoil.root [
+                root.localStorage (fun hydrater ->
+                    hydrater.setAtom Recoil.Atoms.debug
+                    hydrater.setAtom Recoil.Atoms.treeName)
+
+                root.children [ router () ]
+            ])
 
     ReactDOM.render (appMain (), document.getElementById "app")
-

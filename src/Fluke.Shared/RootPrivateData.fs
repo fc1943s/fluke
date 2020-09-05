@@ -4,6 +4,7 @@ namespace Fluke.Shared
 open FSharpPlus
 open Fluke.Shared
 open Fluke.Shared.PrivateData
+open Fluke.Shared.SharedPrivateData.fc1943s
 open Suigetsu.Core
 
 
@@ -44,22 +45,22 @@ module RootPrivateData =
         match tempDataType with
         | TempPrivate ->
             SharedPrivateData.Data.informationCommentInteractions
-            @ PrivateData.InformationComments.informationCommentInteractions
+            @ InformationCommentInteractions.informationCommentInteractions
         | TempPublic -> []
         | Test -> []
 
     let cellComments =
         match tempDataType with
         | TempPrivate ->
-            SharedPrivateData.Data.cellComments
-            @ PrivateData.CellComments.cellComments
-            @ PrivateData.Journal.journalComments
+            SharedPrivateData.Data.cellCommentInteractions
+            @ PrivateData.CellCommentInteractions.cellCommentInteractions
+            @ PrivateData.Journal.cellCommentInteractions
         | TempPublic -> []
         | Test -> []
 
     let taskCommentInteractions =
         match tempDataType with
-        | TempPrivate -> PrivateData.TaskComments.taskCommentInteractions
+        | TempPrivate -> PrivateData.TaskCommentInteractions.taskCommentInteractions
         | TempPublic -> []
         | Test -> []
 
@@ -71,13 +72,13 @@ module RootPrivateData =
 
     let cellStatusEntries =
         match tempDataType with
-        | TempPrivate -> PrivateData.CellStatusEntries.cellStatusEntries
+        | TempPrivate -> PrivateData.CellStatusChangeInteractions.cellStatusChangeInteractions
         | TempPublic -> []
         | Test -> []
 
     let sharedCellStatusEntries =
         match tempDataType with
-        | TempPrivate -> SharedPrivateData.Data.cellStatusEntries
+        | TempPrivate -> SharedPrivateData.Data.cellStatusChangeInteractions
         | TempPublic -> []
         | Test -> []
 
@@ -92,14 +93,16 @@ module RootPrivateData =
         | TempPrivate -> SharedPrivateData.SharedTasks.treeData
         | TempPublic ->
             {| treeData with
-                   TaskStateList = []
-                   InformationList = []
-                   TaskOrderList = [] |}
+                TaskStateList = []
+                InformationList = []
+                TaskOrderList = []
+            |}
         | Test ->
             {| treeData with
-                   TaskStateList = []
-                   InformationList = []
-                   TaskOrderList = [] |}
+                TaskStateList = []
+                InformationList = []
+                TaskOrderList = []
+            |}
 
     let currentUser =
         PrivateData.PrivateData.Consts.currentUser

@@ -100,7 +100,7 @@ module NavBarComponent =
                                 CustomClass "switch is-small is-dark"
                                 Props [
                                     Checked isChecked
-                                    OnChange(fun _ -> ())
+                                    OnChange (fun _ -> ())
                                 ]
                             ]
 
@@ -187,7 +187,7 @@ module TooltipPopupComponent =
                                     [
                                         comments
                                         |> List.map (fun (user, (Comment comment)) ->
-                                            sprintf "%s:%s%s" user.Username Environment.NewLine (comment.Trim()))
+                                            sprintf "%s:%s%s" user.Username Environment.NewLine (comment.Trim ()))
                                         |> List.map ((+) Environment.NewLine)
                                         |> String.concat (Environment.NewLine + Environment.NewLine)
                                         |> fun text ->
@@ -228,8 +228,10 @@ module PanelsComponent =
                         Html.span [
                             prop.classes [
                                 Css.cellSquare
-                                if isToday then Css.todayHeader
-                                if hasSelection then Css.selectionHighlight
+                                if isToday then
+                                    Css.todayHeader
+                                if hasSelection then
+                                    Css.selectionHighlight
                                 match (weekStart, input.Date) with
                                 | StartOfMonth -> Css.cellStartMonth
                                 | StartOfWeek -> Css.cellStartWeek
@@ -308,7 +310,12 @@ module PanelsComponent =
             let useStyles =
                 Styles.makeStyles (fun (styles: StyleCreator<{| hovered: bool |}>) _theme ->
                     {|
-                        root = styles.create (fun props -> [ if props.hovered then style.zIndex 1 ])
+                        root =
+                            styles.create (fun props ->
+                                [
+                                    if props.hovered then
+                                        style.zIndex 1
+                                ])
                         name =
                             styles.create (fun props ->
                                 [
@@ -357,7 +364,8 @@ module PanelsComponent =
                             Html.div [
                                 prop.classes [
                                     classes.name
-                                    if hasSelection then Css.selectionHighlight
+                                    if hasSelection then
+                                        Css.selectionHighlight
                                 ]
                                 prop.style [ yield! paddingLeftLevel input.Level ]
                                 prop.children [ str taskName ]
@@ -418,7 +426,12 @@ module PanelsComponent =
             let useStyles =
                 Styles.makeStyles (fun (styles: StyleCreator<{| hovered: bool |}>) _theme ->
                     {|
-                        root = styles.create (fun props -> [ if props.hovered then style.zIndex 1 ])
+                        root =
+                            styles.create (fun props ->
+                                [
+                                    if props.hovered then
+                                        style.zIndex 1
+                                ])
                         name =
                             styles.create (fun props ->
                                 [
@@ -465,8 +478,10 @@ module PanelsComponent =
                     Html.div [
                         prop.classes [
                             status.CellClass
-                            if selected then Css.cellSelected
-                            if isToday then Css.cellToday
+                            if selected then
+                                Css.cellSelected
+                            if isToday then
+                                Css.cellToday
                         ]
                         prop.onClick (fun (_event: MouseEvent) -> onCellClick ())
                         prop.children [
@@ -944,12 +959,14 @@ module MainComponent =
                 Recoil.useState Recoil.Atoms.shiftPressed
 
             let keyEvent (e: KeyboardEvent) =
-                if e.ctrlKey <> ctrlPressed then setCtrlPressed e.ctrlKey
+                if e.ctrlKey <> ctrlPressed then
+                    setCtrlPressed e.ctrlKey
 
-                if e.shiftKey <> shiftPressed then setShiftPressed e.shiftKey
+                if e.shiftKey <> shiftPressed then
+                    setShiftPressed e.shiftKey
 
-                if e.key = "Escape" && not selection.IsEmpty
-                then setSelection Map.empty
+                if e.key = "Escape" && not selection.IsEmpty then
+                    setSelection Map.empty
 
             React.useListener.onKeyDown keyEvent
             React.useListener.onKeyUp keyEvent
@@ -1048,7 +1065,7 @@ module MainComponent =
                 if not debug then
                     ()
                 else
-                    let indent n = String(' ', n)
+                    let indent n = String (' ', n)
 
                     let json =
                         Recoil.Profiling.state

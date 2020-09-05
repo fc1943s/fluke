@@ -327,12 +327,12 @@ module Tests =
                             | Choice2Of3 _ -> TimeOfDay
                             | Choice3Of3 _ -> Frequency
 
-                        let _noSorting = Choice1Of3()
-                        let sortByTimeOfDay = Choice2Of3()
-                        let sortByFrequency = Choice3Of3()
+                        let _noSorting = Choice1Of3 ()
+                        let sortByTimeOfDay = Choice2Of3 ()
+                        let sortByFrequency = Choice3Of3 ()
 
                         let testWithLaneSortingData (props: {| Sort: Choice<_, _, _>
-                                                               Data: (Task * TempTaskEvent list) list
+                                                               Data: (Task * DslTask list) list
                                                                Expected: string list
                                                                Position: FlukeDateTime |}) =
 
@@ -384,8 +384,8 @@ module Tests =
                                                 Scheduling = Manual WithSuggestion
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
-                                                DslStatusEntry(flukeDate 2020 Month.March 08, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 08, Postponed None)
                                             ]
 
                                             { Task.Default with
@@ -393,12 +393,12 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 09, ManualPending)
+                                                DslStatusEntry (flukeDate 2020 Month.March 09, ManualPending)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "04"
-                                                Scheduling = Recurrency(Offset(Days 1))
+                                                Scheduling = Recurrency (Offset (Days 1))
                                                 PendingAfter = flukeTime 20 00 |> Some
                                             },
                                             []
@@ -408,7 +408,7 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, ManualPending)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, ManualPending)
                                             ]
 
                                             { Task.Default with
@@ -416,45 +416,45 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 04, Postponed None)
-                                                DslStatusEntry(flukeDate 2020 Month.March 06, Dismissed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 06, Dismissed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "07"
-                                                Scheduling = Recurrency(Offset(Days 4))
+                                                Scheduling = Recurrency (Offset (Days 4))
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 08, Completed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 08, Completed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "08"
-                                                Scheduling = Recurrency(Offset(Days 2))
+                                                Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, Completed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, Completed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "09"
-                                                Scheduling = Recurrency(Offset(Days 2))
+                                                Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, Dismissed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, Dismissed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "10"
-                                                Scheduling = Recurrency(Offset(Days 2))
+                                                Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "11"
-                                                Scheduling = Recurrency(Offset(Days 1))
+                                                Scheduling = Recurrency (Offset (Days 1))
                                             },
                                             []
 
@@ -466,23 +466,23 @@ module Tests =
 
                                             { Task.Default with
                                                 Name = TaskName "13"
-                                                Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Tuesday ])
+                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ])
                                             },
                                             []
 
                                             { Task.Default with
                                                 Name = TaskName "14"
-                                                Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Wednesday ])
+                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ])
                                             },
                                             []
 
                                             { Task.Default with
                                                 Name = TaskName "15"
-                                                Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Friday ])
+                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ])
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 07, Postponed None)
-                                                DslStatusEntry(flukeDate 2020 Month.March 09, Dismissed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 09, Dismissed)
                                             ]
                                         ]
                                     Expected =
@@ -528,8 +528,8 @@ module Tests =
                                                 Scheduling = Manual WithSuggestion
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
-                                                DslStatusEntry(flukeDate 2020 Month.March 08, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 08, Postponed None)
                                             ]
 
                                             { Task.Default with
@@ -537,12 +537,12 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 09, ManualPending)
+                                                DslStatusEntry (flukeDate 2020 Month.March 09, ManualPending)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "04"
-                                                Scheduling = Recurrency(Offset(Days 1))
+                                                Scheduling = Recurrency (Offset (Days 1))
                                                 PendingAfter = flukeTime 20 00 |> Some
                                             },
                                             []
@@ -552,7 +552,7 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, ManualPending)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, ManualPending)
                                             ]
 
                                             { Task.Default with
@@ -560,49 +560,49 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 04, Postponed None)
-                                                DslStatusEntry(flukeDate 2020 Month.March 06, Dismissed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 06, Dismissed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "07"
-                                                Scheduling = Recurrency(Offset(Days 4))
+                                                Scheduling = Recurrency (Offset (Days 4))
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 08, Completed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 08, Completed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "08"
-                                                Scheduling = Recurrency(Offset(Days 2))
+                                                Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, Completed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, Completed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "09"
-                                                Scheduling = Recurrency(Offset(Days 2))
+                                                Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, Dismissed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, Dismissed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "10"
-                                                Scheduling = Recurrency(Offset(Days 2))
+                                                Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "11"
-                                                Scheduling = Recurrency(Offset(Days 1))
+                                                Scheduling = Recurrency (Offset (Days 1))
                                             },
                                             [
                                                 DslStatusEntry
-                                                    (flukeDate 2020 Month.March 10, Postponed(flukeTime 13 00 |> Some))
+                                                    (flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some))
                                             ]
 
                                             { Task.Default with
@@ -613,44 +613,44 @@ module Tests =
 
                                             { Task.Default with
                                                 Name = TaskName "13"
-                                                Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Tuesday ])
+                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ])
                                             },
                                             []
 
                                             { Task.Default with
                                                 Name = TaskName "14"
-                                                Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Wednesday ])
+                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ])
                                             },
                                             []
 
                                             { Task.Default with
                                                 Name = TaskName "15"
-                                                Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Friday ])
+                                                Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ])
                                             },
                                             [
-                                                DslStatusEntry(flukeDate 2020 Month.March 07, Postponed None)
-                                                DslStatusEntry(flukeDate 2020 Month.March 09, Dismissed)
+                                                DslStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
+                                                DslStatusEntry (flukeDate 2020 Month.March 09, Dismissed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "16"
-                                                Scheduling = Recurrency(Offset(Days 1))
+                                                Scheduling = Recurrency (Offset (Days 1))
                                                 MissedAfter = (flukeTime 13 00 |> Some)
                                             },
                                             []
 
                                             { Task.Default with
                                                 Name = TaskName "17"
-                                                Scheduling = Recurrency(Offset(Days 1))
+                                                Scheduling = Recurrency (Offset (Days 1))
                                             },
                                             [
                                                 DslStatusEntry
-                                                    (flukeDate 2020 Month.March 10, Postponed(flukeTime 15 00 |> Some))
+                                                    (flukeDate 2020 Month.March 10, Postponed (flukeTime 15 00 |> Some))
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "18"
-                                                Scheduling = Recurrency(Offset(Days 1))
+                                                Scheduling = Recurrency (Offset (Days 1))
                                             },
                                             []
                                         ]
@@ -686,7 +686,7 @@ module Tests =
                         let testWithLaneRenderingData (props: {| Task: Task
                                                                  Position: FlukeDateTime
                                                                  Expected: (FlukeDate * CellStatus) list
-                                                                 Events: TempTaskEvent list |}) =
+                                                                 Events: DslTask list |}) =
 
                             let taskState =
                                 applyTaskEvents
@@ -720,7 +720,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 1))
+                                                    Scheduling = Recurrency (Offset (Days 1))
                                                 }
                                             Position =
                                                 {
@@ -731,14 +731,15 @@ module Tests =
                                                 [
                                                     flukeDate 2020 Month.March 09, Disabled
                                                     flukeDate 2020 Month.March 10,
-                                                    UserStatus(Users.testUser, Postponed(Some(flukeTime 23 00)))
+                                                    UserStatus (Users.testUser, Postponed (Some (flukeTime 23 00)))
                                                     flukeDate 2020 Month.March 11, Pending
                                                     flukeDate 2020 Month.March 12, Pending
                                                 ]
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10, Postponed(Some(flukeTime 23 00)))
+                                                        (flukeDate 2020 Month.March 10,
+                                                         Postponed (Some (flukeTime 23 00)))
                                                 ]
                                         |}
                                 }
@@ -748,7 +749,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 1))
+                                                    Scheduling = Recurrency (Offset (Days 1))
                                                 }
                                             Position =
                                                 {
@@ -759,14 +760,15 @@ module Tests =
                                                 [
                                                     flukeDate 2020 Month.March 09, Disabled
                                                     flukeDate 2020 Month.March 10,
-                                                    UserStatus(Users.testUser, Postponed(Some(flukeTime 01 00)))
+                                                    UserStatus (Users.testUser, Postponed (Some (flukeTime 01 00)))
                                                     flukeDate 2020 Month.March 11, Pending
                                                     flukeDate 2020 Month.March 12, Pending
                                                 ]
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10, Postponed(Some(flukeTime 01 00)))
+                                                        (flukeDate 2020 Month.March 10,
+                                                         Postponed (Some (flukeTime 01 00)))
                                                 ]
                                         |}
                                 }
@@ -776,7 +778,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 1))
+                                                    Scheduling = Recurrency (Offset (Days 1))
                                                 }
                                             Position =
                                                 {
@@ -793,7 +795,8 @@ module Tests =
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10, Postponed(Some(flukeTime 23 00)))
+                                                        (flukeDate 2020 Month.March 10,
+                                                         Postponed (Some (flukeTime 23 00)))
                                                 ]
                                         |}
                                 }
@@ -803,7 +806,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 1))
+                                                    Scheduling = Recurrency (Offset (Days 1))
                                                 }
                                             Position =
                                                 {
@@ -820,7 +823,8 @@ module Tests =
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10, Postponed(Some(flukeTime 01 00)))
+                                                        (flukeDate 2020 Month.March 10,
+                                                         Postponed (Some (flukeTime 01 00)))
                                                 ]
                                         |}
                                 }
@@ -830,7 +834,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 1))
+                                                    Scheduling = Recurrency (Offset (Days 1))
                                                 }
                                             Position =
                                                 {
@@ -840,19 +844,21 @@ module Tests =
                                             Expected =
                                                 [
                                                     flukeDate 2020 Month.March 07, Disabled
-                                                    flukeDate 2020 Month.March 08, UserStatus(Users.testUser, Completed)
+                                                    flukeDate 2020 Month.March 08,
+                                                    UserStatus (Users.testUser, Completed)
                                                     flukeDate 2020 Month.March 09, Missed
                                                     flukeDate 2020 Month.March 10,
-                                                    UserStatus(Users.testUser, Postponed(Some(flukeTime 01 00)))
+                                                    UserStatus (Users.testUser, Postponed (Some (flukeTime 01 00)))
                                                     flukeDate 2020 Month.March 11, Missed
                                                     flukeDate 2020 Month.March 12, Pending
                                                     flukeDate 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 08, Completed)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 08, Completed)
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10, Postponed(Some(flukeTime 01 00)))
+                                                        (flukeDate 2020 Month.March 10,
+                                                         Postponed (Some (flukeTime 01 00)))
                                                 ]
                                         |}
                                 }
@@ -862,7 +868,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 1))
+                                                    Scheduling = Recurrency (Offset (Days 1))
                                                 }
                                             Position =
                                                 {
@@ -875,13 +881,14 @@ module Tests =
                                                     flukeDate 2020 Month.March 10, Pending
                                                     flukeDate 2020 Month.March 11, Pending
                                                     flukeDate 2020 Month.March 12,
-                                                    UserStatus(Users.testUser, Postponed(Some(flukeTime 13 00)))
+                                                    UserStatus (Users.testUser, Postponed (Some (flukeTime 13 00)))
                                                     flukeDate 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 12, Postponed(Some(flukeTime 13 00)))
+                                                        (flukeDate 2020 Month.March 12,
+                                                         Postponed (Some (flukeTime 13 00)))
                                                 ]
                                         |}
                                 }
@@ -896,7 +903,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 2))
+                                                    Scheduling = Recurrency (Offset (Days 2))
                                                 }
                                             Position =
                                                 {
@@ -921,7 +928,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 3))
+                                                    Scheduling = Recurrency (Offset (Days 3))
                                                 }
                                             Position =
                                                 {
@@ -930,7 +937,7 @@ module Tests =
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 8, UserStatus(Users.testUser, Completed)
+                                                    flukeDate 2020 Month.March 8, UserStatus (Users.testUser, Completed)
                                                     flukeDate 2020 Month.March 9, Disabled
                                                     flukeDate 2020 Month.March 10, Disabled
                                                     flukeDate 2020 Month.March 11, Pending
@@ -941,7 +948,7 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 8, Completed)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 8, Completed)
                                                 ]
                                         |}
                                 }
@@ -951,7 +958,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 2))
+                                                    Scheduling = Recurrency (Offset (Days 2))
                                                 }
                                             Position =
                                                 {
@@ -962,14 +969,14 @@ module Tests =
                                                 [
                                                     flukeDate 2020 Month.March 9, Disabled
                                                     flukeDate 2020 Month.March 10,
-                                                    UserStatus(Users.testUser, Postponed None)
+                                                    UserStatus (Users.testUser, Postponed None)
                                                     flukeDate 2020 Month.March 11, Pending
                                                     flukeDate 2020 Month.March 12, Disabled
                                                     flukeDate 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -979,7 +986,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 2))
+                                                    Scheduling = Recurrency (Offset (Days 2))
                                                     PendingAfter = flukeTime 03 00 |> Some
                                                 }
                                             Position =
@@ -991,14 +998,14 @@ module Tests =
                                                 [
                                                     flukeDate 2020 Month.March 9, Disabled
                                                     flukeDate 2020 Month.March 10,
-                                                    UserStatus(Users.testUser, Postponed None)
+                                                    UserStatus (Users.testUser, Postponed None)
                                                     flukeDate 2020 Month.March 11, Pending
                                                     flukeDate 2020 Month.March 12, Disabled
                                                     flukeDate 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1008,7 +1015,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 2))
+                                                    Scheduling = Recurrency (Offset (Days 2))
                                                 }
                                             Position =
                                                 {
@@ -1019,14 +1026,14 @@ module Tests =
                                                 [
                                                     flukeDate 2020 Month.March 9, Disabled
                                                     flukeDate 2020 Month.March 10,
-                                                    UserStatus(Users.testUser, Postponed None)
+                                                    UserStatus (Users.testUser, Postponed None)
                                                     flukeDate 2020 Month.March 11, Pending
                                                     flukeDate 2020 Month.March 12, Disabled
                                                     flukeDate 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 10, Postponed None)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1037,7 +1044,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 2))
+                                                    Scheduling = Recurrency (Offset (Days 2))
                                                 }
                                             Position =
                                                 {
@@ -1047,18 +1054,19 @@ module Tests =
                                             Expected =
                                                 [
                                                     flukeDate 2020 Month.March 7, Disabled
-                                                    flukeDate 2020 Month.March 8, UserStatus(Users.testUser, Completed)
+                                                    flukeDate 2020 Month.March 8, UserStatus (Users.testUser, Completed)
                                                     flukeDate 2020 Month.March 9, Disabled
                                                     flukeDate 2020 Month.March 10, Missed
                                                     flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, UserStatus(Users.testUser, Completed)
+                                                    flukeDate 2020 Month.March 12,
+                                                    UserStatus (Users.testUser, Completed)
                                                     flukeDate 2020 Month.March 13, Disabled
                                                     flukeDate 2020 Month.March 14, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 8, Completed)
-                                                    DslStatusEntry(flukeDate 2020 Month.March 12, Completed)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 8, Completed)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 12, Completed)
                                                 ]
                                         |}
                                 }
@@ -1068,7 +1076,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 1))
+                                                    Scheduling = Recurrency (Offset (Days 1))
                                                     PendingAfter = flukeTime 20 00 |> Some
                                                 }
                                             Position =
@@ -1091,7 +1099,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 1))
+                                                    Scheduling = Recurrency (Offset (Days 1))
                                                     PendingAfter = flukeTime 20 00 |> Some
                                                 }
                                             Position =
@@ -1115,7 +1123,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 2))
+                                                    Scheduling = Recurrency (Offset (Days 2))
                                                     PendingAfter = flukeTime 18 00 |> Some
                                                 }
                                             Position =
@@ -1141,7 +1149,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 3))
+                                                    Scheduling = Recurrency (Offset (Days 3))
                                                 }
                                             Position =
                                                 {
@@ -1154,17 +1162,17 @@ module Tests =
                                                     flukeDate 2020 Month.March 28, Pending
                                                     flukeDate 2020 Month.March 29, Disabled
                                                     flukeDate 2020 Month.March 30,
-                                                    UserStatus(Users.testUser, ManualPending)
+                                                    UserStatus (Users.testUser, ManualPending)
                                                     flukeDate 2020 Month.March 31,
-                                                    UserStatus(Users.testUser, ManualPending)
+                                                    UserStatus (Users.testUser, ManualPending)
                                                     flukeDate 2020 Month.April 01, Disabled
                                                     flukeDate 2020 Month.April 02, Disabled
                                                     flukeDate 2020 Month.April 03, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 30, ManualPending)
-                                                    DslStatusEntry(flukeDate 2020 Month.March 31, ManualPending)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 30, ManualPending)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 31, ManualPending)
                                                 ]
                                         |}
                                 }
@@ -1178,7 +1186,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Saturday ])
+                                                    Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ])
                                                 }
                                             Position =
                                                 {
@@ -1190,14 +1198,14 @@ module Tests =
                                                     for d in 13 .. 29 do
                                                         flukeDate 2020 Month.March d,
                                                         match d with
-                                                        | 14 -> UserStatus(Users.testUser, Completed)
+                                                        | 14 -> UserStatus (Users.testUser, Completed)
                                                         | 21
                                                         | 28 -> Pending
                                                         | _ -> Disabled
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 14, Completed)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 14, Completed)
                                                 ]
                                         |}
                                 }
@@ -1207,7 +1215,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Wednesday ])
+                                                    Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ])
                                                 }
                                             Position =
                                                 {
@@ -1219,7 +1227,7 @@ module Tests =
                                                     for d in 10 .. 26 do
                                                         flukeDate 2020 Month.March d,
                                                         match d with
-                                                        | 13 -> UserStatus(Users.testUser, Completed)
+                                                        | 13 -> UserStatus (Users.testUser, Completed)
                                                         | 18
                                                         | 19 -> Missed
                                                         | 20
@@ -1228,7 +1236,7 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 13, Completed)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 13, Completed)
                                                 ]
                                         |}
                                 }
@@ -1238,7 +1246,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Saturday ])
+                                                    Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ])
                                                 }
                                             Position =
                                                 {
@@ -1250,7 +1258,7 @@ module Tests =
                                                     for d in 13 .. 29 do
                                                         flukeDate 2020 Month.March d,
                                                         match d with
-                                                        | 18 -> UserStatus(Users.testUser, Postponed None)
+                                                        | 18 -> UserStatus (Users.testUser, Postponed None)
                                                         | 19 -> Missed
                                                         | 20
                                                         | 21
@@ -1259,7 +1267,7 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 18, Postponed None)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 18, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1269,7 +1277,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Wednesday ])
+                                                    Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ])
                                                 }
                                             Position =
                                                 {
@@ -1293,7 +1301,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Fixed [ Weekly DayOfWeek.Saturday ])
+                                                    Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ])
                                                 }
                                             Position =
                                                 {
@@ -1327,7 +1335,7 @@ module Tests =
                                                                 Weekly DayOfWeek.Thursday
                                                                 Weekly DayOfWeek.Friday
                                                              ])
-                                                    PendingAfter = Some(flukeTime 19 00)
+                                                    PendingAfter = Some (flukeTime 19 00)
                                                 }
                                             Position =
                                                 {
@@ -1388,7 +1396,7 @@ module Tests =
                                                 [
                                                     flukeDate 2020 Month.March 8, Disabled
                                                     flukeDate 2020 Month.March 9,
-                                                    UserStatus(Users.testUser, ManualPending)
+                                                    UserStatus (Users.testUser, ManualPending)
                                                     flukeDate 2020 Month.March 10, Missed
                                                     flukeDate 2020 Month.March 11, Pending
                                                     flukeDate 2020 Month.March 12, Disabled
@@ -1396,7 +1404,7 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 9, ManualPending)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 9, ManualPending)
                                                 ]
                                         |}
                                 }
@@ -1463,18 +1471,18 @@ module Tests =
                                                 [
                                                     flukeDate 2020 Month.March 25, Suggested
                                                     flukeDate 2020 Month.March 26,
-                                                    UserStatus(Users.testUser, ManualPending)
+                                                    UserStatus (Users.testUser, ManualPending)
                                                     flukeDate 2020 Month.March 27, Missed
                                                     flukeDate 2020 Month.March 28, Pending
                                                     flukeDate 2020 Month.March 29, Suggested
                                                     flukeDate 2020 Month.March 30,
-                                                    UserStatus(Users.testUser, ManualPending)
+                                                    UserStatus (Users.testUser, ManualPending)
                                                     flukeDate 2020 Month.March 31, Suggested
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 26, ManualPending)
-                                                    DslStatusEntry(flukeDate 2020 Month.March 30, ManualPending)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 26, ManualPending)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 30, ManualPending)
                                                 ]
                                         |}
                                 }
@@ -1496,16 +1504,17 @@ module Tests =
                                                 [
                                                     flukeDate 2020 Month.March 24, Suggested
                                                     flukeDate 2020 Month.March 25,
-                                                    UserStatus(Users.testUser, ManualPending)
-                                                    flukeDate 2020 Month.March 26, UserStatus(Users.testUser, Completed)
+                                                    UserStatus (Users.testUser, ManualPending)
+                                                    flukeDate 2020 Month.March 26,
+                                                    UserStatus (Users.testUser, Completed)
                                                     flukeDate 2020 Month.March 27, Suggested
                                                     flukeDate 2020 Month.March 28, Suggested
                                                     flukeDate 2020 Month.March 29, Suggested
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 25, ManualPending)
-                                                    DslStatusEntry(flukeDate 2020 Month.March 26, Completed)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 25, ManualPending)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 26, Completed)
                                                 ]
                                         |}
                                 }
@@ -1526,7 +1535,7 @@ module Tests =
                                                 [
                                                     flukeDate 2020 Month.March 24, Suggested
                                                     flukeDate 2020 Month.March 25,
-                                                    UserStatus(Users.testUser, ManualPending)
+                                                    UserStatus (Users.testUser, ManualPending)
                                                     flukeDate 2020 Month.March 26, Missed
                                                     flukeDate 2020 Month.March 27, Missed
                                                     flukeDate 2020 Month.March 28, Pending
@@ -1534,7 +1543,7 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry(flukeDate 2020 Month.March 25, ManualPending)
+                                                    DslStatusEntry (flukeDate 2020 Month.March 25, ManualPending)
                                                 ]
                                         |}
                                 }
@@ -1548,7 +1557,7 @@ module Tests =
                                         {|
                                             Task =
                                                 { Task.Default with
-                                                    Scheduling = Recurrency(Offset(Days 1))
+                                                    Scheduling = Recurrency (Offset (Days 1))
                                                 }
                                             Position =
                                                 {
@@ -1569,10 +1578,10 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslSession(flukeDateTime 2020 Month.March 01 11 00)
-                                                    DslSession(flukeDateTime 2020 Month.March 01 13 00)
-                                                    DslSession(flukeDateTime 2020 Month.March 08 11 00)
-                                                    DslSession(flukeDateTime 2020 Month.March 08 13 00)
+                                                    DslSession (flukeDateTime 2020 Month.March 01 11 00)
+                                                    DslSession (flukeDateTime 2020 Month.March 01 13 00)
+                                                    DslSession (flukeDateTime 2020 Month.March 08 11 00)
+                                                    DslSession (flukeDateTime 2020 Month.March 08 13 00)
                                                 ]
                                         |}
 

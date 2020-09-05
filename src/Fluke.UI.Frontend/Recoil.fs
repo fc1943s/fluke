@@ -27,8 +27,8 @@ module Recoil =
 
         let state =
             {|
-                CallCount = Dictionary()
-                Timestamps = List<string * int64>()
+                CallCount = Dictionary ()
+                Timestamps = List<string * int64> ()
             |}
 
         Browser.Dom.window?profilingState <- state
@@ -39,7 +39,7 @@ module Recoil =
             | true -> state.CallCount.[id] <- state.CallCount.[id] + 1
 
         let addTimestamp id =
-            state.Timestamps.Add(id, ticksDiff DateTime.Now.Ticks)
+            state.Timestamps.Add (id, ticksDiff DateTime.Now.Ticks)
 
         addTimestamp "Init"
 
@@ -314,7 +314,7 @@ module Recoil =
                     RootPrivateData.informationCommentInteractions
                     |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
                         match interaction with
-                        | Interaction.Information (information, interaction) -> Some(information, interaction)
+                        | Interaction.Information (information, interaction) -> Some (information, interaction)
                         | _ -> None)
                     |> List.groupBy fst
                     |> Map.ofList
@@ -355,7 +355,7 @@ module Recoil =
                                 match interaction with
                                 | Interaction.Cell ({ Task = task'; DateId = (DateId referenceDay) }, cellInteraction) when task' =
                                                                                                                                 taskState.Task ->
-                                    Some(referenceDay, cellInteraction)
+                                    Some (referenceDay, cellInteraction)
                                 | _ -> None)
 
                         externalCellInteractions
@@ -369,7 +369,7 @@ module Recoil =
                         taskState.Sessions
                         |> List.choose (function
                             | TaskInteraction.Session (start, _, _) as session ->
-                                Some(dateId input.DayStart start, session)
+                                Some (dateId input.DayStart start, session)
                             | _ -> None)
                         |> List.groupBy fst
                         |> Map.ofList
@@ -718,9 +718,9 @@ module Recoil =
 
             let rec informationId (information: Information): InformationId =
                 match information with
-                | Project {Name=ProjectName name} -> sprintf "%s/%s" information.KindName name
-                | Area {Name=AreaName name} -> sprintf "%s/%s" information.KindName name
-                | Resource {Name=ResourceName name} -> sprintf "%s/%s" information.KindName name
+                | Project { Name = ProjectName name } -> sprintf "%s/%s" information.KindName name
+                | Area { Name = AreaName name } -> sprintf "%s/%s" information.KindName name
+                | Resource { Name = ResourceName name } -> sprintf "%s/%s" information.KindName name
                 | Archive x ->
                     let (InformationId archiveId) = informationId x
                     sprintf "%s/%s" information.KindName archiveId
@@ -733,7 +733,8 @@ module Recoil =
                 }
 
         module RecoilTask =
-            let taskId (task: Task) = TaskId(task.Information.Name, task.Name)
+            let taskId (task: Task) =
+                TaskId (task.Information.Name, task.Name)
 
             type RecoilTask =
                 {
@@ -859,7 +860,7 @@ module Recoil =
             let rec taskIdFamily =
                 atomFamily {
                     key (sprintf "%s/%s" (nameof RecoilCell) (nameof taskIdFamily))
-                    def (fun (_cellId: CellId) -> TaskId(InformationName "", TaskName ""))
+                    def (fun (_cellId: CellId) -> TaskId (InformationName "", TaskName ""))
                 }
 
             let rec dateFamily =
@@ -906,7 +907,7 @@ module Recoil =
                     }
 
             let cellId (TaskId (InformationName informationName, TaskName taskName)) (DateId referenceDay) =
-                CellId(sprintf "%s/%s/%s" informationName taskName (referenceDay.DateTime.Format "yyyy-MM-dd"))
+                CellId (sprintf "%s/%s/%s" informationName taskName (referenceDay.DateTime.Format "yyyy-MM-dd"))
 
             let rec cellFamily =
                 atomFamily {
@@ -980,7 +981,7 @@ module Recoil =
                     }
 
             let treeId owner name =
-                TreeId(sprintf "%s/%s" owner.Username name)
+                TreeId (sprintf "%s/%s" owner.Username name)
 
             let rec treeFamily =
                 atomFamily {
@@ -1502,18 +1503,19 @@ module Recoil =
                         Profiling.addCount (nameof activeSessions)
                         taskList
                         |> List.map (fun task ->
-                             let (TaskName taskName) = task.Name
-                             let duration =
-                                 getter.get (RecoilTask.activeSessionFamily task.Id)
+                            let (TaskName taskName) = task.Name
 
-                             duration
-                             |> Option.map (fun duration ->
-                                 ActiveSession
-                                     (taskName,
-                                      Minute duration,
-                                      Minute TempData.Consts.sessionLength,
-                                      Minute TempData.Consts.sessionBreakLength)))
-                         |> List.choose id)
+                            let duration =
+                                getter.get (RecoilTask.activeSessionFamily task.Id)
+
+                            duration
+                            |> Option.map (fun duration ->
+                                ActiveSession
+                                    (taskName,
+                                     Minute duration,
+                                     Minute TempData.Consts.sessionLength,
+                                     Minute TempData.Consts.sessionBreakLength)))
+                        |> List.choose id)
             }
 
         let rec weekCellsMap =
@@ -1535,7 +1537,7 @@ module Recoil =
                                     let startDate =
                                         dateId dayStart position
                                         |> ofDateId
-                                        |> fun referenceDay -> referenceDay.DateTime.AddDays(7 * weekOffset)
+                                        |> fun referenceDay -> referenceDay.DateTime.AddDays (7 * weekOffset)
                                         |> getStartDate
 
                                     [ 0 .. 6 ]
@@ -1707,12 +1709,12 @@ module Recoil =
                                     let minDate =
                                         match minDates with
                                         | [] -> None
-                                        | x -> Some(List.min x)
+                                        | x -> Some (List.min x)
 
                                     let maxDate =
                                         match maxDates with
                                         | [] -> None
-                                        | x -> Some(List.max x)
+                                        | x -> Some (List.max x)
 
                                     match minDate, maxDate with
                                     | Some minDate, Some maxDate ->
