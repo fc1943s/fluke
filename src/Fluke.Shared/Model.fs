@@ -207,7 +207,6 @@ module Model =
 
     type UserInteraction = UserInteraction of user: User * moment: FlukeDateTime * interaction: Interaction
 
-    type UserComment_ = UserComment_ of user: User * comment: string
 
 
 
@@ -223,6 +222,8 @@ module Model =
 
 
 
+
+    type UserComment_ = UserComment_ of user: User * comment: string
 
     type CellStatus =
         | Disabled

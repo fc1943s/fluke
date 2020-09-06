@@ -346,7 +346,7 @@ module Recoil =
 
                     let cellInteractionsMap =
                         let externalCellInteractions =
-                            RootPrivateData.cellComments
+                            RootPrivateData.cellCommentInteractions
                             |> List.filter (fun (UserInteraction (user, moment, interaction)) ->
                                 match interaction with
                                 | Interaction.Cell ({ Task = task' }, _) when task' = taskState.Task -> true
@@ -413,19 +413,17 @@ module Recoil =
 
 
                 let privateTaskStateList =
-                    let oldEvents = RootPrivateData.cellStatusEntries
                     treeData.TaskStateList
                     |> List.map
                         (applyEvents
-                            (oldEvents
+                            (RootPrivateData.cellStatusChangeInteractions
                              @ RootPrivateData.taskCommentInteractions))
 
                 let sharedTaskStateList =
-                    let oldEvents = RootPrivateData.sharedCellStatusEntries
                     sharedTreeData.TaskStateList
                     |> List.map
                         (applyEvents
-                            (oldEvents
+                            (RootPrivateData.sharedCellStatusChangeInteractions
                              @ RootPrivateData.sharedTaskCommentInteractions))
 
                 sharedTaskStateList @ privateTaskStateList
@@ -1121,6 +1119,8 @@ module Recoil =
                         | Some tree ->
                             //                    let tree =
 //                        { tree with TaskList = tree.TaskList |> List.take 3 }
+
+                            Browser.Dom.window?tree <- tree
 
                             let recoilInformationIdList =
                                 tree.InformationStateList

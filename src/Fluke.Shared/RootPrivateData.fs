@@ -49,7 +49,7 @@ module RootPrivateData =
         | TempPublic -> []
         | Test -> []
 
-    let cellComments =
+    let cellCommentInteractions =
         match tempDataType with
         | TempPrivate ->
             SharedPrivateData.Data.cellCommentInteractions
@@ -70,13 +70,13 @@ module RootPrivateData =
         | TempPublic -> []
         | Test -> []
 
-    let cellStatusEntries =
+    let cellStatusChangeInteractions =
         match tempDataType with
         | TempPrivate -> PrivateData.CellStatusChangeInteractions.cellStatusChangeInteractions
         | TempPublic -> []
         | Test -> []
 
-    let sharedCellStatusEntries =
+    let sharedCellStatusChangeInteractions =
         match tempDataType with
         | TempPrivate -> SharedPrivateData.Data.cellStatusChangeInteractions
         | TempPublic -> []
@@ -92,17 +92,17 @@ module RootPrivateData =
         match tempDataType with
         | TempPrivate -> SharedPrivateData.SharedTasks.treeData
         | TempPublic ->
-            {| treeData with
+            { treeData with
                 TaskStateList = []
                 InformationList = []
                 TaskOrderList = []
-            |}
+            }
         | Test ->
-            {| treeData with
+            { treeData with
                 TaskStateList = []
                 InformationList = []
                 TaskOrderList = []
-            |}
+            }
 
     let currentUser =
         PrivateData.PrivateData.Consts.currentUser

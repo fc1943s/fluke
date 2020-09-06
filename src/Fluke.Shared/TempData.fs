@@ -1,6 +1,7 @@
 namespace Fluke.Shared
 
 open System
+open System.Collections.Generic
 open FSharpPlus
 open Suigetsu.Core
 
@@ -224,6 +225,14 @@ module TempData =
             let build = List.fold apply
             let rebuld = build initialState
 
+    type TreeData =
+        {
+            GetLivePosition: (unit -> FlukeDateTime)
+            InformationList: Information list
+            TaskOrderList: TaskOrderEntry list
+            TaskStateList: TaskState list
+        }
+
 
     let getLivePosition () = FlukeDateTime.FromDateTime DateTime.Now
 
@@ -336,10 +345,10 @@ module TempData =
                 createCellStatusChangeInteraction dayStart user task date manualCellStatus))
 
 
-    let applyTaskEvents dayStart task (events: (DslTask * User) list) =
+    let createTaskState dayStart task (dslEntries: (DslTask * User) list) =
         let defaultTaskState =
             {
-                Task = Task.Default
+                Task = task
                 Sessions = []
                 CellInteractions = []
                 UserInteractions = []
@@ -349,9 +358,9 @@ module TempData =
 
         let interactions =
             let moment = Consts.defaultPosition
-            (defaultTaskState, events)
-            ||> List.fold (fun taskState (event, user) -> // TODO: Why start?
-                    match event with
+            (defaultTaskState, dslEntries)
+            ||> List.fold (fun taskState (dslTask, user) ->
+                    match dslTask with
                     | DslTaskInteraction taskInteraction ->
                         let interaction = Interaction.Task (task, taskInteraction)
 
@@ -455,21 +464,19 @@ module TempData =
         taskTree
         |> List.map (Tuple2.mapItem2 (List.map (Tuple2.mapItem2 (List.map (fun event -> event, user)))))
 
-    let transformTreeData dayStart taskTree =
+    let createTreeData dayStart taskTree =
         let taskStateList =
             taskTree
             |> List.collect (fun (information, tasks) ->
                 tasks
                 |> List.map (fun (taskName, events: (DslTask * User) list) ->
-                    printfn "TASKNAME %A" taskName
-
                     let task =
                         { Task.Default with
                             Name = TaskName taskName
                             Information = information
                         }
 
-                    applyTaskEvents dayStart task events))
+                    createTaskState dayStart task events))
 
         let informationList =
             taskTree |> List.map fst |> List.distinct
@@ -482,81 +489,121 @@ module TempData =
                     Priority = TaskOrderPriority.Last
                 })
 
-        {|
+        {
             TaskStateList = taskStateList
             TaskOrderList = taskOrderList
             InformationList = informationList
             GetLivePosition = getLivePosition
-        |}
+        }
 
     // How the HELL will I rewrite this? 🤦
-    let treeDataFactory taskContainerFactory dslTree =
-        let mutable taskStateMap: Map<TaskName, TaskState> = Map.empty
-        let mutable taskStateList = []
+    let treeDataFactory taskContainerFactory
+                        (dslTreeGetter: ((string -> Task) -> (Information * (string * (DslTask * User) list) list) list))
+                        =
 
-        let mutable treeDataMaybe: {| GetLivePosition: unit -> FlukeDateTime
-                                      InformationList: Information list
-                                      TaskOrderList: TaskOrderEntry list
-                                      TaskStateList: TaskState list |} option = None
+        let taskDictionary = Dictionary<string, Task> ()
 
-        let getTask fail name =
-            let taskState =
-                taskStateMap |> Map.tryFind (TaskName name)
-
-            let result =
-                match taskState, fail with
-                | Some taskState, _ when taskState.Task <> Task.Default -> taskState.Task
-                | None, false -> Task.Default
-                | _ -> failwithf "error searching task %A" name
-
-            printfn "getTask %A; result: %A" name result.Name
-            result
+        let mutable treeDataMaybe = None
+        let mutable taskGetter = fun _ -> Task.Default
 
         for n in [ 0; 1 ] do
-            printfn "loop %A" n
-            printfn "taskStateMap %A" taskStateMap
+
+            let taskGetterInternal taskName =
+                let found, task = taskDictionary.TryGetValue taskName
+                if found then
+                    task
+                else
+                    printfn "task not found[%d]: %A" n taskName
+                    Task.Default
+
+            taskGetter <- taskGetterInternal
+
+            let dslTree = dslTreeGetter taskGetterInternal
+
+            let taskStateList =
+                let rec informationLoop dslTree =
+                    match dslTree with
+                    | (information, tasks) :: tail ->
+                        let rec tasksLoop tasks =
+                            match tasks with
+                            | (taskName, dslEntries) :: tail ->
+                                let task =
+                                    { Task.Default with
+                                        Information = information
+                                        Name = TaskName taskName
+                                    }
+
+                                taskDictionary.[taskName] <- task
+
+                                let taskState =
+                                    createTaskState Consts.dayStart task dslEntries
+
+                                taskState :: tasksLoop tail
+                            | [] -> []
+
+                        tasksLoop tasks @ informationLoop tail
+                    | [] -> []
+
+                informationLoop dslTree
+
+            let informationList = dslTree |> List.map fst |> List.distinct
+
+            let taskOrderList =
+                taskStateList
+                |> List.map (fun taskState ->
+                    {
+                        Task = taskState.Task
+                        Priority = TaskOrderPriority.Last
+                    })
 
             let treeData =
-                dslTree (getTask (n = 1))
-                |> transformTreeData Consts.dayStart
-
-            printfn "treeData %A" treeData
-
-            let duplicated =
-                treeData.TaskStateList
-                |> List.filter (fun taskState -> taskState.Task <> Task.Default)
-                |> List.map (fun taskState -> taskState.Task.Name)
-                |> List.groupBy id
-                |> List.filter
-                    (snd
-                     >> List.length
-                     >> fun n -> n > 1)
-                |> List.map fst
-
-            if not duplicated.IsEmpty then
-                failwithf "Duplicated task names: %A" duplicated
-
-            taskStateMap <-
-                treeData.TaskStateList
-                |> List.map (fun taskState -> taskState.Task.Name, taskState)
-                |> Map.ofList
+                {
+                    TaskStateList = taskStateList
+                    TaskOrderList = taskOrderList
+                    InformationList = informationList
+                    GetLivePosition = getLivePosition
+                }
 
             treeDataMaybe <- Some treeData
 
+        let treeData = treeDataMaybe.Value
 
 
-        let tasks = taskContainerFactory (getTask true)
+        //        printfn "treeData %A" treeData
 
-        let taskOrderList = getTaskOrderList [] taskStateList []
+        let duplicated =
+            treeData.TaskStateList
+            //            |> List.filter (fun taskState -> taskState.Task <> Task.Default)
+            |> List.map (fun taskState -> taskState.Task.Name)
+            |> List.groupBy id
+            |> List.filter
+                (snd
+                 >> List.length
+                 >> fun n -> n > 1)
+            |> List.map fst
+
+        if not duplicated.IsEmpty then
+            failwithf "Duplicated task names: %A" duplicated
+
+        //        taskStateMap <-
+//            treeData.TaskStateList
+//            |> List.map (fun taskState -> taskState.Task.Name, taskState)
+//            |> Map.ofList
+//
+//        treeDataMaybe <- Some treeData
+
+
+        let tasks = taskContainerFactory taskGetter
+
+        let taskOrderList =
+            getTaskOrderList [] treeData.TaskStateList []
 
         let newTreeData =
-            treeDataMaybe
-            |> Option.map (fun treeData ->
-                {| treeData with
-                    TaskOrderList = taskOrderList
-                |})
+            { treeData with
+                TaskOrderList = taskOrderList
+            }
 
-        newTreeData.Value, tasks
+        newTreeData, tasks
 
 
 
@@ -574,10 +621,10 @@ module TempData =
                 testData.Events
                 |> List.map (fun x -> x, Users.testUser)
 
-            {|
+            {
                 TaskStateList =
                     [
-                        applyTaskEvents Consts.testDayStart testData.Task eventsWithUser
+                        createTaskState Consts.testDayStart testData.Task eventsWithUser
                     ]
                 TaskOrderList =
                     [
@@ -588,7 +635,7 @@ module TempData =
                     ]
                 GetLivePosition = fun () -> testData.Position
                 InformationList = [ testData.Task.Information ]
-            |}
+            }
 
 
         let createSortLanesTestData (testData: {| Position: FlukeDateTime
@@ -599,9 +646,9 @@ module TempData =
                 |> List.map (fun (task, events) ->
                     events
                     |> List.map (fun x -> x, Users.testUser)
-                    |> applyTaskEvents Consts.testDayStart task)
+                    |> createTaskState Consts.testDayStart task)
 
-            {|
+            {
                 TaskStateList = taskStateList
                 TaskOrderList =
                     testData.Data
@@ -615,7 +662,7 @@ module TempData =
                     taskStateList
                     |> List.map (fun x -> x.Task.Information)
                     |> List.distinct
-            |}
+            }
 
         let tempData =
             {|
@@ -674,7 +721,7 @@ module TempData =
                         Resource Resources.vim, []
                         Resource Resources.windows, []
                     ]
-                    |> transformTreeData Consts.testDayStart
+                    |> createTreeData Consts.testDayStart
                 RenderLaneTests =
                     {|
                         Task =
@@ -873,6 +920,18 @@ module TempData =
                     |}
 
                     |> createSortLanesTestData
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
