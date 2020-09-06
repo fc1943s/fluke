@@ -458,19 +458,13 @@ module PanelsComponent =
                     let showUser =
                         Recoil.useValue (Recoil.Selectors.RecoilTask.showUserFamily input.TaskId)
 
-                    let cellInteractions = Recoil.useValue cell.CellInteractions
+                    let attachments = Recoil.useValue cell.Attachments
                     let sessions = Recoil.useValue cell.Sessions
 
                     let selected, setSelected =
                         Recoil.useState (Recoil.Selectors.RecoilCell.selectedFamily cellId)
 
                     let status = Recoil.useValue cell.Status
-
-                    let cellAttachments =
-                        cellInteractions
-                        |> List.choose (function
-                            | CellInteraction.Attachment attachment -> Some attachment
-                            | _ -> None)
 
                     let onCellClick =
                         React.useCallbackRef (fun () -> setSelected (not selected))
@@ -492,7 +486,7 @@ module PanelsComponent =
                                 | UserStatus (user, manualCellStatus) ->
                                     UserStatusIndicatorComponent.render {| User = user |}
                                 | _ -> ()
-                            TooltipPopupComponent.render {| Attachments = cellAttachments |}
+                            TooltipPopupComponent.render {| Attachments = attachments |}
                         ]
                     ])
 

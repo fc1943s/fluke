@@ -336,22 +336,22 @@ module Tests =
                                                                Expected: string list
                                                                Position: FlukeDateTime |}) =
 
-                            let taskList =
+                            let taskStateList =
                                 props.Data
                                 |> List.map (fun (task, events) ->
-                                    applyTaskEvents
+                                    createTaskState
                                         Testing.Consts.testDayStart
                                         task
-                                        (events |> List.map (fun x -> x, Users.testUser)))
+                                        (events |> List.map (fun x -> x, Users.fluke)))
 
                             let dateSequence =
-                                taskList
+                                taskStateList
                                 |> Seq.collect (fun x -> x.CellStateMap |> Map.keys)
                                 |> Seq.toList
                                 |> List.map (fun (DateId referenceDay) -> referenceDay)
                                 |> Rendering.getDateSequence (35, 35)
 
-                            taskList
+                            taskStateList
                             |> List.map (Rendering.renderLane Testing.Consts.testDayStart props.Position dateSequence)
                             |> fun lanes ->
                                 match props.Sort with
@@ -368,7 +368,7 @@ module Tests =
                                     Sort = sortByFrequency
                                     Position =
                                         {
-                                            Date = flukeDate 2020 Month.March 10
+                                            Date = FlukeDate.Create 2020 Month.March 10
                                             Time = Testing.Consts.testDayStart
                                         }
                                     Data =
@@ -384,8 +384,8 @@ module Tests =
                                                 Scheduling = Manual WithSuggestion
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
-                                                DslStatusEntry (flukeDate 2020 Month.March 08, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Postponed None)
                                             ]
 
                                             { Task.Default with
@@ -393,13 +393,13 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 09, ManualPending)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 09, ManualPending)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "04"
                                                 Scheduling = Recurrency (Offset (Days 1))
-                                                PendingAfter = flukeTime 20 00 |> Some
+                                                PendingAfter = FlukeTime.Create 20 00 |> Some
                                             },
                                             []
 
@@ -408,7 +408,7 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, ManualPending)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, ManualPending)
                                             ]
 
                                             { Task.Default with
@@ -416,8 +416,8 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
-                                                DslStatusEntry (flukeDate 2020 Month.March 06, Dismissed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 04, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 06, Dismissed)
                                             ]
 
                                             { Task.Default with
@@ -425,7 +425,7 @@ module Tests =
                                                 Scheduling = Recurrency (Offset (Days 4))
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 08, Completed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Completed)
                                             ]
 
                                             { Task.Default with
@@ -433,7 +433,7 @@ module Tests =
                                                 Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, Completed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Completed)
                                             ]
 
                                             { Task.Default with
@@ -441,7 +441,7 @@ module Tests =
                                                 Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, Dismissed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Dismissed)
                                             ]
 
                                             { Task.Default with
@@ -449,7 +449,7 @@ module Tests =
                                                 Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
                                             ]
 
                                             { Task.Default with
@@ -481,8 +481,8 @@ module Tests =
                                                 Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ])
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
-                                                DslStatusEntry (flukeDate 2020 Month.March 09, Dismissed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 07, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Dismissed)
                                             ]
                                         ]
                                     Expected =
@@ -512,8 +512,8 @@ module Tests =
                                     Sort = sortByTimeOfDay
                                     Position =
                                         {
-                                            Date = flukeDate 2020 Month.March 10
-                                            Time = flukeTime 14 00
+                                            Date = FlukeDate.Create 2020 Month.March 10
+                                            Time = FlukeTime.Create 14 00
                                         }
                                     Data =
                                         [
@@ -528,8 +528,8 @@ module Tests =
                                                 Scheduling = Manual WithSuggestion
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
-                                                DslStatusEntry (flukeDate 2020 Month.March 08, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Postponed None)
                                             ]
 
                                             { Task.Default with
@@ -537,13 +537,13 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 09, ManualPending)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 09, ManualPending)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "04"
                                                 Scheduling = Recurrency (Offset (Days 1))
-                                                PendingAfter = flukeTime 20 00 |> Some
+                                                PendingAfter = FlukeTime.Create 20 00 |> Some
                                             },
                                             []
 
@@ -552,7 +552,7 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, ManualPending)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, ManualPending)
                                             ]
 
                                             { Task.Default with
@@ -560,8 +560,8 @@ module Tests =
                                                 Scheduling = Manual WithoutSuggestion
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 04, Postponed None)
-                                                DslStatusEntry (flukeDate 2020 Month.March 06, Dismissed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 04, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 06, Dismissed)
                                             ]
 
                                             { Task.Default with
@@ -569,7 +569,7 @@ module Tests =
                                                 Scheduling = Recurrency (Offset (Days 4))
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 08, Completed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Completed)
                                             ]
 
                                             { Task.Default with
@@ -577,7 +577,7 @@ module Tests =
                                                 Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, Completed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Completed)
                                             ]
 
                                             { Task.Default with
@@ -585,7 +585,7 @@ module Tests =
                                                 Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, Dismissed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Dismissed)
                                             ]
 
                                             { Task.Default with
@@ -593,7 +593,7 @@ module Tests =
                                                 Scheduling = Recurrency (Offset (Days 2))
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
                                             ]
 
                                             { Task.Default with
@@ -602,7 +602,7 @@ module Tests =
                                             },
                                             [
                                                 DslStatusEntry
-                                                    (flukeDate 2020 Month.March 10, Postponed (flukeTime 13 00 |> Some))
+                                                    (FlukeDate.Create 2020 Month.March 10, Postponed (FlukeTime.Create 13 00 |> Some))
                                             ]
 
                                             { Task.Default with
@@ -628,14 +628,14 @@ module Tests =
                                                 Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ])
                                             },
                                             [
-                                                DslStatusEntry (flukeDate 2020 Month.March 07, Postponed None)
-                                                DslStatusEntry (flukeDate 2020 Month.March 09, Dismissed)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 07, Postponed None)
+                                                DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Dismissed)
                                             ]
 
                                             { Task.Default with
                                                 Name = TaskName "16"
                                                 Scheduling = Recurrency (Offset (Days 1))
-                                                MissedAfter = (flukeTime 13 00 |> Some)
+                                                MissedAfter = (FlukeTime.Create 13 00 |> Some)
                                             },
                                             []
 
@@ -645,7 +645,7 @@ module Tests =
                                             },
                                             [
                                                 DslStatusEntry
-                                                    (flukeDate 2020 Month.March 10, Postponed (flukeTime 15 00 |> Some))
+                                                    (FlukeDate.Create 2020 Month.March 10, Postponed (FlukeTime.Create 15 00 |> Some))
                                             ]
 
                                             { Task.Default with
@@ -689,11 +689,11 @@ module Tests =
                                                                  Events: DslTask list |}) =
 
                             let taskState =
-                                applyTaskEvents
+                                createTaskState
                                     Testing.Consts.testDayStart
                                     props.Task
                                     (props.Events
-                                     |> List.map (fun x -> x, Users.testUser))
+                                     |> List.map (fun x -> x, Users.fluke))
 
                             let dateSequence = props.Expected |> List.map fst
 
@@ -724,22 +724,22 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 10
+                                                    Date = FlukeDate.Create 2020 Month.March 10
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 09, Disabled
-                                                    flukeDate 2020 Month.March 10,
-                                                    UserStatus (Users.testUser, Postponed (Some (flukeTime 23 00)))
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Pending
+                                                    FlukeDate.Create 2020 Month.March 09, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10,
+                                                    UserStatus (Users.fluke, Postponed (Some (FlukeTime.Create 23 00)))
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Pending
                                                 ]
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10,
-                                                         Postponed (Some (flukeTime 23 00)))
+                                                        (FlukeDate.Create 2020 Month.March 10,
+                                                         Postponed (Some (FlukeTime.Create 23 00)))
                                                 ]
                                         |}
                                 }
@@ -753,22 +753,22 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 10
+                                                    Date = FlukeDate.Create 2020 Month.March 10
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 09, Disabled
-                                                    flukeDate 2020 Month.March 10,
-                                                    UserStatus (Users.testUser, Postponed (Some (flukeTime 01 00)))
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Pending
+                                                    FlukeDate.Create 2020 Month.March 09, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10,
+                                                    UserStatus (Users.fluke, Postponed (Some (FlukeTime.Create 01 00)))
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Pending
                                                 ]
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10,
-                                                         Postponed (Some (flukeTime 01 00)))
+                                                        (FlukeDate.Create 2020 Month.March 10,
+                                                         Postponed (Some (FlukeTime.Create 01 00)))
                                                 ]
                                         |}
                                 }
@@ -782,21 +782,21 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 11
-                                                    Time = flukeTime 02 00
+                                                    Date = FlukeDate.Create 2020 Month.March 11
+                                                    Time = FlukeTime.Create 02 00
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 09, Disabled
-                                                    flukeDate 2020 Month.March 10, Pending
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Pending
+                                                    FlukeDate.Create 2020 Month.March 09, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10, Pending
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Pending
                                                 ]
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10,
-                                                         Postponed (Some (flukeTime 23 00)))
+                                                        (FlukeDate.Create 2020 Month.March 10,
+                                                         Postponed (Some (FlukeTime.Create 23 00)))
                                                 ]
                                         |}
                                 }
@@ -810,21 +810,21 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 11
-                                                    Time = flukeTime 02 00
+                                                    Date = FlukeDate.Create 2020 Month.March 11
+                                                    Time = FlukeTime.Create 02 00
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 09, Disabled
-                                                    flukeDate 2020 Month.March 10, Pending
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Pending
+                                                    FlukeDate.Create 2020 Month.March 09, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10, Pending
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Pending
                                                 ]
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10,
-                                                         Postponed (Some (flukeTime 01 00)))
+                                                        (FlukeDate.Create 2020 Month.March 10,
+                                                         Postponed (Some (FlukeTime.Create 01 00)))
                                                 ]
                                         |}
                                 }
@@ -838,27 +838,27 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 13
-                                                    Time = flukeTime 02 00
+                                                    Date = FlukeDate.Create 2020 Month.March 13
+                                                    Time = FlukeTime.Create 02 00
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 07, Disabled
-                                                    flukeDate 2020 Month.March 08,
-                                                    UserStatus (Users.testUser, Completed)
-                                                    flukeDate 2020 Month.March 09, Missed
-                                                    flukeDate 2020 Month.March 10,
-                                                    UserStatus (Users.testUser, Postponed (Some (flukeTime 01 00)))
-                                                    flukeDate 2020 Month.March 11, Missed
-                                                    flukeDate 2020 Month.March 12, Pending
-                                                    flukeDate 2020 Month.March 13, Pending
+                                                    FlukeDate.Create 2020 Month.March 07, Disabled
+                                                    FlukeDate.Create 2020 Month.March 08,
+                                                    UserStatus (Users.fluke, Completed)
+                                                    FlukeDate.Create 2020 Month.March 09, Missed
+                                                    FlukeDate.Create 2020 Month.March 10,
+                                                    UserStatus (Users.fluke, Postponed (Some (FlukeTime.Create 01 00)))
+                                                    FlukeDate.Create 2020 Month.March 11, Missed
+                                                    FlukeDate.Create 2020 Month.March 12, Pending
+                                                    FlukeDate.Create 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 08, Completed)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Completed)
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 10,
-                                                         Postponed (Some (flukeTime 01 00)))
+                                                        (FlukeDate.Create 2020 Month.March 10,
+                                                         Postponed (Some (FlukeTime.Create 01 00)))
                                                 ]
                                         |}
                                 }
@@ -872,23 +872,23 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 10
+                                                    Date = FlukeDate.Create 2020 Month.March 10
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 09, Disabled
-                                                    flukeDate 2020 Month.March 10, Pending
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12,
-                                                    UserStatus (Users.testUser, Postponed (Some (flukeTime 13 00)))
-                                                    flukeDate 2020 Month.March 13, Pending
+                                                    FlukeDate.Create 2020 Month.March 09, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10, Pending
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12,
+                                                    UserStatus (Users.fluke, Postponed (Some (FlukeTime.Create 13 00)))
+                                                    FlukeDate.Create 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
                                                     DslStatusEntry
-                                                        (flukeDate 2020 Month.March 12,
-                                                         Postponed (Some (flukeTime 13 00)))
+                                                        (FlukeDate.Create 2020 Month.March 12,
+                                                         Postponed (Some (FlukeTime.Create 13 00)))
                                                 ]
                                         |}
                                 }
@@ -907,17 +907,17 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 9
+                                                    Date = FlukeDate.Create 2020 Month.March 9
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 7, Disabled
-                                                    flukeDate 2020 Month.March 8, Disabled
-                                                    flukeDate 2020 Month.March 9, Pending
-                                                    flukeDate 2020 Month.March 10, Disabled
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Disabled
+                                                    FlukeDate.Create 2020 Month.March 7, Disabled
+                                                    FlukeDate.Create 2020 Month.March 8, Disabled
+                                                    FlukeDate.Create 2020 Month.March 9, Pending
+                                                    FlukeDate.Create 2020 Month.March 10, Disabled
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Disabled
                                                 ]
                                             Events = []
                                         |}
@@ -932,23 +932,23 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 9
+                                                    Date = FlukeDate.Create 2020 Month.March 9
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 8, UserStatus (Users.testUser, Completed)
-                                                    flukeDate 2020 Month.March 9, Disabled
-                                                    flukeDate 2020 Month.March 10, Disabled
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Disabled
-                                                    flukeDate 2020 Month.March 13, Disabled
-                                                    flukeDate 2020 Month.March 14, Pending
-                                                    flukeDate 2020 Month.March 15, Disabled
+                                                    FlukeDate.Create 2020 Month.March 8, UserStatus (Users.fluke, Completed)
+                                                    FlukeDate.Create 2020 Month.March 9, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10, Disabled
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Disabled
+                                                    FlukeDate.Create 2020 Month.March 13, Disabled
+                                                    FlukeDate.Create 2020 Month.March 14, Pending
+                                                    FlukeDate.Create 2020 Month.March 15, Disabled
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 8, Completed)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 8, Completed)
                                                 ]
                                         |}
                                 }
@@ -962,21 +962,21 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 10
+                                                    Date = FlukeDate.Create 2020 Month.March 10
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 9, Disabled
-                                                    flukeDate 2020 Month.March 10,
-                                                    UserStatus (Users.testUser, Postponed None)
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Disabled
-                                                    flukeDate 2020 Month.March 13, Pending
+                                                    FlukeDate.Create 2020 Month.March 9, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10,
+                                                    UserStatus (Users.fluke, Postponed None)
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Disabled
+                                                    FlukeDate.Create 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -987,25 +987,25 @@ module Tests =
                                             Task =
                                                 { Task.Default with
                                                     Scheduling = Recurrency (Offset (Days 2))
-                                                    PendingAfter = flukeTime 03 00 |> Some
+                                                    PendingAfter = FlukeTime.Create 03 00 |> Some
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 10
+                                                    Date = FlukeDate.Create 2020 Month.March 10
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 9, Disabled
-                                                    flukeDate 2020 Month.March 10,
-                                                    UserStatus (Users.testUser, Postponed None)
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Disabled
-                                                    flukeDate 2020 Month.March 13, Pending
+                                                    FlukeDate.Create 2020 Month.March 9, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10,
+                                                    UserStatus (Users.fluke, Postponed None)
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Disabled
+                                                    FlukeDate.Create 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1019,21 +1019,21 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 11
+                                                    Date = FlukeDate.Create 2020 Month.March 11
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 9, Disabled
-                                                    flukeDate 2020 Month.March 10,
-                                                    UserStatus (Users.testUser, Postponed None)
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Disabled
-                                                    flukeDate 2020 Month.March 13, Pending
+                                                    FlukeDate.Create 2020 Month.March 9, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10,
+                                                    UserStatus (Users.fluke, Postponed None)
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Disabled
+                                                    FlukeDate.Create 2020 Month.March 13, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 10, Postponed None)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1048,25 +1048,25 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 11
+                                                    Date = FlukeDate.Create 2020 Month.March 11
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 7, Disabled
-                                                    flukeDate 2020 Month.March 8, UserStatus (Users.testUser, Completed)
-                                                    flukeDate 2020 Month.March 9, Disabled
-                                                    flukeDate 2020 Month.March 10, Missed
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12,
-                                                    UserStatus (Users.testUser, Completed)
-                                                    flukeDate 2020 Month.March 13, Disabled
-                                                    flukeDate 2020 Month.March 14, Pending
+                                                    FlukeDate.Create 2020 Month.March 7, Disabled
+                                                    FlukeDate.Create 2020 Month.March 8, UserStatus (Users.fluke, Completed)
+                                                    FlukeDate.Create 2020 Month.March 9, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10, Missed
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12,
+                                                    UserStatus (Users.fluke, Completed)
+                                                    FlukeDate.Create 2020 Month.March 13, Disabled
+                                                    FlukeDate.Create 2020 Month.March 14, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 8, Completed)
-                                                    DslStatusEntry (flukeDate 2020 Month.March 12, Completed)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 8, Completed)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 12, Completed)
                                                 ]
                                         |}
                                 }
@@ -1077,18 +1077,18 @@ module Tests =
                                             Task =
                                                 { Task.Default with
                                                     Scheduling = Recurrency (Offset (Days 1))
-                                                    PendingAfter = flukeTime 20 00 |> Some
+                                                    PendingAfter = FlukeTime.Create 20 00 |> Some
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 10
-                                                    Time = flukeTime 19 30
+                                                    Date = FlukeDate.Create 2020 Month.March 10
+                                                    Time = FlukeTime.Create 19 30
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 9, Disabled
-                                                    flukeDate 2020 Month.March 10, Suggested
-                                                    flukeDate 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 9, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10, Suggested
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
                                                 ]
                                             Events = []
                                         |}
@@ -1100,18 +1100,18 @@ module Tests =
                                             Task =
                                                 { Task.Default with
                                                     Scheduling = Recurrency (Offset (Days 1))
-                                                    PendingAfter = flukeTime 20 00 |> Some
+                                                    PendingAfter = FlukeTime.Create 20 00 |> Some
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 10
-                                                    Time = flukeTime 21 00
+                                                    Date = FlukeDate.Create 2020 Month.March 10
+                                                    Time = FlukeTime.Create 21 00
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 9, Disabled
-                                                    flukeDate 2020 Month.March 10, Pending
-                                                    flukeDate 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 9, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10, Pending
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
                                                 ]
                                             Events = []
                                         |}
@@ -1124,21 +1124,21 @@ module Tests =
                                             Task =
                                                 { Task.Default with
                                                     Scheduling = Recurrency (Offset (Days 2))
-                                                    PendingAfter = flukeTime 18 00 |> Some
+                                                    PendingAfter = FlukeTime.Create 18 00 |> Some
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 27
-                                                    Time = flukeTime 17 00
+                                                    Date = FlukeDate.Create 2020 Month.March 27
+                                                    Time = FlukeTime.Create 17 00
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 25, Disabled
-                                                    flukeDate 2020 Month.March 26, Disabled
-                                                    flukeDate 2020 Month.March 27, Suggested
-                                                    flukeDate 2020 Month.March 28, Disabled
-                                                    flukeDate 2020 Month.March 29, Pending
-                                                    flukeDate 2020 Month.March 29, Disabled
+                                                    FlukeDate.Create 2020 Month.March 25, Disabled
+                                                    FlukeDate.Create 2020 Month.March 26, Disabled
+                                                    FlukeDate.Create 2020 Month.March 27, Suggested
+                                                    FlukeDate.Create 2020 Month.March 28, Disabled
+                                                    FlukeDate.Create 2020 Month.March 29, Pending
+                                                    FlukeDate.Create 2020 Month.March 29, Disabled
                                                 ]
                                             Events = []
                                         |}
@@ -1153,26 +1153,26 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 28
+                                                    Date = FlukeDate.Create 2020 Month.March 28
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 27, Disabled
-                                                    flukeDate 2020 Month.March 28, Pending
-                                                    flukeDate 2020 Month.March 29, Disabled
-                                                    flukeDate 2020 Month.March 30,
-                                                    UserStatus (Users.testUser, ManualPending)
-                                                    flukeDate 2020 Month.March 31,
-                                                    UserStatus (Users.testUser, ManualPending)
-                                                    flukeDate 2020 Month.April 01, Disabled
-                                                    flukeDate 2020 Month.April 02, Disabled
-                                                    flukeDate 2020 Month.April 03, Pending
+                                                    FlukeDate.Create 2020 Month.March 27, Disabled
+                                                    FlukeDate.Create 2020 Month.March 28, Pending
+                                                    FlukeDate.Create 2020 Month.March 29, Disabled
+                                                    FlukeDate.Create 2020 Month.March 30,
+                                                    UserStatus (Users.fluke, ManualPending)
+                                                    FlukeDate.Create 2020 Month.March 31,
+                                                    UserStatus (Users.fluke, ManualPending)
+                                                    FlukeDate.Create 2020 Month.April 01, Disabled
+                                                    FlukeDate.Create 2020 Month.April 02, Disabled
+                                                    FlukeDate.Create 2020 Month.April 03, Pending
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 30, ManualPending)
-                                                    DslStatusEntry (flukeDate 2020 Month.March 31, ManualPending)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 30, ManualPending)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 31, ManualPending)
                                                 ]
                                         |}
                                 }
@@ -1190,22 +1190,22 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 21
+                                                    Date = FlukeDate.Create 2020 Month.March 21
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
                                                     for d in 13 .. 29 do
-                                                        flukeDate 2020 Month.March d,
+                                                        FlukeDate.Create 2020 Month.March d,
                                                         match d with
-                                                        | 14 -> UserStatus (Users.testUser, Completed)
+                                                        | 14 -> UserStatus (Users.fluke, Completed)
                                                         | 21
                                                         | 28 -> Pending
                                                         | _ -> Disabled
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 14, Completed)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 14, Completed)
                                                 ]
                                         |}
                                 }
@@ -1219,15 +1219,15 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 20
+                                                    Date = FlukeDate.Create 2020 Month.March 20
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
                                                     for d in 10 .. 26 do
-                                                        flukeDate 2020 Month.March d,
+                                                        FlukeDate.Create 2020 Month.March d,
                                                         match d with
-                                                        | 13 -> UserStatus (Users.testUser, Completed)
+                                                        | 13 -> UserStatus (Users.fluke, Completed)
                                                         | 18
                                                         | 19 -> Missed
                                                         | 20
@@ -1236,7 +1236,7 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 13, Completed)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 13, Completed)
                                                 ]
                                         |}
                                 }
@@ -1250,15 +1250,15 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 20
+                                                    Date = FlukeDate.Create 2020 Month.March 20
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
                                                     for d in 13 .. 29 do
-                                                        flukeDate 2020 Month.March d,
+                                                        FlukeDate.Create 2020 Month.March d,
                                                         match d with
-                                                        | 18 -> UserStatus (Users.testUser, Postponed None)
+                                                        | 18 -> UserStatus (Users.fluke, Postponed None)
                                                         | 19 -> Missed
                                                         | 20
                                                         | 21
@@ -1267,7 +1267,7 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 18, Postponed None)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 18, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1281,13 +1281,13 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 20
+                                                    Date = FlukeDate.Create 2020 Month.March 20
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
                                                     for d in 17 .. 26 do
-                                                        flukeDate 2020 Month.March d,
+                                                        FlukeDate.Create 2020 Month.March d,
                                                         match d with
                                                         | 25 -> Pending
                                                         | _ -> Disabled
@@ -1305,13 +1305,13 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 20
+                                                    Date = FlukeDate.Create 2020 Month.March 20
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
                                                     for d in 13 .. 29 do
-                                                        flukeDate 2020 Month.March d,
+                                                        FlukeDate.Create 2020 Month.March d,
                                                         match d with
                                                         | 21
                                                         | 28 -> Pending
@@ -1335,18 +1335,18 @@ module Tests =
                                                                 Weekly DayOfWeek.Thursday
                                                                 Weekly DayOfWeek.Friday
                                                              ])
-                                                    PendingAfter = Some (flukeTime 19 00)
+                                                    PendingAfter = Some (FlukeTime.Create 19 00)
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.August 26
+                                                    Date = FlukeDate.Create 2020 Month.August 26
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.August 25, Disabled
-                                                    flukeDate 2020 Month.August 26, Suggested
-                                                    flukeDate 2020 Month.August 27, Pending
+                                                    FlukeDate.Create 2020 Month.August 25, Disabled
+                                                    FlukeDate.Create 2020 Month.August 26, Suggested
+                                                    FlukeDate.Create 2020 Month.August 27, Pending
                                                 ]
                                             Events = []
                                         |}
@@ -1365,16 +1365,16 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 11
+                                                    Date = FlukeDate.Create 2020 Month.March 11
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 9, Disabled
-                                                    flukeDate 2020 Month.March 10, Disabled
-                                                    flukeDate 2020 Month.March 11, Suggested
-                                                    flukeDate 2020 Month.March 12, Disabled
-                                                    flukeDate 2020 Month.March 13, Disabled
+                                                    FlukeDate.Create 2020 Month.March 9, Disabled
+                                                    FlukeDate.Create 2020 Month.March 10, Disabled
+                                                    FlukeDate.Create 2020 Month.March 11, Suggested
+                                                    FlukeDate.Create 2020 Month.March 12, Disabled
+                                                    FlukeDate.Create 2020 Month.March 13, Disabled
                                                 ]
                                             Events = []
                                         |}
@@ -1389,22 +1389,22 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 11
+                                                    Date = FlukeDate.Create 2020 Month.March 11
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 8, Disabled
-                                                    flukeDate 2020 Month.March 9,
-                                                    UserStatus (Users.testUser, ManualPending)
-                                                    flukeDate 2020 Month.March 10, Missed
-                                                    flukeDate 2020 Month.March 11, Pending
-                                                    flukeDate 2020 Month.March 12, Disabled
-                                                    flukeDate 2020 Month.March 13, Disabled
+                                                    FlukeDate.Create 2020 Month.March 8, Disabled
+                                                    FlukeDate.Create 2020 Month.March 9,
+                                                    UserStatus (Users.fluke, ManualPending)
+                                                    FlukeDate.Create 2020 Month.March 10, Missed
+                                                    FlukeDate.Create 2020 Month.March 11, Pending
+                                                    FlukeDate.Create 2020 Month.March 12, Disabled
+                                                    FlukeDate.Create 2020 Month.March 13, Disabled
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 9, ManualPending)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 9, ManualPending)
                                                 ]
                                         |}
                                 }
@@ -1415,18 +1415,18 @@ module Tests =
                                             Task =
                                                 { Task.Default with
                                                     Scheduling = Manual WithSuggestion
-                                                    PendingAfter = flukeTime 20 00 |> Some
+                                                    PendingAfter = FlukeTime.Create 20 00 |> Some
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 10
-                                                    Time = flukeTime 19 30
+                                                    Date = FlukeDate.Create 2020 Month.March 10
+                                                    Time = FlukeTime.Create 19 30
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 09, Suggested
-                                                    flukeDate 2020 Month.March 10, Suggested
-                                                    flukeDate 2020 Month.March 11, Suggested
+                                                    FlukeDate.Create 2020 Month.March 09, Suggested
+                                                    FlukeDate.Create 2020 Month.March 10, Suggested
+                                                    FlukeDate.Create 2020 Month.March 11, Suggested
                                                 ]
                                             Events = []
                                         |}
@@ -1438,18 +1438,18 @@ module Tests =
                                             Task =
                                                 { Task.Default with
                                                     Scheduling = Manual WithSuggestion
-                                                    PendingAfter = flukeTime 20 00 |> Some
+                                                    PendingAfter = FlukeTime.Create 20 00 |> Some
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 10
-                                                    Time = flukeTime 21 00
+                                                    Date = FlukeDate.Create 2020 Month.March 10
+                                                    Time = FlukeTime.Create 21 00
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 09, Suggested
-                                                    flukeDate 2020 Month.March 10, Pending
-                                                    flukeDate 2020 Month.March 11, Suggested
+                                                    FlukeDate.Create 2020 Month.March 09, Suggested
+                                                    FlukeDate.Create 2020 Month.March 10, Pending
+                                                    FlukeDate.Create 2020 Month.March 11, Suggested
                                                 ]
                                             Events = []
                                         |}
@@ -1464,25 +1464,25 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 28
+                                                    Date = FlukeDate.Create 2020 Month.March 28
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 25, Suggested
-                                                    flukeDate 2020 Month.March 26,
-                                                    UserStatus (Users.testUser, ManualPending)
-                                                    flukeDate 2020 Month.March 27, Missed
-                                                    flukeDate 2020 Month.March 28, Pending
-                                                    flukeDate 2020 Month.March 29, Suggested
-                                                    flukeDate 2020 Month.March 30,
-                                                    UserStatus (Users.testUser, ManualPending)
-                                                    flukeDate 2020 Month.March 31, Suggested
+                                                    FlukeDate.Create 2020 Month.March 25, Suggested
+                                                    FlukeDate.Create 2020 Month.March 26,
+                                                    UserStatus (Users.fluke, ManualPending)
+                                                    FlukeDate.Create 2020 Month.March 27, Missed
+                                                    FlukeDate.Create 2020 Month.March 28, Pending
+                                                    FlukeDate.Create 2020 Month.March 29, Suggested
+                                                    FlukeDate.Create 2020 Month.March 30,
+                                                    UserStatus (Users.fluke, ManualPending)
+                                                    FlukeDate.Create 2020 Month.March 31, Suggested
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 26, ManualPending)
-                                                    DslStatusEntry (flukeDate 2020 Month.March 30, ManualPending)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 26, ManualPending)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 30, ManualPending)
                                                 ]
                                         |}
                                 }
@@ -1497,24 +1497,24 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 28
+                                                    Date = FlukeDate.Create 2020 Month.March 28
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 24, Suggested
-                                                    flukeDate 2020 Month.March 25,
-                                                    UserStatus (Users.testUser, ManualPending)
-                                                    flukeDate 2020 Month.March 26,
-                                                    UserStatus (Users.testUser, Completed)
-                                                    flukeDate 2020 Month.March 27, Suggested
-                                                    flukeDate 2020 Month.March 28, Suggested
-                                                    flukeDate 2020 Month.March 29, Suggested
+                                                    FlukeDate.Create 2020 Month.March 24, Suggested
+                                                    FlukeDate.Create 2020 Month.March 25,
+                                                    UserStatus (Users.fluke, ManualPending)
+                                                    FlukeDate.Create 2020 Month.March 26,
+                                                    UserStatus (Users.fluke, Completed)
+                                                    FlukeDate.Create 2020 Month.March 27, Suggested
+                                                    FlukeDate.Create 2020 Month.March 28, Suggested
+                                                    FlukeDate.Create 2020 Month.March 29, Suggested
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 25, ManualPending)
-                                                    DslStatusEntry (flukeDate 2020 Month.March 26, Completed)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 26, Completed)
                                                 ]
                                         |}
                                 }
@@ -1528,22 +1528,22 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 28
+                                                    Date = FlukeDate.Create 2020 Month.March 28
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.March 24, Suggested
-                                                    flukeDate 2020 Month.March 25,
-                                                    UserStatus (Users.testUser, ManualPending)
-                                                    flukeDate 2020 Month.March 26, Missed
-                                                    flukeDate 2020 Month.March 27, Missed
-                                                    flukeDate 2020 Month.March 28, Pending
-                                                    flukeDate 2020 Month.March 29, Suggested
+                                                    FlukeDate.Create 2020 Month.March 24, Suggested
+                                                    FlukeDate.Create 2020 Month.March 25,
+                                                    UserStatus (Users.fluke, ManualPending)
+                                                    FlukeDate.Create 2020 Month.March 26, Missed
+                                                    FlukeDate.Create 2020 Month.March 27, Missed
+                                                    FlukeDate.Create 2020 Month.March 28, Pending
+                                                    FlukeDate.Create 2020 Month.March 29, Suggested
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (flukeDate 2020 Month.March 25, ManualPending)
+                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
                                                 ]
                                         |}
                                 }
@@ -1561,20 +1561,20 @@ module Tests =
                                                 }
                                             Position =
                                                 {
-                                                    Date = flukeDate 2020 Month.March 04
+                                                    Date = FlukeDate.Create 2020 Month.March 04
                                                     Time = Testing.Consts.testDayStart
                                                 }
                                             Expected =
                                                 [
-                                                    flukeDate 2020 Month.February 29, Disabled
-                                                    flukeDate 2020 Month.March 1, Disabled
-                                                    flukeDate 2020 Month.March 2, Disabled
-                                                    flukeDate 2020 Month.March 3, Disabled
-                                                    flukeDate 2020 Month.March 4, Pending
-                                                    flukeDate 2020 Month.March 5, Pending
-                                                    flukeDate 2020 Month.March 6, Pending
-                                                    flukeDate 2020 Month.March 7, Pending
-                                                    flukeDate 2020 Month.March 8, Pending
+                                                    FlukeDate.Create 2020 Month.February 29, Disabled
+                                                    FlukeDate.Create 2020 Month.March 1, Disabled
+                                                    FlukeDate.Create 2020 Month.March 2, Disabled
+                                                    FlukeDate.Create 2020 Month.March 3, Disabled
+                                                    FlukeDate.Create 2020 Month.March 4, Pending
+                                                    FlukeDate.Create 2020 Month.March 5, Pending
+                                                    FlukeDate.Create 2020 Month.March 6, Pending
+                                                    FlukeDate.Create 2020 Month.March 7, Pending
+                                                    FlukeDate.Create 2020 Month.March 8, Pending
                                                 ]
                                             Events =
                                                 [
@@ -1588,23 +1588,23 @@ module Tests =
                                     testWithLaneRenderingData laneRenderingTestData
 
                                     let taskState =
-                                        applyTaskEvents
+                                        createTaskState
                                             Testing.Consts.testDayStart
                                             laneRenderingTestData.Task
                                             (laneRenderingTestData.Events
-                                             |> List.map (fun x -> x, Users.testUser))
+                                             |> List.map (fun x -> x, Users.fluke))
 
                                     let sessionsExpected =
                                         [
-                                            flukeDate 2020 Month.February 29, 1
-                                            flukeDate 2020 Month.March 1, 1
-                                            flukeDate 2020 Month.March 2, 0
-                                            flukeDate 2020 Month.March 3, 0
-                                            flukeDate 2020 Month.March 4, 0
-                                            flukeDate 2020 Month.March 5, 0
-                                            flukeDate 2020 Month.March 6, 0
-                                            flukeDate 2020 Month.March 7, 1
-                                            flukeDate 2020 Month.March 8, 1
+                                            FlukeDate.Create 2020 Month.February 29, 1
+                                            FlukeDate.Create 2020 Month.March 1, 1
+                                            FlukeDate.Create 2020 Month.March 2, 0
+                                            FlukeDate.Create 2020 Month.March 3, 0
+                                            FlukeDate.Create 2020 Month.March 4, 0
+                                            FlukeDate.Create 2020 Month.March 5, 0
+                                            FlukeDate.Create 2020 Month.March 6, 0
+                                            FlukeDate.Create 2020 Month.March 7, 1
+                                            FlukeDate.Create 2020 Month.March 8, 1
                                         ]
 
                                     let dateSequence = sessionsExpected |> List.map fst
@@ -1644,3 +1644,4 @@ module Tests =
                         }
                     ]
             ]
+

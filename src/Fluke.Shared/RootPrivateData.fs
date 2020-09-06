@@ -1,111 +1,223 @@
 namespace Fluke.Shared
 
 
+open System
 open FSharpPlus
 open Fluke.Shared
-open Fluke.Shared.PrivateData
-open Fluke.Shared.SharedPrivateData.fc1943s
+//open Fluke.Shared.PrivateData
 open Suigetsu.Core
 
 
 module RootPrivateData =
-    type TempDataType =
-        | TempPrivate
-        | TempPublic
-        | Test
+    //    type TempDataType =
+//        | TempPrivate
+//        | TempPublic
+//        | Test
 
-    let tempDataType = TempPrivate
+    //    let tempDataType = TempPrivate
     //    let tempDataType = Test
 //    let tempDataType = TempPublic
 
-    let testData =
-        TempData.Testing.tempData.RenderLaneTests
+    //    let testData =
+//        TempData.Testing.tempData.RenderLaneTests
     //    let testData = TempData.Testing.tempData.SortLanesTests
 
-    let getLivePosition =
-        match tempDataType with
-        | TempPrivate -> TempData.getLivePosition
-        | TempPublic -> TempData.getLivePosition
-        | Test -> testData.GetLivePosition
+    //    let getLivePosition =
+//        match tempDataType with
+//        | TempPrivate -> TempData.getLivePosition
+//        | TempPublic -> TempData.getLivePosition
+//        | Test -> testData.GetLivePosition
 
-    let dayStart =
-        match tempDataType with
-        | TempPrivate -> TempData.Consts.dayStart
-        | TempPublic -> TempData.Consts.dayStart
-        | Test -> TempData.Testing.Consts.testDayStart
+    //    let dayStart =
+//        match tempDataType with
+//        | TempPrivate -> TempData.Consts.dayStart
+//        | TempPublic -> TempData.Consts.dayStart
+//        | Test -> TempData.Testing.Consts.testDayStart
+//
+//    let weekStart =
+//        match tempDataType with
+//        | TempPrivate -> PrivateData.Consts.weekStart
+//        | TempPublic -> PrivateData.Consts.weekStart
+//        | Test -> PrivateData.Consts.weekStart
 
-    let weekStart =
-        match tempDataType with
-        | TempPrivate -> PrivateData.Consts.weekStart
-        | TempPublic -> PrivateData.Consts.weekStart
-        | Test -> PrivateData.Consts.weekStart
+    module private Private =
+
+        //        let informationCommentInteractions =
+//            match tempDataType with
+//            | TempPrivate ->
+//                SharedPrivateData.Data.informationCommentInteractions
+//                @ InformationCommentInteractions.informationCommentInteractions
+//            | TempPublic -> []
+//            | Test -> []
+
+        //        let cellCommentInteractions =
+//            match tempDataType with
+//            | TempPrivate ->
+//                SharedPrivateData.Data.cellCommentInteractions
+//                @ PrivateData.CellCommentInteractions.cellCommentInteractions
+//                @ PrivateData.Journal.cellCommentInteractions
+//            | TempPublic -> []
+//            | Test -> []
+
+        //        let taskCommentInteractions =
+//            match tempDataType with
+//            | TempPrivate -> PrivateData.TaskCommentInteractions.taskCommentInteractions
+//            | TempPublic -> []
+//            | Test -> []
+//
+//        let sharedTaskCommentInteractions =
+//            match tempDataType with
+//            | TempPrivate -> SharedPrivateData.Data.taskCommentInteractions
+//            | TempPublic -> []
+//            | Test -> []
+
+        //        let cellStatusChangeInteractions =
+//            match tempDataType with
+//            | TempPrivate -> PrivateData.CellStatusChangeInteractions.cellStatusChangeInteractions
+//            | TempPublic -> []
+//            | Test -> []
+
+        //        let sharedCellStatusChangeInteractions =
+//            match tempDataType with
+//            | TempPrivate -> SharedPrivateData.Data.cellStatusChangeInteractions
+//            | TempPublic -> []
+//            | Test -> []
 
 
-    let informationCommentInteractions =
-        match tempDataType with
-        | TempPrivate ->
-            SharedPrivateData.Data.informationCommentInteractions
-            @ InformationCommentInteractions.informationCommentInteractions
-        | TempPublic -> []
-        | Test -> []
+        //    let userInteractions =
+//        [
+//            yield! Private.informationCommentInteractions
+//            yield! Private.cellCommentInteractions
+//            yield! Private.taskCommentInteractions
+//            yield! Private.sharedTaskCommentInteractions
+//            yield! Private.cellStatusChangeInteractions
+//            yield! Private.sharedCellStatusChangeInteractions
+//        ]
 
-    let cellCommentInteractions =
-        match tempDataType with
-        | TempPrivate ->
-            SharedPrivateData.Data.cellCommentInteractions
-            @ PrivateData.CellCommentInteractions.cellCommentInteractions
-            @ PrivateData.Journal.cellCommentInteractions
-        | TempPublic -> []
-        | Test -> []
 
-    let taskCommentInteractions =
-        match tempDataType with
-        | TempPrivate -> PrivateData.TaskCommentInteractions.taskCommentInteractions
-        | TempPublic -> []
-        | Test -> []
+        //    let treeData =
+//        match tempDataType with
+//        | TempPrivate -> PrivateData.Tasks.treeData
+//        | TempPublic -> TempData.Testing.tempData.ManualTasks
+//        | Test -> testData
 
-    let sharedTaskCommentInteractions =
-        match tempDataType with
-        | TempPrivate -> SharedPrivateData.Data.taskCommentInteractions
-        | TempPublic -> []
-        | Test -> []
+        //    let sharedTreeData =
+//        match tempDataType with
+//        | TempPrivate -> SharedPrivateData.SharedTasks.treeData
+//        | TempPublic ->
+//            { treeData with
+//                TaskStateList = []
+//                InformationList = []
+//                TaskOrderList = []
+//            }
+//        | Test ->
+//            { treeData with
+//                TaskStateList = []
+//                InformationList = []
+//                TaskOrderList = []
+//            }
 
-    let cellStatusChangeInteractions =
-        match tempDataType with
-        | TempPrivate -> PrivateData.CellStatusChangeInteractions.cellStatusChangeInteractions
-        | TempPublic -> []
-        | Test -> []
+        //    let currentUser =
+//        PrivateData.PrivateData.Consts.currentUser
+        ()
 
-    let sharedCellStatusChangeInteractions =
-        match tempDataType with
-        | TempPrivate -> SharedPrivateData.Data.cellStatusChangeInteractions
-        | TempPublic -> []
-        | Test -> []
+    module TreeData =
+        open Model
+        open Model.State
 
-    let treeData =
-        match tempDataType with
-        | TempPrivate -> PrivateData.Tasks.treeData
-        | TempPublic -> TempData.Testing.tempData.ManualTasks
-        | Test -> testData
+        let dslData = PrivateData.Tasks.dslData
+        let sharedDslData = SharedPrivateData.SharedTasks.dslData
 
-    let sharedTreeData =
-        match tempDataType with
-        | TempPrivate -> SharedPrivateData.SharedTasks.treeData
-        | TempPublic ->
-            { treeData with
-                TaskStateList = []
-                InformationList = []
-                TaskOrderList = []
+        let privateInteractions =
+            [
+                yield! dslData.TaskStateList |> List.collect snd
+                yield! PrivateData.InformationCommentInteractions.informationCommentInteractions
+                yield! PrivateData.CellCommentInteractions.cellCommentInteractions
+                yield! PrivateData.Journal.cellCommentInteractions
+                yield! PrivateData.TaskCommentInteractions.taskCommentInteractions
+                yield! PrivateData.CellStatusChangeInteractions.cellStatusChangeInteractions
+            ]
+
+        let rec ``fc1943s/private`` =
+            TreeState.Create
+                (TreeId (Guid "8FE2ECF3-0DCB-4933-86B9-13DE90D659F0"),
+                 TreeName (nameof ``fc1943s/private``),
+                 TempData.Users.fc1943s)
+            |> treeStateWithInteractions privateInteractions
+
+        let rec ``liryanne/private`` =
+            TreeState.Create
+                (TreeId (Guid "A92CCFC3-9BF5-4921-9B1B-4D6787BF9C60"),
+                 TreeName (nameof ``liryanne/private``),
+                 TempData.Users.liryanne)
+            |> treeStateWithInteractions privateInteractions
+
+        let rec ``liryanne/shared`` =
+            TreeState.Create
+                (TreeId (Guid "9A7A797D-0615-4CF6-B85D-86985978E251"),
+                 TreeName (nameof ``liryanne/shared``),
+                 TempData.Users.liryanne)
+            |> treeStateWithInteractions
+                [
+                    yield! sharedDslData.TaskStateList |> List.collect snd
+
+                    yield! SharedPrivateData.liryanne.InformationCommentInteractions.informationCommentInteractions
+                    yield! SharedPrivateData.fc1943s.InformationCommentInteractions.informationCommentInteractions
+                    yield! SharedPrivateData.liryanne.CellCommentInteractions.cellCommentInteractions
+                    yield! SharedPrivateData.fc1943s.CellCommentInteractions.cellCommentInteractions
+                    yield! SharedPrivateData.liryanne.TaskCommentInteractions.taskCommentInteractions
+                    yield! SharedPrivateData.fc1943s.TaskCommentInteractions.taskCommentInteractions
+                    yield! SharedPrivateData.liryanne.CellStatusChangeInteractions.cellStatusChangeInteractions
+                    yield! SharedPrivateData.fc1943s.CellStatusChangeInteractions.cellStatusChangeInteractions
+                ]
+
+        let rec ``fluke/samples/laneRendering/frequency/postponed_until/postponed_until_later`` =
+            TreeState.Create
+                (id = TreeId (Guid "84998AA3-7262-439F-8E6C-43FDD56A0DD6"),
+                 name =
+                     TreeName (nameof ``fluke/samples/laneRendering/frequency/postponed_until/postponed_until_later``),
+                 owner = TempData.Users.fluke)
+            |> treeStateWithInteractions []
+
+        let rec ``fluke/samples/laneSorting/frequency`` =
+            TreeState.Create
+                (id = TreeId (Guid "46A344F2-2E6C-47DF-A87B-CB2DD326417B"),
+                 name = TreeName (nameof ``fluke/samples/laneSorting/frequency``),
+                 owner = TempData.Users.fluke)
+            |> treeStateWithInteractions []
+
+        let rec ``fluke/samples/laneSorting/timeOfDay`` =
+            TreeState.Create
+                (id = TreeId (Guid "61897654-D28F-4DCA-8185-D7B9EE83284B"),
+                 name = TreeName (nameof ``fluke/samples/laneSorting/timeOfDay``),
+                 owner = TempData.Users.fluke)
+            |> treeStateWithInteractions []
+
+
+        let state:TempData.State =
+            let privateTreeState =
+                [
+                    ``fc1943s/private``
+                    ``liryanne/private``
+                ]
+                |> List.find (fun treeState -> treeState.Owner = PrivateData.PrivateData.Consts.currentUser)
+
+            let treeStateMap =
+                [
+                    privateTreeState, true
+                    ``liryanne/shared``, true
+                    ``fluke/samples/laneSorting/frequency``, false
+                    ``fluke/samples/laneSorting/timeOfDay``, false
+                ]
+                |> List.map (fun (tree, selected) -> tree.Id, (tree, selected))
+                |> Map.ofList
+
+            {
+                User = Some PrivateData.PrivateData.Consts.currentUser
+                GetLivePosition = TempData.getLivePosition
+                TreeMap = treeStateMap
             }
-        | Test ->
-            { treeData with
-                TaskStateList = []
-                InformationList = []
-                TaskOrderList = []
-            }
 
-    let currentUser =
-        PrivateData.PrivateData.Consts.currentUser
 
 
 //    module Tmp =
@@ -216,7 +328,7 @@ module RootPrivateData =
 //                        flukeDateTime 2020 Month.June 20 15 53
 //                    ]
 //                    Lane = [
-//                        (flukeDate 2020 Month.June 13), Completed
+//                        (FlukeDate.Create 2020 Month.June 13), Completed
 //                    ]
 //                    Comments = [
 //                        Comment (TempData.Users.fc1943s, "fc1943s: task1 comment")
@@ -229,7 +341,7 @@ module RootPrivateData =
 ////                    Information = Area { Name = "area2" }
 ////                    Scheduling = Recurrency (Offset (Days 1))
 ////                    PendingAfter = None
-////                    MissedAfter = flukeTime 09 00 |> Some
+////                    MissedAfter = FlukeTime.Create 09 00 |> Some
 ////                    Priority = Critical10
 ////                    Duration = Some 5
 ////                    Sessions = []

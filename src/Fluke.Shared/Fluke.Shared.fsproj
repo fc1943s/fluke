@@ -6,6 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Model.fs" />
+    <Compile Include="Old.fs" />
+    <Compile Include="Rendering.fs" />
+    <Compile Include="Sorting.fs" />
     <Compile Include="TempData.fs" />
       
     <Compile Include="PrivateData\PrivateData.fs" />
@@ -28,8 +31,6 @@
     <Compile Include="SharedPrivateData\liryanne\TaskComments.fs" />
     <Compile Include="SharedPrivateData\liryanne\CellComments.fs" />
     <Compile Include="SharedPrivateData\liryanne\CellStatusEntries.fs" />
-      
-    <Compile Include="SharedPrivateData\Data.fs" />
       
     <Compile Include="RootPrivateData.fs" />
       

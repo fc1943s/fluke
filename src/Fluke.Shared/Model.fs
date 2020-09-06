@@ -150,18 +150,21 @@ module Model =
             | High9 -> 9
             | Critical10 -> 10
 
-    type Comment = Comment of comment: string
 
-    type DateId = DateId of referenceDay: FlukeDate
-
-    type CellAddress = { Task: Task; DateId: DateId }
-
-
-    type User = { Username: string; Color: UserColor }
+    type User =
+        {
+            Username: string
+            Color: UserColor
+            WeekStart: DayOfWeek
+            DayStart: FlukeTime
+        }
 
     and [<RequireQualifiedAccess>] UserColor =
+        | Black
         | Pink
         | Blue
+
+    type Comment = Comment of comment: string
 
     // Link: Auto:[Title, Favicon, Screenshot]
     // Image: Embed
@@ -174,30 +177,11 @@ module Model =
         | Attachment of attachment: Attachment
 
     [<RequireQualifiedAccess>]
-    type AttachmentInteraction = | Pin
+    type _AttachmentInteraction = | Pin_
 
-    [<RequireQualifiedAccess>]
-    type InformationInteraction =
-        | Attachment of attachment: Attachment
-        | Sort of top: Information option * bottom: Information option
+    type DateId = DateId of referenceDay: FlukeDate
 
-    [<RequireQualifiedAccess>]
-    type TaskInteraction =
-        | Attachment of attachment: Attachment
-        | Archive
-        | Session of start: FlukeDateTime * duration: Minute * breakDuration: Minute
-        | Sort of top: Task option * bottom: Task option
-
-    [<RequireQualifiedAccess>]
-    type CellInteraction =
-        | Attachment of attachment: Attachment
-        | StatusChange of cellStatusChange: CellStatusChange
-    //            | Sort of top:Cell option * bottom:Cell option
-    and [<RequireQualifiedAccess>] CellStatusChange =
-        | Postpone of until: FlukeTime option
-        | Complete
-        | Dismiss
-        | Schedule
+    type CellAddress = { Task: Task; DateId: DateId }
 
     [<RequireQualifiedAccess>]
     type Interaction =
@@ -205,27 +189,33 @@ module Model =
         | Task of task: Task * interaction: TaskInteraction
         | Cell of cellAddress: CellAddress * interaction: CellInteraction
 
+    and [<RequireQualifiedAccess>] InformationInteraction =
+        | Attachment of attachment: Attachment
+        | Sort of top: Information option * bottom: Information option
+
+    and [<RequireQualifiedAccess>] TaskInteraction =
+        | Attachment of attachment: Attachment
+        | Archive
+        | Session of session: TaskSession
+        | Sort of top: Task option * bottom: Task option
+
+    and TaskSession = TaskSession of start: FlukeDateTime * duration: Minute * breakDuration: Minute
+
+    and [<RequireQualifiedAccess>] CellInteraction =
+        | Attachment of attachment: Attachment
+        | StatusChange of cellStatusChange: CellStatusChange
+
+    and [<RequireQualifiedAccess>] CellStatusChange =
+        | Postpone of until: FlukeTime option
+        | Complete
+        | Dismiss
+        | Schedule
+
     type UserInteraction = UserInteraction of user: User * moment: FlukeDateTime * interaction: Interaction
 
+    type Cell = Cell of address: CellAddress * status: CellStatus
 
-
-
-
-
-
-
-
-
-    //    type X =
-//        | SameDay
-//        | NextDay
-
-
-
-
-    type UserComment_ = UserComment_ of user: User * comment: string
-
-    type CellStatus =
+    and CellStatus =
         | Disabled
         | Suggested
         | Pending
@@ -240,77 +230,265 @@ module Model =
         | ManualPending
 
 
-    type TaskId = TaskId of informationName: InformationName * taskName: TaskName
-    //    type TaskSession = TaskSession of start: FlukeDateTime * duration: Minute * breakDuration: Minute
-//    type TaskSession = TaskSession of TaskInteraction
-    type TaskStatusEntry = TaskStatusEntry of user: User * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
-
-    type CellState =
-        {
-            Status: CellStatus
-            CellInteractions: CellInteraction list
-            Sessions: TaskInteraction list
-        }
-
-
-
-    type Cell = Cell of address: CellAddress * status: CellStatus
-    //    type TaskComment = TaskComment of task: Task * comment: UserComment
-
-    type CellStatusEntry = CellStatusEntry of user: User * task: Task * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
-
-    //    type CellComment = CellComment of task: Task * moment: FlukeDateTime * comment: UserComment
-    type CellSession = CellSession of task: Task * start: FlukeDateTime * duration: Minute
-
-    //    type InformationComment =
-//        { Information: Information
-//          Comment: InformationInteraction }
-
-    //    type CellEvent =
-//        | StatusEvent of CellStatusEntry
-//        | CommentEvent of CellComment
-//        | SessionEvent of CellSession
-
-    [<RequireQualifiedAccess>]
-    type TaskOrderPriority =
-        | First
-        | LessThan of Task
-        | Last
-
-    type TaskOrderEntry =
-        {
-            Task: Task
-            Priority: TaskOrderPriority
-        }
-
-    type TaskState =
-        {
-            Task: Task
-            Sessions: TaskInteraction list
-            UserInteractions: UserInteraction list
-            CellInteractions: (FlukeDate * CellInteraction) list
-            InformationMap: Map<Information, bool>
-            CellStateMap: Map<DateId, CellState>
-        }
-
-    type OldLane = OldLane of task: TaskState * cells: Cell list
 
 
 
 
-    [<RequireQualifiedAccess>]
-    type TreeAccess =
-        | Admin of user: User
-        | ReadOnly of user: User
 
-    type Tree =
-        {
-            Owner: User
-            SharedWith: TreeAccess list
-            Position: FlukeDateTime
-            InformationList: Information list
-            TaskStateList: TaskState list
-        }
+
+
+
+
+
+
+
+
+
+
+
+    module State =
+        type InformationState =
+            {
+                Information: Information
+                Attachments: Attachment list
+                SortList: (Information option * Information option) list
+            }
+
+
+        type CellState =
+            {
+                Status: CellStatus
+                Attachments: Attachment list
+                Sessions: TaskSession list
+            }
+
+        type TaskState =
+            {
+                Task: Task
+                Sessions: TaskSession list
+                Attachments: Attachment list
+                SortList: (Task option * Task option) list
+                CellStateMap: Map<DateId, CellState>
+                InformationMap: Map<Information, unit>
+            }
+
+
+        type TreeState =
+            {
+                Id: TreeId
+                Name: TreeName
+                Owner: User
+                SharedWith: TreeAccess list
+                Position: FlukeDateTime option
+                DayStart: FlukeTime
+                InformationStateMap: Map<Information, InformationState>
+                TaskStateMap: Map<Task, TaskState>
+            }
+
+        and TreeId = TreeId of guid: Guid
+
+        and TreeName = TreeName of name: string
+
+        and [<RequireQualifiedAccess>] TreeAccess =
+            | Admin of user: User
+            | ReadOnly of user: User
+
+        type TreeSelection =
+            {
+                InformationStateMap: Map<Information, InformationState>
+                TaskStateMap: Map<Task, TaskState>
+            }
+
+
+        let hasAccess treeState user =
+            match treeState with
+            | tree when tree.Owner = user -> true
+            | tree ->
+                tree.SharedWith
+                |> List.exists (function
+                    | TreeAccess.Admin dbUser -> dbUser = user
+                    | TreeAccess.ReadOnly dbUser -> dbUser = user)
+
+
+        let treeStateWithInteractions (userInteractionList: UserInteraction list) (treeState: TreeState) =
+            let treeState =
+                (treeState, userInteractionList)
+                ||> List.fold (fun treeState (UserInteraction (user, moment, interaction)) ->
+                        match interaction with
+                        | Interaction.Information (information, informationInteraction) ->
+                            let informationState =
+                                treeState.InformationStateMap
+                                |> Map.tryFind information
+                                |> Option.defaultValue
+                                    {
+                                        Information = information
+                                        Attachments = []
+                                        SortList = []
+                                    }
+
+                            let newInformationState =
+                                match informationInteraction with
+                                | InformationInteraction.Attachment attachment ->
+                                    let attachments =
+                                        attachment :: informationState.Attachments
+
+                                    let newInformationState =
+                                        { informationState with
+                                            Attachments = attachments
+                                        }
+
+                                    newInformationState
+
+                                | InformationInteraction.Sort (top, bottom) ->
+                                    let sortList =
+                                        (top, bottom) :: informationState.SortList
+
+                                    let newInformationState =
+                                        { informationState with
+                                            SortList = sortList
+                                        }
+
+                                    newInformationState
+
+                            let newInformationStateMap =
+                                treeState.InformationStateMap
+                                |> Map.add information newInformationState
+
+                            { treeState with
+                                InformationStateMap = newInformationStateMap
+                            }
+
+                        | Interaction.Task (task, taskInteraction) ->
+                            let taskState =
+                                treeState.TaskStateMap
+                                |> Map.tryFind task
+                                |> Option.defaultValue
+                                    {
+                                        Task = task
+                                        Sessions = []
+                                        Attachments = []
+                                        SortList = []
+                                        CellStateMap = Map.empty
+                                        InformationMap = Map.empty
+                                    }
+
+                            let newTaskState =
+                                match taskInteraction with
+                                | TaskInteraction.Attachment attachment ->
+                                    let attachments = attachment :: taskState.Attachments
+
+                                    let newTaskState =
+                                        { taskState with
+                                            Attachments = attachments
+                                        }
+
+                                    newTaskState
+
+                                | TaskInteraction.Sort (top, bottom) ->
+                                    let sortList = (top, bottom) :: taskState.SortList
+
+                                    let newTaskState = { taskState with SortList = sortList }
+
+                                    newTaskState
+                                | TaskInteraction.Session session ->
+                                    let sessions = session :: taskState.Sessions
+
+                                    let newTaskState = { taskState with Sessions = sessions }
+
+                                    newTaskState
+                                | TaskInteraction.Archive -> taskState
+
+                            let newTaskStateMap =
+                                treeState.TaskStateMap
+                                |> Map.add task newTaskState
+
+                            { treeState with
+                                TaskStateMap = newTaskStateMap
+                            }
+                        | Interaction.Cell ({ Task = task; DateId = dateId } as cellAddress, cellInteraction) ->
+                            let taskState =
+                                treeState.TaskStateMap
+                                |> Map.tryFind task
+                                |> Option.defaultValue
+                                    {
+                                        Task = task
+                                        Sessions = []
+                                        Attachments = []
+                                        SortList = []
+                                        CellStateMap = Map.empty
+                                        InformationMap = Map.empty
+                                    }
+
+                            let cellState =
+                                taskState.CellStateMap
+                                |> Map.tryFind dateId
+                                |> Option.defaultValue
+                                    {
+                                        Status = Disabled
+                                        Attachments = []
+                                        Sessions = []
+                                    }
+
+
+                            let newCellState =
+                                match cellInteraction with
+                                | CellInteraction.Attachment attachment ->
+                                    let attachments = attachment :: cellState.Attachments
+
+                                    let newCellState =
+                                        { cellState with
+                                            Attachments = attachments
+                                        }
+
+                                    newCellState
+                                | CellInteraction.StatusChange cellStatusChange ->
+                                    let manualCellStatus =
+                                        match cellStatusChange with
+                                        | CellStatusChange.Complete -> Completed
+                                        | CellStatusChange.Dismiss -> Dismissed
+                                        | CellStatusChange.Postpone until -> Postponed until
+                                        | CellStatusChange.Schedule -> ManualPending
+
+                                    let newCellState =
+                                        { cellState with
+                                            Status = UserStatus (user, manualCellStatus)
+                                        }
+
+                                    newCellState
+
+                            let newTaskState =
+                                { taskState with
+                                    CellStateMap =
+                                        taskState.CellStateMap
+                                        |> Map.add dateId newCellState
+                                }
+
+                            let newTaskStateMap =
+                                treeState.TaskStateMap
+                                |> Map.add task newTaskState
+
+                            { treeState with
+                                TaskStateMap = newTaskStateMap
+                            })
+
+            treeState
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -336,9 +514,16 @@ module Model =
 
     type FlukeDate with
 
-        member this.DateTime =
+        member inline this.DateTime =
             let Year year, Day day = this.Year, this.Day
             DateTime (year, int this.Month, day, 12, 0, 0)
+
+        static member inline Create year month day =
+            {
+                Year = Year year
+                Month = month
+                Day = Day day
+            }
 
         static member inline FromDateTime (date: DateTime) =
             {
@@ -347,14 +532,14 @@ module Model =
                 Day = Day date.Day
             }
 
-    let flukeDate year month day =
-        {
-            Year = Year year
-            Month = month
-            Day = Day day
-        }
 
     type FlukeTime with
+
+        static member Create hour minute =
+            {
+                Hour = Hour (float hour)
+                Minute = Minute (float minute)
+            }
 
         static member inline FromDateTime (date: DateTime) =
             {
@@ -362,32 +547,21 @@ module Model =
                 Minute = float date.Minute |> Minute
             }
 
-        member this.GreaterEqualThan time =
+        member inline this.GreaterEqualThan time =
             this.Hour > time.Hour
             || this.Hour = time.Hour
                && this.Minute >= time.Minute
 
-    let flukeTime hour minute =
-        {
-            Hour = Hour (float hour)
-            Minute = Minute (float minute)
-        }
 
     type FlukeDateTime with
 
-        member this.DateTime =
+        member inline this.DateTime =
             let Year year, Day day, Hour hour, Minute minute =
                 this.Date.Year, this.Date.Day, this.Time.Hour, this.Time.Minute
 
             DateTime (year, int this.Date.Month, day, int hour, int minute, 0)
 
-        static member inline FromDateTime (date: DateTime) =
-            {
-                Date = FlukeDate.FromDateTime date
-                Time = FlukeTime.FromDateTime date
-            }
-
-        member this.GreaterEqualThan (dayStart: FlukeTime) (DateId referenceDay) time =
+        member inline this.GreaterEqualThan (dayStart: FlukeTime) (DateId referenceDay) time =
             let testingAfterMidnight = dayStart.GreaterEqualThan time
             let currentlyBeforeMidnight = this.Time.GreaterEqualThan dayStart
 
@@ -402,11 +576,19 @@ module Model =
 
             this.DateTime >= dateToCompare.DateTime
 
-    let flukeDateTime year month day hour minute =
-        {
-            Date = flukeDate year month day
-            Time = flukeTime hour minute
-        }
+        static member inline FromDateTime (date: DateTime) =
+            {
+                Date = FlukeDate.FromDateTime date
+                Time = FlukeTime.FromDateTime date
+            }
+
+        static member inline Create year month day hour minute =
+            {
+                Date = FlukeDate.Create year month day
+                Time = FlukeTime.Create hour minute
+            }
+
+
 
     type Information with
 
@@ -448,11 +630,24 @@ module Model =
                 Duration = None
             }
 
-    let ofLane =
-        fun (OldLane (taskState, cells)) -> taskState, cells
 
     //    let ofTaskSession =
 //        fun (TaskInteraction (start, duration, breakDuration)) -> start, duration, breakDuration
+    open State
+
+    type TreeState with
+        static member Create (id, name, owner) =
+            {
+                Id = id
+                Name = name
+                Owner = owner
+                SharedWith = []
+                DayStart = FlukeTime.Create 00 00
+                Position = None
+                InformationStateMap = Map.empty
+                TaskStateMap = Map.empty
+            }
+
 
     let ofDateId =
         fun (DateId referenceDay) -> referenceDay
@@ -471,12 +666,12 @@ module Model =
 //    let ofCellComment =
 //        fun (CellComment (task, moment, userComment)) -> task, moment, userComment
 
-    let ofCellSession =
-        fun (CellSession (task, start, duration)) -> task, start, duration
+    //    let ofCellSession =
+//        fun (CellSession (task, start, duration)) -> task, start, duration
 
 
-    let ofTaskStatusEntry =
-        fun (TaskStatusEntry (user, moment, manualCellStatus)) -> user, moment, manualCellStatus
+    //    let ofTaskStatusEntry =
+//        fun (TaskStatusEntry (user, moment, manualCellStatus)) -> user, moment, manualCellStatus
 
 
     let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position: FlukeDateTime, DateId referenceDay) =
@@ -509,464 +704,9 @@ module Model =
             |> FlukeDate.FromDateTime
         |> DateId
 
-    let taskId (task: Task) =
-        TaskId (task.Information.Name, task.Name)
 
-    let createTaskStatusEntries task cellStatusEntries =
-        cellStatusEntries
-        |> List.filter (fun (CellStatusEntry (user, task', moment, manualCellStatus)) -> task' = task)
-        |> List.map (fun (CellStatusEntry (user, task', moment, entries)) -> TaskStatusEntry (user, moment, entries))
-        |> List.sortBy (fun (TaskStatusEntry (user, date, _)) -> date)
-
-
-
-
-module Rendering =
-    open Model
-
-    let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
-
-        let rec dateLoop (date: DateTime) (maxDate: DateTime) =
-            seq {
-                if date <= maxDate then
-                    yield date
-                    yield! dateLoop (date.AddDays 1.) maxDate
-            }
-
-        let dates =
-            cellDates
-            |> Seq.map (fun x -> x.DateTime)
-            |> Seq.sort
-            |> Seq.toArray
-
-        let minDate =
-            dates
-            |> Array.head
-            |> fun x -> x.AddDays -(float paddingLeft)
-
-        let maxDate =
-            dates
-            |> Array.last
-            |> fun x -> x.AddDays (float paddingRight)
-
-        dateLoop minDate maxDate
-        |> Seq.map FlukeDate.FromDateTime
-        |> Seq.toList
-
-
-    type LaneCellRenderState =
-        | WaitingFirstEvent
-        | WaitingEvent
-        | DayMatch
-        | Counting of int
-
-    type LaneCellRenderOutput =
-        | EmptyCell
-        | StatusCell of CellStatus
-        | TodayCell
-
-
-    let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) (taskState: TaskState) =
-        let convertManualCellStatus cellStatusChange =
-            match cellStatusChange with
-            | CellStatusChange.Complete -> Completed
-            | CellStatusChange.Dismiss -> Dismissed
-            | CellStatusChange.Postpone until -> Postponed until
-            | CellStatusChange.Schedule -> ManualPending
-
-        let cellStatusEventsByDateId =
-            taskState.UserInteractions
-            |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
-                match interaction with
-                | Interaction.Cell ({ DateId = (DateId referenceDay) }, CellInteraction.StatusChange statusChange) ->
-                    Some (dateId dayStart moment, (user, moment, convertManualCellStatus statusChange))
-                | _ -> None)
-            |> Map.ofList
-
-        let firstDateRange, lastDateRange =
-            //            let x x =
-//                let rec loop x = function
-//                    | () -> ()
-//                loop x
-//            let a = x dateSequence
-//            a |> ignore
-
-            let firstDateRange =
-                dateSequence
-                |> List.head
-                |> fun date -> { Date = date; Time = dayStart }
-
-            let lastDateRange =
-                dateSequence
-                |> List.last
-                |> fun date -> { Date = date; Time = dayStart }
-
-            firstDateRange, lastDateRange
-
-        let dateSequenceWithEntries =
-            let dates =
-                cellStatusEventsByDateId
-                |> Seq.map (fun (KeyValue ((DateId referenceDay), (user, moment, manualCellStatus))) ->
-                    referenceDay.DateTime) // Map.keys
-                |> Seq.sort
-                |> Seq.toArray
-
-            match dates with
-            | [||] -> dateSequence
-            | dates ->
-                [
-                    dates |> Array.head |> min firstDateRange.DateTime
-                    dates |> Array.last |> max lastDateRange.DateTime
-                ]
-                |> List.map FlukeDate.FromDateTime
-                |> getDateSequence (0, 0)
-            |> List.map (fun date -> { Date = date; Time = dayStart })
-
-
-        let rec loop renderState =
-            function
-            | moment :: tail ->
-                let dateId = dateId dayStart moment
-
-                let cellStatus =
-                    cellStatusEventsByDateId |> Map.tryFind dateId
-
-                let group = dayStart, position, dateId
-
-                let status, renderState =
-                    match cellStatus with
-                    | Some (user, moment, manualCellStatus) ->
-                        let renderState =
-                            match manualCellStatus, group with
-                            | Postponed (Some _), BeforeToday -> renderState
-                            | (Postponed None
-                              | ManualPending),
-                              BeforeToday -> WaitingEvent
-                            | Postponed None, Today -> DayMatch
-                            | _ -> Counting 1
-
-                        let event =
-                            match manualCellStatus, group with
-                            | Postponed (Some until), Today when position.GreaterEqualThan dayStart dateId until ->
-                                Pending
-                            | _ -> UserStatus (user, manualCellStatus)
-
-                        StatusCell event, renderState
-
-                    | None ->
-                        let getStatus renderState =
-                            match renderState, group with
-                            | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
-                            | DayMatch, BeforeToday -> StatusCell Missed, WaitingEvent
-                            | WaitingEvent, BeforeToday -> StatusCell Missed, WaitingEvent
-
-                            | WaitingFirstEvent, Today -> TodayCell, Counting 1
-                            | DayMatch, Today -> TodayCell, Counting 1
-                            | WaitingEvent, Today -> TodayCell, Counting 1
-
-                            | WaitingFirstEvent, AfterToday -> EmptyCell, WaitingFirstEvent
-                            | DayMatch, AfterToday -> StatusCell Pending, Counting 1
-                            | WaitingEvent, AfterToday -> StatusCell Pending, Counting 1
-
-                            | Counting count, _ -> EmptyCell, Counting (count + 1)
-
-                        match taskState.Task.Scheduling with
-                        | Recurrency (Offset offset) ->
-                            let days =
-                                match offset with
-                                | Days days -> days
-                                | Weeks weeks -> weeks * 7
-                                | Months months -> months * 28
-
-                            let renderState =
-                                match renderState with
-                                | Counting count when count = days -> DayMatch
-                                | _ -> renderState
-
-                            getStatus renderState
-
-                        | Recurrency (Fixed recurrencyList) ->
-                            let isDateMatched =
-                                recurrencyList
-                                |> List.map (function
-                                    | Weekly dayOfWeek -> dayOfWeek = moment.DateTime.DayOfWeek
-                                    | Monthly day -> day = moment.Date.Day
-                                    | Yearly (day, month) -> day = moment.Date.Day && month = moment.Date.Month)
-                                |> List.exists id
-
-                            match renderState, group with
-                            | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
-                            | _, Today when isDateMatched -> TodayCell, Counting 1
-                            | WaitingFirstEvent, Today -> EmptyCell, Counting 1
-                            | _, _ when isDateMatched -> getStatus WaitingEvent
-                            | _, _ -> getStatus renderState
-
-                        | Manual suggestion ->
-                            match renderState, group, suggestion with
-                            | WaitingFirstEvent, Today, WithSuggestion when taskState.Task.PendingAfter = None ->
-                                StatusCell Suggested, Counting 1
-                            | WaitingFirstEvent, Today, WithSuggestion -> TodayCell, Counting 1
-                            | WaitingFirstEvent, Today, _ -> StatusCell Suggested, Counting 1
-                            | _ ->
-                                let status, renderState = getStatus renderState
-
-                                let status =
-                                    match status, suggestion with
-                                    | EmptyCell, WithSuggestion -> StatusCell Suggested
-                                    | TodayCell, _ -> StatusCell Pending
-                                    | status, _ -> status
-
-                                status, renderState
-
-                let status =
-                    match status with
-                    | EmptyCell -> Disabled
-                    | StatusCell status -> status
-                    | TodayCell ->
-                        match taskState.Task.MissedAfter, taskState.Task.PendingAfter with
-                        | Some missedAfter, _ when position.GreaterEqualThan dayStart dateId missedAfter -> MissedToday
-
-                        | _, Some pendingAfter when position.GreaterEqualThan dayStart dateId pendingAfter -> Pending
-
-                        | _, None -> Pending
-
-                        | _ -> Suggested
-
-                (moment, status) :: loop renderState tail
-            | [] -> []
-
-        let cells =
-            loop WaitingFirstEvent dateSequenceWithEntries
-            |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
-            |> List.map (fun (moment, cellStatus) ->
-                Cell
-                    ({
-                         DateId = dateId dayStart moment
-                         Task = taskState.Task
-                     },
-                     cellStatus))
-
-        OldLane (taskState, cells)
-
-
-
-module Sorting =
-    open Model
-
-    let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
-        let result = List<Task> ()
-
-        let taskOrderList =
-            taskOrderList
-            |> Seq.rev
-            |> Seq.distinctBy (fun x -> x.Task)
-            |> Seq.rev
-            |> Seq.toList
-
-        for { Priority = priority; Task = task } in taskOrderList do
-            match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | TaskOrderPriority.First, None -> result.Insert (0, task)
-            | TaskOrderPriority.Last, None -> result.Add task
-            | TaskOrderPriority.LessThan lessThan, None ->
-                match result |> Seq.tryFindIndexBack ((=) lessThan) with
-                | None ->
-                    seq {
-                        task
-                        lessThan
-                    }
-                    |> Seq.iter (fun x -> result.Insert (0, x))
-                | Some i -> result.Insert (i + 1, task)
-            | _ -> ()
-
-        for { Priority = priority; Task = task } in taskOrderList do
-            match priority, result |> Seq.tryFindIndexBack ((=) task) with
-            | TaskOrderPriority.First, None -> result.Insert (0, task)
-            | TaskOrderPriority.Last, None -> result.Add task
-            | _ -> ()
-
-        result |> Seq.toList
-
-    let applyManualOrder (taskOrderList: TaskOrderEntry list) lanes =
-        let tasks =
-            lanes
-            |> List.map
-                (ofLane
-                 >> fst
-                 >> fun taskState -> taskState.Task)
-
-        let tasksSet = tasks |> Set.ofList
-
-        let orderEntriesOfTasks =
-            taskOrderList
-            |> List.filter (fun orderEntry -> tasksSet.Contains orderEntry.Task)
-
-        let tasksWithOrderEntrySet =
-            orderEntriesOfTasks
-            |> List.map (fun x -> x.Task)
-            |> Set.ofList
-
-        let tasksWithoutOrderEntry =
-            tasks
-            |> List.filter (fun task -> not (tasksWithOrderEntrySet.Contains task))
-
-        let orderEntriesMissing =
-            tasksWithoutOrderEntry
-            |> List.map (fun task ->
-                {
-                    Task = task
-                    Priority = TaskOrderPriority.Last
-                })
-
-        let newTaskOrderList =
-            orderEntriesMissing @ orderEntriesOfTasks
-
-        let taskIndexMap =
-            newTaskOrderList
-            |> getManualSortedTaskList
-            |> List.mapi (fun i task -> task, i)
-            |> Map.ofList
-
-        lanes
-        |> List.sortBy (fun (OldLane (taskState, _)) -> taskIndexMap.[taskState.Task])
-
-    let sortLanesByFrequency lanes =
-        lanes
-        |> List.sortBy (fun (OldLane (taskState, cells)) ->
-            let disabledCellsCount =
-                cells
-                |> List.filter (function
-                    | Cell (_,
-                            (Disabled
-                            | Suggested)) -> true
-                    | _ -> false)
-                |> List.length
-
-            disabledCellsCount - taskState.Sessions.Length)
-
-    let sortLanesByIncomingRecurrency dayStart position lanes =
-        lanes
-        |> List.sortBy (fun (OldLane (_, cells)) ->
-            let lowPriority =
-                cells
-                |> List.exists (fun (Cell (address, status)) ->
-                    let today = isToday dayStart position address.DateId
-                    match today, status with
-                    | true,
-                      (Disabled
-                      | Suggested) -> true
-                    | _ -> false)
-
-            if not lowPriority then
-                cells.Length
-            else
-                cells
-                |> List.tryFindIndex (function
-                    | Cell (_,
-                            (Pending
-                            | UserStatus (_, ManualPending))) -> true
-                    | _ -> false)
-                |> Option.defaultValue cells.Length)
-
-    type LaneSortType =
-        | TaskOrderList
-        | DefaultSort
-
-    let sortLanesByTimeOfDay dayStart (position: FlukeDateTime) taskOrderList lanes =
-        let currentDateId = dateId dayStart position
-
-        let getGroup taskState (Cell (address, status)) =
-            let (|PostponedUntil|Postponed|WasPostponed|NotPostponed|) =
-                function
-                | Postponed None -> Postponed
-                | Postponed (Some until) when position.GreaterEqualThan dayStart address.DateId until -> WasPostponed
-                | Postponed _ -> PostponedUntil
-                | _ -> NotPostponed
-
-            let getSessionsTodayCount (cellStateMap: Map<DateId, CellState>) =
-                cellStateMap
-                |> Map.tryFind currentDateId
-                |> Option.map (fun cellState -> cellState.Sessions)
-                |> Option.defaultValue []
-                |> fun sessions -> sessions.Length
-
-            let (|SchedulingRecurrency|ManualWithSuggestion|ManualWithoutSuggestion|HasSessionToday|) (taskState: TaskState) =
-                match taskState with
-                | { Task = { Scheduling = Recurrency _ } } -> SchedulingRecurrency
-                | { CellStateMap = cellStateMap } when getSessionsTodayCount cellStateMap > 0 -> HasSessionToday
-                | { Task = { Scheduling = Manual WithSuggestion } } -> ManualWithSuggestion
-                | { Task = { Scheduling = Manual WithoutSuggestion } } -> ManualWithoutSuggestion
-
-
-            let groupsIndexList =
-                [
-                    (function
-                    | MissedToday, _ -> Some TaskOrderList
-                    | _ -> None)
-                    (function
-                    | UserStatus (user, ManualPending), _ -> Some TaskOrderList
-                    | _ -> None)
-                    (function
-                    | ((UserStatus (_, WasPostponed))
-                      | Pending),
-                      _ -> Some TaskOrderList
-                    | _ -> None)
-                    (function
-                    | UserStatus (user, PostponedUntil), _ -> Some TaskOrderList
-                    | _ -> None)
-                    (function
-                    | Suggested, SchedulingRecurrency -> Some TaskOrderList
-                    | _ -> None)
-                    (function
-                    | Suggested, ManualWithSuggestion -> Some TaskOrderList
-                    | _ -> None)
-                    (function
-                    | UserStatus (user, Completed), _ -> Some DefaultSort
-                    | _ -> None)
-                    (function
-                    | UserStatus (user, Dismissed), _ -> Some DefaultSort
-                    | _ -> None)
-                    (function
-                    | UserStatus (user, Postponed), _ -> Some TaskOrderList
-                    | _ -> None)
-                    (function
-                    | _, HasSessionToday -> Some DefaultSort
-                    | _ -> None)
-                    //                  (function Disabled,                                   SchedulingRecurrency    -> Some DefaultSort   | _ -> None)
-                    //                  (function Suggested,                                  ManualWithoutSuggestion -> Some DefaultSort   | _ -> None)
-                    (function
-                    | _ -> Some DefaultSort)
-                ]
-
-            groupsIndexList
-            |> List.map (fun orderFn -> orderFn (status, taskState))
-            |> List.indexed
-            |> List.choose (function
-                | groupIndex, Some sortType -> Some (groupIndex, sortType)
-                | _, None -> None)
-            |> List.head
-
-        lanes
-        |> List.indexed
-        |> List.groupBy (fun (_, (OldLane (taskState, cells))) ->
-            cells
-            |> List.filter (fun (Cell (address, _)) -> isToday dayStart position address.DateId)
-            |> List.map (getGroup taskState)
-            |> List.minBy fst)
-        |> List.collect (fun ((groupIndex, sortType), indexedLanes) ->
-            match sortType with
-            | TaskOrderList ->
-                indexedLanes
-                |> List.map snd
-                |> applyManualOrder taskOrderList
-                |> List.indexed
-            | DefaultSort -> indexedLanes
-            |> List.map (fun (laneIndex, lane) -> (groupIndex * 1000) + laneIndex, lane))
-        |> List.sortBy fst
-        |> List.map snd
-
-module Temp =
-
-    type Mode =
-        | Navigation
-        | Selection
-        | Editing
+//    let createTaskStatusEntries task cellStatusEntries =
+//        cellStatusEntries
+//        |> List.filter (fun (CellStatusEntry (user, task', moment, manualCellStatus)) -> task' = task)
+//        |> List.map (fun (CellStatusEntry (user, task', moment, entries)) -> TaskStatusEntry (user, moment, entries))
+//        |> List.sortBy (fun (TaskStatusEntry (user, date, _)) -> date)
