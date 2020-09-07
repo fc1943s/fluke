@@ -523,7 +523,7 @@ module TempData =
         {
             User: User option
             GetLivePosition: unit -> FlukeDateTime
-            TreeMap: Map<State.TreeId, State.TreeState * bool>
+            TreeStateMap: Map<State.TreeId, State.TreeState * bool>
         }
 
     type DslData =
@@ -533,6 +533,48 @@ module TempData =
             TaskOrderList: TaskOrderEntry list
             TaskStateList: (State.TaskState * UserInteraction list) list
         }
+
+    let mergeInformationStateMap (oldMap: Map<Information, State.InformationState>)
+                                 (newMap: Map<Information, State.InformationState>)
+                                 =
+        (oldMap, newMap)
+        ||> Map.mapValues2 (fun oldValue newValue ->
+                { oldValue with
+                    Attachments = oldValue.Attachments @ newValue.Attachments
+                    SortList = oldValue.SortList @ newValue.SortList
+                })
+
+    let mergeCellStateMap (oldMap: Map<DateId, State.CellState>) (newMap: Map<DateId, State.CellState>) =
+        (oldMap, newMap)
+        ||> Map.mapValues2 (fun oldValue newValue -> newValue)
+
+    let mergeInformationMap (oldMap: Map<Information, unit>) (newMap: Map<Information, unit>) =
+        (oldMap, newMap)
+        ||> Map.mapValues2 (fun oldValue newValue -> newValue)
+
+    let mergeTaskState (oldValue: State.TaskState) (newValue: State.TaskState) =
+        { oldValue with
+            Sessions = oldValue.Sessions @ newValue.Sessions
+            Attachments = oldValue.Attachments @ newValue.Attachments
+            SortList = oldValue.SortList @ newValue.SortList
+            CellStateMap = mergeCellStateMap oldValue.CellStateMap newValue.CellStateMap
+            InformationMap = mergeInformationMap oldValue.InformationMap newValue.InformationMap
+        }
+
+    let mergeTaskStateMap (oldMap: Map<Task, State.TaskState>) (newMap: Map<Task, State.TaskState>) =
+        (oldMap, newMap) ||> Map.mapValues2 mergeTaskState
+
+
+    let mergeTreeState (oldValue: State.TreeState) (newValue: State.TreeState) =
+        { oldValue with
+            InformationStateMap = mergeInformationStateMap oldValue.InformationStateMap newValue.InformationStateMap
+            TaskStateMap = mergeTaskStateMap oldValue.TaskStateMap newValue.TaskStateMap
+        }
+
+    let mergeTreeStateMap (oldMap: Map<State.TreeId, State.TreeState>) (newMap: Map<State.TreeId, State.TreeState>) =
+
+        (oldMap, newMap) ||> Map.mapValues2 mergeTreeState
+
     // How the HELL will I rewrite this? 🤦
     let dslDataFactory taskContainerFactory
                        (dslTreeGetter: ((string -> Task) -> (Information * (string * (DslTask * User) list) list) list))
@@ -656,59 +698,122 @@ module TempData =
         module Consts =
             let testDayStart = FlukeTime.Create 12 00
 
+        let dslDataToTreeState user dslData =
+            let userInteractions =
+                dslData.TaskStateList |> List.collect snd
+
+            let treeStateWithoutInteractions: State.TreeState =
+                {
+                    Id =
+                        State.TreeId
+                        <| Guid "17A1AA3D-95C7-424E-BD6D-7C12B33CED37"
+                    Name = State.TreeName "dslDataToState"
+                    Owner = user
+                    SharedWith = []
+                    Position = None
+                    InformationStateMap = dslData.InformationStateMap
+                    TaskStateMap = Map.empty
+                }
+
+            treeStateWithoutInteractions
+            |> State.treeStateWithInteractions userInteractions
+
         let createRenderLaneTestData (testData: {| Position: FlukeDateTime
                                                    Expected: (FlukeDate * CellStatus) list
                                                    Events: DslTask list
                                                    Task: Task |}) =
-            let eventsWithUser =
-                testData.Events
-                |> List.map (fun x -> x, Users.fluke)
+            let user = Users.fluke
 
-            {
-                TaskStateList =
-                    [
-                        createTaskState Consts.testDayStart testData.Position testData.Task eventsWithUser
-                    ]
-                TaskOrderList =
-                    [
-                        {
-                            Task = testData.Task
-                            Priority = TaskOrderPriority.First
-                        }
-                    ]
-                GetLivePosition = fun () -> testData.Position
-                InformationStateMap =
-                    [ testData.Task.Information ]
-                    |> State.informationListToStateMap
-            }
+            let eventsWithUser =
+                testData.Events |> List.map (fun x -> x, user)
+
+            let dslData =
+                {
+                    TaskStateList =
+                        [
+                            createTaskState Consts.testDayStart testData.Position testData.Task eventsWithUser
+                        ]
+                    TaskOrderList =
+                        [
+                            {
+                                Task = testData.Task
+                                Priority = TaskOrderPriority.First
+                            }
+                        ]
+                    GetLivePosition = fun () -> testData.Position
+                    InformationStateMap =
+                        [ testData.Task.Information ]
+                        |> State.informationListToStateMap
+                }
+
+            let getLivePosition = fun () -> testData.Position
+
+            let treeState = dslDataToTreeState Users.fluke dslData
+
+            let treeStateMap =
+                [ treeState.Id, (treeState, true) ] |> Map.ofList
+
+            let state =
+                {
+                    User = Some Users.fluke
+                    GetLivePosition = getLivePosition
+                    TreeStateMap = treeStateMap
+                }
+
+            dslData
 
 
         let createSortLanesTestData (testData: {| Position: FlukeDateTime
                                                   Data: (Task * DslTask list) list
                                                   Expected: string list |}) =
-            let taskStateList =
-                testData.Data
-                |> List.map (fun (task, events) ->
-                    events
-                    |> List.map (fun dslTask -> dslTask, Users.fluke)
-                    |> createTaskState Consts.testDayStart testData.Position task)
+            let user = Users.fluke
 
-            {
-                TaskStateList = taskStateList
-                TaskOrderList =
+            let dslData =
+                let taskStateList =
+                    testData.Data
+                    |> List.map (fun (task, events) ->
+                        events
+                        |> List.map (fun dslTask -> dslTask, user)
+                        |> createTaskState Consts.testDayStart testData.Position task)
+
+                let taskOrderList =
                     testData.Data
                     |> List.map (fun (task, events) ->
                         {
                             Task = task
                             Priority = TaskOrderPriority.Last
                         })
-                GetLivePosition = fun () -> testData.Position
-                InformationStateMap =
+
+                let getLivePosition = fun () -> testData.Position
+
+                let informationStateMap =
                     taskStateList
                     |> List.map (fun (taskState, _) -> taskState.Task.Information)
                     |> List.distinct
                     |> State.informationListToStateMap
-            }
+
+                {
+                    TaskStateList = taskStateList
+                    TaskOrderList = taskOrderList
+                    GetLivePosition = getLivePosition
+                    InformationStateMap = informationStateMap
+                }
+
+            let getLivePosition = fun () -> testData.Position
+
+            let treeState = dslDataToTreeState Users.fluke dslData
+
+            let treeStateMap =
+                [ treeState.Id, (treeState, true) ] |> Map.ofList
+
+            let state =
+                {
+                    User = Some Users.fluke
+                    GetLivePosition = getLivePosition
+                    TreeStateMap = treeStateMap
+                }
+
+            dslData
 
         let tempData =
             {|
@@ -969,37 +1074,6 @@ module TempData =
                     |}
 
                     |> createSortLanesTestData
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
             |}

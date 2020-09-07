@@ -264,6 +264,7 @@ module Model =
 
         type CellState =
             {
+                User: User
                 Status: CellStatus
                 Attachments: Attachment list
                 Sessions: TaskSession list
@@ -287,7 +288,6 @@ module Model =
                 Owner: User
                 SharedWith: TreeAccess list
                 Position: FlukeDateTime option
-                DayStart: FlukeTime
                 InformationStateMap: Map<Information, InformationState>
                 TaskStateMap: Map<Task, TaskState>
             }
@@ -327,7 +327,6 @@ module Model =
                 |> List.exists (function
                     | TreeAccess.Admin dbUser -> dbUser = user
                     | TreeAccess.ReadOnly dbUser -> dbUser = user)
-
 
         let treeStateWithInteractions (userInteractionList: UserInteraction list) (treeState: TreeState) =
             let treeState =
@@ -443,6 +442,7 @@ module Model =
                                 |> Map.tryFind dateId
                                 |> Option.defaultValue
                                     {
+                                        User = user
                                         Status = Disabled
                                         Attachments = []
                                         Sessions = []
@@ -661,7 +661,6 @@ module Model =
                 Name = name
                 Owner = owner
                 SharedWith = []
-                DayStart = FlukeTime.Create 00 00
                 Position = None
                 InformationStateMap = Map.empty
                 TaskStateMap = Map.empty

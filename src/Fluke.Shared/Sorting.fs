@@ -142,4 +142,3 @@ module Sorting =
             |> List.map (fun (laneIndex, lane) -> (groupIndex * 1000) + laneIndex, lane))
         |> List.sortBy fst
         |> List.map snd
-

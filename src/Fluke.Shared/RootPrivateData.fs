@@ -125,42 +125,46 @@ module RootPrivateData =
         open Model
         open Model.State
 
-        let dslData = PrivateData.Tasks.dslData
-        let sharedDslData = SharedPrivateData.SharedTasks.dslData
+        module Private =
 
-        let privateInteractions =
-            [
-                yield! dslData.TaskStateList |> List.collect snd
-                yield! PrivateData.InformationCommentInteractions.informationCommentInteractions
-                yield! PrivateData.CellCommentInteractions.cellCommentInteractions
-                yield! PrivateData.Journal.cellCommentInteractions
-                yield! PrivateData.TaskCommentInteractions.taskCommentInteractions
-                yield! PrivateData.CellStatusChangeInteractions.cellStatusChangeInteractions
-            ]
+            let dslTreeState =
+                PrivateData.Tasks.dslData
+                |> TempData.Testing.dslDataToTreeState PrivateData.PrivateData.Consts.currentUser
 
-        let rec ``fc1943s/private`` =
-            TreeState.Create
-                (TreeId (Guid "8FE2ECF3-0DCB-4933-86B9-13DE90D659F0"),
-                 TreeName (nameof ``fc1943s/private``),
-                 TempData.Users.fc1943s)
-            |> treeStateWithInteractions privateInteractions
+            let sharedDslTreeState =
+                SharedPrivateData.SharedTasks.dslData
+                |> TempData.Testing.dslDataToTreeState PrivateData.PrivateData.Consts.currentUser
 
-        let rec ``liryanne/private`` =
-            TreeState.Create
-                (TreeId (Guid "A92CCFC3-9BF5-4921-9B1B-4D6787BF9C60"),
-                 TreeName (nameof ``liryanne/private``),
-                 TempData.Users.liryanne)
-            |> treeStateWithInteractions privateInteractions
-
-        let rec ``liryanne/shared`` =
-            TreeState.Create
-                (TreeId (Guid "9A7A797D-0615-4CF6-B85D-86985978E251"),
-                 TreeName (nameof ``liryanne/shared``),
-                 TempData.Users.liryanne)
-            |> treeStateWithInteractions
+            let privateInteractions =
                 [
-                    yield! sharedDslData.TaskStateList |> List.collect snd
+                    yield! PrivateData.InformationCommentInteractions.informationCommentInteractions
+                    yield! PrivateData.CellCommentInteractions.cellCommentInteractions
+                    yield! PrivateData.Journal.cellCommentInteractions
+                    yield! PrivateData.TaskCommentInteractions.taskCommentInteractions
+                    yield! PrivateData.CellStatusChangeInteractions.cellStatusChangeInteractions
+                ]
 
+            let rec ``fc1943s/private`` =
+                TreeState.Create
+                    (id = TreeId (Guid "8FE2ECF3-0DCB-4933-86B9-13DE90D659F0"),
+                     name = TreeName (nameof ``fc1943s/private``),
+                     owner = TempData.Users.fc1943s)
+                |> treeStateWithInteractions privateInteractions
+                |> TempData.mergeTreeState dslTreeState
+
+            let rec ``liryanne/private`` =
+                TreeState.Create
+                    (id = TreeId (Guid "A92CCFC3-9BF5-4921-9B1B-4D6787BF9C60"),
+                     name = TreeName (nameof ``liryanne/private``),
+                     owner = TempData.Users.liryanne)
+                |> treeStateWithInteractions privateInteractions
+
+            let rec ``liryanne/shared`` =
+                TreeState.Create
+                    (id = TreeId (Guid "9A7A797D-0615-4CF6-B85D-86985978E251"),
+                     name = TreeName (nameof ``liryanne/shared``),
+                     owner = TempData.Users.liryanne)
+                |> treeStateWithInteractions [
                     yield! SharedPrivateData.liryanne.InformationCommentInteractions.informationCommentInteractions
                     yield! SharedPrivateData.fc1943s.InformationCommentInteractions.informationCommentInteractions
                     yield! SharedPrivateData.liryanne.CellCommentInteractions.cellCommentInteractions
@@ -169,53 +173,59 @@ module RootPrivateData =
                     yield! SharedPrivateData.fc1943s.TaskCommentInteractions.taskCommentInteractions
                     yield! SharedPrivateData.liryanne.CellStatusChangeInteractions.cellStatusChangeInteractions
                     yield! SharedPrivateData.fc1943s.CellStatusChangeInteractions.cellStatusChangeInteractions
-                ]
+                   ]
+                |> TempData.mergeTreeState sharedDslTreeState
 
-        let rec ``fluke/samples/laneRendering/frequency/postponed_until/postponed_until_later`` =
-            TreeState.Create
-                (id = TreeId (Guid "84998AA3-7262-439F-8E6C-43FDD56A0DD6"),
-                 name =
-                     TreeName (nameof ``fluke/samples/laneRendering/frequency/postponed_until/postponed_until_later``),
-                 owner = TempData.Users.fluke)
-            |> treeStateWithInteractions []
+            let rec ``fluke/samples/laneRendering/frequency/postponed_until/postponed_until_later`` =
+                TreeState.Create
+                    (id = TreeId (Guid "84998AA3-7262-439F-8E6C-43FDD56A0DD6"),
+                     name =
+                         TreeName
+                             (nameof ``fluke/samples/laneRendering/frequency/postponed_until/postponed_until_later``),
+                     owner = TempData.Users.fluke)
+                |> treeStateWithInteractions []
 
-        let rec ``fluke/samples/laneSorting/frequency`` =
-            TreeState.Create
-                (id = TreeId (Guid "46A344F2-2E6C-47DF-A87B-CB2DD326417B"),
-                 name = TreeName (nameof ``fluke/samples/laneSorting/frequency``),
-                 owner = TempData.Users.fluke)
-            |> treeStateWithInteractions []
+            let rec ``fluke/samples/laneSorting/frequency`` =
+                TreeState.Create
+                    (id = TreeId (Guid "46A344F2-2E6C-47DF-A87B-CB2DD326417B"),
+                     name = TreeName (nameof ``fluke/samples/laneSorting/frequency``),
+                     owner = TempData.Users.fluke)
+                |> treeStateWithInteractions []
 
-        let rec ``fluke/samples/laneSorting/timeOfDay`` =
-            TreeState.Create
-                (id = TreeId (Guid "61897654-D28F-4DCA-8185-D7B9EE83284B"),
-                 name = TreeName (nameof ``fluke/samples/laneSorting/timeOfDay``),
-                 owner = TempData.Users.fluke)
-            |> treeStateWithInteractions []
+            let rec ``fluke/samples/laneSorting/timeOfDay`` =
+                TreeState.Create
+                    (id = TreeId (Guid "61897654-D28F-4DCA-8185-D7B9EE83284B"),
+                     name = TreeName (nameof ``fluke/samples/laneSorting/timeOfDay``),
+                     owner = TempData.Users.fluke)
+                |> treeStateWithInteractions []
 
+        open Private
 
-        let state:TempData.State =
-            let privateTreeState =
-                [
-                    ``fc1943s/private``
-                    ``liryanne/private``
-                ]
-                |> List.find (fun treeState -> treeState.Owner = PrivateData.PrivateData.Consts.currentUser)
-
+        let state: TempData.State =
             let treeStateMap =
-                [
-                    privateTreeState, true
-                    ``liryanne/shared``, true
-                    ``fluke/samples/laneSorting/frequency``, false
-                    ``fluke/samples/laneSorting/timeOfDay``, false
-                ]
-                |> List.map (fun (tree, selected) -> tree.Id, (tree, selected))
-                |> Map.ofList
+                let privateTreeState =
+                    [
+                        ``fc1943s/private``
+                        ``liryanne/private``
+                    ]
+                    |> List.find (fun treeState -> treeState.Owner = PrivateData.PrivateData.Consts.currentUser)
+
+                let result =
+                    [
+                        privateTreeState, true
+                        ``liryanne/shared``, true
+                        ``fluke/samples/laneSorting/frequency``, false
+                        ``fluke/samples/laneSorting/timeOfDay``, false
+                    ]
+                    |> List.map (fun (tree, selected) -> tree.Id, (tree, selected))
+                    |> Map.ofList
+
+                result
 
             {
                 User = Some PrivateData.PrivateData.Consts.currentUser
                 GetLivePosition = TempData.getLivePosition
-                TreeMap = treeStateMap
+                TreeStateMap = treeStateMap
             }
 
 
