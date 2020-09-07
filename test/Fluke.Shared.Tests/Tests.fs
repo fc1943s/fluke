@@ -10,6 +10,8 @@ open Fluke.Shared.TempData
 open Suigetsu.Core
 
 module Data =
+    open Old
+
     let task1 =
         { Task.Default with
             Name = TaskName "1"
@@ -63,6 +65,7 @@ module Data =
 
 module Tests =
     open Data
+    open Old
 
     [<Tests>]
     let tests =
@@ -341,18 +344,21 @@ module Tests =
                                 |> List.map (fun (task, events) ->
                                     createTaskState
                                         Testing.Consts.testDayStart
+                                        props.Position
                                         task
                                         (events |> List.map (fun x -> x, Users.fluke)))
 
                             let dateSequence =
                                 taskStateList
-                                |> Seq.collect (fun x -> x.CellStateMap |> Map.keys)
+                                |> Seq.collect (fun (taskState, _) -> taskState.CellStateMap |> Map.keys)
                                 |> Seq.toList
                                 |> List.map (fun (DateId referenceDay) -> referenceDay)
                                 |> Rendering.getDateSequence (35, 35)
 
                             taskStateList
-                            |> List.map (Rendering.renderLane Testing.Consts.testDayStart props.Position dateSequence)
+                            |> List.map
+                                (fst
+                                 >> Rendering.renderLane Testing.Consts.testDayStart props.Position dateSequence)
                             |> fun lanes ->
                                 match props.Sort with
                                 | NoSorting -> lanes
@@ -602,7 +608,8 @@ module Tests =
                                             },
                                             [
                                                 DslStatusEntry
-                                                    (FlukeDate.Create 2020 Month.March 10, Postponed (FlukeTime.Create 13 00 |> Some))
+                                                    (FlukeDate.Create 2020 Month.March 10,
+                                                     Postponed (FlukeTime.Create 13 00 |> Some))
                                             ]
 
                                             { Task.Default with
@@ -645,7 +652,8 @@ module Tests =
                                             },
                                             [
                                                 DslStatusEntry
-                                                    (FlukeDate.Create 2020 Month.March 10, Postponed (FlukeTime.Create 15 00 |> Some))
+                                                    (FlukeDate.Create 2020 Month.March 10,
+                                                     Postponed (FlukeTime.Create 15 00 |> Some))
                                             ]
 
                                             { Task.Default with
@@ -691,9 +699,10 @@ module Tests =
                             let taskState =
                                 createTaskState
                                     Testing.Consts.testDayStart
+                                    props.Position
                                     props.Task
-                                    (props.Events
-                                     |> List.map (fun x -> x, Users.fluke))
+                                    (props.Events |> List.map (fun x -> x, Users.fluke))
+                                |> fst
 
                             let dateSequence = props.Expected |> List.map fst
 
@@ -937,7 +946,8 @@ module Tests =
                                                 }
                                             Expected =
                                                 [
-                                                    FlukeDate.Create 2020 Month.March 8, UserStatus (Users.fluke, Completed)
+                                                    FlukeDate.Create 2020 Month.March 8,
+                                                    UserStatus (Users.fluke, Completed)
                                                     FlukeDate.Create 2020 Month.March 9, Disabled
                                                     FlukeDate.Create 2020 Month.March 10, Disabled
                                                     FlukeDate.Create 2020 Month.March 11, Pending
@@ -976,7 +986,8 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
+                                                    DslStatusEntry
+                                                        (FlukeDate.Create 2020 Month.March 10, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1005,7 +1016,8 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
+                                                    DslStatusEntry
+                                                        (FlukeDate.Create 2020 Month.March 10, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1033,7 +1045,8 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
+                                                    DslStatusEntry
+                                                        (FlukeDate.Create 2020 Month.March 10, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1054,7 +1067,8 @@ module Tests =
                                             Expected =
                                                 [
                                                     FlukeDate.Create 2020 Month.March 7, Disabled
-                                                    FlukeDate.Create 2020 Month.March 8, UserStatus (Users.fluke, Completed)
+                                                    FlukeDate.Create 2020 Month.March 8,
+                                                    UserStatus (Users.fluke, Completed)
                                                     FlukeDate.Create 2020 Month.March 9, Disabled
                                                     FlukeDate.Create 2020 Month.March 10, Missed
                                                     FlukeDate.Create 2020 Month.March 11, Pending
@@ -1267,7 +1281,8 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslStatusEntry (FlukeDate.Create 2020 Month.March 18, Postponed None)
+                                                    DslStatusEntry
+                                                        (FlukeDate.Create 2020 Month.March 18, Postponed None)
                                                 ]
                                         |}
                                 }
@@ -1578,10 +1593,10 @@ module Tests =
                                                 ]
                                             Events =
                                                 [
-                                                    DslSession (flukeDateTime 2020 Month.March 01 11 00)
-                                                    DslSession (flukeDateTime 2020 Month.March 01 13 00)
-                                                    DslSession (flukeDateTime 2020 Month.March 08 11 00)
-                                                    DslSession (flukeDateTime 2020 Month.March 08 13 00)
+                                                    DslSession (FlukeDateTime.Create 2020 Month.March 01 11 00)
+                                                    DslSession (FlukeDateTime.Create 2020 Month.March 01 13 00)
+                                                    DslSession (FlukeDateTime.Create 2020 Month.March 08 11 00)
+                                                    DslSession (FlukeDateTime.Create 2020 Month.March 08 13 00)
                                                 ]
                                         |}
 
@@ -1590,9 +1605,11 @@ module Tests =
                                     let taskState =
                                         createTaskState
                                             Testing.Consts.testDayStart
+                                            laneRenderingTestData.Position
                                             laneRenderingTestData.Task
                                             (laneRenderingTestData.Events
                                              |> List.map (fun x -> x, Users.fluke))
+                                        |> fst
 
                                     let sessionsExpected =
                                         [
@@ -1614,10 +1631,8 @@ module Tests =
                                         |> List.map (fun date ->
                                             let sessionCount =
                                                 taskState.Sessions
-                                                |> List.filter (function
-                                                    | TaskInteraction.Session (start, _, _) ->
-                                                        isToday Testing.Consts.testDayStart start (DateId date)
-                                                    | _ -> false)
+                                                |> List.filter (fun (TaskSession (start, _, _)) ->
+                                                    isToday Testing.Consts.testDayStart start (DateId date))
                                                 |> List.length
 
                                             date, sessionCount)
@@ -1644,4 +1659,3 @@ module Tests =
                         }
                     ]
             ]
-

@@ -296,7 +296,7 @@ module PanelsComponent =
                             prop.children
                                 [
                                     yield! dateSequence
-                                           |> List.map (fun ({ Day = Day day } as date) ->
+                                           |> List.map (fun ({ Day = Model.Day day } as date) ->
                                                DayComponent.render
                                                    {|
                                                        Date = date
@@ -341,7 +341,7 @@ module PanelsComponent =
                     let task =
                         Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily input.TaskId)
 
-                    let (TaskName taskName) = Recoil.useValue task.Name
+                    let (Model.TaskName taskName) = Recoil.useValue task.Name
                     let userInteractions = Recoil.useValue task.UserInteractions
 
                     let taskAttachments =
@@ -548,7 +548,7 @@ module PanelsComponent =
                                                                            ]
                                                                            prop.children
                                                                                [
-                                                                                   let (InformationName informationName) =
+                                                                                   let (Model.InformationName informationName) =
                                                                                        task.Information.Name
 
                                                                                    str informationName
@@ -644,7 +644,7 @@ module PanelsComponent =
                                                                                           ]
                                                                                           prop.children
                                                                                               [
-                                                                                                  let (InformationName informationName) =
+                                                                                                  let (Model.InformationName informationName) =
                                                                                                       information.Name
 
                                                                                                   str informationName
@@ -747,7 +747,7 @@ module PanelsComponent =
                                                                            ]
                                                                            prop.children
                                                                                [
-                                                                                   let (InformationName informationName) =
+                                                                                   let (Model.InformationName informationName) =
                                                                                        task.Information.Name
 
                                                                                    str informationName
@@ -895,7 +895,7 @@ module PanelsComponent =
                                                                                                      ]
                                                                                                  prop.children
                                                                                                      [
-                                                                                                         let (TaskName taskName) =
+                                                                                                         let (Model.TaskName taskName) =
                                                                                                              cell.Task.Name
 
                                                                                                          str taskName
@@ -989,7 +989,7 @@ module MainComponent =
                         //Uncaught (in promise) Promise {<fulfilled>: List}
                         Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[1]"
 
-                        setter.set (Recoil.Selectors.currentTree, Some treeAsync)
+                        setter.set (Recoil.Selectors.currentTreeState, Some treeAsync)
 
                         Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[2]"
                     }

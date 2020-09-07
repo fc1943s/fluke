@@ -487,7 +487,7 @@ module TempData =
         taskTree
         |> List.map (Tuple2.mapItem2 (List.map (Tuple2.mapItem2 (List.map (fun event -> event, user)))))
 
-//    let createTreeData dayStart position taskTree =
+    //    let createTreeData dayStart position taskTree =
 //        let taskStateList =
 //            taskTree
 //            |> List.collect (fun (information, tasks) ->
@@ -525,10 +525,11 @@ module TempData =
             GetLivePosition: unit -> FlukeDateTime
             TreeMap: Map<State.TreeId, State.TreeState * bool>
         }
+
     type DslData =
         {
             GetLivePosition: (unit -> FlukeDateTime)
-            InformationList: Information list
+            InformationStateMap: Map<Information, State.InformationState>
             TaskOrderList: TaskOrderEntry list
             TaskStateList: (State.TaskState * UserInteraction list) list
         }
@@ -582,7 +583,11 @@ module TempData =
 
                 informationLoop dslTree
 
-            let informationList = dslTree |> List.map fst |> List.distinct
+            let informationStateMap =
+                dslTree
+                |> List.map fst
+                |> List.distinct
+                |> State.informationListToStateMap
 
             let taskOrderList =
                 taskStateList
@@ -596,7 +601,7 @@ module TempData =
                 {
                     TaskStateList = taskStateList
                     TaskOrderList = taskOrderList
-                    InformationList = informationList
+                    InformationStateMap = informationStateMap
                     GetLivePosition = getLivePosition
                 }
 
@@ -672,7 +677,9 @@ module TempData =
                         }
                     ]
                 GetLivePosition = fun () -> testData.Position
-                InformationList = [ testData.Task.Information ]
+                InformationStateMap =
+                    [ testData.Task.Information ]
+                    |> State.informationListToStateMap
             }
 
 
@@ -696,10 +703,11 @@ module TempData =
                             Priority = TaskOrderPriority.Last
                         })
                 GetLivePosition = fun () -> testData.Position
-                InformationList =
+                InformationStateMap =
                     taskStateList
                     |> List.map (fun (taskState, _) -> taskState.Task.Information)
                     |> List.distinct
+                    |> State.informationListToStateMap
             }
 
         let tempData =
@@ -759,7 +767,6 @@ module TempData =
                         Resource Resources.vim, []
                         Resource Resources.windows, []
                     ]
-//                    |> createTreeData Consts.testDayStart Consts.defaultPosition
                 RenderLaneTests =
                     {|
                         Task =
@@ -962,6 +969,8 @@ module TempData =
                     |}
 
                     |> createSortLanesTestData
+
+
 
 
 

@@ -177,7 +177,14 @@ module Model =
         | Attachment of attachment: Attachment
 
     [<RequireQualifiedAccess>]
-    type _AttachmentInteraction = | Pin_
+    type AttachmentInteraction_ =
+        // ?
+        | Pin_
+
+    [<RequireQualifiedAccess>]
+    type DayInteraction_ =
+        // ?
+        | Holiday_
 
     type DateId = DateId of referenceDay: FlukeDate
 
@@ -299,6 +306,18 @@ module Model =
                 TaskStateMap: Map<Task, TaskState>
             }
 
+        let informationListToStateMap informationList =
+            informationList
+            |> List.map (fun information ->
+                let informationState: InformationState =
+                    {
+                        Information = information
+                        Attachments = []
+                        SortList = []
+                    }
+
+                information, informationState)
+            |> Map.ofList
 
         let hasAccess treeState user =
             match treeState with
