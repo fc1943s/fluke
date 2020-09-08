@@ -264,7 +264,6 @@ module Model =
 
         type CellState =
             {
-                User: User
                 Status: CellStatus
                 Attachments: Attachment list
                 Sessions: TaskSession list
@@ -287,7 +286,7 @@ module Model =
                 Name: TreeName
                 Owner: User
                 SharedWith: TreeAccess list
-                Position: FlukeDateTime option
+//                Position: FlukeDateTime option
                 InformationStateMap: Map<Information, InformationState>
                 TaskStateMap: Map<Task, TaskState>
             }
@@ -329,7 +328,7 @@ module Model =
                     | TreeAccess.ReadOnly dbUser -> dbUser = user)
 
         let treeStateWithInteractions (userInteractionList: UserInteraction list) (treeState: TreeState) =
-            let treeState =
+            let newTreeState =
                 (treeState, userInteractionList)
                 ||> List.fold (fun treeState (UserInteraction (user, moment, interaction)) ->
                         match interaction with
@@ -442,7 +441,6 @@ module Model =
                                 |> Map.tryFind dateId
                                 |> Option.defaultValue
                                     {
-                                        User = user
                                         Status = Disabled
                                         Attachments = []
                                         Sessions = []
@@ -490,7 +488,11 @@ module Model =
                                 TaskStateMap = newTaskStateMap
                             })
 
-            treeState
+            let diag =
+                newTreeState.TaskStateMap
+                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
+            printfn "diag2 %A" diag
+            newTreeState
 
 
 
@@ -656,13 +658,13 @@ module Model =
     open State
 
     type TreeState with
-        static member Create (id, name, owner) =
+        static member Create (id, name, owner, ?sharedWith) =
             {
                 Id = id
                 Name = name
                 Owner = owner
-                SharedWith = []
-                Position = None
+                SharedWith = defaultArg sharedWith []
+//                Position = None
                 InformationStateMap = Map.empty
                 TaskStateMap = Map.empty
             }

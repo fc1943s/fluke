@@ -1,77 +1,69 @@
-//#r "C:/Users/fc194/.nuget/packages/fsharpplus/1.1.3/lib/netstandard2.0/FSharpPlus.dll"
+#r "C:/Users/fc194/.nuget/packages/fsharpplus/1.1.3/lib/netstandard2.0/FSharpPlus.dll"
 //#r "nuget: FSharpPlus"
 #r "src/Fluke.Shared/bin/Debug/netcoreapp5.0/Fluke.Shared.dll"
 
 open Fluke.Shared.Model
-open Fluke.Shared.TempData
-open Fluke.Shared.PrivateData.PrivateData
-
-//let c = Fluke.Shared.PrivateData.PrivateData.Projects.app_fluke
-//let c = Tasks.rawTreeData
+open Fluke.Shared
+open System.Collections.Generic
+open FSharpPlus
 
 
-let rawTreeData =
-    [ Project Projects.app_fluke,
-      [ "random selected tasks",
-        [ TempPriority High9
-          TempComment "another option would be a priority range selector. ex: select from 10 to 7"
-          TempComment "fix shift selecting so you can get the selected tasks" ] ] ]
+//let a = PrivateData.PrivateData.getPrivateAreas ()
+let state =
+    RootPrivateData.TreeData.getState().TreeStateMap
+    |> Map.values
+    |> Seq.map fst
+    |> Seq.map (fun treeState ->
+        treeState.TaskStateMap
+        |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
 
-type InformationName = InformationName of name: string
-type TaskName = TaskName of name: string
-type InformationId = InformationId of id: string
+        )
+    |> Seq.toList
 
-let rec informationId (information: Information): InformationId =
-    match information with
-    | Project x -> sprintf "%s/%s" information.KindName x.Name
-    | Area x -> sprintf "%s/%s" information.KindName x.Name
-    | Resource x -> sprintf "%s/%s" information.KindName x.Name
-    | Archive x ->
-        let (InformationId archiveId) = informationId x
-        sprintf "%s/%s" information.KindName archiveId
-    |> InformationId
+let v = ()
 
+printfn "AA %A" v
+printfn "1"
 
+let init : Map<string, string> = Map.empty
 
-[<RequireQualifiedAccess>]
-type InformationKind =
-    | Project
-    | Area
-    | Resource
-    | Archive of InformationKind
-    member this.Name =
-        match this with
-        | Project -> "project"
-        | Area -> "area"
-        | Resource -> "resource"
-        | Archive kind -> sprintf "[%s]" kind.Name
+type Cmd =
+    | Set of Map<string, string>
+    | Add of string * string
+    | Get of Map<string, string>
 
-    static member FromInformation =
-        function
-        | Information.Project _ -> InformationKind.Project
-        | Information.Area _ -> InformationKind.Area
-        | Information.Resource _ -> InformationKind.Resource
-        | Information.Archive information -> InformationKind.Archive(InformationKind.FromInformation information)
+let taskMailboxMap =
+    MailboxProcessor.Start(fun inbox ->
+        let taskDictionary = Dictionary<string, Task> ()
+        let rec loop taskDictionary =
+            async {
+                do printfn "currentMap = %A, waiting..." map
+                let! (key, value) = inbox.Receive()
+                let newMap =
+                    map
+//                    |> Map.add key value
 
-type Event =
-    | AddInformation of id: InformationId * kind: InformationKind * name: InformationName
-    | AddTask of informationId: InformationId * name: TaskName
+                return! loop taskDictionary
+            }
 
+        loop taskDictionary)
 
-type TaskState = { Name: TaskName }
+//val counter : MailboxProcessor<int>
+let a = taskMailboxMap.Post ("task1", "val1")
+printfn "result: %A\n" a
+let b = taskMailboxMap.Post ("task1", "val2")
+printfn "result: %A\n" b
+let c = taskMailboxMap.Post ("task2", "val2")
+printfn "result: %A\n" c
 
+let d = taskMailboxMap.Post ("task3", "val2")
 
-let a = 3
+let e = taskMailboxMap.Scan (fun ((key, value) as x) ->
+    match key with
+    | "task2" -> Some <| async { return x }
+    | "task1" -> Some <| async { return x }
+    | "task3" -> Some <| async { return x }
+    | _ -> None
+    )
 
-let b =
-    rawTreeData
-    |> List.map (fun (information, tasks) ->
-        [ let informationId = informationId information
-          [ AddInformation(informationId, InformationKind.FromInformation information, InformationName information.Name) ]
-
-          tasks
-          |> List.map (fun (taskName, events) -> AddTask(informationId, TaskName taskName)) ])
-
-()
-//printfn "AA: %A" a
-//let d = c.Head
+let f = e |> Async.RunSynchronously

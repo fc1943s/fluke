@@ -22,7 +22,7 @@ module Tests =
                         test "1" {
                             1 |> Expect.equal "" 1
 
-                            let state = RootPrivateData.TreeData.state
+                            let state = RootPrivateData.TreeData.getState ()
 
                             []
                             |> List.map (fun information ->

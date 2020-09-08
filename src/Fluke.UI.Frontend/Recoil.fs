@@ -164,8 +164,7 @@ module Recoil =
                 (emptyTreeSelection, treeStateList)
                 ||> List.fold (fun treeSelection treeState ->
                         match treeState with
-                        | treeState when treeState.Position = Some input.Position
-                                         && State.hasAccess treeState input.User ->
+                        | treeState when hasAccess treeState input.User ->
                             let newInformationStateMap =
                                 TempData.mergeInformationStateMap
                                     treeSelection.InformationStateMap
@@ -245,7 +244,6 @@ module Recoil =
                                 |> Map.tryFind dateId
                                 |> Option.defaultValue
                                     {
-                                        User = input.User
                                         Status = Disabled
                                         Sessions = []
                                         Attachments = []
@@ -797,6 +795,8 @@ module Recoil =
 
                         Profiling.addTimestamp "currentTreeState.set[0]"
 
+                        printfn "user dateSequence tree %A %A %A" (user=None) dateSequence.Length (newValue=None)
+
                         match user, newValue with
                         | Some user, Some tree ->
                             //                    let tree =
@@ -1135,7 +1135,10 @@ module Recoil =
                                     let usersCount =
                                         taskState.CellStateMap
                                         |> Map.values
-                                        |> Seq.map (fun cellState -> cellState.User)
+                                        |> Seq.map (fun cellState -> cellState.Status)
+                                        |> Seq.choose (function
+                                            | UserStatus (user, _) -> Some user
+                                            | _ -> None)
                                         |> Seq.distinct
                                         |> Seq.length
 

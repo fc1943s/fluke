@@ -155,7 +155,11 @@ module TempData =
 
         let rec result =
             {|
-                defaultPosition = { Date = FlukeDate.MinValue; Time = dayStart }
+                defaultPosition =
+                    {
+                        Date = FlukeDate.MinValue
+                        Time = dayStart
+                    }
             |}
 
         result
@@ -527,7 +531,7 @@ module TempData =
 
     type DslData =
         {
-//            GetLivePosition: (unit -> FlukeDateTime)
+            //            GetLivePosition: (unit -> FlukeDateTime)
             InformationStateMap: Map<Information, State.InformationState>
             TaskOrderList: TaskOrderEntry list
             TaskStateList: (State.TaskState * UserInteraction list) list
@@ -553,6 +557,7 @@ module TempData =
 
     let mergeTaskState (oldValue: State.TaskState) (newValue: State.TaskState) =
         { oldValue with
+            Task = oldValue.Task
             Sessions = oldValue.Sessions @ newValue.Sessions
             Attachments = oldValue.Attachments @ newValue.Attachments
             SortList = oldValue.SortList @ newValue.SortList
@@ -574,120 +579,201 @@ module TempData =
 
         (oldMap, newMap) ||> Map.mapValues2 mergeTreeState
 
+
+
     // How the HELL will I rewrite this? 🤦
     let dslDataFactory moment
                        taskContainerFactory
                        (dslTreeGetter: ((string -> Task) -> (Information * (string * (DslTask * User) list) list) list))
                        =
-
         let taskDictionary = Dictionary<string, Task> ()
+        fun () ->
 
-        let mutable dslDataMaybe = None
-        let mutable taskGetter = fun _ -> Task.Default
+            //        let testGetter taskName =
+//            let map = safeQueue.Dequeue ()
+//            let task =
+//                map
+//                |> Map.tryFind taskName
+//                |> Option.defaultValue Task.Default
+//            ()
 
-        for n in [ 0; 1 ] do
 
-            let taskGetterInternal taskName =
-                let found, task = taskDictionary.TryGetValue taskName
-                if found then
-                    task
-                else
-                    printfn "task not found[%d]: %A" n taskName
-                    Task.Default
+            let taskMailboxMap =
+                MailboxProcessor.Start (fun inbox ->
+                    let rec loop () =
+                        async {
+                            //                do printfn "currentMap = %A, waiting..." map
+                            let! (taskName: string, task: Task) = inbox.Receive ()
 
-            taskGetter <- taskGetterInternal
+                            let found, task = taskDictionary.TryGetValue taskName
 
-            let dslTree = dslTreeGetter taskGetterInternal
+                            if taskName = "seethrus" then
+                                printfn "[mailbox]seethrus %A" (found, task)
 
-            let taskStateList =
-                let rec informationLoop dslTree =
-                    match dslTree with
-                    | (information, tasks) :: tail ->
-                        let rec tasksLoop tasks =
-                            match tasks with
-                            | (taskName, dslEntries) :: tail ->
-                                let task =
+                            let task =
+                                if found then
+                                    task
+                                else
+                                    failwithf "[mailbox]task not found: %A" taskName
                                     { Task.Default with
-                                        Information = information
                                         Name = TaskName taskName
                                     }
 
-                                taskDictionary.[taskName] <- task
+                            taskDictionary.[taskName] <- task
 
-                                let taskState = createTaskState moment task dslEntries
+                            return! loop ()
+                        }
 
-                                taskState :: tasksLoop tail
-                            | [] -> []
+                    loop ())
 
-                        tasksLoop tasks @ informationLoop tail
-                    | [] -> []
+//            let taskMailboxMap =
+//                {|
+//                    Post =
+//                        fun (taskName, task) ->
+//                            taskDictionary.[taskName] <- task
+//                            ()
+//                |}
 
-                informationLoop dslTree
 
-            let informationStateMap =
-                dslTree
-                |> List.map fst
-                |> List.distinct
-                |> State.informationListToStateMap
+            let mutable dslDataMaybe = None
 
-            let taskOrderList =
-                taskStateList
-                |> List.map (fun (taskState, _) ->
+            let mutable taskGetter =
+                fun _ ->
+                    failwithf "NO"
+                    Task.Default
+
+            for n in [ 0; 1 ] do
+                let taskGetterInternal =
+                    fun taskName ->
+                        let found, task = taskDictionary.TryGetValue taskName
+
+                        if taskName = "seethrus" then
+                            printfn "[above]seethrus %A" (found, task)
+
+                        let task =
+                            if found then
+                                task
+                            else
+                                //                            if n = 1 then
+//                                printfn "[above[1]]task not found: %A" taskName
+                                { Task.Default with
+                                    Name = TaskName taskName
+                                }
+
+                        taskMailboxMap.Post (taskName, task)
+
+                        task
+
+                taskGetter <- taskGetterInternal
+
+                let dslTree = dslTreeGetter taskGetterInternal
+
+                let taskStateList =
+                    let rec informationLoop dslTree =
+                        match dslTree with
+                        | (information, tasks) :: tail ->
+                            let rec tasksLoop tasks =
+                                match tasks with
+                                | (taskName, dslEntries) :: tail ->
+                                    let found, task = taskDictionary.TryGetValue taskName
+
+                                    if taskName = "seethrus" then
+                                        printfn "[below]seethrus %A" (found, task)
+
+                                    let task =
+                                        if found then
+                                            { task with Information = information }
+                                        else
+                                            //                                            if n = 1 then
+//                                                printfn "[below[1]]task not found: %A" taskName
+                                            { Task.Default with
+                                                Information = information
+                                                Name = TaskName taskName
+                                            }
+
+                                    let taskState, interactions = createTaskState moment task dslEntries
+
+                                    taskMailboxMap.Post (taskName, taskState.Task)
+
+                                    (taskState, interactions) :: tasksLoop tail
+                                | [] -> []
+
+                            tasksLoop tasks @ informationLoop tail
+                        | [] -> []
+
+                    informationLoop dslTree
+
+                let informationStateMap =
+                    dslTree
+                    |> List.map fst
+                    |> List.distinct
+                    |> State.informationListToStateMap
+
+                let taskOrderList =
+                    taskStateList
+                    |> List.map (fun (taskState, _) ->
+                        {
+                            Task = taskState.Task
+                            Priority = TaskOrderPriority.Last
+                        })
+
+                let dslData =
                     {
-                        Task = taskState.Task
-                        Priority = TaskOrderPriority.Last
-                    })
+                        TaskStateList = taskStateList
+                        TaskOrderList = taskOrderList
+                        InformationStateMap = informationStateMap
+                    }
 
-            let dslData =
-                {
-                    TaskStateList = taskStateList
-                    TaskOrderList = taskOrderList
-                    InformationStateMap = informationStateMap
-//                    GetLivePosition = getLivePosition
-                }
+                dslDataMaybe <- Some dslData
 
-            dslDataMaybe <- Some dslData
-
-        let dslData = dslDataMaybe.Value
+            let dslData = dslDataMaybe.Value
 
 
-        //        printfn "treeData %A" treeData
+            //        printfn "treeData %A" treeData
 
-        let duplicated =
-            dslData.TaskStateList
-            //            |> List.filter (fun taskState -> taskState.Task <> Task.Default)
-            |> List.map (fun (taskState, _) -> taskState.Task.Name)
-            |> List.groupBy id
-            |> List.filter
-                (snd
-                 >> List.length
-                 >> fun n -> n > 1)
-            |> List.map fst
+            let duplicated =
+                dslData.TaskStateList
+                //            |> List.filter (fun taskState -> taskState.Task <> Task.Default)
+                |> List.map (fun (taskState, _) -> taskState.Task.Name)
+                |> List.groupBy id
+                |> List.filter
+                    (snd
+                     >> List.length
+                     >> fun n -> n > 1)
+                |> List.map fst
 
-        if not duplicated.IsEmpty then
-            failwithf "Duplicated task names: %A" duplicated
+            if not duplicated.IsEmpty then
+                failwithf "Duplicated task names: %A" duplicated
 
-        //        taskStateMap <-
+            //        taskStateMap <-
 //            treeData.TaskStateList
 //            |> List.map (fun taskState -> taskState.Task.Name, taskState)
 //            |> Map.ofList
 //
 //        treeDataMaybe <- Some treeData
 
+            let taskState =
+                dslData.TaskStateList
+                |> List.tryFind (fun (taskState, interactions) -> taskState.Task.Name = TaskName "seethrus")
 
-        let tasks = taskContainerFactory taskGetter
+            printfn "[\/1]seethrus %A" (taskState)
+            printfn "[\/2]seethrus %A" (taskDictionary.TryGetValue ("seethrus"))
+
+            let tasks = taskContainerFactory taskGetter
 
 
 
-        let taskOrderList =
-            getTaskOrderList [] (dslData.TaskStateList |> List.map fst) []
+            let taskOrderList =
+                getTaskOrderList [] (dslData.TaskStateList |> List.map fst) []
 
-        let newDslData =
-            { dslData with
-                TaskOrderList = taskOrderList
-            }
+            let newDslData =
+                { dslData with
+                    TaskOrderList = taskOrderList
+                }
 
-        newDslData, tasks
+            newDslData, tasks
+        |> Core.memoizeLazy
+        |> fun x -> x ()
 
 
 
@@ -736,7 +822,7 @@ module TempData =
                                 Priority = TaskOrderPriority.First
                             }
                         ]
-//                    GetLivePosition = fun () -> input.Position
+                    //                    GetLivePosition = fun () -> input.Position
                     InformationStateMap =
                         [ input.Task.Information ]
                         |> State.informationListToStateMap
@@ -790,7 +876,7 @@ module TempData =
                 {
                     TaskStateList = taskStateList
                     TaskOrderList = taskOrderList
-//                    GetLivePosition = getLivePosition
+                    //                    GetLivePosition = getLivePosition
                     InformationStateMap = informationStateMap
                 }
 

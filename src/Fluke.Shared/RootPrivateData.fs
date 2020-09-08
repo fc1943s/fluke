@@ -157,8 +157,13 @@ module RootPrivateData =
                 let newTaskStateMap =
                     (treeState.TaskStateMap, taskStateList)
                     ||> List.fold (fun taskStateMap taskState ->
-                        let oldTaskState = treeState.TaskStateMap.[taskState.Task]
-                        let newTaskState = TempData.mergeTaskState oldTaskState taskState
+                        let oldTaskState =
+                            treeState.TaskStateMap
+                            |> Map.tryFind taskState.Task
+                        let newTaskState =
+                            match oldTaskState with
+                            | Some oldTaskState -> TempData.mergeTaskState oldTaskState taskState
+                            | None -> taskState
 
                         taskStateMap
                         |> Map.add taskState.Task newTaskState
@@ -194,7 +199,8 @@ module RootPrivateData =
                         TreeState.Create
                             (id = TreeId (Guid "9A7A797D-0615-4CF6-B85D-86985978E251"),
                              name = TreeName (nameof result.``liryanne/shared``),
-                             owner = users.liryanne)
+                             owner = users.liryanne,
+                             sharedWith = [TreeAccess.Admin users.fc1943s])
                         |> treeStateWithInteractions [
                             yield! SharedPrivateData.liryanne.InformationCommentInteractions.getInformationCommentInteractions
                                        moment
@@ -272,6 +278,17 @@ module RootPrivateData =
                     TreeStateMap = treeStateMap
                 }
 
+            let diag =
+                state.TreeStateMap
+                |> Map.values
+                |> Seq.map fst
+                |> Seq.map (fun treeState ->
+                    treeState.TaskStateMap
+                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
+
+                    )
+                |> Seq.toList
+            printfn "diag1 %A" diag
             state
 
 
