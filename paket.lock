@@ -5,7 +5,7 @@ NUGET
     FSharp.Core (4.7.2)
 GIT
   remote: https://github.com/fc1943s/Suigetsu.git
-     (e7e41f03911b27bc69ba74c6e3bcffcde8853e53)
+     (a9782f4e4edfb7642e6b8dd328084b34aa26e72d)
       build: powershell –ExecutionPolicy Bypass ./build.ps1
 GROUP Build
 STORAGE: NONE
@@ -417,15 +417,15 @@ NUGET
     Fable.Browser.Blob (1.1) - restriction: >= netstandard2.0
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.6.2) - restriction: >= netstandard2.0
-    Fable.Browser.Dom (1.2) - restriction: >= netstandard2.0
+    Fable.Browser.Dom (2.1) - restriction: >= netstandard2.0
       Fable.Browser.Blob (>= 1.1) - restriction: >= netstandard2.0
-      Fable.Browser.Event (>= 1.0) - restriction: >= netstandard2.0
+      Fable.Browser.Event (>= 1.2.1) - restriction: >= netstandard2.0
       Fable.Browser.WebStorage (>= 1.0) - restriction: >= netstandard2.0
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
-      FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
-    Fable.Browser.Event (1.0) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
+    Fable.Browser.Event (1.2.1) - restriction: >= netstandard2.0
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
-      FSharp.Core (>= 4.5.2) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
     Fable.Browser.WebStorage (1.0) - restriction: >= netstandard2.0
       Fable.Browser.Event (>= 1.0) - restriction: >= netstandard2.0
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
@@ -451,17 +451,17 @@ NUGET
     Fable.Promise (2.1)
       Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
-    Fable.React (6.2) - restriction: >= netstandard2.0
-      Fable.Browser.Dom (>= 1.0) - restriction: >= netstandard2.0
+    Fable.React (7.0.1) - restriction: >= netstandard2.0
+      Fable.Browser.Dom (>= 2.0.1) - restriction: >= netstandard2.0
       Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
-      FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.1) - restriction: >= netstandard2.0
     Fable.SimpleJson (3.11)
       Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
       Fable.Parsimmon (>= 4.0) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
-    Feliz (1.12.1)
+    Feliz (1.13.1)
       Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
-      Fable.React (>= 6.2) - restriction: >= netstandard2.0
+      Fable.React (>= 7.0.1) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
     Feliz.Bulma (2.3)
       Feliz (>= 0.68.2) - restriction: >= netstandard2.0
@@ -469,24 +469,24 @@ NUGET
     Feliz.MaterialUI (1.2)
       Feliz (>= 1.5 < 2.0)
       FSharp.Core (>= 4.7 < 5.0)
-    Feliz.Recoil (0.17.1)
+    Feliz.Recoil (0.17.2)
       Fable.Core (>= 3.1.5 < 4.0)
       Fable.Promise (>= 2.1 < 3.0)
-      Fable.SimpleJson (>= 3.10 < 4.0)
-      Feliz (>= 1.7 < 2.0)
+      Fable.SimpleJson (>= 3.11 < 4.0)
+      Feliz (>= 1.13.1 < 2.0)
       FSharp.Core (>= 4.7.2 < 5.0)
-    Feliz.Router (3.0.1)
+    Feliz.Router (3.2)
       Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
-      Fable.Elmish (>= 3.0.6) - restriction: >= netstandard2.0
-      Feliz (>= 1.6) - restriction: >= netstandard2.0
-      Feliz.UseListener (>= 0.3) - restriction: >= netstandard2.0
+      Fable.Elmish (>= 3.1) - restriction: >= netstandard2.0
+      Feliz (>= 1.13.1) - restriction: >= netstandard2.0
+      Feliz.UseListener (>= 0.6.1) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
-    Feliz.UseListener (0.5)
+    Feliz.UseListener (0.6.1)
       Fable.Core (>= 3.1.5 < 4.0)
-      Feliz (>= 1.5 < 2.0)
-      FSharp.Core (>= 4.7 < 5.0)
+      Feliz (>= 1.13.1 < 2.0)
+      FSharp.Core (>= 4.7.2 < 5.0)
     FSharp.Core (4.7.2)
-    Fulma (2.9)
+    Fulma (2.10)
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
       Fable.React (>= 5.1) - restriction: >= netstandard2.0
     Fulma.Extensions.Wikiki.PageLoader (2.0.1)

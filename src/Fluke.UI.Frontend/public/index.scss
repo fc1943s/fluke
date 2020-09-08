@@ -1,55 +1,36 @@
-.tooltip-container,
-.top-right-blue-indicator,
-.top-right-pink-indicator,
-.bottom-right-blue-indicator,
-.bottom-right-pink-indicator,
-.user-indicator,
-.tooltip-popup,
+//.tooltip-container,
+//.top-right-blue-indicator,
+//.top-right-pink-indicator,
+//.bottom-right-blue-indicator,
+//.bottom-right-pink-indicator,
+//.user-indicator,
+//.tooltip-popup,
+//.lanes-panel,
+//.today-header,
+//.selection-highlight,
+//.lane-container,
+//.details-panel,
+//.cell-square,
+//.cell-rectangle,
+//.cell-start-week,
+//.cell-start-month,
+//.cell-selected,
+//.cell-today,
+//.session-length-indicator,
+//.cell-disabled,
+//.cell-suggested,
+//.cell-pending,
+//.cell-missed,
+//.cell-missed-today,
+//.cell-postponed,
+//.cell-postponed-until,
+//.cell-completed,
+//.cell-dismissed,
+//.cell-manual-pending,
+//.cell-session {
+//}
 
-.lanes-panel,
-.today-header,
-.selection-highlight,
-.lane-container,
-
-.details-panel,
-
-.cell-square,
-.cell-rectangle,
-.cell-start-week,
-.cell-start-month,
-.cell-selected,
-.cell-today,
-.session-length-indicator,
-
-.cell-disabled,
-.cell-suggested,
-.cell-pending,
-.cell-missed,
-.cell-missed-today,
-.cell-postponed,
-.cell-postponed-until,
-.cell-completed,
-.cell-dismissed,
-.cell-manual-pending,
-.cell-session {
-} // https://github.com/zanaptak/TypedCssClasses/issues/4
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+// https://github.com/zanaptak/TypedCssClasses/issues/4
 
 
 $color-cell-disabled: #595959;
@@ -75,7 +56,7 @@ $cell-size: 17px;
   padding: 0;
   box-sizing: border-box;
 
-  font-family: Roboto Condensed, sans-serif;
+  font-family: 'Roboto Condensed', sans-serif;
   font-size: 12px;
   color: #ddd;
   user-select: none;

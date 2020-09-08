@@ -6,7 +6,6 @@ open Fable.Core.JsInterop
 
 
 module Ext =
-    importAll "typeface-roboto-condensed"
 
     //    importAll "./node_modules/@fortawesome/fontawesome-free/css/all.css"
 
@@ -14,11 +13,13 @@ module Ext =
 //    importAll "./node_modules/bulma-extensions/dist/css/bulma-extensions.min.css"
 //    importAll "./node_modules/bulmaswatch/cyborg/bulmaswatch.scss"
 
+    importAll "typeface-roboto-condensed"
+
     importAll "./public/index.scss"
-    importAll "./public/index.ts"
     importAll "./public/index.tsx"
-    importAll "./public/index.js"
+    importAll "./public/index.ts"
     importAll "./public/index.jsx"
+    importAll "./public/index.js"
 
     //    [<Emit "(new Audio($0)).play();">]
     [<Emit "(() => { var audio = new Audio($0); audio.volume = 0.5; return audio; })().play();">]

@@ -1,11 +1,9 @@
 namespace Fluke.Shared
 
 open System
-open System.Collections.Generic
 open Suigetsu.Core
 
 module Model =
-
     [<StructuredFormatDisplay "{Name}">]
     type Area = { Name: AreaName }
 
@@ -157,6 +155,8 @@ module Model =
             Color: UserColor
             WeekStart: DayOfWeek
             DayStart: FlukeTime
+            SessionLength: Minute
+            SessionBreakLength: Minute
         }
 
     and [<RequireQualifiedAccess>] UserColor =
@@ -550,6 +550,7 @@ module Model =
                 Month = Enum.Parse (typeof<Month>, string date.Month) :?> Month
                 Day = Day date.Day
             }
+        static member inline MinValue = FlukeDate.FromDateTime DateTime.MinValue
 
 
     type FlukeTime with

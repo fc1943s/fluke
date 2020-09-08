@@ -20,6 +20,7 @@ open Feliz.Bulma
 open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.Shared
+open Fable.Core.JsInterop
 
 
 module Temp =
@@ -27,8 +28,8 @@ module Temp =
         let onElementHover (elemRef: IRefValue<#HTMLElement option>) =
             let isHovered, setIsHovered = React.useState false
 
-            React.useElementListener.onMouseEnter (elemRef, (fun _ -> setIsHovered true), passive = true)
-            React.useElementListener.onMouseLeave (elemRef, (fun _ -> setIsHovered false), passive = true)
+            React.useElementListener.onMouseEnter (elemRef, (fun _ -> setIsHovered true))
+            React.useElementListener.onMouseLeave (elemRef, (fun _ -> setIsHovered false))
 
             React.useMemo ((fun () -> isHovered), [| isHovered :> obj |])
 
@@ -264,7 +265,7 @@ module PanelsComponent =
                                                let firstDate =
                                                    dates
                                                    |> List.tryHead
-                                                   |> Option.defaultValue TempData.Consts.defaultDate
+                                                   |> Option.defaultValue FlukeDate.MinValue
 
                                                let month = firstDate.DateTime.Format "MMM"
                                                let cellWidth = cellSize * dates.Length
@@ -984,6 +985,10 @@ module MainComponent =
                     async {
                         Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[0]"
                         let! treeAsync = setter.snapshot.getAsync (Recoil.Selectors.treeAsync view)
+
+                        printfn "TREEASYNC=None:%A" (treeAsync=None)
+                        Browser.Dom.window?treeAsync <- treeAsync
+
                         //Uncaught (in promise) Promise {<fulfilled>: List}
                         Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[1]"
 
@@ -1008,6 +1013,8 @@ module MainComponent =
         React.memo (fun () ->
             let oldActiveSessions = React.useRef []
 
+            let user = Recoil.useValue Recoil.Selectors.user
+
             let activeSessions =
                 Recoil.useValue Recoil.Selectors.activeSessions
 
@@ -1027,14 +1034,20 @@ module MainComponent =
                             Temp.Sound.playTick
                         | Some (Model.ActiveSession (_, newDuration, totalDuration, _)) when newDuration = totalDuration ->
                             Temp.Sound.playDing
-                        | None when oldDuration = TempData.Consts.sessionLength
-                                    + TempData.Consts.sessionBreakLength
-                                    - 1. -> Temp.Sound.playDing
+                        | None ->
+                            match user with
+                            | Some { SessionLength = Model.Minute sessionLength;
+                                     SessionBreakLength = Model.Minute sessionBreakLength } when oldDuration =
+                                                                                                     sessionLength
+                                                                                                 + sessionBreakLength
+                                                                                                 - 1. ->
+                                Temp.Sound.playDing
+                            | _ -> fun () -> ()
                         | _ -> fun () -> ())
                     |> List.iter (fun x -> x ())
 
                     oldActiveSessions.current <- activeSessions),
-                 [| activeSessions :> obj |])
+                 [| user :> obj; activeSessions :> obj |])
 
             nothing)
 
@@ -1060,7 +1073,7 @@ module MainComponent =
                     let indent n = String (' ', n)
 
                     let json =
-                        Recoil.Profiling.state
+                        Recoil.Profiling.profilingState
                         |> Fable.SimpleJson.SimpleJson.stringify
                         |> JS.JSON.parse
                         |> fun obj -> JS.JSON.stringify (obj, unbox null, 4)

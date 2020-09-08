@@ -15,12 +15,12 @@
     <Content Include="package.json" />
     <Content Include="webpack.config.ts" />
     <Content Include="paket.references" />
-    <Content Include="public\index.js" />
-    <Content Include="public\index.scss" />
     <Content Include="public\index.html" />
-    <Content Include="public\index.jsx" />
-    <Content Include="public\index.ts" />
+    <Content Include="public\index.scss" />
     <Content Include="public\index.tsx" />
+    <Content Include="public\index.ts" />
+    <Content Include="public\index.jsx" />
+    <Content Include="public\index.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj" />

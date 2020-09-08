@@ -23,6 +23,8 @@ module App =
                 root.localStorage (fun hydrater ->
                     hydrater.setAtom Recoil.Atoms.debug
                     hydrater.setAtom Recoil.Atoms.treeName)
+                root.init Recoil.initState
+
 
                 root.children [ router () ]
             ])
