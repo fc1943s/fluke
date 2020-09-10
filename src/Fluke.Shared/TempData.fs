@@ -1,6 +1,7 @@
 namespace Fluke.Shared
 
 open System
+open System.Collections.Concurrent
 open System.Collections.Generic
 open FSharpPlus
 open Suigetsu.Core
@@ -276,7 +277,7 @@ module TempData =
         | DslStatusEntry of date: FlukeDate * manualCellStatus: ManualCellStatus
         | DslCellComment of date: FlukeDate * comment: string
         | DslTaskSet of taskSet: DslTaskSet
-        | DslTaskSort of top: Task option * bottom: Task option
+        | DslTaskSort of top: TaskName option * bottom: TaskName option
 
     and DslTaskSet =
         | DslSetScheduling of scheduling: Scheduling * start: FlukeDate option
@@ -347,15 +348,16 @@ module TempData =
 
         userInteraction
 
-    let createCellStatusChangeInteractions user (entries: (FlukeDate * (Task * ManualCellStatus) list) list) =
+    let createCellStatusChangeInteractions user (entries: (FlukeDate * (Task option * ManualCellStatus) list) list) =
         entries
         |> List.collect (fun (date, events) ->
             events
-            |> List.map (fun (task, manualCellStatus) ->
-                createCellStatusChangeInteraction user task date manualCellStatus))
+            |> List.choose (fun (task, manualCellStatus) ->
+                task
+                |> Option.map (fun task -> createCellStatusChangeInteraction user task date manualCellStatus)))
 
 
-    let createTaskState moment task (dslEntries: (DslTask * User) list) =
+    let createTaskState moment task (sortTaskMap: Map<TaskName, Task> option) (dslTasks: (DslTask * User) list) =
 
         let defaultTaskState: State.TaskState =
             {
@@ -368,7 +370,7 @@ module TempData =
             }
 
         let taskState, userInteractions =
-            ((defaultTaskState, []), dslEntries)
+            ((defaultTaskState, []), dslTasks)
             ||> List.fold (fun (taskState, userInteractions) (dslTask, user) ->
                     match dslTask with
                     | DslTaskComment comment ->
@@ -405,13 +407,27 @@ module TempData =
                         let newUserInteractions = userInteractions @ [ userInteraction ]
                         taskState, newUserInteractions
                     | DslTaskSort (top, bottom) ->
-                        let interaction =
-                            Interaction.Task (task, TaskInteraction.Sort (top, bottom))
+                        let newUserInteractions =
+                            match sortTaskMap with
+                            | Some sortTaskMap ->
+                                let getTask taskName =
+                                    taskName
+                                    |> Option.map (fun taskName ->
+                                        sortTaskMap
+                                        |> Map.tryFind taskName
+                                        |> function
+                                        | Some task -> task
+                                        | None -> failwithf "DslTaskSort. Task not found: %A" taskName)
 
-                        let userInteraction =
-                            UserInteraction (user, moment, interaction)
+                                let interaction =
+                                    Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
 
-                        let newUserInteractions = userInteractions @ [ userInteraction ]
+                                let userInteraction =
+                                    UserInteraction (user, moment, interaction)
+
+                                userInteractions @ [ userInteraction ]
+                            | None -> userInteractions
+
                         taskState, newUserInteractions
                     | DslStatusEntry (date, manualCellStatus) ->
                         let userInteraction =
@@ -486,9 +502,20 @@ module TempData =
 
 
 
-    let treeDataWithUser user taskTree =
-        taskTree
-        |> List.map (Tuple2.mapItem2 (List.map (Tuple2.mapItem2 (List.map (fun event -> event, user)))))
+    let dslTreeWithUser (user: User) (dslTree: (Information * (string * DslTask list) list) list) =
+        dslTree
+        |> List.map (fun (information, tasks) ->
+            let newTasks =
+                tasks
+                |> List.map (fun (taskName, dslTasks) ->
+                    taskName,
+                    dslTasks
+                    |> List.map (fun dslTask -> dslTask, user))
+
+            information, newTasks)
+
+    //        taskTree
+//        |> List.map (fun x -> x |> Tuple2.mapItem2 (fun x -> x |> List.map (fun x -> x |> Tuple2.mapItem2 (fun (a,b) -> x |> List.map (fun (event:DslTask) -> event, user)))))
 
     //    let createTreeData dayStart position taskTree =
 //        let taskStateList =
@@ -581,199 +608,101 @@ module TempData =
 
 
 
-    // How the HELL will I rewrite this? 🤦
-    let dslDataFactory moment
-                       taskContainerFactory
-                       (dslTreeGetter: ((string -> Task) -> (Information * (string * (DslTask * User) list) list) list))
-                       =
-        let taskDictionary = Dictionary<string, Task> ()
-        fun () ->
+    let createDslData moment taskContainerFactory (dslTree: (Information * (string * (DslTask * User) list) list) list) =
 
-            //        let testGetter taskName =
-//            let map = safeQueue.Dequeue ()
-//            let task =
-//                map
-//                |> Map.tryFind taskName
-//                |> Option.defaultValue Task.Default
-//            ()
-
-
-            let taskMailboxMap =
-                MailboxProcessor.Start (fun inbox ->
-                    let rec loop () =
-                        async {
-                            //                do printfn "currentMap = %A, waiting..." map
-                            let! (taskName: string, task: Task) = inbox.Receive ()
-
-                            let found, task = taskDictionary.TryGetValue taskName
-
-                            if taskName = "seethrus" then
-                                printfn "[mailbox]seethrus %A" (found, task)
-
-                            let task =
-                                if found then
-                                    task
-                                else
-                                    failwithf "[mailbox]task not found: %A" taskName
+        let taskMap, taskStateList =
+            dslTree
+            |> List.map (fun (information, tasks) ->
+                let taskMap, taskStateList =
+                    ((Map.empty, []), tasks)
+                    ||> List.fold (fun (taskMap, taskStateList) (taskName, dslTasks) ->
+                            let oldTask =
+                                taskMap
+                                |> Map.tryFind taskName
+                                |> function
+                                | Some task -> { task with Information = information }
+                                | None ->
                                     { Task.Default with
+                                        Information = information
                                         Name = TaskName taskName
                                     }
 
-                            taskDictionary.[taskName] <- task
+                            let fakeTaskMap =
+                                taskMap
+                                |> Map.toSeq
+                                |> Seq.map (fun (taskName, task) -> TaskName taskName, task)
+                                |> Map.ofSeq
+                                |> Some
 
-                            return! loop ()
-                        }
+                            let taskState, interactions =
+                                createTaskState moment oldTask fakeTaskMap dslTasks
 
-                    loop ())
+                            if taskName = "seethrus" then
+                                printfn "[below]seethrus oldtask:%A newtask:%A" oldTask taskState.Task
 
-//            let taskMailboxMap =
-//                {|
-//                    Post =
-//                        fun (taskName, task) ->
-//                            taskDictionary.[taskName] <- task
-//                            ()
-//                |}
+                            let newTaskMap =
+                                taskMap |> Map.add taskName taskState.Task
 
+                            newTaskMap, taskStateList @ [ taskState, interactions ])
 
-            let mutable dslDataMaybe = None
-
-            let mutable taskGetter =
-                fun _ ->
-                    failwithf "NO"
-                    Task.Default
-
-            for n in [ 0; 1 ] do
-                let taskGetterInternal =
-                    fun taskName ->
-                        let found, task = taskDictionary.TryGetValue taskName
-
-                        if taskName = "seethrus" then
-                            printfn "[above]seethrus %A" (found, task)
-
-                        let task =
-                            if found then
-                                task
-                            else
-                                //                            if n = 1 then
-//                                printfn "[above[1]]task not found: %A" taskName
-                                { Task.Default with
-                                    Name = TaskName taskName
-                                }
-
-                        taskMailboxMap.Post (taskName, task)
-
-                        task
-
-                taskGetter <- taskGetterInternal
-
-                let dslTree = dslTreeGetter taskGetterInternal
-
-                let taskStateList =
-                    let rec informationLoop dslTree =
-                        match dslTree with
-                        | (information, tasks) :: tail ->
-                            let rec tasksLoop tasks =
-                                match tasks with
-                                | (taskName, dslEntries) :: tail ->
-                                    let found, task = taskDictionary.TryGetValue taskName
-
-                                    if taskName = "seethrus" then
-                                        printfn "[below]seethrus %A" (found, task)
-
-                                    let task =
-                                        if found then
-                                            { task with Information = information }
-                                        else
-                                            //                                            if n = 1 then
-//                                                printfn "[below[1]]task not found: %A" taskName
-                                            { Task.Default with
-                                                Information = information
-                                                Name = TaskName taskName
-                                            }
-
-                                    let taskState, interactions = createTaskState moment task dslEntries
-
-                                    taskMailboxMap.Post (taskName, taskState.Task)
-
-                                    (taskState, interactions) :: tasksLoop tail
-                                | [] -> []
-
-                            tasksLoop tasks @ informationLoop tail
-                        | [] -> []
-
-                    informationLoop dslTree
-
-                let informationStateMap =
-                    dslTree
-                    |> List.map fst
-                    |> List.distinct
-                    |> State.informationListToStateMap
-
-                let taskOrderList =
-                    taskStateList
-                    |> List.map (fun (taskState, _) ->
-                        {
-                            Task = taskState.Task
-                            Priority = TaskOrderPriority.Last
-                        })
-
-                let dslData =
-                    {
-                        TaskStateList = taskStateList
-                        TaskOrderList = taskOrderList
-                        InformationStateMap = informationStateMap
-                    }
-
-                dslDataMaybe <- Some dslData
-
-            let dslData = dslDataMaybe.Value
+                taskMap, taskStateList)
+            |> List.fold (fun (newTaskMap: Map<string, Task>, newTaskStateList) (taskMap, taskStateList) ->
+                newTaskMap |> Map.union taskMap, newTaskStateList @ taskStateList) (Map.empty, [])
 
 
-            //        printfn "treeData %A" treeData
+        let informationStateMap =
+            dslTree
+            |> List.map fst
+            |> List.distinct
+            |> State.informationListToStateMap
 
-            let duplicated =
-                dslData.TaskStateList
-                //            |> List.filter (fun taskState -> taskState.Task <> Task.Default)
-                |> List.map (fun (taskState, _) -> taskState.Task.Name)
-                |> List.groupBy id
-                |> List.filter
-                    (snd
-                     >> List.length
-                     >> fun n -> n > 1)
-                |> List.map fst
+        let taskOrderList =
+            taskStateList
+            |> List.map (fun (taskState, _) ->
+                {
+                    Task = taskState.Task
+                    Priority = TaskOrderPriority.Last
+                })
 
-            if not duplicated.IsEmpty then
-                failwithf "Duplicated task names: %A" duplicated
+        let duplicated =
+            taskStateList
+            |> List.map (fun (taskState, _) -> taskState.Task.Name)
+            |> List.groupBy id
+            |> List.filter
+                (snd
+                 >> List.length
+                 >> fun n -> n > 1)
+            |> List.map fst
 
-            //        taskStateMap <-
-//            treeData.TaskStateList
-//            |> List.map (fun taskState -> taskState.Task.Name, taskState)
-//            |> Map.ofList
-//
-//        treeDataMaybe <- Some treeData
+        if not duplicated.IsEmpty then
+            failwithf "Duplicated task names: %A" duplicated
 
-            let taskState =
-                dslData.TaskStateList
-                |> List.tryFind (fun (taskState, interactions) -> taskState.Task.Name = TaskName "seethrus")
+        let taskState =
+            taskStateList
+            |> List.tryFind (fun (taskState, interactions) -> taskState.Task.Name = TaskName "seethrus")
 
-            printfn "[\/1]seethrus %A" (taskState)
-            printfn "[\/2]seethrus %A" (taskDictionary.TryGetValue ("seethrus"))
+        printfn "[\/1]seethrus %A" (taskState)
 
-            let tasks = taskContainerFactory taskGetter
-
+        let tasks =
+            taskContainerFactory (fun taskName ->
+                taskMap
+                |> Map.tryFind taskName
+                |> Option.orElseWith (fun () -> failwithf "createDslData. Task not found: %A" taskName))
 
 
-            let taskOrderList =
-                getTaskOrderList [] (dslData.TaskStateList |> List.map fst) []
+        let taskOrderList =
+            getTaskOrderList [] (taskStateList |> List.map fst) []
 
-            let newDslData =
-                { dslData with
-                    TaskOrderList = taskOrderList
-                }
+        let dslData =
+            {
+                TaskStateList = taskStateList
+                TaskOrderList = taskOrderList
+                InformationStateMap = informationStateMap
+            }
 
-            newDslData, tasks
-        |> Core.memoizeLazy
-        |> fun x -> x ()
+        dslData, tasks
+
+
 
 
 
@@ -813,7 +742,7 @@ module TempData =
                 {
                     TaskStateList =
                         [
-                            createTaskState input.Position input.Task eventsWithUser
+                            createTaskState input.Position input.Task None eventsWithUser
                         ]
                     TaskOrderList =
                         [
@@ -855,7 +784,7 @@ module TempData =
                     |> List.map (fun (task, events) ->
                         events
                         |> List.map (fun dslTask -> dslTask, input.User)
-                        |> createTaskState input.Position task)
+                        |> createTaskState input.Position task None)
 
                 let taskOrderList =
                     input.Data

@@ -213,11 +213,13 @@ module Recoil =
                         Lanes = filteredLanes
                     |}
                 |> List.map ofLane
-                |> List.map
-                    (Tuple2.mapItem2 (fun cells ->
+                |> List.map (fun (taskState, cells) ->
+                    let newCells =
                         cells
                         |> List.map (fun (Cell (address, status)) -> address.DateId, status)
-                        |> Map.ofList))
+                        |> Map.ofList
+
+                    taskState, newCells)
 
             //                    let sortedTaskList =
 //                        sortedTaskList
@@ -795,7 +797,7 @@ module Recoil =
 
                         Profiling.addTimestamp "currentTreeState.set[0]"
 
-                        printfn "user dateSequence tree %A %A %A" (user=None) dateSequence.Length (newValue=None)
+                        printfn "user dateSequence tree %A %A %A" (user = None) dateSequence.Length (newValue = None)
 
                         match user, newValue with
                         | Some user, Some tree ->
@@ -1502,7 +1504,7 @@ module Recoil =
                             Profiling.addCount (sprintf "%s/%s (SET)" (nameof RecoilCell) (nameof selectedFamily)))
                 }
 
-        /// [1]
+    /// [1]
 
     let initState (initializer: MutableSnapshot) =
         let state = RootPrivateData.TreeData.getState ()

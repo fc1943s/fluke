@@ -150,27 +150,28 @@ module RootPrivateData =
                 let newInformationStateMap =
                     TempData.mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
 
-                let taskStateList, userInteractionsBundle =
-                    dslData.TaskStateList
-                    |> List.unzip
+                let taskStateList, userInteractionsBundle = dslData.TaskStateList |> List.unzip
 
                 let newTaskStateMap =
                     (treeState.TaskStateMap, taskStateList)
                     ||> List.fold (fun taskStateMap taskState ->
-                        let oldTaskState =
-                            treeState.TaskStateMap
-                            |> Map.tryFind taskState.Task
-                        let newTaskState =
-                            match oldTaskState with
-                            | Some oldTaskState -> TempData.mergeTaskState oldTaskState taskState
-                            | None -> taskState
+                            let oldTaskState =
+                                treeState.TaskStateMap
+                                |> Map.tryFind taskState.Task
 
-                        taskStateMap
-                        |> Map.add taskState.Task newTaskState
-                    )
+                            let newTaskState =
+                                match oldTaskState with
+                                | Some oldTaskState -> TempData.mergeTaskState oldTaskState taskState
+                                | None -> taskState
 
-                let userInteractions = userInteractionsBundle|>List.collect id
-                let newTreeState = treeStateWithInteractions userInteractions treeState
+                            taskStateMap
+                            |> Map.add taskState.Task newTaskState)
+
+                let userInteractions =
+                    userInteractionsBundle |> List.collect id
+
+                let newTreeState =
+                    treeStateWithInteractions userInteractions treeState
 
                 let result =
                     { newTreeState with
@@ -200,7 +201,7 @@ module RootPrivateData =
                             (id = TreeId (Guid "9A7A797D-0615-4CF6-B85D-86985978E251"),
                              name = TreeName (nameof result.``liryanne/shared``),
                              owner = users.liryanne,
-                             sharedWith = [TreeAccess.Admin users.fc1943s])
+                             sharedWith = [ TreeAccess.Admin users.fc1943s ])
                         |> treeStateWithInteractions [
                             yield! SharedPrivateData.liryanne.InformationCommentInteractions.getInformationCommentInteractions
                                        moment
@@ -244,7 +245,9 @@ module RootPrivateData =
 
 
         let getState () =
-            let consts = PrivateData.PrivateData.getPrivateConsts()
+            let consts =
+                PrivateData.PrivateData.getPrivateConsts ()
+
             let user = consts.CurrentUser
 
             let getLivePosition () = FlukeDateTime.FromDateTime DateTime.Now
@@ -288,6 +291,7 @@ module RootPrivateData =
 
                     )
                 |> Seq.toList
+
             printfn "diag1 %A" diag
             state
 

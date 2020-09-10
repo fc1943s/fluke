@@ -1610,6 +1610,7 @@ module Tests =
                                         createTaskState
                                             laneRenderingTestData.Position
                                             laneRenderingTestData.Task
+                                            None
                                             (laneRenderingTestData.Events
                                              |> List.map (fun x -> x, users.fluke))
                                         |> fst
