@@ -147,6 +147,14 @@ module RootPrivateData =
                 ]
 
             let mergeDslDataIntoTreeState (dslData: TempData.DslData) (treeState: TreeState) =
+
+                let diag =
+                    treeState.TaskStateMap
+                        |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
+                match diag with
+                | Some diag -> printfn "mergeDslDataIntoTreeState A %A B %A C %A" dslData.TaskStateList.Length treeState.TaskStateMap.Count diag
+                | None -> ()
+
                 let newInformationStateMap =
                     TempData.mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
 

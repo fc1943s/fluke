@@ -417,7 +417,11 @@ module TempData =
                                         |> Map.tryFind taskName
                                         |> function
                                         | Some task -> task
-                                        | None -> failwithf "DslTaskSort. Task not found: %A" taskName)
+                                        | None ->
+                                            failwithf
+                                                "DslTaskSort. Task not found: %A. Map length: %A"
+                                                taskName
+                                                sortTaskMap.Count)
 
                                 let interaction =
                                     Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
@@ -575,12 +579,12 @@ module TempData =
                 })
 
     let mergeCellStateMap (oldMap: Map<DateId, State.CellState>) (newMap: Map<DateId, State.CellState>) =
-        (oldMap, newMap)
-        ||> Map.mapValues2 (fun oldValue newValue -> newValue)
+        oldMap
+        |> Map.union newMap
 
     let mergeInformationMap (oldMap: Map<Information, unit>) (newMap: Map<Information, unit>) =
-        (oldMap, newMap)
-        ||> Map.mapValues2 (fun oldValue newValue -> newValue)
+        oldMap
+        |> Map.union newMap
 
     let mergeTaskState (oldValue: State.TaskState) (newValue: State.TaskState) =
         { oldValue with
@@ -611,44 +615,54 @@ module TempData =
     let createDslData moment taskContainerFactory (dslTree: (Information * (string * (DslTask * User) list) list) list) =
 
         let taskMap, taskStateList =
-            dslTree
-            |> List.map (fun (information, tasks) ->
-                let taskMap, taskStateList =
-                    ((Map.empty, []), tasks)
-                    ||> List.fold (fun (taskMap, taskStateList) (taskName, dslTasks) ->
-                            let oldTask =
-                                taskMap
-                                |> Map.tryFind taskName
-                                |> function
-                                | Some task -> { task with Information = information }
-                                | None ->
-                                    { Task.Default with
-                                        Information = information
-                                        Name = TaskName taskName
-                                    }
+            let (|FirstPass|SecondPass|) =
+                function
+                | 0 -> FirstPass
+                | _ -> SecondPass
 
-                            let fakeTaskMap =
-                                taskMap
-                                |> Map.toSeq
-                                |> Seq.map (fun (taskName, task) -> TaskName taskName, task)
-                                |> Map.ofSeq
-                                |> Some
+            let rec loop pass taskMap =
+                let newTaskMap, newTaskStateList =
+                    ((taskMap, []), dslTree)
+                    ||> List.fold (fun (taskMap, taskStateList) (information, tasks) ->
+                            ((taskMap, taskStateList), tasks)
+                            ||> List.fold (fun (taskMap, taskStateList) (taskName, dslTasks) ->
+                                    let oldTask = taskMap |> Map.tryFind taskName
 
-                            let taskState, interactions =
-                                createTaskState moment oldTask fakeTaskMap dslTasks
+                                    let newTask =
+                                        match oldTask with
+                                        | Some task -> { task with Information = information }
+                                        | None ->
+                                            { Task.Default with
+                                                Information = information
+                                                Name = TaskName taskName
+                                            }
 
-                            if taskName = "seethrus" then
-                                printfn "[below]seethrus oldtask:%A newtask:%A" oldTask taskState.Task
+                                    let fakeTaskMap =
+                                        match pass with
+                                        | FirstPass -> None
+                                        | SecondPass ->
+                                            taskMap
+                                            |> Map.toSeq
+                                            |> Seq.map (fun (taskName, task) -> TaskName taskName, task)
+                                            |> Map.ofSeq
+                                            |> Some
 
-                            let newTaskMap =
-                                taskMap |> Map.add taskName taskState.Task
+                                    let taskState, interactions =
+                                        createTaskState moment newTask fakeTaskMap dslTasks
 
-                            newTaskMap, taskStateList @ [ taskState, interactions ])
+                                    let newTaskMap =
+                                        taskMap |> Map.add taskName taskState.Task
 
-                taskMap, taskStateList)
-            |> List.fold (fun (newTaskMap: Map<string, Task>, newTaskStateList) (taskMap, taskStateList) ->
-                newTaskMap |> Map.union taskMap, newTaskStateList @ taskStateList) (Map.empty, [])
+                                    let newTaskStateList =
+                                        taskStateList @ [ taskState, interactions ]
 
+                                    newTaskMap, newTaskStateList))
+
+                match pass with
+                | 0 -> loop 1 newTaskMap
+                | _ -> newTaskMap, newTaskStateList
+
+            loop 0 Map.empty
 
         let informationStateMap =
             dslTree
@@ -701,8 +715,6 @@ module TempData =
             }
 
         dslData, tasks
-
-
 
 
 

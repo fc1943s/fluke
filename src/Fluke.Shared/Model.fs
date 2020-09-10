@@ -328,6 +328,14 @@ module Model =
                     | TreeAccess.ReadOnly dbUser -> dbUser = user)
 
         let treeStateWithInteractions (userInteractionList: UserInteraction list) (treeState: TreeState) =
+
+//            let diag =
+//                treeState.TaskStateMap
+//                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
+//            match diag with
+//            | Some diag -> printfn "treeStateWithInteractions A %A B %A C %A" userInteractionList.Length treeState.TaskStateMap.Count diag
+//            | None -> ()
+
             let newTreeState =
                 (treeState, userInteractionList)
                 ||> List.fold (fun treeState (UserInteraction (user, moment, interaction)) ->
@@ -488,10 +496,10 @@ module Model =
                                 TaskStateMap = newTaskStateMap
                             })
 
-            let diag =
-                newTreeState.TaskStateMap
-                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
-            printfn "diag2 %A" diag
+//            let diag =
+//                newTreeState.TaskStateMap
+//                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
+//            printfn "diag2 %A" diag
             newTreeState
 
 
