@@ -56,16 +56,20 @@ module Recoil =
             | View.Week ->
                 taskStateList
                 |> List.filter (function
-                    | { Task = { Scheduling = Manual WithoutSuggestion }; CellStateMap = cellStateMap;
-                        Sessions = sessions } when cellStateMap
-                                                   |> Map.toSeq
-                                                   |> Seq.exists (fun ((DateId referenceDay), cellState) ->
-                                                       cellState.Status
-                                                       <> Disabled
-                                                       && referenceDay.DateTime >==< dateRange)
-                                                   && sessions
-                                                      |> List.exists (fun (TaskSession (start, _, _)) ->
-                                                          start.Date.DateTime >==< dateRange) -> true
+                    | taskState when taskState.CellStateMap
+                                     |> Map.toSeq
+                                     |> Seq.exists (fun ((DateId referenceDay), cellState) ->
+                                         cellState.Status
+                                         <> Disabled
+                                         && referenceDay.DateTime >==< dateRange)
+                                     || taskState.Sessions
+                                        |> List.exists (fun (TaskSession (start, _, _)) ->
+                                            start.Date.DateTime >==< dateRange)
+                                     || taskState.Attachments
+                                        |> List.exists (fun attachment ->
+                                            match attachment with
+                                            | Attachment.Comment _ -> true
+                                            | _ -> false) -> true
                     | _ -> false)
             | View.Groups ->
                 taskStateList
@@ -132,7 +136,6 @@ module Recoil =
                                Position: FlukeDateTime
                                TreeStateMap: Map<TreeId, (TreeState * bool)> |}) =
 
-
             let treeStateList =
                 input.TreeStateMap
                 |> Map.values
@@ -152,8 +155,6 @@ module Recoil =
                 |> List.collect (fun treeState -> treeState.TaskStateMap |> Map.values |> Seq.toList)
 
 
-
-
             let treeSelection =
                 let emptyTreeSelection: State.TreeSelection =
                     {
@@ -170,8 +171,12 @@ module Recoil =
                                     treeSelection.InformationStateMap
                                     treeState.InformationStateMap
 
+                            let newTaskStateMap =
+                                TempData.mergeTaskStateMap treeSelection.TaskStateMap treeState.TaskStateMap
+
                             { treeSelection with
                                 InformationStateMap = newInformationStateMap
+                                TaskStateMap = newTaskStateMap
                             }
                         | _ -> treeSelection)
 
@@ -194,6 +199,8 @@ module Recoil =
             let filteredTaskStateList =
                 filterTaskStateList input.View dateRange taskStateList
 
+            printfn "getTree %A" (taskStateList.Length, filteredTaskStateList.Length)
+
             let filteredLanes =
                 filteredTaskStateList
                 |> List.map (fun taskState ->
@@ -201,6 +208,8 @@ module Recoil =
 
             //            let taskOrderList = RootPrivateData.treeData.TaskOrderList // @ RootPrivateData.taskOrderList
             let taskOrderList = [] // @ RootPrivateData.taskOrderList
+
+
 
             let sortedTaskStateList =
                 sortLanes

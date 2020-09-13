@@ -148,12 +148,12 @@ module RootPrivateData =
 
             let mergeDslDataIntoTreeState (dslData: TempData.DslData) (treeState: TreeState) =
 
-                let diag =
-                    treeState.TaskStateMap
-                        |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
-                match diag with
-                | Some diag -> printfn "mergeDslDataIntoTreeState A %A B %A C %A" dslData.TaskStateList.Length treeState.TaskStateMap.Count diag
-                | None -> ()
+//                let diag =
+//                    treeState.TaskStateMap
+//                        |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
+//                match diag with
+//                | Some diag -> printfn "mergeDslDataIntoTreeState A %A B %A C %A" dslData.TaskStateList.Length treeState.TaskStateMap.Count diag
+//                | None -> ()
 
                 let newInformationStateMap =
                     TempData.mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
@@ -289,18 +289,18 @@ module RootPrivateData =
                     TreeStateMap = treeStateMap
                 }
 
-            let diag =
-                state.TreeStateMap
-                |> Map.values
-                |> Seq.map fst
-                |> Seq.map (fun treeState ->
-                    treeState.TaskStateMap
-                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
-
-                    )
-                |> Seq.toList
-
-            printfn "diag1 %A" diag
+//            let diag =
+//                state.TreeStateMap
+//                |> Map.values
+//                |> Seq.map fst
+//                |> Seq.map (fun treeState ->
+//                    treeState.TaskStateMap
+//                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
+//
+//                    )
+//                |> Seq.toList
+//
+//            printfn "diag1 %A" diag
             state
 
 

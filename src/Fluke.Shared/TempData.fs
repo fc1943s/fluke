@@ -572,19 +572,17 @@ module TempData =
                                  (newMap: Map<Information, State.InformationState>)
                                  =
         (oldMap, newMap)
-        ||> Map.mapValues2 (fun oldValue newValue ->
-                { oldValue with
-                    Attachments = oldValue.Attachments @ newValue.Attachments
-                    SortList = oldValue.SortList @ newValue.SortList
-                })
+        ||> Map.unionWith (fun oldValue newValue ->
+            { oldValue with
+                Attachments = oldValue.Attachments @ newValue.Attachments
+                SortList = oldValue.SortList @ newValue.SortList
+            })
 
     let mergeCellStateMap (oldMap: Map<DateId, State.CellState>) (newMap: Map<DateId, State.CellState>) =
-        oldMap
-        |> Map.union newMap
+        oldMap |> Map.union newMap
 
     let mergeInformationMap (oldMap: Map<Information, unit>) (newMap: Map<Information, unit>) =
-        oldMap
-        |> Map.union newMap
+        oldMap |> Map.union newMap
 
     let mergeTaskState (oldValue: State.TaskState) (newValue: State.TaskState) =
         { oldValue with
@@ -597,7 +595,7 @@ module TempData =
         }
 
     let mergeTaskStateMap (oldMap: Map<Task, State.TaskState>) (newMap: Map<Task, State.TaskState>) =
-        (oldMap, newMap) ||> Map.mapValues2 mergeTaskState
+        Map.unionWith mergeTaskState oldMap newMap
 
 
     let mergeTreeState (oldValue: State.TreeState) (newValue: State.TreeState) =
@@ -607,8 +605,7 @@ module TempData =
         }
 
     let mergeTreeStateMap (oldMap: Map<State.TreeId, State.TreeState>) (newMap: Map<State.TreeId, State.TreeState>) =
-
-        (oldMap, newMap) ||> Map.mapValues2 mergeTreeState
+        Map.unionWith mergeTreeState oldMap newMap
 
 
 
@@ -691,11 +688,11 @@ module TempData =
         if not duplicated.IsEmpty then
             failwithf "Duplicated task names: %A" duplicated
 
-        let taskState =
-            taskStateList
-            |> List.tryFind (fun (taskState, interactions) -> taskState.Task.Name = TaskName "seethrus")
+        //        let taskState =
+//            taskStateList
+//            |> List.tryFind (fun (taskState, interactions) -> taskState.Task.Name = TaskName "seethrus")
 
-        printfn "[\/1]seethrus %A" (taskState)
+        //        printfn "[\/1]seethrus %A" (taskState)
 
         let tasks =
             taskContainerFactory (fun taskName ->
