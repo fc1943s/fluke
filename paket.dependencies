@@ -33,6 +33,9 @@ group Fluke.UI.Frontend
     nuget Feliz.Router ~> 3.2
     nuget Feliz.MaterialUI ~> 1.2
 
+    nuget Fable.SimpleJson ~> 3.11
+    nuget Thoth.Json ~> 4.1
+
 
 group Testing
     storage: none

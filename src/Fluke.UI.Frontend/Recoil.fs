@@ -1517,7 +1517,16 @@ module Recoil =
 
     let initState (initializer: MutableSnapshot) =
         let state = RootPrivateData.TreeData.getState ()
-        Browser.Dom.window?flukeState <- state
+
+        let state2 = {| User =state.User; TreeStateMap = state.TreeStateMap |}
+
+        let simpleJson = Fable.SimpleJson.SimpleJson.stringify state2
+        let thothJson = Thoth.Json.Encode.Auto.toString(4, state2)
+
+        Browser.Dom.window?flukeState <- state2
+        Browser.Dom.window?flukeStateSimple <- simpleJson
+        Browser.Dom.window?flukeStateThoth <- thothJson
+
         initializer.set (Atoms.state, Some state)
 
     (************************* END *************************)
