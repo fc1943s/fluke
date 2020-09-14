@@ -170,7 +170,7 @@ module TooltipPopupComponent =
             | [] -> nothing
             | _ ->
                 let user = // TODO: 2+ different users in the same day. what to show? smooth transition between them?
-                    comments.Head |> fst
+                    fst comments.Head
 
                 Html.div [
                     prop.ref tooltipContainerRef
@@ -520,70 +520,69 @@ module PanelsComponent =
                     let currentTaskList =
                         Recoil.useValue Recoil.Selectors.currentTaskList
 
-                    match currentTaskList with
-                    | None -> str "currentTaskList not found"
-                    | Some currentTaskList ->
-                        let taskIdList =
-                            currentTaskList |> List.map (fun x -> x.Id)
+                    let taskIdList =
+                        currentTaskList |> List.map (fun x -> x.Id)
 
-                        Html.div [
-                            prop.className Css.lanesPanel
-                            prop.children [
+                    Html.div [
+                        prop.className Css.lanesPanel
+                        prop.children [
+                            Html.div [
+                                yield! Html.div [ prop.className Css.cellRectangle ]
+                                       |> List.replicate 3
+
                                 Html.div [
-                                    yield! Html.div [ prop.className Css.cellRectangle ]
-                                           |> List.replicate 3
-
-                                    Html.div [
-                                        prop.style [ style.display.flex ]
-                                        prop.children [
-                                            Html.div [
-                                                prop.style [ style.paddingRight 10 ]
-                                                prop.children
-                                                    [
-                                                        yield! currentTaskList
-                                                               |> List.map (fun task ->
-                                                                   Html.div [
-                                                                       prop.className Css.cellRectangle
-                                                                       prop.children [
-                                                                           Html.div [
-                                                                               prop.style [
-                                                                                   style.color task.Information.Color
-                                                                                   style.whitespace.nowrap
-                                                                               ]
-                                                                               prop.children
-                                                                                   [
-                                                                                       let (Model.InformationName informationName) =
-                                                                                           task.Information.Name
-
-                                                                                       str informationName
-                                                                                   ]
+                                    prop.style [ style.display.flex ]
+                                    prop.children [
+                                        Html.div [
+                                            prop.style [ style.paddingRight 10 ]
+                                            prop.children
+                                                [
+                                                    yield! currentTaskList
+                                                           |> List.map (fun task ->
+                                                               Html.div [
+                                                                   prop.className Css.cellRectangle
+                                                                   prop.children [
+                                                                       Html.div [
+                                                                           prop.style [
+                                                                               style.color task.Information.Color
+                                                                               style.whitespace.nowrap
                                                                            ]
-                                                                           TooltipPopupComponent.render
-                                                                               {| Attachments = task.Attachments |}
+                                                                           prop.children
+                                                                               [
+                                                                                   let (Model.InformationName informationName) =
+                                                                                       task.Information.Name
+
+                                                                                   str informationName
+                                                                               ]
                                                                        ]
-                                                                   ])
-                                                    ]
-                                            ]
-                                            // Column: Task Name
-                                            Html.div [
-                                                prop.style [ style.width 200 ]
-                                                prop.children
-                                                    [
-                                                        yield! currentTaskList
-                                                               |> List.map (fun task ->
-                                                                   TaskNameComponent.render
-                                                                       {| Level = 0; TaskId = task.Id |})
-                                                    ]
-                                            ]
+                                                                       TooltipPopupComponent.render
+                                                                           {|
+                                                                               Attachments = task.InformationAttachments
+                                                                           |}
+                                                                   ]
+                                                               ])
+                                                ]
+                                        ]
+                                        // Column: Task Name
+                                        Html.div [
+                                            prop.style [ style.width 200 ]
+                                            prop.children
+                                                [
+                                                    yield! currentTaskList
+                                                           |> List.map (fun task ->
+                                                               TaskNameComponent.render
+                                                                   {| Level = 0; TaskId = task.Id |})
+                                                ]
                                         ]
                                     ]
                                 ]
-                                Html.div [
-                                    HeaderComponent.render ()
-                                    CellsComponent.render {| TaskIdList = taskIdList |}
-                                ]
                             ]
-                        ])
+                            Html.div [
+                                HeaderComponent.render ()
+                                CellsComponent.render {| TaskIdList = taskIdList |}
+                            ]
+                        ]
+                    ])
 
         module GroupsViewComponent =
             let render =
@@ -591,128 +590,118 @@ module PanelsComponent =
                     let currentTaskList =
                         Recoil.useValue Recoil.Selectors.currentTaskList
 
-                    match currentTaskList with
-                    | None -> str "currentTaskList not found"
-                    | Some currentTaskList ->
+                    let groupMap =
+                        currentTaskList
+                        |> List.map (fun x -> x.Information, x)
+                        |> Map.ofList
 
-                        let groupMap =
-                            currentTaskList
-                            |> List.map (fun x -> x.Information, x)
-                            |> Map.ofList
+                    let groups =
+                        currentTaskList
+                        |> List.groupBy (fun group -> group.Information)
+                        |> List.sortBy (fun (information, _) -> information.Name)
+                        |> List.groupBy (fun (information, _) -> information.KindName)
+                        |> List.sortBy
+                            (snd
+                             >> List.head
+                             >> fst
+                             >> fun information -> information.Order)
 
-                        let groups =
-                            currentTaskList
-                            |> List.groupBy (fun group -> group.Information)
-                            |> List.sortBy (fun (information, _) -> information.Name)
-                            |> List.groupBy (fun (information, _) -> information.KindName)
-                            |> List.sortBy
-                                (snd
-                                 >> List.head
-                                 >> fst
-                                 >> fun information -> information.Order)
+                    Html.div [
+                        prop.className Css.lanesPanel
+                        prop.children [
+                            Html.div [
+                                yield! Html.div [ prop.className Css.cellRectangle ]
+                                       |> List.replicate 3
 
-                        Html.div [
-                            prop.className Css.lanesPanel
-                            prop.children [
-                                Html.div [
-                                    yield! Html.div [ prop.className Css.cellRectangle ]
-                                           |> List.replicate 3
-
-                                    Html.div
-                                        [
-                                            yield! groups
-                                                   |> List.map (fun (informationKindName, taskGroups) ->
+                                Html.div
+                                    [
+                                        yield! groups
+                                               |> List.map (fun (informationKindName, taskGroups) ->
+                                                   Html.div [
                                                        Html.div [
-                                                           Html.div [
-                                                               prop.style [ style.color "#444" ]
-                                                               prop.children [ str informationKindName ]
-                                                           ]
-                                                           Html.div
-                                                               [
-                                                                   yield! taskGroups
-                                                                          |> List.map (fun (information, group) ->
-                                                                              let informationAttachments =
-                                                                                  groupMap.[information].Attachments
+                                                           prop.style [ style.color "#444" ]
+                                                           prop.children [ str informationKindName ]
+                                                       ]
+                                                       Html.div
+                                                           [
+                                                               yield! taskGroups
+                                                                      |> List.map (fun (information, group) ->
+                                                                          let informationAttachments =
+                                                                              groupMap.[information].Attachments
 
+                                                                          Html.div [
                                                                               Html.div [
-                                                                                  Html.div [
-                                                                                      prop.className Css.cellRectangle
-                                                                                      prop.children [
-                                                                                          Html.div [
-                                                                                              prop.style [
-                                                                                                  style.color "#444"
-                                                                                                  yield! paddingLeftLevel
-                                                                                                             1
+                                                                                  prop.className Css.cellRectangle
+                                                                                  prop.children [
+                                                                                      Html.div [
+                                                                                          prop.style [
+                                                                                              style.color "#444"
+                                                                                              yield! paddingLeftLevel 1
+                                                                                          ]
+                                                                                          prop.children
+                                                                                              [
+                                                                                                  let (Model.InformationName informationName) =
+                                                                                                      information.Name
+
+                                                                                                  str informationName
                                                                                               ]
-                                                                                              prop.children
-                                                                                                  [
-                                                                                                      let (Model.InformationName informationName) =
-                                                                                                          information.Name
-
-                                                                                                      str
-                                                                                                          informationName
-                                                                                                  ]
-                                                                                          ]
-                                                                                          TooltipPopupComponent.render
-                                                                                              {|
-                                                                                                  Attachments =
-                                                                                                      informationAttachments
-                                                                                              |}
                                                                                       ]
+                                                                                      TooltipPopupComponent.render
+                                                                                          {|
+                                                                                              Attachments =
+                                                                                                  informationAttachments
+                                                                                          |}
                                                                                   ]
-                                                                                  // Task Name
-                                                                                  Html.div [
-                                                                                      prop.style [ style.width 400 ]
-                                                                                      prop.children
-                                                                                          [
-                                                                                              yield! group
-                                                                                                     |> List.map (fun groupTask ->
-                                                                                                         TaskNameComponent.render
-                                                                                                             {|
-                                                                                                                 Level =
-                                                                                                                     2
-                                                                                                                 TaskId =
-                                                                                                                     groupTask.Id
-                                                                                                             |})
-                                                                                          ]
-                                                                                  ]
-                                                                              ])
-                                                               ]
-                                                       ])
-                                        ]
-                                ]
-                                // Column: Grid
-                                Html.div [
-                                    HeaderComponent.render ()
-                                    Html.div
-                                        [
-                                            yield! groups
-                                                   |> List.map (fun (_, taskGroups) ->
-                                                       Html.div [
-                                                           Html.div [ prop.className Css.cellRectangle ]
-                                                           Html.div
-                                                               [
-                                                                   yield! taskGroups
-                                                                          |> List.map (fun (_, groupTask) ->
+                                                                              ]
+                                                                              // Task Name
                                                                               Html.div [
-                                                                                  Html.div
+                                                                                  prop.style [ style.width 400 ]
+                                                                                  prop.children
                                                                                       [
-                                                                                          prop.className
-                                                                                              Css.cellRectangle
+                                                                                          yield! group
+                                                                                                 |> List.map (fun groupTask ->
+                                                                                                     TaskNameComponent.render
+                                                                                                         {|
+                                                                                                             Level = 2
+                                                                                                             TaskId =
+                                                                                                                 groupTask.Id
+                                                                                                         |})
                                                                                       ]
-                                                                                  CellsComponent.render
-                                                                                      {|
-                                                                                          TaskIdList =
-                                                                                              groupTask
-                                                                                              |> List.map (fun x -> x.Id)
-                                                                                      |}
-                                                                              ])
-                                                               ]
-                                                       ])
-                                        ]
-                                ]
+                                                                              ]
+                                                                          ])
+                                                           ]
+                                                   ])
+                                    ]
                             ]
-                        ])
+                            // Column: Grid
+                            Html.div [
+                                HeaderComponent.render ()
+                                Html.div
+                                    [
+                                        yield! groups
+                                               |> List.map (fun (_, taskGroups) ->
+                                                   Html.div [
+                                                       Html.div [ prop.className Css.cellRectangle ]
+                                                       Html.div
+                                                           [
+                                                               yield! taskGroups
+                                                                      |> List.map (fun (_, groupTask) ->
+                                                                          Html.div [
+                                                                              Html.div
+                                                                                  [ prop.className Css.cellRectangle ]
+                                                                              CellsComponent.render
+                                                                                  {|
+                                                                                      TaskIdList =
+                                                                                          groupTask
+                                                                                          |> List.map (fun x -> x.Id)
+                                                                                  |}
+                                                                          ])
+                                                           ]
+                                                   ])
+                                    ]
+                            ]
+                        ]
+                    ])
 
         module TasksViewComponent =
             let render =
@@ -720,95 +709,93 @@ module PanelsComponent =
                     let currentTaskList =
                         Recoil.useValue Recoil.Selectors.currentTaskList
 
-                    match currentTaskList with
-                    | None -> str "currentTaskList not found"
-                    | Some currentTaskList ->
+                    let taskIdList =
+                        currentTaskList |> List.map (fun x -> x.Id)
 
-                        let taskIdList =
-                            currentTaskList |> List.map (fun x -> x.Id)
+                    Html.div [
+                        prop.className Css.lanesPanel
+                        prop.children [
+                            Html.div [
+                                yield! Html.div [ prop.className Css.cellRectangle ]
+                                       |> List.replicate 3
 
-                        Html.div [
-                            prop.className Css.lanesPanel
-                            prop.children [
                                 Html.div [
-                                    yield! Html.div [ prop.className Css.cellRectangle ]
-                                           |> List.replicate 3
+                                    prop.style [ style.display.flex ]
+                                    prop.children [
+                                        Html.div [
+                                            prop.style [ style.paddingRight 10 ]
+                                            prop.children
+                                                [
+                                                    yield! currentTaskList
+                                                           |> List.map (fun task ->
+                                                               Html.div [
+                                                                   prop.className Css.cellRectangle
+                                                                   prop.children [
+                                                                       Html.div [
+                                                                           prop.style [
+                                                                               style.color task.Information.Color
+                                                                               style.whitespace.nowrap
+                                                                           ]
+                                                                           prop.children
+                                                                               [
+                                                                                   let (Model.InformationName informationName) =
+                                                                                       task.Information.Name
 
-                                    Html.div [
-                                        prop.style [ style.display.flex ]
-                                        prop.children [
-                                            Html.div [
-                                                prop.style [ style.paddingRight 10 ]
-                                                prop.children
-                                                    [
-                                                        yield! currentTaskList
-                                                               |> List.map (fun task ->
-                                                                   Html.div [
-                                                                       prop.className Css.cellRectangle
-                                                                       prop.children [
-                                                                           Html.div [
-                                                                               prop.style [
-                                                                                   style.color task.Information.Color
-                                                                                   style.whitespace.nowrap
+                                                                                   str informationName
                                                                                ]
-                                                                               prop.children
-                                                                                   [
-                                                                                       let (Model.InformationName informationName) =
-                                                                                           task.Information.Name
-
-                                                                                       str informationName
-                                                                                   ]
-                                                                           ]
-
-                                                                           TooltipPopupComponent.render
-                                                                               {| Attachments = task.Attachments |}
                                                                        ]
-                                                                   ])
-                                                    ]
-                                            ]
-                                            // Column: Priority
-                                            Html.div [
-                                                prop.style [
-                                                    style.paddingRight 10
-                                                    style.textAlign.center
+
+                                                                       TooltipPopupComponent.render
+                                                                           {|
+                                                                               Attachments = task.InformationAttachments
+                                                                           |}
+                                                                   ]
+                                                               ])
                                                 ]
-                                                prop.children
-                                                    [
-                                                        yield! currentTaskList
-                                                               |> List.map (fun task ->
-                                                                   Html.div [
-                                                                       prop.className Css.cellRectangle
-                                                                       prop.children
-                                                                           [
-                                                                               task.Priority
-                                                                               |> Option.map (fun x -> x.Value)
-                                                                               |> Option.defaultValue 0
-                                                                               |> string
-                                                                               |> str
-                                                                           ]
-                                                                   ])
-                                                    ]
+                                        ]
+                                        // Column: Priority
+                                        Html.div [
+                                            prop.style [
+                                                style.paddingRight 10
+                                                style.textAlign.center
                                             ]
-                                            // Column: Task Name
-                                            Html.div [
-                                                prop.style [ style.width 200 ]
-                                                prop.children
-                                                    [
-                                                        yield! currentTaskList
-                                                               |> List.map (fun task ->
-                                                                   TaskNameComponent.render
-                                                                       {| Level = 0; TaskId = task.Id |})
-                                                    ]
-                                            ]
+                                            prop.children
+                                                [
+                                                    yield! currentTaskList
+                                                           |> List.map (fun task ->
+                                                               Html.div [
+                                                                   prop.className Css.cellRectangle
+                                                                   prop.children
+                                                                       [
+                                                                           task.Priority
+                                                                           |> Option.map (fun x -> x.Value)
+                                                                           |> Option.defaultValue 0
+                                                                           |> string
+                                                                           |> str
+                                                                       ]
+                                                               ])
+                                                ]
+                                        ]
+                                        // Column: Task Name
+                                        Html.div [
+                                            prop.style [ style.width 200 ]
+                                            prop.children
+                                                [
+                                                    yield! currentTaskList
+                                                           |> List.map (fun task ->
+                                                               TaskNameComponent.render
+                                                                   {| Level = 0; TaskId = task.Id |})
+                                                ]
                                         ]
                                     ]
                                 ]
-                                Html.div [
-                                    HeaderComponent.render ()
-                                    CellsComponent.render {| TaskIdList = taskIdList |}
-                                ]
                             ]
-                        ])
+                            Html.div [
+                                HeaderComponent.render ()
+                                CellsComponent.render {| TaskIdList = taskIdList |}
+                            ]
+                        ]
+                    ])
 
         module WeekViewComponent =
             let render =
@@ -980,19 +967,20 @@ module MainComponent =
         React.memo (fun () ->
             let view = Recoil.useValue Recoil.Selectors.view
 
-            let loadTree =
+            let loadTreeSelection =
                 Recoil.useCallbackRef (fun setter ->
                     async {
                         Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[0]"
-                        let! treeAsync = setter.snapshot.getAsync (Recoil.Selectors.treeAsync view)
+                        let! treeSelection = setter.snapshot.getAsync (Recoil.Selectors.treeSelectionAsync view)
 
-                        printfn "TREEASYNC=None:%A" (treeAsync=None)
-                        Browser.Dom.window?treeAsync <- treeAsync
+                        printfn "dataLoader.TREESELECTION=None:%A" (treeSelection = None)
+
+                        Browser.Dom.window?treeSelection <- treeSelection
 
                         //Uncaught (in promise) Promise {<fulfilled>: List}
                         Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[1]"
 
-                        setter.set (Recoil.Selectors.currentTreeState, treeAsync)
+                        setter.set (Recoil.Selectors.treeSelection, treeSelection)
 
                         Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[2]"
                     }
@@ -1002,7 +990,7 @@ module MainComponent =
             React.useEffect
                 ((fun () ->
                     Recoil.Profiling.addTimestamp "dataLoader effect"
-                    loadTree ()),
+                    loadTreeSelection ()),
 
                  // TODO: return a cleanup?
                  [| view :> obj |])

@@ -394,9 +394,9 @@ module TempData =
 
                         let newUserInteractions = userInteractions @ [ userInteraction ]
                         taskState, newUserInteractions
-                    | (DslSession ({ Date = date; Time = time })) ->
+                    | DslSession start ->
                         let taskSession =
-                            TaskSession ({ Date = date; Time = time }, user.SessionLength, user.SessionBreakLength)
+                            TaskSession (start, user.SessionLength, user.SessionBreakLength)
 
                         let taskInteraction = TaskInteraction.Session taskSession
                         let interaction = Interaction.Task (task, taskInteraction)
@@ -573,10 +573,10 @@ module TempData =
                                  =
         (oldMap, newMap)
         ||> Map.unionWith (fun oldValue newValue ->
-            { oldValue with
-                Attachments = oldValue.Attachments @ newValue.Attachments
-                SortList = oldValue.SortList @ newValue.SortList
-            })
+                { oldValue with
+                    Attachments = oldValue.Attachments @ newValue.Attachments
+                    SortList = oldValue.SortList @ newValue.SortList
+                })
 
     let mergeCellStateMap (oldMap: Map<DateId, State.CellState>) (newMap: Map<DateId, State.CellState>) =
         oldMap |> Map.union newMap
@@ -644,14 +644,14 @@ module TempData =
                                             |> Map.ofSeq
                                             |> Some
 
-                                    let taskState, interactions =
+                                    let taskState, userInteractions =
                                         createTaskState moment newTask fakeTaskMap dslTasks
 
                                     let newTaskMap =
                                         taskMap |> Map.add taskName taskState.Task
 
                                     let newTaskStateList =
-                                        taskStateList @ [ taskState, interactions ]
+                                        taskStateList @ [ taskState, userInteractions ]
 
                                     newTaskMap, newTaskStateList))
 
@@ -660,6 +660,11 @@ module TempData =
                 | _ -> newTaskMap, newTaskStateList
 
             loop 0 Map.empty
+
+        //        printfn
+//            "taskMap taskStateList ### %A ### ### %A ###"
+//            (taskMap|>Map.tryPick (fun k v -> if k.Contains "week view" then Some v else None))
+//            (taskStateList |> List.filter (fun (taskState, interactions) -> let (TaskName taskName) = taskState.Task.Name in taskName.Contains "week view"))
 
         let informationStateMap =
             dslTree

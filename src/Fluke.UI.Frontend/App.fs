@@ -20,9 +20,7 @@ module App =
 
             Recoil.Profiling.addTimestamp "appMain.render"
             Recoil.root [
-                root.localStorage (fun hydrater ->
-                    hydrater.setAtom Recoil.Atoms.debug
-                    hydrater.setAtom Recoil.Atoms.treeName)
+                root.localStorage (fun hydrater -> hydrater.setAtom Recoil.Atoms.debug)
                 root.init Recoil.initState
 
 

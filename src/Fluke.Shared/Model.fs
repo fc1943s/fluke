@@ -286,7 +286,7 @@ module Model =
                 Name: TreeName
                 Owner: User
                 SharedWith: TreeAccess list
-//                Position: FlukeDateTime option
+                //                Position: FlukeDateTime option
                 InformationStateMap: Map<Information, InformationState>
                 TaskStateMap: Map<Task, TaskState>
             }
@@ -301,8 +301,10 @@ module Model =
 
         type TreeSelection =
             {
+                TreeStateList: TreeState list
                 InformationStateMap: Map<Information, InformationState>
                 TaskStateMap: Map<Task, TaskState>
+                TaskList: Task list
             }
 
         let informationListToStateMap informationList =
@@ -329,7 +331,7 @@ module Model =
 
         let treeStateWithInteractions (userInteractionList: UserInteraction list) (treeState: TreeState) =
 
-//            let diag =
+            //            let diag =
 //                treeState.TaskStateMap
 //                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
 //            match diag with
@@ -400,27 +402,44 @@ module Model =
                             let newTaskState =
                                 match taskInteraction with
                                 | TaskInteraction.Attachment attachment ->
-                                    let attachments = attachment :: taskState.Attachments
+                                    let newAttachments = attachment :: taskState.Attachments
 
-                                    let newTaskState =
-                                        { taskState with
-                                            Attachments = attachments
-                                        }
-
-                                    newTaskState
+                                    { taskState with
+                                        Attachments = newAttachments
+                                    }
 
                                 | TaskInteraction.Sort (top, bottom) ->
-                                    let sortList = (top, bottom) :: taskState.SortList
+                                    let newSortList = (top, bottom) :: taskState.SortList
 
-                                    let newTaskState = { taskState with SortList = sortList }
+                                    { taskState with
+                                        SortList = newSortList
+                                    }
+                                | TaskInteraction.Session (TaskSession (start, duration, breakDuration) as session) ->
+                                    let newSessions = session :: taskState.Sessions
 
-                                    newTaskState
-                                | TaskInteraction.Session session ->
-                                    let sessions = session :: taskState.Sessions
-
-                                    let newTaskState = { taskState with Sessions = sessions }
-
-                                    newTaskState
+                                    { taskState with
+                                        Sessions = newSessions
+                                    }
+                                //                                    let cellState =
+//                                        taskState.CellStateMap
+//                                        |> Map.tryFind dateId
+//                                        |> Option.defaultValue
+//                                            {
+//                                                Status = Disabled
+//                                                Attachments = []
+//                                                Sessions = []
+//                                            }
+//
+//                                    let newSessions = session :: cellState.Sessions
+//
+//                                    let newCellState =
+//                                        {cellState with Sessions = newSessions}
+//
+//                                    let newCellStateMap =
+//                                        taskState.CellStateMap
+//                                        |> Map.add dateId newCellState
+//
+//                                    { taskState with CellStateMap = newCellStateMap }
                                 | TaskInteraction.Archive -> taskState
 
                             let newTaskStateMap =
@@ -496,7 +515,7 @@ module Model =
                                 TaskStateMap = newTaskStateMap
                             })
 
-//            let diag =
+            //            let diag =
 //                newTreeState.TaskStateMap
 //                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
 //            printfn "diag2 %A" diag
@@ -560,6 +579,7 @@ module Model =
                 Month = Enum.Parse (typeof<Month>, string date.Month) :?> Month
                 Day = Day date.Day
             }
+
         static member inline MinValue = FlukeDate.FromDateTime DateTime.MinValue
 
 
@@ -672,7 +692,7 @@ module Model =
                 Name = name
                 Owner = owner
                 SharedWith = defaultArg sharedWith []
-//                Position = None
+                //                Position = None
                 InformationStateMap = Map.empty
                 TaskStateMap = Map.empty
             }

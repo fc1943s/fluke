@@ -27,16 +27,16 @@ module Tests =
 
                             let state2 = {| User =state.User; TreeStateMap = state.TreeStateMap |}
 
-//                            let fsharpJson = FSharp.Json.Json.serialize state2
-                            let thoth = Thoth.Json.Net.Encode.Auto.toString(0, state2)
-//                            let stj = System.Text.Json.JsonSerializer.Serialize(state2)
-
-                            let remoting = Newtonsoft.Json.JsonConvert.SerializeObject(state2, [| Fable.Remoting.Json.FableJsonConverter() :> Newtonsoft.Json.JsonConverter |])
-
-//                            File.WriteAllText("./fsharpJson.json", fsharpJson)
-                            File.WriteAllText("./thoth.json", thoth)
-//                            File.WriteAllText("./stj.json", stj)
-                            File.WriteAllText("./remoting.json", remoting)
+////                            let fsharpJson = FSharp.Json.Json.serialize state2
+//                            let thoth = Thoth.Json.Net.Encode.Auto.toString(0, state2)
+////                            let stj = System.Text.Json.JsonSerializer.Serialize(state2)
+//
+//                            let remoting = Newtonsoft.Json.JsonConvert.SerializeObject(state2, [| Fable.Remoting.Json.FableJsonConverter() :> Newtonsoft.Json.JsonConverter |])
+//
+////                            File.WriteAllText("./fsharpJson.json", fsharpJson)
+//                            File.WriteAllText("./thoth.json", thoth)
+////                            File.WriteAllText("./stj.json", stj)
+//                            File.WriteAllText("./remoting.json", remoting)
 
 
                             []

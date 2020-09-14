@@ -142,7 +142,6 @@ module RootPrivateData =
                     yield! PrivateData.InformationCommentInteractions.getInformationCommentInteractions moment
                     yield! PrivateData.CellCommentInteractions.getCellCommentInteractions moment
                     yield! PrivateData.Journal.getCellCommentInteractions moment
-                    yield! PrivateData.TaskCommentInteractions.getTaskCommentInteractions moment
                     yield! PrivateData.CellStatusChangeInteractions.getCellStatusChangeInteractions moment
                 ]
 
@@ -158,13 +157,22 @@ module RootPrivateData =
                 let newInformationStateMap =
                     TempData.mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
 
-                let taskStateList, userInteractionsBundle = dslData.TaskStateList |> List.unzip
+                let taskStateList, userInteractionsBundle =
+                    dslData.TaskStateList
+                    |> List.unzip
+
+
+                let userInteractions =
+                    userInteractionsBundle |> List.collect id
+
+                let newTreeState =
+                    treeStateWithInteractions userInteractions treeState
 
                 let newTaskStateMap =
-                    (treeState.TaskStateMap, taskStateList)
+                    (newTreeState.TaskStateMap, taskStateList)
                     ||> List.fold (fun taskStateMap taskState ->
                             let oldTaskState =
-                                treeState.TaskStateMap
+                                newTreeState.TaskStateMap
                                 |> Map.tryFind taskState.Task
 
                             let newTaskState =
@@ -174,12 +182,6 @@ module RootPrivateData =
 
                             taskStateMap
                             |> Map.add taskState.Task newTaskState)
-
-                let userInteractions =
-                    userInteractionsBundle |> List.collect id
-
-                let newTreeState =
-                    treeStateWithInteractions userInteractions treeState
 
                 let result =
                     { newTreeState with
@@ -217,8 +219,6 @@ module RootPrivateData =
                                        moment
                             yield! SharedPrivateData.liryanne.CellCommentInteractions.getCellCommentInteractions moment
                             yield! SharedPrivateData.fc1943s.CellCommentInteractions.getCellCommentInteractions moment
-                            yield! SharedPrivateData.liryanne.TaskCommentInteractions.getTaskCommentInteractions moment
-                            yield! SharedPrivateData.fc1943s.TaskCommentInteractions.getTaskCommentInteractions moment
                             yield! SharedPrivateData.liryanne.CellStatusChangeInteractions.getCellStatusChangeInteractions
                                        moment
                             yield! SharedPrivateData.fc1943s.CellStatusChangeInteractions.getCellStatusChangeInteractions

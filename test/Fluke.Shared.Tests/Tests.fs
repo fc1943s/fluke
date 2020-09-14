@@ -69,7 +69,7 @@ module Tests =
 
     [<Tests>]
     let tests =
-        let users = getUsers()
+        let users = getUsers ()
         testList
             "Tests"
             [
@@ -362,8 +362,7 @@ module Tests =
                             |> fun lanes ->
                                 match props.Sort with
                                 | NoSorting -> lanes
-                                | TimeOfDay ->
-                                    Sorting.sortLanesByTimeOfDay users.fluke.DayStart props.Position [] lanes
+                                | TimeOfDay -> Sorting.sortLanesByTimeOfDay users.fluke.DayStart props.Position [] lanes
                                 | Frequency -> Sorting.sortLanesByFrequency lanes
                             |> List.map (fun (OldLane ({ Task = { Name = TaskName name } }, _)) -> name)
                             |> Expect.equal "" props.Expected
@@ -705,8 +704,8 @@ module Tests =
                                         Events = props.Events
                                         Expected = props.Expected
                                     |}
-                            let taskState =
-                                fst dslData.TaskStateList.Head
+
+                            let taskState = fst dslData.TaskStateList.Head
 
                             let dateSequence = props.Expected |> List.map fst
 
