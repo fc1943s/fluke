@@ -285,7 +285,7 @@ module Model =
                 Id: TreeId
                 Name: TreeName
                 Owner: User
-                SharedWith: TreeAccess list
+                SharedWith: TreeAccess
                 //                Position: FlukeDateTime option
                 InformationStateMap: Map<Information, InformationState>
                 TaskStateMap: Map<Task, TaskState>
@@ -296,6 +296,10 @@ module Model =
         and TreeName = TreeName of name: string
 
         and [<RequireQualifiedAccess>] TreeAccess =
+            | Public
+            | Private of TreeAccessItem list
+
+        and [<RequireQualifiedAccess>] TreeAccessItem =
             | Admin of user: User
             | ReadOnly of user: User
 
@@ -322,12 +326,13 @@ module Model =
 
         let hasAccess treeState user =
             match treeState with
-            | tree when tree.Owner = user -> true
-            | tree ->
-                tree.SharedWith
+            | { Owner = owner } when owner = user -> true
+            | { SharedWith = TreeAccess.Public } -> true
+            | { SharedWith = TreeAccess.Private accessList } ->
+                accessList
                 |> List.exists (function
-                    | TreeAccess.Admin dbUser -> dbUser = user
-                    | TreeAccess.ReadOnly dbUser -> dbUser = user)
+                    | TreeAccessItem.Admin dbUser
+                    | TreeAccessItem.ReadOnly dbUser -> dbUser = user)
 
         let treeStateWithInteractions (userInteractionList: UserInteraction list) (treeState: TreeState) =
 
@@ -691,7 +696,7 @@ module Model =
                 Id = id
                 Name = name
                 Owner = owner
-                SharedWith = defaultArg sharedWith []
+                SharedWith = defaultArg sharedWith (TreeAccess.Private [])
                 //                Position = None
                 InformationStateMap = Map.empty
                 TaskStateMap = Map.empty

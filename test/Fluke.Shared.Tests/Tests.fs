@@ -339,26 +339,32 @@ module Tests =
                                                                Data: (Task * DslTask list) list
                                                                Expected: string list
                                                                Position: FlukeDateTime |}) =
-                            let dslData =
-                                TempData.Testing.createLaneSortingDslData
-                                    {|
-                                        User = users.fluke
-                                        Position = props.Position
-                                        Expected = props.Expected
-                                        Data = props.Data
-                                    |}
+                            let treeState =
+                                let dslData =
+                                    TempData.Testing.createLaneSortingDslData
+                                        {|
+                                            User = users.fluke
+                                            Position = props.Position
+                                            Expected = props.Expected
+                                            Data = props.Data
+                                        |}
+
+                                State.TreeState.Create
+                                    (id = State.TreeId Guid.Empty, name = State.TreeName "Test", owner = users.fluke)
+                                |> mergeDslDataIntoTreeState dslData
 
                             let dateSequence =
-                                dslData.TaskStateList
-                                |> Seq.collect (fun (taskState, _) -> taskState.CellStateMap |> Map.keys)
+                                treeState.TaskStateMap
+                                |> Map.values
+                                |> Seq.collect (fun taskState -> taskState.CellStateMap |> Map.keys)
                                 |> Seq.toList
                                 |> List.map (fun (DateId referenceDay) -> referenceDay)
                                 |> Rendering.getDateSequence (35, 35)
 
-                            dslData.TaskStateList
-                            |> List.map
-                                (fst
-                                 >> Rendering.renderLane users.fluke.DayStart props.Position dateSequence)
+                            treeState.TaskStateMap
+                            |> Map.values
+                            |> Seq.map (Rendering.renderLane users.fluke.DayStart props.Position dateSequence)
+                            |> Seq.toList
                             |> fun lanes ->
                                 match props.Sort with
                                 | NoSorting -> lanes
@@ -694,18 +700,22 @@ module Tests =
                                                                  Task: Task
                                                                  Events: DslTask list
                                                                  Expected: (FlukeDate * CellStatus) list |}) =
+                            let treeState =
+                                let dslData =
+                                    TempData.Testing.createLaneRenderingDslData
+                                        {|
+                                            User = users.fluke
+                                            Position = props.Position
+                                            Task = props.Task
+                                            Events = props.Events
+                                            Expected = props.Expected
+                                        |}
 
-                            let dslData =
-                                TempData.Testing.createLaneRenderingDslData
-                                    {|
-                                        User = users.fluke
-                                        Position = props.Position
-                                        Task = props.Task
-                                        Events = props.Events
-                                        Expected = props.Expected
-                                    |}
+                                State.TreeState.Create
+                                    (id = State.TreeId Guid.Empty, name = State.TreeName "Test", owner = users.fluke)
+                                |> mergeDslDataIntoTreeState dslData
 
-                            let taskState = fst dslData.TaskStateList.Head
+                            let taskState = treeState.TaskStateMap.[props.Task]
 
                             let dateSequence = props.Expected |> List.map fst
 

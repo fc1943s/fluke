@@ -718,6 +718,49 @@ module TempData =
 
         dslData, tasks
 
+    let mergeDslDataIntoTreeState (dslData: DslData) (treeState: State.TreeState) =
+
+        //                let diag =
+//                    treeState.TaskStateMap
+//                        |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
+//                match diag with
+//                | Some diag -> printfn "mergeDslDataIntoTreeState A %A B %A C %A" dslData.TaskStateList.Length treeState.TaskStateMap.Count diag
+//                | None -> ()
+
+        let newInformationStateMap =
+            mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
+
+        let taskStateList, userInteractionsBundle = dslData.TaskStateList |> List.unzip
+
+
+        let userInteractions =
+            userInteractionsBundle |> List.collect id
+
+        let newTreeState =
+            State.treeStateWithInteractions userInteractions treeState
+
+        let newTaskStateMap =
+            (newTreeState.TaskStateMap, taskStateList)
+            ||> List.fold (fun taskStateMap taskState ->
+                    let oldTaskState =
+                        newTreeState.TaskStateMap
+                        |> Map.tryFind taskState.Task
+
+                    let newTaskState =
+                        match oldTaskState with
+                        | Some oldTaskState -> mergeTaskState oldTaskState taskState
+                        | None -> taskState
+
+                    taskStateMap
+                    |> Map.add taskState.Task newTaskState)
+
+        let result =
+            { newTreeState with
+                InformationStateMap = newInformationStateMap
+                TaskStateMap = newTaskStateMap
+            }
+
+        result
 
 
 
@@ -933,13 +976,11 @@ module TempData =
                         |}
                         |> createLaneRenderingDslData
                     SortLanesTests =
-
                         {|
-                            User = users.fluke
                             Position =
                                 {
                                     Date = FlukeDate.Create 2020 Month.March 10
-                                    Time = FlukeTime.Create 14 00
+                                    Time = users.fluke.DayStart
                                 }
                             Data =
                                 [
@@ -1026,11 +1067,7 @@ module TempData =
                                         Name = TaskName "11"
                                         Scheduling = Recurrency (Offset (Days 1))
                                     },
-                                    [
-                                        DslStatusEntry
-                                            (FlukeDate.Create 2020 Month.March 10,
-                                             Postponed (FlukeTime.Create 13 00 |> Some))
-                                    ]
+                                    []
 
                                     { Task.Default with
                                         Name = TaskName "12"
@@ -1058,53 +1095,27 @@ module TempData =
                                         DslStatusEntry (FlukeDate.Create 2020 Month.March 07, Postponed None)
                                         DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Dismissed)
                                     ]
-
-                                    { Task.Default with
-                                        Name = TaskName "16"
-                                        Scheduling = Recurrency (Offset (Days 1))
-                                        MissedAfter = (FlukeTime.Create 13 00 |> Some)
-                                    },
-                                    []
-
-                                    { Task.Default with
-                                        Name = TaskName "17"
-                                        Scheduling = Recurrency (Offset (Days 1))
-                                    },
-                                    [
-                                        DslStatusEntry
-                                            (FlukeDate.Create 2020 Month.March 10,
-                                             Postponed (FlukeTime.Create 15 00 |> Some))
-                                    ]
-
-                                    { Task.Default with
-                                        Name = TaskName "18"
-                                        Scheduling = Recurrency (Offset (Days 1))
-                                    },
-                                    []
                                 ]
                             Expected =
                                 [
-                                    "16"
-                                    "05"
-                                    "03"
                                     "11"
-                                    "13"
-                                    "18"
-                                    "17"
                                     "04"
-                                    "01"
-                                    "02"
                                     "10"
                                     "08"
                                     "09"
-                                    "06"
                                     "07"
-                                    "12"
-                                    "14"
                                     "15"
+                                    "13"
+                                    "14"
+                                    "02"
+                                    "06"
+                                    "03"
+                                    "05"
+                                    "01"
+                                    "12"
                                 ]
                         |}
-
+                        |> fun x -> {| x with User = getUsers().fluke |}
                         |> createLaneSortingDslData
                 |}
 

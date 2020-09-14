@@ -51,25 +51,26 @@ module Recoil =
 
 
         let rec filterTaskStateList view dateRange (taskStateList: State.TaskState list) =
+            printfn "DR %A" dateRange
             match view with
             | View.Calendar
             | View.Week ->
                 taskStateList
                 |> List.filter (function
-                    | taskState when taskState.CellStateMap
-                                     |> Map.toSeq
-                                     |> Seq.exists (fun ((DateId referenceDay), cellState) ->
-                                         referenceDay.DateTime
-                                         >==< dateRange
-                                         && (cellState.Attachments
-                                             |> List.exists (function
-                                                 | Attachment.Comment _ -> true
-                                                 | _ -> false)
-                                             || cellState.Status <> Disabled))
-                                     || taskState.Sessions
-                                        |> List.exists (fun (TaskSession (start, _, _)) ->
-                                            start.Date.DateTime >==< dateRange) -> true
-                    | _ -> false)
+                    | { Task = { Scheduling = Manual WithoutSuggestion } } as taskState ->
+                        taskState.CellStateMap
+                        |> Map.toSeq
+                        |> Seq.exists (fun ((DateId referenceDay), cellState) ->
+                            referenceDay.DateTime
+                            >==< dateRange
+                            && (cellState.Attachments
+                                |> List.exists (function
+                                    | Attachment.Comment _ -> true
+                                    | _ -> false)
+                                || cellState.Status <> Disabled))
+                        || taskState.Sessions
+                           |> List.exists (fun (TaskSession (start, _, _)) -> start.Date.DateTime >==< dateRange)
+                    | _ -> true)
             | View.Groups ->
                 taskStateList
                 |> List.filter (function
@@ -327,6 +328,8 @@ module Recoil =
                     TaskStateMap = TempData.mergeTaskStateMap treeSelection.TaskStateMap newTaskStateMap
                     TaskList = newTaskList
                 }
+
+            //            printfn "ts %A" newTreeSelection
 
             newTreeSelection
 
@@ -635,7 +638,7 @@ module Recoil =
                     Id: RecoilValue<TreeId, ReadWrite>
                     Name: RecoilValue<TreeName, ReadWrite>
                     Owner: RecoilValue<User option, ReadWrite>
-                    SharedWith: RecoilValue<TreeAccess list, ReadWrite>
+                    SharedWith: RecoilValue<TreeAccess, ReadWrite>
                     //                    Position: RecoilValue<FlukeDateTime option, ReadWrite>
                     InformationIdList: RecoilValue<RecoilInformation.InformationId list, ReadWrite>
                     TaskIdList: RecoilValue<RecoilTask.TaskId list, ReadWrite>
@@ -670,7 +673,7 @@ module Recoil =
                     key (sprintf "%s/%s" (nameof RecoilInformation) (nameof sharedWithFamily))
                     def (fun (_treeId: TreeId) ->
                             Profiling.addCount (nameof sharedWithFamily)
-                            [])
+                            TreeAccess.Public)
                 }
 
             //            let rec positionFamily =
@@ -863,18 +866,19 @@ module Recoil =
                         Profiling.addCount (nameof treeSelection)
                         treeSelection)
                 set (fun setter (newValue: TreeSelection option) ->
-                        let user = setter.get user
                         let dateSequence = setter.get dateSequence
 
                         Profiling.addTimestamp "treeSelection.set[0]"
 
-                        printfn "user dateSequence tree %A %A %A" (user = None) (newValue = None) dateSequence.Length
+                        printfn
+                            "dateSequence tree newValue==none=%A dateSequence.length=%A"
+                            (newValue = None)
+                            dateSequence.Length
 
-                        match user, newValue with
-                        | Some user, Some treeSelection ->
+                        match newValue with
+                        | Some treeSelection ->
                             //                    let tree =
 //                        { tree with TaskList = tree.TaskList |> List.take 3 }
-
                             let recoilInformationMap =
                                 treeSelection.InformationStateMap
                                 |> Map.mapValues (fun informationState ->
@@ -1632,8 +1636,8 @@ module Recoil =
 //        let simpleJson = Fable.SimpleJson.SimpleJson.stringify state2
 //        let thothJson = Thoth.Json.Encode.Auto.toString(4, state2)
 //
-//        Browser.Dom.window?flukeState <- state2
-//        Browser.Dom.window?flukeStateSimple <- simpleJson
+        Browser.Dom.window?flukeState <- state
+        //        Browser.Dom.window?flukeStateSimple <- simpleJson
 //        Browser.Dom.window?flukeStateThoth <- thothJson
 
         initializer.set (Atoms.state, Some state)
