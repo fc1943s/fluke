@@ -737,6 +737,12 @@ module Recoil =
                 def (Router.currentPath ())
             }
 
+        let rec internal cellSize =
+            atom {
+                key ("atom/" + nameof cellSize)
+                def (17)
+            }
+
         //        let rec internal treeName =
 //            atom {
 //                key ("atom/" + nameof treeName)
