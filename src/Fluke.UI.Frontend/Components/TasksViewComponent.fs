@@ -14,11 +14,9 @@ open Fluke.UI.Frontend.Model
 module TasksViewComponent =
     let render =
         React.memo (fun () ->
-            let currentTaskList =
-                Recoil.useValue Recoil.Selectors.currentTaskList
+            let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
 
-            let taskIdList =
-                currentTaskList |> List.map (fun x -> x.Id)
+            let taskIdList = currentTaskList |> List.map (fun x -> x.Id)
 
             Html.div [
                 prop.className Css.lanesPanel
@@ -63,9 +61,7 @@ module TasksViewComponent =
                                                                ]
 
                                                                TooltipPopupComponent.render
-                                                                   {|
-                                                                       Attachments = task.InformationAttachments
-                                                                   |}
+                                                                   {| Attachments = task.InformationAttachments |}
                                                            ]
                                                        ])
                                         ]
@@ -103,11 +99,7 @@ module TasksViewComponent =
                                         [
                                             yield! currentTaskList
                                                    |> List.map (fun task ->
-                                                       TaskNameComponent.render
-                                                           {|
-                                                               Css = []
-                                                               TaskId = task.Id
-                                                           |})
+                                                       TaskNameComponent.render {| Css = []; TaskId = task.Id |})
                                         ]
                                 ]
                             ]
@@ -115,10 +107,7 @@ module TasksViewComponent =
                     ]
                     Html.div [
                         GridHeaderComponent.render ()
-                        CellsComponent.render
-                            {|
-                                TaskIdList = taskIdList
-                            |}
+                        CellsComponent.render {| TaskIdList = taskIdList |}
                     ]
                 ]
             ])

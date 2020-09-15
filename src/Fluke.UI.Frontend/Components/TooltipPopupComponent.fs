@@ -15,8 +15,7 @@ module TooltipPopupComponent =
         React.memo (fun (input: {| Attachments: Attachment list |}) ->
             let tooltipContainerRef = React.useElementRef ()
 
-            let hovered =
-                Temp.UseListener.onElementHover tooltipContainerRef
+            let hovered = Temp.UseListener.onElementHover tooltipContainerRef
 
             let comments =
                 input.Attachments
@@ -53,11 +52,7 @@ module TooltipPopupComponent =
                                             | false -> nothing
                                             | true ->
                                                 ReactBindings.React.createElement
-                                                    (Ext.reactMarkdown,
-                                                     {|
-                                                         source = text
-                                                     |},
-                                                     [])
+                                                    (Ext.reactMarkdown, {| source = text |}, [])
                                     ]
                             ]
                         ]

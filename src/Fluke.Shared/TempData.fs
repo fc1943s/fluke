@@ -148,19 +148,14 @@ module TempData =
 
 
     let getPublicConsts () =
-        let rootPath =
-            """M:\Dropbox\home_encrypted\projects\app-fluke"""
+        let rootPath = """M:\Dropbox\home_encrypted\projects\app-fluke"""
 
         let dbPath = rootPath + """\db_v1"""
         let dayStart = FlukeTime.Create 07 00
 
         let rec result =
             {|
-                defaultPosition =
-                    {
-                        Date = FlukeDate.MinValue
-                        Time = dayStart
-                    }
+                defaultPosition = { Date = FlukeDate.MinValue; Time = dayStart }
             |}
 
         result
@@ -289,8 +284,7 @@ module TempData =
         let interaction =
             Interaction.Task (task, TaskInteraction.Attachment (Attachment.Comment (user, Comment comment)))
 
-        let userInteraction =
-            UserInteraction (user, moment, interaction)
+        let userInteraction = UserInteraction (user, moment, interaction)
 
         userInteraction
 
@@ -299,8 +293,7 @@ module TempData =
             Interaction.Information
                 (information, InformationInteraction.Attachment (Attachment.Comment (user, Comment comment)))
 
-        let userInteraction =
-            UserInteraction (user, moment, interaction)
+        let userInteraction = UserInteraction (user, moment, interaction)
 
         userInteraction
 
@@ -309,17 +302,11 @@ module TempData =
             Attachment.Comment (user, Comment comment)
             |> CellInteraction.Attachment
 
-        let cellAddress =
-            {
-                Task = task
-                DateId = dateId dayStart moment
-            }
+        let cellAddress = { Task = task; DateId = dateId dayStart moment }
 
-        let interaction =
-            Interaction.Cell (cellAddress, cellInteraction)
+        let interaction = Interaction.Cell (cellAddress, cellInteraction)
 
-        let userInteraction =
-            UserInteraction (user, moment, interaction)
+        let userInteraction = UserInteraction (user, moment, interaction)
 
         userInteraction
 
@@ -331,20 +318,17 @@ module TempData =
             | Postponed until -> CellStatusChange.Postpone until
             | ManualPending -> CellStatusChange.Schedule
 
-        let cellInteraction =
-            CellInteraction.StatusChange cellStatusChange
+        let cellInteraction = CellInteraction.StatusChange cellStatusChange
 
         let dateId = DateId date
 
         let cellAddress = { Task = task; DateId = dateId }
 
-        let interaction =
-            Interaction.Cell (cellAddress, cellInteraction)
+        let interaction = Interaction.Cell (cellAddress, cellInteraction)
 
         let moment = { Date = date; Time = user.DayStart }
 
-        let userInteraction =
-            UserInteraction (user, moment, interaction)
+        let userInteraction = UserInteraction (user, moment, interaction)
 
         userInteraction
 
@@ -378,10 +362,14 @@ module TempData =
                             Interaction.Task
                                 (task, TaskInteraction.Attachment (Attachment.Comment (user, Comment comment)))
 
-                        let userInteraction =
-                            UserInteraction (user, moment, interaction)
+                        let userInteraction = UserInteraction (user, moment, interaction)
 
-                        let newUserInteractions = userInteractions @ [ userInteraction ]
+                        let newUserInteractions =
+                            userInteractions
+                            @ [
+                                userInteraction
+                            ]
+
                         taskState, newUserInteractions
                     | DslCellComment (date, comment) ->
                         let interaction =
@@ -389,22 +377,29 @@ module TempData =
                                 ({ Task = task; DateId = DateId date },
                                  CellInteraction.Attachment (Attachment.Comment (user, Comment comment)))
 
-                        let userInteraction =
-                            UserInteraction (user, moment, interaction)
+                        let userInteraction = UserInteraction (user, moment, interaction)
 
-                        let newUserInteractions = userInteractions @ [ userInteraction ]
+                        let newUserInteractions =
+                            userInteractions
+                            @ [
+                                userInteraction
+                            ]
+
                         taskState, newUserInteractions
                     | DslSession start ->
-                        let taskSession =
-                            TaskSession (start, user.SessionLength, user.SessionBreakLength)
+                        let taskSession = TaskSession (start, user.SessionLength, user.SessionBreakLength)
 
                         let taskInteraction = TaskInteraction.Session taskSession
                         let interaction = Interaction.Task (task, taskInteraction)
 
-                        let userInteraction =
-                            UserInteraction (user, moment, interaction)
+                        let userInteraction = UserInteraction (user, moment, interaction)
 
-                        let newUserInteractions = userInteractions @ [ userInteraction ]
+                        let newUserInteractions =
+                            userInteractions
+                            @ [
+                                userInteraction
+                            ]
+
                         taskState, newUserInteractions
                     | DslTaskSort (top, bottom) ->
                         let newUserInteractions =
@@ -426,26 +421,29 @@ module TempData =
                                 let interaction =
                                     Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
 
-                                let userInteraction =
-                                    UserInteraction (user, moment, interaction)
+                                let userInteraction = UserInteraction (user, moment, interaction)
 
-                                userInteractions @ [ userInteraction ]
+                                userInteractions
+                                @ [
+                                    userInteraction
+                                ]
                             | None -> userInteractions
 
                         taskState, newUserInteractions
                     | DslStatusEntry (date, manualCellStatus) ->
-                        let userInteraction =
-                            createCellStatusChangeInteraction user task date manualCellStatus
+                        let userInteraction = createCellStatusChangeInteraction user task date manualCellStatus
 
-                        let newUserInteractions = userInteractions @ [ userInteraction ]
+                        let newUserInteractions =
+                            userInteractions
+                            @ [
+                                userInteraction
+                            ]
+
                         taskState, newUserInteractions
                     | DslPriority priority ->
                         let newTaskState =
                             { taskState with
-                                Task =
-                                    { taskState.Task with
-                                        Priority = Some priority
-                                    }
+                                Task = { taskState.Task with Priority = Some priority }
                             }
 
                         newTaskState, userInteractions
@@ -461,30 +459,21 @@ module TempData =
                         | DslSetScheduling (scheduling, start) ->
                             let newTaskState =
                                 { taskState with
-                                    Task =
-                                        { taskState.Task with
-                                            Scheduling = scheduling
-                                        }
+                                    Task = { taskState.Task with Scheduling = scheduling }
                                 }
 
                             newTaskState, userInteractions
                         | DslSetPendingAfter start ->
                             let newTaskState =
                                 { taskState with
-                                    Task =
-                                        { taskState.Task with
-                                            PendingAfter = Some start
-                                        }
+                                    Task = { taskState.Task with PendingAfter = Some start }
                                 }
 
                             newTaskState, userInteractions
                         | DslSetMissedAfter start ->
                             let newTaskState =
                                 { taskState with
-                                    Task =
-                                        { taskState.Task with
-                                            MissedAfter = Some start
-                                        }
+                                    Task = { taskState.Task with MissedAfter = Some start }
                                 }
 
                             newTaskState, userInteractions
@@ -647,11 +636,13 @@ module TempData =
                                     let taskState, userInteractions =
                                         createTaskState moment newTask fakeTaskMap dslTasks
 
-                                    let newTaskMap =
-                                        taskMap |> Map.add taskName taskState.Task
+                                    let newTaskMap = taskMap |> Map.add taskName taskState.Task
 
                                     let newTaskStateList =
-                                        taskStateList @ [ taskState, userInteractions ]
+                                        taskStateList
+                                        @ [
+                                            taskState, userInteractions
+                                        ]
 
                                     newTaskMap, newTaskStateList))
 
@@ -706,8 +697,7 @@ module TempData =
                 |> Option.orElseWith (fun () -> failwithf "createDslData. Task not found: %A" taskName))
 
 
-        let taskOrderList =
-            getTaskOrderList [] (taskStateList |> List.map fst) []
+        let taskOrderList = getTaskOrderList [] (taskStateList |> List.map fst) []
 
         let dslData =
             {
@@ -727,17 +717,14 @@ module TempData =
 //                | Some diag -> printfn "mergeDslDataIntoTreeState A %A B %A C %A" dslData.TaskStateList.Length treeState.TaskStateMap.Count diag
 //                | None -> ()
 
-        let newInformationStateMap =
-            mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
+        let newInformationStateMap = mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
 
         let taskStateList, userInteractionsBundle = dslData.TaskStateList |> List.unzip
 
 
-        let userInteractions =
-            userInteractionsBundle |> List.collect id
+        let userInteractions = userInteractionsBundle |> List.collect id
 
-        let newTreeState =
-            State.treeStateWithInteractions userInteractions treeState
+        let newTreeState = State.treeStateWithInteractions userInteractions treeState
 
         let newTaskStateMap =
             (newTreeState.TaskStateMap, taskStateList)
@@ -792,8 +779,7 @@ module TempData =
                                                   Task: Task
                                                   Events: DslTask list
                                                   Expected: (FlukeDate * CellStatus) list |}) =
-            let eventsWithUser =
-                input.Events |> List.map (fun x -> x, input.User)
+            let eventsWithUser = input.Events |> List.map (fun x -> x, input.User)
 
             let dslData =
                 {
@@ -810,7 +796,9 @@ module TempData =
                         ]
                     //                    GetLivePosition = fun () -> input.Position
                     InformationStateMap =
-                        [ input.Task.Information ]
+                        [
+                            input.Task.Information
+                        ]
                         |> State.informationListToStateMap
                 }
 
@@ -845,11 +833,7 @@ module TempData =
 
                 let taskOrderList =
                     input.Data
-                    |> List.map (fun (task, events) ->
-                        {
-                            Task = task
-                            Priority = TaskOrderPriority.Last
-                        })
+                    |> List.map (fun (task, events) -> { Task = task; Priority = TaskOrderPriority.Last })
 
                 let getLivePosition = fun () -> input.Position
 
@@ -916,7 +900,10 @@ module TempData =
                                 "move fluke tasks to github issues", []
                             ]
                             Project projects.blog, []
-                            Project projects.rebuild_website, [ "task1", [] ]
+                            Project projects.rebuild_website,
+                            [
+                                "task1", []
+                            ]
                             Area areas.car, []
                             Area areas.career, []
                             Area areas.chores, []
@@ -924,7 +911,10 @@ module TempData =
                             Area areas.food, []
                             Area areas.finances, []
                             Area areas.health, []
-                            Area areas.leisure, [ "watch_movie_foobar", [] ]
+                            Area areas.leisure,
+                            [
+                                "watch_movie_foobar", []
+                            ]
                             Area areas.programming, []
                             Area areas.travel, []
                             Area areas.workflow, []
@@ -1077,19 +1067,34 @@ module TempData =
 
                                     { Task.Default with
                                         Name = TaskName "13"
-                                        Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ])
+                                        Scheduling =
+                                            Recurrency
+                                                (Fixed
+                                                    [
+                                                        Weekly DayOfWeek.Tuesday
+                                                    ])
                                     },
                                     []
 
                                     { Task.Default with
                                         Name = TaskName "14"
-                                        Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ])
+                                        Scheduling =
+                                            Recurrency
+                                                (Fixed
+                                                    [
+                                                        Weekly DayOfWeek.Wednesday
+                                                    ])
                                     },
                                     []
 
                                     { Task.Default with
                                         Name = TaskName "15"
-                                        Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ])
+                                        Scheduling =
+                                            Recurrency
+                                                (Fixed
+                                                    [
+                                                        Weekly DayOfWeek.Friday
+                                                    ])
                                     },
                                     [
                                         DslStatusEntry (FlukeDate.Create 2020 Month.March 07, Postponed None)

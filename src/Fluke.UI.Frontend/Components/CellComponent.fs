@@ -35,28 +35,15 @@ module CellComponent =
     let render =
         React.memo (fun (input: {| TaskId: Recoil.Atoms.RecoilTask.TaskId
                                    Date: FlukeDate |}) ->
-            let cellId =
-                Recoil.Atoms.RecoilCell.cellId input.TaskId (DateId input.Date)
-
-            let cell =
-                Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
-
-            let isToday =
-                Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
-
-            let showUser =
-                Recoil.useValue (Recoil.Selectors.RecoilTask.showUserFamily input.TaskId)
-
+            let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId (DateId input.Date)
+            let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
+            let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
+            let showUser = Recoil.useValue (Recoil.Selectors.RecoilTask.showUserFamily input.TaskId)
             let attachments = Recoil.useValue cell.Attachments
             let sessions = Recoil.useValue cell.Sessions
-
-            let selected, setSelected =
-                Recoil.useState (Recoil.Selectors.RecoilCell.selectedFamily cellId)
-
+            let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selectedFamily cellId)
             let status = Recoil.useValue cell.Status
-
-            let onCellClick =
-                React.useCallbackRef (fun () -> setSelected (not selected))
+            let onCellClick = React.useCallbackRef (fun () -> setSelected (not selected))
 
             Html.div [
                 prop.classes [
@@ -68,25 +55,13 @@ module CellComponent =
                 ]
                 prop.onClick (fun (_event: MouseEvent) -> onCellClick ())
                 prop.children [
-                    CellBorderComponent.render
-                        {|
-                            Date = input.Date
-                        |}
-                    CellSessionIndicatorComponent.render
-                        {|
-                            Sessions = sessions
-                        |}
+                    CellBorderComponent.render {| Date = input.Date |}
+                    CellSessionIndicatorComponent.render {| Sessions = sessions |}
                     if showUser then
                         match status with
                         | UserStatus (user, manualCellStatus) ->
-                            CellStatusUserIndicatorComponent.render
-                                {|
-                                    User = user
-                                |}
+                            CellStatusUserIndicatorComponent.render {| User = user |}
                         | _ -> ()
-                    TooltipPopupComponent.render
-                        {|
-                            Attachments = attachments
-                        |}
+                    TooltipPopupComponent.render {| Attachments = attachments |}
                 ]
             ])

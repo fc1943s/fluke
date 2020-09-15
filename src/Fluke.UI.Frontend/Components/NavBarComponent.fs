@@ -23,9 +23,7 @@ module NavBarComponent =
         React.memo (fun () ->
             let debug, setDebug = Recoil.useState Recoil.Atoms.debug
             let view = Recoil.useValue Recoil.Selectors.view
-
-            let activeSessions =
-                Recoil.useValue Recoil.Selectors.activeSessions
+            let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
 
             let setView view =
                 let path =

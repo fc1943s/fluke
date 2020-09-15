@@ -187,10 +187,7 @@ module Recoil =
                                     |> Option.defaultValue []
                                     |> List.append cellState.Sessions
 
-                                dateId,
-                                { cellState with
-                                    Sessions = newSessions
-                                })
+                                dateId, { cellState with Sessions = newSessions })
                             |> Map.ofSeq
 
                         { taskState with
@@ -240,8 +237,7 @@ module Recoil =
                 head, last
 
 
-            let filteredTaskStateList =
-                filterTaskStateList input.View dateRange taskStateList
+            let filteredTaskStateList = filterTaskStateList input.View dateRange taskStateList
 
             printfn "getTree %A" (taskStateList.Length, filteredTaskStateList.Length)
 
@@ -307,10 +303,7 @@ module Recoil =
                             dateId, { cellState with Status = newStatus })
                         |> Map.ofSeq
 
-                    let newTaskState =
-                        { taskState with
-                            CellStateMap = newCellStateMap
-                        }
+                    let newTaskState = { taskState with CellStateMap = newCellStateMap }
 
                     newTaskState)
 
@@ -804,8 +797,7 @@ module Recoil =
                 get (fun getter ->
                         let state = getter.get Atoms.state
 
-                        let result =
-                            state |> Option.bind (fun state -> state.User)
+                        let result = state |> Option.bind (fun state -> state.User)
 
                         Profiling.addCount (nameof user)
                         result)
@@ -857,7 +849,9 @@ module Recoil =
                             match position with
                             | None -> []
                             | Some position ->
-                                [ position.Date ]
+                                [
+                                    position.Date
+                                ]
                                 |> Rendering.getDateSequence (45, 20)
 
                         Profiling.addCount (nameof dateSequence)
@@ -908,8 +902,7 @@ module Recoil =
                                 let task = taskState.Task
                                 let taskId = Atoms.RecoilTask.taskId task
 
-                                let recoilTask =
-                                    setter.get (Atoms.RecoilTask.taskFamily taskId)
+                                let recoilTask = setter.get (Atoms.RecoilTask.taskFamily taskId)
 
                                 setter.set (recoilTask.Id, taskId)
                                 setter.set (recoilTask.Name, task.Name)
@@ -924,11 +917,9 @@ module Recoil =
 
                                 dateSequence
                                 |> List.iter (fun date ->
-                                    let cellId =
-                                        Atoms.RecoilCell.cellId taskId (DateId date)
+                                    let cellId = Atoms.RecoilCell.cellId taskId (DateId date)
 
-                                    let recoilCell =
-                                        setter.get (Atoms.RecoilCell.cellFamily cellId)
+                                    let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
 
                                     setter.set (recoilCell.Id, cellId)
                                     setter.set (recoilCell.TaskId, taskId)
@@ -942,8 +933,7 @@ module Recoil =
                                 |> Map.iter (fun dateId cellState ->
                                     let cellId = Atoms.RecoilCell.cellId taskId dateId
 
-                                    let recoilCell =
-                                        setter.get (Atoms.RecoilCell.cellFamily cellId)
+                                    let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
 
                                     setter.set (recoilCell.Status, cellState.Status)
                                     setter.set (recoilCell.Attachments, cellState.Attachments)
@@ -953,8 +943,7 @@ module Recoil =
 
                             treeSelection.TreeStateList
                             |> List.iter (fun treeState ->
-                                let recoilTree =
-                                    setter.get (Atoms.RecoilTree.treeFamily treeState.Id)
+                                let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeState.Id)
 
                                 let informationIdList =
                                     treeState.InformationStateMap
@@ -1027,8 +1016,7 @@ module Recoil =
                                     |> Map.tryFind taskId
                                     |> Option.defaultValue Set.empty
 
-                                let datesToIgnore =
-                                    Set.intersect taskSelection newTaskSelection
+                                let datesToIgnore = Set.intersect taskSelection newTaskSelection
 
                                 let datesToUnselect =
                                     datesToIgnore
@@ -1046,11 +1034,9 @@ module Recoil =
                         |> Seq.iter (fun (taskId, operations) ->
                             operations
                             |> Seq.iter (fun (date, selected) ->
-                                let cellId =
-                                    Atoms.RecoilCell.cellId taskId (DateId date)
+                                let cellId = Atoms.RecoilCell.cellId taskId (DateId date)
 
-                                let cell =
-                                    setter.get (Atoms.RecoilCell.cellFamily cellId)
+                                let cell = setter.get (Atoms.RecoilCell.cellFamily cellId)
 
                                 setter.set (cell.Selected, selected)))
 
@@ -1171,7 +1157,10 @@ module Recoil =
                                     treeSelection.TaskStateMap
                                     |> Map.tryPick (fun task taskState ->
                                         let taskId' = Atoms.RecoilTask.taskId task
-                                        if taskId = taskId' then Some taskState else None)
+                                        if taskId = taskId' then
+                                            Some taskState
+                                        else
+                                            None)
                                     |> Option.map (fun taskState -> taskState.Sessions)
                                     |> Option.defaultValue []
                                 | None -> []
@@ -1200,11 +1189,9 @@ module Recoil =
                                 | Some position, Some lastSession ->
                                     let (TaskSession (start, (Minute duration), (Minute breakDuration))) = lastSession
 
-                                    let currentDuration =
-                                        (position.DateTime - start.DateTime).TotalMinutes
+                                    let currentDuration = (position.DateTime - start.DateTime).TotalMinutes
 
-                                    let active =
-                                        currentDuration < duration + breakDuration
+                                    let active = currentDuration < duration + breakDuration
 
                                     match active with
                                     | true -> Some currentDuration
@@ -1226,7 +1213,10 @@ module Recoil =
                             let result =
                                 taskStateMap
                                 |> Map.tryPick (fun task taskState ->
-                                    if taskId = Atoms.RecoilTask.taskId task then Some taskState else None)
+                                    if taskId = Atoms.RecoilTask.taskId task then
+                                        Some taskState
+                                    else
+                                        None)
                                 |> Option.map (fun taskState ->
                                     let usersCount =
                                         taskState.CellStateMap
@@ -1319,8 +1309,7 @@ module Recoil =
                                     //                                    treeSelection.TaskStateMap.[task]
                                     let taskId = Atoms.RecoilTask.taskId task
 
-                                    let task =
-                                        getter.get (Atoms.RecoilTask.taskFamily taskId)
+                                    let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
 
                                     let informationId = getter.get task.InformationId
 
@@ -1363,8 +1352,7 @@ module Recoil =
                                 |> List.map (fun task ->
                                     let (TaskName taskName) = task.Name
 
-                                    let duration =
-                                        getter.get (RecoilTask.activeSessionFamily task.Id)
+                                    let duration = getter.get (RecoilTask.activeSessionFamily task.Id)
 
                                     duration
                                     |> Option.map (fun duration ->
@@ -1390,7 +1378,9 @@ module Recoil =
                             | Some user, Some position ->
 
                                 let weeks =
-                                    [ -1 .. 1 ]
+                                    [
+                                        -1 .. 1
+                                    ]
                                     |> List.map (fun weekOffset ->
                                         let dateIdSequence =
                                             let rec getStartDate (date: DateTime) =
@@ -1405,7 +1395,9 @@ module Recoil =
                                                 |> fun referenceDay -> referenceDay.DateTime.AddDays (7 * weekOffset)
                                                 |> getStartDate
 
-                                            [ 0 .. 6 ]
+                                            [
+                                                0 .. 6
+                                            ]
                                             |> List.map startDate.AddDays
                                             |> List.map FlukeDateTime.FromDateTime
                                             |> List.map (dateId user.DayStart)
@@ -1418,8 +1410,7 @@ module Recoil =
                                                     //                                                    let taskId = getter.get task.Id
                                                     let cellId = Atoms.RecoilCell.cellId task.Id dateId
 
-                                                    let cell =
-                                                        getter.get (Atoms.RecoilCell.cellFamily cellId)
+                                                    let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
 
                                                     let status = getter.get cell.Status
                                                     let sessions = getter.get cell.Sessions
@@ -1448,8 +1439,7 @@ module Recoil =
                                             |> List.map (fun (dateId, cells) ->
 
                                                 //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
-                                                let taskSessions =
-                                                    cells |> List.collect (fun x -> x.Sessions)
+                                                let taskSessions = cells |> List.collect (fun x -> x.Sessions)
 
                                                 let sortedTasksMap =
                                                     cells
@@ -1487,18 +1477,12 @@ module Recoil =
                                                             (taskState,
                                                              [
                                                                  Cell
-                                                                     ({
-                                                                          Task = taskState.Task
-                                                                          DateId = dateId
-                                                                      },
+                                                                     ({ Task = taskState.Task; DateId = dateId },
                                                                       cell.Status)
                                                              ]))
                                                     |> Sorting.sortLanesByTimeOfDay
                                                         user.DayStart
-                                                           {
-                                                               Date = ofDateId dateId
-                                                               Time = user.DayStart
-                                                           }
+                                                           { Date = ofDateId dateId; Time = user.DayStart }
                                                            []
                                                     |> List.indexed
                                                     |> List.map (fun (i, (OldLane (taskState, _))) ->
@@ -1527,8 +1511,7 @@ module Recoil =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof RecoilCell) (nameof selectedFamily))
                     get (fun (cellId: Atoms.RecoilCell.CellId) getter ->
-                            let cell =
-                                getter.get (Atoms.RecoilCell.cellFamily cellId)
+                            let cell = getter.get (Atoms.RecoilCell.cellFamily cellId)
 
                             Profiling.addCount (sprintf "%s/%s" (nameof RecoilCell) (nameof selectedFamily))
                             getter.get cell.Selected)
@@ -1536,8 +1519,7 @@ module Recoil =
                             let ctrlPressed = setter.get Atoms.ctrlPressed
                             let shiftPressed = setter.get Atoms.shiftPressed
 
-                            let cell =
-                                setter.get (Atoms.RecoilCell.cellFamily cellId)
+                            let cell = setter.get (Atoms.RecoilCell.cellFamily cellId)
 
                             let date = setter.get cell.Date
                             let taskId = setter.get cell.TaskId
@@ -1550,7 +1532,12 @@ module Recoil =
                                         |> Option.defaultValue Set.empty
 
                                     let newSet =
-                                        let fn = if newValue then Set.add else Set.remove
+                                        let fn =
+                                            if newValue then
+                                                Set.add
+                                            else
+                                                Set.remove
+
                                         fn date oldSet
 
                                     oldSelection |> Map.add taskId newSet
@@ -1598,7 +1585,10 @@ module Recoil =
                                     match minDate, maxDate with
                                     | Some minDate, Some maxDate ->
                                         let newSet =
-                                            [ minDate; maxDate ]
+                                            [
+                                                minDate
+                                                maxDate
+                                            ]
                                             |> Rendering.getDateSequence (0, 0)
                                             |> Set.ofList
 
@@ -1621,9 +1611,15 @@ module Recoil =
 
                                 | false, false ->
                                     let newTaskSelection =
-                                        if newValue then Set.singleton date else Set.empty
+                                        if newValue then
+                                            Set.singleton date
+                                        else
+                                            Set.empty
 
-                                    [ taskId, newTaskSelection ] |> Map.ofList
+                                    [
+                                        taskId, newTaskSelection
+                                    ]
+                                    |> Map.ofList
                                 | false, true ->
                                     let oldSelection = setter.get Atoms.selection
                                     swapSelection oldSelection taskId date

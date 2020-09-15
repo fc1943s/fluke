@@ -15,8 +15,7 @@ open Fluke.Shared.Model
 module WeekViewComponent =
     let render =
         React.memo (fun () ->
-            let weekCellsMap =
-                Recoil.useValue Recoil.Selectors.weekCellsMap
+            let weekCellsMap = Recoil.useValue Recoil.Selectors.weekCellsMap
 
             Html.div [
                 prop.className Css.lanesPanel

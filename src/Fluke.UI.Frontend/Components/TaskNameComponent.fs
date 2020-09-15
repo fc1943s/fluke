@@ -36,19 +36,11 @@ module TaskNameComponent =
                                    TaskId: Recoil.Atoms.RecoilTask.TaskId |}) ->
             let ref = React.useElementRef ()
             let hovered = Temp.UseListener.onElementHover ref
-
-            let classes =
-                useStyles
-                    {|
-                        hovered = hovered
-                    |}
+            let classes = useStyles {| hovered = hovered |}
 
             // TODO: put inside RecoilTask object?
-            let hasSelection =
-                Recoil.useValue (Recoil.Selectors.RecoilTask.hasSelectionFamily input.TaskId)
-
-            let task =
-                Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily input.TaskId)
+            let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilTask.hasSelectionFamily input.TaskId)
+            let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily input.TaskId)
 
             let (TaskName taskName) = Recoil.useValue task.Name
             let attachments = Recoil.useValue task.Attachments
@@ -75,9 +67,6 @@ module TaskNameComponent =
                                 str taskName
                             ]
                     ]
-                    TooltipPopupComponent.render
-                        {|
-                            Attachments = attachments
-                        |}
+                    TooltipPopupComponent.render {| Attachments = attachments |}
                 ]
             ])

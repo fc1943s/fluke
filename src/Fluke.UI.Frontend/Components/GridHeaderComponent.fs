@@ -10,14 +10,12 @@ open Fluke.UI.Frontend
 open Fluke.Shared.Model
 
 
+
 module GridHeaderComponent =
     let render =
         React.memo (fun () ->
-            let cellSize =
-                Recoil.useValue Recoil.Atoms.cellSize
-
-            let dateSequence =
-                Recoil.useValue Recoil.Selectors.dateSequence
+            let cellSize = Recoil.useValue Recoil.Atoms.cellSize
+            let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
             let datesByMonth =
                 dateSequence
@@ -81,11 +79,7 @@ module GridHeaderComponent =
                         [
                             yield! dateSequence
                                    |> List.map (fun ({ Day = Day day } as date) ->
-                                       DayComponent.render
-                                           {|
-                                               Date = date
-                                               Label = day.ToString "D2"
-                                           |})
+                                       DayComponent.render {| Date = date; Label = day.ToString "D2" |})
                         ]
                 ]
             ])

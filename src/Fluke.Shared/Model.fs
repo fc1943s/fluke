@@ -361,26 +361,13 @@ module Model =
                             let newInformationState =
                                 match informationInteraction with
                                 | InformationInteraction.Attachment attachment ->
-                                    let attachments =
-                                        attachment :: informationState.Attachments
-
-                                    let newInformationState =
-                                        { informationState with
-                                            Attachments = attachments
-                                        }
-
-                                    newInformationState
-
+                                    let attachments = attachment :: informationState.Attachments
+                                    { informationState with
+                                        Attachments = attachments
+                                    }
                                 | InformationInteraction.Sort (top, bottom) ->
-                                    let sortList =
-                                        (top, bottom) :: informationState.SortList
-
-                                    let newInformationState =
-                                        { informationState with
-                                            SortList = sortList
-                                        }
-
-                                    newInformationState
+                                    let sortList = (top, bottom) :: informationState.SortList
+                                    { informationState with SortList = sortList }
 
                             let newInformationStateMap =
                                 treeState.InformationStateMap
@@ -409,22 +396,16 @@ module Model =
                                 | TaskInteraction.Attachment attachment ->
                                     let newAttachments = attachment :: taskState.Attachments
 
-                                    { taskState with
-                                        Attachments = newAttachments
-                                    }
+                                    { taskState with Attachments = newAttachments }
 
                                 | TaskInteraction.Sort (top, bottom) ->
                                     let newSortList = (top, bottom) :: taskState.SortList
 
-                                    { taskState with
-                                        SortList = newSortList
-                                    }
+                                    { taskState with SortList = newSortList }
                                 | TaskInteraction.Session (TaskSession (start, duration, breakDuration) as session) ->
                                     let newSessions = session :: taskState.Sessions
 
-                                    { taskState with
-                                        Sessions = newSessions
-                                    }
+                                    { taskState with Sessions = newSessions }
                                 //                                    let cellState =
 //                                        taskState.CellStateMap
 //                                        |> Map.tryFind dateId
@@ -451,9 +432,7 @@ module Model =
                                 treeState.TaskStateMap
                                 |> Map.add task newTaskState
 
-                            { treeState with
-                                TaskStateMap = newTaskStateMap
-                            }
+                            { treeState with TaskStateMap = newTaskStateMap }
                         | Interaction.Cell ({ Task = task; DateId = dateId } as cellAddress, cellInteraction) ->
                             let taskState =
                                 treeState.TaskStateMap
@@ -484,10 +463,7 @@ module Model =
                                 | CellInteraction.Attachment attachment ->
                                     let attachments = attachment :: cellState.Attachments
 
-                                    let newCellState =
-                                        { cellState with
-                                            Attachments = attachments
-                                        }
+                                    let newCellState = { cellState with Attachments = attachments }
 
                                     newCellState
                                 | CellInteraction.StatusChange cellStatusChange ->
@@ -516,9 +492,7 @@ module Model =
                                 treeState.TaskStateMap
                                 |> Map.add task newTaskState
 
-                            { treeState with
-                                TaskStateMap = newTaskStateMap
-                            })
+                            { treeState with TaskStateMap = newTaskStateMap })
 
             //            let diag =
 //                newTreeState.TaskStateMap
@@ -572,11 +546,7 @@ module Model =
             DateTime (year, int this.Month, day, 12, 0, 0)
 
         static member inline Create year month day =
-            {
-                Year = Year year
-                Month = month
-                Day = Day day
-            }
+            { Year = Year year; Month = month; Day = Day day }
 
         static member inline FromDateTime (date: DateTime) =
             {
@@ -703,8 +673,7 @@ module Model =
             }
 
 
-    let ofDateId =
-        fun (DateId referenceDay) -> referenceDay
+    let ofDateId = fun (DateId referenceDay) -> referenceDay
 
     let ofAttachmentComment =
         function
@@ -729,8 +698,7 @@ module Model =
 
 
     let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position: FlukeDateTime, DateId referenceDay) =
-        let dateStart =
-            { Date = referenceDay; Time = dayStart }.DateTime
+        let dateStart = { Date = referenceDay; Time = dayStart }.DateTime
 
         let dateEnd = dateStart.AddDays 1.
 

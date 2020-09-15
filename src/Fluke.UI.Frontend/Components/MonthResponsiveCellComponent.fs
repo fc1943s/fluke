@@ -9,8 +9,7 @@ open Fluke.Shared.Model
 
 module MonthResponsiveCellComponent =
     let render =
-        React.memo (fun (input: {| Date: FlukeDate
-                                   Css: IStyleAttribute list |}) ->
+        React.memo (fun (input: {| Date: FlukeDate; Css: IStyleAttribute list |}) ->
             let month = input.Date.DateTime.Format "MMM"
 
             Html.span [

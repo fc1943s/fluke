@@ -19,13 +19,9 @@ open Fable.Core.JsInterop
 module MainComponent =
     let globalShortcutHandler =
         React.memo (fun () ->
-            let selection, setSelection =
-                Recoil.useState Recoil.Selectors.selection
-
+            let selection, setSelection = Recoil.useState Recoil.Selectors.selection
             let ctrlPressed, setCtrlPressed = Recoil.useState Recoil.Atoms.ctrlPressed
-
-            let shiftPressed, setShiftPressed =
-                Recoil.useState Recoil.Atoms.shiftPressed
+            let shiftPressed, setShiftPressed = Recoil.useState Recoil.Atoms.shiftPressed
 
             let keyEvent (e: KeyboardEvent) =
                 if e.ctrlKey <> ctrlPressed then
@@ -44,8 +40,7 @@ module MainComponent =
 
     let positionUpdater =
         React.memo (fun () ->
-            let resetPosition =
-                Recoil.useResetState Recoil.Selectors.position
+            let resetPosition = Recoil.useResetState Recoil.Selectors.position
 
             Scheduling.useScheduling Scheduling.Interval (60 * 1000) resetPosition
             //        Scheduling.useScheduling Scheduling.Interval (10 * 1000) resetPosition
@@ -91,11 +86,8 @@ module MainComponent =
     let soundPlayer =
         React.memo (fun () ->
             let oldActiveSessions = React.useRef []
-
             let user = Recoil.useValue Recoil.Selectors.user
-
-            let activeSessions =
-                Recoil.useValue Recoil.Selectors.activeSessions
+            let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
 
             React.useEffect
                 ((fun () ->
@@ -135,8 +127,7 @@ module MainComponent =
 
     let autoReload_TEMP =
         React.memo (fun () ->
-            let reload =
-                React.useCallback (fun () -> Dom.window.location.reload true)
+            let reload = React.useCallback (fun () -> Dom.window.location.reload true)
 
             Scheduling.useScheduling Scheduling.Timeout (60 * 60 * 1000) reload
 

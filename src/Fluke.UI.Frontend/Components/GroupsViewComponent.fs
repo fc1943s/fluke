@@ -15,8 +15,7 @@ module GroupsViewComponent =
         React.memo (fun () ->
             let groupIndentationLength = 20
 
-            let currentTaskList =
-                Recoil.useValue Recoil.Selectors.currentTaskList
+            let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
 
             let groupMap =
                 currentTaskList

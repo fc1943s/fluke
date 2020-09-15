@@ -14,11 +14,9 @@ open Fluke.Shared
 module CalendarViewComponent =
     let render =
         React.memo (fun () ->
-            let currentTaskList =
-                Recoil.useValue Recoil.Selectors.currentTaskList
+            let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
 
-            let taskIdList =
-                currentTaskList |> List.map (fun x -> x.Id)
+            let taskIdList = currentTaskList |> List.map (fun x -> x.Id)
 
             Html.div [
                 prop.className Css.lanesPanel
@@ -62,9 +60,7 @@ module CalendarViewComponent =
                                                                        ]
                                                                ]
                                                                TooltipPopupComponent.render
-                                                                   {|
-                                                                       Attachments = task.InformationAttachments
-                                                                   |}
+                                                                   {| Attachments = task.InformationAttachments |}
                                                            ]
                                                        ])
                                         ]
@@ -79,11 +75,7 @@ module CalendarViewComponent =
                                         [
                                             yield! currentTaskList
                                                    |> List.map (fun task ->
-                                                       TaskNameComponent.render
-                                                           {|
-                                                               Css = []
-                                                               TaskId = task.Id
-                                                           |})
+                                                       TaskNameComponent.render {| Css = []; TaskId = task.Id |})
                                         ]
                                 ]
                             ]
@@ -91,10 +83,7 @@ module CalendarViewComponent =
                     ]
                     Html.div [
                         GridHeaderComponent.render ()
-                        CellsComponent.render
-                            {|
-                                TaskIdList = taskIdList
-                            |}
+                        CellsComponent.render {| TaskIdList = taskIdList |}
                     ]
                 ]
             ])

@@ -13,8 +13,7 @@ module CellsComponent =
         React.memo (fun (input: {| TaskIdList: Recoil.Atoms.RecoilTask.TaskId list |}) ->
             Recoil.Profiling.addTimestamp "cells.render"
 
-            let dateSequence =
-                Recoil.useValue Recoil.Selectors.dateSequence
+            let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
             Html.div [
                 prop.className Css.laneContainer
@@ -26,11 +25,7 @@ module CellsComponent =
                                        [
                                            yield! dateSequence
                                                   |> List.map (fun date ->
-                                                      CellComponent.render
-                                                          {|
-                                                              TaskId = taskId
-                                                              Date = date
-                                                          |})
+                                                      CellComponent.render {| TaskId = taskId; Date = date |})
                                        ])
                     ]
             ])

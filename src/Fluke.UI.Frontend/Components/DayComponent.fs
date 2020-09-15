@@ -11,15 +11,10 @@ open Fluke.UI.Frontend
 
 module DayComponent =
     let render =
-        React.memo (fun (input: {| Date: FlukeDate
-                                   Label: string |}) ->
+        React.memo (fun (input: {| Date: FlukeDate; Label: string |}) ->
             let user = Recoil.useValue Recoil.Selectors.user
-
-            let isToday =
-                Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
-
-            let hasSelection =
-                Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.hasSelectionFamily input.Date)
+            let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
+            let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.hasSelectionFamily input.Date)
 
             match user with
             | None -> str "No user"

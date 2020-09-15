@@ -12,7 +12,10 @@ module App =
         React.memo (fun () ->
             React.router
                 [
-                    router.children [ Components.MainComponent.render () ]
+                    router.children
+                        [
+                            Components.MainComponent.render ()
+                        ]
                 ])
 
     let appMain =
@@ -24,7 +27,10 @@ module App =
                 root.init Recoil.initState
 
 
-                root.children [ router () ]
+                root.children
+                    [
+                        router ()
+                    ]
             ])
 
     ReactDOM.render (appMain (), document.getElementById "app")
