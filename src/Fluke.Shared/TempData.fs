@@ -1,15 +1,14 @@
 namespace Fluke.Shared
 
 open System
-open System.Collections.Concurrent
-open System.Collections.Generic
 open FSharpPlus
 open Suigetsu.Core
 
 
 module TempData =
-    open Model
-    open Old
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
 
     let getPublicAreas () =
         {|
@@ -210,7 +209,7 @@ module TempData =
 //                        TaskMap =
 //                            let taskId = taskId task
 //                            let dateId = dateId state.DayStart moment
-//                            let newStatus = UserStatus (user, Completed)
+//                            let newStatus = UserStatus (user, CellStatus.Completed)
 //
 //                            let cellMap =
 //                                state.TaskMap
@@ -242,27 +241,6 @@ module TempData =
 
 
 
-    let getTaskOrderList oldTaskOrderList (taskStateList: State.TaskState list) manualTaskOrder =
-        let taskMap =
-            taskStateList
-            |> List.map (fun x -> (x.Task.Information, x.Task.Name), x)
-            |> Map.ofList
-
-        let newTaskOrderList =
-            manualTaskOrder
-            |> List.map (fun (information, taskName) ->
-                taskMap
-                |> Map.tryFind (information, TaskName taskName)
-                |> function
-                | None -> failwithf "Invalid task: '%A/%s'" information taskName
-                | Some taskState ->
-                    {
-                        Task = taskState.Task
-                        Priority = TaskOrderPriority.First
-                    })
-
-        oldTaskOrderList @ newTaskOrderList
-
 
     type DslTask =
         | DslTaskComment of comment: string
@@ -281,42 +259,41 @@ module TempData =
         | DslSetDuration of duration: int
 
     let createTaskCommentInteraction user moment task comment =
-        let interaction =
-            Interaction.Task (task, TaskInteraction.Attachment (Attachment.Comment (user, Comment comment)))
+        let interaction = Interaction.Task (task, TaskInteraction.Attachment (Attachment.Comment (user, comment)))
 
-        let userInteraction = UserInteraction (user, moment, interaction)
+        let userInteraction = UserInteraction (moment, user, interaction)
 
         userInteraction
 
     let createInformationCommentInteraction user moment information comment =
         let interaction =
             Interaction.Information
-                (information, InformationInteraction.Attachment (Attachment.Comment (user, Comment comment)))
+                (information, InformationInteraction.Attachment (Attachment.Comment (user, comment)))
 
-        let userInteraction = UserInteraction (user, moment, interaction)
+        let userInteraction = UserInteraction (moment, user, interaction)
 
         userInteraction
 
     let createCellCommentInteraction dayStart task moment user comment =
         let cellInteraction =
-            Attachment.Comment (user, Comment comment)
+            Attachment.Comment (user, comment)
             |> CellInteraction.Attachment
 
         let cellAddress = { Task = task; DateId = dateId dayStart moment }
 
         let interaction = Interaction.Cell (cellAddress, cellInteraction)
 
-        let userInteraction = UserInteraction (user, moment, interaction)
+        let userInteraction = UserInteraction (moment, user, interaction)
 
         userInteraction
 
-    let createCellStatusChangeInteraction user task date manualCellStatus =
+    let createCellStatusChangeInteraction (user: User) task date manualCellStatus =
         let cellStatusChange =
             match manualCellStatus with
-            | Completed -> CellStatusChange.Complete
-            | Dismissed -> CellStatusChange.Dismiss
-            | Postponed until -> CellStatusChange.Postpone until
-            | ManualPending -> CellStatusChange.Schedule
+            | ManualCellStatus.Completed -> CellStatusChange.Complete
+            | ManualCellStatus.Dismissed -> CellStatusChange.Dismiss
+            | ManualCellStatus.Postponed until -> CellStatusChange.Postpone until
+            | ManualCellStatus.ManualPending -> CellStatusChange.Schedule
 
         let cellInteraction = CellInteraction.StatusChange cellStatusChange
 
@@ -328,7 +305,7 @@ module TempData =
 
         let moment = { Date = date; Time = user.DayStart }
 
-        let userInteraction = UserInteraction (user, moment, interaction)
+        let userInteraction = UserInteraction (moment, user, interaction)
 
         userInteraction
 
@@ -343,7 +320,7 @@ module TempData =
 
     let createTaskState moment task (sortTaskMap: Map<TaskName, Task> option) (dslTasks: (DslTask * User) list) =
 
-        let defaultTaskState: State.TaskState =
+        let defaultTaskState: TaskState =
             {
                 Task = task
                 Sessions = []
@@ -360,9 +337,9 @@ module TempData =
                     | DslTaskComment comment ->
                         let interaction =
                             Interaction.Task
-                                (task, TaskInteraction.Attachment (Attachment.Comment (user, Comment comment)))
+                                (task, TaskInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment)))
 
-                        let userInteraction = UserInteraction (user, moment, interaction)
+                        let userInteraction = UserInteraction (moment, user, interaction)
 
                         let newUserInteractions =
                             userInteractions
@@ -375,9 +352,9 @@ module TempData =
                         let interaction =
                             Interaction.Cell
                                 ({ Task = task; DateId = DateId date },
-                                 CellInteraction.Attachment (Attachment.Comment (user, Comment comment)))
+                                 CellInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment)))
 
-                        let userInteraction = UserInteraction (user, moment, interaction)
+                        let userInteraction = UserInteraction (moment, user, interaction)
 
                         let newUserInteractions =
                             userInteractions
@@ -392,7 +369,7 @@ module TempData =
                         let taskInteraction = TaskInteraction.Session taskSession
                         let interaction = Interaction.Task (task, taskInteraction)
 
-                        let userInteraction = UserInteraction (user, moment, interaction)
+                        let userInteraction = UserInteraction (moment, user, interaction)
 
                         let newUserInteractions =
                             userInteractions
@@ -421,7 +398,7 @@ module TempData =
                                 let interaction =
                                     Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
 
-                                let userInteraction = UserInteraction (user, moment, interaction)
+                                let userInteraction = UserInteraction (moment, user, interaction)
 
                                 userInteractions
                                 @ [
@@ -542,23 +519,23 @@ module TempData =
 //            GetLivePosition = getLivePosition
 //        }
 
-    type State =
+    type SessionState =
         {
             User: User option
             GetLivePosition: unit -> FlukeDateTime
-            TreeStateMap: Map<State.TreeId, State.TreeState * bool>
+            TreeStateMap: Map<TreeId, TreeState * bool>
         }
 
     type DslData =
         {
             //            GetLivePosition: (unit -> FlukeDateTime)
-            InformationStateMap: Map<Information, State.InformationState>
-            TaskOrderList: TaskOrderEntry list
-            TaskStateList: (State.TaskState * UserInteraction list) list
+            InformationStateMap: Map<Information, InformationState>
+            //            TaskOrderList: TaskOrderEntry list
+            TaskStateList: (TaskState * UserInteraction list) list
         }
 
-    let mergeInformationStateMap (oldMap: Map<Information, State.InformationState>)
-                                 (newMap: Map<Information, State.InformationState>)
+    let mergeInformationStateMap (oldMap: Map<Information, InformationState>)
+                                 (newMap: Map<Information, InformationState>)
                                  =
         (oldMap, newMap)
         ||> Map.unionWith (fun oldValue newValue ->
@@ -567,13 +544,12 @@ module TempData =
                     SortList = oldValue.SortList @ newValue.SortList
                 })
 
-    let mergeCellStateMap (oldMap: Map<DateId, State.CellState>) (newMap: Map<DateId, State.CellState>) =
-        oldMap |> Map.union newMap
+    let mergeCellStateMap (oldMap: Map<DateId, CellState>) (newMap: Map<DateId, CellState>) = oldMap |> Map.union newMap
 
     let mergeInformationMap (oldMap: Map<Information, unit>) (newMap: Map<Information, unit>) =
         oldMap |> Map.union newMap
 
-    let mergeTaskState (oldValue: State.TaskState) (newValue: State.TaskState) =
+    let mergeTaskState (oldValue: TaskState) (newValue: TaskState) =
         { oldValue with
             Task = oldValue.Task
             Sessions = oldValue.Sessions @ newValue.Sessions
@@ -583,17 +559,17 @@ module TempData =
             InformationMap = mergeInformationMap oldValue.InformationMap newValue.InformationMap
         }
 
-    let mergeTaskStateMap (oldMap: Map<Task, State.TaskState>) (newMap: Map<Task, State.TaskState>) =
+    let mergeTaskStateMap (oldMap: Map<Task, TaskState>) (newMap: Map<Task, TaskState>) =
         Map.unionWith mergeTaskState oldMap newMap
 
 
-    let mergeTreeState (oldValue: State.TreeState) (newValue: State.TreeState) =
+    let mergeTreeState (oldValue: TreeState) (newValue: TreeState) =
         { oldValue with
             InformationStateMap = mergeInformationStateMap oldValue.InformationStateMap newValue.InformationStateMap
             TaskStateMap = mergeTaskStateMap oldValue.TaskStateMap newValue.TaskStateMap
         }
 
-    let mergeTreeStateMap (oldMap: Map<State.TreeId, State.TreeState>) (newMap: Map<State.TreeId, State.TreeState>) =
+    let mergeTreeStateMap (oldMap: Map<TreeId, TreeState>) (newMap: Map<TreeId, TreeState>) =
         Map.unionWith mergeTreeState oldMap newMap
 
 
@@ -612,7 +588,7 @@ module TempData =
                     ||> List.fold (fun (taskMap, taskStateList) (information, tasks) ->
                             ((taskMap, taskStateList), tasks)
                             ||> List.fold (fun (taskMap, taskStateList) (taskName, dslTasks) ->
-                                    let oldTask = taskMap |> Map.tryFind taskName
+                                    let oldTask: Task option = taskMap |> Map.tryFind taskName
 
                                     let newTask =
                                         match oldTask with
@@ -661,15 +637,15 @@ module TempData =
             dslTree
             |> List.map fst
             |> List.distinct
-            |> State.informationListToStateMap
+            |> informationListToStateMap
 
-        let taskOrderList =
-            taskStateList
-            |> List.map (fun (taskState, _) ->
-                {
-                    Task = taskState.Task
-                    Priority = TaskOrderPriority.Last
-                })
+        //        let taskOrderList =
+//            taskStateList
+//            |> List.map (fun (taskState, _) ->
+//                {
+//                    Task = taskState.Task
+//                    Priority = TaskOrderPriority.Last
+//                })
 
         let duplicated =
             taskStateList
@@ -697,24 +673,24 @@ module TempData =
                 |> Option.orElseWith (fun () -> failwithf "createDslData. Task not found: %A" taskName))
 
 
-        let taskOrderList = getTaskOrderList [] (taskStateList |> List.map fst) []
+        //        let taskOrderList = getTaskOrderList [] (taskStateList |> List.map fst) []
 
         let dslData =
             {
                 TaskStateList = taskStateList
-                TaskOrderList = taskOrderList
+                //                TaskOrderList = taskOrderList
                 InformationStateMap = informationStateMap
             }
 
         dslData, tasks
 
-    let mergeDslDataIntoTreeState (dslData: DslData) (treeState: State.TreeState) =
+    let mergeDslDataIntoTreeState (dslData: DslData) (treeState: TreeState) =
 
         //                let diag =
-//                    treeState.TaskStateMap
+//                    treeTaskStateMap
 //                        |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
 //                match diag with
-//                | Some diag -> printfn "mergeDslDataIntoTreeState A %A B %A C %A" dslData.TaskStateList.Length treeState.TaskStateMap.Count diag
+//                | Some diag -> printfn "mergeDslDataIntoTreeState A %A B %A C %A" dslData.TaskStateList.Length treeTaskStateMap.Count diag
 //                | None -> ()
 
         let newInformationStateMap = mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
@@ -724,7 +700,7 @@ module TempData =
 
         let userInteractions = userInteractionsBundle |> List.collect id
 
-        let newTreeState = State.treeStateWithInteractions userInteractions treeState
+        let newTreeState = treeStateWithInteractions userInteractions treeState
 
         let newTaskStateMap =
             (newTreeState.TaskStateMap, taskStateList)
@@ -758,10 +734,10 @@ module TempData =
 //            let userInteractions =
 //                dslData.TaskStateList |> List.collect snd
 //
-//            let treeStateWithoutInteractions: State.TreeState =
+//            let treeStateWithoutInteractions: TreeState =
 //                {
 //                    Id =
-//                        State.TreeId
+//                        TreeId
 //                        <| Guid "17A1AA3D-95C7-424E-BD6D-7C12B33CED37"
 //                    Name = State.TreeName "dslDataToState"
 //                    Owner = user
@@ -772,7 +748,7 @@ module TempData =
 //                }
 //
 //            treeStateWithoutInteractions
-//            |> State.treeStateWithInteractions userInteractions
+//            |> TreeStateWithInteractions userInteractions
 
         let createLaneRenderingDslData (input: {| User: User
                                                   Position: FlukeDateTime
@@ -787,19 +763,19 @@ module TempData =
                         [
                             createTaskState input.Position input.Task None eventsWithUser
                         ]
-                    TaskOrderList =
-                        [
-                            {
-                                Task = input.Task
-                                Priority = TaskOrderPriority.First
-                            }
-                        ]
-                    //                    GetLivePosition = fun () -> input.Position
+                    //                    TaskOrderList =
+//                        [
+//                            {
+//                                Task = input.Task
+//                                Priority = TaskOrderPriority.First
+//                            }
+//                        ]
+//                    //                    GetLivePosition = fun () -> input.Position
                     InformationStateMap =
                         [
                             input.Task.Information
                         ]
-                        |> State.informationListToStateMap
+                        |> informationListToStateMap
                 }
 
             //            let getLivePosition = fun () -> input.Position
@@ -831,9 +807,9 @@ module TempData =
                         |> List.map (fun dslTask -> dslTask, input.User)
                         |> createTaskState input.Position task None)
 
-                let taskOrderList =
-                    input.Data
-                    |> List.map (fun (task, events) -> { Task = task; Priority = TaskOrderPriority.Last })
+                //                let taskOrderList =
+//                    input.Data
+//                    |> List.map (fun (task, events) -> { Task = task; Priority = TaskOrderPriority.Last })
 
                 let getLivePosition = fun () -> input.Position
 
@@ -841,11 +817,11 @@ module TempData =
                     taskStateList
                     |> List.map (fun (taskState, _) -> taskState.Task.Information)
                     |> List.distinct
-                    |> State.informationListToStateMap
+                    |> informationListToStateMap
 
                 {
                     TaskStateList = taskStateList
-                    TaskOrderList = taskOrderList
+                    //                    TaskOrderList = taskOrderList
                     //                    GetLivePosition = getLivePosition
                     InformationStateMap = informationStateMap
                 }
@@ -866,6 +842,11 @@ module TempData =
 
             dslData
 
+    module PublicData =
+        open Domain.Information
+        open Domain.UserInteraction
+        open Domain.State
+
         let getPublicData () =
             let users = getUsers ()
             let projects = getPublicProjects ()
@@ -876,7 +857,7 @@ module TempData =
                 {|
                     ManualTasks =
                         [
-                            Project projects.app_fluke,
+                            Project (projects.app_fluke, []),
                             [
                                 "data management",
                                 [
@@ -899,41 +880,41 @@ module TempData =
                                 "mobile layout", []
                                 "move fluke tasks to github issues", []
                             ]
-                            Project projects.blog, []
-                            Project projects.rebuild_website,
+                            Project (projects.blog, []), []
+                            Project (projects.rebuild_website, []),
                             [
                                 "task1", []
                             ]
-                            Area areas.car, []
-                            Area areas.career, []
-                            Area areas.chores, []
-                            Area areas.fitness, []
-                            Area areas.food, []
-                            Area areas.finances, []
-                            Area areas.health, []
-                            Area areas.leisure,
+                            Area (areas.car, []), []
+                            Area (areas.career, []), []
+                            Area (areas.chores, []), []
+                            Area (areas.fitness, []), []
+                            Area (areas.food, []), []
+                            Area (areas.finances, []), []
+                            Area (areas.health, []), []
+                            Area (areas.leisure, []),
                             [
                                 "watch_movie_foobar", []
                             ]
-                            Area areas.programming, []
-                            Area areas.travel, []
-                            Area areas.workflow, []
-                            Area areas.writing, []
-                            Resource resources.agile, []
-                            Resource resources.artificial_intelligence, []
-                            Resource resources.cloud, []
-                            Resource resources.communication, []
-                            Resource resources.docker, []
-                            Resource resources.fsharp,
+                            Area (areas.programming, []), []
+                            Area (areas.travel, []), []
+                            Area (areas.workflow, []), []
+                            Area (areas.writing, []), []
+                            Resource (resources.agile, []), []
+                            Resource (resources.artificial_intelligence, []), []
+                            Resource (resources.cloud, []), []
+                            Resource (resources.communication, []), []
+                            Resource (resources.docker, []), []
+                            Resource (resources.fsharp, []),
                             [
                                 "study: [choice, computation expressions]", []
                                 "organize youtube playlists", []
                             ]
-                            Resource resources.linux, []
-                            Resource resources.music, []
-                            Resource resources.rust, []
-                            Resource resources.vim, []
-                            Resource resources.windows, []
+                            Resource (resources.linux, []), []
+                            Resource (resources.music, []), []
+                            Resource (resources.rust, []), []
+                            Resource (resources.vim, []), []
+                            Resource (resources.windows, []), []
                         ]
                     RenderLaneTests =
                         {|
@@ -964,7 +945,7 @@ module TempData =
                                 ]
                             Events = []
                         |}
-                        |> createLaneRenderingDslData
+                        |> Testing.createLaneRenderingDslData
                     SortLanesTests =
                         {|
                             Position =
@@ -1026,7 +1007,8 @@ module TempData =
                                         Scheduling = Recurrency (Offset (Days 4))
                                     },
                                     [
-                                        DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Completed)
+                                        DslStatusEntry
+                                            (FlukeDate.Create 2020 Month.March 08, ManualCellStatus.Completed)
                                     ]
 
                                     { Task.Default with
@@ -1034,7 +1016,8 @@ module TempData =
                                         Scheduling = Recurrency (Offset (Days 2))
                                     },
                                     [
-                                        DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Completed)
+                                        DslStatusEntry
+                                            (FlukeDate.Create 2020 Month.March 10, ManualCellStatus.Completed)
                                     ]
 
                                     { Task.Default with
@@ -1121,7 +1104,7 @@ module TempData =
                                 ]
                         |}
                         |> fun x -> {| x with User = getUsers().fluke |}
-                        |> createLaneSortingDslData
+                        |> Testing.createLaneSortingDslData
                 |}
 
             tempData

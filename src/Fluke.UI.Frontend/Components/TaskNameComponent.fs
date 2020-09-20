@@ -6,10 +6,14 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.Shared.Model
+open Fluke.Shared
 
 
 module TaskNameComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let useStyles =
         Styles.makeStyles (fun (styles: StyleCreator<{| hovered: bool |}>) _theme ->
             {|

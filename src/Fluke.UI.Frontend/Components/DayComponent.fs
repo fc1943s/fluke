@@ -3,13 +3,16 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.UseListener
-open Fluke.Shared.Model
 open Feliz.Recoil
 open FSharpPlus
 open Fluke.UI.Frontend
-
+open Fluke.Shared
 
 module DayComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let render =
         React.memo (fun (input: {| Date: FlukeDate; Label: string |}) ->
             let user = Recoil.useValue Recoil.Selectors.user

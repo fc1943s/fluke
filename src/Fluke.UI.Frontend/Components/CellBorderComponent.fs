@@ -6,10 +6,14 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.Shared.Model
+open Fluke.Shared
 
 
 module CellBorderComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let render =
         React.memo (fun (input: {| Date: FlukeDate |}) ->
             let user = Recoil.useValue Recoil.Selectors.user

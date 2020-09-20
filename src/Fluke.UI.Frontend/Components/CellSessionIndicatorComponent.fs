@@ -4,10 +4,14 @@ open Fable.React
 open Feliz
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.Shared.Model
+open Fluke.Shared
 
 
 module CellSessionIndicatorComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let render =
         React.memo (fun (input: {| Sessions: TaskSession list |}) ->
             Html.div [

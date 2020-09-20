@@ -13,11 +13,14 @@ open Feliz.Bulma
 open Feliz.UseListener
 open Suigetsu.Core
 open Fluke.UI.Frontend
-open Fluke.Shared.Model
 open Fluke.UI.Frontend.Model
+open Fluke.Shared
 
 
 module NavBarComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
 
     let render =
         React.memo (fun () ->

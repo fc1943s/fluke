@@ -9,10 +9,13 @@ open Feliz.UseListener
 open Fable.DateFunctions
 open Fluke.UI.Frontend
 open Fluke.Shared
-open Fluke.Shared.Model
 
 
 module WeekViewComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let render =
         React.memo (fun () ->
             let weekCellsMap = Recoil.useValue Recoil.Selectors.weekCellsMap
@@ -38,7 +41,7 @@ module WeekViewComponent =
                                            [
                                                yield! week
                                                       |> Map.keys
-                                                      |> Seq.map (fun dateId ->
+                                                      |> Seq.map (fun ((DateId referenceDay) as dateId) ->
                                                           let cells = week.[dateId]
 
                                                           Html.div [
@@ -63,7 +66,7 @@ module WeekViewComponent =
                                                                       ]
                                                                       prop.children
                                                                           [
-                                                                              (ofDateId dateId).DateTime.Format
+                                                                              referenceDay.DateTime.Format
                                                                                   "EEEE, dd MMM yyyy"
                                                                               |> String.toLower
                                                                               |> str
@@ -80,7 +83,7 @@ module WeekViewComponent =
                                                                                  prop.children [
                                                                                      CellComponent.render
                                                                                          {|
-                                                                                             Date = dateId |> ofDateId
+                                                                                             Date = referenceDay
                                                                                              TaskId = cell.Task.Id
                                                                                          |}
                                                                                      Html.div [
@@ -90,7 +93,7 @@ module WeekViewComponent =
                                                                                              ]
                                                                                          prop.children
                                                                                              [
-                                                                                                 let (Model.TaskName taskName) =
+                                                                                                 let (TaskName taskName) =
                                                                                                      cell.Task.Name
 
                                                                                                  str taskName

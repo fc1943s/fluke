@@ -1,40 +1,43 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Model.fs" />
-    <Compile Include="Old.fs" />
-    <Compile Include="Rendering.fs" />
-    <Compile Include="Sorting.fs" />
-    <Compile Include="TempData.fs" />
+    <PropertyGroup>
+        <TargetFramework>netcoreapp5.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="Domain\Information.fs" />
+        <Compile Include="Domain\UserInteraction.fs" />
+        <Compile Include="Domain\State.fs" />
+        <Compile Include="Old.fs" />
+        <Compile Include="Rendering.fs" />
+        <Compile Include="Sorting.fs" />
+        <Compile Include="TempData.fs" />
 
-    <Compile Include="PrivateData\PrivateData.fs" />
-    <Compile Include="PrivateData\Tasks.fs" />
-    <Compile Include="PrivateData\InformationComments.fs" />
-    <Compile Include="PrivateData\CellComments.fs" />
-    <Compile Include="PrivateData\CellStatusEntries.fs" />
-    <Compile Include="PrivateData\Journal.fs" />
-    <Compile Include="PrivateData\Tests.fs" />
+        <Compile Include="PrivateData\PrivateData.fs" />
+        <Compile Include="PrivateData\Tasks.fs" />
+        <Compile Include="PrivateData\InformationComments.fs" />
+        <Compile Include="PrivateData\CellComments.fs" />
+        <Compile Include="PrivateData\CellStatusEntries.fs" />
+        <Compile Include="PrivateData\Journal.fs" />
+        <Compile Include="PrivateData\Tests.fs" />
 
-    <Compile Include="SharedPrivateData\SharedTasks.fs" />
+        <Compile Include="SharedPrivateData\SharedTasks.fs" />
 
-    <Compile Include="SharedPrivateData\fc1943s\InformationComments.fs" />
-    <Compile Include="SharedPrivateData\fc1943s\CellComments.fs" />
-    <Compile Include="SharedPrivateData\fc1943s\CellStatusEntries.fs" />
+        <Compile Include="SharedPrivateData\fc1943s\InformationComments.fs" />
+        <Compile Include="SharedPrivateData\fc1943s\CellComments.fs" />
+        <Compile Include="SharedPrivateData\fc1943s\CellStatusEntries.fs" />
 
-    <Compile Include="SharedPrivateData\liryanne\InformationComments.fs" />
-    <Compile Include="SharedPrivateData\liryanne\CellComments.fs" />
-    <Compile Include="SharedPrivateData\liryanne\CellStatusEntries.fs" />
+        <Compile Include="SharedPrivateData\liryanne\InformationComments.fs" />
+        <Compile Include="SharedPrivateData\liryanne\CellComments.fs" />
+        <Compile Include="SharedPrivateData\liryanne\CellStatusEntries.fs" />
 
-    <Compile Include="RootPrivateData.fs" />
+        <Compile Include="RootPrivateData.fs" />
 
-    <Content Include="paket.references" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj" />
-  </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+        <Content Include="paket.references" />
+
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

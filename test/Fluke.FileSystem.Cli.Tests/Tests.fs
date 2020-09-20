@@ -8,7 +8,9 @@ open FSharpPlus
 
 
 module Tests =
-    open Model
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
 
     let tests =
         testList
@@ -22,12 +24,16 @@ module Tests =
                         test "1" {
                             1 |> Expect.equal "" 1
 
-                            let state = RootPrivateData.TreeData.getState ()
+                            let sessionState = RootPrivateData.TreeData.getSessionState ()
 
 
-                            let state2 = {| User =state.User; TreeStateMap = state.TreeStateMap |}
+                            let state2 =
+                                {|
+                                    User = sessionState.User
+                                    TreeStateMap = sessionState.TreeStateMap
+                                |}
 
-////                            let fsharpJson = FSharp.Json.Json.serialize state2
+                            ////                            let fsharpJson = FSharp.Json.Json.serialize state2
 //                            let thoth = Thoth.Json.Net.Encode.Auto.toString(0, state2)
 ////                            let stj = System.Text.Json.JsonSerializer.Serialize(state2)
 //
@@ -42,9 +48,9 @@ module Tests =
                             []
                             |> List.map (fun information ->
                                 match information with
-                                | Project { Name = ProjectName name } -> Some (information.KindName, name)
-                                | Area { Name = AreaName name } -> Some (information.KindName, name)
-                                | Resource { Name = ResourceName name } -> Some (information.KindName, name)
+                                | Project ({ Name = ProjectName name }, _) -> Some (information.KindName, name)
+                                | Area ({ Name = AreaName name }, _) -> Some (information.KindName, name)
+                                | Resource ({ Name = ResourceName name }, _) -> Some (information.KindName, name)
                                 | Archive _ -> None)
                             |> List.choose id
                             |> List.groupBy fst
@@ -59,8 +65,7 @@ module Tests =
                                         (FileInfo path).Attributes.HasFlag FileAttributes.ReparsePoint)
                                     |> Array.toList
 
-                                let mainDirectories =
-                                    getDirectoriesIo PrivateData.Tests.directories.Main
+                                let mainDirectories = getDirectoriesIo PrivateData.Tests.directories.Main
 
                                 let otherDirectories =
                                     PrivateData.Tests.directories.Others
@@ -105,4 +110,3 @@ module Tests =
                         }
                     ]
             ]
-

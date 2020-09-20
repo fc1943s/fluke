@@ -4,7 +4,6 @@ namespace Fluke.Shared
 open System
 open FSharpPlus
 open Fluke.Shared
-//open Fluke.Shared.PrivateData
 open Suigetsu.Core
 
 
@@ -122,8 +121,9 @@ module RootPrivateData =
         ()
 
     module TreeData =
-        open Model
-        open Model.State
+        open Domain.Information
+        open Domain.UserInteraction
+        open Domain.State
 
         let private getTreeData (moment: FlukeDateTime) =
             let users = TempData.getUsers ()
@@ -192,7 +192,7 @@ module RootPrivateData =
                         |> treeStateWithInteractions []
                     ``fluke/samples/laneSorting/frequency`` =
 
-                        let publicData = TempData.Testing.getPublicData ()
+                        let publicData = TempData.PublicData.getPublicData ()
                         let dslData = publicData.SortLanesTests
 
                         TreeState.Create
@@ -215,7 +215,7 @@ module RootPrivateData =
 
 
 
-        let getState () =
+        let getSessionState () =
             let consts =
                 PrivateData.PrivateData.getPrivateConsts ()
 
@@ -225,7 +225,7 @@ module RootPrivateData =
             let moment = getLivePosition ()
             let trees = getTreeData moment
 
-            let state: TempData.State =
+            let state: TempData.SessionState =
                 let treeStateMap =
                     let privateTreeState =
                         [

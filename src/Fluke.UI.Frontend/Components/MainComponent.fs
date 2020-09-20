@@ -17,6 +17,10 @@ open Fable.Core.JsInterop
 
 
 module MainComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let globalShortcutHandler =
         React.memo (fun () ->
             let selection, setSelection = Recoil.useState Recoil.Selectors.selection
@@ -51,22 +55,22 @@ module MainComponent =
         React.memo (fun () ->
             let view = Recoil.useValue Recoil.Selectors.view
 
-            let loadTreeSelection =
+            let loadState =
                 Recoil.useCallbackRef (fun setter ->
                     async {
-                        Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[0]"
-                        let! treeSelection = setter.snapshot.getAsync (Recoil.Selectors.treeSelectionAsync view)
+                        Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
+                        let! state = setter.snapshot.getAsync (Recoil.Selectors.stateAsync view)
 
-                        printfn "dataLoader.TREESELECTION=None:%A" (treeSelection = None)
+                        printfn "dataLoader.state=None:%A" (state = None)
 
-                        Browser.Dom.window?treeSelection <- treeSelection
+                        Browser.Dom.window?state <- state
 
                         //Uncaught (in promise) Promise {<fulfilled>: List}
-                        Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[1]"
+                        Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
 
-                        setter.set (Recoil.Selectors.treeSelection, treeSelection)
+                        setter.set (Recoil.Selectors.state, state)
 
-                        Recoil.Profiling.addTimestamp "dataLoader.loadTreeCallback[2]"
+                        Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[2]"
                     }
                     |> Async.StartImmediate)
 
@@ -74,7 +78,7 @@ module MainComponent =
             React.useEffect
                 ((fun () ->
                     Recoil.Profiling.addTimestamp "dataLoader effect"
-                    loadTreeSelection ()),
+                    loadState ()),
 
                  // TODO: return a cleanup?
                  [|
@@ -92,27 +96,25 @@ module MainComponent =
             React.useEffect
                 ((fun () ->
                     oldActiveSessions.current
-                    |> List.map (fun (Model.ActiveSession (oldTaskName, (Model.Minute oldDuration), _, _)) ->
+                    |> List.map (fun (Model.ActiveSession (oldTaskName, (Minute oldDuration), _, _)) ->
                         let newSession =
                             activeSessions
-                            |> List.tryFind (fun (Model.ActiveSession (taskName, (Model.Minute duration), _, _)) ->
+                            |> List.tryFind (fun (Model.ActiveSession (taskName, (Minute duration), _, _)) ->
                                 taskName = oldTaskName
                                 && duration = oldDuration + 1.)
 
                         match newSession with
-                        | Some (Model.ActiveSession (_, (Model.Minute newDuration), _, _)) when oldDuration = -1.
-                                                                                                && newDuration = 0. ->
+                        | Some (Model.ActiveSession (_, (Minute newDuration), _, _)) when oldDuration = -1.
+                                                                                          && newDuration = 0. ->
                             Temp.Sound.playTick
                         | Some (Model.ActiveSession (_, newDuration, totalDuration, _)) when newDuration = totalDuration ->
                             Temp.Sound.playDing
                         | None ->
                             match user with
-                            | Some { SessionLength = Model.Minute sessionLength;
-                                     SessionBreakLength = Model.Minute sessionBreakLength } when oldDuration =
-                                                                                                     sessionLength
-                                                                                                 + sessionBreakLength
-                                                                                                 - 1. ->
-                                Temp.Sound.playDing
+                            | Some { SessionLength = Minute sessionLength;
+                                     SessionBreakLength = Minute sessionBreakLength } when oldDuration = sessionLength
+                                                                                           + sessionBreakLength
+                                                                                           - 1. -> Temp.Sound.playDing
                             | _ -> fun () -> ()
                         | _ -> fun () -> ())
                     |> List.iter (fun x -> x ())

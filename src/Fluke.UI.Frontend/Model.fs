@@ -4,7 +4,9 @@ open Fluke.Shared
 
 
 module Model =
-    open Model
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
 
     [<RequireQualifiedAccess>]
     type View =
@@ -31,7 +33,7 @@ module Model =
             | Archive archive -> sprintf "[%s]" archive.Color
 
     type CellStatus with
-        member this.CellClass =
+        member inline this.CellClass =
             match this with
             | Disabled -> Css.cellDisabled
             | Suggested -> Css.cellSuggested

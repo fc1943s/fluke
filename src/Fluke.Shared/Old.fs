@@ -3,9 +3,10 @@ namespace Fluke.Shared
 open System.Collections.Generic
 
 
-module Old =
-    open Model
-    open Model.State
+module Old2 =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
 
     //    type X =
 //        | SameDay
@@ -39,7 +40,7 @@ module Old =
 
 
 
-    type OldLane = OldLane of task: State.TaskState * cells: Cell list
+    type OldLane = OldLane of task: TaskState * cells: (CellAddress * CellStatus) list
 
     //    type TreeData =
 //        {
@@ -49,11 +50,7 @@ module Old =
 //            TaskStateList: (TaskState * UserInteraction list) list
 //        }
 //
-    and TaskOrderEntry =
-        {
-            Task: Task
-            Priority: TaskOrderPriority
-        }
+    and TaskOrderEntry = { Task: Task; Priority: TaskOrderPriority }
 
     and [<RequireQualifiedAccess>] TaskOrderPriority =
         | First
@@ -62,14 +59,8 @@ module Old =
 
     let ofLane (OldLane (taskState, cells)) = taskState, cells
 
+
     module Sorting =
-        open Model
-        open Model.State
-
-
-
-
-
         let getManualSortedTaskList (taskOrderList: TaskOrderEntry list) =
             let result = List<Task> ()
 
@@ -128,14 +119,9 @@ module Old =
 
             let orderEntriesMissing =
                 tasksWithoutOrderEntry
-                |> List.map (fun task ->
-                    {
-                        Task = task
-                        Priority = TaskOrderPriority.Last
-                    })
+                |> List.map (fun task -> { Task = task; Priority = TaskOrderPriority.Last })
 
-            let newTaskOrderList =
-                orderEntriesMissing @ orderEntriesOfTasks
+            let newTaskOrderList = orderEntriesMissing @ orderEntriesOfTasks
 
             let taskIndexMap =
                 newTaskOrderList
@@ -145,3 +131,68 @@ module Old =
 
             lanes
             |> List.sortBy (fun (OldLane (taskState, _)) -> taskIndexMap.[taskState.Task])
+
+        let getTaskOrderList oldTaskOrderList (taskStateList: TaskState list) manualTaskOrder =
+            let taskMap =
+                taskStateList
+                |> List.map (fun x -> (x.Task.Information, x.Task.Name), x)
+                |> Map.ofList
+
+            let newTaskOrderList =
+                manualTaskOrder
+                |> List.map (fun (information, taskName) ->
+                    taskMap
+                    |> Map.tryFind (information, TaskName taskName)
+                    |> function
+                    | None -> failwithf "Invalid task: '%A/%s'" information taskName
+                    | Some taskState ->
+                        {
+                            Task = taskState.Task
+                            Priority = TaskOrderPriority.First
+                        })
+
+            oldTaskOrderList @ newTaskOrderList
+
+
+    module Model =
+        ()
+
+
+
+
+//    let ofTaskSession =
+//        fun (TaskInteraction (start, duration, breakDuration)) -> start, duration, breakDuration
+
+
+
+//    let ofDateId = fun (DateId referenceDay) -> referenceDay
+
+//    let ofAttachmentComment (attachment: Attachment) =
+//        match attachment with
+//        | Attachment.Comment (user, comment) -> Some (user, comment)
+//        | _ -> None
+
+//    let ofUserComment =
+//        fun (UserComment (user, comment)) -> user, comment
+//
+//    let ofTaskComment =
+//        fun (TaskComment (task, userComment)) -> task, userComment
+//
+//    let ofCellComment =
+//        fun (CellComment (task, moment, userComment)) -> task, moment, userComment
+
+//    let ofCellSession =
+//        fun (CellSession (task, start, duration)) -> task, start, duration
+
+
+//    let ofTaskStatusEntry =
+//        fun (TaskStatusEntry (user, moment, manualCellStatus)) -> user, moment, manualCellStatus
+
+
+
+
+//    let createTaskStatusEntries task cellStatusEntries =
+//        cellStatusEntries
+//        |> List.filter (fun (CellStatusEntry (user, task', moment, manualCellStatus)) -> task' = task)
+//        |> List.map (fun (CellStatusEntry (user, task', moment, entries)) -> TaskStatusEntry (user, moment, entries))
+//        |> List.sortBy (fun (TaskStatusEntry (user, date, _)) -> date)

@@ -7,10 +7,14 @@ open Suigetsu.Core
 open Feliz
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.Shared.Model
+open Fluke.Shared
 
 
 module TooltipPopupComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let render =
         React.memo (fun (input: {| Attachments: Attachment list |}) ->
             let tooltipContainerRef = React.useElementRef ()
@@ -19,7 +23,10 @@ module TooltipPopupComponent =
 
             let comments =
                 input.Attachments
-                |> List.choose ofAttachmentComment
+                |> List.choose (fun x ->
+                    match x with
+                    | Attachment.Comment (user, comment) -> Some (user, comment)
+                    | _ -> None)
 
             match comments with
             | [] -> nothing
@@ -43,7 +50,7 @@ module TooltipPopupComponent =
                                 prop.children
                                     [
                                         comments
-                                        |> List.map (fun (user, (Comment comment)) ->
+                                        |> List.map (fun (user, (Comment.Comment comment)) ->
                                             sprintf "%s:%s%s" user.Username Environment.NewLine (comment.Trim ()))
                                         |> List.map ((+) Environment.NewLine)
                                         |> String.concat (Environment.NewLine + Environment.NewLine)

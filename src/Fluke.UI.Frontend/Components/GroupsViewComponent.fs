@@ -11,6 +11,10 @@ open Fluke.Shared
 
 
 module GroupsViewComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let render =
         React.memo (fun () ->
             let groupIndentationLength = 20
@@ -77,7 +81,7 @@ module GroupsViewComponent =
                                                                                   ]
                                                                                   prop.children
                                                                                       [
-                                                                                          let (Model.InformationName informationName) =
+                                                                                          let (InformationName informationName) =
                                                                                               information.Name
 
                                                                                           str informationName

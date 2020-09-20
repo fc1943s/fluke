@@ -18,14 +18,14 @@ open Fable.Core.JsInterop
 
 module Recoil =
     open Model
-    open Old
-    open State
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
 
     module Profiling =
         let private initialTicks = DateTime.Now.Ticks
 
-        let private ticksDiff ticks =
-            int64 (TimeSpan(ticks - initialTicks).TotalMilliseconds)
+        let private ticksDiff ticks = int64 (TimeSpan(ticks - initialTicks).TotalMilliseconds)
 
         let internal profilingState =
             {|
@@ -40,8 +40,7 @@ module Recoil =
             | false -> profilingState.CallCount.[id] <- 1
             | true -> profilingState.CallCount.[id] <- profilingState.CallCount.[id] + 1
 
-        let internal addTimestamp id =
-            profilingState.Timestamps.Add (id, ticksDiff DateTime.Now.Ticks)
+        let internal addTimestamp id = profilingState.Timestamps.Add (id, ticksDiff DateTime.Now.Ticks)
 
         addTimestamp "Init"
 
@@ -50,7 +49,7 @@ module Recoil =
     module FakeBackend =
 
 
-        let rec filterTaskStateList view dateRange (taskStateList: State.TaskState list) =
+        let rec filterTaskStateList view dateRange (taskStateList: TaskState list) =
             printfn "DR %A" dateRange
             match view with
             | View.Calendar
@@ -96,20 +95,19 @@ module Recoil =
         let sortLanes (input: {| View: View
                                  DayStart: FlukeTime
                                  Position: FlukeDateTime
-                                 TaskOrderList: TaskOrderEntry list
-                                 InformationStateList: State.InformationState list
-                                 Lanes: OldLane list |}) =
+                                 InformationStateList: InformationState list // TaskOrderList: TaskOrderEntry list
+                                 Lanes: (TaskState * (CellAddress * CellStatus) list) list |}) =
             match input.View with
             | View.Calendar ->
                 input.Lanes
                 |> Sorting.sortLanesByFrequency
                 |> Sorting.sortLanesByIncomingRecurrency input.DayStart input.Position
-                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
+                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position //input.TaskOrderList
             | View.Groups ->
                 let lanes =
                     input.Lanes
-                    |> Sorting.applyManualOrder input.TaskOrderList
-                    |> List.groupBy (fun (OldLane (taskState, _)) -> taskState.Task.Information)
+                    //                    |> Sorting.applyManualOrder input.TaskOrderList
+                    |> List.groupBy (fun (taskState, _) -> taskState.Task.Information)
                     |> Map.ofList
 
                 input.InformationStateList
@@ -123,18 +121,18 @@ module Recoil =
                 |> List.collect snd
             | View.Tasks ->
                 input.Lanes
-                |> Sorting.applyManualOrder input.TaskOrderList
-                |> List.sortByDescending (fun (OldLane (taskState, _)) ->
+                //                |> Sorting.applyManualOrder input.TaskOrderList
+                |> List.sortByDescending (fun (taskState, _) ->
                     taskState.Task.Priority
                     |> Option.map (fun x -> x.Value)
                     |> Option.defaultValue 0)
             | View.Week -> input.Lanes
 
-        let getTreeSelection (input: {| User: User
-                                        DateSequence: FlukeDate list
-                                        View: View
-                                        Position: FlukeDateTime
-                                        TreeStateMap: Map<TreeId, (TreeState * bool)> |}) =
+        let getState (input: {| User: User
+                                DateSequence: FlukeDate list
+                                View: View
+                                Position: FlukeDateTime
+                                TreeStateMap: Map<TreeId, (TreeState * bool)> |}) =
 
             let treeStateList =
                 input.TreeStateMap
@@ -194,8 +192,8 @@ module Recoil =
                             CellStateMap = TempData.mergeCellStateMap taskState.CellStateMap newCellStateMap
                         }))
 
-            let treeSelection =
-                let emptyTreeSelection: State.TreeSelection =
+            let state =
+                let emptyState: State =
                     {
                         TreeStateList = treeStateList
                         InformationStateMap = Map.empty
@@ -203,23 +201,22 @@ module Recoil =
                         TaskList = []
                     }
 
-                (emptyTreeSelection, treeStateList)
-                ||> List.fold (fun treeSelection treeState ->
+                (emptyState, treeStateList)
+                ||> List.fold (fun state treeState ->
                         match treeState with
                         | treeState when hasAccess treeState input.User ->
                             let newInformationStateMap =
                                 TempData.mergeInformationStateMap
-                                    treeSelection.InformationStateMap
+                                    state.InformationStateMap
                                     treeState.InformationStateMap
 
-                            let newTaskStateMap =
-                                TempData.mergeTaskStateMap treeSelection.TaskStateMap treeState.TaskStateMap
+                            let newTaskStateMap = TempData.mergeTaskStateMap state.TaskStateMap treeState.TaskStateMap
 
-                            { treeSelection with
+                            { state with
                                 InformationStateMap = newInformationStateMap
                                 TaskStateMap = newTaskStateMap
                             }
-                        | _ -> treeSelection)
+                        | _ -> state)
 
 
             let dateRange =
@@ -247,7 +244,7 @@ module Recoil =
                     Rendering.renderLane input.User.DayStart input.Position input.DateSequence taskState)
 
             //            let taskOrderList = RootPrivateData.treeData.TaskOrderList // @ RootPrivateData.taskOrderList
-            let taskOrderList = [] // @ RootPrivateData.taskOrderList
+//            let taskOrderList = [] // @ RootPrivateData.taskOrderList
 
 
 
@@ -257,15 +254,13 @@ module Recoil =
                         View = input.View
                         DayStart = input.User.DayStart
                         Position = input.Position
-                        TaskOrderList = taskOrderList
                         InformationStateList = informationStateList
                         Lanes = filteredLanes
                     |}
-                |> List.map ofLane
                 |> List.map (fun (taskState, cells) ->
                     let newCells =
                         cells
-                        |> List.map (fun (Cell (address, status)) -> address.DateId, status)
+                        |> List.map (fun (address, status) -> address.DateId, status)
                         |> Map.ofList
 
                     taskState, newCells)
@@ -316,15 +311,15 @@ module Recoil =
                 newTaskStateList
                 |> List.map (fun taskState -> taskState.Task)
 
-            let newTreeSelection =
-                { treeSelection with
-                    TaskStateMap = TempData.mergeTaskStateMap treeSelection.TaskStateMap newTaskStateMap
+            let newState =
+                { state with
+                    TaskStateMap = TempData.mergeTaskStateMap state.TaskStateMap newTaskStateMap
                     TaskList = newTaskList
                 }
 
             //            printfn "ts %A" newTreeSelection
 
-            newTreeSelection
+            newState
 
 
 
@@ -354,7 +349,7 @@ module Recoil =
                     key (sprintf "%s/%s" (nameof RecoilInformation) (nameof wrappedInformationFamily))
                     def (fun (_informationId: InformationId) ->
                             Profiling.addCount (nameof wrappedInformationFamily)
-                            Area Area.Default)
+                            Area (Area.Default, []))
                 }
 
             let rec attachmentsFamily =
@@ -367,7 +362,7 @@ module Recoil =
 
             type RecoilInformation with
 
-                static member internal Create informationId =
+                static member inline internal Create informationId =
                     {
                         Id = idFamily informationId
                         WrappedInformation = wrappedInformationFamily informationId
@@ -376,9 +371,9 @@ module Recoil =
 
             let rec informationId (information: Information): InformationId =
                 match information with
-                | Project { Name = ProjectName name } -> sprintf "%s/%s" information.KindName name
-                | Area { Name = AreaName name } -> sprintf "%s/%s" information.KindName name
-                | Resource { Name = ResourceName name } -> sprintf "%s/%s" information.KindName name
+                | Project ({ Name = ProjectName name }, _) -> sprintf "%s/%s" information.KindName name
+                | Area ({ Name = AreaName name }, _) -> sprintf "%s/%s" information.KindName name
+                | Resource ({ Name = ResourceName name }, _) -> sprintf "%s/%s" information.KindName name
                 | Archive x ->
                     let (InformationId archiveId) = informationId x
                     sprintf "%s/%s" information.KindName archiveId
@@ -395,8 +390,7 @@ module Recoil =
         module RecoilTask =
             type TaskId = TaskId of informationName: InformationName * taskName: TaskName
 
-            let taskId (task: Task) =
-                TaskId (task.Information.Name, task.Name)
+            let taskId (task: Task) = TaskId (task.Information.Name, task.Name)
 
             type RecoilTask =
                 {
@@ -497,7 +491,7 @@ module Recoil =
 
             type RecoilTask with
 
-                static member internal Create taskId =
+                static member inline internal Create taskId =
                     {
                         Id = idFamily taskId
                         InformationId = informationIdFamily taskId
@@ -591,7 +585,7 @@ module Recoil =
 
             type RecoilCell with
 
-                static member internal Create cellId =
+                static member inline internal Create cellId =
                     {
                         Id = idFamily cellId
                         TaskId = taskIdFamily cellId
@@ -695,7 +689,7 @@ module Recoil =
 
             type RecoilTree with
 
-                static member internal Create treeId =
+                static member inline internal Create treeId =
                     {
                         Id = idFamily treeId
                         Name = nameFamily treeId
@@ -753,16 +747,16 @@ module Recoil =
 //                key ("atom/" + nameof tree)
 //                def (None: TempData.State option)
 //            }
-        let rec internal treeSelection =
-            atom {
-                key ("atom/" + nameof treeSelection)
-                def (None: TreeSelection option)
-            }
-
         let rec internal state =
             atom {
                 key ("atom/" + nameof state)
-                def (None: TempData.State option)
+                def (None: State option)
+            }
+
+        let rec internal sessionState =
+            atom {
+                key ("atom/" + nameof sessionState)
+                def (None: TempData.SessionState option)
             }
 
         let rec internal selection =
@@ -795,9 +789,11 @@ module Recoil =
             selector {
                 key ("selector/" + nameof user)
                 get (fun getter ->
-                        let state = getter.get Atoms.state
+                        let sessionState = getter.get Atoms.sessionState
 
-                        let result = state |> Option.bind (fun state -> state.User)
+                        let result =
+                            sessionState
+                            |> Option.bind (fun sessionState -> sessionState.User)
 
                         Profiling.addCount (nameof user)
                         result)
@@ -826,11 +822,11 @@ module Recoil =
                 key ("selector/" + nameof position)
                 get (fun getter ->
                         let _positionTrigger = getter.get Atoms.positionTrigger
-                        let state = getter.get Atoms.state
+                        let sessionState = getter.get Atoms.sessionState
 
                         let result =
-                            state
-                            |> Option.map (fun state -> state.GetLivePosition ())
+                            sessionState
+                            |> Option.map (fun sessionState -> sessionState.GetLivePosition ())
 
                         Profiling.addCount (nameof position)
                         result)
@@ -858,17 +854,17 @@ module Recoil =
                         result)
             }
 
-        let rec treeSelection =
+        let rec state =
             selector {
-                key ("selector/" + nameof treeSelection)
+                key ("selector/" + nameof state)
                 get (fun getter ->
-                        let treeSelection = getter.get Atoms.treeSelection
-                        Profiling.addCount (nameof treeSelection)
-                        treeSelection)
-                set (fun setter (newValue: TreeSelection option) ->
+                        let state = getter.get Atoms.state
+                        Profiling.addCount (nameof state)
+                        state)
+                set (fun setter (newValue: State option) ->
                         let dateSequence = setter.get dateSequence
 
-                        Profiling.addTimestamp "treeSelection.set[0]"
+                        Profiling.addTimestamp "state.set[0]"
 
                         printfn
                             "dateSequence tree newValue==none=%A dateSequence.length=%A"
@@ -876,11 +872,11 @@ module Recoil =
                             dateSequence.Length
 
                         match newValue with
-                        | Some treeSelection ->
+                        | Some state ->
                             //                    let tree =
 //                        { tree with TaskList = tree.TaskList |> List.take 3 }
                             let recoilInformationMap =
-                                treeSelection.InformationStateMap
+                                state.InformationStateMap
                                 |> Map.mapValues (fun informationState ->
                                     let informationId =
                                         Atoms.RecoilInformation.informationId informationState.Information
@@ -894,10 +890,10 @@ module Recoil =
                                     informationId)
 
 
-                            Profiling.addTimestamp "treeSelection.set[1]"
+                            Profiling.addTimestamp "state.set[1]"
 
-                            treeSelection.TaskList
-                            |> List.map (fun task -> treeSelection.TaskStateMap.[task])
+                            state.TaskList
+                            |> List.map (fun task -> state.TaskStateMap.[task])
                             |> List.iter (fun taskState ->
                                 let task = taskState.Task
                                 let taskId = Atoms.RecoilTask.taskId task
@@ -941,7 +937,7 @@ module Recoil =
                                     setter.set (recoilCell.Selected, false)))
 
 
-                            treeSelection.TreeStateList
+                            state.TreeStateList
                             |> List.iter (fun treeState ->
                                 let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeState.Id)
 
@@ -965,22 +961,22 @@ module Recoil =
 
                         | _ -> ()
 
-                        setter.set (Atoms.treeSelection, newValue)
+                        setter.set (Atoms.state, newValue)
 
-                        Profiling.addTimestamp "treeSelection.set[2]"
-                        Profiling.addCount (nameof treeSelection + " (SET)"))
+                        Profiling.addTimestamp "state.set[2]"
+                        Profiling.addCount (nameof state + " (SET)"))
             }
 
         let rec currentTaskStateMap =
             selector {
                 key ("selector/" + nameof currentTaskStateMap)
                 get (fun getter ->
-                        let treeSelection = getter.get treeSelection
+                        let state = getter.get state
 
                         let result =
-                            match treeSelection with
+                            match state with
                             | None -> Map.empty
-                            | Some treeSelection -> treeSelection.TaskStateMap
+                            | Some state -> state.TaskStateMap
 
                         Profiling.addCount (nameof currentTaskStateMap)
                         result)
@@ -1067,37 +1063,37 @@ module Recoil =
             }
         /// [4]
         // TODO: Remove View and check performance
-        let rec treeSelectionAsync =
+        let rec stateAsync =
             selectorFamily {
-                key ("selectorFamily/" + nameof treeSelectionAsync)
+                key ("selectorFamily/" + nameof stateAsync)
                 get (fun (view: View) getter ->
                         async {
-                            Profiling.addTimestamp "treeAsync.get[0]"
-                            let state = getter.get Atoms.state
+                            Profiling.addTimestamp "stateAsync.get[0]"
+                            let sessionState = getter.get Atoms.sessionState
                             let user = getter.get user
                             let position = getter.get position
 
                             let result =
-                                match state, user, position with
-                                | Some state, Some user, Some position ->
+                                match sessionState, user, position with
+                                | Some sessionState, Some user, Some position ->
                                     let dateSequence = getter.get dateSequence
 
-                                    Profiling.addTimestamp "treeAsync.get[1]"
+                                    Profiling.addTimestamp "stateAsync.get[1]"
 
-                                    let treeSelection =
-                                        FakeBackend.getTreeSelection
+                                    let state =
+                                        FakeBackend.getState
                                             {|
                                                 User = user
                                                 DateSequence = dateSequence
                                                 View = view
                                                 Position = position
-                                                TreeStateMap = state.TreeStateMap
+                                                TreeStateMap = sessionState.TreeStateMap
                                             |}
 
-                                    Profiling.addTimestamp "treeAsync.get[2]"
-                                    Profiling.addCount (nameof treeSelectionAsync)
+                                    Profiling.addTimestamp "stateAsync.get[2]"
+                                    Profiling.addCount (nameof stateAsync)
 
-                                    Some treeSelection
+                                    Some state
                                 | _ -> None
 
                             return result
@@ -1149,12 +1145,12 @@ module Recoil =
                     get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
                             //                            let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
 
-                            let treeSelection = getter.get treeSelection
+                            let state = getter.get state
 
                             let sessions =
-                                match treeSelection with
-                                | Some treeSelection ->
-                                    treeSelection.TaskStateMap
+                                match state with
+                                | Some state ->
+                                    state.TaskStateMap
                                     |> Map.tryPick (fun task taskState ->
                                         let taskId' = Atoms.RecoilTask.taskId task
                                         if taskId = taskId' then
@@ -1299,14 +1295,14 @@ module Recoil =
             selector {
                 key ("selector/" + nameof currentTaskList)
                 get (fun getter ->
-                        let treeSelection = getter.get treeSelection
+                        let state = getter.get state
 
                         let result =
-                            treeSelection
-                            |> Option.map (fun treeSelection ->
-                                treeSelection.TaskList
+                            state
+                            |> Option.map (fun state ->
+                                state.TaskList
                                 |> List.map (fun task ->
-                                    //                                    treeSelection.TaskStateMap.[task]
+                                    //                                    state.TaskStateMap.[task]
                                     let taskId = Atoms.RecoilTask.taskId task
 
                                     let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
@@ -1391,8 +1387,8 @@ module Recoil =
 
                                             let startDate =
                                                 dateId user.DayStart position
-                                                |> ofDateId
-                                                |> fun referenceDay -> referenceDay.DateTime.AddDays (7 * weekOffset)
+                                                |> fun (DateId referenceDay) ->
+                                                    referenceDay.DateTime.AddDays (7 * weekOffset)
                                                 |> getStartDate
 
                                             [
@@ -1406,7 +1402,7 @@ module Recoil =
                                             taskList
                                             |> List.collect (fun task ->
                                                 dateIdSequence
-                                                |> List.map (fun dateId ->
+                                                |> List.map (fun ((DateId referenceDay) as dateId) ->
                                                     //                                                    let taskId = getter.get task.Id
                                                     let cellId = Atoms.RecoilCell.cellId task.Id dateId
 
@@ -1417,7 +1413,7 @@ module Recoil =
                                                     let attachments = getter.get cell.Attachments
 
                                                     let isToday =
-                                                        getter.get (RecoilFlukeDate.isTodayFamily (ofDateId dateId))
+                                                        getter.get (RecoilFlukeDate.isTodayFamily referenceDay)
 
                                                     match status, sessions, attachments with
                                                     | (Disabled
@@ -1436,7 +1432,7 @@ module Recoil =
                                                         |> Some)
                                                 |> List.choose id)
                                             |> List.groupBy (fun x -> x.DateId)
-                                            |> List.map (fun (dateId, cells) ->
+                                            |> List.map (fun (((DateId referenceDay) as dateId), cells) ->
 
                                                 //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
                                                 let taskSessions = cells |> List.collect (fun x -> x.Sessions)
@@ -1473,19 +1469,15 @@ module Recoil =
                                                                 CellStateMap = Map.empty
                                                             }
 
-                                                        OldLane
-                                                            (taskState,
-                                                             [
-                                                                 Cell
-                                                                     ({ Task = taskState.Task; DateId = dateId },
-                                                                      cell.Status)
-                                                             ]))
+                                                        taskState,
+                                                        [
+                                                            { Task = taskState.Task; DateId = dateId }, cell.Status
+                                                        ])
                                                     |> Sorting.sortLanesByTimeOfDay
                                                         user.DayStart
-                                                           { Date = ofDateId dateId; Time = user.DayStart }
-                                                           []
+                                                           { Date = referenceDay; Time = user.DayStart }
                                                     |> List.indexed
-                                                    |> List.map (fun (i, (OldLane (taskState, _))) ->
+                                                    |> List.map (fun (i, (taskState, _)) ->
                                                         Atoms.RecoilTask.taskId taskState.Task, i)
                                                     |> Map.ofList
 
@@ -1631,18 +1623,18 @@ module Recoil =
     /// [1]
 
     let initState (initializer: MutableSnapshot) =
-        let state = RootPrivateData.TreeData.getState ()
+        let sessionState = RootPrivateData.TreeData.getSessionState ()
 
         //        let state2 = {| User =state.User; TreeStateMap = state.TreeStateMap |}
 //
 //        let simpleJson = Fable.SimpleJson.SimpleJson.stringify state2
 //        let thothJson = Thoth.Json.Encode.Auto.toString(4, state2)
 //
-        Browser.Dom.window?flukeState <- state
+        Browser.Dom.window?flukeSessionState <- sessionState
         //        Browser.Dom.window?flukeStateSimple <- simpleJson
 //        Browser.Dom.window?flukeStateThoth <- thothJson
 
-        initializer.set (Atoms.state, Some state)
+        initializer.set (Atoms.sessionState, Some sessionState)
 
     (************************* END *************************)
 

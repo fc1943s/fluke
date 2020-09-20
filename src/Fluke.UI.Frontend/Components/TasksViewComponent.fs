@@ -12,6 +12,10 @@ open Fluke.UI.Frontend.Model
 
 
 module TasksViewComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let render =
         React.memo (fun () ->
             let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
@@ -53,7 +57,7 @@ module TasksViewComponent =
                                                                    ]
                                                                    prop.children
                                                                        [
-                                                                           let (Model.InformationName informationName) =
+                                                                           let (InformationName informationName) =
                                                                                task.Information.Name
 
                                                                            str informationName

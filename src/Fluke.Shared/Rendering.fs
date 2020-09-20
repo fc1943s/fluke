@@ -6,8 +6,9 @@ open FSharpPlus
 
 
 module Rendering =
-    open Model
-    open Old
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
 
     let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
 
@@ -51,7 +52,11 @@ module Rendering =
         | TodayCell
 
 
-    let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) (taskState: State.TaskState) =
+    let renderLane dayStart
+                   (position: FlukeDateTime)
+                   (dateSequence: FlukeDate list)
+                   (taskState: TaskState)
+                   =
         //        let convertManualCellStatus cellStatusChange =
 //            match cellStatusChange with
 //            | CellStatusChange.Complete -> Completed
@@ -65,10 +70,10 @@ module Rendering =
 //            |> Map.tryFind dateId
 
         //        let cellStatusEventsByDateId =
-//            taskState.UserInteractions
+//            taskUserInteractions
 //            |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
 //                match interaction with
-//                | Interaction.Cell ({ DateId = (DateId referenceDay) }, CellInteraction.StatusChange statusChange) ->
+//                | Cell ({ DateId = (DateId referenceDay) }, CellStatusChange statusChange) ->
 //                    Some (dateId dayStart moment, (user, moment, convertManualCellStatus statusChange))
 //                | _ -> None)
 //            |> Map.ofList
@@ -84,12 +89,20 @@ module Rendering =
             let firstDateRange =
                 dateSequence
                 |> List.head
-                |> fun date -> { Date = date; Time = dayStart }
+                |> fun date ->
+                    {
+                        Date = date
+                        Time = dayStart
+                    }
 
             let lastDateRange =
                 dateSequence
                 |> List.last
-                |> fun date -> { Date = date; Time = dayStart }
+                |> fun date ->
+                    {
+                        Date = date
+                        Time = dayStart
+                    }
 
             firstDateRange, lastDateRange
 
@@ -110,7 +123,11 @@ module Rendering =
                 ]
                 |> List.map FlukeDate.FromDateTime
                 |> getDateSequence (0, 0)
-            |> List.map (fun date -> { Date = date; Time = dayStart })
+            |> List.map (fun date ->
+                {
+                    Date = date
+                    Time = dayStart
+                })
 
 
         let rec loop renderState =
@@ -118,8 +135,7 @@ module Rendering =
             | moment :: tail ->
                 let dateId = dateId dayStart moment
 
-                let cellState =
-                    taskState.CellStateMap |> Map.tryFind dateId
+                let cellState = taskState.CellStateMap |> Map.tryFind dateId
 
                 let group = dayStart, position, dateId
 
@@ -128,20 +144,22 @@ module Rendering =
                     | Some cellState ->
                         let renderState =
                             match cellState.Status, group with
-                            | UserStatus (_, Postponed (Some _)), BeforeToday -> renderState
-                            | UserStatus (_,
-                                          (Postponed None
-                                          | ManualPending)),
+                            | CellStatus.UserStatus (_, ManualCellStatus.Postponed (Some _)), BeforeToday ->
+                                renderState
+                            | CellStatus.UserStatus (_,
+                                                           (ManualCellStatus.Postponed None
+                                                           | ManualCellStatus.ManualPending)),
                               BeforeToday -> WaitingEvent
-                            | UserStatus (_, Postponed None), Today -> DayMatch
+                            | CellStatus.UserStatus (_, ManualCellStatus.Postponed None), Today -> DayMatch
                             | _ -> Counting 1
 
                         let event =
                             match cellState.Status, group with
-                            | UserStatus (_, Postponed (Some until)), Today when position.GreaterEqualThan
-                                                                                     dayStart
-                                                                                     dateId
-                                                                                     until -> Pending
+                            | CellStatus.UserStatus (_, ManualCellStatus.Postponed (Some until)), Today when position.GreaterEqualThan
+                                                                                                                             dayStart
+                                                                                                                             dateId
+                                                                                                                             until ->
+                                CellStatus.Pending
                             | _ -> cellState.Status
 
                         StatusCell event, renderState
@@ -150,16 +168,16 @@ module Rendering =
                         let getStatus renderState =
                             match renderState, group with
                             | WaitingFirstEvent, BeforeToday -> EmptyCell, WaitingFirstEvent
-                            | DayMatch, BeforeToday -> StatusCell Missed, WaitingEvent
-                            | WaitingEvent, BeforeToday -> StatusCell Missed, WaitingEvent
+                            | DayMatch, BeforeToday -> StatusCell CellStatus.Missed, WaitingEvent
+                            | WaitingEvent, BeforeToday -> StatusCell CellStatus.Missed, WaitingEvent
 
                             | WaitingFirstEvent, Today -> TodayCell, Counting 1
                             | DayMatch, Today -> TodayCell, Counting 1
                             | WaitingEvent, Today -> TodayCell, Counting 1
 
                             | WaitingFirstEvent, AfterToday -> EmptyCell, WaitingFirstEvent
-                            | DayMatch, AfterToday -> StatusCell Pending, Counting 1
-                            | WaitingEvent, AfterToday -> StatusCell Pending, Counting 1
+                            | DayMatch, AfterToday -> StatusCell CellStatus.Pending, Counting 1
+                            | WaitingEvent, AfterToday -> StatusCell CellStatus.Pending, Counting 1
 
                             | Counting count, _ -> EmptyCell, Counting (count + 1)
 
@@ -197,33 +215,35 @@ module Rendering =
                         | Manual suggestion ->
                             match renderState, group, suggestion with
                             | WaitingFirstEvent, Today, WithSuggestion when taskState.Task.PendingAfter = None ->
-                                StatusCell Suggested, Counting 1
+                                StatusCell CellStatus.Suggested, Counting 1
                             | WaitingFirstEvent, Today, WithSuggestion -> TodayCell, Counting 1
-                            | WaitingFirstEvent, Today, _ -> StatusCell Suggested, Counting 1
+                            | WaitingFirstEvent, Today, _ -> StatusCell CellStatus.Suggested, Counting 1
                             | _ ->
                                 let status, renderState = getStatus renderState
 
                                 let status =
                                     match status, suggestion with
-                                    | EmptyCell, WithSuggestion -> StatusCell Suggested
-                                    | TodayCell, _ -> StatusCell Pending
+                                    | EmptyCell, WithSuggestion -> StatusCell CellStatus.Suggested
+                                    | TodayCell, _ -> StatusCell CellStatus.Pending
                                     | status, _ -> status
 
                                 status, renderState
 
                 let status =
                     match status with
-                    | EmptyCell -> Disabled
+                    | EmptyCell -> CellStatus.Disabled
                     | StatusCell status -> status
                     | TodayCell ->
                         match taskState.Task.MissedAfter, taskState.Task.PendingAfter with
-                        | Some missedAfter, _ when position.GreaterEqualThan dayStart dateId missedAfter -> MissedToday
+                        | Some missedAfter, _ when position.GreaterEqualThan dayStart dateId missedAfter ->
+                            CellStatus.MissedToday
 
-                        | _, Some pendingAfter when position.GreaterEqualThan dayStart dateId pendingAfter -> Pending
+                        | _, Some pendingAfter when position.GreaterEqualThan dayStart dateId pendingAfter ->
+                            CellStatus.Pending
 
-                        | _, None -> Pending
+                        | _, None -> CellStatus.Pending
 
-                        | _ -> Suggested
+                        | _ -> CellStatus.Suggested
 
                 (moment, status) :: loop renderState tail
             | [] -> []
@@ -232,11 +252,10 @@ module Rendering =
             loop WaitingFirstEvent dateSequenceWithEntries
             |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
             |> List.map (fun (moment, cellStatus) ->
-                Cell
-                    ({
-                         DateId = dateId dayStart moment
-                         Task = taskState.Task
-                     },
-                     cellStatus))
+                {
+                    DateId = dateId dayStart moment
+                    Task = taskState.Task
+                },
+                cellStatus)
 
-        OldLane (taskState, cells)
+        taskState, cells

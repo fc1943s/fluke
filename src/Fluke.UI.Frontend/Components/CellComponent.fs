@@ -7,10 +7,14 @@ open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Model
-open Fluke.Shared.Model
+open Fluke.Shared
 
 
 module CellComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let useStyles =
         Styles.makeStyles (fun (styles: StyleCreator<{| hovered: bool |}>) _theme ->
             {|

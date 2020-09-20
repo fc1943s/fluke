@@ -7,11 +7,13 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.Shared.Model
-
-
+open Fluke.Shared
 
 module GridHeaderComponent =
+    open Domain.Information
+    open Domain.UserInteraction
+    open Domain.State
+
     let render =
         React.memo (fun () ->
             let cellSize = Recoil.useValue Recoil.Atoms.cellSize
