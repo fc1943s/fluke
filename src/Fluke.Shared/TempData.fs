@@ -519,12 +519,12 @@ module TempData =
 //            GetLivePosition = getLivePosition
 //        }
 
-    type SessionState =
-        {
-            User: User option
-            GetLivePosition: unit -> FlukeDateTime
-            TreeStateMap: Map<TreeId, TreeState * bool>
-        }
+    //    type SessionState =
+//        {
+//            User: User option
+//            GetLivePosition: unit -> FlukeDateTime
+//            TreeStateMap: Map<TreeState, bool>
+//        }
 
     type DslData =
         {

@@ -68,10 +68,8 @@ module Sorting =
             let (|PostponedUntil|Postponed|WasPostponed|NotPostponed|) =
                 function
                 | ManualCellStatus.Postponed None -> Postponed
-                | ManualCellStatus.Postponed (Some until) when position.GreaterEqualThan
-                                                                         dayStart
-                                                                         address.DateId
-                                                                         until -> WasPostponed
+                | ManualCellStatus.Postponed (Some until) when position.GreaterEqualThan dayStart address.DateId until ->
+                    WasPostponed
                 | ManualCellStatus.Postponed _ -> PostponedUntil
                 | _ -> NotPostponed
 
@@ -146,7 +144,7 @@ module Sorting =
             |> List.map (getGroup taskState)
             |> List.minBy fst)
         |> List.collect (fun ((groupIndex, sortType), indexedLanes) ->
-//            match sortType with
+            //            match sortType with
 //            | TaskOrderList ->
 //                indexedLanes
 //                |> List.map snd

@@ -52,11 +52,7 @@ module Rendering =
         | TodayCell
 
 
-    let renderLane dayStart
-                   (position: FlukeDateTime)
-                   (dateSequence: FlukeDate list)
-                   (taskState: TaskState)
-                   =
+    let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) (taskState: TaskState) =
         //        let convertManualCellStatus cellStatusChange =
 //            match cellStatusChange with
 //            | CellStatusChange.Complete -> Completed
@@ -89,20 +85,12 @@ module Rendering =
             let firstDateRange =
                 dateSequence
                 |> List.head
-                |> fun date ->
-                    {
-                        Date = date
-                        Time = dayStart
-                    }
+                |> fun date -> { Date = date; Time = dayStart }
 
             let lastDateRange =
                 dateSequence
                 |> List.last
-                |> fun date ->
-                    {
-                        Date = date
-                        Time = dayStart
-                    }
+                |> fun date -> { Date = date; Time = dayStart }
 
             firstDateRange, lastDateRange
 
@@ -123,11 +111,7 @@ module Rendering =
                 ]
                 |> List.map FlukeDate.FromDateTime
                 |> getDateSequence (0, 0)
-            |> List.map (fun date ->
-                {
-                    Date = date
-                    Time = dayStart
-                })
+            |> List.map (fun date -> { Date = date; Time = dayStart })
 
 
         let rec loop renderState =
@@ -144,11 +128,10 @@ module Rendering =
                     | Some cellState ->
                         let renderState =
                             match cellState.Status, group with
-                            | CellStatus.UserStatus (_, ManualCellStatus.Postponed (Some _)), BeforeToday ->
-                                renderState
+                            | CellStatus.UserStatus (_, ManualCellStatus.Postponed (Some _)), BeforeToday -> renderState
                             | CellStatus.UserStatus (_,
-                                                           (ManualCellStatus.Postponed None
-                                                           | ManualCellStatus.ManualPending)),
+                                                     (ManualCellStatus.Postponed None
+                                                     | ManualCellStatus.ManualPending)),
                               BeforeToday -> WaitingEvent
                             | CellStatus.UserStatus (_, ManualCellStatus.Postponed None), Today -> DayMatch
                             | _ -> Counting 1
@@ -156,9 +139,9 @@ module Rendering =
                         let event =
                             match cellState.Status, group with
                             | CellStatus.UserStatus (_, ManualCellStatus.Postponed (Some until)), Today when position.GreaterEqualThan
-                                                                                                                             dayStart
-                                                                                                                             dateId
-                                                                                                                             until ->
+                                                                                                                 dayStart
+                                                                                                                 dateId
+                                                                                                                 until ->
                                 CellStatus.Pending
                             | _ -> cellState.Status
 

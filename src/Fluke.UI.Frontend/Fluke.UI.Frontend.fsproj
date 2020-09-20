@@ -13,6 +13,7 @@
     <Compile Include="Temp.fs" />
     <Compile Include="Components\MonthResponsiveCellComponent.fs" />
     <Compile Include="Components\PageLoaderComponent.fs" />
+    <Compile Include="Components\TreeSelectorComponent.fs" />
     <Compile Include="Components\NavBarComponent.fs" />
     <Compile Include="Components\DayComponent.fs" />
     <Compile Include="Components\SpinnerComponent.fs" />

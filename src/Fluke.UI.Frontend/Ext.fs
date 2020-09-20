@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend
 
+open System.Collections.Generic
 open Browser
 open Fable.Core
 open Fable.Core.JsInterop
@@ -31,8 +32,10 @@ module Ext =
 
     let recoilLogger: obj -> obj = importDefault "recoil-logger"
 
-    Dom.window?Ext <- {|
-                          reactMarkdown = reactMarkdown
-                          playSound = playSound
-                          recoilLogger = recoilLogger
-                      |}
+    let domRefs = Dictionary<string, obj> ()
+    Dom.window?fluke <- domRefs
+    let setDom key value = domRefs.[key] <- value
+
+    setDom (nameof reactMarkdown) reactMarkdown
+    setDom (nameof playSound) playSound
+    setDom (nameof recoilLogger) recoilLogger

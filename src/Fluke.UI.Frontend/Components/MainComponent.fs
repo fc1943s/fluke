@@ -61,11 +61,10 @@ module MainComponent =
                         Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
                         let! state = setter.snapshot.getAsync (Recoil.Selectors.stateAsync view)
 
-                        printfn "dataLoader.state=None:%A" (state = None)
+                        printfn "dataLoader.state=None:%A" (state.IsNone)
 
-                        Browser.Dom.window?state <- state
+                        Ext.setDom (nameof state) state
 
-                        //Uncaught (in promise) Promise {<fulfilled>: List}
                         Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
 
                         setter.set (Recoil.Selectors.state, state)

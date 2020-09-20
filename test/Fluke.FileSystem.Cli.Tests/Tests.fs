@@ -24,13 +24,13 @@ module Tests =
                         test "1" {
                             1 |> Expect.equal "" 1
 
-                            let sessionState = RootPrivateData.TreeData.getSessionState ()
+                            let baseState = RootPrivateData.State.getBaseState ()
 
 
                             let state2 =
                                 {|
-                                    User = sessionState.User
-                                    TreeStateMap = sessionState.TreeStateMap
+                                    User = baseState.Session.User
+                                    TreeStateMap = baseState.TreeStateMap
                                 |}
 
                             ////                            let fsharpJson = FSharp.Json.Json.serialize state2

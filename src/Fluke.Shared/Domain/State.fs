@@ -9,10 +9,18 @@ module State =
 
     type State =
         {
-            TreeStateList: TreeState list
+            Session: Session
+            TaskList: Task list
             InformationStateMap: Map<Information, InformationState>
             TaskStateMap: Map<Task, TaskState>
-            TaskList: Task list
+            TreeStateMap: Map<TreeId, TreeState>
+        }
+
+    and Session =
+        {
+            User: User option
+            GetLivePosition: unit -> FlukeDateTime
+            TreeSelection: TreeState list
         }
 
     and TreeState =
@@ -21,7 +29,7 @@ module State =
             Name: TreeName
             Owner: User
             SharedWith: TreeAccess
-            //                Position: FlukeDateTime option
+            Position: FlukeDateTime option
             InformationStateMap: Map<Information, InformationState>
             TaskStateMap: Map<Task, TaskState>
         }
@@ -76,6 +84,7 @@ module State =
         | Dismissed
         | ManualPending
 
+
     and TreeState with
         static member inline Create (id, name, owner, ?sharedWith): TreeState =
             {
@@ -83,7 +92,7 @@ module State =
                 Name = name
                 Owner = owner
                 SharedWith = defaultArg sharedWith (TreeAccess.Private [])
-                //                Position = None
+                Position = None
                 InformationStateMap = Map.empty
                 TaskStateMap = Map.empty
             }

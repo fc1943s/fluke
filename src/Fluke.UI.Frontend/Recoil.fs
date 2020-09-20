@@ -33,7 +33,7 @@ module Recoil =
                 Timestamps = List<string * int64> ()
             |}
 
-        Browser.Dom.window?profilingState <- profilingState
+        Ext.setDom (nameof profilingState) profilingState
 
         let internal addCount id =
             match profilingState.CallCount.ContainsKey id with
@@ -132,24 +132,17 @@ module Recoil =
                                 DateSequence: FlukeDate list
                                 View: View
                                 Position: FlukeDateTime
-                                TreeStateMap: Map<TreeId, (TreeState * bool)> |}) =
-
-            let treeStateList =
-                input.TreeStateMap
-                |> Map.values
-                |> Seq.filter snd
-                |> Seq.map fst
-                |> Seq.toList
+                                State: State |}) =
 
             let informationStateList =
-                treeStateList
+                input.State.Session.TreeSelection
                 |> List.collect (fun treeState ->
                     treeState.InformationStateMap
                     |> Map.values
                     |> Seq.toList)
 
             let taskStateList =
-                treeStateList
+                input.State.Session.TreeSelection
                 |> List.collect (fun treeState ->
                     treeState.TaskStateMap
                     |> Map.values
@@ -193,15 +186,7 @@ module Recoil =
                         }))
 
             let state =
-                let emptyState: State =
-                    {
-                        TreeStateList = treeStateList
-                        InformationStateMap = Map.empty
-                        TaskStateMap = Map.empty
-                        TaskList = []
-                    }
-
-                (emptyState, treeStateList)
+                (input.State, input.State.Session.TreeSelection)
                 ||> List.fold (fun state treeState ->
                         match treeState with
                         | treeState when hasAccess treeState input.User ->
@@ -753,12 +738,6 @@ module Recoil =
                 def (None: State option)
             }
 
-        let rec internal sessionState =
-            atom {
-                key ("atom/" + nameof sessionState)
-                def (None: TempData.SessionState option)
-            }
-
         let rec internal selection =
             atom {
                 key ("atom/" + nameof selection)
@@ -789,11 +768,11 @@ module Recoil =
             selector {
                 key ("selector/" + nameof user)
                 get (fun getter ->
-                        let sessionState = getter.get Atoms.sessionState
+                        let state = getter.get Atoms.state
 
                         let result =
-                            sessionState
-                            |> Option.bind (fun sessionState -> sessionState.User)
+                            state
+                            |> Option.bind (fun state -> state.Session.User)
 
                         Profiling.addCount (nameof user)
                         result)
@@ -822,11 +801,11 @@ module Recoil =
                 key ("selector/" + nameof position)
                 get (fun getter ->
                         let _positionTrigger = getter.get Atoms.positionTrigger
-                        let sessionState = getter.get Atoms.sessionState
+                        let state = getter.get Atoms.state
 
                         let result =
-                            sessionState
-                            |> Option.map (fun sessionState -> sessionState.GetLivePosition ())
+                            state
+                            |> Option.map (fun state -> state.Session.GetLivePosition ())
 
                         Profiling.addCount (nameof position)
                         result)
@@ -868,7 +847,7 @@ module Recoil =
 
                         printfn
                             "dateSequence tree newValue==none=%A dateSequence.length=%A"
-                            (newValue = None)
+                            newValue.IsNone
                             dateSequence.Length
 
                         match newValue with
@@ -937,7 +916,7 @@ module Recoil =
                                     setter.set (recoilCell.Selected, false)))
 
 
-                            state.TreeStateList
+                            state.Session.TreeSelection
                             |> List.iter (fun treeState ->
                                 let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeState.Id)
 
@@ -1069,13 +1048,13 @@ module Recoil =
                 get (fun (view: View) getter ->
                         async {
                             Profiling.addTimestamp "stateAsync.get[0]"
-                            let sessionState = getter.get Atoms.sessionState
+                            let state = getter.get Atoms.state
                             let user = getter.get user
                             let position = getter.get position
 
                             let result =
-                                match sessionState, user, position with
-                                | Some sessionState, Some user, Some position ->
+                                match state, user, position with
+                                | Some state, Some user, Some position ->
                                     let dateSequence = getter.get dateSequence
 
                                     Profiling.addTimestamp "stateAsync.get[1]"
@@ -1087,7 +1066,7 @@ module Recoil =
                                                 DateSequence = dateSequence
                                                 View = view
                                                 Position = position
-                                                TreeStateMap = sessionState.TreeStateMap
+                                                State = state
                                             |}
 
                                     Profiling.addTimestamp "stateAsync.get[2]"
@@ -1623,18 +1602,18 @@ module Recoil =
     /// [1]
 
     let initState (initializer: MutableSnapshot) =
-        let sessionState = RootPrivateData.TreeData.getSessionState ()
+        let baseState = RootPrivateData.State.getBaseState ()
 
         //        let state2 = {| User =state.User; TreeStateMap = state.TreeStateMap |}
 //
 //        let simpleJson = Fable.SimpleJson.SimpleJson.stringify state2
 //        let thothJson = Thoth.Json.Encode.Auto.toString(4, state2)
 //
-        Browser.Dom.window?flukeSessionState <- sessionState
+        Ext.setDom (nameof baseState) baseState
         //        Browser.Dom.window?flukeStateSimple <- simpleJson
 //        Browser.Dom.window?flukeStateThoth <- thothJson
 
-        initializer.set (Atoms.sessionState, Some sessionState)
+        initializer.set (Atoms.state, Some baseState)
 
     (************************* END *************************)
 

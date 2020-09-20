@@ -76,14 +76,15 @@ module NavBarComponent =
                         ]
                     ]
 
-                let viewCheckbox newView text =
-                    checkbox (view = newView) text (fun () -> setView newView)
+                let viewCheckbox newView text = checkbox (view = newView) text (fun () -> setView newView)
 
                 viewCheckbox View.Calendar "calendar view"
                 viewCheckbox View.Groups "groups view"
                 viewCheckbox View.Tasks "tasks view"
                 viewCheckbox View.Week "week view"
                 checkbox debug "debug" (fun () -> setDebug (not debug))
+
+                TreeSelectorComponent.render ()
 
                 Bulma.navbarItem.div
                     [
