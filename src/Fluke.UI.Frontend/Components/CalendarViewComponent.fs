@@ -69,6 +69,29 @@ module CalendarViewComponent =
                                                        ])
                                         ]
                                 ]
+                                // Column: Priority
+                                Html.div [
+                                    prop.style [
+                                        style.paddingRight 10
+                                        style.textAlign.center
+                                    ]
+                                    prop.children
+                                        [
+                                            yield! currentTaskList
+                                                   |> List.map (fun task ->
+                                                       Html.div [
+                                                           prop.className Css.cellRectangle
+                                                           prop.children
+                                                               [
+                                                                   task.Priority
+                                                                   |> Option.map (fun x -> x.Value)
+                                                                   |> Option.defaultValue 0
+                                                                   |> string
+                                                                   |> str
+                                                               ]
+                                                       ])
+                                        ]
+                                ]
                                 // Column: Task Name
                                 Html.div [
                                     prop.style

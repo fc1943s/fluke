@@ -104,17 +104,35 @@ module GroupsViewComponent =
                                                                               [
                                                                                   yield! group
                                                                                          |> List.map (fun groupTask ->
-                                                                                             TaskNameComponent.render
-                                                                                                 {|
-                                                                                                     Css =
-                                                                                                         [
-                                                                                                             style.paddingLeft
-                                                                                                                 (groupIndentationLength
-                                                                                                                  * 2)
-                                                                                                         ]
-                                                                                                     TaskId =
-                                                                                                         groupTask.Id
-                                                                                                 |})
+                                                                                             let priority =
+                                                                                                 groupTask.Priority
+                                                                                                 |> Option.map (fun x ->
+                                                                                                     x.Value)
+                                                                                                 |> Option.defaultValue
+                                                                                                     0
+                                                                                                 |> string
+                                                                                                 |> str
+
+                                                                                             Html.div [
+                                                                                                 prop.style
+                                                                                                     [
+                                                                                                         style.display.flex
+                                                                                                     ]
+                                                                                                 prop.children [
+                                                                                                     priority
+                                                                                                     TaskNameComponent.render
+                                                                                                         {|
+                                                                                                             Css =
+                                                                                                                 [
+                                                                                                                     style.paddingLeft
+                                                                                                                         (groupIndentationLength
+                                                                                                                          * 2)
+                                                                                                                 ]
+                                                                                                             TaskId =
+                                                                                                                 groupTask.Id
+                                                                                                         |}
+                                                                                                 ]
+                                                                                             ])
                                                                               ]
                                                                       ]
                                                                   ])
