@@ -2,38 +2,56 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Fable.Core
 open Feliz.Recoil
+open FSharpPlus
 open Fluke.UI.Frontend
-open Fable.Core.JsInterop
-
-module Chakra =
-    [<AbstractClass>]
-    type IChakra =
-        abstract Box: obj
-
-    [<ImportAll "@chakra-ui/core">]
-    let chakra: IChakra = jsNative
-
-    //    let Box (children: #seq<ReactElement>) = Interop.reactElementWithChildren "Box" children
-
-    //    [<ImportMember("@chakra-ui/core")>]
-//    let Box (children: #seq<ReactElement>): ReactElement = jsNative
-//    printfn "chakra %A" (JS.JSON.stringify(chakra.Box))
-//    Browser.Dom.window?box <- Box
-    let box props children = ReactBindings.React.createElement (chakra.Box, props, children)
+open Fluke.Shared.Domain
 
 
 module TreeSelectorComponent =
-
-    //    let chakra = JsInterop.importAll "@chakra-ui/core"
-
     let render =
         React.memo (fun () ->
             let state = Recoil.useValue Recoil.Atoms.state
 
-            Chakra.box
-                {| position = "relative" |}
-                [
-                    str "tree3"
-                ])
+            match state with
+            | None -> nothing
+            | Some state ->
+                let treeSelection =
+                    state.Session.TreeSelection
+                    |> List.map (fun treeState -> treeState.Id)
+                    |> List.toArray
+
+                Chakra.box
+                    {| position = "relative" |}
+                    [
+                        Chakra.menu
+                            {| closeOnSelect = false |}
+                            [
+                                Chakra.menuButton
+                                    {| ``as`` = Chakra.chakraCore.Button |}
+                                    [
+                                        str "TreeSelector"
+                                    ]
+
+                                Chakra.menuList
+                                    ()
+                                    [
+                                        Chakra.menuOptionGroup
+                                            {|
+                                                title = "Private"
+                                                ``type`` = "checkbox"
+                                                value = treeSelection
+                                            |}
+                                            [
+                                                yield! state.TreeStateMap
+                                                       |> Map.values
+                                                       |> Seq.map (fun { Id = id; Name = State.TreeName name } ->
+                                                           Chakra.menuItemOption
+                                                               {| value = id |}
+                                                               [
+                                                                   str name
+                                                               ])
+                                            ]
+                                    ]
+                            ]
+                    ])

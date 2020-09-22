@@ -218,6 +218,7 @@ module RootPrivateData =
                 |> List.filter (fun treeState ->
                     match treeState with
                     | { Owner = owner } when owner = user -> true
+                    | { SharedWith = TreeAccess.Public } -> true
                     | { SharedWith = TreeAccess.Private accessList } ->
                         accessList
                         |> List.exists (function
