@@ -16,7 +16,7 @@ module GroupsViewComponent =
     open Domain.State
 
     let render =
-        React.memo (fun () ->
+        React.memo (fun (input: {| Username: Username |}) ->
             let groupIndentationLength = 20
 
             let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
@@ -142,7 +142,7 @@ module GroupsViewComponent =
                     ]
                     // Column: Grid
                     Html.div [
-                        GridHeaderComponent.render ()
+                        GridHeaderComponent.render {| Username = input.Username |}
                         Html.div
                             [
                                 yield! groups
@@ -163,6 +163,7 @@ module GroupsViewComponent =
                                                                           ]
                                                                       CellsComponent.render
                                                                           {|
+                                                                              Username = input.Username
                                                                               TaskIdList =
                                                                                   groupTask |> List.map (fun x -> x.Id)
                                                                           |}

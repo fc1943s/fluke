@@ -10,17 +10,17 @@ module State =
     type State =
         {
             Session: Session
-            TaskList: Task list
-            InformationStateMap: Map<Information, InformationState>
-            TaskStateMap: Map<Task, TaskState>
-            TreeStateMap: Map<TreeId, TreeState>
         }
 
     and Session =
         {
             User: User option
+            TreeSelection: Set<TreeState>
+            TaskList: Task list
+            InformationStateMap: Map<Information, InformationState>
+            TaskStateMap: Map<Task, TaskState>
+            TreeStateMap: Map<TreeId, TreeState>
             GetLivePosition: unit -> FlukeDateTime
-            TreeSelection: TreeState list
         }
 
     and TreeState =

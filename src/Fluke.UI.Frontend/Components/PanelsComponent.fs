@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.React
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
@@ -12,15 +13,19 @@ module PanelsComponent =
         React.memo (fun () ->
 
             let view = Recoil.useValue Recoil.Selectors.view
+            let username = Recoil.useValue Recoil.Atoms.username
 
             Html.div [
                 prop.className Css.panels
                 prop.children [
-                    match view with
-                    | View.Calendar -> CalendarViewComponent.render ()
-                    | View.Groups -> GroupsViewComponent.render ()
-                    | View.Tasks -> TasksViewComponent.render ()
-                    | View.Week -> WeekViewComponent.render ()
+                    match username with
+                    | None -> str "no user"
+                    | Some username ->
+                        match view with
+                        | View.Calendar -> CalendarViewComponent.render {| Username = username |}
+                        | View.Groups -> GroupsViewComponent.render {| Username = username |}
+                        | View.Tasks -> TasksViewComponent.render {| Username = username |}
+                        | View.Week -> WeekViewComponent.render {| Username = username |}
 
                     DetailsComponent.render ()
                 ]

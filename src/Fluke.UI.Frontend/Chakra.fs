@@ -16,6 +16,7 @@ module Chakra =
     let chakraCore: {| Box: obj
                        Button: obj
                        ChakraProvider: obj
+                       DarkMode: obj
                        extendTheme: obj -> obj
                        Menu: obj
                        MenuButton: obj
@@ -32,6 +33,7 @@ module Chakra =
 
     let box<'T> = wrap chakraCore.Box
     let button<'T> = wrap chakraCore.Button
+    let darkMode<'T> = wrap chakraCore.DarkMode
     let menu<'T> = wrap chakraCore.Menu
     let menuButton<'T> = wrap chakraCore.MenuButton
     let menuList<'T> = wrap chakraCore.MenuList

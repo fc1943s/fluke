@@ -15,12 +15,13 @@ module App =
                     router.children
                         [
                             Chakra.provider
-                                {|
-                                    resetCSS = true
-                                    theme = Chakra.theme
-                                |}
+                                {| resetCSS = true; theme = Chakra.theme |}
                                 [
-                                    Components.MainComponent.render ()
+                                    Chakra.darkMode
+                                        ()
+                                        [
+                                            Components.MainComponent.render ()
+                                        ]
                                 ]
                         ]
                 ])

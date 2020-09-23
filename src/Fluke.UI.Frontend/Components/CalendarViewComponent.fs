@@ -17,7 +17,7 @@ module CalendarViewComponent =
     open Domain.State
 
     let render =
-        React.memo (fun () ->
+        React.memo (fun (input: {| Username: Username |}) ->
             let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
 
             let taskIdList = currentTaskList |> List.map (fun x -> x.Id)
@@ -109,8 +109,8 @@ module CalendarViewComponent =
                         ]
                     ]
                     Html.div [
-                        GridHeaderComponent.render ()
-                        CellsComponent.render {| TaskIdList = taskIdList |}
+                        GridHeaderComponent.render {| Username = input.Username |}
+                        CellsComponent.render {| Username = input.Username;TaskIdList = taskIdList |}
                     ]
                 ]
             ])

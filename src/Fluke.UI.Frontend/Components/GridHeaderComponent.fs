@@ -15,7 +15,7 @@ module GridHeaderComponent =
     open Domain.State
 
     let render =
-        React.memo (fun () ->
+        React.memo (fun (input: {| Username: Username |}) ->
             let cellSize = Recoil.useValue Recoil.Atoms.cellSize
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
@@ -67,6 +67,7 @@ module GridHeaderComponent =
                                            {|
                                                Date = date
                                                Label = date.DateTime.Format "EEEEEE"
+                                               Username = input.Username
                                            |})
                         ]
                 ]
@@ -81,7 +82,12 @@ module GridHeaderComponent =
                         [
                             yield! dateSequence
                                    |> List.map (fun ({ Day = Day day } as date) ->
-                                       DayComponent.render {| Date = date; Label = day.ToString "D2" |})
+                                       DayComponent.render
+                                           {|
+                                               Date = date
+                                               Label = day.ToString "D2"
+                                               Username = input.Username
+                                           |})
                         ]
                 ]
             ])

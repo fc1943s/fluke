@@ -50,8 +50,8 @@ module TooltipPopupComponent =
                                 prop.children
                                     [
                                         comments
-                                        |> List.map (fun (user, (Comment.Comment comment)) ->
-                                            sprintf "%s:%s%s" user.Username Environment.NewLine (comment.Trim ()))
+                                        |> List.map (fun (({ Username = Username username } as user), (Comment.Comment comment)) ->
+                                            sprintf "%s:%s%s" username Environment.NewLine (comment.Trim ()))
                                         |> List.map ((+) Environment.NewLine)
                                         |> String.concat (Environment.NewLine + Environment.NewLine)
                                         |> fun text ->

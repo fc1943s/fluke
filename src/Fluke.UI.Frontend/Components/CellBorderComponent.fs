@@ -15,22 +15,19 @@ module CellBorderComponent =
     open Domain.State
 
     let render =
-        React.memo (fun (input: {| Date: FlukeDate |}) ->
-            let user = Recoil.useValue Recoil.Selectors.user
+        React.memo (fun (input: {| Username: Username; Date: FlukeDate |}) ->
+            let weekStart = Recoil.useValue (Recoil.Atoms.RecoilUser.weekStartFamily input.Username)
 
-            match user with
-            | None -> str "No user found"
-            | Some user ->
-                match (user.WeekStart, input.Date) with
-                | StartOfMonth -> Some Css.cellStartMonth
-                | StartOfWeek -> Some Css.cellStartWeek
-                | _ -> None
-                |> Option.map (fun className ->
-                    Html.div
-                        [
-                            prop.classes [
-                                Css.cellSquare
-                                className
-                            ]
-                        ])
-                |> Option.defaultValue nothing)
+            match (weekStart, input.Date) with
+            | StartOfMonth -> Some Css.cellStartMonth
+            | StartOfWeek -> Some Css.cellStartWeek
+            | _ -> None
+            |> Option.map (fun className ->
+                Html.div
+                    [
+                        prop.classes [
+                            Css.cellSquare
+                            className
+                        ]
+                    ])
+            |> Option.defaultValue nothing)

@@ -17,7 +17,7 @@ module WeekViewComponent =
     open Domain.State
 
     let render =
-        React.memo (fun () ->
+        React.memo (fun (input: {| Username: Username |}) ->
             let weekCellsMap = Recoil.useValue Recoil.Selectors.weekCellsMap
 
             Html.div [
@@ -83,6 +83,7 @@ module WeekViewComponent =
                                                                                  prop.children [
                                                                                      CellComponent.render
                                                                                          {|
+                                                                                             Username = input.Username
                                                                                              Date = referenceDay
                                                                                              TaskId = cell.Task.Id
                                                                                          |}

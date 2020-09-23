@@ -114,7 +114,7 @@ module TempData =
             {|
                 fluke =
                     {
-                        Username = nameof result.fluke
+                        Username = Username <| nameof result.fluke
                         Color = UserColor.Black
                         WeekStart = DayOfWeek.Sunday
                         DayStart = FlukeTime.Create 12 00
@@ -123,7 +123,7 @@ module TempData =
                     }
                 fc1943s =
                     {
-                        Username = nameof result.fc1943s
+                        Username = Username <| nameof result.fc1943s
                         Color = UserColor.Blue
                         WeekStart = DayOfWeek.Sunday
                         DayStart = FlukeTime.Create 07 00
@@ -132,7 +132,7 @@ module TempData =
                     }
                 liryanne =
                     {
-                        Username = nameof result.liryanne
+                        Username = Username <| nameof result.liryanne
                         Color = UserColor.Pink
                         WeekStart = DayOfWeek.Monday
                         DayStart = FlukeTime.Create 07 00

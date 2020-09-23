@@ -37,7 +37,8 @@ module CellComponent =
             |})
 
     let render =
-        React.memo (fun (input: {| TaskId: Recoil.Atoms.RecoilTask.TaskId
+        React.memo (fun (input: {| Username: Username
+                                   TaskId: Recoil.Atoms.RecoilTask.TaskId
                                    Date: FlukeDate |}) ->
             let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId (DateId input.Date)
             let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
@@ -59,7 +60,7 @@ module CellComponent =
                 ]
                 prop.onClick (fun (_event: MouseEvent) -> onCellClick ())
                 prop.children [
-                    CellBorderComponent.render {| Date = input.Date |}
+                    CellBorderComponent.render {| Username = input.Username; Date = input.Date |}
                     CellSessionIndicatorComponent.render {| Sessions = sessions |}
                     if showUser then
                         match status with

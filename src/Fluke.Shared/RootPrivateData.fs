@@ -232,29 +232,32 @@ module RootPrivateData =
                 |> List.filter (fun treeState ->
                     treeState.SharedWith <> TreeAccess.Public
                 )
-
-            let session =
-                {
-                    User = Some user
-                    GetLivePosition = getLivePosition
-                    TreeSelection = treeSelection
-                }
+                |> Set.ofList
 
             let treeStateMap =
                 treesWithAccess
                 |> List.map (fun treeState -> treeState.Id, treeState)
                 |> Map.ofList
 
+
 //            let taskStateMap =
 //                treeStateList
 //                |> List.map (fun treeState -> treeState.TaskStateMap)
 
+            let session =
+                {
+                    User = Some user
+                    GetLivePosition = getLivePosition
+                    TreeSelection = treeSelection
+                    TaskList = [] (*: Task list*)
+                    InformationStateMap = Map.empty (*: Map<Information, InformationState>*)
+                    TaskStateMap = Map.empty (*: Map<Task, TaskState>*)
+                    TreeStateMap = treeStateMap (*: Map<TreeId, TreeState>*)
+                }
+
+
             {
                 Session = session
-                TaskList = [] (*: Task list*)
-                InformationStateMap = Map.empty (*: Map<Information, InformationState>*)
-                TaskStateMap = Map.empty (*: Map<Task, TaskState>*)
-                TreeStateMap = treeStateMap (*: Map<TreeId, TreeState>*)
             }
 
 //            let diag =

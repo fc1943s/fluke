@@ -27,11 +27,11 @@ module Tests =
                             let baseState = RootPrivateData.State.getBaseState ()
 
 
-                            let state2 =
-                                {|
-                                    User = baseState.Session.User
-                                    TreeStateMap = baseState.TreeStateMap
-                                |}
+//                            let state2 =
+//                                {|
+//                                    User = baseState.Session.User
+//                                    TreeStateMap = baseState.Session.TreeStateMap
+//                                |}
 
                             ////                            let fsharpJson = FSharp.Json.Json.serialize state2
 //                            let thoth = Thoth.Json.Net.Encode.Auto.toString(0, state2)

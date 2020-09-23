@@ -87,9 +87,13 @@ module MainComponent =
             nothing)
 
     let soundPlayer =
-        React.memo (fun () ->
+        React.memo (fun (input: {| Username: Username |}) ->
             let oldActiveSessions = React.useRef []
-            let user = Recoil.useValue Recoil.Selectors.user
+            let (Minute sessionLength) = Recoil.useValue (Recoil.Atoms.RecoilUser.sessionLengthFamily input.Username)
+
+            let (Minute sessionBreakLength) =
+                Recoil.useValue (Recoil.Atoms.RecoilUser.sessionBreakLengthFamily input.Username)
+
             let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
 
             React.useEffect
@@ -109,18 +113,19 @@ module MainComponent =
                         | Some (Model.ActiveSession (_, newDuration, totalDuration, _)) when newDuration = totalDuration ->
                             Temp.Sound.playDing
                         | None ->
-                            match user with
-                            | Some { SessionLength = Minute sessionLength;
-                                     SessionBreakLength = Minute sessionBreakLength } when oldDuration = sessionLength
-                                                                                           + sessionBreakLength
-                                                                                           - 1. -> Temp.Sound.playDing
-                            | _ -> fun () -> ()
+                            if oldDuration = sessionLength
+                               + sessionBreakLength
+                               - 1. then
+                                Temp.Sound.playDing
+                            else
+                                fun () -> ()
                         | _ -> fun () -> ())
                     |> List.iter (fun x -> x ())
 
                     oldActiveSessions.current <- activeSessions),
                  [|
-                     user :> obj
+                     sessionLength :> obj
+                     sessionBreakLength :> obj
                      activeSessions :> obj
                  |])
 
@@ -176,7 +181,7 @@ module MainComponent =
                             style.bottom 0
                             style.fontSize 9
                             style.backgroundColor "#44444488"
-                            style.zIndex 100
+                            style.zIndex 1
                         ]
                         prop.children
                             [
@@ -193,7 +198,7 @@ module MainComponent =
                             style.top 0
                             style.right 0
                             style.backgroundColor "#ccc3"
-                            style.zIndex 100
+                            style.zIndex 1
                         ]
                         prop.children
                             [
@@ -204,19 +209,29 @@ module MainComponent =
 
     let render =
         React.memo (fun () ->
+            let username = Recoil.useValue Recoil.Atoms.username
+
             React.fragment [
                 diag ()
-                globalShortcutHandler ()
-                positionUpdater ()
-                autoReload_TEMP ()
+
+                match username with
+                | Some _ ->
+                    globalShortcutHandler ()
+                    positionUpdater ()
+                    autoReload_TEMP ()
+                | None -> ()
 
                 React.suspense
                     ([
                         dataLoader ()
-                        soundPlayer ()
 
-                        NavBarComponent.render ()
-                        PanelsComponent.render ()
+                        match username with
+                        | Some username ->
+                            soundPlayer {| Username = username |}
+
+                            NavBarComponent.render ()
+                            PanelsComponent.render ()
+                        | None -> str "no user"
                      ],
                      PageLoaderComponent.render ())
             ])

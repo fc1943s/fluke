@@ -18,8 +18,8 @@ module TreeSelectorComponent =
             | Some state ->
                 let treeSelection =
                     state.Session.TreeSelection
-                    |> List.map (fun treeState -> treeState.Id)
-                    |> List.toArray
+                    |> Set.map (fun treeState -> treeState.Id)
+                    |> Set.toArray
 
                 Chakra.box
                     {| position = "relative" |}
@@ -28,7 +28,10 @@ module TreeSelectorComponent =
                             {| closeOnSelect = false |}
                             [
                                 Chakra.menuButton
-                                    {| ``as`` = Chakra.chakraCore.Button |}
+                                    {|
+                                        ``as`` = Chakra.chakraCore.Button
+                                        colorScheme = "black"
+                                    |}
                                     [
                                         str "TreeSelector"
                                     ]
@@ -41,9 +44,12 @@ module TreeSelectorComponent =
                                                 title = "Private"
                                                 ``type`` = "checkbox"
                                                 value = treeSelection
+                                                onChange =
+                                                    fun (treeSelection: State.TreeId []) ->
+                                                        printfn "menuoptiongroup onchange %A" treeSelection
                                             |}
                                             [
-                                                yield! state.TreeStateMap
+                                                yield! state.Session.TreeStateMap
                                                        |> Map.values
                                                        |> Seq.map (fun { Id = id; Name = State.TreeName name } ->
                                                            Chakra.menuItemOption

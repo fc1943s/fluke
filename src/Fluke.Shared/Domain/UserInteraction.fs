@@ -13,6 +13,10 @@ module UserInteraction =
 
     and FlukeDate = { Year: Year; Month: Month; Day: Day }
 
+    and TempSchedule =
+        | TimeSchedule1 of date: FlukeDate * Schedulings: (FlukeTime * Task) list
+        | TimeSchedule2 of date: FlukeDate * Schedulings: Map<FlukeTime, Task>
+
     and Year = Year of int
 
     and [<RequireQualifiedAccess>] Interaction =
@@ -36,13 +40,15 @@ module UserInteraction =
 
     and User =
         {
-            Username: string
+            Username: Username
             Color: UserColor
             WeekStart: DayOfWeek
             DayStart: FlukeTime
             SessionLength: Minute
             SessionBreakLength: Minute
         }
+
+    and Username = Username of string
 
     and [<RequireQualifiedAccess>] UserColor =
         | Black
