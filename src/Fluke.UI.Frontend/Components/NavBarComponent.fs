@@ -23,7 +23,7 @@ module NavBarComponent =
     open Domain.State
 
     let render =
-        React.memo (fun () ->
+        React.memo (fun (input: {| Username: Username |}) ->
             let debug, setDebug = Recoil.useState Recoil.Atoms.debug
             let view = Recoil.useValue Recoil.Selectors.view
             let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
@@ -84,7 +84,7 @@ module NavBarComponent =
                 viewCheckbox View.Week "week view"
                 checkbox debug "debug" (fun () -> setDebug (not debug))
 
-                TreeSelectorComponent.render ()
+                TreeSelectorComponent.render {| Username = input.Username |}
 
                 Bulma.navbarItem.div
                     [

@@ -215,23 +215,20 @@ module MainComponent =
                 diag ()
 
                 match username with
-                | Some _ ->
+                | Some username ->
                     globalShortcutHandler ()
                     positionUpdater ()
                     autoReload_TEMP ()
-                | None -> ()
 
-                React.suspense
-                    ([
-                        dataLoader ()
-
-                        match username with
-                        | Some username ->
+                    React.suspense
+                        ([
+                            dataLoader ()
                             soundPlayer {| Username = username |}
 
-                            NavBarComponent.render ()
+                            NavBarComponent.render {| Username = username |}
                             PanelsComponent.render ()
-                        | None -> str "no user"
-                     ],
-                     PageLoaderComponent.render ())
+                         ],
+                         PageLoaderComponent.render ())
+
+                | None -> str "no user"
             ])
