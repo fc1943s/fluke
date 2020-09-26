@@ -325,24 +325,27 @@ module Recoil =
 
 
     module Atoms =
+        let atomFamilyFn (fn: 'a -> 'b) =
+            atomFamily {
+                key (string <| Guid.NewGuid ())
+                def fn
+            }
+
         module rec Information =
             type InformationId = InformationId of id: string
 
             let rec wrappedInformation =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Information) (nameof wrappedInformation))
-                    def (fun (_informationId: InformationId) ->
-                            Profiling.addCount (nameof wrappedInformation)
-                            Area (Area.Default, []))
-                }
+                atomFamilyFn
+                <| fun (_informationId: InformationId) ->
+                    Profiling.addCount (nameof wrappedInformation)
+                    Area (Area.Default, [])
 
             let rec attachments =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Information) (nameof attachments))
-                    def (fun (_informationId: InformationId) ->
-                            Profiling.addCount (nameof attachments)
-                            [])
-                }
+                atomFamilyFn
+                <| fun (_informationId: InformationId) ->
+                    Profiling.addCount (nameof attachments)
+                    []
+
 
             let rec informationId (information: Information): InformationId =
                 match information with
@@ -358,54 +361,47 @@ module Recoil =
         module rec Task =
             type TaskId = TaskId of informationName: InformationName * taskName: TaskName
 
-
             let rec informationId =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Task) (nameof informationId))
-                    def (fun (_taskId: TaskId) ->
-                            Profiling.addCount (nameof informationId)
-                            Information.informationId Task.Default.Information)
-                }
+                atomFamilyFn
+                <| fun (_taskId: TaskId) ->
+                    Profiling.addCount (nameof informationId)
+                    Information.informationId Task.Default.Information
+
 
             let rec name =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Task) (nameof name))
-                    def (fun (_taskId: TaskId) ->
-                            Profiling.addCount (nameof name)
-                            Task.Default.Name)
-                }
+                atomFamilyFn
+                <| fun (_taskId: TaskId) ->
+                    Profiling.addCount (nameof name)
+                    Task.Default.Name
+
 
             let rec scheduling =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Task) (nameof scheduling))
-                    def (fun (_taskId: TaskId) ->
-                            Profiling.addCount (nameof scheduling)
-                            Task.Default.Scheduling)
-                }
+                atomFamilyFn
+                <| fun (_taskId: TaskId) ->
+                    Profiling.addCount (nameof scheduling)
+                    Task.Default.Scheduling
+
 
             let rec pendingAfter =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Task) (nameof pendingAfter))
-                    def (fun (_taskId: TaskId) ->
-                            Profiling.addCount (nameof pendingAfter)
-                            Task.Default.PendingAfter)
-                }
+                atomFamilyFn
+                <| fun (_taskId: TaskId) ->
+                    Profiling.addCount (nameof pendingAfter)
+                    Task.Default.PendingAfter
+
 
             let rec missedAfter =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Task) (nameof missedAfter))
-                    def (fun (_taskId: TaskId) ->
-                            Profiling.addCount (nameof missedAfter)
-                            Task.Default.MissedAfter)
-                }
+                atomFamilyFn
+                <| fun (_taskId: TaskId) ->
+                    Profiling.addCount (nameof missedAfter)
+                    Task.Default.MissedAfter
+
 
             let rec priority =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Task) (nameof priority))
-                    def (fun (_taskId: TaskId) ->
-                            Profiling.addCount (nameof priority)
-                            Task.Default.Priority)
-                }
+                atomFamilyFn
+                <| fun (_taskId: TaskId) ->
+                    Profiling.addCount (nameof priority)
+                    Task.Default.Priority
+
 
             //            let rec sessionsFamily =
 //                atomFamily {
@@ -419,100 +415,89 @@ module Recoil =
 //                def (fun (_taskId: TaskId) -> Profiling.addCount  (nameof commentsFamily); []) // TODO: move from here?
 //            }
             let rec attachments =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Task) (nameof attachments))
-                    def (fun (_taskId: TaskId) ->
-                            Profiling.addCount (nameof attachments)
-                            []) // TODO: move from here?
-                }
+                atomFamilyFn
+                <| fun (_taskId: TaskId) ->
+                    Profiling.addCount (nameof attachments)
+                    [] // TODO: move from here?
+
 
             let rec duration =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Task) (nameof duration))
-                    def (fun (_taskId: TaskId) ->
-                            Profiling.addCount (nameof duration)
-                            Task.Default.Duration)
-                }
+                atomFamilyFn
+                <| fun (_taskId: TaskId) ->
+                    Profiling.addCount (nameof duration)
+                    Task.Default.Duration
+
 
             let taskId (task: Task) = TaskId (task.Information.Name, task.Name)
 
         module rec User =
 
             let rec color =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof User) (nameof color))
-                    def (fun (_username: Username) ->
-                            Profiling.addCount (nameof color)
-                            UserColor.Black)
-                }
+                atomFamilyFn
+                <| fun (_username: Username) ->
+                    Profiling.addCount (nameof color)
+                    UserColor.Black
+
 
             let rec weekStart =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof User) (nameof weekStart))
-                    def (fun (_username: Username) ->
-                            Profiling.addCount (nameof weekStart)
-                            DayOfWeek.Sunday)
-                }
+                atomFamilyFn
+                <| fun (_username: Username) ->
+                    Profiling.addCount (nameof weekStart)
+                    DayOfWeek.Sunday
+
 
             let rec dayStart =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof User) (nameof dayStart))
-                    def (fun (_username: Username) ->
-                            Profiling.addCount (nameof dayStart)
-                            FlukeTime.Create 04 00)
-                }
+                atomFamilyFn
+                <| fun (_username: Username) ->
+                    Profiling.addCount (nameof dayStart)
+                    FlukeTime.Create 04 00
+
 
             let rec sessionLength =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof User) (nameof sessionLength))
-                    def (fun (_username: Username) ->
-                            Profiling.addCount (nameof sessionLength)
-                            Minute 25.)
-                }
+                atomFamilyFn
+                <| fun (_username: Username) ->
+                    Profiling.addCount (nameof sessionLength)
+                    Minute 25.
+
 
             let rec sessionBreakLength =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof User) (nameof sessionBreakLength))
-                    def (fun (_username: Username) ->
-                            Profiling.addCount (nameof sessionBreakLength)
-                            Minute 5.)
-                }
+                atomFamilyFn
+                <| fun (_username: Username) ->
+                    Profiling.addCount (nameof sessionBreakLength)
+                    Minute 5.
+
 
 
 
         module rec Session =
 
             let rec user =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Session) (nameof user))
-                    def (fun (_username: Username) ->
-                            Profiling.addCount (nameof user)
-                            None)
-                }
+                atomFamilyFn
+                <| fun (_username: Username) ->
+                    Profiling.addCount (nameof user)
+                    None
+
 
             let rec treeSelectionIds =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Session) (nameof treeSelectionIds))
-                    def (fun (_username: Username) ->
-                            Profiling.addCount (nameof treeSelectionIds)
-                            (Set.empty: Set<TreeId>))
-                }
+                atomFamilyFn
+                <| fun (_username: Username) ->
+                    Profiling.addCount (nameof treeSelectionIds)
+                    (Set.empty: Set<TreeId>)
+
 
             let rec availableTreeIds =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Session) (nameof availableTreeIds))
-                    def (fun (_username: Username) ->
-                            Profiling.addCount (nameof availableTreeIds)
-                            [])
-                }
+                atomFamilyFn
+                <| fun (_username: Username) ->
+                    Profiling.addCount (nameof availableTreeIds)
+                    []
+
 
             let rec taskIdList =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Session) (nameof taskIdList))
-                    def (fun (_username: Username) ->
-                            Profiling.addCount (nameof taskIdList)
-                            [])
-                }
+                atomFamilyFn
+                <| fun (_username: Username) ->
+                    Profiling.addCount (nameof taskIdList)
+                    []
+
 
 
 
@@ -520,52 +505,46 @@ module Recoil =
             type CellId = CellId of id: string
 
             let rec taskId =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Cell) (nameof taskId))
-                    def (fun (_cellId: CellId) ->
-                            Profiling.addCount (nameof taskId)
-                            Task.TaskId (InformationName "", TaskName ""))
-                }
+                atomFamilyFn
+                <| fun (_cellId: CellId) ->
+                    Profiling.addCount (nameof taskId)
+                    Task.TaskId (InformationName "", TaskName "")
+
 
             let rec date =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Cell) (nameof date))
-                    def (fun (_cellId: CellId) ->
-                            Profiling.addCount (nameof date)
-                            FlukeDate.MinValue)
-                }
+                atomFamilyFn
+                <| fun (_cellId: CellId) ->
+                    Profiling.addCount (nameof date)
+                    FlukeDate.MinValue
+
 
             let rec status =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Cell) (nameof status))
-                    def (fun (_cellId: CellId) ->
-                            Profiling.addCount (nameof status)
-                            Disabled)
-                }
+                atomFamilyFn
+                <| fun (_cellId: CellId) ->
+                    Profiling.addCount (nameof status)
+                    Disabled
+
 
             let rec attachments =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Cell) (nameof attachments))
-                    def (fun (_cellId: CellId) ->
-                            Profiling.addCount (nameof attachments)
-                            []: Attachment list)
-                }
+                atomFamilyFn
+                <| fun (_cellId: CellId) ->
+                    Profiling.addCount (nameof attachments)
+                    []: Attachment list
+
 
             let rec sessions =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Cell) (nameof sessions))
-                    def (fun (_cellId: CellId) ->
-                            Profiling.addCount (nameof sessions)
-                            []: TaskSession list)
-                }
+                atomFamilyFn
+                <| fun (_cellId: CellId) ->
+                    Profiling.addCount (nameof sessions)
+                    []: TaskSession list
+
 
             let rec selected =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Cell) (nameof selected))
-                    def (fun (_cellId: CellId) ->
-                            Profiling.addCount (nameof selected)
-                            false)
-                }
+                atomFamilyFn
+                <| fun (_cellId: CellId) ->
+                    Profiling.addCount (nameof selected)
+                    false
+
 
 
             let cellId (Task.TaskId (InformationName informationName, TaskName taskName)) (DateId referenceDay) =
@@ -587,39 +566,35 @@ module Recoil =
 //            }
 
             let rec name =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Information) (nameof name))
-                    def (fun (_treeId: TreeId) ->
-                            Profiling.addCount (nameof name)
-                            TreeName "")
-                }
+                atomFamilyFn
+                <| fun (_treeId: TreeId) ->
+                    Profiling.addCount (nameof name)
+                    TreeName ""
+
 
             let rec owner =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Information) (nameof owner))
-                    def (fun (_treeId: TreeId) ->
-                            Profiling.addCount (nameof owner)
-                            None)
-                }
+                atomFamilyFn
+                <| fun (_treeId: TreeId) ->
+                    Profiling.addCount (nameof owner)
+                    None
+
 
             let rec sharedWith =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Information) (nameof sharedWith))
-                    def (fun (_treeId: TreeId) ->
-                            Profiling.addCount (nameof sharedWith)
-                            TreeAccess.Public)
-                }
+                atomFamilyFn
+                <| fun (_treeId: TreeId) ->
+                    Profiling.addCount (nameof sharedWith)
+                    TreeAccess.Public
+
 
             let rec position =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof Information) (nameof position))
-                    def (fun (_treeId: TreeId) ->
-                            Profiling.addCount (nameof position)
-                            None)
-                }
+                atomFamilyFn
+                <| fun (_treeId: TreeId) ->
+                    Profiling.addCount (nameof position)
+                    None
 
 
-            //            let treeId owner name =
+
+        //            let treeId owner name =
 //                TreeId (sprintf "%s/%s" owner.Username name)
 //
 
@@ -1120,7 +1095,7 @@ module Recoil =
                             | Some state ->
                                 match state.Session with
                                 | { User = Some user } as session when user.Username = username ->
-//                                    setter.set (Atoms.state, newValue)
+                                    //                                    setter.set (Atoms.state, newValue)
 //                                    setter.set (Atoms.getLivePosition, {| Get = session.GetLivePosition |})
 //                                    setter.set (Atoms.username, Some user.Username)
 
@@ -1138,7 +1113,7 @@ module Recoil =
                                         state.Session.TaskList
                                         |> List.map (fun task -> Atoms.Task.taskId task)
 
-//                                    setter.set (recoilSession.User, Some user)
+                                    //                                    setter.set (recoilSession.User, Some user)
                                     setter.set (Atoms.Session.treeSelectionIds user.Username, treeSelectionIds)
                                     setter.set (Atoms.Session.availableTreeIds user.Username, availableTreeIds)
                                     setter.set (Atoms.Session.taskIdList user.Username, taskIdList)
@@ -1174,7 +1149,8 @@ module Recoil =
                                         let recoilTask = setter.get (Atoms.Task.name taskId)
 
                                         setter.set (Atoms.Task.name taskId, task.Name)
-                                        setter.set (Atoms.Task.informationId taskId, recoilInformationMap.[task.Information])
+                                        setter.set
+                                            (Atoms.Task.informationId taskId, recoilInformationMap.[task.Information])
                                         setter.set (Atoms.Task.pendingAfter taskId, task.PendingAfter)
                                         setter.set (Atoms.Task.missedAfter taskId, task.MissedAfter)
                                         setter.set (Atoms.Task.scheduling taskId, task.Scheduling)
@@ -1519,8 +1495,7 @@ module Recoil =
                                                     let sessions = getter.get (Atoms.Cell.sessions cellId)
                                                     let attachments = getter.get (Atoms.Cell.attachments cellId)
 
-                                                    let isToday =
-                                                        getter.get (RecoilFlukeDate.isToday referenceDay)
+                                                    let isToday = getter.get (RecoilFlukeDate.isToday referenceDay)
 
                                                     match status, sessions, attachments with
                                                     | (Disabled
