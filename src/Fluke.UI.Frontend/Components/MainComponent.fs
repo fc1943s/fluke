@@ -53,13 +53,13 @@ module MainComponent =
 
     let dataLoader =
         React.memo (fun (input: {| Username: Username |}) ->
-//            let position = Recoil.useValue Recoil.Selectors.position
+            //            let position = Recoil.useValue Recoil.Selectors.position
 //            let treeSelectionIds = Recoil.useValue (Recoil.Atoms.RecoilSession.treeSelectionIdsFamily input.Username)
 
             let loadState =
                 Recoil.useCallbackRef (fun setter ->
                     async {
-//                        do! Async.Sleep 1000
+                        //                        do! Async.Sleep 1000
                         Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
                         let! state = setter.snapshot.getAsync (Recoil.Selectors.RecoilSession.state input.Username)
 
@@ -82,9 +82,7 @@ module MainComponent =
                     loadState ()),
 
                  // TODO: return a cleanup?
-                 [|
-//                     treeSelectionIds :> obj
-                 |])
+                 [||])
 
             nothing)
 
@@ -169,45 +167,10 @@ module MainComponent =
                         setText json
                         setOldJson json)
 
-            if not debug then
-                nothing
+            if debug then
+                DebugOverlay.render {| BottomRightText = text |}
             else
-                React.fragment [
-                    Html.pre [
-                        prop.id "diag"
-                        prop.style [
-                            style.custom ("width", "min-content")
-                            style.custom ("height", "80%")
-                            style.position.fixedRelativeToWindow
-                            style.right 0
-                            style.bottom 0
-                            style.fontSize 9
-                            style.backgroundColor "#44444488"
-                            style.zIndex 1
-                        ]
-                        prop.children
-                            [
-                                str text
-                            ]
-                    ]
-
-                    Html.div [
-                        prop.id "test1"
-                        prop.style [
-                            style.position.absolute
-                            style.width 100
-                            style.height 100
-                            style.top 0
-                            style.right 0
-                            style.backgroundColor "#ccc3"
-                            style.zIndex 1
-                        ]
-                        prop.children
-                            [
-                                str "test1"
-                            ]
-                    ]
-                ])
+                nothing)
 
     let render =
         React.memo (fun () ->

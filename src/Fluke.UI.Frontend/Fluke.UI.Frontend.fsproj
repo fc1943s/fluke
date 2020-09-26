@@ -32,6 +32,7 @@
     <Compile Include="Components\WeekViewComponent.fs" />
     <Compile Include="Components\DetailsComponent.fs" />
     <Compile Include="Components\PanelsComponent.fs" />
+    <Compile Include="Components\DebugOverlayComponent.fs" />
     <Compile Include="Components\MainComponent.fs" />
     <Compile Include="App.fs" />
     <Content Include="package.json" />
