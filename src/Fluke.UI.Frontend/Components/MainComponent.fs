@@ -52,14 +52,16 @@ module MainComponent =
             nothing)
 
     let dataLoader =
-        React.memo (fun () ->
-            let view = Recoil.useValue Recoil.Selectors.view
+        React.memo (fun (input: {| Username: Username |}) ->
+//            let position = Recoil.useValue Recoil.Selectors.position
+//            let treeSelectionIds = Recoil.useValue (Recoil.Atoms.RecoilSession.treeSelectionIdsFamily input.Username)
 
             let loadState =
                 Recoil.useCallbackRef (fun setter ->
                     async {
+//                        do! Async.Sleep 1000
                         Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
-                        let! state = setter.snapshot.getAsync (Recoil.Selectors.stateAsync view)
+                        let! state = setter.snapshot.getAsync (Recoil.Selectors.RecoilSession.state input.Username)
 
                         printfn "dataLoader.state=None:%A" (state.IsNone)
 
@@ -67,7 +69,7 @@ module MainComponent =
 
                         Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
 
-                        setter.set (Recoil.Selectors.state, state)
+                        setter.set (Recoil.Selectors.RecoilSession.state input.Username, state)
 
                         Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[2]"
                     }
@@ -81,7 +83,7 @@ module MainComponent =
 
                  // TODO: return a cleanup?
                  [|
-                     view :> obj
+//                     treeSelectionIds :> obj
                  |])
 
             nothing)
@@ -222,7 +224,7 @@ module MainComponent =
 
                     React.suspense
                         ([
-                            dataLoader ()
+                            dataLoader {| Username = username |}
                             soundPlayer {| Username = username |}
 
                             NavBarComponent.render {| Username = username |}

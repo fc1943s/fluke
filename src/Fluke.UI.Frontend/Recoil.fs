@@ -330,48 +330,24 @@ module Recoil =
 
 
     module Atoms =
-        module RecoilInformation =
+        module rec RecoilInformation =
             type InformationId = InformationId of id: string
 
-            type RecoilInformation =
-                {
-                    Id: RecoilValue<InformationId, ReadWrite>
-                    WrappedInformation: RecoilValue<Information, ReadWrite>
-                    Attachments: RecoilValue<Attachment list, ReadWrite>
-                }
-
-            let rec idFamily =
+            let rec wrappedInformation =
                 atomFamily {
-                    key (sprintf "%s/%s" (nameof RecoilInformation) (nameof idFamily))
+                    key (sprintf "%s/%s" (nameof RecoilInformation) (nameof wrappedInformation))
                     def (fun (_informationId: InformationId) ->
-                            Profiling.addCount (nameof idFamily)
-                            InformationId "")
-                }
-
-            let rec wrappedInformationFamily =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof RecoilInformation) (nameof wrappedInformationFamily))
-                    def (fun (_informationId: InformationId) ->
-                            Profiling.addCount (nameof wrappedInformationFamily)
+                            Profiling.addCount (nameof wrappedInformation)
                             Area (Area.Default, []))
                 }
 
-            let rec attachmentsFamily =
+            let rec attachments =
                 atomFamily {
-                    key (sprintf "%s/%s" (nameof RecoilInformation) (nameof attachmentsFamily))
+                    key (sprintf "%s/%s" (nameof RecoilInformation) (nameof attachments))
                     def (fun (_informationId: InformationId) ->
-                            Profiling.addCount (nameof attachmentsFamily)
+                            Profiling.addCount (nameof attachments)
                             [])
                 }
-
-            type RecoilInformation with
-
-                static member inline internal Create informationId =
-                    {
-                        Id = idFamily informationId
-                        WrappedInformation = wrappedInformationFamily informationId
-                        Attachments = attachmentsFamily informationId
-                    }
 
             let rec informationId (information: Information): InformationId =
                 match information with
@@ -383,13 +359,6 @@ module Recoil =
                     sprintf "%s/%s" information.KindName archiveId
                 |> InformationId
 
-            let rec informationFamily =
-                atomFamily {
-                    key (sprintf "%s/%s" (nameof RecoilInformation) (nameof informationFamily))
-                    def (fun (informationId: InformationId) ->
-                            Profiling.addCount (nameof informationFamily)
-                            RecoilInformation.Create informationId)
-                }
 
         module RecoilTask =
             type TaskId = TaskId of informationName: InformationName * taskName: TaskName
@@ -964,151 +933,138 @@ module Recoil =
                         result)
             }
 
-        let rec state =
-            selector {
-                key ("selector/" + nameof state)
-                get (fun getter ->
-                        let state = getter.get Atoms.state
-                        Profiling.addCount (nameof state)
-                        state)
-                set (fun setter (newValue: State option) ->
-                        let dateSequence = setter.get dateSequence
+        //        let rec state =
+//            selector {
+//                key ("selector/" + nameof state)
+//                get (fun getter ->
+//                        let state = getter.get Atoms.state
+//                        Profiling.addCount (nameof state)
+//                        state)
+//                set (fun setter (newValue: State option) ->
+//                        let dateSequence = setter.get dateSequence
+//
+//                        Profiling.addTimestamp "state.set[0]"
+//
+//                        printfn
+//                            "dateSequence tree newValue==none=%A dateSequence.length=%A"
+//                            newValue.IsNone
+//                            dateSequence.Length
+//
+//                        match newValue with
+//                        | Some state ->
+//                            match state.Session with
+//                            | { User = None } ->
+//                                setter.set (Atoms.state, None)
+//                                setter.reset Atoms.getLivePosition
+//                                setter.set (Atoms.username, None)
+//                            | { User = Some user } as session ->
+//                                setter.set (Atoms.state, newValue)
+//                                setter.set (Atoms.getLivePosition, {| Get = session.GetLivePosition |})
+//                                setter.set (Atoms.username, Some user.Username)
+//
+//                                let recoilSession = setter.get (Atoms.RecoilSession.sessionFamily user.Username)
+//
+//                                let treeSelectionIds =
+//                                    state.Session.TreeSelection
+//                                    |> Set.map (fun treeState -> treeState.Id)
+//
+//                                let availableTreeIds =
+//                                    state.Session.TreeStateMap
+//                                    |> Map.values
+//                                    |> Seq.map (fun treeState -> treeState.Id)
+//                                    |> Seq.toList
+//
+//                                let taskIdList =
+//                                    state.Session.TaskList
+//                                    |> List.map (fun task -> Atoms.RecoilTask.taskId task)
+//
+//                                setter.set (recoilSession.User, Some user)
+//                                setter.set (recoilSession.TreeSelectionIds, treeSelectionIds)
+//                                setter.set (recoilSession.AvailableTreeIds, availableTreeIds)
+//                                setter.set (recoilSession.TaskIdList, taskIdList)
+//
+//                            let recoilInformationMap =
+//                                state.Session.TaskList
+//                                |> Seq.map (fun task -> task.Information)
+//                                |> Seq.distinct
+//                                |> Seq.map (fun information -> state.Session.InformationStateMap.[information])
+//                                |> Seq.map (fun informationState ->
+//
+//
+//                                    let informationId =
+//                                        Atoms.RecoilInformation.informationId informationState.Information
+//
+//                                    setter.set
+//                                        (Atoms.RecoilInformation.wrappedInformation informationId,
+//                                         informationState.Information)
+//                                    setter.set
+//                                        (Atoms.RecoilInformation.attachments informationId, informationState.Attachments)
+//                                    informationState.Information, informationId)
+//                                |> Map.ofSeq
+//
+//                            Profiling.addTimestamp "state.set[1]"
+//
+//                            state.Session.TaskList
+//                            |> List.map (fun task -> state.Session.TaskStateMap.[task])
+//                            |> List.iter (fun taskState ->
+//                                let task = taskState.Task
+//                                let taskId = Atoms.RecoilTask.taskId task
+//
+//                                let recoilTask = setter.get (Atoms.RecoilTask.taskFamily taskId)
+//
+//                                setter.set (recoilTask.Id, taskId)
+//                                setter.set (recoilTask.Name, task.Name)
+//                                setter.set (recoilTask.InformationId, recoilInformationMap.[task.Information])
+//                                setter.set (recoilTask.PendingAfter, task.PendingAfter)
+//                                setter.set (recoilTask.MissedAfter, task.MissedAfter)
+//                                setter.set (recoilTask.Scheduling, task.Scheduling)
+//                                setter.set (recoilTask.Priority, task.Priority)
+//                                //                                setter.set (recoilTask.Sessions, taskState.Sessions) // TODO: move from here
+//                                setter.set (recoilTask.Attachments, taskState.Attachments)
+//                                setter.set (recoilTask.Duration, task.Duration)
+//
+//                                dateSequence
+//                                |> List.iter (fun date ->
+//                                    let cellId = Atoms.RecoilCell.cellId taskId (DateId date)
+//
+//                                    let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
+//
+//                                    setter.set (recoilCell.Id, cellId)
+//                                    setter.set (recoilCell.TaskId, taskId)
+//                                    setter.set (recoilCell.Date, date))
+//
+//                                taskState.CellStateMap
+//                                |> Map.filter (fun dateId cellState ->
+//                                    (<>) cellState.Status Disabled
+//                                    || not cellState.Attachments.IsEmpty
+//                                    || not cellState.Sessions.IsEmpty)
+//                                |> Map.iter (fun dateId cellState ->
+//                                    let cellId = Atoms.RecoilCell.cellId taskId dateId
+//
+//                                    let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
+//
+//                                    setter.set (recoilCell.Status, cellState.Status)
+//                                    setter.set (recoilCell.Attachments, cellState.Attachments)
+//                                    setter.set (recoilCell.Sessions, cellState.Sessions)
+//                                    setter.set (recoilCell.Selected, false)))
+//
+//
+//                            state.Session.TreeStateMap
+//                            |> Map.values
+//                            |> Seq.iter (fun treeState ->
+//                                let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeState.Id)
+//
+//                                setter.set (recoilTree.Name, treeState.Name)
+//                                setter.set (recoilTree.Owner, Some treeState.Owner)
+//                                setter.set (recoilTree.SharedWith, treeState.SharedWith)
+//                                setter.set (recoilTree.Position, treeState.Position))
+//
+//                        | _ -> ()
+//
+//                        Profiling.addTimestamp "state.set[2]"
+//                        Profiling.addCount (nameof state + " (SET)"))
+//            }
 
-                        Profiling.addTimestamp "state.set[0]"
-
-                        printfn
-                            "dateSequence tree newValue==none=%A dateSequence.length=%A"
-                            newValue.IsNone
-                            dateSequence.Length
-
-                        match newValue with
-                        | Some state ->
-                            match state.Session with
-                            | { User = None } ->
-                                setter.set (Atoms.state, None)
-                                setter.reset Atoms.getLivePosition
-                                setter.set (Atoms.username, None)
-                            | { User = Some user } as session ->
-                                setter.set (Atoms.state, newValue)
-                                setter.set (Atoms.getLivePosition, {| Get = session.GetLivePosition |})
-                                setter.set (Atoms.username, Some user.Username)
-
-                                let recoilSession = setter.get (Atoms.RecoilSession.sessionFamily user.Username)
-
-                                let treeSelectionIds =
-                                    state.Session.TreeSelection
-                                    |> Set.map (fun treeState -> treeState.Id)
-
-                                let availableTreeIds =
-                                    state.Session.TreeStateMap
-                                    |> Map.values
-                                    |> Seq.map (fun treeState -> treeState.Id)
-                                    |> Seq.toList
-
-                                let taskIdList =
-                                    state.Session.TaskList
-                                    |> List.map (fun task -> Atoms.RecoilTask.taskId task)
-
-                                setter.set (recoilSession.User, Some user)
-                                setter.set (recoilSession.TreeSelectionIds, treeSelectionIds)
-                                setter.set (recoilSession.AvailableTreeIds, availableTreeIds)
-                                setter.set (recoilSession.TaskIdList, taskIdList)
-
-                            let recoilInformationMap =
-                                state.Session.TaskList
-                                |> Seq.map (fun task -> task.Information)
-                                |> Seq.distinct
-                                |> Seq.map (fun information -> state.Session.InformationStateMap.[information])
-                                |> Seq.map (fun informationState ->
-                                    let informationId =
-                                        Atoms.RecoilInformation.informationId informationState.Information
-
-                                    let recoilInformation =
-                                        setter.get (Atoms.RecoilInformation.informationFamily informationId)
-
-                                    setter.set (recoilInformation.Id, informationId)
-                                    setter.set (recoilInformation.WrappedInformation, informationState.Information)
-                                    setter.set (recoilInformation.Attachments, informationState.Attachments)
-                                    informationState.Information, informationId)
-                                |> Map.ofSeq
-
-                            Profiling.addTimestamp "state.set[1]"
-
-                            state.Session.TaskList
-                            |> List.map (fun task -> state.Session.TaskStateMap.[task])
-                            |> List.iter (fun taskState ->
-                                let task = taskState.Task
-                                let taskId = Atoms.RecoilTask.taskId task
-
-                                let recoilTask = setter.get (Atoms.RecoilTask.taskFamily taskId)
-
-                                setter.set (recoilTask.Id, taskId)
-                                setter.set (recoilTask.Name, task.Name)
-                                setter.set (recoilTask.InformationId, recoilInformationMap.[task.Information])
-                                setter.set (recoilTask.PendingAfter, task.PendingAfter)
-                                setter.set (recoilTask.MissedAfter, task.MissedAfter)
-                                setter.set (recoilTask.Scheduling, task.Scheduling)
-                                setter.set (recoilTask.Priority, task.Priority)
-                                //                                setter.set (recoilTask.Sessions, taskState.Sessions) // TODO: move from here
-                                setter.set (recoilTask.Attachments, taskState.Attachments)
-                                setter.set (recoilTask.Duration, task.Duration)
-
-                                dateSequence
-                                |> List.iter (fun date ->
-                                    let cellId = Atoms.RecoilCell.cellId taskId (DateId date)
-
-                                    let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
-
-                                    setter.set (recoilCell.Id, cellId)
-                                    setter.set (recoilCell.TaskId, taskId)
-                                    setter.set (recoilCell.Date, date))
-
-                                taskState.CellStateMap
-                                |> Map.filter (fun dateId cellState ->
-                                    (<>) cellState.Status Disabled
-                                    || not cellState.Attachments.IsEmpty
-                                    || not cellState.Sessions.IsEmpty)
-                                |> Map.iter (fun dateId cellState ->
-                                    let cellId = Atoms.RecoilCell.cellId taskId dateId
-
-                                    let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
-
-                                    setter.set (recoilCell.Status, cellState.Status)
-                                    setter.set (recoilCell.Attachments, cellState.Attachments)
-                                    setter.set (recoilCell.Sessions, cellState.Sessions)
-                                    setter.set (recoilCell.Selected, false)))
-
-
-                            state.Session.TreeStateMap
-                            |> Map.values
-                            |> Seq.iter (fun treeState ->
-                                let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeState.Id)
-
-                                setter.set (recoilTree.Name, treeState.Name)
-                                setter.set (recoilTree.Owner, Some treeState.Owner)
-                                setter.set (recoilTree.SharedWith, treeState.SharedWith)
-                                setter.set (recoilTree.Position, treeState.Position))
-
-                        | _ -> ()
-
-                        Profiling.addTimestamp "state.set[2]"
-                        Profiling.addCount (nameof state + " (SET)"))
-            }
-
-        let rec currentSession =
-            selector {
-                key ("selector/" + nameof currentSession)
-                get (fun getter ->
-                        let state = getter.get state
-
-                        let result =
-                            match state with
-                            | Some state -> Some state.Session
-                            | None -> None
-
-                        Profiling.addCount (nameof currentSession)
-                        result)
-            }
         /// [1]
         let rec selection =
             selector {
@@ -1190,60 +1146,62 @@ module Recoil =
                         result)
             }
         /// [4]
-        // TODO: Remove View and check performance
-        let rec stateAsync =
-            selectorFamily {
-                key ("selectorFamily/" + nameof stateAsync)
-                get (fun (view: View) getter ->
-                        async {
-                            Profiling.addTimestamp "stateAsync.get[0]"
-                            let state = getter.get Atoms.state
-                            let position = getter.get position
-
-                            let result =
-                                match state, position with
-                                | Some state, Some position ->
-                                    match state.Session.User with
-                                    | Some user ->
-                                        let dateSequence = getter.get dateSequence
-
-                                        let treeSelectionIds =
-                                            getter.get (Atoms.RecoilSession.treeSelectionIdsFamily user.Username)
-
-                                        let newTreeSelectionIds =
-                                            if treeSelectionIds.IsEmpty
-                                            then state.Session.TreeSelection |> Set.map (fun treeState -> treeState.Id)
-                                            else treeSelectionIds
-
-                                        Profiling.addTimestamp "stateAsync.get[1]"
-
-                                        let newState =
-                                            FakeBackend.getState
-                                                {|
-                                                    User = user
-                                                    DateSequence = dateSequence
-                                                    View = view
-                                                    Position = position
-                                                    TreeSelectionIds = newTreeSelectionIds
-                                                    TreeStateMap = state.Session.TreeStateMap
-                                                    GetLivePosition = state.Session.GetLivePosition
-                                                |}
-
-                                        Profiling.addTimestamp "stateAsync.get[2]"
-                                        Profiling.addCount (nameof stateAsync)
-
-                                        printfn
-                                            "B %A A %A"
-                                            state.Session.InformationStateMap.Count
-                                            newState.Session.InformationStateMap.Count
-
-                                        Some newState
-                                    | _ -> None
-                                | _ -> None
-
-                            return result
-                        })
-            }
+//        // TODO: Remove View and check performance
+//        let rec stateAsync =
+//            selectorFamily {
+//                key ("selectorFamily/" + nameof stateAsync)
+//                get (fun (view: View) getter ->
+//                        async {
+//                            Profiling.addTimestamp "stateAsync.get[0]"
+//                            let state = getter.get Atoms.state
+//                            let position = getter.get position
+//
+//                            let result =
+//                                match state, position with
+//                                | Some state, Some position ->
+//                                    match state.Session.User with
+//                                    | Some user ->
+//                                        let dateSequence = getter.get dateSequence
+//
+//                                        let treeSelectionIds =
+//                                            getter.get (Atoms.RecoilSession.treeSelectionIdsFamily user.Username)
+//
+//                                        let newTreeSelectionIds =
+//                                            if treeSelectionIds.IsEmpty then
+//                                                state.Session.TreeSelection
+//                                                |> Set.map (fun treeState -> treeState.Id)
+//                                            else
+//                                                treeSelectionIds
+//
+//                                        Profiling.addTimestamp "stateAsync.get[1]"
+//
+//                                        let newState =
+//                                            FakeBackend.getState
+//                                                {|
+//                                                    User = user
+//                                                    DateSequence = dateSequence
+//                                                    View = view
+//                                                    Position = position
+//                                                    TreeSelectionIds = newTreeSelectionIds
+//                                                    TreeStateMap = state.Session.TreeStateMap
+//                                                    GetLivePosition = state.Session.GetLivePosition
+//                                                |}
+//
+//                                        Profiling.addTimestamp "stateAsync.get[2]"
+//                                        Profiling.addCount (nameof stateAsync)
+//
+//                                        printfn
+//                                            "B %A A %A"
+//                                            state.Session.InformationStateMap.Count
+//                                            newState.Session.InformationStateMap.Count
+//
+//                                        Some newState
+//                                    | _ -> None
+//                                | _ -> None
+//
+//                            return result
+//                        })
+//            }
 
         module rec RecoilFlukeDate =
             let rec isTodayFamily =
@@ -1282,6 +1240,188 @@ module Recoil =
                         )
                 }
 
+        module rec RecoilSession =
+            let rec state =
+                selectorFamily {
+                    key (sprintf "%s/%s" (nameof RecoilSession) (nameof state))
+                    get (fun (username: Username) getter ->
+                            let state = getter.get Atoms.state
+                            let user = getter.get (Atoms.RecoilSession.userFamily username)
+                            let dateSequence = getter.get dateSequence
+                            let view = getter.get view
+                            let position = getter.get position
+                            let getLivePosition = (getter.get Atoms.getLivePosition).Get
+                            let treeSelectionIds = getter.get (Atoms.RecoilSession.treeSelectionIdsFamily username)
+
+                            let result =
+                                match user, position, state with
+                                | Some user, Some position, Some state ->
+                                    let newTreeSelectionIds =
+                                        if treeSelectionIds.IsEmpty then
+                                            state.Session.TreeSelection
+                                            |> Set.map (fun treeState -> treeState.Id)
+                                        else
+                                            treeSelectionIds
+
+                                    let newState =
+                                        FakeBackend.getState
+                                            {|
+                                                User = user
+                                                DateSequence = dateSequence
+                                                View = view
+                                                Position = position
+                                                TreeSelectionIds = newTreeSelectionIds
+                                                TreeStateMap = state.Session.TreeStateMap
+                                                GetLivePosition = getLivePosition
+                                            |}
+
+                                    Some newState
+                                | _ -> None
+
+                            Profiling.addCount (sprintf "%s/%s" (nameof RecoilSession) (nameof state))
+                            result)
+                    set (fun (username: Username) setter (newValue: State option) ->
+                            let dateSequence = setter.get dateSequence
+
+                            Profiling.addTimestamp "state.set[0]"
+
+                            printfn
+                                "dateSequence tree newValue==none=%A dateSequence.length=%A"
+                                newValue.IsNone
+                                dateSequence.Length
+
+                            match newValue with
+                            | Some state ->
+                                match state.Session with
+                                | { User = Some user } as session when user.Username = username ->
+//                                    setter.set (Atoms.state, newValue)
+//                                    setter.set (Atoms.getLivePosition, {| Get = session.GetLivePosition |})
+//                                    setter.set (Atoms.username, Some user.Username)
+
+                                    let recoilSession = setter.get (Atoms.RecoilSession.sessionFamily user.Username)
+
+                                    let treeSelectionIds =
+                                        state.Session.TreeSelection
+                                        |> Set.map (fun treeState -> treeState.Id)
+
+                                    let availableTreeIds =
+                                        state.Session.TreeStateMap
+                                        |> Map.values
+                                        |> Seq.map (fun treeState -> treeState.Id)
+                                        |> Seq.toList
+
+                                    let taskIdList =
+                                        state.Session.TaskList
+                                        |> List.map (fun task -> Atoms.RecoilTask.taskId task)
+
+//                                    setter.set (recoilSession.User, Some user)
+                                    setter.set (recoilSession.TreeSelectionIds, treeSelectionIds)
+                                    setter.set (recoilSession.AvailableTreeIds, availableTreeIds)
+                                    setter.set (recoilSession.TaskIdList, taskIdList)
+
+                                    let recoilInformationMap =
+                                        state.Session.TaskList
+                                        |> Seq.map (fun task -> task.Information)
+                                        |> Seq.distinct
+                                        |> Seq.map (fun information -> state.Session.InformationStateMap.[information])
+                                        |> Seq.map (fun informationState ->
+
+
+                                            let informationId =
+                                                Atoms.RecoilInformation.informationId informationState.Information
+
+                                            setter.set
+                                                (Atoms.RecoilInformation.wrappedInformation informationId,
+                                                 informationState.Information)
+                                            setter.set
+                                                (Atoms.RecoilInformation.attachments informationId,
+                                                 informationState.Attachments)
+                                            informationState.Information, informationId)
+                                        |> Map.ofSeq
+
+                                    Profiling.addTimestamp "state.set[1]"
+
+                                    state.Session.TaskList
+                                    |> List.map (fun task -> state.Session.TaskStateMap.[task])
+                                    |> List.iter (fun taskState ->
+                                        let task = taskState.Task
+                                        let taskId = Atoms.RecoilTask.taskId task
+
+                                        let recoilTask = setter.get (Atoms.RecoilTask.taskFamily taskId)
+
+                                        setter.set (recoilTask.Id, taskId)
+                                        setter.set (recoilTask.Name, task.Name)
+                                        setter.set (recoilTask.InformationId, recoilInformationMap.[task.Information])
+                                        setter.set (recoilTask.PendingAfter, task.PendingAfter)
+                                        setter.set (recoilTask.MissedAfter, task.MissedAfter)
+                                        setter.set (recoilTask.Scheduling, task.Scheduling)
+                                        setter.set (recoilTask.Priority, task.Priority)
+                                        //                                setter.set (recoilTask.Sessions, taskState.Sessions) // TODO: move from here
+                                        setter.set (recoilTask.Attachments, taskState.Attachments)
+                                        setter.set (recoilTask.Duration, task.Duration)
+
+                                        dateSequence
+                                        |> List.iter (fun date ->
+                                            let cellId = Atoms.RecoilCell.cellId taskId (DateId date)
+
+                                            let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
+
+                                            setter.set (recoilCell.Id, cellId)
+                                            setter.set (recoilCell.TaskId, taskId)
+                                            setter.set (recoilCell.Date, date))
+
+                                        taskState.CellStateMap
+                                        |> Map.filter (fun dateId cellState ->
+                                            (<>) cellState.Status Disabled
+                                            || not cellState.Attachments.IsEmpty
+                                            || not cellState.Sessions.IsEmpty)
+                                        |> Map.iter (fun dateId cellState ->
+                                            let cellId = Atoms.RecoilCell.cellId taskId dateId
+
+                                            let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
+
+                                            setter.set (recoilCell.Status, cellState.Status)
+                                            setter.set (recoilCell.Attachments, cellState.Attachments)
+                                            setter.set (recoilCell.Sessions, cellState.Sessions)
+                                            setter.set (recoilCell.Selected, false)))
+
+
+                                    state.Session.TreeStateMap
+                                    |> Map.values
+                                    |> Seq.iter (fun treeState ->
+                                        let recoilTree = setter.get (Atoms.RecoilTree.treeFamily treeState.Id)
+
+                                        setter.set (recoilTree.Name, treeState.Name)
+                                        setter.set (recoilTree.Owner, Some treeState.Owner)
+                                        setter.set (recoilTree.SharedWith, treeState.SharedWith)
+                                        setter.set (recoilTree.Position, treeState.Position))
+
+                                | _ ->
+                                    setter.set (Atoms.state, None)
+                                    setter.reset Atoms.getLivePosition
+                                    setter.set (Atoms.username, None)
+                            | _ -> ()
+
+                            Profiling.addTimestamp "state.set[2]"
+                            Profiling.addCount (nameof state + " (SET)"))
+                }
+
+            let rec currentSession =
+                selectorFamily {
+                    key ("selector/" + nameof currentSession)
+                    get (fun (username: Username) getter ->
+                            let state = getter.get (state username)
+
+                            let result =
+                                match state with
+                                | Some state -> Some state.Session
+                                | None -> None
+
+                            Profiling.addCount (nameof currentSession)
+                            result)
+                }
+
+
         module rec RecoilInformation =
             ()
 
@@ -1290,33 +1430,33 @@ module Recoil =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof RecoilTask) (nameof lastSessionFamily))
                     get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
-                            //                            let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
+                            let username = getter.get Atoms.username
+                            match username with
+                            | Some username ->
+                                let state = getter.get (RecoilSession.state username)
 
-                            let state = getter.get state
+                                let sessions =
+                                    match state with
+                                    | Some state ->
+                                        state.Session.TaskStateMap
+                                        |> Map.tryPick (fun task taskState ->
+                                            let taskId' = Atoms.RecoilTask.taskId task
+                                            if taskId = taskId' then
+                                                Some taskState
+                                            else
+                                                None)
+                                        |> Option.map (fun taskState -> taskState.Sessions)
+                                        |> Option.defaultValue []
+                                    | None -> []
 
-                            let sessions =
-                                match state with
-                                | Some state ->
-                                    state.Session.TaskStateMap
-                                    |> Map.tryPick (fun task taskState ->
-                                        let taskId' = Atoms.RecoilTask.taskId task
-                                        if taskId = taskId' then
-                                            Some taskState
-                                        else
-                                            None)
-                                    |> Option.map (fun taskState -> taskState.Sessions)
-                                    |> Option.defaultValue []
-                                | None -> []
+                                let result =
+                                    sessions
+                                    |> List.sortByDescending (fun (TaskSession (start, _, _)) -> start.DateTime)
+                                    |> List.tryHead
 
-                            let result =
-                                sessions
-                                |> List.sortByDescending (fun (TaskSession (start, _, _)) -> start.DateTime)
-                                |> List.tryHead
-
-                            Profiling.addCount (sprintf "%s/%s" (nameof RecoilTask) (nameof lastSessionFamily))
-                            result
-
-                        )
+                                Profiling.addCount (sprintf "%s/%s" (nameof RecoilTask) (nameof lastSessionFamily))
+                                result
+                            | None -> None)
                 }
 
             let rec activeSessionFamily =
@@ -1351,33 +1491,37 @@ module Recoil =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof RecoilTask) (nameof showUserFamily))
                     get (fun (taskId: Atoms.RecoilTask.TaskId) getter ->
-                            let currentSession = getter.get currentSession
+                            let username = getter.get Atoms.username
+                            match username with
+                            | Some username ->
+                                let currentSession = getter.get (RecoilSession.currentSession username)
 
-                            let result =
-                                currentSession
-                                |> Option.map (fun session -> session.TaskStateMap)
-                                |> Option.defaultValue Map.empty
-                                |> Map.tryPick (fun task taskState ->
-                                    if taskId = Atoms.RecoilTask.taskId task then
-                                        Some taskState
-                                    else
-                                        None)
-                                |> Option.map (fun taskState ->
-                                    let usersCount =
-                                        taskState.CellStateMap
-                                        |> Map.values
-                                        |> Seq.map (fun cellState -> cellState.Status)
-                                        |> Seq.choose (function
-                                            | UserStatus (user, _) -> Some user
-                                            | _ -> None)
-                                        |> Seq.distinct
-                                        |> Seq.length
+                                let result =
+                                    currentSession
+                                    |> Option.map (fun session -> session.TaskStateMap)
+                                    |> Option.defaultValue Map.empty
+                                    |> Map.tryPick (fun task taskState ->
+                                        if taskId = Atoms.RecoilTask.taskId task then
+                                            Some taskState
+                                        else
+                                            None)
+                                    |> Option.map (fun taskState ->
+                                        let usersCount =
+                                            taskState.CellStateMap
+                                            |> Map.values
+                                            |> Seq.map (fun cellState -> cellState.Status)
+                                            |> Seq.choose (function
+                                                | UserStatus (user, _) -> Some user
+                                                | _ -> None)
+                                            |> Seq.distinct
+                                            |> Seq.length
 
-                                    usersCount > 1)
-                                |> Option.defaultValue false
+                                        usersCount > 1)
+                                    |> Option.defaultValue false
 
-                            Profiling.addCount (sprintf "%s/%s" (nameof RecoilTask) (nameof showUserFamily))
-                            result)
+                                Profiling.addCount (sprintf "%s/%s" (nameof RecoilTask) (nameof showUserFamily))
+                                result
+                            | None -> false)
                 }
 
             let rec hasSelectionFamily =
@@ -1444,43 +1588,42 @@ module Recoil =
             selector {
                 key ("selector/" + nameof currentTaskList)
                 get (fun getter ->
-                        let state = getter.get state
+                        let username = getter.get Atoms.username
 
-                        let result =
-                            state
-                            |> Option.map (fun state ->
-                                state.Session.TaskList
-                                |> List.map (fun task ->
+                        match username with
+                        | Some username ->
+                            let taskIdList = getter.get (Atoms.RecoilSession.taskIdListFamily username)
+
+                            let result =
+                                taskIdList
+                                |> List.map (fun taskId ->
                                     //                                    state.TaskStateMap.[task]
-                                    let taskId = Atoms.RecoilTask.taskId task
-
                                     let task = getter.get (Atoms.RecoilTask.taskFamily taskId)
 
                                     let informationId = getter.get task.InformationId
-
-                                    let information =
-                                        getter.get (Atoms.RecoilInformation.informationFamily informationId)
+                                    let information = Atoms.RecoilInformation.wrappedInformation informationId
+                                    let attachments = Atoms.RecoilInformation.attachments informationId
 
                                     {|
                                         Id = taskId
                                         Name = getter.get task.Name
-                                        Information = getter.get information.WrappedInformation
-                                        InformationAttachments = getter.get information.Attachments
+                                        Information = getter.get information
+                                        InformationAttachments = getter.get attachments
                                         Scheduling = getter.get task.Scheduling
                                         PendingAfter = getter.get task.PendingAfter
                                         MissedAfter = getter.get task.MissedAfter
                                         Priority = getter.get task.Priority
                                         Attachments = getter.get task.Attachments
                                         Duration = getter.get task.Duration
-                                    |}))
-                            |> Option.defaultValue []
+                                    |})
 
-                        //
-//                            |> List.map (fun task ->
-//                                getter.get (Atoms.RecoilTask.taskFamily (Atoms.RecoilTask.taskId task)))
+                            //
+                            //                            |> List.map (fun task ->
+                            //                                getter.get (Atoms.RecoilTask.taskFamily (Atoms.RecoilTask.taskId task)))
 
-                        Profiling.addCount (nameof currentTaskList)
-                        result)
+                            Profiling.addCount (nameof currentTaskList)
+                            result
+                        | None -> [])
             }
 
         let rec activeSessions =
@@ -1793,6 +1936,7 @@ module Recoil =
             initializer.set (Atoms.state, Some baseState)
             initializer.set (Atoms.getLivePosition, {| Get = baseState.Session.GetLivePosition |})
             initializer.set (Atoms.username, Some user.Username)
+            initializer.set (Atoms.RecoilSession.userFamily user.Username, Some user)
         | None -> ()
 
     (************************* END *************************)
