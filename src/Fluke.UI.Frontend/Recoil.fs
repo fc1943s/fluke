@@ -195,23 +195,18 @@ module Recoil =
                             CellStateMap = TempData.mergeCellStateMap taskState.CellStateMap newCellStateMap
                         }))
 
-            let session =
-                (input.State.Session, input.State.Session.TreeSelection |> Set.toList)
-                ||> List.fold (fun session treeState ->
+            // TODO: this might be needed
+            let informationStateMap, taskStateMap =
+                ((Map.empty, Map.empty), treeSelection)
+                ||> List.fold (fun (informationStateMap, taskStateMap) treeState ->
                         match treeState with
                         | treeState when hasAccess treeState input.User ->
                             let newInformationStateMap =
-                                TempData.mergeInformationStateMap
-                                    session.InformationStateMap
-                                    treeState.InformationStateMap
+                                TempData.mergeInformationStateMap informationStateMap treeState.InformationStateMap
 
-                            let newTaskStateMap = TempData.mergeTaskStateMap session.TaskStateMap treeState.TaskStateMap
-
-                            { session with
-                                InformationStateMap = newInformationStateMap
-                                TaskStateMap = newTaskStateMap
-                            }
-                        | _ -> session)
+                            let newTaskStateMap = TempData.mergeTaskStateMap taskStateMap treeState.TaskStateMap
+                            newInformationStateMap, newTaskStateMap
+                        | _ -> informationStateMap, taskStateMap)
 
 
             let dateRange =
