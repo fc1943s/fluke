@@ -89,10 +89,10 @@ module MainComponent =
     let soundPlayer =
         React.memo (fun (input: {| Username: Username |}) ->
             let oldActiveSessions = React.useRef []
-            let (Minute sessionLength) = Recoil.useValue (Recoil.Atoms.RecoilUser.sessionLengthFamily input.Username)
+            let (Minute sessionLength) = Recoil.useValue (Recoil.Atoms.User.sessionLength input.Username)
 
             let (Minute sessionBreakLength) =
-                Recoil.useValue (Recoil.Atoms.RecoilUser.sessionBreakLengthFamily input.Username)
+                Recoil.useValue (Recoil.Atoms.User.sessionBreakLength input.Username)
 
             let activeSessions = Recoil.useValue Recoil.Selectors.activeSessions
 

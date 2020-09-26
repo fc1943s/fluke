@@ -17,9 +17,9 @@ module DayComponent =
         React.memo (fun (input: {| Username: Username
                                    Date: FlukeDate
                                    Label: string |}) ->
-            let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
-            let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.hasSelectionFamily input.Date)
-            let weekStart = Recoil.useValue (Recoil.Atoms.RecoilUser.weekStartFamily input.Username)
+            let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isToday input.Date)
+            let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.hasSelection input.Date)
+            let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
 
             Html.span [
                 prop.classes [

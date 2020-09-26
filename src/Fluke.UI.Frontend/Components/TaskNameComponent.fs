@@ -37,17 +37,16 @@ module TaskNameComponent =
 
     let render =
         React.memo (fun (input: {| Css: IStyleAttribute list
-                                   TaskId: Recoil.Atoms.RecoilTask.TaskId |}) ->
+                                   TaskId: Recoil.Atoms.Task.TaskId |}) ->
             let ref = React.useElementRef ()
             let hovered = Temp.UseListener.onElementHover ref
             let classes = useStyles {| hovered = hovered |}
 
             // TODO: put inside RecoilTask object?
-            let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilTask.hasSelectionFamily input.TaskId)
-            let task = Recoil.useValue (Recoil.Atoms.RecoilTask.taskFamily input.TaskId)
+            let hasSelection = Recoil.useValue (Recoil.Selectors.RecoilTask.hasSelection input.TaskId)
 
-            let (TaskName taskName) = Recoil.useValue task.Name
-            let attachments = Recoil.useValue task.Attachments
+            let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name input.TaskId)
+            let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments input.TaskId)
 
             Html.div [
                 prop.ref ref

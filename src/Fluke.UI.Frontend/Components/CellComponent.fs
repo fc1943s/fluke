@@ -38,16 +38,15 @@ module CellComponent =
 
     let render =
         React.memo (fun (input: {| Username: Username
-                                   TaskId: Recoil.Atoms.RecoilTask.TaskId
+                                   TaskId: Recoil.Atoms.Task.TaskId
                                    Date: FlukeDate |}) ->
-            let cellId = Recoil.Atoms.RecoilCell.cellId input.TaskId (DateId input.Date)
-            let cell = Recoil.useValue (Recoil.Atoms.RecoilCell.cellFamily cellId)
-            let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isTodayFamily input.Date)
-            let showUser = Recoil.useValue (Recoil.Selectors.RecoilTask.showUserFamily input.TaskId)
-            let attachments = Recoil.useValue cell.Attachments
-            let sessions = Recoil.useValue cell.Sessions
-            let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selectedFamily cellId)
-            let status = Recoil.useValue cell.Status
+            let cellId = Recoil.Atoms.Cell.cellId input.TaskId (DateId input.Date)
+            let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isToday input.Date)
+            let showUser = Recoil.useValue (Recoil.Selectors.RecoilTask.showUser input.TaskId)
+            let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments cellId)
+            let sessions = Recoil.useValue (Recoil.Atoms.Cell.sessions cellId)
+            let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selected cellId)
+            let status = Recoil.useValue (Recoil.Atoms.Cell.status cellId)
             let onCellClick = React.useCallbackRef (fun () -> setSelected (not selected))
 
             Html.div [

@@ -16,7 +16,7 @@ module CellBorderComponent =
 
     let render =
         React.memo (fun (input: {| Username: Username; Date: FlukeDate |}) ->
-            let weekStart = Recoil.useValue (Recoil.Atoms.RecoilUser.weekStartFamily input.Username)
+            let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
 
             match (weekStart, input.Date) with
             | StartOfMonth -> Some Css.cellStartMonth

@@ -15,7 +15,7 @@ module TreeSelectorComponent =
 
     let treeNameComponent =
         React.memo (fun (input: {| TreeId: TreeId |}) ->
-            let (TreeName treeName) = Recoil.useValue (Recoil.Atoms.RecoilTree.nameFamily input.TreeId)
+            let (TreeName treeName) = Recoil.useValue (Recoil.Atoms.Tree.name input.TreeId)
             str treeName)
 
     let menuCheckbox (input: {| TreeId: TreeId |}) =
@@ -27,9 +27,8 @@ module TreeSelectorComponent =
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
-            let session = Recoil.useValue (Recoil.Atoms.RecoilSession.sessionFamily input.Username)
-            let treeSelectionIds, setTreeSelectionIds = Recoil.useState session.TreeSelectionIds
-            let availableTreeIds = Recoil.useValue session.AvailableTreeIds
+            let treeSelectionIds, setTreeSelectionIds = Recoil.useState (Recoil.Atoms.Session.treeSelectionIds input.Username)
+            let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
 
             let treeSelectionIdsArray = treeSelectionIds |> Set.toArray
 
