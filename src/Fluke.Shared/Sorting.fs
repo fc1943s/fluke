@@ -28,9 +28,6 @@ module Sorting =
                 |> Seq.collect (fun cellState -> cellState.Sessions)
                 |> Seq.length
 
-            //            if taskSessionsCount > 0 || taskState.Sessions.Length > 0 then printfn "task %A dateId %A taskSessionsCount %A taskState.Sessions %A" taskState.Task.Name dateId taskSessionsCount taskState.Sessions
-
-
             disabledCellsCount - taskSessionsCount)
 
     let sortLanesByIncomingRecurrency dayStart position lanes =

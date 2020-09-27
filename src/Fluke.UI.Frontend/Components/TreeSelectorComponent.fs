@@ -32,9 +32,6 @@ module TreeSelectorComponent =
 
             let treeSelectionIdsArray = treeSelectionIds |> Set.toArray
 
-            printfn "treeSelectionIdsArray %A" treeSelectionIdsArray
-            printfn "availableTreeIds %A" availableTreeIds
-
             Chakra.box
                 {| position = "relative" |}
                 [

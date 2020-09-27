@@ -205,9 +205,7 @@ module RootPrivateData =
 
 
 
-        let getBaseState () =
-            let getLivePosition () = FlukeDateTime.FromDateTime DateTime.Now
-            let moment = getLivePosition ()
+        let getTreeStateMap moment =
             let treeStateList = getTreeStateList moment
 
             let consts = PrivateData.PrivateData.getPrivateConsts ()
@@ -227,51 +225,24 @@ module RootPrivateData =
                             | _ -> false)
                     | _ -> false)
 
-            let treeSelection =
-                treesWithAccess
-                |> List.filter (fun treeState ->
-                    treeState.SharedWith <> TreeAccess.Public
-                )
-                |> Set.ofList
+//            let treeSelection =
+//                treesWithAccess
+//                |> List.filter (fun treeState ->
+//                    treeState.SharedWith <> TreeAccess.Public
+//                )
+//                |> Set.ofList
 
             let treeStateMap =
                 treesWithAccess
                 |> List.map (fun treeState -> treeState.Id, treeState)
                 |> Map.ofList
 
-
-//            let taskStateMap =
-//                treeStateList
-//                |> List.map (fun treeState -> treeState.TaskStateMap)
-
-            let session =
-                {
-                    User = Some user
-                    GetLivePosition = getLivePosition
-                    TreeSelection = treeSelection
-                    TaskList = [] (*: Task list*)
-                    InformationStateMap = Map.empty (*: Map<Information, InformationState>*)
-                    TaskStateMap = Map.empty (*: Map<Task, TaskState>*)
-                    TreeStateMap = treeStateMap (*: Map<TreeId, TreeState>*)
-                }
+            let result = user, treeStateMap
+            result
 
 
-            {
-                Session = session
-            }
 
-//            let diag =
-//                state.TreeStateMap
-//                |> Map.values
-//                |> Seq.map fst
-//                |> Seq.map (fun treeState ->
-//                    treeState.TaskStateMap
-//                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
-//
-//                    )
-//                |> Seq.toList
-//
-//            printfn "diag1 %A" diag
+
 
 
 

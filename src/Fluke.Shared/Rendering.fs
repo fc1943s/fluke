@@ -208,13 +208,6 @@ module Rendering =
 
                                 status, renderState
 
-//                match moment, taskState.Task with
-//                | { Date = date }, { Name = TaskName taskName } when date = FlukeDate.Create 2020 Month.September 20
-//                                                                     && taskName.StartsWith "task_name" ->
-//                    printfn "X %A;" cellState
-//
-//                | _ -> ()
-
                 let status =
                     match tempStatus with
                     | EmptyCell -> Disabled

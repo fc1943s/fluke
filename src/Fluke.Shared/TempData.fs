@@ -660,12 +660,6 @@ module TempData =
         if not duplicated.IsEmpty then
             failwithf "Duplicated task names: %A" duplicated
 
-        //        let taskState =
-//            taskStateList
-//            |> List.tryFind (fun (taskState, interactions) -> taskState.Task.Name = TaskName "seethrus")
-
-        //        printfn "[\/1]seethrus %A" (taskState)
-
         let tasks =
             taskContainerFactory (fun taskName ->
                 taskMap
@@ -685,13 +679,6 @@ module TempData =
         dslData, tasks
 
     let mergeDslDataIntoTreeState (dslData: DslData) (treeState: TreeState) =
-
-        //                let diag =
-//                    treeTaskStateMap
-//                        |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
-//                match diag with
-//                | Some diag -> printfn "mergeDslDataIntoTreeState A %A B %A C %A" dslData.TaskStateList.Length treeTaskStateMap.Count diag
-//                | None -> ()
 
         let newInformationStateMap = mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
 

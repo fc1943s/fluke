@@ -7,20 +7,20 @@ module State =
     open Information
     open UserInteraction
 
-    type State =
-        {
-            Session: Session
-        }
+//    type State =
+//        {
+//            Session: Session
+//        }
 
-    and Session =
+    type SessionData =
         {
-            User: User option
-            TreeSelection: Set<TreeState>
+//            User: User option
+//            TreeSelection: Set<TreeState>
             TaskList: Task list
             InformationStateMap: Map<Information, InformationState>
             TaskStateMap: Map<Task, TaskState>
-            TreeStateMap: Map<TreeId, TreeState>
-            GetLivePosition: unit -> FlukeDateTime
+//            TreeStateMap: Map<TreeId, TreeState>
+//            GetLivePosition: unit -> FlukeDateTime
         }
 
     and TreeState =
@@ -121,13 +121,6 @@ module State =
                 | TreeAccessItem.ReadOnly dbUser -> dbUser = user)
 
     let treeStateWithInteractions (userInteractionList: UserInteraction list) (treeState: TreeState) =
-
-        //            let diag =
-//                treeState.TaskStateMap
-//                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
-//            match diag with
-//            | Some diag -> printfn "treeStateWithInteractions A %A B %A C %A" userInteractionList.Length treeState.TaskStateMap.Count diag
-//            | None -> ()
 
         let newTreeState =
             (treeState, userInteractionList)
@@ -280,8 +273,4 @@ module State =
 
                         { treeState with TaskStateMap = newTaskStateMap })
 
-        //            let diag =
-//                newTreeState.TaskStateMap
-//                    |> Map.tryPick (fun k v -> if k.Name = TaskName "seethrus" then Some v else None)
-//            printfn "diag2 %A" diag
         newTreeState

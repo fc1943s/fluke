@@ -21,6 +21,9 @@
     <Compile Include="Components\GridHeaderComponent.fs" />
     <Compile Include="Components\TooltipPopupComponent.fs" />
     <Compile Include="Components\TaskNameComponent.fs" />
+    <Compile Include="Components\InformationNameComponent.fs" />
+    <Compile Include="Components\TaskInformationNameComponent.fs" />
+    <Compile Include="Components\TaskPriorityComponent.fs" />
     <Compile Include="Components\CellStatusUserIndicatorComponent.fs" />
     <Compile Include="Components\CellBorderComponent.fs" />
     <Compile Include="Components\CellSessionIndicatorComponent.fs" />

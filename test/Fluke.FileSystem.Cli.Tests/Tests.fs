@@ -24,7 +24,7 @@ module Tests =
                         test "1" {
                             1 |> Expect.equal "" 1
 
-                            let baseState = RootPrivateData.State.getBaseState ()
+//                            let baseState = RootPrivateData.State.getBaseState ()
 
 
 //                            let state2 =

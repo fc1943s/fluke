@@ -19,23 +19,8 @@ module GroupsViewComponent =
         React.memo (fun (input: {| Username: Username |}) ->
             let groupIndentationLength = 20
 
-            let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
-
-            let groupMap =
-                currentTaskList
-                |> List.map (fun x -> x.Information, x)
-                |> Map.ofList
-
-            let groups =
-                currentTaskList
-                |> List.groupBy (fun group -> group.Information)
-                |> List.sortBy (fun (information, _) -> information.Name)
-                |> List.groupBy (fun (information, _) -> information.KindName)
-                |> List.sortBy
-                    (snd
-                     >> List.head
-                     >> fst
-                     >> fun information -> information.Order)
+            let tasksByInformationKind =
+                Recoil.useValue (Recoil.Selectors.Session.tasksByInformationKind input.Username)
 
             Html.div [
                 prop.className Css.lanesPanel
@@ -49,8 +34,8 @@ module GroupsViewComponent =
 
                         Html.div
                             [
-                                yield! groups
-                                       |> List.map (fun (informationKindName, taskGroups) ->
+                                yield! tasksByInformationKind
+                                       |> List.map (fun (informationKindName, groups) ->
                                            Html.div [
                                                Html.div [
                                                    prop.style
@@ -64,36 +49,15 @@ module GroupsViewComponent =
                                                ]
                                                Html.div
                                                    [
-                                                       yield! taskGroups
-                                                              |> List.map (fun (information, group) ->
-                                                                  let informationAttachments =
-                                                                      groupMap.[information].Attachments
+                                                       yield! groups
+                                                              |> List.map (fun (informationId, taskIdList) ->
+
+
 
                                                                   Html.div [
-                                                                      Html.div [
-                                                                          prop.className Css.cellRectangle
-                                                                          prop.children [
-                                                                              Html.div [
-                                                                                  prop.style [
-                                                                                      style.color "#444"
-                                                                                      style.paddingLeft
-                                                                                          groupIndentationLength
-                                                                                  ]
-                                                                                  prop.children
-                                                                                      [
-                                                                                          let (InformationName informationName) =
-                                                                                              information.Name
+                                                                      InformationNameComponent.render
+                                                                          {| InformationId = informationId |}
 
-                                                                                          str informationName
-                                                                                      ]
-                                                                              ]
-                                                                              TooltipPopupComponent.render
-                                                                                  {|
-                                                                                      Attachments =
-                                                                                          informationAttachments
-                                                                                  |}
-                                                                          ]
-                                                                      ]
                                                                       // Task Name
                                                                       Html.div [
                                                                           prop.style
@@ -102,24 +66,19 @@ module GroupsViewComponent =
                                                                               ]
                                                                           prop.children
                                                                               [
-                                                                                  yield! group
-                                                                                         |> List.map (fun groupTask ->
-                                                                                             let priority =
-                                                                                                 groupTask.Priority
-                                                                                                 |> Option.map (fun x ->
-                                                                                                     x.Value)
-                                                                                                 |> Option.defaultValue
-                                                                                                     0
-                                                                                                 |> string
-                                                                                                 |> str
-
+                                                                                  yield! taskIdList
+                                                                                         |> List.map (fun taskId ->
                                                                                              Html.div [
                                                                                                  prop.style
                                                                                                      [
                                                                                                          style.display.flex
                                                                                                      ]
                                                                                                  prop.children [
-                                                                                                     priority
+                                                                                                     TaskPriorityComponent.render
+                                                                                                         {|
+                                                                                                             TaskId =
+                                                                                                                 taskId
+                                                                                                         |}
                                                                                                      TaskNameComponent.render
                                                                                                          {|
                                                                                                              Css =
@@ -129,7 +88,7 @@ module GroupsViewComponent =
                                                                                                                           * 2)
                                                                                                                  ]
                                                                                                              TaskId =
-                                                                                                                 groupTask.Id
+                                                                                                                 taskId
                                                                                                          |}
                                                                                                  ]
                                                                                              ])
@@ -145,8 +104,8 @@ module GroupsViewComponent =
                         GridHeaderComponent.render {| Username = input.Username |}
                         Html.div
                             [
-                                yield! groups
-                                       |> List.map (fun (_, taskGroups) ->
+                                yield! tasksByInformationKind
+                                       |> List.map (fun (_, groups) ->
                                            Html.div [
                                                Html.div
                                                    [
@@ -154,8 +113,8 @@ module GroupsViewComponent =
                                                    ]
                                                Html.div
                                                    [
-                                                       yield! taskGroups
-                                                              |> List.map (fun (_, groupTask) ->
+                                                       yield! groups
+                                                              |> List.map (fun (_, taskIdList) ->
                                                                   Html.div [
                                                                       Html.div
                                                                           [
@@ -164,8 +123,7 @@ module GroupsViewComponent =
                                                                       CellsComponent.render
                                                                           {|
                                                                               Username = input.Username
-                                                                              TaskIdList =
-                                                                                  groupTask |> List.map (fun x -> x.Id)
+                                                                              TaskIdList = taskIdList
                                                                           |}
                                                                   ])
                                                    ]

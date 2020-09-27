@@ -41,12 +41,12 @@ module CellComponent =
                                    TaskId: Recoil.Atoms.Task.TaskId
                                    Date: FlukeDate |}) ->
             let cellId = Recoil.Atoms.Cell.cellId input.TaskId (DateId input.Date)
-            let isToday = Recoil.useValue (Recoil.Selectors.RecoilFlukeDate.isToday input.Date)
-            let showUser = Recoil.useValue (Recoil.Selectors.RecoilTask.showUser input.TaskId)
+            let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday input.Date)
+            let showUser = Recoil.useValue (Recoil.Selectors.Task.showUser input.TaskId)
             let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments cellId)
             let sessions = Recoil.useValue (Recoil.Atoms.Cell.sessions cellId)
-            let selected, setSelected = Recoil.useState (Recoil.Selectors.RecoilCell.selected cellId)
             let status = Recoil.useValue (Recoil.Atoms.Cell.status cellId)
+            let selected, setSelected = Recoil.useState (Recoil.Selectors.Cell.selected cellId)
             let onCellClick = React.useCallbackRef (fun () -> setSelected (not selected))
 
             Html.div [

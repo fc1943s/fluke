@@ -18,7 +18,7 @@ module WeekViewComponent =
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
-            let weekCellsMap = Recoil.useValue Recoil.Selectors.weekCellsMap
+            let weekCellsMap = Recoil.useValue (Recoil.Selectors.Session.weekCellsMap input.Username)
 
             Html.div [
                 prop.className Css.lanesPanel
@@ -85,7 +85,7 @@ module WeekViewComponent =
                                                                                          {|
                                                                                              Username = input.Username
                                                                                              Date = referenceDay
-                                                                                             TaskId = cell.Task.Id
+                                                                                             TaskId = cell.TaskId
                                                                                          |}
                                                                                      Html.div [
                                                                                          prop.style
@@ -94,10 +94,12 @@ module WeekViewComponent =
                                                                                              ]
                                                                                          prop.children
                                                                                              [
-                                                                                                 let (TaskName taskName) =
-                                                                                                     cell.Task.Name
-
-                                                                                                 str taskName
+                                                                                                 TaskNameComponent.render
+                                                                                                     {|
+                                                                                                         TaskId =
+                                                                                                             cell.TaskId
+                                                                                                         Css = []
+                                                                                                     |}
                                                                                              ]
                                                                                      ]
                                                                                  ]

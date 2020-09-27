@@ -6,12 +6,6 @@ open Fable.Core
 
 module Chakra =
 
-    //    let Box (children: #seq<ReactElement>) = Interop.reactElementWithChildren "Box" children
-
-    //    [<ImportMember("@chakra-ui/core")>]
-//    let Box (children: #seq<ReactElement>): ReactElement = jsNative
-//    printfn "chakra %A" (JS.JSON.stringify(chakra.Box))
-//    Browser.Dom.window?box <- Box
     [<ImportAll "@chakra-ui/core">]
     let chakraCore: {| Box: obj
                        Button: obj
@@ -24,8 +18,6 @@ module Chakra =
                        MenuItemOption: obj
                        MenuOptionGroup: obj |} = jsNative
 
-    //    [<ImportAll "@chakra-ui/utils">]
-//    let chakraUtils: {| merge: obj * obj -> obj |} = jsNative
     [<ImportAll "@chakra-ui/theme-tools">]
     let chakraTheme: {| mode: string * string -> obj -> obj |} = jsNative
 

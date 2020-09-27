@@ -18,9 +18,7 @@ module CalendarViewComponent =
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
-            let currentTaskList = Recoil.useValue Recoil.Selectors.currentTaskList
-
-            let taskIdList = currentTaskList |> List.map (fun x -> x.Id)
+            let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList input.Username)
 
             Html.div [
                 prop.className Css.lanesPanel
@@ -45,28 +43,9 @@ module CalendarViewComponent =
                                         ]
                                     prop.children
                                         [
-                                            yield! currentTaskList
-                                                   |> List.map (fun task ->
-                                                       Html.div [
-                                                           prop.className Css.cellRectangle
-                                                           prop.children [
-                                                               Html.div [
-                                                                   prop.style [
-                                                                       style.color task.Information.Color
-                                                                       style.whitespace.nowrap
-                                                                   ]
-                                                                   prop.children
-                                                                       [
-                                                                           let (InformationName informationName) =
-                                                                               task.Information.Name
-
-                                                                           str informationName
-                                                                       ]
-                                                               ]
-                                                               TooltipPopupComponent.render
-                                                                   {| Attachments = task.InformationAttachments |}
-                                                           ]
-                                                       ])
+                                            yield! taskIdList
+                                                   |> List.map (fun taskId ->
+                                                       TaskInformationNameComponent.render {| TaskId = taskId |})
                                         ]
                                 ]
                                 // Column: Priority
@@ -77,19 +56,9 @@ module CalendarViewComponent =
                                     ]
                                     prop.children
                                         [
-                                            yield! currentTaskList
-                                                   |> List.map (fun task ->
-                                                       Html.div [
-                                                           prop.className Css.cellRectangle
-                                                           prop.children
-                                                               [
-                                                                   task.Priority
-                                                                   |> Option.map (fun x -> x.Value)
-                                                                   |> Option.defaultValue 0
-                                                                   |> string
-                                                                   |> str
-                                                               ]
-                                                       ])
+                                            yield! taskIdList
+                                                   |> List.map (fun taskId ->
+                                                       TaskPriorityComponent.render {| TaskId = taskId |})
                                         ]
                                 ]
                                 // Column: Task Name
@@ -100,9 +69,9 @@ module CalendarViewComponent =
                                         ]
                                     prop.children
                                         [
-                                            yield! currentTaskList
-                                                   |> List.map (fun task ->
-                                                       TaskNameComponent.render {| Css = []; TaskId = task.Id |})
+                                            yield! taskIdList
+                                                   |> List.map (fun taskId ->
+                                                       TaskNameComponent.render {| Css = []; TaskId = taskId |})
                                         ]
                                 ]
                             ]
@@ -110,7 +79,11 @@ module CalendarViewComponent =
                     ]
                     Html.div [
                         GridHeaderComponent.render {| Username = input.Username |}
-                        CellsComponent.render {| Username = input.Username;TaskIdList = taskIdList |}
+                        CellsComponent.render
+                            {|
+                                Username = input.Username
+                                TaskIdList = taskIdList
+                            |}
                     ]
                 ]
             ])
