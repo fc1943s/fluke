@@ -25,8 +25,9 @@ module TreeSelectorComponent =
             let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
 
             let treeSelectionIdsSet = treeSelectionIds |> Set.ofArray
+
             //
-//            printfn "TreeSelectorComponent.render -> treeSelectionIdsText = %A" treeSelectionIdsText
+            printfn "TreeSelectorComponent.render -> treeSelectionIds = %A" treeSelectionIds
 
             Chakra.box
                 {| position = "relative" |}
@@ -49,27 +50,23 @@ module TreeSelectorComponent =
                                     yield! availableTreeIds
                                            |> List.map (fun treeId ->
                                                Chakra.menuItem
-                                                   {|
-                                                       title = "Private"
-                                                       ``type`` = "checkbox"
-                                                       onClick =
-                                                           fun () ->
-                                                               let swap value set =
-                                                                   if set |> Set.contains value then
-                                                                       set |> Set.remove value
-                                                                   else
-                                                                       set |> Set.add value
-
-                                                               treeSelectionIdsSet
-                                                               |> swap treeId
-                                                               |> Set.toArray
-                                                               |> setTreeSelectionIds
-                                                   |}
-
+                                                   ()
                                                    [
                                                        Chakra.checkbox
                                                            {|
                                                                defaultIsChecked = treeSelectionIdsSet.Contains treeId
+                                                               onChange =
+                                                                   fun () ->
+                                                                       let swap value set =
+                                                                           if set |> Set.contains value then
+                                                                               set |> Set.remove value
+                                                                           else
+                                                                               set |> Set.add value
+
+                                                                       treeSelectionIdsSet
+                                                                       |> swap treeId
+                                                                       |> Set.toArray
+                                                                       |> setTreeSelectionIds
                                                            |}
                                                            [
                                                                treeNameComponent {| TreeId = treeId |}

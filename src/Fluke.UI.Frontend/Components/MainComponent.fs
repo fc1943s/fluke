@@ -60,12 +60,12 @@ module MainComponent =
 //                let treeSelectionIds = Recoil.useValue (Recoil.Atoms.Session.treeSelectionIds input.Username)
                 let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
                 let treeStateMap = Recoil.useValue Recoil.Atoms.treeStateMap
-                let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
+//                let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
                 //                printfn "MainComponent.dataLoader -> Atoms.Session.treeSelectionIds = %A" treeSelectionIds
-                printfn
-                    "MainComponent.SessionDataLoader.hook -> Selectors.Session.sessionData.IsSome = %A"
-                    sessionData.IsSome
+//                printfn
+//                    "MainComponent.SessionDataLoader.hook -> Selectors.Session.sessionData.IsSome = %A"
+//                    sessionData.IsSome
 
                 //                let treeSelectionIdsMemo =
 //                    React.useMemo (fun () ->
@@ -170,9 +170,9 @@ module MainComponent =
 
                                     setter.set (Recoil.Atoms.Session.taskIdList input.Username, taskIdList)
 
-                                    printfn
-                                        "MainComponent.SessionDataLoader.hook.loadState -> Atoms.Session.taskIdList[.Length] <- %A"
-                                        taskIdList.Length
+//                                    printfn
+//                                        "MainComponent.SessionDataLoader.hook.loadState -> Atoms.Session.taskIdList[.Length] <- %A"
+//                                        taskIdList.Length
 
                                 a ()
                             | None -> ()
