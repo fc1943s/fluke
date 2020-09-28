@@ -137,12 +137,10 @@ module Recoil =
 //                input.State.Session.TreeSelection
 //                |> Set.map (fun treeState -> treeState.Id)
 //
-            printfn "FakeBackend.getSession -> input.TreeSelectionIds = %A" input.TreeSelectionIds
-
             let treeSelection =
                 input.TreeSelectionIds
-                |> Set.map (fun treeId -> input.TreeStateMap.[treeId])
                 |> Set.toList
+                |> List.choose (fun treeId -> input.TreeStateMap |> Map.tryFind treeId)
 
             let informationStateList =
                 treeSelection
@@ -482,11 +480,11 @@ module Recoil =
                     Profiling.addCount (nameof user)
                     None: User option
 
-            let rec treeSelectionIds =
-                atomFamilyFn
-                <| fun (_username: Username) ->
-                    Profiling.addCount (nameof treeSelectionIds)
-                    Set.empty: Set<TreeId>
+            //            let rec treeSelectionIds =
+//                atomFamilyFn
+//                <| fun (_username: Username) ->
+//                    Profiling.addCount (nameof treeSelectionIds)
+//                    Set.empty: Set<TreeId>
 
             let rec availableTreeIds =
                 atomFamilyFn
@@ -604,6 +602,13 @@ module Recoil =
             atom {
                 key ("atom/" + nameof debug)
                 def false
+                local_storage
+            }
+
+        let rec internal treeSelectionIds =
+            atom {
+                key ("atom/" + nameof treeSelectionIds)
+                def ([||]: TreeId [])
                 local_storage
             }
 
@@ -1420,7 +1425,8 @@ module Recoil =
                                 let view = getter.get view
                                 let position = getter.get position
                                 //                            let getLivePosition = (getter.get Atoms.getLivePosition).Get
-                                let treeSelectionIds = getter.get (Atoms.Session.treeSelectionIds username)
+//                                let treeSelectionIds = getter.get (Atoms.Session.treeSelectionIds username)
+                                let treeSelectionIds = getter.get Atoms.treeSelectionIds
 
                                 let result =
                                     match user, position, treeStateMap.Count with
@@ -1439,7 +1445,7 @@ module Recoil =
                                                     DateSequence = dateSequence
                                                     View = view
                                                     Position = position
-                                                    TreeSelectionIds = treeSelectionIds
+                                                    TreeSelectionIds = treeSelectionIds |> Set.ofArray
                                                     TreeStateMap = treeStateMap
                                                 |}
                                         //                                                GetLivePosition = getLivePosition

@@ -178,29 +178,27 @@ module RootPrivateData =
                     yield! SharedPrivateData.fc1943s.CellStatusChangeInteractions.getCellStatusChangeInteractions moment
                    ]
                 |> TempData.mergeDslDataIntoTreeState sharedDslData
-                TreeState.Create
-                    (id = TreeId (Guid "84998AA3-7262-439F-8E6C-43FDD56A0DD6"),
-                     name = TreeName ("fluke/samples/laneRendering/frequency/postponed_until/postponed_until_later"),
-                     owner = users.fluke,
-                     sharedWith = TreeAccess.Public)
-                |> treeStateWithInteractions []
 
-                let publicData = TempData.PublicData.getPublicData ()
-                let dslData = publicData.SortLanesTests
+                yield! Templates.getTreeMap ()
+                       |> Map.toList
+                       |> List.map (fun (templateName, dslTemplate) ->
 
-                TreeState.Create
-                    (id = TreeId (Guid "46A344F2-2E6C-47DF-A87B-CB2DD326417B"),
-                     name = TreeName ("fluke/samples/laneSorting/frequency"),
-                     owner = users.fluke,
-                     sharedWith = TreeAccess.Public)
-                |> treeStateWithInteractions []
-                |> TempData.mergeDslDataIntoTreeState dslData
-                TreeState.Create
-                    (id = TreeId (Guid "61897654-D28F-4DCA-8185-D7B9EE83284B"),
-                     name = TreeName ("fluke/samples/laneSorting/timeOfDay"),
-                     owner = users.fluke,
-                     sharedWith = TreeAccess.Public)
-                |> treeStateWithInteractions []
+                           let dslData =
+                               TempData.Testing.createLaneRenderingDslData
+                                   {|
+                                       User = users.fluke
+                                       Position = dslTemplate.Position
+                                       Task = dslTemplate.Task
+                                       Events = dslTemplate.Events
+                                       Expected = dslTemplate.Expected
+                                   |}
+
+                           TreeState.Create
+                               (id = TreeId (Guid.NewGuid ()),
+                                name = TreeName templateName,
+                                owner = users.fluke,
+                                sharedWith = TreeAccess.Public)
+                           |> TempData.mergeDslDataIntoTreeState dslData)
             ]
 
 
@@ -225,7 +223,7 @@ module RootPrivateData =
                             | _ -> false)
                     | _ -> false)
 
-//            let treeSelection =
+            //            let treeSelection =
 //                treesWithAccess
 //                |> List.filter (fun treeState ->
 //                    treeState.SharedWith <> TreeAccess.Public

@@ -86,7 +86,9 @@ module MainComponent =
 
                             match sessionData with
                             | Some sessionData ->
-                                printfn "MainComponent.SessionDataLoader.hook -> loadState -> (sessionData.TaskList.Length) = %A" sessionData.TaskList.Length
+                                printfn
+                                    "MainComponent.SessionDataLoader.hook -> loadState -> (sessionData.TaskList.Length) = %A"
+                                    sessionData.TaskList.Length
                                 //                                        let! treeStateMap = setter.snapshot.getAsync Recoil.Atoms.treeStateMap
 //                                        let! dateSequence = setter.snapshot.getAsync Recoil.Selectors.dateSequence
 
@@ -119,7 +121,8 @@ module MainComponent =
                                         setter.set (Recoil.Atoms.Task.name taskId, taskState.Task.Name)
 
                                         setter.set
-                                            (Recoil.Atoms.Task.informationId taskId, recoilInformationMap.[taskState.Task.Information])
+                                            (Recoil.Atoms.Task.informationId taskId,
+                                             recoilInformationMap.[taskState.Task.Information])
 
                                         setter.set (Recoil.Atoms.Task.pendingAfter taskId, taskState.Task.PendingAfter)
 
@@ -133,7 +136,7 @@ module MainComponent =
 
                                         setter.set (Recoil.Atoms.Task.duration taskId, taskState.Task.Duration)
 
-//                                        dateSequence
+                                        //                                        dateSequence
 //                                        |> List.iter (fun date ->
 //                                            let cellId = Recoil.Atoms.Cell.cellId taskId (DateId date)
 //
@@ -151,8 +154,7 @@ module MainComponent =
                                             setter.set (Recoil.Atoms.Cell.status cellId, cellState.Status)
                                             setter.set (Recoil.Atoms.Cell.attachments cellId, cellState.Attachments)
                                             setter.set (Recoil.Atoms.Cell.sessions cellId, cellState.Sessions)
-                                            setter.set (Recoil.Atoms.Cell.selected cellId, false))
-                                      )
+                                            setter.set (Recoil.Atoms.Cell.selected cellId, false)))
 
                                     treeStateMap
                                     |> Map.values
@@ -161,10 +163,11 @@ module MainComponent =
                                         setter.set (Recoil.Atoms.Tree.owner treeState.Id, Some treeState.Owner)
                                         setter.set (Recoil.Atoms.Tree.sharedWith treeState.Id, treeState.SharedWith)
                                         setter.set (Recoil.Atoms.Tree.position treeState.Id, treeState.Position))
-//
+                                    //
                                     let taskIdList =
                                         sessionData.TaskList
                                         |> List.map Recoil.Atoms.Task.taskId
+
                                     setter.set (Recoil.Atoms.Session.taskIdList input.Username, taskIdList)
 
                                     printfn
@@ -202,7 +205,6 @@ module MainComponent =
                 Recoil.Profiling.addTimestamp "dataLoader render"
                 React.useEffect
                     ((fun () ->
-                        printfn "MainComponent.SessionDataLoader.hook -> useEffect -> () = %A" ()
                         Recoil.Profiling.addTimestamp "dataLoader effect"
                         loadState ()),
 
@@ -318,29 +320,26 @@ module MainComponent =
                                 let availableTreeIds =
                                     treeStateMap
                                     |> Map.values
+                                    |> Seq.sortBy (fun treeState -> treeState.Name)
                                     |> Seq.map (fun treeState -> treeState.Id)
                                     |> Seq.toList
-
-                                let treeSelectionIds =
-                                    treeStateMap
-                                    |> Map.values
-                                    |> Seq.filter (fun treeState -> treeState.SharedWith <> TreeAccess.Public)
-                                    |> Seq.map (fun treeState -> treeState.Id)
-                                    |> Set.ofSeq
-
-                                printfn
-                                    "MainComponent.Content.render -> treeSelectionIds[.Count] = %A"
-                                    treeSelectionIds.Count
 
                                 setter.set (Recoil.Atoms.username, Some user.Username)
                                 setter.set (Recoil.Atoms.Session.user user.Username, Some user)
                                 setter.set (Recoil.Atoms.Session.availableTreeIds user.Username, availableTreeIds)
-                                setter.set (Recoil.Atoms.Session.treeSelectionIds user.Username, treeSelectionIds)
                                 setter.set (Recoil.Atoms.treeStateMap, treeStateMap)
                             | None -> ()
                         }
                         |> Async.StartImmediate)
 
+                React.useEffect
+                    ((fun () ->
+                        match username with
+                        | Some _ -> ()
+                        | None -> loadUser ()),
+                     [|
+                         username :> obj
+                     |])
 
                 match username with
                 | Some username ->
@@ -354,18 +353,13 @@ module MainComponent =
                          ],
                          PageLoaderComponent.render ())
 
-                | None ->
-                    Chakra.button
-                        {| onClick = loadUser |}
-                        [
-                            str "Load user"
-                        ])
+                | None -> nothing)
 
     let render =
         React.memo (fun () ->
             React.fragment [
                 GlobalShortcutHandler.hook ()
-//                PositionUpdater.hook ()
+                //                PositionUpdater.hook ()
 //                AutoReload.hook_TEMP ()
                 Debug.render ()
                 Content.render ()

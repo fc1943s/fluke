@@ -27,10 +27,12 @@ module TreeSelectorComponent =
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
-            let treeSelectionIds, setTreeSelectionIds = Recoil.useState (Recoil.Atoms.Session.treeSelectionIds input.Username)
+            let treeSelectionIds, setTreeSelectionIds = Recoil.useState Recoil.Atoms.treeSelectionIds
             let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
 
-            let treeSelectionIdsArray = treeSelectionIds |> Set.toArray
+            let treeSelectionIdsArray = treeSelectionIds |> Array.toList |> List.toArray
+//
+//            printfn "TreeSelectorComponent.render -> treeSelectionIdsText = %A" treeSelectionIdsText
 
             Chakra.box
                 {| position = "relative" |}
@@ -54,14 +56,16 @@ module TreeSelectorComponent =
                                         {|
                                             title = "Private"
                                             ``type`` = "checkbox"
-                                            value = treeSelectionIdsArray
+                                            initialValue = treeSelectionIdsArray
                                             onChange =
                                                 fun (treeSelection: TreeId []) ->
                                                     treeSelection
-                                                    |> Set.ofArray
                                                     |> fun x ->
                                                         printfn "onChange treeSelection: %A" x
                                                         x
+//                                                    |> Array.toList
+//                                                    |> List.map TreeId
+//                                                    |> List.toArray
                                                     |> setTreeSelectionIds
                                         |}
                                         [
