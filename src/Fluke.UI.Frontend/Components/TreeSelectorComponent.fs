@@ -18,10 +18,14 @@ module TreeSelectorComponent =
             let (TreeName treeName) = Recoil.useValue (Recoil.Atoms.Tree.name input.TreeId)
             str treeName)
 
-    let menuCheckbox (input: {| TreeId: TreeId |}) =
+    let menuCheckbox (input: {| TreeId: TreeId; Active: bool |}) =
         Chakra.menuItemOption
             {| value = input.TreeId |}
             [
+                if input.Active then
+                    str "Active: "
+                else
+                    nothing
                 treeNameComponent {| TreeId = input.TreeId |}
             ]
 
@@ -31,7 +35,8 @@ module TreeSelectorComponent =
             let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
 
             let treeSelectionIdsArray = treeSelectionIds |> Array.toList |> List.toArray
-//
+            let treeSelectionIdsSet = treeSelectionIds |> Set.ofArray
+            //
 //            printfn "TreeSelectorComponent.render -> treeSelectionIdsText = %A" treeSelectionIdsText
 
             Chakra.box
@@ -56,32 +61,54 @@ module TreeSelectorComponent =
                                         {|
                                             title = "Private"
                                             ``type`` = "checkbox"
-                                            initialValue = treeSelectionIdsArray
+                                            _value = treeSelectionIdsArray
                                             onChange =
                                                 fun (treeSelection: TreeId []) ->
                                                     treeSelection
                                                     |> fun x ->
                                                         printfn "onChange treeSelection: %A" x
                                                         x
-//                                                    |> Array.toList
-//                                                    |> List.map TreeId
-//                                                    |> List.toArray
                                                     |> setTreeSelectionIds
                                         |}
                                         [
                                             yield! availableTreeIds
                                                    |> List.map (fun treeId ->
-                                                       //                                                       React.fragment [
-                                                       menuCheckbox {| TreeId = treeId |}
-                                                       //                                                           menuCheckboxTest {| TreeId = treeId |}
-//                                                           Chakra.menuItemOption
-//                                                               {| key=treeId; value = treeId |}
-//                                                               [
-//                                                                   str <| string treeId
-//                                                               ]
-//                                                       ]
-                                                       )
+                                                       menuCheckbox
+                                                           {|
+                                                               TreeId = treeId
+                                                               Active = treeSelectionIdsSet.Contains treeId
+                                                           |})
                                         ]
                                 ]
                         ]
                 ])
+
+(*
+<Menu>
+  <MenuButton as={Button} rightIcon={<ChevronDownIcon />}>
+    Your Cats
+  </MenuButton>
+  <MenuList>
+    <MenuItem minH="48px">
+      <Image
+        boxSize="2rem"
+        borderRadius="full"
+        src="https://placekitten.com/100/100"
+        alt="Fluffybuns the destroyer"
+        mr="12px"
+      />
+      <span>Fluffybuns the Destroyer</span>
+    </MenuItem>
+    <MenuItem minH="40px">
+      <Image
+        boxSize="2rem"
+        borderRadius="full"
+        src="https://placekitten.com/120/120"
+        alt="Simon the pensive"
+        mr="12px"
+      />
+      <span>Simon the pensive</span>
+    </MenuItem>
+  </MenuList>
+</Menu>
+*)
