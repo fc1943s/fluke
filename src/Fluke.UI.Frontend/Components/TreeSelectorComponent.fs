@@ -18,23 +18,12 @@ module TreeSelectorComponent =
             let (TreeName treeName) = Recoil.useValue (Recoil.Atoms.Tree.name input.TreeId)
             str treeName)
 
-    let menuCheckbox (input: {| TreeId: TreeId; Active: bool |}) =
-        Chakra.menuItemOption
-            {| value = input.TreeId |}
-            [
-                if input.Active then
-                    str "Active: "
-                else
-                    nothing
-                treeNameComponent {| TreeId = input.TreeId |}
-            ]
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
             let treeSelectionIds, setTreeSelectionIds = Recoil.useState Recoil.Atoms.treeSelectionIds
             let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
 
-            let treeSelectionIdsArray = treeSelectionIds |> Array.toList |> List.toArray
             let treeSelectionIdsSet = treeSelectionIds |> Set.ofArray
             //
 //            printfn "TreeSelectorComponent.render -> treeSelectionIdsText = %A" treeSelectionIdsText
@@ -57,29 +46,37 @@ module TreeSelectorComponent =
                             Chakra.menuList
                                 ()
                                 [
-                                    Chakra.menuOptionGroup
-                                        {|
-                                            title = "Private"
-                                            ``type`` = "checkbox"
-                                            _value = treeSelectionIdsArray
-                                            onChange =
-                                                fun (treeSelection: TreeId []) ->
-                                                    treeSelection
-                                                    |> fun x ->
-                                                        printfn "onChange treeSelection: %A" x
-                                                        x
-                                                    |> setTreeSelectionIds
-                                        |}
-                                        [
-                                            yield! availableTreeIds
-                                                   |> List.map (fun treeId ->
-                                                       menuCheckbox
+                                    yield! availableTreeIds
+                                           |> List.map (fun treeId ->
+                                               Chakra.menuItem
+                                                   {|
+                                                       title = "Private"
+                                                       ``type`` = "checkbox"
+                                                       onClick =
+                                                           fun () ->
+                                                               let swap value set =
+                                                                   if set |> Set.contains value then
+                                                                       set |> Set.remove value
+                                                                   else
+                                                                       set |> Set.add value
+
+                                                               treeSelectionIdsSet
+                                                               |> swap treeId
+                                                               |> Set.toArray
+                                                               |> setTreeSelectionIds
+                                                   |}
+
+                                                   [
+                                                       Chakra.checkbox
                                                            {|
-                                                               TreeId = treeId
-                                                               Active = treeSelectionIdsSet.Contains treeId
-                                                           |})
-                                        ]
+                                                               defaultIsChecked = treeSelectionIdsSet.Contains treeId
+                                                           |}
+                                                           [
+                                                               treeNameComponent {| TreeId = treeId |}
+                                                           ]
+                                                   ])
                                 ]
+
                         ]
                 ])
 

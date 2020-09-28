@@ -10,13 +10,14 @@ module Chakra =
     let chakraCore: {| Box: obj
                        Button: obj
                        ChakraProvider: obj
+                       Checkbox: obj
                        DarkMode: obj
                        extendTheme: obj -> obj
                        Menu: obj
                        MenuButton: obj
                        MenuList: obj
-                       MenuItemOption: obj
-                       MenuOptionGroup: obj |} = jsNative
+                       MenuItem: obj
+                        |} = jsNative
 
     [<ImportAll "@chakra-ui/theme-tools">]
     let chakraTheme: {| mode: string * string -> obj -> obj |} = jsNative
@@ -25,12 +26,12 @@ module Chakra =
 
     let box<'T> = wrap chakraCore.Box
     let button<'T> = wrap chakraCore.Button
+    let checkbox<'T> = wrap chakraCore.Checkbox
     let darkMode<'T> = wrap chakraCore.DarkMode
     let menu<'T> = wrap chakraCore.Menu
     let menuButton<'T> = wrap chakraCore.MenuButton
     let menuList<'T> = wrap chakraCore.MenuList
-    let menuItemOption<'T> = wrap chakraCore.MenuItemOption
-    let menuOptionGroup<'T> = wrap chakraCore.MenuOptionGroup
+    let menuItem<'T> = wrap chakraCore.MenuItem
     let provider<'T> = wrap chakraCore.ChakraProvider
 
     let theme =
