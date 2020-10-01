@@ -21,7 +21,13 @@ module TreeSelectorComponent =
             let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
 
             let treeSelectionIds, setTreeSelectionIds = Recoil.useState Recoil.Atoms.treeSelectionIds
-            let treeSelectionIdsSet = treeSelectionIds |> Set.ofArray
+
+            let availableTreeIdsSet = availableTreeIds |> Set.ofList
+
+            let treeSelectionIdsSet =
+                treeSelectionIds
+                |> Set.ofArray
+                |> Set.intersect availableTreeIdsSet
 
             let selected = treeSelectionIdsSet.Contains input.TreeId
 
@@ -36,11 +42,8 @@ module TreeSelectorComponent =
                             else
                                 set |> Set.add value
 
-                        let availableTreeIdsSet = availableTreeIds |> Set.ofList
-
                         let newTreeSelectionIds =
                             treeSelectionIdsSet
-                            |> Set.intersect availableTreeIdsSet
                             |> swap input.TreeId
                             |> Set.toArray
 
