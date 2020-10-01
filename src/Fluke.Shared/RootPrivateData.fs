@@ -197,6 +197,7 @@ module RootPrivateData =
                                (id = TreeId (Guid.NewGuid ()),
                                 name = TreeName templateName,
                                 owner = users.fluke,
+                                position = dslTemplate.Position,
                                 sharedWith = TreeAccess.Public)
                            |> TempData.mergeDslDataIntoTreeState dslData)
             ]

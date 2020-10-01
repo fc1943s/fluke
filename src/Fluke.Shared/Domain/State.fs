@@ -86,13 +86,13 @@ module State =
 
 
     and TreeState with
-        static member inline Create (id, name, owner, ?sharedWith): TreeState =
+        static member inline Create (id, name, owner, ?sharedWith, ?position): TreeState =
             {
                 Id = id
                 Name = name
                 Owner = owner
                 SharedWith = defaultArg sharedWith (TreeAccess.Private [])
-                Position = None
+                Position = position
                 InformationStateMap = Map.empty
                 TaskStateMap = Map.empty
             }

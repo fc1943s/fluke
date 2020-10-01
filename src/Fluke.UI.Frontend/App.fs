@@ -42,4 +42,5 @@ module App =
                     ]
             ])
 
-    ReactDOM.render (appMain (), document.getElementById "app")
+//    ReactDOM.render (appMain (), document.getElementById "app")
+    Ext.reactDom.unstable_createRoot(document.getElementById "app").render(appMain ())

@@ -16,11 +16,11 @@ module Chakra =
                        Menu: obj
                        MenuButton: obj
                        MenuList: obj
-                       MenuItem: obj
-                        |} = jsNative
+                       MenuItem: obj |} = jsNative
 
     [<ImportAll "@chakra-ui/theme-tools">]
     let chakraTheme: {| mode: string * string -> obj -> obj |} = jsNative
+
 
     let wrap<'T, 'U> (comp: 'T) (props: 'U) children = ReactBindings.React.createElement (comp, props, children)
 

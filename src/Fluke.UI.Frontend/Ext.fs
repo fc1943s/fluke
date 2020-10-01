@@ -8,6 +8,13 @@ open Fable.Core.JsInterop
 
 module Ext =
 
+    module JS =
+
+        [<Emit("(w => $0 instanceof w[$1])(window)")>]
+        let instanceOf (_obj: obj, _typeName: string): bool = jsNative
+
+
+
     //    importAll "./node_modules/@fortawesome/fontawesome-free/css/all.css"
 
     //    importAll "./node_modules/bulma/bulma.sass"
@@ -31,6 +38,10 @@ module Ext =
     //    let useEventListener (_event: string) (_fn: KeyboardEvent -> unit) : unit = importDefault "@use-it/event-listener"
 
     let recoilLogger: obj -> obj = importDefault "recoil-logger"
+
+    [<ImportAll "react-dom">]
+    let reactDom: {| unstable_createRoot: Browser.Types.HTMLElement -> {| render: Fable.React.ReactElement -> unit |} |} =
+        jsNative
 
     let domRefs = Dictionary<string, obj> ()
     Dom.window?fluke <- domRefs

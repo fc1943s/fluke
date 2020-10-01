@@ -13,21 +13,44 @@ module TreeSelectorComponent =
     open Domain.UserInteraction
     open Domain.State
 
-    let treeNameComponent =
+    let menuItemComponent =
         React.memo (fun (input: {| TreeId: TreeId |}) ->
             let (TreeName treeName) = Recoil.useValue (Recoil.Atoms.Tree.name input.TreeId)
-            str treeName)
+            //            let position = Recoil.useValue (Recoil.Atoms.Tree.position input.TreeId)
 
+            let treeSelectionIds, setTreeSelectionIds = Recoil.useState Recoil.Atoms.treeSelectionIds
+            let treeSelectionIdsSet = treeSelectionIds |> Set.ofArray
+
+            let selected = treeSelectionIdsSet.Contains input.TreeId
+
+            Chakra.checkbox
+                {|
+                    value = input.TreeId
+                    disabled = false
+                    isChecked = selected
+                    onClick =
+                        fun (e: {| target: Browser.Types.HTMLElement |}) ->
+                            if Ext.JS.instanceOf (e.target, nameof Browser.Types.HTMLInputElement) then
+                                let swap value set =
+                                    if set |> Set.contains value then
+                                        set |> Set.remove value
+                                    else
+                                        set |> Set.add value
+
+                                treeSelectionIdsSet
+                                |> swap input.TreeId
+                                |> Set.toArray
+                                |> setTreeSelectionIds
+                    onChange = fun (_e: {| target: obj |}) -> ()
+                |}
+                [
+                    str treeName
+                ])
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
-            let treeSelectionIds, setTreeSelectionIds = Recoil.useState Recoil.Atoms.treeSelectionIds
             let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
 
-            let treeSelectionIdsSet = treeSelectionIds |> Set.ofArray
-
-            //
-            printfn "TreeSelectorComponent.render -> treeSelectionIds = %A" treeSelectionIds
 
             Chakra.box
                 {| position = "relative" |}
@@ -45,32 +68,14 @@ module TreeSelectorComponent =
                                 ]
 
                             Chakra.menuList
-                                ()
+                                {| height = "500px"; overflowY = "scroll" |}
                                 [
                                     yield! availableTreeIds
                                            |> List.map (fun treeId ->
                                                Chakra.menuItem
                                                    ()
                                                    [
-                                                       Chakra.checkbox
-                                                           {|
-                                                               defaultIsChecked = treeSelectionIdsSet.Contains treeId
-                                                               onChange =
-                                                                   fun () ->
-                                                                       let swap value set =
-                                                                           if set |> Set.contains value then
-                                                                               set |> Set.remove value
-                                                                           else
-                                                                               set |> Set.add value
-
-                                                                       treeSelectionIdsSet
-                                                                       |> swap treeId
-                                                                       |> Set.toArray
-                                                                       |> setTreeSelectionIds
-                                                           |}
-                                                           [
-                                                               treeNameComponent {| TreeId = treeId |}
-                                                           ]
+                                                       menuItemComponent {| TreeId = treeId |}
                                                    ])
                                 ]
 
