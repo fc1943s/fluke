@@ -47,165 +47,182 @@ module Templates =
         [
             "Lane Rendering",
             [
-                "Postponed Until",
+                "Manual",
                 [
-                    "Postponed until later",
+                    "Empty manual task",
                     {
                         Task =
                             { Task.Default with
-                                Scheduling = Recurrency (Offset (Days 1))
-                            }
-                        Position =
-                            {
-                                Date = FlukeDate.Create 2020 Month.March 10
-                                Time = userFluke.DayStart
-                            }
-                        Expected =
-                            [
-                                FlukeDate.Create 2020 Month.March 09, Disabled
-                                FlukeDate.Create 2020 Month.March 10,
-                                UserStatus (userFluke, Postponed (Some (FlukeTime.Create 23 00)))
-                                FlukeDate.Create 2020 Month.March 11, Pending
-                                FlukeDate.Create 2020 Month.March 12, Pending
-                            ]
-                        Events =
-                            [
-                                DslStatusEntry
-                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 23 00)))
-                            ]
-                    }
-                    "Postponed until after midnight",
-                    {
-                        Task =
-                            { Task.Default with
-                                Scheduling = Recurrency (Offset (Days 1))
-                            }
-                        Position =
-                            {
-                                Date = FlukeDate.Create 2020 Month.March 10
-                                Time = userFluke.DayStart
-                            }
-                        Expected =
-                            [
-                                FlukeDate.Create 2020 Month.March 09, Disabled
-                                FlukeDate.Create 2020 Month.March 10,
-                                UserStatus (userFluke, Postponed (Some (FlukeTime.Create 01 00)))
-                                FlukeDate.Create 2020 Month.March 11, Pending
-                                FlukeDate.Create 2020 Month.March 12, Pending
-                            ]
-                        Events =
-                            [
-                                DslStatusEntry
-                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 01 00)))
-                            ]
-                    }
-                    "Pending after expiration of Postponed (before midnight)",
-                    {
-                        Task =
-                            { Task.Default with
-                                Scheduling = Recurrency (Offset (Days 1))
+                                Scheduling = Manual WithoutSuggestion
                             }
                         Position =
                             {
                                 Date = FlukeDate.Create 2020 Month.March 11
-                                Time = FlukeTime.Create 02 00
-                            }
-                        Expected =
-                            [
-                                FlukeDate.Create 2020 Month.March 09, Disabled
-                                FlukeDate.Create 2020 Month.March 10, Pending
-                                FlukeDate.Create 2020 Month.March 11, Pending
-                                FlukeDate.Create 2020 Month.March 12, Pending
-                            ]
-                        Events =
-                            [
-                                DslStatusEntry
-                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 23 00)))
-                            ]
-                    }
-
-
-                    "Pending after expiration of Postponed (after midnight)",
-                    {
-                        Task =
-                            { Task.Default with
-                                Scheduling = Recurrency (Offset (Days 1))
-                            }
-                        Position =
-                            {
-                                Date = FlukeDate.Create 2020 Month.March 11
-                                Time = FlukeTime.Create 02 00
-                            }
-                        Expected =
-                            [
-                                FlukeDate.Create 2020 Month.March 09, Disabled
-                                FlukeDate.Create 2020 Month.March 10, Pending
-                                FlukeDate.Create 2020 Month.March 11, Pending
-                                FlukeDate.Create 2020 Month.March 12, Pending
-                            ]
-                        Events =
-                            [
-                                DslStatusEntry
-                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 01 00)))
-                            ]
-                    }
-
-
-                    "Past PostponedUntil events are shown",
-                    {
-                        Task =
-                            { Task.Default with
-                                Scheduling = Recurrency (Offset (Days 1))
-                            }
-                        Position =
-                            {
-                                Date = FlukeDate.Create 2020 Month.March 13
-                                Time = FlukeTime.Create 02 00
-                            }
-                        Expected =
-                            [
-                                FlukeDate.Create 2020 Month.March 07, Disabled
-                                FlukeDate.Create 2020 Month.March 08, UserStatus (userFluke, Completed)
-                                FlukeDate.Create 2020 Month.March 09, Missed
-                                FlukeDate.Create 2020 Month.March 10,
-                                UserStatus (userFluke, Postponed (Some (FlukeTime.Create 01 00)))
-                                FlukeDate.Create 2020 Month.March 11, Missed
-                                FlukeDate.Create 2020 Month.March 12, Pending
-                                FlukeDate.Create 2020 Month.March 13, Pending
-                            ]
-                        Events =
-                            [
-                                DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Completed)
-                                DslStatusEntry
-                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 01 00)))
-                            ]
-                    }
-
-
-                    "Future PostponedUntil events are shown",
-                    {
-                        Task =
-                            { Task.Default with
-                                Scheduling = Recurrency (Offset (Days 1))
-                            }
-                        Position =
-                            {
-                                Date = FlukeDate.Create 2020 Month.March 10
                                 Time = userFluke.DayStart
                             }
                         Expected =
                             [
-                                FlukeDate.Create 2020 Month.March 09, Disabled
-                                FlukeDate.Create 2020 Month.March 10, Pending
+                                FlukeDate.Create 2020 Month.March 9, Disabled
+                                FlukeDate.Create 2020 Month.March 10, Disabled
+                                FlukeDate.Create 2020 Month.March 11, Suggested
+                                FlukeDate.Create 2020 Month.March 12, Disabled
+                                FlukeDate.Create 2020 Month.March 13, Disabled
+                            ]
+                        Events = []
+                    }
+
+
+                    "ManualPending task scheduled for today after missing",
+                    {
+                        Task =
+                            { Task.Default with
+                                Scheduling = Manual WithoutSuggestion
+                            }
+                        Position =
+                            {
+                                Date = FlukeDate.Create 2020 Month.March 11
+                                Time = userFluke.DayStart
+                            }
+                        Expected =
+                            [
+                                FlukeDate.Create 2020 Month.March 8, Disabled
+                                FlukeDate.Create 2020 Month.March 9, UserStatus (userFluke, ManualPending)
+                                FlukeDate.Create 2020 Month.March 10, Missed
                                 FlukeDate.Create 2020 Month.March 11, Pending
-                                FlukeDate.Create 2020 Month.March 12,
-                                UserStatus (userFluke, Postponed (Some (FlukeTime.Create 13 00)))
-                                FlukeDate.Create 2020 Month.March 13, Pending
+                                FlukeDate.Create 2020 Month.March 12, Disabled
+                                FlukeDate.Create 2020 Month.March 13, Disabled
                             ]
                         Events =
                             [
-                                DslStatusEntry
-                                    (FlukeDate.Create 2020 Month.March 12, Postponed (Some (FlukeTime.Create 13 00)))
+                                DslStatusEntry (FlukeDate.Create 2020 Month.March 9, ManualPending)
+                            ]
+                    }
+
+
+                    "Manual Suggested task Suggested before PendingAfter",
+                    {
+                        Task =
+                            { Task.Default with
+                                Scheduling = Manual WithSuggestion
+                                PendingAfter = FlukeTime.Create 20 00 |> Some
+                            }
+                        Position =
+                            {
+                                Date = FlukeDate.Create 2020 Month.March 10
+                                Time = FlukeTime.Create 19 30
+                            }
+                        Expected =
+                            [
+                                FlukeDate.Create 2020 Month.March 09, Suggested
+                                FlukeDate.Create 2020 Month.March 10, Suggested
+                                FlukeDate.Create 2020 Month.March 11, Suggested
+                            ]
+                        Events = []
+                    }
+
+
+                    "Manual Suggested task Pending after PendingAfter",
+                    {
+                        Task =
+                            { Task.Default with
+                                Scheduling = Manual WithSuggestion
+                                PendingAfter = FlukeTime.Create 20 00 |> Some
+                            }
+                        Position =
+                            {
+                                Date = FlukeDate.Create 2020 Month.March 10
+                                Time = FlukeTime.Create 21 00
+                            }
+                        Expected =
+                            [
+                                FlukeDate.Create 2020 Month.March 09, Suggested
+                                FlukeDate.Create 2020 Month.March 10, Pending
+                                FlukeDate.Create 2020 Month.March 11, Suggested
+                            ]
+                        Events = []
+                    }
+
+
+                    "Manual Suggested task: Missed ManualPending propagates until today",
+                    {
+                        Task =
+                            { Task.Default with
+                                Scheduling = Manual WithSuggestion
+                            }
+                        Position =
+                            {
+                                Date = FlukeDate.Create 2020 Month.March 28
+                                Time = userFluke.DayStart
+                            }
+                        Expected =
+                            [
+                                FlukeDate.Create 2020 Month.March 25, Suggested
+                                FlukeDate.Create 2020 Month.March 26, UserStatus (userFluke, ManualPending)
+                                FlukeDate.Create 2020 Month.March 27, Missed
+                                FlukeDate.Create 2020 Month.March 28, Pending
+                                FlukeDate.Create 2020 Month.March 29, Suggested
+                                FlukeDate.Create 2020 Month.March 30, UserStatus (userFluke, ManualPending)
+                                FlukeDate.Create 2020 Month.March 31, Suggested
+                            ]
+                        Events =
+                            [
+                                DslStatusEntry (FlukeDate.Create 2020 Month.March 26, ManualPending)
+                                DslStatusEntry (FlukeDate.Create 2020 Month.March 30, ManualPending)
+                            ]
+                    }
+
+
+                    "Manual Suggested task: Suggested mode restored after completing a forgotten ManualPending event",
+                    {
+                        Task =
+                            { Task.Default with
+                                Scheduling = Manual WithSuggestion
+                            }
+                        Position =
+                            {
+                                Date = FlukeDate.Create 2020 Month.March 28
+                                Time = userFluke.DayStart
+                            }
+                        Expected =
+                            [
+                                FlukeDate.Create 2020 Month.March 24, Suggested
+                                FlukeDate.Create 2020 Month.March 25, UserStatus (userFluke, ManualPending)
+                                FlukeDate.Create 2020 Month.March 26, UserStatus (userFluke, Completed)
+                                FlukeDate.Create 2020 Month.March 27, Suggested
+                                FlukeDate.Create 2020 Month.March 28, Suggested
+                                FlukeDate.Create 2020 Month.March 29, Suggested
+                            ]
+                        Events =
+                            [
+                                DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
+                                DslStatusEntry (FlukeDate.Create 2020 Month.March 26, Completed)
+                            ]
+                    }
+
+
+                    "Manual Suggested task: Pending today after missing a ManualPending event",
+                    {
+                        Task =
+                            { Task.Default with
+                                Scheduling = Manual WithSuggestion
+                            }
+                        Position =
+                            {
+                                Date = FlukeDate.Create 2020 Month.March 28
+                                Time = userFluke.DayStart
+                            }
+                        Expected =
+                            [
+                                FlukeDate.Create 2020 Month.March 24, Suggested
+                                FlukeDate.Create 2020 Month.March 25, UserStatus (userFluke, ManualPending)
+                                FlukeDate.Create 2020 Month.March 26, Missed
+                                FlukeDate.Create 2020 Month.March 27, Missed
+                                FlukeDate.Create 2020 Month.March 28, Pending
+                                FlukeDate.Create 2020 Month.March 29, Suggested
+                            ]
+                        Events =
+                            [
+                                DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
                             ]
                     }
                 ]
@@ -661,182 +678,165 @@ module Templates =
                         Events = []
                     }
                 ]
-                "Manual",
+                "Postponed Until",
                 [
-                    "Empty manual task",
+                    "Postponed until later",
                     {
                         Task =
                             { Task.Default with
-                                Scheduling = Manual WithoutSuggestion
+                                Scheduling = Recurrency (Offset (Days 1))
                             }
                         Position =
                             {
-                                Date = FlukeDate.Create 2020 Month.March 11
+                                Date = FlukeDate.Create 2020 Month.March 10
                                 Time = userFluke.DayStart
                             }
                         Expected =
                             [
-                                FlukeDate.Create 2020 Month.March 9, Disabled
-                                FlukeDate.Create 2020 Month.March 10, Disabled
-                                FlukeDate.Create 2020 Month.March 11, Suggested
-                                FlukeDate.Create 2020 Month.March 12, Disabled
-                                FlukeDate.Create 2020 Month.March 13, Disabled
-                            ]
-                        Events = []
-                    }
-
-
-                    "ManualPending task scheduled for today after missing",
-                    {
-                        Task =
-                            { Task.Default with
-                                Scheduling = Manual WithoutSuggestion
-                            }
-                        Position =
-                            {
-                                Date = FlukeDate.Create 2020 Month.March 11
-                                Time = userFluke.DayStart
-                            }
-                        Expected =
-                            [
-                                FlukeDate.Create 2020 Month.March 8, Disabled
-                                FlukeDate.Create 2020 Month.March 9, UserStatus (userFluke, ManualPending)
-                                FlukeDate.Create 2020 Month.March 10, Missed
+                                FlukeDate.Create 2020 Month.March 09, Disabled
+                                FlukeDate.Create 2020 Month.March 10,
+                                UserStatus (userFluke, Postponed (Some (FlukeTime.Create 23 00)))
                                 FlukeDate.Create 2020 Month.March 11, Pending
-                                FlukeDate.Create 2020 Month.March 12, Disabled
-                                FlukeDate.Create 2020 Month.March 13, Disabled
+                                FlukeDate.Create 2020 Month.March 12, Pending
                             ]
                         Events =
                             [
-                                DslStatusEntry (FlukeDate.Create 2020 Month.March 9, ManualPending)
+                                DslStatusEntry
+                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 23 00)))
                             ]
                     }
-
-
-                    "Manual Suggested task Suggested before PendingAfter",
+                    "Postponed until after midnight",
                     {
                         Task =
                             { Task.Default with
-                                Scheduling = Manual WithSuggestion
-                                PendingAfter = FlukeTime.Create 20 00 |> Some
+                                Scheduling = Recurrency (Offset (Days 1))
                             }
                         Position =
                             {
                                 Date = FlukeDate.Create 2020 Month.March 10
-                                Time = FlukeTime.Create 19 30
+                                Time = userFluke.DayStart
                             }
                         Expected =
                             [
-                                FlukeDate.Create 2020 Month.March 09, Suggested
-                                FlukeDate.Create 2020 Month.March 10, Suggested
-                                FlukeDate.Create 2020 Month.March 11, Suggested
+                                FlukeDate.Create 2020 Month.March 09, Disabled
+                                FlukeDate.Create 2020 Month.March 10,
+                                UserStatus (userFluke, Postponed (Some (FlukeTime.Create 01 00)))
+                                FlukeDate.Create 2020 Month.March 11, Pending
+                                FlukeDate.Create 2020 Month.March 12, Pending
                             ]
-                        Events = []
+                        Events =
+                            [
+                                DslStatusEntry
+                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 01 00)))
+                            ]
                     }
-
-
-                    "Manual Suggested task Pending after PendingAfter",
+                    "Pending after expiration of Postponed (before midnight)",
                     {
                         Task =
                             { Task.Default with
-                                Scheduling = Manual WithSuggestion
-                                PendingAfter = FlukeTime.Create 20 00 |> Some
+                                Scheduling = Recurrency (Offset (Days 1))
                             }
                         Position =
                             {
-                                Date = FlukeDate.Create 2020 Month.March 10
-                                Time = FlukeTime.Create 21 00
+                                Date = FlukeDate.Create 2020 Month.March 11
+                                Time = FlukeTime.Create 02 00
                             }
                         Expected =
                             [
-                                FlukeDate.Create 2020 Month.March 09, Suggested
+                                FlukeDate.Create 2020 Month.March 09, Disabled
                                 FlukeDate.Create 2020 Month.March 10, Pending
-                                FlukeDate.Create 2020 Month.March 11, Suggested
-                            ]
-                        Events = []
-                    }
-
-
-                    "Manual Suggested task: Missed ManualPending propagates until today",
-                    {
-                        Task =
-                            { Task.Default with
-                                Scheduling = Manual WithSuggestion
-                            }
-                        Position =
-                            {
-                                Date = FlukeDate.Create 2020 Month.March 28
-                                Time = userFluke.DayStart
-                            }
-                        Expected =
-                            [
-                                FlukeDate.Create 2020 Month.March 25, Suggested
-                                FlukeDate.Create 2020 Month.March 26, UserStatus (userFluke, ManualPending)
-                                FlukeDate.Create 2020 Month.March 27, Missed
-                                FlukeDate.Create 2020 Month.March 28, Pending
-                                FlukeDate.Create 2020 Month.March 29, Suggested
-                                FlukeDate.Create 2020 Month.March 30, UserStatus (userFluke, ManualPending)
-                                FlukeDate.Create 2020 Month.March 31, Suggested
+                                FlukeDate.Create 2020 Month.March 11, Pending
+                                FlukeDate.Create 2020 Month.March 12, Pending
                             ]
                         Events =
                             [
-                                DslStatusEntry (FlukeDate.Create 2020 Month.March 26, ManualPending)
-                                DslStatusEntry (FlukeDate.Create 2020 Month.March 30, ManualPending)
+                                DslStatusEntry
+                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 23 00)))
                             ]
                     }
 
 
-                    "Manual Suggested task: Suggested mode restored after completing a forgotten ManualPending event",
+                    "Pending after expiration of Postponed (after midnight)",
                     {
                         Task =
                             { Task.Default with
-                                Scheduling = Manual WithSuggestion
+                                Scheduling = Recurrency (Offset (Days 1))
                             }
                         Position =
                             {
-                                Date = FlukeDate.Create 2020 Month.March 28
-                                Time = userFluke.DayStart
+                                Date = FlukeDate.Create 2020 Month.March 11
+                                Time = FlukeTime.Create 02 00
                             }
                         Expected =
                             [
-                                FlukeDate.Create 2020 Month.March 24, Suggested
-                                FlukeDate.Create 2020 Month.March 25, UserStatus (userFluke, ManualPending)
-                                FlukeDate.Create 2020 Month.March 26, UserStatus (userFluke, Completed)
-                                FlukeDate.Create 2020 Month.March 27, Suggested
-                                FlukeDate.Create 2020 Month.March 28, Suggested
-                                FlukeDate.Create 2020 Month.March 29, Suggested
+                                FlukeDate.Create 2020 Month.March 09, Disabled
+                                FlukeDate.Create 2020 Month.March 10, Pending
+                                FlukeDate.Create 2020 Month.March 11, Pending
+                                FlukeDate.Create 2020 Month.March 12, Pending
                             ]
                         Events =
                             [
-                                DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
-                                DslStatusEntry (FlukeDate.Create 2020 Month.March 26, Completed)
+                                DslStatusEntry
+                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 01 00)))
                             ]
                     }
 
 
-                    "Manual Suggested task: Pending today after missing a ManualPending event",
+                    "Past PostponedUntil events are shown",
                     {
                         Task =
                             { Task.Default with
-                                Scheduling = Manual WithSuggestion
+                                Scheduling = Recurrency (Offset (Days 1))
                             }
                         Position =
                             {
-                                Date = FlukeDate.Create 2020 Month.March 28
+                                Date = FlukeDate.Create 2020 Month.March 13
+                                Time = FlukeTime.Create 02 00
+                            }
+                        Expected =
+                            [
+                                FlukeDate.Create 2020 Month.March 07, Disabled
+                                FlukeDate.Create 2020 Month.March 08, UserStatus (userFluke, Completed)
+                                FlukeDate.Create 2020 Month.March 09, Missed
+                                FlukeDate.Create 2020 Month.March 10,
+                                UserStatus (userFluke, Postponed (Some (FlukeTime.Create 01 00)))
+                                FlukeDate.Create 2020 Month.March 11, Missed
+                                FlukeDate.Create 2020 Month.March 12, Pending
+                                FlukeDate.Create 2020 Month.March 13, Pending
+                            ]
+                        Events =
+                            [
+                                DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Completed)
+                                DslStatusEntry
+                                    (FlukeDate.Create 2020 Month.March 10, Postponed (Some (FlukeTime.Create 01 00)))
+                            ]
+                    }
+
+
+                    "Future PostponedUntil events are shown",
+                    {
+                        Task =
+                            { Task.Default with
+                                Scheduling = Recurrency (Offset (Days 1))
+                            }
+                        Position =
+                            {
+                                Date = FlukeDate.Create 2020 Month.March 10
                                 Time = userFluke.DayStart
                             }
                         Expected =
                             [
-                                FlukeDate.Create 2020 Month.March 24, Suggested
-                                FlukeDate.Create 2020 Month.March 25, UserStatus (userFluke, ManualPending)
-                                FlukeDate.Create 2020 Month.March 26, Missed
-                                FlukeDate.Create 2020 Month.March 27, Missed
-                                FlukeDate.Create 2020 Month.March 28, Pending
-                                FlukeDate.Create 2020 Month.March 29, Suggested
+                                FlukeDate.Create 2020 Month.March 09, Disabled
+                                FlukeDate.Create 2020 Month.March 10, Pending
+                                FlukeDate.Create 2020 Month.March 11, Pending
+                                FlukeDate.Create 2020 Month.March 12,
+                                UserStatus (userFluke, Postponed (Some (FlukeTime.Create 13 00)))
+                                FlukeDate.Create 2020 Month.March 13, Pending
                             ]
                         Events =
                             [
-                                DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
+                                DslStatusEntry
+                                    (FlukeDate.Create 2020 Month.March 12, Postponed (Some (FlukeTime.Create 13 00)))
                             ]
                     }
                 ]

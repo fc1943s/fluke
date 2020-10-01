@@ -627,6 +627,12 @@ module Recoil =
                      |})
             }
 
+        let rec internal selectedPosition =
+            atom {
+                key ("atom/" + nameof selectedPosition)
+                def (None: FlukeDateTime option)
+            }
+
         let rec internal username =
             atom {
                 key ("atom/" + nameof username)
@@ -715,8 +721,12 @@ module Recoil =
                 get (fun getter ->
                         let _positionTrigger = getter.get Atoms.positionTrigger
                         let getLivePosition = getter.get Atoms.getLivePosition
-
-                        let result = Some <| getLivePosition.Get ()
+                        let selectedPosition = getter.get Atoms.selectedPosition
+                        //
+                        let result =
+                            selectedPosition
+                            |> Option.defaultValue (getLivePosition.Get ())
+                            |> Some
 
                         Profiling.addCount (nameof position)
                         result)

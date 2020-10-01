@@ -14,38 +14,68 @@ module TreeSelectorComponent =
     open Domain.State
 
     let menuItemComponent =
-        React.memo (fun (input: {| TreeId: TreeId |}) ->
+        React.memo (fun (input: {| Username: Username; TreeId: TreeId |}) ->
+            let selectedPosition, setSelectedPosition = Recoil.useState (Recoil.Atoms.selectedPosition)
             let (TreeName treeName) = Recoil.useValue (Recoil.Atoms.Tree.name input.TreeId)
-            //            let position = Recoil.useValue (Recoil.Atoms.Tree.position input.TreeId)
+            let treePosition = Recoil.useValue (Recoil.Atoms.Tree.position input.TreeId)
+            let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
 
             let treeSelectionIds, setTreeSelectionIds = Recoil.useState Recoil.Atoms.treeSelectionIds
             let treeSelectionIdsSet = treeSelectionIds |> Set.ofArray
 
             let selected = treeSelectionIdsSet.Contains input.TreeId
 
-            Chakra.checkbox
-                {|
-                    value = input.TreeId
-                    disabled = false
-                    isChecked = selected
-                    onClick =
-                        fun (e: {| target: Browser.Types.HTMLElement |}) ->
-                            if Ext.JS.instanceOf (e.target, nameof Browser.Types.HTMLInputElement) then
-                                let swap value set =
-                                    if set |> Set.contains value then
-                                        set |> Set.remove value
-                                    else
-                                        set |> Set.add value
+            let onChange = fun (_e: {| target: obj |}) -> ()
 
-                                treeSelectionIdsSet
-                                |> swap input.TreeId
-                                |> Set.toArray
-                                |> setTreeSelectionIds
-                    onChange = fun (_e: {| target: obj |}) -> ()
-                |}
-                [
-                    str treeName
-                ])
+            let onClick =
+                fun (e: {| target: Browser.Types.HTMLElement |}) ->
+                    if Ext.JS.instanceOf (e.target, nameof Browser.Types.HTMLInputElement) then
+                        let swap value set =
+                            if set |> Set.contains value then
+                                set |> Set.remove value
+                            else
+                                set |> Set.add value
+
+                        let availableTreeIdsSet = availableTreeIds |> Set.ofList
+
+                        let newTreeSelectionIds =
+                            treeSelectionIdsSet
+                            |> Set.intersect availableTreeIdsSet
+                            |> swap input.TreeId
+                            |> Set.toArray
+
+                        setTreeSelectionIds newTreeSelectionIds
+
+                        match newTreeSelectionIds with
+                        | [||] -> None
+                        | _ -> treePosition
+                        |> setSelectedPosition
+
+            let (|RenderCheckbox|HideCheckbox|) =
+                function
+                | None, None -> RenderCheckbox
+                | None, Some _ when treeSelectionIds.Length = 0 -> RenderCheckbox
+                | Some _, Some _ when selectedPosition = treePosition -> RenderCheckbox
+                | _ -> HideCheckbox
+
+            match selectedPosition, treePosition with
+            | RenderCheckbox ->
+                Chakra.menuItem
+                    ()
+                    [
+                        Chakra.checkbox
+                            {|
+                                value = input.TreeId
+                                isChecked = selected
+                                onClick = onClick
+                                onChange = onChange
+                            |}
+                            [
+                                str treeName
+                            ]
+                    ]
+            | _ -> nothing)
+
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
@@ -72,11 +102,7 @@ module TreeSelectorComponent =
                                 [
                                     yield! availableTreeIds
                                            |> List.map (fun treeId ->
-                                               Chakra.menuItem
-                                                   ()
-                                                   [
-                                                       menuItemComponent {| TreeId = treeId |}
-                                                   ])
+                                               menuItemComponent {| Username = input.Username; TreeId = treeId |})
                                 ]
 
                         ]
