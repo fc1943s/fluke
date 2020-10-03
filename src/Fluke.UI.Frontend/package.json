@@ -27,7 +27,7 @@
     "bulma-extensions": "^6.2",
     "bulmaswatch": "^0.8",
 
-    "react": "^0.0.0-experimental-94c0244ba",
+    "react": "^0.14.0",
     "react-dom": "^0.0.0-experimental-94c0244ba",
 
     "recoil": "^0.0",
