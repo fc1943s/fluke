@@ -12,7 +12,12 @@
   "private": true,
   "scripts": {
     "webpack": "webpack",
-    "webpack-dev-server": "webpack-dev-server"
+    "webpack-dev-server": "webpack-dev-server",
+    "pretest": "fable-splitter --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
+    "test": "jest",
+    "splitter-watch": "fable-splitter --watch --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
+    "jest-watch": "jest --watchAll",
+    "test-watch": "concurrently --kill-others \"yarn splitter-watch\" \"yarn jest-watch\""
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",
@@ -26,7 +31,7 @@
     "react-dom": "^0.0.0-experimental-94c0244ba",
 
     "recoil": "^0.0",
-    "recoil-logger": "^1.1",
+    "gkx": "^1.0",
 
     "@material-ui/core": "^4.11",
 
@@ -51,7 +56,7 @@
     "@types/node" : "^14.10",
 
     "html-webpack-plugin": "^4.5",
-    "copy-webpack-plugin": "^6.1",
+    "copy-webpack-plugin": "^6.2",
     "mini-css-extract-plugin": "^0.11",
 
     "@babel/core": "^7.11",
@@ -66,6 +71,14 @@
     "file-loader": "^6.1",
 
     "fable-loader": "^2.1",
-    "fable-compiler": "^2.13"
+    "fable-compiler": "^2.13",
+    "fable-splitter": "^2.2",
+
+    "jest": "^26.4",
+    "@testing-library/react": "^11.0",
+    "@testing-library/user-event": "^12.1",
+    "@testing-library/jest-dom": "^5.11",
+
+    "concurrently": "^5.3"
   }
 }

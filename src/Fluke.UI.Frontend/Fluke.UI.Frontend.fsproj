@@ -1,57 +1,60 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Css.fs" />
-    <Compile Include="Ext.fs" />
-    <Compile Include="Element.fs" />
-    <Compile Include="Model.fs" />
-    <Compile Include="Recoil.fs" />
-    <Compile Include="Temp.fs" />
-    <Compile Include="Components\MonthResponsiveCellComponent.fs" />
-    <Compile Include="Components\PageLoaderComponent.fs" />
-    <Compile Include="Components\TreeSelectorComponent.fs" />
-    <Compile Include="Components\NavBarComponent.fs" />
-    <Compile Include="Components\DayComponent.fs" />
-    <Compile Include="Components\SpinnerComponent.fs" />
-    <Compile Include="Components\GridHeaderComponent.fs" />
-    <Compile Include="Components\TooltipPopupComponent.fs" />
-    <Compile Include="Components\TaskNameComponent.fs" />
-    <Compile Include="Components\InformationNameComponent.fs" />
-    <Compile Include="Components\TaskInformationNameComponent.fs" />
-    <Compile Include="Components\TaskPriorityComponent.fs" />
-    <Compile Include="Components\CellStatusUserIndicatorComponent.fs" />
-    <Compile Include="Components\CellBorderComponent.fs" />
-    <Compile Include="Components\CellSessionIndicatorComponent.fs" />
-    <Compile Include="Components\CellComponent.fs" />
-    <Compile Include="Components\CellsComponent.fs" />
-    <Compile Include="Components\CalendarViewComponent.fs" />
-    <Compile Include="Components\GroupsViewComponent.fs" />
-    <Compile Include="Components\TasksViewComponent.fs" />
-    <Compile Include="Components\WeekViewComponent.fs" />
-    <Compile Include="Components\DetailsComponent.fs" />
-    <Compile Include="Components\PanelsComponent.fs" />
-    <Compile Include="Components\DebugOverlayComponent.fs" />
-    <Compile Include="Components\MainComponent.fs" />
-    <Compile Include="App.fs" />
-    <Content Include="package.json" />
-    <Content Include="webpack.config.ts" />
-    <Content Include="paket.references" />
-    <Content Include="public\index.html" />
-    <Content Include="public\index.scss" />
-    <Content Include="public\index.tsx" />
-    <Content Include="public\index.ts" />
-    <Content Include="public\index.jsx" />
-    <Content Include="public\index.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj" />
-    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI.Frontend.React\Suigetsu.UI.Frontend.React.fsproj" />
-    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI.Frontend.ElmishBridge\Suigetsu.UI.Frontend.ElmishBridge.fsproj" />
-    <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
-  </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+    <PropertyGroup>
+        <TargetFramework>netcoreapp5.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="Bindings\Dom.fs" />
+        <Compile Include="Bindings\JS.fs" />
+        <Compile Include="Bindings\Crypto.fs" />
+        <Compile Include="Bindings\React.fs" />
+        <Compile Include="Bindings\Chakra.fs" />
+        <Compile Include="Bindings\Markdown.fs" />
+        <Compile Include="Hooks\Scheduling.fs" />
+        <Compile Include="Hooks\Listener.fs" />
+        <Compile Include="Temp\Css.fs" />
+        <Compile Include="Temp.fs" />
+        <Compile Include="Model.fs" />
+        <Compile Include="Recoil.fs" />
+        <Compile Include="Components\MonthResponsiveCellComponent.fs" />
+        <Compile Include="Components\PageLoaderComponent.fs" />
+        <Compile Include="Components\TreeSelectorComponent.fs" />
+        <Compile Include="Components\NavBarComponent.fs" />
+        <Compile Include="Components\DayComponent.fs" />
+        <Compile Include="Components\SpinnerComponent.fs" />
+        <Compile Include="Components\GridHeaderComponent.fs" />
+        <Compile Include="Components\TooltipPopupComponent.fs" />
+        <Compile Include="Components\TaskNameComponent.fs" />
+        <Compile Include="Components\InformationNameComponent.fs" />
+        <Compile Include="Components\TaskInformationNameComponent.fs" />
+        <Compile Include="Components\TaskPriorityComponent.fs" />
+        <Compile Include="Components\CellStatusUserIndicatorComponent.fs" />
+        <Compile Include="Components\CellBorderComponent.fs" />
+        <Compile Include="Components\CellSessionIndicatorComponent.fs" />
+        <Compile Include="Components\CellComponent.fs" />
+        <Compile Include="Components\CellsComponent.fs" />
+        <Compile Include="Components\CalendarViewComponent.fs" />
+        <Compile Include="Components\GroupsViewComponent.fs" />
+        <Compile Include="Components\TasksViewComponent.fs" />
+        <Compile Include="Components\WeekViewComponent.fs" />
+        <Compile Include="Components\DetailsComponent.fs" />
+        <Compile Include="Components\PanelsComponent.fs" />
+        <Compile Include="Components\DebugOverlayComponent.fs" />
+        <Compile Include="Components\MainComponent.fs" />
+        <Compile Include="App.fs" />
+        <Content Include="package.json" />
+        <Content Include="webpack.config.ts" />
+        <Content Include="paket.references" />
+        <Content Include="public\index.html" />
+        <Content Include="public\index.scss" />
+        <Content Include="public\index.tsx" />
+        <Content Include="public\index.ts" />
+        <Content Include="public\index.jsx" />
+        <Content Include="public\index.js" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

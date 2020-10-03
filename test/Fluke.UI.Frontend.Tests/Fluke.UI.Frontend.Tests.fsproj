@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp5.0</TargetFramework>
+        <LangVersion>preview</LangVersion>
+    </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Temp.test.fs" />
+    <None Include="paket.references" />
+    <Content Include="splitter.config.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Fluke.UI.Frontend\Fluke.UI.Frontend.fsproj" />
+  </ItemGroup>
+  <Import Project="..\..\.paket\Paket.Restore.targets" />
+</Project>

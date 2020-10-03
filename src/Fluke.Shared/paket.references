@@ -1,5 +1,6 @@
-FSharp.Core
-
 group Fluke.Shared
+
+FSharp.Core
+FSharpPlus
 
 

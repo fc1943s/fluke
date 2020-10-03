@@ -1,6 +1,5 @@
 namespace Fluke.Shared
 
-open Suigetsu.Core
 open FSharpPlus
 
 

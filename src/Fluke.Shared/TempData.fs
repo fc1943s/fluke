@@ -2,7 +2,6 @@ namespace Fluke.Shared
 
 open System
 open FSharpPlus
-open Suigetsu.Core
 
 
 module TempData =

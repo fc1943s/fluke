@@ -3,10 +3,10 @@ namespace Fluke.UI.Frontend.Components
 open System
 open FSharpPlus
 open Fable.React
-open Suigetsu.Core
 open Feliz
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
 
 
@@ -19,7 +19,7 @@ module TooltipPopupComponent =
         React.memo (fun (input: {| Attachments: Attachment list |}) ->
             let tooltipContainerRef = React.useElementRef ()
 
-            let hovered = Temp.UseListener.onElementHover tooltipContainerRef
+            let hovered = Listener.useElementHover tooltipContainerRef
 
             let comments =
                 input.Attachments
@@ -57,9 +57,7 @@ module TooltipPopupComponent =
                                         |> fun text ->
                                             match hovered with
                                             | false -> nothing
-                                            | true ->
-                                                ReactBindings.React.createElement
-                                                    (Ext.reactMarkdown, {| source = text |}, [])
+                                            | true -> Bindings.Markdown.render text
                                     ]
                             ]
                         ]

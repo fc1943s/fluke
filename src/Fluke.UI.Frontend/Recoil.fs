@@ -12,7 +12,6 @@ open Feliz.Recoil
 open Fluke.Shared
 open Fluke.UI.Frontend
 open Fable.DateFunctions
-open Suigetsu.Core
 
 
 module Recoil =
@@ -32,7 +31,7 @@ module Recoil =
                 Timestamps = List<string * int64> ()
             |}
 
-        Ext.setDom (nameof profilingState) profilingState
+        Bindings.Dom.set (nameof profilingState) profilingState
 
         let internal addCount id =
             match profilingState.CallCount.ContainsKey id with
@@ -771,7 +770,7 @@ module Recoil =
                                         { treeState with
                                             Id =
                                                 name
-                                                |> Ext.crypto.SHA3
+                                                |> Bindings.Crypto.sha3
                                                 |> string
                                                 |> String.take 16
                                                 |> System.Text.Encoding.UTF8.GetBytes

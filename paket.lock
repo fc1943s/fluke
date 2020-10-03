@@ -423,6 +423,13 @@ NUGET
 
 GROUP Fluke.Shared
 STORAGE: NONE
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    FSharp.Core (4.7.2) - restriction: || (>= net45) (>= netstandard2.0)
+    FSharpPlus (1.1.3)
+      FSharp.Core (>= 4.6.2) - restriction: || (>= net45) (>= netstandard2.0)
+      System.ValueTuple (>= 4.4) - restriction: >= net45
+    System.ValueTuple (4.5) - restriction: >= net45
 
 GROUP Fluke.UI.Frontend
 STORAGE: NONE
@@ -516,6 +523,57 @@ NUGET
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
     Zanaptak.TypedCssClasses (0.4)
       FSharp.Core (>= 4.3.4) - restriction: >= netstandard2.0
+
+GROUP Fluke.UI.Frontend.Tests
+STORAGE: NONE
+NUGET
+  remote: https://api.nuget.org/v3/index.json
+    Fable.Browser.Blob (1.1) - restriction: >= netstandard2.0
+      Fable.Core (>= 3.0) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.6.2) - restriction: >= netstandard2.0
+    Fable.Browser.Dom (2.1)
+      Fable.Browser.Blob (>= 1.1) - restriction: >= netstandard2.0
+      Fable.Browser.Event (>= 1.2.1) - restriction: >= netstandard2.0
+      Fable.Browser.WebStorage (>= 1.0) - restriction: >= netstandard2.0
+      Fable.Core (>= 3.0) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
+    Fable.Browser.Event (1.2.1)
+      Fable.Core (>= 3.0) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
+    Fable.Browser.WebStorage (1.0) - restriction: >= netstandard2.0
+      Fable.Browser.Event (>= 1.0) - restriction: >= netstandard2.0
+      Fable.Core (>= 3.0) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.5.2) - restriction: >= netstandard2.0
+    Fable.Core (3.1.6)
+      FSharp.Core (>= 4.7.1) - restriction: >= netstandard2.0
+    Fable.Jester (0.27.1)
+      Fable.Browser.Dom (>= 2.1 < 3.0)
+      Fable.Core (>= 3.1.5 < 4.0)
+      Fable.Node (>= 1.0.2 < 2.0)
+      Fable.Promise (>= 2.1 < 3.0)
+      Feliz (>= 1.13.1 < 2.0)
+      FSharp.Core (>= 4.7.2 < 5.0)
+    Fable.Node (1.0.2)
+      Fable.Core (>= 3.1.2) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
+    Fable.Promise (2.1)
+      Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
+    Fable.React (7.0.1) - restriction: >= netstandard2.0
+      Fable.Browser.Dom (>= 2.0.1) - restriction: >= netstandard2.0
+      Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.1) - restriction: >= netstandard2.0
+    Fable.ReactTestingLibrary (0.27.1)
+      Fable.Browser.Event (>= 1.2.1 < 2.0)
+      Fable.Core (>= 3.1.5 < 4.0)
+      Fable.Promise (>= 2.1 < 3.0)
+      Feliz (>= 1.13.1 < 2.0)
+      FSharp.Core (>= 4.7.2 < 5.0)
+    Feliz (1.14)
+      Fable.Core (>= 3.1.5) - restriction: >= netstandard2.0
+      Fable.React (>= 7.0.1) - restriction: >= netstandard2.0
+      FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
+    FSharp.Core (4.7.2)
 
 GROUP Testing
 STORAGE: NONE

@@ -12,6 +12,8 @@ group Fluke.Shared
     storage: none
     source https://api.nuget.org/v3/index.json
 
+    nuget FSharpPlus ~> 1.1
+
 
 
 group Fluke.UI.Frontend
@@ -30,9 +32,15 @@ group Fluke.UI.Frontend
     nuget Feliz.UseListener ~> 0.6
     nuget Feliz.Router ~> 3.2
     nuget Feliz.MaterialUI ~> 1.2
-
     nuget Fable.SimpleJson ~> 3.11
     nuget Thoth.Json ~> 4.1
+
+group Fluke.UI.Frontend.Tests
+    storage: none
+    source https://api.nuget.org/v3/index.json
+
+    nuget Fable.Jester ~> 0.27
+    nuget Fable.ReactTestingLibrary ~> 0.27
 
 
 group Testing

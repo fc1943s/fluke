@@ -1,0 +1,6 @@
+group Fluke.UI.Frontend.Tests
+
+FSharp.Core
+
+Fable.Jester
+Fable.ReactTestingLibrary

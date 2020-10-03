@@ -1,7 +1,7 @@
 namespace Fluke.Shared.Domain
 
 open System
-open Suigetsu.Core
+open Fluke.Shared
 
 module UserInteraction =
     open Information

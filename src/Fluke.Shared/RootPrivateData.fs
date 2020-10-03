@@ -6,7 +6,6 @@ open System.Security.Cryptography
 open System.Text
 open FSharpPlus
 open Fluke.Shared
-open Suigetsu.Core
 
 
 module RootPrivateData =

@@ -5,9 +5,12 @@ open Feliz.Recoil
 open Feliz.Router
 open Browser.Dom
 open Fluke.UI.Frontend
+open Fable.Core.JsInterop
+open Fluke.UI.Frontend.Bindings
 
 
 module App =
+
     let router =
         React.memo (fun () ->
             React.router
@@ -42,5 +45,12 @@ module App =
                     ]
             ])
 
-//    ReactDOM.render (appMain (), document.getElementById "app")
-    Ext.reactDom.unstable_createRoot(document.getElementById "app").render(appMain ())
+    importAll "typeface-roboto-condensed"
+
+    importAll "./public/index.scss"
+    importAll "./public/index.tsx"
+    importAll "./public/index.ts"
+    importAll "./public/index.jsx"
+    importAll "./public/index.js"
+
+    React.render (document.getElementById "app") (appMain ())

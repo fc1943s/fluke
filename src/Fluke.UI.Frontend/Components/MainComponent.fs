@@ -6,12 +6,11 @@ open Fable.Core
 open Browser.Types
 open FSharpPlus
 open Fable.React
-open Suigetsu.UI.Frontend.React
-open Suigetsu.Core
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
 open Fable.Core.JsInterop
 

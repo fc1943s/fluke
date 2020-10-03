@@ -5,6 +5,7 @@
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="Core.fs" />
         <Compile Include="Domain\Information.fs" />
         <Compile Include="Domain\UserInteraction.fs" />
         <Compile Include="Domain\State.fs" />
@@ -36,9 +37,6 @@
 
         <Content Include="paket.references" />
 
-    </ItemGroup>
-    <ItemGroup>
-        <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj" />
     </ItemGroup>
     <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

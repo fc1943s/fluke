@@ -11,7 +11,6 @@ open Feliz
 open Feliz.Recoil
 open Feliz.Bulma
 open Feliz.UseListener
-open Suigetsu.Core
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Model
 open Fluke.Shared
