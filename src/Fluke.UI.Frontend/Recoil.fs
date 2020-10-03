@@ -763,8 +763,23 @@ module Recoil =
                         let result =
                             match position with
                             | Some position ->
-                                Some
-                                <| RootPrivateData.State.getTreeStateMap position
+                                let user, treeStateMap = RootPrivateData.State.getTreeStateMap position
+
+                                let newTreeStateMap =
+                                    treeStateMap
+                                    |> Map.mapValues (fun ({ Name = TreeName name } as treeState) ->
+                                        { treeState with
+                                            Id =
+                                                name
+                                                |> Ext.crypto.SHA3
+                                                |> string
+                                                |> String.take 16
+                                                |> System.Text.Encoding.UTF8.GetBytes
+                                                |> Guid
+                                                |> TreeId
+                                        })
+
+                                Some (user, newTreeStateMap)
                             | None -> None
 
                         Profiling.addCount (nameof treeStateMap)

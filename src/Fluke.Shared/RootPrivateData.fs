@@ -2,6 +2,8 @@ namespace Fluke.Shared
 
 
 open System
+open System.Security.Cryptography
+open System.Text
 open FSharpPlus
 open Fluke.Shared
 open Suigetsu.Core

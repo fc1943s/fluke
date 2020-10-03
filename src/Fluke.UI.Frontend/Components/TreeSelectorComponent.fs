@@ -31,11 +31,15 @@ module TreeSelectorComponent =
 
             let selected = treeSelectionIdsSet.Contains input.TreeId
 
+            printfn "availableTreeIds: %A" availableTreeIds
+            printfn "treeSelectionIds: %A" treeSelectionIds
+            printfn "treeSelectionIdsSet: %A" treeSelectionIdsSet
+
             let onChange = fun (_e: {| target: obj |}) -> ()
 
             let onClick =
                 fun (e: {| target: Browser.Types.HTMLElement |}) ->
-                    if Ext.JS.instanceOf (e.target, nameof Browser.Types.HTMLInputElement) then
+                    if JS.instanceof (e.target, nameof Browser.Types.HTMLInputElement) then
                         let swap value set =
                             if set |> Set.contains value then
                                 set |> Set.remove value
@@ -54,10 +58,10 @@ module TreeSelectorComponent =
                         | _ -> treePosition
                         |> setSelectedPosition
 
-            let (|RenderCheckbox|HideCheckbox|) =
-                function
+            let (|RenderCheckbox|HideCheckbox|) (selectedPosition, treePosition) =
+                match selectedPosition, treePosition with
                 | None, None -> RenderCheckbox
-                | None, Some _ when treeSelectionIds.Length = 0 -> RenderCheckbox
+                | None, Some _ when treeSelectionIdsSet.IsEmpty -> RenderCheckbox
                 | Some _, Some _ when selectedPosition = treePosition -> RenderCheckbox
                 | _ -> HideCheckbox
 

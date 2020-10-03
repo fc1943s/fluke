@@ -5,7 +5,6 @@
     <LangVersion>preview</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Chakra.fs" />
     <Compile Include="Css.fs" />
     <Compile Include="Ext.fs" />
     <Compile Include="Element.fs" />
