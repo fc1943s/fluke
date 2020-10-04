@@ -25,7 +25,6 @@ module State =
 
     and TreeState =
         {
-            Id: TreeId
             Name: TreeName
             Owner: User
             SharedWith: TreeAccess
@@ -33,8 +32,6 @@ module State =
             InformationStateMap: Map<Information, InformationState>
             TaskStateMap: Map<Task, TaskState>
         }
-
-    and TreeId = TreeId of guid: Guid
 
     and TreeName = TreeName of name: string
 
@@ -84,11 +81,13 @@ module State =
         | Dismissed
         | ManualPending
 
+    type TreeId = TreeId of guid: Guid
+
+
 
     and TreeState with
-        static member inline Create (id, name, owner, ?sharedWith, ?position): TreeState =
+        static member inline Create (name, owner, ?sharedWith, ?position): TreeState =
             {
-                Id = id
                 Name = name
                 Owner = owner
                 SharedWith = defaultArg sharedWith (TreeAccess.Private [])

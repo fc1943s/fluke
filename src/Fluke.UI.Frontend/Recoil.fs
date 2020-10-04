@@ -763,23 +763,23 @@ module Recoil =
                         let result =
                             match position with
                             | Some position ->
-                                let user, treeStateMap = RootPrivateData.State.getTreeStateMap position
+                                let user, treeStateList = RootPrivateData.State.getTreeStateList position
 
-                                let newTreeStateMap =
-                                    treeStateMap
-                                    |> Map.mapValues (fun ({ Name = TreeName name } as treeState) ->
-                                        { treeState with
-                                            Id =
-                                                name
-                                                |> Bindings.Crypto.sha3
-                                                |> string
-                                                |> String.take 16
-                                                |> System.Text.Encoding.UTF8.GetBytes
-                                                |> Guid
-                                                |> TreeId
-                                        })
+                                let treeStateMap =
+                                    treeStateList
+                                    |> List.map (fun ({ Name = TreeName name } as treeState) ->
+                                        let id =
+                                            name
+                                            |> Bindings.Crypto.sha3
+                                            |> string
+                                            |> String.take 16
+                                            |> System.Text.Encoding.UTF8.GetBytes
+                                            |> Guid
+                                            |> TreeId
+                                        id, treeState)
+                                    |> Map.ofList
 
-                                Some (user, newTreeStateMap)
+                                Some (user, treeStateMap)
                             | None -> None
 
                         Profiling.addCount (nameof treeStateMap)

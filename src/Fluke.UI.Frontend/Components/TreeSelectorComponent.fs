@@ -34,10 +34,6 @@ module TreeSelectorComponent =
 
             let selected = treeSelectionIdsSet.Contains input.TreeId
 
-            printfn "availableTreeIds: %A" availableTreeIds
-            printfn "treeSelectionIds: %A" treeSelectionIds
-            printfn "treeSelectionIdsSet: %A" treeSelectionIdsSet
-
             let onChange = fun (_e: {| target: obj |}) -> ()
 
             let onClick =

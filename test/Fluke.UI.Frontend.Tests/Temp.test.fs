@@ -103,8 +103,6 @@ module Temp =
     Jest.describe
         ("TreeSelector",
          (fun () ->
-             let ofTreeId (State.TreeId guid) = guid.ToString ()
-
              let users = TempData.getUsers ()
              let user = users.fluke
 

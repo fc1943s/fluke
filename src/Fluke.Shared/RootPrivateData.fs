@@ -126,7 +126,7 @@ module RootPrivateData =
         open Domain.UserInteraction
         open Domain.State
 
-        let private getTreeStateList (moment: FlukeDateTime) =
+        let getTreeStateList (moment: FlukeDateTime) =
             let users = TempData.getUsers ()
 
             let dslData = PrivateData.Tasks.getDslData moment |> fst
@@ -146,67 +146,56 @@ module RootPrivateData =
                 ]
 
 
-            [
-                TreeState.Create
-                    (id = TreeId (Guid "8FE2ECF3-0DCB-4933-86B9-13DE90D659F0"),
-                     name = TreeName ("fc1943s/private"),
-                     owner = users.fc1943s)
-                |> treeStateWithInteractions privateInteractions
-                |> TempData.mergeDslDataIntoTreeState dslData
-                TreeState.Create
-                    (id = TreeId (Guid "A92CCFC3-9BF5-4921-9B1B-4D6787BF9C60"),
-                     name = TreeName ("liryanne/private"),
-                     owner = users.liryanne)
-                |> treeStateWithInteractions privateInteractions
-                TreeState.Create
-                    (id = TreeId (Guid "9A7A797D-0615-4CF6-B85D-86985978E251"),
-                     name = TreeName ("liryanne/shared"),
-                     owner = users.liryanne,
-                     sharedWith =
-                         TreeAccess.Private
-                             [
-                                 TreeAccessItem.Admin users.fc1943s
-                             ])
-                |> treeStateWithInteractions [
-                    yield! SharedPrivateData.liryanne.InformationCommentInteractions.getInformationCommentInteractions
-                               moment
-                    yield! SharedPrivateData.fc1943s.InformationCommentInteractions.getInformationCommentInteractions
-                               moment
-                    yield! SharedPrivateData.liryanne.CellCommentInteractions.getCellCommentInteractions moment
-                    yield! SharedPrivateData.fc1943s.CellCommentInteractions.getCellCommentInteractions moment
-                    yield! SharedPrivateData.liryanne.CellStatusChangeInteractions.getCellStatusChangeInteractions
-                               moment
-                    yield! SharedPrivateData.fc1943s.CellStatusChangeInteractions.getCellStatusChangeInteractions moment
-                   ]
-                |> TempData.mergeDslDataIntoTreeState sharedDslData
+            let treeStateList =
+                [
+                    TreeState.Create (name = TreeName ("fc1943s/private"), owner = users.fc1943s)
+                    |> treeStateWithInteractions privateInteractions
+                    |> TempData.mergeDslDataIntoTreeState dslData
+                    TreeState.Create (name = TreeName ("liryanne/private"), owner = users.liryanne)
+                    |> treeStateWithInteractions privateInteractions
+                    TreeState.Create
+                        (name = TreeName ("liryanne/shared"),
+                         owner = users.liryanne,
+                         sharedWith =
+                             TreeAccess.Private
+                                 [
+                                     TreeAccessItem.Admin users.fc1943s
+                                 ])
+                    |> treeStateWithInteractions [
+                        yield! SharedPrivateData.liryanne.InformationCommentInteractions.getInformationCommentInteractions
+                                   moment
+                        yield! SharedPrivateData.fc1943s.InformationCommentInteractions.getInformationCommentInteractions
+                                   moment
+                        yield! SharedPrivateData.liryanne.CellCommentInteractions.getCellCommentInteractions moment
+                        yield! SharedPrivateData.fc1943s.CellCommentInteractions.getCellCommentInteractions moment
+                        yield! SharedPrivateData.liryanne.CellStatusChangeInteractions.getCellStatusChangeInteractions
+                                   moment
+                        yield! SharedPrivateData.fc1943s.CellStatusChangeInteractions.getCellStatusChangeInteractions
+                                   moment
+                       ]
+                    |> TempData.mergeDslDataIntoTreeState sharedDslData
 
-                yield! Templates.getTreeMap ()
-                       |> Map.toList
-                       |> List.map (fun (templateName, dslTemplate) ->
+                    yield! Templates.getTreeMap ()
+                           |> Map.toList
+                           |> List.map (fun (templateName, dslTemplate) ->
 
-                           let dslData =
-                               TempData.Testing.createLaneRenderingDslData
-                                   {|
-                                       User = users.fluke
-                                       Position = dslTemplate.Position
-                                       Task = dslTemplate.Task
-                                       Events = dslTemplate.Events
-                                       Expected = dslTemplate.Expected
-                                   |}
+                               let dslData =
+                                   TempData.Testing.createLaneRenderingDslData
+                                       {|
+                                           User = users.fluke
+                                           Position = dslTemplate.Position
+                                           Task = dslTemplate.Task
+                                           Events = dslTemplate.Events
+                                           Expected = dslTemplate.Expected
+                                       |}
 
-                           TreeState.Create
-                               (id = TreeId (Guid.NewGuid ()),
-                                name = TreeName templateName,
-                                owner = users.fluke,
-                                position = dslTemplate.Position,
-                                sharedWith = TreeAccess.Public)
-                           |> TempData.mergeDslDataIntoTreeState dslData)
-            ]
-
-
-
-        let getTreeStateMap moment =
-            let treeStateList = getTreeStateList moment
+                               TreeState.Create
+                                   (name = TreeName templateName,
+                                    owner = users.fluke,
+                                    position = dslTemplate.Position,
+                                    sharedWith = TreeAccess.Public)
+                               |> TempData.mergeDslDataIntoTreeState dslData)
+                ]
 
             let consts = PrivateData.PrivateData.getPrivateConsts ()
             let user = consts.CurrentUser
@@ -232,12 +221,7 @@ module RootPrivateData =
 //                )
 //                |> Set.ofList
 
-            let treeStateMap =
-                treesWithAccess
-                |> List.map (fun treeState -> treeState.Id, treeState)
-                |> Map.ofList
-
-            let result = user, treeStateMap
+            let result = user, treesWithAccess
             result
 
 
@@ -453,11 +437,6 @@ module RootPrivateData =
 //        let newTreeData = {| treeData with TaskOrderList = taskOrderList |}
 //
 //        newTreeData, tasks
-//
-//
-//
-//
-//
 //
 //
 //

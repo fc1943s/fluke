@@ -155,12 +155,11 @@ module MainComponent =
                                         setter.set (Recoil.Atoms.Cell.selected cellId, false)))
 
                                 treeStateMap
-                                |> Map.values
-                                |> Seq.iter (fun treeState ->
-                                    setter.set (Recoil.Atoms.Tree.name treeState.Id, treeState.Name)
-                                    setter.set (Recoil.Atoms.Tree.owner treeState.Id, Some treeState.Owner)
-                                    setter.set (Recoil.Atoms.Tree.sharedWith treeState.Id, treeState.SharedWith)
-                                    setter.set (Recoil.Atoms.Tree.position treeState.Id, treeState.Position))
+                                |> Map.iter (fun id treeState ->
+                                    setter.set (Recoil.Atoms.Tree.name id, treeState.Name)
+                                    setter.set (Recoil.Atoms.Tree.owner id, Some treeState.Owner)
+                                    setter.set (Recoil.Atoms.Tree.sharedWith id, treeState.SharedWith)
+                                    setter.set (Recoil.Atoms.Tree.position id, treeState.Position))
 
                                 let taskIdList =
                                     sessionData.TaskList
@@ -316,10 +315,9 @@ module MainComponent =
                             | Some (user, treeStateMap) ->
                                 let availableTreeIds =
                                     treeStateMap
-                                    |> Map.values
-                                    |> Seq.sortBy (fun treeState -> treeState.Name)
-                                    |> Seq.map (fun treeState -> treeState.Id)
-                                    |> Seq.toList
+                                    |> Map.toList
+                                    |> List.sortBy (fun (id, treeState) -> treeState.Name)
+                                    |> List.map fst
 
                                 setter.set (Recoil.Atoms.username, Some user.Username)
                                 setter.set (Recoil.Atoms.Session.user user.Username, Some user)
