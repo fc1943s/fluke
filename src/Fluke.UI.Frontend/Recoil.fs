@@ -597,27 +597,34 @@ module Recoil =
 //                TreeId (sprintf "%s/%s" owner.Username name)
 //
 
-        let rec internal debug =
+        let rec debug =
             atom {
                 key ("atom/" + nameof debug)
                 def false
                 local_storage
             }
 
-        let rec internal treeSelectionIds =
+        let rec treeSelectionIds =
             atom {
                 key ("atom/" + nameof treeSelectionIds)
                 def ([||]: TreeId [])
                 local_storage
             }
 
-        let rec internal path =
+        let rec selectedPosition =
+            atom {
+                key ("atom/" + nameof selectedPosition)
+                def (None: FlukeDateTime option)
+                local_storage
+            }
+
+        let rec path =
             atom {
                 key ("atom/" + nameof path)
                 def (Router.currentPath ())
             }
 
-        let rec internal getLivePosition =
+        let rec getLivePosition =
             atom {
                 key ("atom/" + nameof getLivePosition)
                 def
@@ -626,49 +633,43 @@ module Recoil =
                      |})
             }
 
-        let rec internal selectedPosition =
-            atom {
-                key ("atom/" + nameof selectedPosition)
-                def (None: FlukeDateTime option)
-            }
-
-        let rec internal username =
+        let rec username =
             atom {
                 key ("atom/" + nameof username)
                 def None
             }
 
-        let rec internal cellSize =
+        let rec cellSize =
             atom {
                 key ("atom/" + nameof cellSize)
                 def 17
             }
 
-        let rec internal treeStateMap =
+        let rec treeStateMap =
             atom {
                 key ("atom/" + nameof treeStateMap)
                 def (Map.empty: Map<TreeId, TreeState>)
             }
 
-        let rec internal selection =
+        let rec selection =
             atom {
                 key ("atom/" + nameof selection)
                 def (Map.empty: Map<Task.TaskId, Set<FlukeDate>>)
             }
 
-        let rec internal ctrlPressed =
+        let rec ctrlPressed =
             atom {
                 key ("atom/" + nameof ctrlPressed)
                 def false
             }
 
-        let rec internal shiftPressed =
+        let rec shiftPressed =
             atom {
                 key ("atom/" + nameof shiftPressed)
                 def false
             }
 
-        let rec internal positionTrigger =
+        let rec positionTrigger =
             atom {
                 key ("atom/" + nameof positionTrigger)
                 def 0

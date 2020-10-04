@@ -16,6 +16,8 @@ module TreeSelectorComponent =
 
     let menuItemComponent =
         React.memo (fun (input: {| Username: Username; TreeId: TreeId |}) ->
+            let (TreeId treeId) = input.TreeId
+
             let selectedPosition, setSelectedPosition = Recoil.useState (Recoil.Atoms.selectedPosition)
             let (TreeName treeName) = Recoil.useValue (Recoil.Atoms.Tree.name input.TreeId)
             let treePosition = Recoil.useValue (Recoil.Atoms.Tree.position input.TreeId)
@@ -73,6 +75,7 @@ module TreeSelectorComponent =
                     [
                         Chakra.checkbox
                             {|
+                                ``data-testid`` = "menu-item-" + treeId.ToString ()
                                 value = input.TreeId
                                 isChecked = selected
                                 onClick = onClick
@@ -88,7 +91,6 @@ module TreeSelectorComponent =
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
             let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
-
 
             Chakra.box
                 {| position = "relative" |}

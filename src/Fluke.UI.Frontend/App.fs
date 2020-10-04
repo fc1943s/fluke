@@ -39,7 +39,8 @@ module App =
                         root.init Recoil.initState
                         root.localStorage (fun hydrater ->
                             hydrater.setAtom Recoil.Atoms.debug
-                            hydrater.setAtom Recoil.Atoms.treeSelectionIds)
+                            hydrater.setAtom Recoil.Atoms.treeSelectionIds
+                            hydrater.setAtom Recoil.Atoms.selectedPosition)
 
                         root.children
                             [
