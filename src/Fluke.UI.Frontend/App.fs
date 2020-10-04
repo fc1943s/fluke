@@ -33,17 +33,20 @@ module App =
         React.memo (fun () ->
 
             Recoil.Profiling.addTimestamp "appMain.render"
-            Recoil.root [
-                root.init Recoil.initState
-                root.localStorage (fun hydrater ->
-                    hydrater.setAtom Recoil.Atoms.debug
-                    hydrater.setAtom Recoil.Atoms.treeSelectionIds)
+            React.strictMode
+                [
+                    Recoil.root [
+                        root.init Recoil.initState
+                        root.localStorage (fun hydrater ->
+                            hydrater.setAtom Recoil.Atoms.debug
+                            hydrater.setAtom Recoil.Atoms.treeSelectionIds)
 
-                root.children
-                    [
-                        router ()
+                        root.children
+                            [
+                                router ()
+                            ]
                     ]
-            ])
+                ])
 
     importAll "typeface-roboto-condensed"
 

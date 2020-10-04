@@ -16,8 +16,8 @@
     "pretest": "fable-splitter --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
     "test": "jest",
     "splitter-watch": "fable-splitter --watch --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
-    "jest-watch": "jest --watchAll",
-    "test-watch": "concurrently --kill-others \"yarn splitter-watch\" \"yarn jest-watch\""
+    "jest-watch": "jest --watch",
+    "test-watch": "concurrently --restart-tries=10000 \"yarn splitter-watch\" \"yarn jest-watch\""
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",
