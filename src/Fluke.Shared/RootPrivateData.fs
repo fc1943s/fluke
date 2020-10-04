@@ -175,26 +175,35 @@ module RootPrivateData =
                        ]
                     |> TempData.mergeDslDataIntoTreeState sharedDslData
 
-                    yield! Templates.getTreeMap ()
+                    yield! Templates.getTreeMap users.fluke
                            |> Map.toList
                            |> List.map (fun (templateName, dslTemplate) ->
 
-                               let dslData =
-                                   TempData.Testing.createLaneRenderingDslData
-                                       {|
-                                           User = users.fluke
-                                           Position = dslTemplate.Position
-                                           Task = dslTemplate.Task
-                                           Events = dslTemplate.Events
-                                           Expected = dslTemplate.Expected
-                                       |}
+                               let dslDataList =
+                                   dslTemplate.Tasks
+                                   |> List.map (fun templateTask ->
+                                       TempData.Testing.createLaneRenderingDslData
+                                           {|
+                                               User = users.fluke
+                                               Position = dslTemplate.Position
+                                               Task = templateTask.Task
+                                               Events = templateTask.Events
+                                           |})
 
-                               TreeState.Create
-                                   (name = TreeName templateName,
-                                    owner = users.fluke,
-                                    position = dslTemplate.Position,
-                                    sharedWith = TreeAccess.Public)
-                               |> TempData.mergeDslDataIntoTreeState dslData)
+                               let treeState =
+                                   TreeState.Create
+                                       (name = TreeName templateName,
+                                        owner = users.fluke,
+                                        position = dslTemplate.Position,
+                                        sharedWith = TreeAccess.Public)
+
+                               let newTreeState =
+                                   (treeState, dslDataList)
+                                   ||> List.fold (fun treeState dslData ->
+                                           treeState
+                                           |> TempData.mergeDslDataIntoTreeState dslData)
+
+                               newTreeState)
                 ]
 
             let consts = PrivateData.PrivateData.getPrivateConsts ()

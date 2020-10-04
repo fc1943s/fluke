@@ -692,8 +692,7 @@ module TempData =
         let createLaneRenderingDslData (input: {| User: User
                                                   Position: FlukeDateTime
                                                   Task: Task
-                                                  Events: DslTask list
-                                                  Expected: (FlukeDate * CellStatus) list |}) =
+                                                  Events: DslTask list |}) =
             let eventsWithUser = input.Events |> List.map (fun x -> x, input.User)
 
             let dslData =
