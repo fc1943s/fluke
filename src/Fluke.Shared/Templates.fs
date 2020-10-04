@@ -840,6 +840,9 @@ module Templates =
                             ]
                     }
                 ]
+            ]
+            "Session Data",
+            [
                 "Sessions",
                 [
                     "Respect dayStart on session events",

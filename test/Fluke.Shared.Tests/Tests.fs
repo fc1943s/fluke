@@ -61,20 +61,20 @@ module Tests =
 
     let testWithLaneRenderingData (props: DslTemplate) =
 
-        let userFluke = getUserFluke ()
+        let user = getUsers().fluke
 
         let treeState =
             let dslData =
                 TempData.Testing.createLaneRenderingDslData
                     {|
-                        User = userFluke
+                        User = user
                         Position = props.Position
                         Task = props.Task
                         Events = props.Events
                         Expected = props.Expected
                     |}
 
-            TreeState.Create (name = TreeName "Test", owner = userFluke)
+            TreeState.Create (name = TreeName "Test", owner = user)
             |> mergeDslDataIntoTreeState dslData
 
         let taskState = treeState.TaskStateMap.[props.Task]
@@ -85,7 +85,7 @@ module Tests =
             List.map string
             >> String.concat Environment.NewLine
 
-        Rendering.renderLane userFluke.DayStart props.Position dateSequence taskState
+        Rendering.renderLane user.DayStart props.Position dateSequence taskState
         |> fun (taskState, cells) ->
             cells
             |> List.map (fun (address, status) -> string address.DateId, status)
@@ -122,7 +122,7 @@ module Tests =
 
     [<Tests>]
     let tests =
-        let users = getUsers ()
+        let user = getUsers().fluke
         testList
             "Tests"
             [
@@ -150,13 +150,13 @@ module Tests =
                                 let dslData =
                                     TempData.Testing.createLaneSortingDslData
                                         {|
-                                            User = users.fluke
+                                            User = user
                                             Position = props.Position
                                             Expected = props.Expected
                                             Data = props.Data
                                         |}
 
-                                TreeState.Create (name = TreeName "Test", owner = users.fluke)
+                                TreeState.Create (name = TreeName "Test", owner = user)
                                 |> mergeDslDataIntoTreeState dslData
 
                             let dateSequence =
@@ -169,12 +169,12 @@ module Tests =
 
                             treeState.TaskStateMap
                             |> Map.values
-                            |> Seq.map (Rendering.renderLane users.fluke.DayStart props.Position dateSequence)
+                            |> Seq.map (Rendering.renderLane user.DayStart props.Position dateSequence)
                             |> Seq.toList
                             |> fun lanes ->
                                 match props.Sort with
                                 | NoSorting -> lanes
-                                | TimeOfDay -> Sorting.sortLanesByTimeOfDay users.fluke.DayStart props.Position lanes
+                                | TimeOfDay -> Sorting.sortLanesByTimeOfDay user.DayStart props.Position lanes
                                 | Frequency -> Sorting.sortLanesByFrequency lanes
                             |> List.map (fun ({ Task = { Name = TaskName name } }, _) -> name)
                             |> Expect.equal "" props.Expected
@@ -186,7 +186,7 @@ module Tests =
                                     Position =
                                         {
                                             Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = users.fluke.DayStart
+                                            Time = user.DayStart
                                         }
                                     Data =
                                         [
@@ -529,35 +529,67 @@ module Tests =
                     ]
 
                 testList
-                    "Lane Rendering"
+                    "Session Data"
                     [
-                        testList "Postponed Until" []
-
-                        testList "Recurrency Offset" []
-
-                        testList "Recurrency Fixed" []
-
-                        testList "Manual" []
-
                         testList
                             "Sessions"
                             [
-                                test "Lane Rendering/Sessions/Respect dayStart on session events" {
+                                test "Session Data/Sessions/Respect dayStart on session events" {
                                     let treeMap = getTreeMap ()
 
                                     let dslTemplate =
-                                        treeMap.["Lane Rendering/Sessions/Respect dayStart on session events"]
+                                        treeMap.["Session Data/Sessions/Respect dayStart on session events"]
 
                                     testWithLaneRenderingData dslTemplate
 
-                                    let taskState =
-                                        createTaskState
-                                            dslTemplate.Position
-                                            dslTemplate.Task
-                                            None
-                                            (dslTemplate.Events
-                                             |> List.map (fun x -> x, users.fluke))
-                                        |> fst
+
+
+
+
+
+                                    let treeState =
+                                        let dslData =
+                                            TempData.Testing.createLaneRenderingDslData
+                                                {|
+                                                    User = user
+                                                    Position = dslTemplate.Position
+                                                    Task = dslTemplate.Task
+                                                    Events = dslTemplate.Events
+                                                    Expected = dslTemplate.Expected
+                                                |}
+
+                                        TreeState.Create (name = TreeName "Test", owner = user)
+                                        |> mergeDslDataIntoTreeState dslData
+
+
+                                    let dateSequence = dslTemplate.Expected |> List.map fst
+
+
+                                    let treeId = TreeId Guid.Empty
+
+                                    let treeStateMap =
+                                        [
+                                            treeId, treeState
+                                        ]
+                                        |> Map.ofList
+
+
+                                    let sessionData =
+                                        View.getSessionData
+                                            {|
+                                                User = user
+                                                DateSequence = dateSequence
+                                                View = View.View.Calendar
+                                                Position = dslTemplate.Position
+                                                TreeStateMap = treeStateMap
+                                                TreeSelectionIds =
+                                                    [
+                                                        treeId
+                                                    ]
+                                                    |> Set.ofList
+                                            |}
+
+                                    let taskState = sessionData.TaskStateMap.[dslTemplate.Task]
 
                                     let sessionsExpected =
                                         [
@@ -580,7 +612,7 @@ module Tests =
                                             let sessionCount =
                                                 taskState.Sessions
                                                 |> List.filter (fun (TaskSession (start, _, _)) ->
-                                                    isToday users.fluke.DayStart start (DateId date))
+                                                    isToday user.DayStart start (DateId date))
                                                 |> List.length
 
                                             date, sessionCount)
