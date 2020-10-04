@@ -5,10 +5,11 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Model
+open Fluke.Shared
 
 
 module PanelsComponent =
+
     let render =
         React.memo (fun () ->
 
@@ -22,10 +23,10 @@ module PanelsComponent =
                     | None -> str "no user"
                     | Some username ->
                         match view with
-                        | View.Calendar -> CalendarViewComponent.render {| Username = username |}
-                        | View.Groups -> GroupsViewComponent.render {| Username = username |}
-                        | View.Tasks -> TasksViewComponent.render {| Username = username |}
-                        | View.Week -> WeekViewComponent.render {| Username = username |}
+                        | View.View.Calendar -> CalendarViewComponent.render {| Username = username |}
+                        | View.View.Groups -> GroupsViewComponent.render {| Username = username |}
+                        | View.View.Tasks -> TasksViewComponent.render {| Username = username |}
+                        | View.View.Week -> WeekViewComponent.render {| Username = username |}
 
                     DetailsComponent.render ()
                 ]

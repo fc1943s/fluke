@@ -14,7 +14,8 @@
         <Compile Include="Hooks\Scheduling.fs" />
         <Compile Include="Hooks\Listener.fs" />
         <Compile Include="Temp\Css.fs" />
-        <Compile Include="Temp.fs" />
+        <Compile Include="Profiling.fs" />
+        <Compile Include="TempAudio.fs" />
         <Compile Include="Model.fs" />
         <Compile Include="Recoil.fs" />
         <Compile Include="Components\MonthResponsiveCellComponent.fs" />

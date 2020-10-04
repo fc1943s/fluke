@@ -9,13 +9,6 @@ module Model =
     open Domain.State
 
     [<RequireQualifiedAccess>]
-    type View =
-        | Calendar
-        | Groups
-        | Tasks
-        | Week
-
-    [<RequireQualifiedAccess>]
     type Hover =
         | Cell
         | Task

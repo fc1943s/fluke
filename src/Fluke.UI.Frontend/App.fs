@@ -32,7 +32,7 @@ module App =
     let appMain =
         React.memo (fun () ->
 
-            Recoil.Profiling.addTimestamp "appMain.render"
+            Profiling.addTimestamp "appMain.render"
             React.strictMode
                 [
                     Recoil.root [

@@ -150,14 +150,9 @@ module TempData =
         let rootPath = """M:\Dropbox\home_encrypted\projects\app-fluke"""
 
         let dbPath = rootPath + """\db_v1"""
-        let dayStart = FlukeTime.Create 07 00
 
-        let rec result =
-            {|
-                defaultPosition = { Date = FlukeDate.MinValue; Time = dayStart }
-            |}
+        ()
 
-        result
 
 
 
@@ -518,34 +513,6 @@ module TempData =
             //            TaskOrderList: TaskOrderEntry list
             TaskStateList: (TaskState * UserInteraction list) list
         }
-
-    let mergeInformationStateMap (oldMap: Map<Information, InformationState>)
-                                 (newMap: Map<Information, InformationState>)
-                                 =
-        (oldMap, newMap)
-        ||> Map.unionWith (fun oldValue newValue ->
-                { oldValue with
-                    Attachments = oldValue.Attachments @ newValue.Attachments
-                    SortList = oldValue.SortList @ newValue.SortList
-                })
-
-    let mergeCellStateMap (oldMap: Map<DateId, CellState>) (newMap: Map<DateId, CellState>) = oldMap |> Map.union newMap
-
-    let mergeInformationMap (oldMap: Map<Information, unit>) (newMap: Map<Information, unit>) =
-        oldMap |> Map.union newMap
-
-    let mergeTaskState (oldValue: TaskState) (newValue: TaskState) =
-        { oldValue with
-            Task = oldValue.Task
-            Sessions = oldValue.Sessions @ newValue.Sessions
-            Attachments = oldValue.Attachments @ newValue.Attachments
-            SortList = oldValue.SortList @ newValue.SortList
-            CellStateMap = mergeCellStateMap oldValue.CellStateMap newValue.CellStateMap
-            InformationMap = mergeInformationMap oldValue.InformationMap newValue.InformationMap
-        }
-
-    let mergeTaskStateMap (oldMap: Map<Task, TaskState>) (newMap: Map<Task, TaskState>) =
-        Map.unionWith mergeTaskState oldMap newMap
 
 
     let mergeTreeState (oldValue: TreeState) (newValue: TreeState) =

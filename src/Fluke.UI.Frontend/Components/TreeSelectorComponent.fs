@@ -34,6 +34,15 @@ module TreeSelectorComponent =
 
             let selected = treeSelectionIdsSet.Contains input.TreeId
 
+            let changeSelection =
+                Recoil.useCallbackRef (fun setter newTreeSelectionIds ->
+                    setTreeSelectionIds newTreeSelectionIds
+
+                    match newTreeSelectionIds with
+                    | [||] -> None
+                    | _ -> treePosition
+                    |> setSelectedPosition)
+
             let onChange = fun (_e: {| target: obj |}) -> ()
 
             let onClick =
@@ -50,12 +59,7 @@ module TreeSelectorComponent =
                             |> swap input.TreeId
                             |> Set.toArray
 
-                        setTreeSelectionIds newTreeSelectionIds
-
-                        match newTreeSelectionIds with
-                        | [||] -> None
-                        | _ -> treePosition
-                        |> setSelectedPosition
+                        changeSelection newTreeSelectionIds
 
             let (|RenderCheckbox|HideCheckbox|) (selectedPosition, treePosition) =
                 match selectedPosition, treePosition with

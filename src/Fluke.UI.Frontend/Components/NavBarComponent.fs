@@ -20,6 +20,7 @@ module NavBarComponent =
     open Domain.Information
     open Domain.UserInteraction
     open Domain.State
+    open View
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
@@ -39,10 +40,10 @@ module NavBarComponent =
 
             React.useListener.onKeyDown (fun (e: KeyboardEvent) ->
                 match e.ctrlKey, e.shiftKey, e.key with
-                | _, true, "C" -> setView View.Calendar
-                | _, true, "G" -> setView View.Groups
-                | _, true, "T" -> setView View.Tasks
-                | _, true, "W" -> setView View.Week
+                | _, true, "C" -> setView View.View.Calendar
+                | _, true, "G" -> setView View.View.Groups
+                | _, true, "T" -> setView View.View.Tasks
+                | _, true, "W" -> setView View.View.Week
                 | _ -> ())
 
             //        Bulma.navbar [
@@ -77,10 +78,10 @@ module NavBarComponent =
 
                 let viewCheckbox newView text = checkbox (view = newView) text (fun () -> setView newView)
 
-                viewCheckbox View.Calendar "calendar view"
-                viewCheckbox View.Groups "groups view"
-                viewCheckbox View.Tasks "tasks view"
-                viewCheckbox View.Week "week view"
+                viewCheckbox View.View.Calendar "calendar view"
+                viewCheckbox View.View.Groups "groups view"
+                viewCheckbox View.View.Tasks "tasks view"
+                viewCheckbox View.View.Week "week view"
                 checkbox debug "debug" (fun () -> setDebug (not debug))
 
                 TreeSelectorComponent.render {| Username = input.Username |}

@@ -74,7 +74,7 @@ module Tests =
                         Expected = props.Expected
                     |}
 
-            TreeState.Create (id = TreeId Guid.Empty, name = TreeName "Test", owner = userFluke)
+            TreeState.Create (name = TreeName "Test", owner = userFluke)
             |> mergeDslDataIntoTreeState dslData
 
         let taskState = treeState.TaskStateMap.[props.Task]
@@ -156,7 +156,7 @@ module Tests =
                                             Data = props.Data
                                         |}
 
-                                TreeState.Create (id = TreeId Guid.Empty, name = TreeName "Test", owner = users.fluke)
+                                TreeState.Create (name = TreeName "Test", owner = users.fluke)
                                 |> mergeDslDataIntoTreeState dslData
 
                             let dateSequence =
@@ -544,7 +544,9 @@ module Tests =
                             [
                                 test "Lane Rendering/Sessions/Respect dayStart on session events" {
                                     let treeMap = getTreeMap ()
-                                    let dslTemplate = treeMap.["Lane Rendering/Sessions/Respect dayStart on session events"]
+
+                                    let dslTemplate =
+                                        treeMap.["Lane Rendering/Sessions/Respect dayStart on session events"]
 
                                     testWithLaneRenderingData dslTemplate
 

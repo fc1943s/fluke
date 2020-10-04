@@ -81,7 +81,7 @@ module MainComponent =
                     Recoil.useCallbackRef (fun setter ->
                         async {
                             //                        do! Async.Sleep 1000
-                            Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
+                            Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
 
                             match sessionData with
                             | Some sessionData ->
@@ -110,7 +110,7 @@ module MainComponent =
                                         informationState.Information, informationId)
                                     |> Map.ofSeq
 
-                                Recoil.Profiling.addTimestamp "state.set[1]"
+                                Profiling.addTimestamp "state.set[1]"
 
                                 sessionData.TaskList
                                 |> List.map (fun task -> sessionData.TaskStateMap.[task])
@@ -190,18 +190,18 @@ module MainComponent =
                             //                            Ext.setDom (nameof state) state
 
 
-                            Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
+                            Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
 
                             //                            setter.set (Recoil.Selectors.Session.state input.Username, state)
 
-                            Recoil.Profiling.addTimestamp "dataLoader.loadStateCallback[2]"
+                            Profiling.addTimestamp "dataLoader.loadStateCallback[2]"
                         }
                         |> Async.StartImmediate)
 
-                Recoil.Profiling.addTimestamp "dataLoader render"
+                Profiling.addTimestamp "dataLoader render"
                 React.useEffect
                     ((fun () ->
-                        Recoil.Profiling.addTimestamp "dataLoader effect"
+                        Profiling.addTimestamp "dataLoader effect"
                         loadState ()),
 
                      // TODO: return a cleanup?
@@ -234,15 +234,15 @@ module MainComponent =
                             match newSession with
                             | Some (Model.ActiveSession (_, (Minute newDuration), _, _)) when oldDuration = -1.
                                                                                               && newDuration = 0. ->
-                                Temp.Sound.playTick
+                                TempAudio.playTick
                             | Some (Model.ActiveSession (_, newDuration, totalDuration, _)) when newDuration =
                                                                                                      totalDuration ->
-                                Temp.Sound.playDing
+                                TempAudio.playDing
                             | None ->
                                 if oldDuration = sessionLength
                                    + sessionBreakLength
                                    - 1. then
-                                    Temp.Sound.playDing
+                                    TempAudio.playDing
                                 else
                                     id
                             | _ -> id)
@@ -280,7 +280,7 @@ module MainComponent =
                         let indent n = String (' ', n)
 
                         let json =
-                            Recoil.Profiling.profilingState
+                            Profiling.profilingState
                             |> Fable.SimpleJson.SimpleJson.stringify
                             |> JS.JSON.parse
                             |> fun obj -> JS.JSON.stringify (obj, unbox null, 4)

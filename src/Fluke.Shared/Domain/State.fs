@@ -1,26 +1,25 @@
 namespace Fluke.Shared.Domain
 
 open System
+open FSharpPlus
 
 
 module State =
     open Information
     open UserInteraction
 
-//    type State =
+    //    type State =
 //        {
 //            Session: Session
 //        }
 
     type SessionData =
         {
-//            User: User option
+            //            User: User option
 //            TreeSelection: Set<TreeState>
             TaskList: Task list
             InformationStateMap: Map<Information, InformationState>
             TaskStateMap: Map<Task, TaskState>
-//            TreeStateMap: Map<TreeId, TreeState>
-//            GetLivePosition: unit -> FlukeDateTime
         }
 
     and TreeState =
@@ -273,3 +272,31 @@ module State =
                         { treeState with TaskStateMap = newTaskStateMap })
 
         newTreeState
+
+    let mergeInformationStateMap (oldMap: Map<Information, InformationState>)
+                                 (newMap: Map<Information, InformationState>)
+                                 =
+        (oldMap, newMap)
+        ||> Map.unionWith (fun oldValue newValue ->
+                { oldValue with
+                    Attachments = oldValue.Attachments @ newValue.Attachments
+                    SortList = oldValue.SortList @ newValue.SortList
+                })
+
+    let mergeCellStateMap (oldMap: Map<DateId, CellState>) (newMap: Map<DateId, CellState>) = oldMap |> Map.union newMap
+
+    let mergeInformationMap (oldMap: Map<Information, unit>) (newMap: Map<Information, unit>) =
+        oldMap |> Map.union newMap
+
+    let mergeTaskState (oldValue: TaskState) (newValue: TaskState) =
+        { oldValue with
+            Task = oldValue.Task
+            Sessions = oldValue.Sessions @ newValue.Sessions
+            Attachments = oldValue.Attachments @ newValue.Attachments
+            SortList = oldValue.SortList @ newValue.SortList
+            CellStateMap = mergeCellStateMap oldValue.CellStateMap newValue.CellStateMap
+            InformationMap = mergeInformationMap oldValue.InformationMap newValue.InformationMap
+        }
+
+    let mergeTaskStateMap (oldMap: Map<Task, TaskState>) (newMap: Map<Task, TaskState>) =
+        Map.unionWith mergeTaskState oldMap newMap

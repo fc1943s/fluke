@@ -12,7 +12,7 @@ module CellsComponent =
     let render =
         React.memo (fun (input: {| Username: Username
                                    TaskIdList: Recoil.Atoms.Task.TaskId list |}) ->
-            Recoil.Profiling.addTimestamp "cells.render"
+            Profiling.addTimestamp "cells.render"
 
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 

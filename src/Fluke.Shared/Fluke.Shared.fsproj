@@ -12,6 +12,7 @@
         <Compile Include="Old.fs" />
         <Compile Include="Rendering.fs" />
         <Compile Include="Sorting.fs" />
+        <Compile Include="View.fs" />
         <Compile Include="Templates.fs" />
         <Compile Include="TempData.fs" />
 
