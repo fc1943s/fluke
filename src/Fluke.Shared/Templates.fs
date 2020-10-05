@@ -27,8 +27,8 @@ module Templates =
 
     [<RequireQualifiedAccess>]
     type TemplateExpect =
-        | Status of CellStatus
-        | Session of unit
+        | Status of status:CellStatus
+        | Session of count:int
 
     type TemplateTask =
         {
@@ -792,7 +792,7 @@ module Templates =
                                             [
                                                 TemplateExpect.Status Pending
                                             ]
-                                            FlukeDate.Create 2020 Month.March 29,
+                                            FlukeDate.Create 2020 Month.March 30,
                                             [
                                                 TemplateExpect.Status Disabled
                                             ]
@@ -1418,10 +1418,12 @@ module Templates =
                                             FlukeDate.Create 2020 Month.February 29,
                                             [
                                                 TemplateExpect.Status Disabled
+                                                TemplateExpect.Session 1
                                             ]
                                             FlukeDate.Create 2020 Month.March 1,
                                             [
                                                 TemplateExpect.Status Disabled
+                                                TemplateExpect.Session 1
                                             ]
                                             FlukeDate.Create 2020 Month.March 2,
                                             [
@@ -1446,10 +1448,12 @@ module Templates =
                                             FlukeDate.Create 2020 Month.March 7,
                                             [
                                                 TemplateExpect.Status Pending
+                                                TemplateExpect.Session 1
                                             ]
                                             FlukeDate.Create 2020 Month.March 8,
                                             [
                                                 TemplateExpect.Status Pending
+                                                TemplateExpect.Session 1
                                             ]
                                         ]
                                 }

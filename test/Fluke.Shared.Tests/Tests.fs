@@ -78,41 +78,102 @@ module Tests =
         newTreeState
 
 
-    let testWithLaneRenderingData (dslTemplate: DslTemplate) =
+    let testWithTemplateData (dslTemplate: DslTemplate) =
 
         let user = getUsers().fluke
 
         let treeState = treeStateFromDslTemplate user dslTemplate
 
-        let toString =
-            List.map string
-            >> String.concat Environment.NewLine
-
         dslTemplate.Tasks
         |> List.iter (fun taskTemplate ->
-            let taskState = treeState.TaskStateMap.[taskTemplate.Task]
             let dateSequence = taskTemplate.Expected |> List.map fst
 
-            Rendering.renderLane user.DayStart dslTemplate.Position dateSequence taskState
-            |> fun (taskState, cells) ->
-                cells
-                |> List.map (fun (address, status) -> string address.DateId, status)
-            |> toString
-            |> Expect.equal
-                ""
-                   (taskTemplate.Expected
-                    |> List.map (fun (date, templateExpectList) ->
-                        let cellStatus =
-                            templateExpectList
-                            |> List.choose (fun templateExpect ->
-                                match templateExpect with
-                                | TemplateExpect.Status cellStatus -> Some cellStatus
-                                | _ -> None)
-                            |> List.tryHead
-                            |> Option.defaultValue Disabled
+            let taskState = treeState.TaskStateMap.[taskTemplate.Task]
 
-                        string (DateId date), cellStatus)
-                    |> toString))
+            let expectedCellMetadataList =
+                taskTemplate.Expected
+                |> List.map (fun (date, templateExpectList) ->
+                    let defaultCellMetadata = {| CellStatus = None; Sessions = None |}
+
+                    let cellMetadata =
+                        (defaultCellMetadata, templateExpectList)
+                        ||> List.fold (fun cellMetadata templateExpect ->
+                                match templateExpect with
+                                | TemplateExpect.Status cellStatus ->
+                                    {| cellMetadata with
+                                        CellStatus = Some cellStatus
+                                    |}
+                                | TemplateExpect.Session count -> {| cellMetadata with Sessions = Some count |})
+
+                    date, cellMetadata)
+
+            let expectedStatus =
+                expectedCellMetadataList
+                |> List.choose (fun (date, expectedCellMetadata) ->
+                    match expectedCellMetadata.CellStatus with
+                    | Some cellStatus -> Some (date, cellStatus)
+                    | _ -> None)
+
+            let expectedSessions =
+                expectedCellMetadataList
+                |> List.choose (fun (date, expectedCellMetadata) ->
+                    match expectedCellMetadata.Sessions with
+                    | Some count -> Some (date, count)
+                    | _ -> None)
+
+            if not expectedStatus.IsEmpty then
+                let laneStatusMap =
+                    Rendering.renderLane user.DayStart dslTemplate.Position dateSequence taskState
+                    |> fun (_taskState, cells) ->
+                        cells
+                        |> List.map (fun ({ DateId = DateId referenceDay }, status) -> referenceDay, status)
+                        |> Map.ofList
+
+                expectedStatus
+                |> List.iter (fun (date, cellStatus) ->
+                    laneStatusMap
+                    |> Map.tryFind date
+                    |> Option.defaultValue Disabled
+                    |> fun cellStatus -> date, cellStatus
+                    |> Expect.equal "" (date, cellStatus))
+
+            if not expectedSessions.IsEmpty then
+                let treeId = TreeId Guid.Empty
+
+                let treeStateMap =
+                    [
+                        treeId, treeState
+                    ]
+                    |> Map.ofList
+
+
+                let sessionData =
+                    View.getSessionData
+                        {|
+                            User = user
+                            DateSequence = dateSequence
+                            View = View.View.Calendar
+                            Position = dslTemplate.Position
+                            TreeStateMap = treeStateMap
+                            TreeSelectionIds =
+                                [
+                                    treeId
+                                ]
+                                |> Set.ofList
+                        |}
+
+                let taskState = sessionData.TaskStateMap.[taskTemplate.Task]
+
+                expectedSessions
+                |> List.iter (fun (date, count) ->
+                    let sessionCount =
+                        taskState.Sessions
+                        |> List.filter (fun (TaskSession (start, _, _)) -> isToday user.DayStart start (DateId date))
+                        |> List.length
+
+                    sessionCount |> Expect.equal "" count))
+
+
 
 
     let createTests testTree =
@@ -128,12 +189,12 @@ module Tests =
                                    [
                                        yield! list
                                               |> List.map (fun (name3, obj: DslTemplate) ->
-                                                  test name3 { testWithLaneRenderingData obj })
+                                                  test name3 { testWithTemplateData obj })
                                    ])
                 ])
 
     let getTreeTests () =
-        let users = TempData.getUsers ()
+        let users = getUsers ()
         let user = users.fluke
         let tree = getTree user
         let tests = createTests tree
@@ -546,116 +607,6 @@ module Tests =
                                             "15"
                                         ]
                                 |}
-                        }
-                    ]
-
-                testList
-                    "Session Data"
-                    [
-                        testList
-                            "Sessions"
-                            [
-                                test "Session Data/Sessions/Respect dayStart on session events" {
-                                    let treeMap = getTreeMap user
-
-                                    let dslTemplate =
-                                        treeMap.["Session Data/Sessions/Respect dayStart on session events"]
-
-                                    testWithLaneRenderingData dslTemplate
-
-
-
-
-
-                                    let treeState = treeStateFromDslTemplate user dslTemplate
-
-                                    dslTemplate.Tasks
-                                    |> List.iter (fun taskTemplate ->
-                                        let dateSequence = taskTemplate.Expected |> List.map fst
-
-
-                                        let treeId = TreeId Guid.Empty
-
-                                        let treeStateMap =
-                                            [
-                                                treeId, treeState
-                                            ]
-                                            |> Map.ofList
-
-
-                                        let sessionData =
-                                            View.getSessionData
-                                                {|
-                                                    User = user
-                                                    DateSequence = dateSequence
-                                                    View = View.View.Calendar
-                                                    Position = dslTemplate.Position
-                                                    TreeStateMap = treeStateMap
-                                                    TreeSelectionIds =
-                                                        [
-                                                            treeId
-                                                        ]
-                                                        |> Set.ofList
-                                                |}
-
-                                        let taskState = sessionData.TaskStateMap.[taskTemplate.Task]
-
-                                        let sessionsExpected =
-                                            [
-                                                FlukeDate.Create 2020 Month.February 29, 1
-                                                FlukeDate.Create 2020 Month.March 1, 1
-                                                FlukeDate.Create 2020 Month.March 2, 0
-                                                FlukeDate.Create 2020 Month.March 3, 0
-                                                FlukeDate.Create 2020 Month.March 4, 0
-                                                FlukeDate.Create 2020 Month.March 5, 0
-                                                FlukeDate.Create 2020 Month.March 6, 0
-                                                FlukeDate.Create 2020 Month.March 7, 1
-                                                FlukeDate.Create 2020 Month.March 8, 1
-                                            ]
-
-                                        let dateSequence = sessionsExpected |> List.map fst
-
-                                        let sessionCountList =
-                                            dateSequence
-                                            |> List.map (fun date ->
-                                                let sessionCount =
-                                                    taskState.Sessions
-                                                    |> List.filter (fun (TaskSession (start, _, _)) ->
-                                                        isToday user.DayStart start (DateId date))
-                                                    |> List.length
-
-                                                date, sessionCount)
-
-                                        let toString =
-                                            List.map string
-                                            >> String.concat Environment.NewLine
-
-                                        sessionCountList
-                                        |> toString
-                                        |> Expect.equal "" (toString sessionsExpected))
-                                }
-                            ]
-                    ]
-
-                testList
-                    "Temp"
-                    [
-                        test "Temp" {
-                            let tree1 =
-                                [
-                                    "a"
-                                    "b"
-                                    "c"
-                                ]
-
-                            let tree2 =
-                                [
-                                    "d"
-                                    "e"
-                                    "f"
-                                ]
-
-                            ()
                         }
                     ]
             ]
