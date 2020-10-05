@@ -27,8 +27,8 @@ module Templates =
 
     [<RequireQualifiedAccess>]
     type TemplateExpect =
-        | Status of status:CellStatus
-        | Session of count:int
+        | Status of status: CellStatus
+        | Session of count: int
 
     type TemplateTask =
         {
@@ -52,7 +52,256 @@ module Templates =
         [
             "Lane Sorting",
             [
-                "Sort by Frequency: All task types mixed", []
+                "Default",
+                [
+                    "All task types mixed",
+                    {
+                        Position =
+                            {
+                                Date = FlukeDate.Create 2020 Month.March 10
+                                Time = FlukeTime.Create 14 00
+                            }
+                        Tasks =
+                            [
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "01"
+                                            Scheduling = Manual WithSuggestion
+                                        }
+                                    Events = []
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "02"
+                                            Scheduling = Manual WithSuggestion
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Postponed None)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "03"
+                                            Scheduling = Manual WithoutSuggestion
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, ManualPending)
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "04"
+                                            Scheduling = Recurrency (Offset (Days 1))
+                                            PendingAfter = Some <| FlukeTime.Create 20 00
+                                        }
+                                    Events = []
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "05"
+                                            Scheduling = Manual WithoutSuggestion
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 10, ManualPending)
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "06"
+                                            Scheduling = Manual WithoutSuggestion
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 04, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 06, Dismissed)
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "07"
+                                            Scheduling = Recurrency (Offset (Days 4))
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Completed)
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "08"
+                                            Scheduling = Recurrency (Offset (Days 2))
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "09"
+                                            Scheduling = Recurrency (Offset (Days 2))
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Dismissed)
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "10"
+                                            Scheduling = Recurrency (Offset (Days 2))
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Completed)
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "11"
+                                            Scheduling = Recurrency (Offset (Days 1))
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry
+                                                (FlukeDate.Create 2020 Month.March 10,
+                                                 Postponed (FlukeTime.Create 15 00 |> Some))
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "12"
+                                            Scheduling = Manual WithoutSuggestion
+                                        }
+                                    Events = []
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "13"
+                                            Scheduling =
+                                                Recurrency
+                                                    (Fixed
+                                                        [
+                                                            Weekly DayOfWeek.Tuesday
+                                                        ])
+                                        }
+                                    Events = []
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "14"
+                                            Scheduling =
+                                                Recurrency
+                                                    (Fixed
+                                                        [
+                                                            Weekly DayOfWeek.Wednesday
+                                                        ])
+                                        }
+                                    Events = []
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "15"
+                                            Scheduling =
+                                                Recurrency
+                                                    (Fixed
+                                                        [
+                                                            Weekly DayOfWeek.Friday
+                                                        ])
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 07, Postponed None)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Dismissed)
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "16"
+                                            Scheduling = Recurrency (Offset (Days 1))
+                                            MissedAfter = (FlukeTime.Create 13 00 |> Some)
+                                        }
+                                    Events = []
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "17"
+                                            Scheduling = Recurrency (Offset (Days 1))
+                                        }
+                                    Events =
+                                        [
+                                            DslStatusEntry
+                                                (FlukeDate.Create 2020 Month.March 10,
+                                                 Postponed (FlukeTime.Create 13 00 |> Some))
+                                        ]
+                                    Expected = []
+                                }
+
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName "18"
+                                            Scheduling = Recurrency (Offset (Days 1))
+                                        }
+                                    Events = []
+                                    Expected = []
+                                }
+                            ]
+                    }
+                ]
             ]
             "Lane Rendering",
             [
@@ -1480,7 +1729,14 @@ module Templates =
                                 dslTemplate.Tasks
                                 |> List.map (fun templateTask ->
                                     { templateTask with
-                                        Task = { templateTask.Task with Name = TaskName name }
+                                        Task =
+                                            { templateTask.Task with
+                                                Name =
+                                                    if templateTask.Task.Name = Task.Default.Name then
+                                                        TaskName name
+                                                    else
+                                                        templateTask.Task.Name
+                                            }
                                     })
                         }
 

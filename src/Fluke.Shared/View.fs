@@ -134,9 +134,6 @@ module View =
                         |> Map.ofList
                         |> Map.mapValues (List.map snd)
 
-                    //                        printfn "sessionsMap %A" sessionsMap
-                    printfn "user %A" input.User
-
                     let newCellStateMap =
                         sessionsMap
                         |> Map.keys

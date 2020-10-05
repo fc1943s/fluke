@@ -47,9 +47,10 @@ module Sorting =
             else
                 cells
                 |> List.tryFindIndex (function
-                    | _,
+                    | { DateId = DateId referenceDay },
                       (CellStatus.Pending
-                      | CellStatus.UserStatus (_, ManualCellStatus.ManualPending)) -> true
+                      | CellStatus.UserStatus (_, ManualCellStatus.ManualPending)) when referenceDay.DateTime > position.Date.DateTime ->
+                        true
                     | _ -> false)
                 |> Option.defaultValue cells.Length)
 
