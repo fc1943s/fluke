@@ -6,7 +6,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Model
+open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
@@ -19,70 +19,55 @@ module CalendarViewComponent =
         React.memo (fun (input: {| Username: Username |}) ->
             let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList input.Username)
 
-            Html.div [
-                prop.className Css.lanesPanel
-                prop.children [
-                    Html.div [
-                        yield! Html.div
-                                   [
-                                       prop.className Css.cellRectangle
-                                   ]
-                               |> List.replicate 3
+            Chakra.flex
+                {| className = "lanes-panel" |}
+                [
+                    Chakra.box
+                        ()
+                        [
+                            yield! Chakra.box {| className = Css.cellRectangle |} []
+                                   |> List.replicate 3
 
-                        Html.div [
-                            prop.style
+                            Chakra.flex
+                                ()
                                 [
-                                    style.display.flex
-                                ]
-                            prop.children [
-                                Html.div [
-                                    prop.style
-                                        [
-                                            style.paddingRight 10
-                                        ]
-                                    prop.children
+                                    Chakra.box
+                                        {| paddingRight = "10px" |}
                                         [
                                             yield! taskIdList
                                                    |> List.map (fun taskId ->
                                                        TaskInformationNameComponent.render {| TaskId = taskId |})
                                         ]
-                                ]
-                                // Column: Priority
-                                Html.div [
-                                    prop.style [
-                                        style.paddingRight 10
-                                        style.textAlign.center
-                                    ]
-                                    prop.children
+                                    // Column: Priority
+                                    Chakra.box
+                                        {| paddingRight = "10px"; textAlign = "center" |}
                                         [
                                             yield! taskIdList
                                                    |> List.map (fun taskId ->
                                                        TaskPriorityComponent.render {| TaskId = taskId |})
                                         ]
-                                ]
-                                // Column: Task Name
-                                Html.div [
-                                    prop.style
-                                        [
-                                            style.width 200
-                                        ]
-                                    prop.children
+                                    // Column: Task Name
+                                    Chakra.box
+                                        {| width = "200px" |}
                                         [
                                             yield! taskIdList
                                                    |> List.map (fun taskId ->
-                                                       TaskNameComponent.render {| Css = []; TaskId = taskId |})
+                                                       TaskNameComponent.render
+                                                           {|
+                                                               TaskId = taskId
+                                                               Props = {| paddingLeft = "0" |}
+                                                           |})
                                         ]
                                 ]
-                            ]
                         ]
-                    ]
-                    Html.div [
-                        GridHeaderComponent.render {| Username = input.Username |}
-                        CellsComponent.render
-                            {|
-                                Username = input.Username
-                                TaskIdList = taskIdList
-                            |}
-                    ]
-                ]
-            ])
+                    Chakra.box
+                        ()
+                        [
+                            GridHeaderComponent.render {| Username = input.Username |}
+                            CellsComponent.render
+                                {|
+                                    Username = input.Username
+                                    TaskIdList = taskIdList
+                                |}
+                        ]
+                ])

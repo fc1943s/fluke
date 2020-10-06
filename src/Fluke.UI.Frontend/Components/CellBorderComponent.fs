@@ -6,6 +6,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
@@ -19,15 +20,17 @@ module CellBorderComponent =
             let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
 
             match (weekStart, input.Date) with
-            | StartOfMonth -> Some Css.cellStartMonth
-            | StartOfWeek -> Some Css.cellStartWeek
+            | StartOfMonth -> Some "1px solid #ffffff3d"
+            | StartOfWeek -> Some "1px solid #222"
             | _ -> None
-            |> Option.map (fun className ->
-                Html.div
-                    [
-                        prop.classes [
-                            Css.cellSquare
-                            className
-                        ]
-                    ])
+            |> Option.map (fun borderLeft ->
+                Chakra.box
+                    {|
+                        position = "absolute"
+                        top = 0
+                        left = 0
+                        bottom = 0
+                        borderLeft = borderLeft
+                    |}
+                    [])
             |> Option.defaultValue nothing)

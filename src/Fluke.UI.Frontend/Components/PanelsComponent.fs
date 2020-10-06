@@ -5,6 +5,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
@@ -16,9 +17,10 @@ module PanelsComponent =
             let view = Recoil.useValue Recoil.Selectors.view
             let username = Recoil.useValue Recoil.Atoms.username
 
-            Html.div [
-                prop.className Css.panels
-                prop.children [
+
+            Chakra.flex
+                {| className = "panels" |}
+                [
                     match username with
                     | None -> str "no user"
                     | Some username ->
@@ -29,5 +31,4 @@ module PanelsComponent =
                         | View.View.Week -> WeekViewComponent.render {| Username = username |}
 
                     DetailsComponent.render ()
-                ]
-            ])
+                ])

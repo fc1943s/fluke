@@ -345,6 +345,18 @@ module Recoil =
                 def 17
             }
 
+        let rec lanePaddingLeft =
+            atom {
+                key ("atom/" + nameof lanePaddingLeft)
+                def 45
+            }
+
+        let rec lanePaddingRight =
+            atom {
+                key ("atom/" + nameof lanePaddingRight)
+                def 20
+            }
+
         let rec treeStateMap =
             atom {
                 key ("atom/" + nameof treeStateMap)
@@ -439,6 +451,8 @@ module Recoil =
             selector {
                 key ("selector/" + nameof dateSequence)
                 get (fun getter ->
+                        let lanePaddingLeft = getter.get Atoms.lanePaddingLeft
+                        let lanePaddingRight = getter.get Atoms.lanePaddingRight
                         let position = getter.get position
 
                         let result =
@@ -448,7 +462,7 @@ module Recoil =
                                 [
                                     position.Date
                                 ]
-                                |> Rendering.getDateSequence (45, 20)
+                                |> Rendering.getDateSequence (lanePaddingLeft, lanePaddingRight)
 
                         Profiling.addCount (nameof dateSequence)
                         result)

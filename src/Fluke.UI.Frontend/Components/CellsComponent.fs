@@ -6,6 +6,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 
 
 module CellsComponent =
@@ -16,22 +17,22 @@ module CellsComponent =
 
             let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
-            Html.div [
-                prop.className Css.laneContainer
-                prop.children
-                    [
-                        yield! input.TaskIdList
-                               |> List.map (fun taskId ->
-                                   Html.div
-                                       [
-                                           yield! dateSequence
-                                                  |> List.map (fun date ->
-                                                      CellComponent.render
-                                                          {|
-                                                              Username = input.Username
-                                                              TaskId = taskId
-                                                              Date = date
-                                                          |})
-                                       ])
-                    ]
-            ])
+            Chakra.box
+                ()
+                [
+                    yield! input.TaskIdList
+                           |> List.mapi (fun i taskId ->
+                               Chakra.flex
+                                   ()
+                                   [
+                                       yield! dateSequence
+                                              |> List.map (fun date ->
+                                                  CellComponent.render
+                                                      {|
+                                                          Username = input.Username
+                                                          TaskId = taskId
+                                                          Date = date
+                                                          SemiTransparent = i % 2 <> 0
+                                                      |})
+                                   ])
+                ])

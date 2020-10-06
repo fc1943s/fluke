@@ -5,6 +5,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Model
 open Fluke.Shared
 
@@ -21,20 +22,18 @@ module InformationNameComponent =
             let attachments = Recoil.useValue (Recoil.Atoms.Information.attachments input.InformationId)
             let (InformationName informationName) = information.Name
 
-            Html.div [
-                prop.className Css.cellRectangle
-                prop.children [
-                    Html.div [
-                        prop.style [
-                            style.color information.Color
-                            style.whitespace.nowrap
+            Chakra.box
+                {| className = Css.cellRectangle |}
+                [
+                    Chakra.box
+                        {|
+                            whiteSpace = "nowrap"
+                            color = information.Color
+                        |}
+                        [
+                            str informationName
                         ]
-                        prop.children
-                            [
-                                str informationName
-                            ]
-                    ]
+
 
                     TooltipPopupComponent.render {| Attachments = attachments |}
-                ]
-            ])
+                ])

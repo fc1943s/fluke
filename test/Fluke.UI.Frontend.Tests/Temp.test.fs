@@ -8,6 +8,8 @@ open Fable.React
 open Fable.React.Helpers
 open Feliz
 open Feliz.Recoil
+open Fluke.Shared.Domain.Information
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Components
@@ -100,11 +102,53 @@ module Temp =
 //  });
 //}
 
+    let getUser () =
+        let users = TempData.getUsers ()
+        users.fluke
+
     Jest.describe
-        ("TreeSelector",
+        ("cell selection",
          (fun () ->
-             let users = TempData.getUsers ()
-             let user = users.fluke
+             let user = getUser ()
+
+             let taskList =
+                 [
+                     { Task.Default with Name = TaskName "1" }
+                     { Task.Default with Name = TaskName "2" }
+                     { Task.Default with Name = TaskName "3" }
+                 ]
+
+             let taskIdList = taskList |> List.map Recoil.Atoms.Task.taskId
+
+             let baseInitializer (initializer: MutableSnapshot) =
+                 let position = FlukeDateTime.Create 2020 Month.January 01 18 00
+                 initializer.set (Recoil.Atoms.lanePaddingLeft, 2)
+                 initializer.set (Recoil.Atoms.lanePaddingRight, 2)
+                 initializer.set (Recoil.Atoms.selectedPosition, Some position)
+
+             //                        let getLivePosition = getter.get Atoms.getLivePosition
+//                        let selectedPosition = getter.get Atoms.selectedPosition
+//                        //
+//                        let result =
+//                            selectedPosition
+//                            |> Option.defaultValue (getLivePosition.Get ())
+//                            |> Some
+
+             let cells = CellsComponent.render {| Username = user.Username; TaskIdList = taskIdList |}
+
+             Jest.test
+                 ("single cell selection",
+                  promise {
+                      let subject = cells |> Testing.render baseInitializer
+                      ()
+                      ()
+                  })
+             ()))
+
+    Jest.describe
+        ("tree selection",
+         (fun () ->
+             let user = getUser ()
 
              let position1 = UserInteraction.FlukeDateTime.FromDateTime DateTime.MinValue
              let position2 = UserInteraction.FlukeDateTime.FromDateTime DateTime.MaxValue
@@ -118,14 +162,6 @@ module Temp =
                      State.TreeId (Guid "C1D06F9A-154A-4BBC-9D7F-0C78C6C44C5C"), None
                  ]
 
-             let treeSelector = TreeSelectorComponent.render {| Username = users.fluke.Username |}
-
-             let baseInitializer (initializer: MutableSnapshot) =
-                 initializer.set (Recoil.Atoms.Session.availableTreeIds user.Username, treeList |> List.map fst)
-
-                 treeList
-                 |> List.iter (fun (treeId, position) -> initializer.set (Recoil.Atoms.Tree.position treeId, position))
-
              let queryMenuItems (subject: Bindings.render<_, _>) =
                  treeList
                  |> List.map fst
@@ -137,8 +173,15 @@ module Temp =
                  |> Array.map Option.isSome
                  |> fun menuItemsVisibility -> Jest.expect(menuItemsVisibility).toEqual array
 
+             let baseInitializer (initializer: MutableSnapshot) =
+                 initializer.set (Recoil.Atoms.Session.availableTreeIds user.Username, treeList |> List.map fst)
+                 treeList
+                 |> List.iter (fun (treeId, position) -> initializer.set (Recoil.Atoms.Tree.position treeId, position))
+
+             let treeSelector = TreeSelectorComponent.render {| Username = user.Username |}
+
              Jest.test
-                 ("1",
+                 ("tree list updates correctly with user clicks",
                   promise {
                       let subject = treeSelector |> Testing.render baseInitializer
 
@@ -258,7 +301,7 @@ module Temp =
                          |]
                   })
              Jest.test
-                 ("2",
+                 ("tree list populated correctly with initial data",
                   promise {
                       let subject =
                           treeSelector
@@ -282,4 +325,5 @@ module Temp =
                           false
                           false
                          |]
-                  })))
+                  })
+             ()))

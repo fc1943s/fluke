@@ -6,6 +6,7 @@ open Feliz.UseListener
 open Feliz.Recoil
 open FSharpPlus
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 module DebugOverlay =
@@ -35,20 +36,18 @@ module DebugOverlay =
                         ]
                 ]
 
-                Html.div [
-                    prop.id "test1"
-                    prop.style [
-                        style.position.absolute
-                        style.width 100
-                        style.height 100
-                        style.top 0
-                        style.right 0
-                        style.backgroundColor "#ccc3"
-                        style.zIndex 1
+                Chakra.box
+                    {|
+                        id = "test1"
+                        position = "absolute"
+                        width = "100px"
+                        height = "100px"
+                        top = 0
+                        right = 0
+                        backgroundColor = "#ccc3"
+                        zIndex = 1
+                    |}
+                    [
+                        str "test1"
                     ]
-                    prop.children
-                        [
-                            str "test1"
-                        ]
-                ]
             ])

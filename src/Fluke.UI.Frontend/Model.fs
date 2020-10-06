@@ -26,17 +26,18 @@ module Model =
             | Archive archive -> sprintf "[%s]" archive.Color
 
     type CellStatus with
-        member inline this.CellClass =
+        member inline this.CellColor =
             match this with
-            | Disabled -> Css.cellDisabled
-            | Suggested -> Css.cellSuggested
-            | Pending -> Css.cellPending
-            | Missed -> Css.cellMissed
-            | MissedToday -> Css.cellMissedToday
+            | Disabled -> "#595959"
+            | Suggested -> "#4c664e"
+            | Pending -> "#262626"
+            | Missed -> "#990022"
+            | MissedToday -> "#530011"
             | UserStatus (user, manualCellStatus) ->
                 match manualCellStatus with
-                | Postponed (Some _) -> Css.cellPostponedUntil
-                | Postponed _ -> Css.cellPostponed
-                | Completed -> Css.cellCompleted
-                | Dismissed -> Css.cellDismissed
-                | ManualPending -> Css.cellManualPending
+                | Postponed (Some _) -> "#604800"
+                | Postponed _ -> "#b08200"
+                | Completed -> "#339933"
+                | Dismissed -> "#673ab7"
+                | ManualPending -> "#003038"
+//                | Session -> "#a9a9a9"

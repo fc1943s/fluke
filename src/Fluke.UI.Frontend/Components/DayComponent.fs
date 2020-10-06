@@ -6,6 +6,7 @@ open Feliz.UseListener
 open Feliz.Recoil
 open FSharpPlus
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 module DayComponent =
@@ -21,23 +22,22 @@ module DayComponent =
             let hasSelection = Recoil.useValue (Recoil.Selectors.FlukeDate.hasSelection input.Date)
             let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
 
-            Html.span [
-                prop.classes [
-                    Css.cellSquare
-
-                    if isToday then
-                        Css.todayHeader
-
-                    if hasSelection then
-                        Css.selectionHighlight
-
-                    match (weekStart, input.Date) with
-                    | StartOfMonth -> Css.cellStartMonth
-                    | StartOfWeek -> Css.cellStartWeek
-                    | _ -> ()
-                ]
-                prop.children
-                    [
-                        str <| String.toLower input.Label
-                    ]
-            ])
+            Chakra.box
+                {|
+                    color =
+                        if hasSelection then
+                            "#ff5656"
+                        elif isToday then
+                            "#777"
+                        else
+                            ""
+                    borderLeft =
+                        match (weekStart, input.Date) with
+                        | StartOfMonth -> "1px solid #ffffff3d"
+                        | StartOfWeek -> "1px solid #222"
+                        | _ -> ""
+                    className = Css.cellSquare
+                |}
+                [
+                    str <| String.toLower input.Label
+                ])

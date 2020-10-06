@@ -6,6 +6,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 module GridHeaderComponent =
@@ -23,13 +24,11 @@ module GridHeaderComponent =
                 |> List.groupBy (fun date -> date.Month)
                 |> List.map snd
 
-            Html.div [
-                Html.div [
-                    prop.style
-                        [
-                            style.display.flex
-                        ]
-                    prop.children
+            Chakra.box
+                ()
+                [
+                    Chakra.flex
+                        ()
                         [
                             yield! datesByMonth
                                    |> List.map (fun dates ->
@@ -43,22 +42,16 @@ module GridHeaderComponent =
 
                                        MonthResponsiveCellComponent.render
                                            {|
+                                               Username = input.Username
                                                Date = firstDate
-                                               Css =
-                                                   [
-                                                       style.width cellWidth
-                                                   ]
+                                               Props = {| width = cellWidth |}
                                            |})
                         ]
-                ]
 
-                // Day of Week row
-                Html.div [
-                    prop.style
-                        [
-                            style.display.flex
-                        ]
-                    prop.children
+
+                    // Day of Week row
+                    Chakra.flex
+                        ()
                         [
                             yield! dateSequence
                                    |> List.map (fun date ->
@@ -69,15 +62,11 @@ module GridHeaderComponent =
                                                Username = input.Username
                                            |})
                         ]
-                ]
 
-                // Day row
-                Html.div [
-                    prop.style
-                        [
-                            style.display.flex
-                        ]
-                    prop.children
+
+                    // Day row
+                    Chakra.flex
+                        ()
                         [
                             yield! dateSequence
                                    |> List.map (fun ({ Day = Day day } as date) ->
@@ -88,5 +77,4 @@ module GridHeaderComponent =
                                                Username = input.Username
                                            |})
                         ]
-                ]
-            ])
+                ])

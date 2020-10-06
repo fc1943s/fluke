@@ -6,6 +6,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
@@ -25,10 +26,8 @@ module TaskPriorityComponent =
                 |> string
 
 
-            Html.div [
-                prop.className Css.cellRectangle
-                prop.children
-                    [
-                        str priorityText
-                    ]
-            ])
+            Chakra.box
+                {| className = Css.cellRectangle |}
+                [
+                    str priorityText
+                ])

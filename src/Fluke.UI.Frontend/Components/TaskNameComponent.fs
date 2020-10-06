@@ -7,6 +7,7 @@ open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
+open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
@@ -37,8 +38,8 @@ module TaskNameComponent =
             |})
 
     let render =
-        React.memo (fun (input: {| Css: IStyleAttribute list
-                                   TaskId: Recoil.Atoms.Task.TaskId |}) ->
+        React.memo (fun (input: {| TaskId: Recoil.Atoms.Task.TaskId
+                                   Props: {| paddingLeft: string |} |}) ->
             let ref = React.useElementRef ()
             let hovered = Listener.useElementHover ref
             let classes = useStyles {| hovered = hovered |}
@@ -46,28 +47,29 @@ module TaskNameComponent =
             let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name input.TaskId)
             let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments input.TaskId)
 
-            Html.div [
-                prop.ref ref
-                prop.classes [
-                    classes.root
-                    Css.cellRectangle
-                ]
-                prop.children [
-                    Html.div [
-                        prop.classes [
-                            classes.name
-                            if hasSelection then
-                                Css.selectionHighlight
+            Chakra.box
+                {|
+                    ref = ref
+                    className =
+                        [
+                            classes.root
+                            Css.cellRectangle
                         ]
-                        prop.style
-                            [
-                                yield! input.Css
-                            ]
-                        prop.children
-                            [
-                                str taskName
-                            ]
-                    ]
+                        |> String.concat " "
+                |}
+                [
+                    Chakra.box
+                        {| input.Props with
+                            color = if hasSelection then "#ff5656" else ""
+                            className =
+                                [
+                                    classes.name
+                                ]
+                                |> String.concat " "
+                        |}
+                        [
+
+                            str taskName
+                        ]
                     TooltipPopupComponent.render {| Attachments = attachments |}
-                ]
-            ])
+                ])

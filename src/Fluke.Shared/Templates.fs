@@ -440,7 +440,7 @@ module Templates =
                     {
                         Position =
                             {
-                                Date = FlukeDate.Create 2020 Month.March 10
+                                Date = FlukeDate.Create 2020 Month.January 01
                                 Time = FlukeTime.Create 21 00
                             }
                         Tasks =
@@ -454,15 +454,15 @@ module Templates =
                                     Events = []
                                     Expected =
                                         [
-                                            FlukeDate.Create 2020 Month.March 09,
+                                            FlukeDate.Create 2019 Month.December 31,
                                             [
                                                 TemplateExpect.Status Suggested
                                             ]
-                                            FlukeDate.Create 2020 Month.March 10,
+                                            FlukeDate.Create 2020 Month.January 01,
                                             [
                                                 TemplateExpect.Status Pending
                                             ]
-                                            FlukeDate.Create 2020 Month.March 11,
+                                            FlukeDate.Create 2020 Month.January 02,
                                             [
                                                 TemplateExpect.Status Suggested
                                             ]

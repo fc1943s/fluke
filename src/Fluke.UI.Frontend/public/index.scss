@@ -5,18 +5,11 @@
 //.bottom-right-pink-indicator,
 //.user-indicator,
 //.tooltip-popup,
-//.lanes-panel,
-//.today-header,
-//.selection-highlight,
-//.lane-container,
-//.details-panel,
 //.cell-square,
 //.cell-rectangle,
 //.cell-start-week,
 //.cell-start-month,
-//.cell-selected,
 //.cell-today,
-//.session-length-indicator,
 //.cell-disabled,
 //.cell-suggested,
 //.cell-pending,
@@ -32,18 +25,6 @@
 
 // https://github.com/zanaptak/TypedCssClasses/issues/4
 
-
-$color-cell-disabled: #595959;
-$color-cell-suggested: #4c664e;
-$color-cell-pending: #262626;
-$color-cell-missed: #990022;
-$color-cell-missed-today: #530011;
-$color-cell-postponed: #b08200;
-$color-cell-postponed-until: #604800;
-$color-cell-completed: #339933;
-$color-cell-dismissed: #673ab7;
-$color-cell-manual-pending: #003038;
-$color-cell-session: #a9a9a9;
 
 $color-corner-blue: #005688;
 $color-corner-pink: #a91c77;
@@ -74,11 +55,8 @@ $cell-size: 17px;
 }
 
 .panels {
-  display: flex;
 
   .lanes-panel {
-
-    display: flex;
 
     @mixin cell-rectangle() {
       position: relative;
@@ -100,107 +78,6 @@ $cell-size: 17px;
       @include square-cell();
     }
 
-    .today-header {
-      color: #777;
-    }
-
-    .selection-highlight {
-      color: #ff5656;
-    }
-
-    .cell-start-week {
-      border-left: 1px solid #222;
-    }
-
-    .cell-start-month {
-      border-left: 1px solid #ffffff3d;
-    }
-
-    .lane-container {
-      > div {
-        display: flex;
-
-        &:nth-child(even) > div > .cell-square {
-          opacity: 0.85;
-        }
-      }
-    }
-
-    .session-length-indicator {
-      font-size: 11px;
-      color: #999;
-      text-shadow: 0 0 2px #000;
-    }
-
-    @mixin cell($bgcolor) {
-      @include square-cell();
-
-      > .cell-square:not(first-child) {
-        position: absolute;
-        top: 0;
-        left: 0;
-      }
-
-      > .cell-square:first-child {
-        background-color: $bgcolor;
-      }
-
-      &.cell-today > .cell-square:first-child {
-        background-color: $bgcolor#{aa};
-      }
-
-      &.cell-selected > .cell-square {
-        border: 1px solid #ffffff55 !important;
-      }
-    }
-
-    .cell-disabled {
-      @include cell($color-cell-disabled);
-    }
-
-    .cell-suggested {
-      @include cell($color-cell-suggested);
-    }
-
-    .cell-pending {
-      @include cell($color-cell-pending);
-    }
-
-    .cell-missed {
-      @include cell($color-cell-missed);
-    }
-
-    .cell-missed-today {
-      @include cell($color-cell-missed-today);
-    }
-
-    .cell-postponed {
-      @include cell($color-cell-postponed);
-    }
-
-    .cell-postponed-until {
-      @include cell($color-cell-postponed-until);
-    }
-
-    .cell-completed {
-      @include cell($color-cell-completed);
-
-      > .cell-square {
-        color: #ccc;
-      }
-    }
-
-    .cell-dismissed {
-      @include cell($color-cell-dismissed);
-    }
-
-    .cell-manual-pending {
-      @include cell($color-cell-manual-pending);
-    }
-
-    .cell-session {
-      @include cell($color-cell-session);
-    }
 
     @mixin cell-indicator() {
       @include cell-rectangle();
@@ -292,11 +169,6 @@ $cell-size: 17px;
         display: block;
       }
     }
-  }
-
-  .details-panel {
-    width: 100%;
-    padding: 5px;
   }
 }
 

@@ -12,6 +12,7 @@ open Feliz.Recoil
 open Feliz.Bulma
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Model
 open Fluke.Shared
 
@@ -99,22 +100,17 @@ module NavBarComponent =
                                 | true -> "Session", "#7cca7c", duration, left
                                 | false -> "Break", "#ca7c7c", -left, totalBreakDuration + left
 
-                            Html.span [
-                                prop.style
-                                    [
-                                        style.color color
-                                    ]
-                                prop.children
-                                    [
-                                        sprintf
-                                            "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]"
-                                            sessionType
-                                            taskName
-                                            duration
-                                            left
-                                        |> str
-                                    ]
-                            ])
+                            Chakra.box
+                                {| color = color |}
+                                [
+                                    sprintf
+                                        "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]"
+                                        sessionType
+                                        taskName
+                                        duration
+                                        left
+                                    |> str
+                                ])
                         |> List.intersperse (br [])
                         |> function
                         | [] -> str "No active session"
