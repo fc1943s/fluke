@@ -53,6 +53,7 @@ module CellComponent =
 
             Chakra.center
                 {|
+                    ``data-testid`` = sprintf "cell-%A" cellId
                     onClick = (fun (_event: MouseEvent) -> onCellClick ())
                     width = "17px"
                     height = "17px"

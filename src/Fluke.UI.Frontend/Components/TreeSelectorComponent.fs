@@ -25,11 +25,11 @@ module TreeSelectorComponent =
 
             let treeSelectionIds, setTreeSelectionIds = Recoil.useState Recoil.Atoms.treeSelectionIds
 
-            let availableTreeIdsSet = availableTreeIds |> Set.ofList
+            let availableTreeIdsSet = set availableTreeIds
 
             let treeSelectionIdsSet =
                 treeSelectionIds
-                |> Set.ofArray
+                |> set
                 |> Set.intersect availableTreeIdsSet
 
             let selected = treeSelectionIdsSet.Contains input.TreeId

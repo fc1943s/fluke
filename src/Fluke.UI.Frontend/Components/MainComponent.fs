@@ -12,7 +12,6 @@ open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
-open Fable.Core.JsInterop
 
 
 module MainComponent =
@@ -23,7 +22,7 @@ module MainComponent =
     module GlobalShortcutHandler =
         let hook =
             React.memo (fun () ->
-                let selection, setSelection = Recoil.useState Recoil.Selectors.selection
+                let cellSelectionMap, setCellSelectionMap = Recoil.useState Recoil.Selectors.cellSelectionMap
                 let ctrlPressed, setCtrlPressed = Recoil.useState Recoil.Atoms.ctrlPressed
                 let shiftPressed, setShiftPressed = Recoil.useState Recoil.Atoms.shiftPressed
 
@@ -34,8 +33,8 @@ module MainComponent =
                     if e.shiftKey <> shiftPressed then
                         setShiftPressed e.shiftKey
 
-                    if e.key = "Escape" && not selection.IsEmpty then
-                        setSelection Map.empty
+                    if e.key = "Escape" && not cellSelectionMap.IsEmpty then
+                        setCellSelectionMap Map.empty
 
                 React.useListener.onKeyDown keyEvent
                 React.useListener.onKeyUp keyEvent

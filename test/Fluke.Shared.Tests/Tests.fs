@@ -125,7 +125,7 @@ module Tests =
                                     [
                                         treeId
                                     ]
-                                    |> Set.ofList
+                                    |> set
                             |}
 
                     let taskState = sessionData.TaskStateMap.[taskTemplate.Task]

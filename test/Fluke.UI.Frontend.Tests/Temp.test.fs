@@ -1,11 +1,9 @@
 namespace Fluke.UI.Frontend.Tests
 
 open System
-open System.Text.RegularExpressions
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Fable.React
-open Fable.React.Helpers
 open Feliz
 open Feliz.Recoil
 open Fluke.Shared.Domain.Information
@@ -67,26 +65,39 @@ module Temp =
 
     module Testing =
 
-        let componentWrapper (initializer: MutableSnapshot -> unit) children =
+        let componentWrapper (initializer: MutableSnapshot -> unit) cmp =
             React.memo (fun () ->
                 React.strictMode
                     [
                         Recoil.root [
                             root.init initializer
-                            root.children children
+                            root.children
+                                [
+                                    cmp
+                                ]
                         ]
                     ]
                 |> ReactErrorBoundary.renderCatchFn (fun (error, info) ->
                     printfn "ERROR %A %A" info.componentStack error) (str "error"))
 
 
-        let render initializer cmp =
-            RTL.render
-                ((componentWrapper
-                    initializer
-                      [
-                          cmp
-                      ]) ())
+        let render initializer (cmp: ReactElement) =
+            let mutable peekFn: (CallbackMethods -> Fable.Core.JS.Promise<unit>) -> Fable.Core.JS.Promise<unit> =
+                fun _ -> failwith "called empty callback"
+
+            let cmpWrapper =
+                React.memo (fun () ->
+                    let peek =
+                        Recoil.useCallbackRef (fun (setter: CallbackMethods) (fn: CallbackMethods -> Fable.Core.JS.Promise<unit>) ->
+                            promise { do! fn setter })
+
+                    peekFn <- peek
+
+                    cmp)
+
+            let subject = RTL.render ((componentWrapper initializer (cmpWrapper ())) ())
+
+            subject, peekFn
 
         let flush () =
             promise {
@@ -120,28 +131,51 @@ module Temp =
 
              let taskIdList = taskList |> List.map Recoil.Atoms.Task.taskId
 
+             let position = FlukeDateTime.Create 2020 Month.January 01 18 00
+
              let baseInitializer (initializer: MutableSnapshot) =
-                 let position = FlukeDateTime.Create 2020 Month.January 01 18 00
                  initializer.set (Recoil.Atoms.lanePaddingLeft, 2)
                  initializer.set (Recoil.Atoms.lanePaddingRight, 2)
                  initializer.set (Recoil.Atoms.selectedPosition, Some position)
 
-             //                        let getLivePosition = getter.get Atoms.getLivePosition
-//                        let selectedPosition = getter.get Atoms.selectedPosition
-//                        //
-//                        let result =
-//                            selectedPosition
-//                            |> Option.defaultValue (getLivePosition.Get ())
-//                            |> Some
-
-             let cells = CellsComponent.render {| Username = user.Username; TaskIdList = taskIdList |}
+             let cells =
+                 CellsComponent.render
+                     {|
+                         Username = user.Username
+                         TaskIdList = taskIdList
+                     |}
 
              Jest.test
                  ("single cell selection",
                   promise {
-                      let subject = cells |> Testing.render baseInitializer
-                      ()
-                      ()
+                      Jest.useFakeTimers ()
+                      let subject, peek = cells |> Testing.render baseInitializer
+
+                      let taskId = taskIdList.[0]
+                      let dateId = DateId position.Date
+                      let cellId = Recoil.Atoms.Cell.cellId taskId dateId
+
+
+                      let! cell = subject.findByTestId (sprintf "cell-%A" cellId)
+
+                      RTL.fireEvent.click cell
+
+                      do! peek (fun setter ->
+                              promise {
+                                  let! cellSelectionMap = setter.snapshot.getPromise Recoil.Atoms.cellSelectionMap
+
+                                  let expectedCellSelectionMap =
+                                      [
+                                          taskId,
+                                          set
+                                              [
+                                                  position.Date
+                                              ]
+                                      ]
+                                      |> Map.ofList
+
+                                  Jest.expect(string cellSelectionMap).toEqual(string expectedCellSelectionMap)
+                              })
                   })
              ()))
 
@@ -150,8 +184,8 @@ module Temp =
          (fun () ->
              let user = getUser ()
 
-             let position1 = UserInteraction.FlukeDateTime.FromDateTime DateTime.MinValue
-             let position2 = UserInteraction.FlukeDateTime.FromDateTime DateTime.MaxValue
+             let position1 = FlukeDateTime.FromDateTime DateTime.MinValue
+             let position2 = FlukeDateTime.FromDateTime DateTime.MaxValue
 
              let treeList =
                  [
@@ -183,7 +217,7 @@ module Temp =
              Jest.test
                  ("tree list updates correctly with user clicks",
                   promise {
-                      let subject = treeSelector |> Testing.render baseInitializer
+                      let subject, _ = treeSelector |> Testing.render baseInitializer
 
                       let menuItems = queryMenuItems subject
 
@@ -303,7 +337,7 @@ module Temp =
              Jest.test
                  ("tree list populated correctly with initial data",
                   promise {
-                      let subject =
+                      let subject, _ =
                           treeSelector
                           |> Testing.render (fun initializer ->
                               baseInitializer initializer

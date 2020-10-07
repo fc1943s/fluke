@@ -102,7 +102,7 @@ module Old2 =
                      >> fst
                      >> fun taskState -> taskState.Task)
 
-            let tasksSet = tasks |> Set.ofList
+            let tasksSet = set tasks
 
             let orderEntriesOfTasks =
                 taskOrderList
@@ -111,7 +111,7 @@ module Old2 =
             let tasksWithOrderEntrySet =
                 orderEntriesOfTasks
                 |> List.map (fun x -> x.Task)
-                |> Set.ofList
+                |> set
 
             let tasksWithoutOrderEntry =
                 tasks

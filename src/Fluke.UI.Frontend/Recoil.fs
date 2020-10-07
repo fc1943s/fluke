@@ -363,9 +363,9 @@ module Recoil =
                 def (Map.empty: Map<TreeId, TreeState>)
             }
 
-        let rec selection =
+        let rec cellSelectionMap =
             atom {
-                key ("atom/" + nameof selection)
+                key ("atom/" + nameof cellSelectionMap)
                 def (Map.empty: Map<Task.TaskId, Set<FlukeDate>>)
             }
 
@@ -635,20 +635,20 @@ module Recoil =
 //            }
 
         /// [1]
-        let rec selection =
+        let rec cellSelectionMap =
             selector {
-                key ("selector/" + nameof selection)
+                key ("selector/" + nameof cellSelectionMap)
                 get (fun getter ->
-                        let selection = getter.get Atoms.selection
+                        let selection = getter.get Atoms.cellSelectionMap
                         Profiling.addCount (nameof selection)
                         selection)
                 set (fun setter (newSelection: Map<Atoms.Task.TaskId, Set<FlukeDate>>) ->
-                        let selection = setter.get Atoms.selection
+                        let cellSelectionMap = setter.get Atoms.cellSelectionMap
 
                         let operationsByTask =
                             let taskIdSet =
                                 seq {
-                                    yield! selection |> Map.keys
+                                    yield! cellSelectionMap |> Map.keys
                                     yield! newSelection |> Map.keys
                                 }
                                 |> Set.ofSeq
@@ -656,7 +656,7 @@ module Recoil =
                             taskIdSet
                             |> Seq.map (fun taskId ->
                                 let taskSelection =
-                                    selection
+                                    cellSelectionMap
                                     |> Map.tryFind taskId
                                     |> Option.defaultValue Set.empty
 
@@ -686,8 +686,8 @@ module Recoil =
                                 let cellId = Atoms.Cell.cellId taskId (DateId date)
                                 setter.set (Atoms.Cell.selected cellId, selected)))
 
-                        setter.set (Atoms.selection, newSelection)
-                        Profiling.addCount (nameof selection + " (SET)"))
+                        setter.set (Atoms.cellSelectionMap, newSelection)
+                        Profiling.addCount (nameof cellSelectionMap + " (SET)"))
             }
         /// [3]
 //        let rec selectedCells =
@@ -793,10 +793,10 @@ module Recoil =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof FlukeDate) (nameof hasSelection))
                     get (fun (date: FlukeDate) getter ->
-                            let selection = getter.get selection
+                            let cellSelectionMap = getter.get cellSelectionMap
 
                             let result =
-                                selection
+                                cellSelectionMap
                                 |> Map.values
                                 |> Seq.exists (fun dateSequence -> dateSequence |> Set.contains date)
 
@@ -902,10 +902,10 @@ module Recoil =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Task) (nameof hasSelection))
                     get (fun (taskId: Atoms.Task.TaskId) getter ->
-                            let selection = getter.get selection
+                            let cellSelectionMap = getter.get cellSelectionMap
 
                             let result =
-                                selection
+                                cellSelectionMap
                                 |> Map.tryFind taskId
                                 |> Option.defaultValue Set.empty
                                 |> Set.isEmpty
@@ -1282,7 +1282,7 @@ module Recoil =
                                 let date = setter.get (Atoms.Cell.date cellId)
                                 let taskId = setter.get (Atoms.Cell.taskId cellId)
 
-                                let newSelection =
+                                let newCellSelectionMap =
                                     let swapSelection oldSelection taskId date =
                                         let oldSet =
                                             oldSelection
@@ -1304,12 +1304,12 @@ module Recoil =
                                     let taskIdList = setter.get (Atoms.Session.taskIdList username)
                                     match shiftPressed, ctrlPressed with
                                     | true, _ ->
-                                        let oldSelection = setter.get Atoms.selection
+                                        let oldCellSelectionMap = setter.get Atoms.cellSelectionMap
 
                                         let selectionTaskList =
                                             taskIdList
                                             |> List.mapi (fun i taskId' ->
-                                                match oldSelection |> Map.tryFind taskId with
+                                                match oldCellSelectionMap |> Map.tryFind taskId with
                                                 | Some oldSelectionDates ->
                                                     let selectionDates =
                                                         match oldSelectionDates.IsEmpty, taskId' = taskId with
@@ -1381,10 +1381,10 @@ module Recoil =
                                         ]
                                         |> Map.ofList
                                     | false, true ->
-                                        let oldSelection = setter.get Atoms.selection
+                                        let oldSelection = setter.get Atoms.cellSelectionMap
                                         swapSelection oldSelection taskId date
 
-                                setter.set (selection, newSelection)
+                                setter.set (cellSelectionMap, newCellSelectionMap)
 
                             | None -> ()
 

@@ -228,7 +228,7 @@ module RootPrivateData =
 //                |> List.filter (fun treeState ->
 //                    treeState.SharedWith <> TreeAccess.Public
 //                )
-//                |> Set.ofList
+//                |> set
 
             let result = user, treesWithAccess
             result
