@@ -33,8 +33,31 @@ module MainComponent =
                     if e.shiftKey <> shiftPressed then
                         setShiftPressed e.shiftKey
 
-                    if e.key = "Escape" && not cellSelectionMap.IsEmpty then
-                        setCellSelectionMap Map.empty
+                    if not cellSelectionMap.IsEmpty then
+                        if e.key = "Escape" && e.``type`` = "keydown" then
+                            setCellSelectionMap Map.empty
+
+                        if e.key = "R" && e.``type`` = "keydown" then
+                            let newMap =
+                                if cellSelectionMap.Count = 1 then
+                                    cellSelectionMap
+                                    |> Map.toList
+                                    |> List.map (fun (taskId, dates) ->
+                                        let date =
+                                            dates
+                                            |> Seq.item (Random().Next(0, dates.Count - 1))
+
+                                        taskId, Set.singleton date)
+                                    |> Map.ofList
+                                else
+                                    let key =
+                                        cellSelectionMap
+                                        |> Map.keys
+                                        |> Seq.item (Random().Next(0, cellSelectionMap.Count - 1))
+
+                                    Map.singleton key cellSelectionMap.[key]
+
+                            setCellSelectionMap newMap
 
                 React.useListener.onKeyDown keyEvent
                 React.useListener.onKeyUp keyEvent
