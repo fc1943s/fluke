@@ -31,7 +31,7 @@ module CellsComponent =
                                                       {|
                                                           Username = input.Username
                                                           TaskId = taskId
-                                                          Date = date
+                                                          DateId = DateId date
                                                           SemiTransparent = i % 2 <> 0
                                                       |})
                                    ])

@@ -74,7 +74,7 @@ module WeekViewComponent =
                                                                              CellComponent.render
                                                                                  {|
                                                                                      Username = input.Username
-                                                                                     Date = referenceDay
+                                                                                     DateId = dateId
                                                                                      TaskId = cell.TaskId
                                                                                      SemiTransparent = false
                                                                                  |}

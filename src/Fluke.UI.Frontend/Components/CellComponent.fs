@@ -40,20 +40,20 @@ module CellComponent =
     let render =
         React.memo (fun (input: {| Username: Username
                                    TaskId: Recoil.Atoms.Task.TaskId
-                                   Date: FlukeDate
+                                   DateId: DateId
                                    SemiTransparent: bool |}) ->
-            let cellId = Recoil.Atoms.Cell.cellId input.TaskId (DateId input.Date)
-            let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday input.Date)
+            let (DateId referenceDay) = input.DateId
+            let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday referenceDay)
             let showUser = Recoil.useValue (Recoil.Selectors.Task.showUser input.TaskId)
-            let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments cellId)
-            let sessions = Recoil.useValue (Recoil.Atoms.Cell.sessions cellId)
-            let status = Recoil.useValue (Recoil.Atoms.Cell.status cellId)
-            let selected, setSelected = Recoil.useState (Recoil.Selectors.Cell.selected cellId)
+            let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments (input.TaskId, input.DateId))
+            let sessions = Recoil.useValue (Recoil.Atoms.Cell.sessions (input.TaskId, input.DateId))
+            let status = Recoil.useValue (Recoil.Atoms.Cell.status (input.TaskId, input.DateId))
+            let selected, setSelected = Recoil.useState (Recoil.Selectors.Cell.selected (input.TaskId, input.DateId))
             let onCellClick = React.useCallbackRef (fun () -> setSelected (not selected))
 
             Chakra.center
                 {|
-                    ``data-testid`` = sprintf "cell-%A" cellId
+                    ``data-testid`` = sprintf "cell-%A-%A" input.TaskId referenceDay.DateTime
                     onClick = (fun (_event: MouseEvent) -> onCellClick ())
                     width = "17px"
                     height = "17px"
@@ -75,7 +75,11 @@ module CellComponent =
                             "none"
                 |}
                 [
-                    CellBorderComponent.render {| Username = input.Username; Date = input.Date |}
+                    CellBorderComponent.render
+                        {|
+                            Username = input.Username
+                            Date = referenceDay
+                        |}
                     CellSessionIndicatorComponent.render {| Status = status; Sessions = sessions |}
                     if showUser then
                         match status with

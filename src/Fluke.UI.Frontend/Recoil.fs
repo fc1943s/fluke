@@ -34,13 +34,13 @@ module Recoil =
             let rec wrappedInformation =
                 atomFamilyFn
                 <| fun (_informationId: InformationId) ->
-                    Profiling.addCount (nameof wrappedInformation)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Information) (nameof wrappedInformation))
                     Area (Area.Default, [])
 
             let rec attachments =
                 atomFamilyFn
                 <| fun (_informationId: InformationId) ->
-                    Profiling.addCount (nameof attachments)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Information) (nameof attachments))
                     []: Attachment list
 
 
@@ -61,42 +61,42 @@ module Recoil =
             let rec informationId =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
-                    Profiling.addCount (nameof informationId)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof informationId))
                     Information.informationId Task.Default.Information
 
 
             let rec name =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
-                    Profiling.addCount (nameof name)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof name))
                     Task.Default.Name
 
 
             let rec scheduling =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
-                    Profiling.addCount (nameof scheduling)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof scheduling))
                     Task.Default.Scheduling
 
 
             let rec pendingAfter =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
-                    Profiling.addCount (nameof pendingAfter)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof pendingAfter))
                     Task.Default.PendingAfter
 
 
             let rec missedAfter =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
-                    Profiling.addCount (nameof missedAfter)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof missedAfter))
                     Task.Default.MissedAfter
 
 
             let rec priority =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
-                    Profiling.addCount (nameof priority)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof priority))
                     Task.Default.Priority
 
 
@@ -114,14 +114,14 @@ module Recoil =
             let rec attachments =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
-                    Profiling.addCount (nameof attachments)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof attachments))
                     []: Attachment list // TODO: move from here?
 
 
             let rec duration =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
-                    Profiling.addCount (nameof duration)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof duration))
                     Task.Default.Duration
 
 
@@ -132,35 +132,35 @@ module Recoil =
             let rec color =
                 atomFamilyFn
                 <| fun (_username: Username) ->
-                    Profiling.addCount (nameof color)
+                    Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof color))
                     UserColor.Black
 
 
             let rec weekStart =
                 atomFamilyFn
                 <| fun (_username: Username) ->
-                    Profiling.addCount (nameof weekStart)
+                    Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof weekStart))
                     DayOfWeek.Sunday
 
 
             let rec dayStart =
                 atomFamilyFn
                 <| fun (_username: Username) ->
-                    Profiling.addCount (nameof dayStart)
+                    Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof dayStart))
                     FlukeTime.Create 04 00
 
 
             let rec sessionLength =
                 atomFamilyFn
                 <| fun (_username: Username) ->
-                    Profiling.addCount (nameof sessionLength)
+                    Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof sessionLength))
                     Minute 25.
 
 
             let rec sessionBreakLength =
                 atomFamilyFn
                 <| fun (_username: Username) ->
-                    Profiling.addCount (nameof sessionBreakLength)
+                    Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof sessionBreakLength))
                     Minute 5.
 
 
@@ -176,7 +176,7 @@ module Recoil =
             let rec user =
                 atomFamilyFn
                 <| fun (_username: Username) ->
-                    Profiling.addCount (nameof user)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof user))
                     None: User option
 
             //            let rec treeSelectionIds =
@@ -188,66 +188,60 @@ module Recoil =
             let rec availableTreeIds =
                 atomFamilyFn
                 <| fun (_username: Username) ->
-                    Profiling.addCount (nameof availableTreeIds)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof availableTreeIds))
                     []: TreeId list
 
             let rec taskIdList =
                 atomFamilyFn
                 <| fun (_username: Username) ->
-                    Profiling.addCount (nameof taskIdList)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof taskIdList))
                     []: Task.TaskId list
 
 
 
 
         module rec Cell =
-            type CellId = CellId of id: string
-
             let rec taskId =
                 atomFamilyFn
-                <| fun (_cellId: CellId) ->
-                    Profiling.addCount (nameof taskId)
-                    Task.TaskId (InformationName "", TaskName "")
+                <| fun (taskId: Task.TaskId, _dateId: DateId) ->
+                    Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof taskId))
+                    taskId
 
 
-            let rec date =
+            let rec dateId =
                 atomFamilyFn
-                <| fun (_cellId: CellId) ->
-                    Profiling.addCount (nameof date)
-                    FlukeDate.MinValue
+                <| fun (_taskId: Task.TaskId, dateId: DateId) ->
+                    Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof dateId))
+                    dateId
 
 
             let rec status =
                 atomFamilyFn
-                <| fun (_cellId: CellId) ->
-                    Profiling.addCount (nameof status)
+                <| fun (_taskId: Task.TaskId, _dateId: DateId) ->
+                    Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof status))
                     Disabled
 
 
             let rec attachments =
                 atomFamilyFn
-                <| fun (_cellId: CellId) ->
-                    Profiling.addCount (nameof attachments)
+                <| fun (_taskId: Task.TaskId, _dateId: DateId) ->
+                    Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof attachments))
                     []: Attachment list
 
 
             let rec sessions =
                 atomFamilyFn
-                <| fun (_cellId: CellId) ->
-                    Profiling.addCount (nameof sessions)
+                <| fun (_taskId: Task.TaskId, _dateId: DateId) ->
+                    Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof sessions))
                     []: TaskSession list
 
 
             let rec selected =
                 atomFamilyFn
-                <| fun (_cellId: CellId) ->
-                    Profiling.addCount (nameof selected)
+                <| fun (_taskId: Task.TaskId, _dateId: DateId) ->
+                    Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof selected))
                     false
 
-
-
-            let cellId (Task.TaskId (InformationName informationName, TaskName taskName)) (DateId referenceDay) =
-                CellId (sprintf "%s/%s/%s" informationName taskName (referenceDay.DateTime.Format "yyyy-MM-dd"))
 
 
         module rec Tree =
@@ -267,28 +261,28 @@ module Recoil =
             let rec name =
                 atomFamilyFn
                 <| fun (_treeId: TreeId) ->
-                    Profiling.addCount (nameof name)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Tree) (nameof name))
                     TreeName ""
 
 
             let rec owner =
                 atomFamilyFn
                 <| fun (_treeId: TreeId) ->
-                    Profiling.addCount (nameof owner)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Tree) (nameof owner))
                     None: User option
 
 
             let rec sharedWith =
                 atomFamilyFn
                 <| fun (_treeId: TreeId) ->
-                    Profiling.addCount (nameof sharedWith)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Tree) (nameof sharedWith))
                     TreeAccess.Public
 
 
             let rec position =
                 atomFamilyFn
                 <| fun (_treeId: TreeId) ->
-                    Profiling.addCount (nameof position)
+                    Profiling.addCount (sprintf "%s/%s" (nameof Tree) (nameof position))
                     None: FlukeDateTime option
 
 
@@ -683,8 +677,7 @@ module Recoil =
                         |> Seq.iter (fun (taskId, operations) ->
                             operations
                             |> Seq.iter (fun (date, selected) ->
-                                let cellId = Atoms.Cell.cellId taskId (DateId date)
-                                setter.set (Atoms.Cell.selected cellId, selected)))
+                                setter.set (Atoms.Cell.selected (taskId, DateId date), selected)))
 
                         setter.set (Atoms.cellSelectionMap, newSelection)
                         Profiling.addCount (nameof cellSelectionMap + " (SET)"))
@@ -823,10 +816,8 @@ module Recoil =
                                 let result =
                                     dateSequence
                                     |> List.rev
-                                    |> List.map DateId
-                                    |> List.map (Atoms.Cell.cellId taskId)
-                                    |> List.tryPick (fun cellId ->
-                                        let sessions = getter.get (Atoms.Cell.sessions cellId)
+                                    |> List.tryPick (fun date ->
+                                        let sessions = getter.get (Atoms.Cell.sessions (taskId, DateId date))
                                         sessions
                                         |> List.sortByDescending (fun (TaskSession (start, _, _)) -> start.DateTime)
                                         |> List.tryHead)
@@ -873,14 +864,9 @@ module Recoil =
                                 let dateSequence = getter.get dateSequence
                                 let taskIdList = getter.get (Atoms.Session.taskIdList username)
 
-                                let cellIdList =
-                                    dateSequence
-                                    |> List.map DateId
-                                    |> List.map (Atoms.Cell.cellId taskId)
-
                                 let statusList =
-                                    cellIdList
-                                    |> List.map Atoms.Cell.status
+                                    dateSequence
+                                    |> List.map (fun date -> Atoms.Cell.status (taskId, DateId date))
                                     |> List.map getter.get
 
                                 let usersCount =
@@ -953,7 +939,7 @@ module Recoil =
 
             let rec activeSessions =
                 selectorFamily {
-                    key ("selector/" + nameof activeSessions)
+                    key (sprintf "%s/%s" (nameof Session) (nameof activeSessions))
                     get (fun (username: Username) getter ->
                             let taskIdList = getter.get (Atoms.Session.taskIdList username)
 
@@ -971,13 +957,13 @@ module Recoil =
                                         ActiveSession (taskName, Minute duration, sessionLength, sessionBreakLength)))
                                 |> List.choose id
 
-                            Profiling.addCount (nameof activeSessions)
+                            Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof activeSessions))
                             result)
                 }
 
             let rec tasksByInformationKind =
                 selectorFamily {
-                    key ("selector/" + nameof weekCellsMap)
+                    key (sprintf "%s/%s" (nameof Session) (nameof tasksByInformationKind))
                     get (fun (username: Username) getter ->
                             let taskIdList = getter.get (Atoms.Session.taskIdList username)
 
@@ -1020,12 +1006,13 @@ module Recoil =
 
                                     informationKindName, newGroups)
 
+                            Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof tasksByInformationKind))
                             informationKindGroups)
                 }
 
             let rec weekCellsMap =
                 selectorFamily {
-                    key ("selector/" + nameof weekCellsMap)
+                    key (sprintf "%s/%s" (nameof Session) (nameof weekCellsMap))
                     get (fun (username: Username) getter ->
                             let position = getter.get position
                             let taskIdList = getter.get (Atoms.Session.taskIdList username)
@@ -1073,11 +1060,11 @@ module Recoil =
                                                     dateIdSequence
                                                     |> List.map (fun ((DateId referenceDay) as dateId) ->
                                                         //                                                    let taskId = getter.get task.Id
-                                                        let cellId = Atoms.Cell.cellId taskId dateId
+                                                        let status = getter.get (Atoms.Cell.status (taskId, dateId))
+                                                        let sessions = getter.get (Atoms.Cell.sessions (taskId, dateId))
 
-                                                        let status = getter.get (Atoms.Cell.status cellId)
-                                                        let sessions = getter.get (Atoms.Cell.sessions cellId)
-                                                        let attachments = getter.get (Atoms.Cell.attachments cellId)
+                                                        let attachments =
+                                                            getter.get (Atoms.Cell.attachments (taskId, dateId))
 
                                                         let isToday = getter.get (FlukeDate.isToday referenceDay)
 
@@ -1150,7 +1137,7 @@ module Recoil =
                                     weeks
                                 | _ -> []
 
-                            Profiling.addCount (nameof weekCellsMap)
+                            Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof weekCellsMap))
                             result)
                 }
 
@@ -1266,12 +1253,12 @@ module Recoil =
             let rec selected =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Cell) (nameof selected))
-                    get (fun (cellId: Atoms.Cell.CellId) getter ->
-                            let selected = getter.get (Atoms.Cell.selected cellId)
+                    get (fun (taskId: Atoms.Task.TaskId, dateId: DateId) getter ->
+                            let selected = getter.get (Atoms.Cell.selected (taskId, dateId))
 
                             Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof selected))
                             selected)
-                    set (fun (cellId: Atoms.Cell.CellId) setter (newValue: bool) ->
+                    set (fun (taskId: Atoms.Task.TaskId, (DateId referenceDay)) setter (newValue: bool) ->
                             let username = setter.get Atoms.username
 
                             match username with
@@ -1279,100 +1266,12 @@ module Recoil =
                                 let ctrlPressed = setter.get Atoms.ctrlPressed
                                 let shiftPressed = setter.get Atoms.shiftPressed
 
-                                let date = setter.get (Atoms.Cell.date cellId)
-                                let taskId = setter.get (Atoms.Cell.taskId cellId)
-
                                 let newCellSelectionMap =
-                                    let swapSelection oldSelection taskId date =
-                                        let oldSet =
-                                            oldSelection
-                                            |> Map.tryFind taskId
-                                            |> Option.defaultValue Set.empty
-
-                                        let newSet =
-                                            let fn =
-                                                if newValue then
-                                                    Set.add
-                                                else
-                                                    Set.remove
-
-                                            fn date oldSet
-
-                                        oldSelection |> Map.add taskId newSet
-
-                                    //                                    let currentTaskList = setter.get (Session.currentTaskList username)
-                                    let taskIdList = setter.get (Atoms.Session.taskIdList username)
                                     match shiftPressed, ctrlPressed with
-                                    | true, _ ->
-                                        let oldCellSelectionMap = setter.get Atoms.cellSelectionMap
-
-                                        let selectionTaskList =
-                                            taskIdList
-                                            |> List.mapi (fun i taskId' ->
-                                                match oldCellSelectionMap |> Map.tryFind taskId with
-                                                | Some oldSelectionDates ->
-                                                    let selectionDates =
-                                                        match oldSelectionDates.IsEmpty, taskId' = taskId with
-                                                        | _, true -> oldSelectionDates |> Set.add date
-                                                        | true, _ -> Set.empty
-                                                        | false, _ -> oldSelectionDates
-
-                                                    {|
-                                                        Index = i
-                                                        TaskId = taskId'
-                                                        Range =
-                                                            Set.minElement selectionDates, Set.maxElement selectionDates
-                                                    |}
-                                                    |> Some
-                                                | _ -> None)
-                                            |> List.choose id
-
-                                        let minDates, maxDates =
-                                            selectionTaskList
-                                            |> List.map (fun selectionTask -> selectionTask.Range)
-                                            |> List.unzip
-
-                                        let minDate =
-                                            match minDates with
-                                            | [] -> None
-                                            | x -> Some (List.min x)
-
-                                        let maxDate =
-                                            match maxDates with
-                                            | [] -> None
-                                            | x -> Some (List.max x)
-
-                                        match minDate, maxDate with
-                                        | Some minDate, Some maxDate ->
-                                            let newSet =
-                                                [
-                                                    minDate
-                                                    maxDate
-                                                ]
-                                                |> Rendering.getDateSequence (0, 0)
-                                                |> Set.ofList
-
-                                            taskIdList
-                                            |> List.indexed
-                                            |> List.skipWhile (fun (i, taskId) ->
-                                                i < (selectionTaskList
-                                                     |> List.tryHead
-                                                     |> Option.map (fun x -> x.Index)
-                                                     |> Option.defaultValue 0))
-                                            |> List.takeWhile (fun (i, taskId) ->
-                                                i
-                                                <= (selectionTaskList
-                                                    |> List.tryLast
-                                                    |> Option.map (fun x -> x.Index)
-                                                    |> Option.defaultValue 0))
-                                            |> List.map (fun (i, task) -> taskId, newSet)
-                                            |> Map.ofList
-                                        | _ -> Map.empty
-
                                     | false, false ->
                                         let newTaskSelection =
                                             if newValue then
-                                                Set.singleton date
+                                                Set.singleton referenceDay
                                             else
                                                 Set.empty
 
@@ -1381,8 +1280,67 @@ module Recoil =
                                         ]
                                         |> Map.ofList
                                     | false, true ->
+                                        let swapSelection oldSelection taskId date =
+                                            let oldSet =
+                                                oldSelection
+                                                |> Map.tryFind taskId
+                                                |> Option.defaultValue Set.empty
+
+                                            let newSet =
+                                                let fn =
+                                                    if newValue then
+                                                        Set.add
+                                                    else
+                                                        Set.remove
+
+                                                fn date oldSet
+
+                                            oldSelection |> Map.add taskId newSet
+
                                         let oldSelection = setter.get Atoms.cellSelectionMap
-                                        swapSelection oldSelection taskId date
+                                        swapSelection oldSelection taskId referenceDay
+                                    | true, _ ->
+                                        let taskIdList = setter.get (Atoms.Session.taskIdList username)
+                                        let oldCellSelectionMap = setter.get Atoms.cellSelectionMap
+
+                                        let initialTaskIdSet =
+                                            oldCellSelectionMap
+                                            |> Map.keys
+                                            |> Set.ofSeq
+                                            |> Set.add taskId
+
+                                        let newTaskIdList =
+                                            taskIdList
+                                            |> List.skipWhile (initialTaskIdSet.Contains >> not)
+                                            |> List.rev
+                                            |> List.skipWhile (initialTaskIdSet.Contains >> not)
+                                            |> List.rev
+
+                                        let initialDateList =
+                                            oldCellSelectionMap
+                                            |> Map.values
+                                            |> Set.unionMany
+                                            |> Set.add referenceDay
+                                            |> Set.toList
+                                            |> List.sort
+
+                                        let dateSeq =
+                                            match initialDateList with
+                                            | [] -> []
+                                            | dateList ->
+                                                [
+                                                    dateList.Head
+                                                    dateList |> List.last
+                                                ]
+                                                |> Rendering.getDateSequence (0, 0)
+                                            |> Set.ofList
+
+                                        let newMap =
+                                            newTaskIdList
+                                            |> List.map (fun taskId -> taskId, dateSeq)
+                                            |> Map.ofList
+
+                                        newMap
 
                                 setter.set (cellSelectionMap, newCellSelectionMap)
 
@@ -1731,4 +1689,3 @@ module Recoil =
 //
 //        let getWeekStart () = RootPrivateData.weekStart
         ()
-

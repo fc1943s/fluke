@@ -104,6 +104,7 @@ module View =
         //            let treeSelectionIds =
 //                input.State.Session.TreeSelection
 //                |> Set.map (fun treeState -> treeState.Id)
+
 //
         let treeSelection =
             input.TreeSelectionIds
@@ -191,10 +192,6 @@ module View =
 
 
         let filteredTaskStateList = filterTaskStateList input.View dateRange taskStateList
-
-        printfn
-            "FakeBackend.getSession -> (taskStateList.Length, filteredTaskStateList.Length) = %A"
-            (taskStateList.Length, filteredTaskStateList.Length)
 
         let filteredLanes =
             filteredTaskStateList

@@ -267,27 +267,6 @@ module TempData =
 
         userInteraction
 
-    let createCellStatusChangeInteraction (user: User) task date manualCellStatus =
-        let cellStatusChange =
-            match manualCellStatus with
-            | ManualCellStatus.Completed -> CellStatusChange.Complete
-            | ManualCellStatus.Dismissed -> CellStatusChange.Dismiss
-            | ManualCellStatus.Postponed until -> CellStatusChange.Postpone until
-            | ManualCellStatus.ManualPending -> CellStatusChange.Schedule
-
-        let cellInteraction = CellInteraction.StatusChange cellStatusChange
-
-        let dateId = DateId date
-
-        let cellAddress = { Task = task; DateId = dateId }
-
-        let interaction = Interaction.Cell (cellAddress, cellInteraction)
-
-        let moment = { Date = date; Time = user.DayStart }
-
-        let userInteraction = UserInteraction (moment, user, interaction)
-
-        userInteraction
 
     let createCellStatusChangeInteractions user (entries: (FlukeDate * (Task option * ManualCellStatus) list) list) =
         entries
@@ -298,157 +277,6 @@ module TempData =
                 |> Option.map (fun task -> createCellStatusChangeInteraction user task date manualCellStatus)))
 
 
-    let createTaskState moment task (sortTaskMap: Map<TaskName, Task> option) (dslTasks: (DslTask * User) list) =
-
-        let defaultTaskState: TaskState =
-            {
-                Task = task
-                Sessions = []
-                Attachments = []
-                SortList = []
-                CellStateMap = Map.empty
-                InformationMap = Map.empty
-            }
-
-        let taskState, userInteractions =
-            ((defaultTaskState, []), dslTasks)
-            ||> List.fold (fun (taskState, userInteractions) (dslTask, user) ->
-                    match dslTask with
-                    | DslTaskComment comment ->
-                        let interaction =
-                            Interaction.Task
-                                (task, TaskInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment)))
-
-                        let userInteraction = UserInteraction (moment, user, interaction)
-
-                        let newUserInteractions =
-                            userInteractions
-                            @ [
-                                userInteraction
-                            ]
-
-                        taskState, newUserInteractions
-                    | DslCellComment (date, comment) ->
-                        let interaction =
-                            Interaction.Cell
-                                ({ Task = task; DateId = DateId date },
-                                 CellInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment)))
-
-                        let userInteraction = UserInteraction (moment, user, interaction)
-
-                        let newUserInteractions =
-                            userInteractions
-                            @ [
-                                userInteraction
-                            ]
-
-                        taskState, newUserInteractions
-                    | DslSession start ->
-                        let taskSession = TaskSession (start, user.SessionLength, user.SessionBreakLength)
-
-                        let taskInteraction = TaskInteraction.Session taskSession
-                        let interaction = Interaction.Task (task, taskInteraction)
-
-                        let userInteraction = UserInteraction (moment, user, interaction)
-
-                        let newUserInteractions =
-                            userInteractions
-                            @ [
-                                userInteraction
-                            ]
-
-                        taskState, newUserInteractions
-                    | DslTaskSort (top, bottom) ->
-                        let newUserInteractions =
-                            match sortTaskMap with
-                            | Some sortTaskMap ->
-                                let getTask taskName =
-                                    taskName
-                                    |> Option.map (fun taskName ->
-                                        sortTaskMap
-                                        |> Map.tryFind taskName
-                                        |> function
-                                        | Some task -> task
-                                        | None ->
-                                            failwithf
-                                                "DslTaskSort. Task not found: %A. Map length: %A"
-                                                taskName
-                                                sortTaskMap.Count)
-
-                                let interaction =
-                                    Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
-
-                                let userInteraction = UserInteraction (moment, user, interaction)
-
-                                userInteractions
-                                @ [
-                                    userInteraction
-                                ]
-                            | None -> userInteractions
-
-                        taskState, newUserInteractions
-                    | DslStatusEntry (date, manualCellStatus) ->
-                        let userInteraction = createCellStatusChangeInteraction user task date manualCellStatus
-
-                        let newUserInteractions =
-                            userInteractions
-                            @ [
-                                userInteraction
-                            ]
-
-                        taskState, newUserInteractions
-                    | DslPriority priority ->
-                        let newTaskState =
-                            { taskState with
-                                Task = { taskState.Task with Priority = Some priority }
-                            }
-
-                        newTaskState, userInteractions
-                    | DslInformationReferenceToggle information ->
-                        let newTaskState =
-                            { taskState with
-                                InformationMap = taskState.InformationMap |> Map.add information ()
-                            }
-
-                        newTaskState, userInteractions
-                    | DslTaskSet set ->
-                        match set with
-                        | DslSetScheduling (scheduling, start) ->
-                            let newTaskState =
-                                { taskState with
-                                    Task = { taskState.Task with Scheduling = scheduling }
-                                }
-
-                            newTaskState, userInteractions
-                        | DslSetPendingAfter start ->
-                            let newTaskState =
-                                { taskState with
-                                    Task = { taskState.Task with PendingAfter = Some start }
-                                }
-
-                            newTaskState, userInteractions
-                        | DslSetMissedAfter start ->
-                            let newTaskState =
-                                { taskState with
-                                    Task = { taskState.Task with MissedAfter = Some start }
-                                }
-
-                            newTaskState, userInteractions
-
-                        | DslSetDuration minutes ->
-                            let newTaskState =
-                                { taskState with
-                                    Task =
-                                        { taskState.Task with
-                                            Duration = Some (Minute (float minutes))
-                                        }
-                                }
-
-                            newTaskState, userInteractions
-
-                    )
-
-        taskState, userInteractions
 
 
 
@@ -506,13 +334,6 @@ module TempData =
 //            TreeStateMap: Map<TreeState, bool>
 //        }
 
-    type DslData =
-        {
-            //            GetLivePosition: (unit -> FlukeDateTime)
-            InformationStateMap: Map<Information, InformationState>
-            //            TaskOrderList: TaskOrderEntry list
-            TaskStateList: (TaskState * UserInteraction list) list
-        }
 
 
     let mergeTreeState (oldValue: TreeState) (newValue: TreeState) =
@@ -630,39 +451,6 @@ module TempData =
 
         dslData, tasks
 
-    let mergeDslDataIntoTreeState (dslData: DslData) (treeState: TreeState) =
-
-        let newInformationStateMap = mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
-
-        let taskStateList, userInteractionsBundle = dslData.TaskStateList |> List.unzip
-
-
-        let userInteractions = userInteractionsBundle |> List.collect id
-
-        let newTreeState = treeStateWithInteractions userInteractions treeState
-
-        let newTaskStateMap =
-            (newTreeState.TaskStateMap, taskStateList)
-            ||> List.fold (fun taskStateMap taskState ->
-                    let oldTaskState =
-                        newTreeState.TaskStateMap
-                        |> Map.tryFind taskState.Task
-
-                    let newTaskState =
-                        match oldTaskState with
-                        | Some oldTaskState -> mergeTaskState oldTaskState taskState
-                        | None -> taskState
-
-                    taskStateMap
-                    |> Map.add taskState.Task newTaskState)
-
-        let result =
-            { newTreeState with
-                InformationStateMap = newInformationStateMap
-                TaskStateMap = newTaskStateMap
-            }
-
-        result
 
 
 

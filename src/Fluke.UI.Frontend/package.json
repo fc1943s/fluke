@@ -16,7 +16,7 @@
     "pretest": "fable-splitter --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
     "test": "jest",
     "splitter-watch": "fable-splitter --watch --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
-    "jest-watch": "jest --watchAll",
+    "jest-watch": "jest --watchAll --runInBand",
     "test-watch": "concurrently --restart-tries=10000 \"yarn splitter-watch\" \"yarn jest-watch\""
   },
   "dependencies": {
@@ -27,8 +27,8 @@
     "bulma-extensions": "^6.2",
     "bulmaswatch": "^0.8",
 
-    "react": "^0.0.0-experimental-94c0244ba",
-    "react-dom": "^0.0.0-experimental-94c0244ba",
+    "react": "0.0.0-experimental-4ead6b530",
+    "react-dom": "0.0.0-experimental-4ead6b530",
 
     "recoil": "^0.0",
     "gkx": "^1.0",
@@ -45,9 +45,9 @@
     "crypto-js": "^4.0.0"
   },
   "devDependencies": {
-    "webpack": "^4.44",
+    "webpack": "^5.0",
     "@types/webpack": "^4.41",
-    "webpack-cli": "^3.3",
+    "webpack-cli": "^4.0",
     "webpack-dev-server": "^3.11",
     "@types/webpack-dev-server": "^3.11",
 
@@ -57,14 +57,15 @@
 
     "html-webpack-plugin": "^4.5",
     "copy-webpack-plugin": "^6.2",
-    "mini-css-extract-plugin": "^0.11",
+    "mini-css-extract-plugin": "^1.0",
 
     "@babel/core": "^7.11",
     "@babel/preset-env": "^7.11",
     "@babel/preset-typescript": "^7.10",
     "@babel/preset-react": "^7.10",
+    "@babel/plugin-proposal-object-rest-spread": "^7.11",
     "babel-loader": "^8.1",
-    "style-loader": "^1.3",
+    "style-loader": "^2.0",
     "css-loader": "^4.3",
     "sass-loader": "^10.0",
     "node-sass": "^4.14",

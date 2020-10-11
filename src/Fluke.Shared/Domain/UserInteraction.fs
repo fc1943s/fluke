@@ -83,6 +83,10 @@ module UserInteraction =
             let Year year, Day day = this.Year, this.Day
             DateTime (year, int this.Month, day, 12, 0, 0)
 
+        member inline this.Stringify () =
+            let { Year = Year year; Month = month; Day = Day day } = this
+            sprintf "%d-%02d-%02d" year (int month) day
+
         static member inline Create year month day: FlukeDate = { Year = Year year; Month = month; Day = Day day }
 
         static member inline FromDateTime (date: DateTime): FlukeDate =

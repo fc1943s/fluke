@@ -52,6 +52,67 @@ module MainComponent =
                 nothing)
 
     module SessionDataLoader =
+        let initializeSessionData username (setter: CallbackMethods) sessionData =
+            let recoilInformationMap =
+                sessionData.TaskList
+                |> Seq.map (fun task -> task.Information)
+                |> Seq.distinct
+                |> Seq.map (fun information -> sessionData.InformationStateMap.[information])
+                |> Seq.map (fun informationState ->
+
+                    let informationId = Recoil.Atoms.Information.informationId informationState.Information
+
+                    setter.set (Recoil.Atoms.Information.wrappedInformation informationId, informationState.Information)
+                    setter.set (Recoil.Atoms.Information.attachments informationId, informationState.Attachments)
+                    informationState.Information, informationId)
+                |> Map.ofSeq
+
+            Profiling.addTimestamp "state.set[1]"
+
+            sessionData.TaskList
+            |> List.map (fun task -> sessionData.TaskStateMap.[task])
+            |> List.iter (fun taskState ->
+                let taskId = Recoil.Atoms.Task.taskId taskState.Task
+                setter.set (Recoil.Atoms.Task.name taskId, taskState.Task.Name)
+
+                setter.set (Recoil.Atoms.Task.informationId taskId, recoilInformationMap.[taskState.Task.Information])
+
+                setter.set (Recoil.Atoms.Task.pendingAfter taskId, taskState.Task.PendingAfter)
+
+                setter.set (Recoil.Atoms.Task.missedAfter taskId, taskState.Task.MissedAfter)
+
+                setter.set (Recoil.Atoms.Task.scheduling taskId, taskState.Task.Scheduling)
+
+                setter.set (Recoil.Atoms.Task.priority taskId, taskState.Task.Priority)
+
+                setter.set (Recoil.Atoms.Task.attachments taskId, taskState.Attachments)
+
+                setter.set (Recoil.Atoms.Task.duration taskId, taskState.Task.Duration)
+
+                //                                        dateSequence
+//                                        |> List.iter (fun date ->
+//                                            let cellId = Recoil.Atoms.Cell.cellId taskId (DateId date)
+//
+//                                            setter.set (Recoil.Atoms.Cell.taskId cellId, taskId)
+//                                            setter.set (Recoil.Atoms.Cell.date cellId, date))
+
+                taskState.CellStateMap
+                |> Map.filter (fun dateId cellState ->
+                    (<>) cellState.Status Disabled
+                    || not cellState.Attachments.IsEmpty
+                    || not cellState.Sessions.IsEmpty)
+                |> Map.iter (fun dateId cellState ->
+                    setter.set (Recoil.Atoms.Cell.status (taskId, dateId), cellState.Status)
+                    setter.set (Recoil.Atoms.Cell.attachments (taskId, dateId), cellState.Attachments)
+                    setter.set (Recoil.Atoms.Cell.sessions (taskId, dateId), cellState.Sessions)
+                    setter.set (Recoil.Atoms.Cell.selected (taskId, dateId), false)))
+
+            let taskIdList =
+                sessionData.TaskList
+                |> List.map Recoil.Atoms.Task.taskId
+
+            setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
+
         let hook =
             React.memo (fun (input: {| Username: Username |}) ->
                 //            let position = Recoil.useValue Recoil.Selectors.position
@@ -84,74 +145,7 @@ module MainComponent =
 
                             match sessionData with
                             | Some sessionData ->
-                                printfn
-                                    "MainComponent.SessionDataLoader.hook -> loadState -> (sessionData.TaskList.Length) = %A"
-                                    sessionData.TaskList.Length
-                                //                                        let! treeStateMap = setter.snapshot.getAsync Recoil.Atoms.treeStateMap
-//                                        let! dateSequence = setter.snapshot.getAsync Recoil.Selectors.dateSequence
-
-                                let recoilInformationMap =
-                                    sessionData.TaskList
-                                    |> Seq.map (fun task -> task.Information)
-                                    |> Seq.distinct
-                                    |> Seq.map (fun information -> sessionData.InformationStateMap.[information])
-                                    |> Seq.map (fun informationState ->
-
-                                        let informationId =
-                                            Recoil.Atoms.Information.informationId informationState.Information
-
-                                        setter.set
-                                            (Recoil.Atoms.Information.wrappedInformation informationId,
-                                             informationState.Information)
-                                        setter.set
-                                            (Recoil.Atoms.Information.attachments informationId,
-                                             informationState.Attachments)
-                                        informationState.Information, informationId)
-                                    |> Map.ofSeq
-
-                                Profiling.addTimestamp "state.set[1]"
-
-                                sessionData.TaskList
-                                |> List.map (fun task -> sessionData.TaskStateMap.[task])
-                                |> List.iter (fun taskState ->
-                                    let taskId = Recoil.Atoms.Task.taskId taskState.Task
-                                    setter.set (Recoil.Atoms.Task.name taskId, taskState.Task.Name)
-
-                                    setter.set
-                                        (Recoil.Atoms.Task.informationId taskId,
-                                         recoilInformationMap.[taskState.Task.Information])
-
-                                    setter.set (Recoil.Atoms.Task.pendingAfter taskId, taskState.Task.PendingAfter)
-
-                                    setter.set (Recoil.Atoms.Task.missedAfter taskId, taskState.Task.MissedAfter)
-
-                                    setter.set (Recoil.Atoms.Task.scheduling taskId, taskState.Task.Scheduling)
-
-                                    setter.set (Recoil.Atoms.Task.priority taskId, taskState.Task.Priority)
-
-                                    setter.set (Recoil.Atoms.Task.attachments taskId, taskState.Attachments)
-
-                                    setter.set (Recoil.Atoms.Task.duration taskId, taskState.Task.Duration)
-
-                                    //                                        dateSequence
-//                                        |> List.iter (fun date ->
-//                                            let cellId = Recoil.Atoms.Cell.cellId taskId (DateId date)
-//
-//                                            setter.set (Recoil.Atoms.Cell.taskId cellId, taskId)
-//                                            setter.set (Recoil.Atoms.Cell.date cellId, date))
-
-                                    taskState.CellStateMap
-                                    |> Map.filter (fun dateId cellState ->
-                                        (<>) cellState.Status Disabled
-                                        || not cellState.Attachments.IsEmpty
-                                        || not cellState.Sessions.IsEmpty)
-                                    |> Map.iter (fun dateId cellState ->
-                                        let cellId = Recoil.Atoms.Cell.cellId taskId dateId
-
-                                        setter.set (Recoil.Atoms.Cell.status cellId, cellState.Status)
-                                        setter.set (Recoil.Atoms.Cell.attachments cellId, cellState.Attachments)
-                                        setter.set (Recoil.Atoms.Cell.sessions cellId, cellState.Sessions)
-                                        setter.set (Recoil.Atoms.Cell.selected cellId, false)))
+                                initializeSessionData input.Username setter sessionData
 
                                 treeStateMap
                                 |> Map.iter (fun id treeState ->
@@ -160,11 +154,6 @@ module MainComponent =
                                     setter.set (Recoil.Atoms.Tree.sharedWith id, treeState.SharedWith)
                                     setter.set (Recoil.Atoms.Tree.position id, treeState.Position))
 
-                                let taskIdList =
-                                    sessionData.TaskList
-                                    |> List.map Recoil.Atoms.Task.taskId
-
-                                setter.set (Recoil.Atoms.Session.taskIdList input.Username, taskIdList)
 
                             //                                    printfn
 //                                        "MainComponent.SessionDataLoader.hook.loadState -> Atoms.Session.taskIdList[.Length] <- %A"
