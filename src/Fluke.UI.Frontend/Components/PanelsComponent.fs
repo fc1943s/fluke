@@ -29,6 +29,4 @@ module PanelsComponent =
                         | View.View.Groups -> GroupsViewComponent.render {| Username = username |}
                         | View.View.Tasks -> TasksViewComponent.render {| Username = username |}
                         | View.View.Week -> WeekViewComponent.render {| Username = username |}
-
-                    DetailsComponent.render ()
                 ])

@@ -57,4 +57,4 @@ module App =
     importAll "./public/index.jsx"
     importAll "./public/index.js"
 
-    React.render (document.getElementById "app") (appMain ())
+    React.render (document.getElementById "root") (appMain ())

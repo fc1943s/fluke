@@ -15,5 +15,5 @@ module React =
     let strictMode children = ReactBindings.React.createElement (react.StrictMode, (), children)
 
 
-    //    ReactDOM.render (appMain (), document.getElementById "app")
+    //    ReactDOM.render (appMain (), document.getElementById "root")
     let render rootElement appComponent = reactDom.unstable_createRoot(rootElement).render(appComponent)

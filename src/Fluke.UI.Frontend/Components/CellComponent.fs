@@ -75,12 +75,13 @@ module CellComponent =
                             "none"
                 |}
                 [
-                    CellBorderComponent.render
-                        {|
-                            Username = input.Username
-                            Date = referenceDay
-                        |}
                     CellSessionIndicatorComponent.render {| Status = status; Sessions = sessions |}
+                    if not selected then
+                        CellBorderComponent.render
+                            {|
+                                Username = input.Username
+                                Date = referenceDay
+                            |}
                     if showUser then
                         match status with
                         | UserStatus (user, manualCellStatus) ->
