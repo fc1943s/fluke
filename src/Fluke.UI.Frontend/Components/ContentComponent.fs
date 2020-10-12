@@ -9,6 +9,21 @@ open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
+open Browser
+open Feliz.Router
+open Browser.Types
+open FSharpPlus
+open Fable.React
+open Fable.React.Props
+open Fulma
+open Feliz
+open Feliz.Recoil
+open Feliz.Bulma
+open Feliz.UseListener
+open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.Model
+open Fluke.Shared
 
 
 module ContentComponent =
@@ -17,74 +32,110 @@ module ContentComponent =
     open Domain.State
 
     let render =
-        React.memo (fun (input: {| Username: Username |}) ->
-            Chakra.flex
-                ()
+        React.memo (fun (input: {| Username: Username; Props: {| flex: int |} |}) ->
+            let view = Recoil.useValue Recoil.Selectors.view
+
+            let setView view =
+                let path =
+                    Router.formatPath [|
+                        "view"
+                        string view
+                    |]
+
+                Dom.window.location.href <- path
+
+            React.useListener.onKeyDown (fun (e: KeyboardEvent) ->
+                match e.ctrlKey, e.shiftKey, e.key with
+                | _, true, "H" -> setView View.View.HabitTracker
+                | _, true, "P" -> setView View.View.Priority
+                | _, true, "B" -> setView View.View.BulletJournal
+                | _, true, "I" -> setView View.View.Information
+                | _ -> ())
+
+
+            let tabs =
                 [
-                    Chakra.flex
-                        {| width = "24px"; position = "relative" |}
+                    View.View.HabitTracker,
+                    "Habit Tracker View",
+                    Icons.bs.BsGrid,
+                    (fun () -> CalendarViewComponent.render {| Username = input.Username |})
+
+                    View.View.Priority,
+                    "Priority View",
+                    Icons.fa.FaSortNumericDownAlt,
+                    (fun () -> TasksViewComponent.render {| Username = input.Username |})
+
+                    View.View.BulletJournal,
+                    "Bullet Journal View",
+                    Icons.bs.BsListCheck,
+                    (fun () -> WeekViewComponent.render {| Username = input.Username |})
+
+                    View.View.Information,
+                    "Information View",
+                    Icons.ti.TiFlowChildren,
+                    (fun () -> GroupsViewComponent.render {| Username = input.Username |})
+                ]
+
+            let tabIndex =
+                tabs
+                |> List.findIndex (fun (view', _, _, _) -> view = view')
+
+            let handleTabsChange index =
+                let view, _, _, _ = tabs.[index]
+                setView view
+
+            Chakra.flex
+                input.Props
+                [
+                    LeftDockComponent.render {| Username = input.Username |}
+
+                    Chakra.box
+                        {|
+                            flex = 1
+                            marginLeft = "10px"
+                            marginRight = "10px"
+                        |}
                         [
-                            Chakra.flex
+                            Chakra.tabs
                                 {|
-                                    right = 0
-                                    position = "absolute"
-                                    transform = "rotate(-90deg) translate(0, -100%)"
-                                    transformOrigin = "100% 0"
-                                    height = "24px"
+                                    isLazy = true
+                                    index = tabIndex
+                                    onChange = handleTabsChange
                                 |}
                                 [
-                                    Chakra.button
-                                        {|
-                                            height = "100%"
-                                            borderRadius = 0
-                                            backgroundColor = "transparent"
-                                            fontWeight = "inherit"
-                                            fontSize = "14px"
-                                            fontFamily = "inherit"
-                                        |}
+                                    Chakra.tabList
+                                        {| borderColor = "transparent" |}
                                         [
-                                            Chakra.box
-                                                {|
-                                                    ``as`` = Icons.md.MdSettings
-                                                    marginRight = "6px"
-                                                    fontSize = "12px"
-                                                |}
-                                                []
-                                            str "Settings"
+                                            yield! tabs
+                                                   |> List.map (fun (_, name, icon, _) ->
+                                                       Chakra.tab
+                                                           {|
+                                                               padding = "12px"
+                                                               color = "gray.45%"
+                                                               _hover =
+                                                                   {|
+                                                                       borderBottomColor = "gray.45%"
+                                                                       borderBottom = "2px solid"
+                                                                   |}
+                                                               _selected =
+                                                                   {| color = "gray.77%"; borderColor = "gray.77%" |}
+                                                           |}
+                                                           [
+                                                               Chakra.box {| ``as`` = icon; marginRight = "6px" |} []
+                                                               str name
+                                                           ])
                                         ]
-
-                                    Chakra.button
-                                        {|
-                                            height = "100%"
-                                            borderRadius = 0
-                                            backgroundColor = "transparent"
-                                            fontWeight = "inherit"
-                                            fontSize = "14px"
-                                            fontFamily = "inherit"
-                                        |}
+                                    Chakra.tabPanels
+                                        {| className = "panels" |}
                                         [
-                                            Chakra.box
-                                                {|
-                                                    ``as`` = Icons.fi.FiDatabase
-                                                    marginRight = "6px"
-                                                    fontSize = "12px"
-                                                |}
-                                                []
-                                            str "Databases"
+                                            yield! tabs
+                                                   |> List.map (fun (_, _, _, content) ->
+                                                       Chakra.tabPanel
+                                                           {| padding = 0 |}
+                                                           [
+                                                               content ()
+                                                           ])
                                         ]
-
                                 ]
-                        ]
-                    Chakra.box
-                        {| flex = 1 |}
-                        [
-                            Chakra.box () []
-                            Chakra.box
-                                ()
-                                [
-                                    NavBarComponent.render {| Username = input.Username |}
-                                    PanelsComponent.render ()
-                                ]
-
                         ]
                 ])

@@ -15,6 +15,11 @@ module Model =
         | Information
         | None
 
+    [<RequireQualifiedAccess>]
+    type DockType =
+        | Databases
+        | Settings
+
     type ActiveSession = ActiveSession of taskName: string * duration: Minute * totalDuration: Minute * totalBreakDuration: Minute
 
     type Information with

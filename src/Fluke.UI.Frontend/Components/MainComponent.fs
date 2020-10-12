@@ -7,6 +7,7 @@ open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
+open Fluke.UI.Frontend.Bindings
 
 
 module MainComponent =
@@ -34,6 +35,7 @@ module MainComponent =
 
     let render =
         React.memo (fun () ->
+            Profiling.addTimestamp "mainComponent.render"
             let username = Recoil.useValue Recoil.Atoms.username
 
             React.fragment [
@@ -49,9 +51,13 @@ module MainComponent =
                             SessionDataLoader.hook {| Username = username |}
                             SoundPlayer.hook {| Username = username |}
 
-                            TopBarComponent.render ()
-                            ContentComponent.render {| Username = username |}
-                            StatusBarComponent.render ()
+                            Chakra.stack
+                                {| minHeight = "100vh"; spacing = 0 |}
+                                [
+                                    TopBarComponent.render ()
+                                    ContentComponent.render {| Username = username; Props = {| flex = 1 |} |}
+                                    StatusBarComponent.render {| Username = username |}
+                                ]
                          ],
                          PageLoaderComponent.render ())
 

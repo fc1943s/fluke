@@ -11,15 +11,15 @@ module View =
 
     [<RequireQualifiedAccess>]
     type View =
-        | Calendar
-        | Groups
-        | Tasks
-        | Week
+        | HabitTracker
+        | Priority
+        | BulletJournal
+        | Information
 
     let rec filterTaskStateList view dateRange (taskStateList: TaskState list) =
         match view with
-        | View.Calendar
-        | View.Week ->
+        | View.HabitTracker
+        | View.BulletJournal ->
             taskStateList
             |> List.filter (function
                 | { Task = { Scheduling = Manual WithoutSuggestion } } as taskState ->
@@ -36,12 +36,19 @@ module View =
                     || taskState.Sessions
                        |> List.exists (fun (TaskSession (start, _, _)) -> start.Date.DateTime >==< dateRange)
                 | _ -> true)
-        | View.Groups ->
+        | View.Priority ->
+            taskStateList
+            |> List.filter (function
+                | { Task = { Information = Archive _ } } -> false
+                | { Task = { Priority = Some priority }; Sessions = [] } when priority.Value < 5 -> false
+                | { Task = { Scheduling = Manual _ } } -> true
+                | _ -> false)
+        | View.Information ->
             taskStateList
             |> List.filter (function
                 | { Task = { Scheduling = Manual WithoutSuggestion } } -> true
                 | _ -> false)
-        //                |> List.filter (fun task ->
+    //                |> List.filter (fun task ->
 //                    task.StatusEntries
 //                    |> List.filter (function
 //                        | TaskStatusEntry (date, _) when date.DateTime >==< dateRange -> true
@@ -50,13 +57,6 @@ module View =
 //                    |> List.tryLast
 //                    |> function Some (TaskStatusEntry (_, Dismissed)) -> false | _ -> true
 //                )
-        | View.Tasks ->
-            taskStateList
-            |> List.filter (function
-                | { Task = { Information = Archive _ } } -> false
-                | { Task = { Priority = Some priority }; Sessions = [] } when priority.Value < 5 -> false
-                | { Task = { Scheduling = Manual _ } } -> true
-                | _ -> false)
 
     let sortLanes (input: {| View: View
                              DayStart: FlukeTime
@@ -64,12 +64,20 @@ module View =
                              InformationStateList: InformationState list // TaskOrderList: TaskOrderEntry list
                              Lanes: (TaskState * (CellAddress * CellStatus) list) list |}) =
         match input.View with
-        | View.Calendar ->
+        | View.HabitTracker ->
             input.Lanes
             |> Sorting.sortLanesByFrequency
             |> Sorting.sortLanesByIncomingRecurrency input.DayStart input.Position
             |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position //input.TaskOrderList
-        | View.Groups ->
+        | View.Priority ->
+            input.Lanes
+            //                |> Sorting.applyManualOrder input.TaskOrderList
+            |> List.sortByDescending (fun (taskState, _) ->
+                taskState.Task.Priority
+                |> Option.map (fun x -> x.Value)
+                |> Option.defaultValue 0)
+        | View.BulletJournal -> input.Lanes
+        | View.Information ->
             let lanes =
                 input.Lanes
                 //                    |> Sorting.applyManualOrder input.TaskOrderList
@@ -85,14 +93,6 @@ module View =
 
                 informationState.Information, lanes)
             |> List.collect snd
-        | View.Tasks ->
-            input.Lanes
-            //                |> Sorting.applyManualOrder input.TaskOrderList
-            |> List.sortByDescending (fun (taskState, _) ->
-                taskState.Task.Priority
-                |> Option.map (fun x -> x.Value)
-                |> Option.defaultValue 0)
-        | View.Week -> input.Lanes
 
     let getSessionData (input: {| User: User
                                   DateSequence: FlukeDate list
@@ -105,7 +105,7 @@ module View =
 //                input.State.Session.TreeSelection
 //                |> Set.map (fun treeState -> treeState.Id)
 
-//
+        //
         let treeSelection =
             input.TreeSelectionIds
             |> Set.toList

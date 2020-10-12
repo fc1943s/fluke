@@ -5,6 +5,7 @@ open Feliz.Recoil
 open Feliz.Router
 open Browser.Dom
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Hooks
 open Fable.Core.JsInterop
 open Fluke.UI.Frontend.Bindings
 
@@ -13,12 +14,14 @@ module App =
 
     let router =
         React.memo (fun () ->
+            Profiling.addTimestamp "router.render"
+            let theme = Theme.useTheme ()
             React.router
                 [
                     router.children
                         [
                             Chakra.provider
-                                {| resetCSS = true; theme = Chakra.theme |}
+                                {| resetCSS = true; theme = theme |}
                                 [
                                     Chakra.darkMode
                                         ()
@@ -31,7 +34,6 @@ module App =
 
     let appMain =
         React.memo (fun () ->
-
             Profiling.addTimestamp "appMain.render"
             React.strictMode
                 [
@@ -40,7 +42,11 @@ module App =
                         root.localStorage (fun hydrater ->
                             hydrater.setAtom Recoil.Atoms.debug
                             hydrater.setAtom Recoil.Atoms.treeSelectionIds
-                            hydrater.setAtom Recoil.Atoms.selectedPosition)
+                            hydrater.setAtom Recoil.Atoms.selectedPosition
+                            hydrater.setAtom Recoil.Atoms.cellSize
+                            hydrater.setAtom Recoil.Atoms.lanePaddingLeft
+                            hydrater.setAtom Recoil.Atoms.lanePaddingRight
+                            hydrater.setAtom Recoil.Atoms.leftDock)
 
                         root.children
                             [

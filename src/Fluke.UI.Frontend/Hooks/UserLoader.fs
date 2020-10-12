@@ -18,6 +18,7 @@ module UserLoader =
             let loadUser =
                 Recoil.useCallbackRef (fun setter ->
                     async {
+                        Profiling.addTimestamp "UserLoader.hook.loadUser"
                         //                            let! treeStateMap = setter.snapshot.getAsync Recoil.Selectors.treeStateMap
 
                         match treeStateMap with

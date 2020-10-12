@@ -118,7 +118,7 @@ module Tests =
                             {|
                                 User = user
                                 DateSequence = dateSequence
-                                View = View.View.Calendar
+                                View = View.View.HabitTracker
                                 Position = dslTemplate.Position
                                 TreeStateMap = treeStateMap
                                 TreeSelectionIds =

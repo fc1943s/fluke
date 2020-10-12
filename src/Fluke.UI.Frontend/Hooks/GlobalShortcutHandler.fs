@@ -14,42 +14,47 @@ open Fluke.Shared
 module GlobalShortcutHandler =
     let hook =
         React.memo (fun () ->
-            let cellSelectionMap, setCellSelectionMap = Recoil.useState Recoil.Selectors.cellSelectionMap
-            let ctrlPressed, setCtrlPressed = Recoil.useState Recoil.Atoms.ctrlPressed
-            let shiftPressed, setShiftPressed = Recoil.useState Recoil.Atoms.shiftPressed
+            Profiling.addTimestamp "GlobalShortcutHandler.render"
+            let keyEvent =
+                Recoil.useCallbackRef (fun setter (e: KeyboardEvent) ->
+                    async {
+                        let! cellSelectionMap = setter.snapshot.getAsync Recoil.Selectors.cellSelectionMap
+                        let! ctrlPressed = setter.snapshot.getAsync Recoil.Atoms.ctrlPressed
+                        let! shiftPressed = setter.snapshot.getAsync Recoil.Atoms.shiftPressed
 
-            let keyEvent (e: KeyboardEvent) =
-                if e.ctrlKey <> ctrlPressed then
-                    setCtrlPressed e.ctrlKey
+                        if e.ctrlKey <> ctrlPressed then
+                            setter.set (Recoil.Atoms.ctrlPressed, e.ctrlKey)
 
-                if e.shiftKey <> shiftPressed then
-                    setShiftPressed e.shiftKey
+                        if e.shiftKey <> shiftPressed then
+                            setter.set (Recoil.Atoms.shiftPressed, e.shiftKey)
 
-                if not cellSelectionMap.IsEmpty then
-                    if e.key = "Escape" && e.``type`` = "keydown" then
-                        setCellSelectionMap Map.empty
+                        if not cellSelectionMap.IsEmpty then
+                            if e.key = "Escape" && e.``type`` = "keydown" then
+                                setter.set (Recoil.Selectors.cellSelectionMap, Map.empty)
 
-                    if e.key = "R" && e.``type`` = "keydown" then
-                        let newMap =
-                            if cellSelectionMap.Count = 1 then
-                                cellSelectionMap
-                                |> Map.toList
-                                |> List.map (fun (taskId, dates) ->
-                                    let date =
-                                        dates
-                                        |> Seq.item (Random().Next(0, dates.Count - 1))
+                            if e.key = "R" && e.``type`` = "keydown" then
+                                let newMap =
+                                    if cellSelectionMap.Count = 1 then
+                                        cellSelectionMap
+                                        |> Map.toList
+                                        |> List.map (fun (taskId, dates) ->
+                                            let date =
+                                                dates
+                                                |> Seq.item (Random().Next(0, dates.Count - 1))
 
-                                    taskId, Set.singleton date)
-                                |> Map.ofList
-                            else
-                                let key =
-                                    cellSelectionMap
-                                    |> Map.keys
-                                    |> Seq.item (Random().Next(0, cellSelectionMap.Count - 1))
+                                            taskId, Set.singleton date)
+                                        |> Map.ofList
+                                    else
+                                        let key =
+                                            cellSelectionMap
+                                            |> Map.keys
+                                            |> Seq.item (Random().Next(0, cellSelectionMap.Count - 1))
 
-                                Map.singleton key cellSelectionMap.[key]
+                                        Map.singleton key cellSelectionMap.[key]
 
-                        setCellSelectionMap newMap
+                                setter.set (Recoil.Selectors.cellSelectionMap, newMap)
+                    }
+                    |> Async.StartImmediate)
 
             React.useListener.onKeyDown keyEvent
             React.useListener.onKeyUp keyEvent

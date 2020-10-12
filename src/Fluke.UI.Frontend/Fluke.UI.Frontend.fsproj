@@ -22,11 +22,11 @@
         <Compile Include="Hooks\SessionDataLoader.fs" />
         <Compile Include="Hooks\SoundPlayer.fs" />
         <Compile Include="Hooks\GlobalShortcutHandler.fs" />
+        <Compile Include="Hooks\Theme.fs" />
         <Compile Include="Hooks\UserLoader.fs" />
         <Compile Include="Components\MonthResponsiveCellComponent.fs" />
         <Compile Include="Components\PageLoaderComponent.fs" />
         <Compile Include="Components\TreeSelectorComponent.fs" />
-        <Compile Include="Components\NavBarComponent.fs" />
         <Compile Include="Components\DayComponent.fs" />
         <Compile Include="Components\SpinnerComponent.fs" />
         <Compile Include="Components\GridHeaderComponent.fs" />
@@ -44,11 +44,11 @@
         <Compile Include="Components\GroupsViewComponent.fs" />
         <Compile Include="Components\TasksViewComponent.fs" />
         <Compile Include="Components\WeekViewComponent.fs" />
-        <Compile Include="Components\PanelsComponent.fs" />
         <Compile Include="Components\DebugOverlayComponent.fs" />
         <Compile Include="Components\LogoComponent.fs" />
         <Compile Include="Components\TopBarComponent.fs" />
         <Compile Include="Components\DockButtonComponent.fs" />
+        <Compile Include="Components\DockPanelComponent.fs" />
         <Compile Include="Components\LeftDockComponent.fs" />
         <Compile Include="Components\StatusBarComponent.fs" />
         <Compile Include="Components\ContentComponent.fs" />

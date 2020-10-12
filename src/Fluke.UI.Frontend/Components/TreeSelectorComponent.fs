@@ -68,52 +68,33 @@ module TreeSelectorComponent =
                 | Some _, Some _ when selectedPosition = treePosition -> RenderCheckbox
                 | _ -> HideCheckbox
 
-            match selectedPosition, treePosition with
-            | RenderCheckbox ->
-                Chakra.menuItem
-                    ()
-                    [
-                        Chakra.checkbox
-                            {|
-                                ``data-testid`` = "menu-item-" + treeId.ToString ()
-                                value = input.TreeId
-                                isChecked = selected
-                                onClick = onClick
-                                onChange = onChange
-                            |}
-                            [
-                                str treeName
-                            ]
-                    ]
-            | _ -> nothing)
+            let enabled =
+                match selectedPosition, treePosition with
+                | RenderCheckbox -> true
+                | _ -> false
+            Chakra.checkbox
+                {|
+                    ``data-testid`` = "menu-item-" + treeId.ToString ()
+                    value = input.TreeId
+                    isChecked = selected
+                    isDisabled = if enabled then None else Some true
+                    onClick = onClick
+                    onChange = onChange
+                |}
+                [
+                    str treeName
+                ]
+            )
 
 
     let render =
-        React.memo (fun (input: {| Username: Username |}) ->
+        React.memo (fun (input: {| Username: Username
+                                   Props: {| flex: int; overflowY: string; flexBasis: int |} |}) ->
             let availableTreeIds = Recoil.useValue (Recoil.Atoms.Session.availableTreeIds input.Username)
 
-            Chakra.box
-                {| position = "relative" |}
+            Chakra.stack
+                input.Props
                 [
-                    Chakra.menu
-                        {| closeOnSelect = false; autoSelect = false |}
-                        [
-                            Chakra.menuButton
-                                {|
-                                    ``as`` = Chakra.core.Button
-                                    colorScheme = "black"
-                                |}
-                                [
-                                    str "TreeSelector"
-                                ]
-
-                            Chakra.menuList
-                                {| height = "500px"; overflowY = "scroll" |}
-                                [
-                                    yield! availableTreeIds
-                                           |> List.map (fun treeId ->
-                                               menuItemComponent {| Username = input.Username; TreeId = treeId |})
-                                ]
-
-                        ]
+                    yield! availableTreeIds
+                           |> List.map (fun treeId -> menuItemComponent {| Username = input.Username; TreeId = treeId |})
                 ])

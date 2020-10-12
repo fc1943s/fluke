@@ -21,9 +21,9 @@ module DebugOverlayComponent =
         React.memo (fun () ->
             let text, setText = React.useState ""
             let oldJson, setOldJson = React.useState ""
-            let debug = Recoil.useValue Recoil.Atoms.debug
+            let debug, setDebug = Recoil.useState Recoil.Atoms.debug
 
-            Scheduling.useScheduling Scheduling.Interval 100 (fun () ->
+            Scheduling.useScheduling Scheduling.Interval 1000 (fun () ->
                 if not debug then
                     ()
                 else
@@ -45,29 +45,8 @@ module DebugOverlayComponent =
                         setText json
                         setOldJson json)
 
-            if not debug then
-                nothing
-            else
-                React.fragment [
-                    Html.pre [
-                        prop.id "diag"
-                        prop.style [
-                            style.custom ("width", "min-content")
-                            style.custom ("height", "80%")
-                            style.position.fixedRelativeToWindow
-                            style.right 0
-                            style.bottom 0
-                            style.fontSize 9
-                            style.backgroundColor "#44444488"
-                            style.zIndex 1
-                            style.overflow.scroll
-                        ]
-                        prop.children
-                            [
-                                str text
-                            ]
-                    ]
-
+            React.fragment [
+                if debug then
                     Chakra.box
                         {|
                             id = "test1"
@@ -82,5 +61,51 @@ module DebugOverlayComponent =
                         [
                             str "test1"
                         ]
-                ]
-            )
+
+                Chakra.box
+                    {|
+                        width = "min-content"
+                        height =
+                            if debug then
+                                "80%"
+                            else
+                                "initial"
+                        position = "fixed"
+                        right = 0
+                        bottom = 0
+                        fontSize = "9px"
+                        backgroundColor = "#44444488"
+                        zIndex = 1
+                        overflow =
+                            if debug then
+                                "scroll"
+                            else
+                                "initial"
+                    |}
+                    [
+                        Chakra.checkbox
+                            {|
+                                isChecked = debug
+                                onClick =
+                                    fun (e: {| preventDefault: unit -> unit |}) ->
+                                        setDebug (not debug)
+                                        e.preventDefault ()
+                            |}
+                            [
+                                str
+                                    (if debug then
+                                        "Debug"
+                                     else
+                                         "")
+                            ]
+
+                        if debug then
+                            Html.pre [
+                                prop.id "diag"
+                                prop.children
+                                    [
+                                        str text
+                                    ]
+                            ]
+                    ]
+            ])

@@ -43,7 +43,6 @@ module Recoil =
                     Profiling.addCount (sprintf "%s/%s" (nameof Information) (nameof attachments))
                     []: Attachment list
 
-
             let rec informationId (information: Information): InformationId =
                 match information with
                 | Project ({ Name = ProjectName name }, _) -> sprintf "%s/%s" information.KindName name
@@ -64,13 +63,11 @@ module Recoil =
                     Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof informationId))
                     Information.informationId Task.Default.Information
 
-
             let rec name =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof name))
                     Task.Default.Name
-
 
             let rec scheduling =
                 atomFamilyFn
@@ -78,20 +75,17 @@ module Recoil =
                     Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof scheduling))
                     Task.Default.Scheduling
 
-
             let rec pendingAfter =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof pendingAfter))
                     Task.Default.PendingAfter
 
-
             let rec missedAfter =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof missedAfter))
                     Task.Default.MissedAfter
-
 
             let rec priority =
                 atomFamilyFn
@@ -117,15 +111,14 @@ module Recoil =
                     Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof attachments))
                     []: Attachment list // TODO: move from here?
 
-
             let rec duration =
                 atomFamilyFn
                 <| fun (_taskId: TaskId) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof duration))
                     Task.Default.Duration
 
-
             let taskId (task: Task) = TaskId (task.Information.Name, task.Name)
+
 
         module rec User =
 
@@ -135,13 +128,11 @@ module Recoil =
                     Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof color))
                     UserColor.Black
 
-
             let rec weekStart =
                 atomFamilyFn
                 <| fun (_username: Username) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof weekStart))
                     DayOfWeek.Sunday
-
 
             let rec dayStart =
                 atomFamilyFn
@@ -149,13 +140,11 @@ module Recoil =
                     Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof dayStart))
                     FlukeTime.Create 04 00
 
-
             let rec sessionLength =
                 atomFamilyFn
                 <| fun (_username: Username) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof sessionLength))
                     Minute 25.
-
 
             let rec sessionBreakLength =
                 atomFamilyFn
@@ -198,8 +187,6 @@ module Recoil =
                     []: Task.TaskId list
 
 
-
-
         module rec Cell =
             let rec taskId =
                 atomFamilyFn
@@ -207,13 +194,11 @@ module Recoil =
                     Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof taskId))
                     taskId
 
-
             let rec dateId =
                 atomFamilyFn
                 <| fun (_taskId: Task.TaskId, dateId: DateId) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof dateId))
                     dateId
-
 
             let rec status =
                 atomFamilyFn
@@ -221,20 +206,17 @@ module Recoil =
                     Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof status))
                     Disabled
 
-
             let rec attachments =
                 atomFamilyFn
                 <| fun (_taskId: Task.TaskId, _dateId: DateId) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof attachments))
                     []: Attachment list
 
-
             let rec sessions =
                 atomFamilyFn
                 <| fun (_taskId: Task.TaskId, _dateId: DateId) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof sessions))
                     []: TaskSession list
-
 
             let rec selected =
                 atomFamilyFn
@@ -312,6 +294,34 @@ module Recoil =
                 local_storage
             }
 
+        let rec cellSize =
+            atom {
+                key ("atom/" + nameof cellSize)
+                def 17
+                local_storage
+            }
+
+        let rec lanePaddingLeft =
+            atom {
+                key ("atom/" + nameof lanePaddingLeft)
+                def 7
+                local_storage
+            }
+
+        let rec lanePaddingRight =
+            atom {
+                key ("atom/" + nameof lanePaddingRight)
+                def 7
+                local_storage
+            }
+
+        let rec leftDock =
+            atom {
+                key ("atom/" + nameof leftDock)
+                def (None: DockType option)
+                local_storage
+            }
+
         let rec path =
             atom {
                 key ("atom/" + nameof path)
@@ -333,23 +343,6 @@ module Recoil =
                 def None
             }
 
-        let rec cellSize =
-            atom {
-                key ("atom/" + nameof cellSize)
-                def 17
-            }
-
-        let rec lanePaddingLeft =
-            atom {
-                key ("atom/" + nameof lanePaddingLeft)
-                def 45
-            }
-
-        let rec lanePaddingRight =
-            atom {
-                key ("atom/" + nameof lanePaddingRight)
-                def 20
-            }
 
         let rec treeStateMap =
             atom {
@@ -392,11 +385,11 @@ module Recoil =
 
                         let result =
                             match path with
-                            | [ "view"; "Calendar" ] -> View.View.Calendar
-                            | [ "view"; "Groups" ] -> View.View.Groups
-                            | [ "view"; "Tasks" ] -> View.View.Tasks
-                            | [ "view"; "Week" ] -> View.View.Week
-                            | _ -> View.View.Calendar
+                            | [ "view"; "HabitTracker" ] -> View.View.HabitTracker
+                            | [ "view"; "Priority" ] -> View.View.Priority
+                            | [ "view"; "BulletJournal" ] -> View.View.BulletJournal
+                            | [ "view"; "Information" ] -> View.View.Information
+                            | _ -> View.View.HabitTracker
 
                         Profiling.addCount (nameof view)
                         result)
