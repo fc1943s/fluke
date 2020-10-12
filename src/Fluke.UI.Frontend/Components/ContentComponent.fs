@@ -7,23 +7,11 @@ open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
 open Browser
 open Feliz.Router
 open Browser.Types
 open FSharpPlus
-open Fable.React
-open Fable.React.Props
-open Fulma
-open Feliz
-open Feliz.Recoil
-open Feliz.Bulma
-open Feliz.UseListener
-open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.Model
-open Fluke.Shared
 
 
 module ContentComponent =
@@ -89,8 +77,9 @@ module ContentComponent =
                 [
                     LeftDockComponent.render {| Username = input.Username |}
 
-                    Chakra.box
+                    Chakra.stack
                         {|
+                            spacing = 0
                             flex = 1
                             marginLeft = "10px"
                             marginRight = "10px"
@@ -101,6 +90,9 @@ module ContentComponent =
                                     isLazy = true
                                     index = tabIndex
                                     onChange = handleTabsChange
+                                    flexDirection = "column"
+                                    display = "flex"
+                                    flex = 1
                                 |}
                                 [
                                     Chakra.tabList
@@ -126,7 +118,12 @@ module ContentComponent =
                                                            ])
                                         ]
                                     Chakra.tabPanels
-                                        {| className = "panels" |}
+                                        {|
+                                            className = "panels"
+                                            flex = 1
+                                            overflowY = "auto"
+                                            flexBasis = 0
+                                        |}
                                         [
                                             yield! tabs
                                                    |> List.map (fun (_, _, _, content) ->

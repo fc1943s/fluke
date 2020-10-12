@@ -1,15 +1,10 @@
 namespace Fluke.UI.Frontend.Hooks
 
-open Browser
-open Fable.React
 open Feliz
-open Feliz.Recoil
 open Feliz.UseListener
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.Hooks
-open Fable.React
 open Fable.Core
+
 
 module Theme =
     let private theme =
