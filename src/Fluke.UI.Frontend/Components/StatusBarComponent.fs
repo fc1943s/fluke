@@ -12,8 +12,4 @@ open Fluke.Shared
 
 
 module StatusBarComponent =
-    let render =
-        React.memo (fun () ->
-            nothing
-        )
-
+    let render = React.memo (fun () -> Chakra.flex {| height = "26px" |} [])

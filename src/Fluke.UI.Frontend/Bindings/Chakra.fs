@@ -5,6 +5,8 @@ open Fable.Core
 
 
 module Chakra =
+    open React
+
     [<ImportAll "@chakra-ui/core">]
     let core: {| Box: obj
                  Button: obj
@@ -26,7 +28,6 @@ module Chakra =
     let private chakraTheme: {| mode: string * string -> obj -> obj |} = jsNative
 
 
-    let private wrap<'T, 'U> (comp: 'T) (props: 'U) children = ReactBindings.React.createElement (comp, props, children)
 
     let box<'T> = wrap core.Box
     let button<'T> = wrap core.Button

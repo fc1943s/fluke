@@ -11,8 +11,9 @@ module React =
     [<ImportAll "react-dom">]
     let private reactDom: {| unstable_createRoot: HTMLElement -> {| render: ReactElement -> unit |} |} = jsNative
 
+    let wrap<'T, 'U> (cmp: 'T) (props: 'U) children = ReactBindings.React.createElement (cmp, props, children)
 
-    let strictMode children = ReactBindings.React.createElement (react.StrictMode, (), children)
+    let strictMode children = wrap react.StrictMode () children
 
 
     //    ReactDOM.render (appMain (), document.getElementById "root")

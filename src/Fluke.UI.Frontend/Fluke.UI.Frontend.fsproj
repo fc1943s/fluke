@@ -10,6 +10,7 @@
         <Compile Include="Bindings\Crypto.fs" />
         <Compile Include="Bindings\React.fs" />
         <Compile Include="Bindings\Chakra.fs" />
+        <Compile Include="Bindings\Icons.fs" />
         <Compile Include="Bindings\Markdown.fs" />
         <Compile Include="Temp\Css.fs" />
         <Compile Include="Profiling.fs" />

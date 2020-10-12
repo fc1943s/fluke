@@ -34,10 +34,26 @@ module MainComponent =
 
     let render =
         React.memo (fun () ->
+            let username = Recoil.useValue Recoil.Atoms.username
+
             React.fragment [
                 GlobalShortcutHandler.hook ()
                 //                PositionUpdater.hook ()
 //                AutoReload.hook_TEMP ()
                 DebugOverlayComponent.render ()
-                ContentComponent.render ()
+
+                match username with
+                | Some username ->
+                    React.suspense
+                        ([
+                            SessionDataLoader.hook {| Username = username |}
+                            SoundPlayer.hook {| Username = username |}
+
+                            TopBarComponent.render ()
+                            ContentComponent.render {| Username = username |}
+                            StatusBarComponent.render ()
+                         ],
+                         PageLoaderComponent.render ())
+
+                | None -> UserLoader.hook ()
             ])
