@@ -73,7 +73,15 @@ module Theme =
                                         fontVariantNumeric = "proportional-nums"
                                     |}
                                     |> JsInterop.toPlainJsObj
-                                ``*:focus`` =
+                                ``*::-webkit-scrollbar`` = {| width = "6px" |} |> JsInterop.toPlainJsObj
+                                ``*::-webkit-scrollbar-track`` = {| display = "none" |} |> JsInterop.toPlainJsObj
+                                ``*::-webkit-scrollbar-thumb`` =
+                                    {| background = "gray.45%" |}
+                                    |> JsInterop.toPlainJsObj
+                                ``*::-webkit-scrollbar-thumb:hover`` =
+                                    {| background = "gray.77%" |}
+                                    |> JsInterop.toPlainJsObj
+                                ``*::focus`` =
                                     {| boxShadow = "none !important" |}
                                     |> JsInterop.toPlainJsObj
                                 ``*, *::before, *::after`` =

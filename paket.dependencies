@@ -22,6 +22,7 @@ group Fluke.UI.Frontend
 
     nuget Fable.FontAwesome.Free ~> 2.0
     nuget Fable.DateFunctions ~> 3.0
+    nuget Fable.Extras ~> 0.1
     nuget Zanaptak.TypedCssClasses ~> 0.4
     nuget Fulma ~> 2.10
     nuget Fulma.Extensions.Wikiki.PageLoader ~> 2.0
