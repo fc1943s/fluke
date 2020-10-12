@@ -4,6 +4,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
 
@@ -24,6 +25,7 @@ module ContentComponent =
                         SessionDataLoader.hook {| Username = username |}
                         SoundPlayer.hook {| Username = username |}
 
+                        TopBarComponent.render ()
                         NavBarComponent.render {| Username = username |}
                         PanelsComponent.render ()
                      ],
