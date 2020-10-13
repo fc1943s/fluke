@@ -11,7 +11,7 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
-module WeekViewComponent =
+module BulletJournalViewComponent =
     open Domain.Information
     open Domain.UserInteraction
     open Domain.State
@@ -20,21 +20,13 @@ module WeekViewComponent =
         React.memo (fun (input: {| Username: Username |}) ->
             let weekCellsMap = Recoil.useValue (Recoil.Selectors.Session.weekCellsMap input.Username)
 
-            Chakra.flex
-                {|
-                    className = "lanes-panel"
-                    width = "300%"
-                    display = "block"
-                |}
+            Chakra.box
+                ()
                 [
                     yield! weekCellsMap
                            |> List.map (fun week ->
                                Chakra.flex
-                                   {|
-                                       marginTop = "15px"
-                                       marginBottom = "15px"
-                                       width = "100%"
-                                   |}
+                                   {| marginTop = "15px"; marginBottom = "15px" |}
                                    [
                                        yield! week
                                               |> Map.keys
@@ -42,11 +34,7 @@ module WeekViewComponent =
                                                   let cells = week.[dateId]
 
                                                   Chakra.box
-                                                      {|
-                                                          paddingLeft = "10px"
-                                                          paddingRight = "10px"
-                                                          width = "100%"
-                                                      |}
+                                                      {| paddingLeft = "10px"; paddingRight = "10px" |}
                                                       [
                                                           Chakra.box
                                                               {|
@@ -82,11 +70,7 @@ module WeekViewComponent =
                                                                                  {| paddingLeft = "4px" |}
                                                                                  [
                                                                                      TaskNameComponent.render
-                                                                                         {|
-                                                                                             TaskId = cell.TaskId
-                                                                                             Props =
-                                                                                                 {| paddingLeft = "0" |}
-                                                                                         |}
+                                                                                         {| TaskId = cell.TaskId |}
                                                                                  ]
                                                                          ])
                                                       ])

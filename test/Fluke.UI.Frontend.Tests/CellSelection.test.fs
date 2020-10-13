@@ -75,12 +75,12 @@ module CellSelection =
                           |])
                  }
 
-             let tasksView =
+             let priorityView =
                  Chakra.box
                      ()
                      [
                          //                     MainComponent.SessionDataLoader.hook {| Username = user.Username |}
-                         TasksViewComponent.render {| Username = user.Username |}
+                         PriorityViewComponent.render {| Username = user.Username |}
                      ]
 
              let expectSelection peek expected =
@@ -103,7 +103,7 @@ module CellSelection =
              Jest.test
                  ("single cell toggle",
                   promise {
-                      let! subject, peek = tasksView |> Setup.render
+                      let! subject, peek = priorityView |> Setup.render
                       do! peek initialSetter
                       do! Setup.initializeSessionData user peek
                       let! cellMap = Setup.getCellMap subject peek
@@ -144,7 +144,7 @@ module CellSelection =
              Jest.test
                  ("ctrl pressed",
                   promise {
-                      let! subject, peek = tasksView |> Setup.render
+                      let! subject, peek = priorityView |> Setup.render
                       do! peek initialSetter
                       do! Setup.initializeSessionData user peek
                       let! cellMap = Setup.getCellMap subject peek
@@ -169,7 +169,7 @@ module CellSelection =
              Jest.test
                  ("horizontal shift pressed",
                   promise {
-                      let! subject, peek = tasksView |> Setup.render
+                      let! subject, peek = priorityView |> Setup.render
                       do! peek initialSetter
                       do! Setup.initializeSessionData user peek
                       let! cellMap = Setup.getCellMap subject peek
@@ -195,7 +195,7 @@ module CellSelection =
              Jest.test
                  ("vertical shift pressed",
                   promise {
-                      let! subject, peek = tasksView |> Setup.render
+                      let! subject, peek = priorityView |> Setup.render
                       do! peek initialSetter
                       do! Setup.initializeSessionData user peek
                       let! cellMap = Setup.getCellMap subject peek
@@ -226,7 +226,7 @@ module CellSelection =
              Jest.test
                  ("box selection",
                   promise {
-                      let! subject, peek = tasksView |> Setup.render
+                      let! subject, peek = priorityView |> Setup.render
                       do! peek initialSetter
                       do! Setup.initializeSessionData user peek
                       let! cellMap = Setup.getCellMap subject peek

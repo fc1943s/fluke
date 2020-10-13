@@ -23,7 +23,11 @@ module InformationNameComponent =
             let (InformationName informationName) = information.Name
 
             Chakra.box
-                {| className = Css.cellRectangle |}
+                {|
+                    position = "relative"
+                    height = "17px"
+                    lineHeight = "17px"
+                |}
                 [
                     Chakra.box
                         {|

@@ -9,7 +9,7 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
-module TasksViewComponent =
+module PriorityViewComponent =
     open Domain.Information
     open Domain.UserInteraction
     open Domain.State
@@ -19,12 +19,12 @@ module TasksViewComponent =
             let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList input.Username)
 
             Chakra.flex
-                {| className = "lanes-panel" |}
+                ()
                 [
                     Chakra.box
                         ()
                         [
-                            yield! Chakra.box {| className = Css.cellRectangle |} []
+                            yield! Chakra.box {| height = "17px" |} []
                                    |> List.replicate 3
 
                             Chakra.flex
@@ -51,11 +51,7 @@ module TasksViewComponent =
                                         [
                                             yield! taskIdList
                                                    |> List.map (fun taskId ->
-                                                       TaskNameComponent.render
-                                                           {|
-                                                               TaskId = taskId
-                                                               Props = {| paddingLeft = "0" |}
-                                                           |})
+                                                       TaskNameComponent.render {| TaskId = taskId |})
                                         ]
                                 ]
                         ]

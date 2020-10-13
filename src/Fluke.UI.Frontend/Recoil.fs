@@ -858,30 +858,31 @@ module Recoil =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Task) (nameof showUser))
                     get (fun (taskId: Atoms.Task.TaskId) getter ->
-                            let username = getter.get Atoms.username
-                            match username with
-                            | Some username ->
-                                let dateSequence = getter.get dateSequence
-                                let taskIdList = getter.get (Atoms.Session.taskIdList username)
+                            //                            let username = getter.get Atoms.username
+//                            match username with
+//                            | Some username ->
+                            let dateSequence = getter.get dateSequence
+                            //                                let taskIdList = getter.get (Atoms.Session.taskIdList username)
 
-                                let statusList =
-                                    dateSequence
-                                    |> List.map (fun date -> Atoms.Cell.status (taskId, DateId date))
-                                    |> List.map getter.get
+                            let statusList =
+                                dateSequence
+                                |> List.map (fun date -> Atoms.Cell.status (taskId, DateId date))
+                                |> List.map getter.get
 
-                                let usersCount =
-                                    statusList
-                                    |> List.choose (function
-                                        | UserStatus (user, _) -> Some user
-                                        | _ -> None)
-                                    |> Seq.distinct
-                                    |> Seq.length
+                            let usersCount =
+                                statusList
+                                |> List.choose (function
+                                    | UserStatus (user, _) -> Some user
+                                    | _ -> None)
+                                |> Seq.distinct
+                                |> Seq.length
 
-                                let result = usersCount > 1
+                            let result = usersCount > 1
 
-                                Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof showUser))
-                                result
-                            | None -> false)
+                            Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof showUser))
+                            result
+                        //                            | None -> false
+                        )
                 }
 
             let rec hasSelection =

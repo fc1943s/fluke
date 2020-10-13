@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
-module GroupsViewComponent =
+module InformationViewComponent =
     open Domain.Information
     open Domain.UserInteraction
     open Domain.State
@@ -23,12 +23,12 @@ module GroupsViewComponent =
                 Recoil.useValue (Recoil.Selectors.Session.tasksByInformationKind input.Username)
 
             Chakra.flex
-                {| className = "lanes-panel" |}
+                ()
                 [
                     Chakra.box
                         ()
                         [
-                            yield! Chakra.box {| className = Css.cellRectangle |} []
+                            yield! Chakra.box {| height = "17px" |} []
                                    |> List.replicate 3
 
                             Chakra.box
@@ -44,16 +44,14 @@ module GroupsViewComponent =
                                                            [
                                                                str informationKindName
                                                            ]
+
                                                        Chakra.box
                                                            ()
                                                            [
                                                                yield! groups
                                                                       |> List.map (fun (informationId, taskIdList) ->
-
-
-
                                                                           Chakra.box
-                                                                              ()
+                                                                              {| paddingLeft = "17px" |}
                                                                               [
                                                                                   InformationNameComponent.render
                                                                                       {|
@@ -66,8 +64,15 @@ module GroupsViewComponent =
                                                                                       [
                                                                                           yield! taskIdList
                                                                                                  |> List.map (fun taskId ->
-                                                                                                     Chakra.flex
-                                                                                                         ()
+                                                                                                     Chakra.stack
+                                                                                                         {|
+                                                                                                             direction =
+                                                                                                                 "row"
+                                                                                                             spacing =
+                                                                                                                 "10px"
+                                                                                                             paddingLeft =
+                                                                                                                 "17px"
+                                                                                                         |}
                                                                                                          [
                                                                                                              TaskPriorityComponent.render
                                                                                                                  {|
@@ -78,10 +83,6 @@ module GroupsViewComponent =
                                                                                                                  {|
                                                                                                                      TaskId =
                                                                                                                          taskId
-                                                                                                                     Props =
-                                                                                                                         {|
-                                                                                                                             paddingLeft = sprintf "%dpx" (groupIndentationLength * 2)
-                                                                                                                         |}
                                                                                                                  |}
                                                                                                          ])
                                                                                       ]
@@ -95,6 +96,7 @@ module GroupsViewComponent =
                         ()
                         [
                             GridHeaderComponent.render {| Username = input.Username |}
+
                             Chakra.box
                                 ()
                                 [
@@ -104,25 +106,31 @@ module GroupsViewComponent =
                                                    ()
                                                    [
                                                        Chakra.box
-                                                           {| className = Css.cellRectangle |}
-                                                           [
-                                                               yield! groups
-                                                                      |> List.map (fun (_, taskIdList) ->
+                                                           {|
+                                                               position = "relative"
+                                                               height = "17px"
+                                                               lineHeight = "17px"
+                                                           |}
+                                                           []
+                                                       yield! groups
+                                                              |> List.map (fun (_, taskIdList) ->
+                                                                  Chakra.box
+                                                                      ()
+                                                                      [
                                                                           Chakra.box
-                                                                              ()
-                                                                              [
-                                                                                  Chakra.box
-                                                                                      {|
-                                                                                          className = Css.cellRectangle
-                                                                                      |}
-                                                                                      []
-                                                                                  CellsComponent.render
-                                                                                      {|
-                                                                                          Username = input.Username
-                                                                                          TaskIdList = taskIdList
-                                                                                      |}
-                                                                              ])
-                                                           ]
+                                                                              {|
+                                                                                  position = "relative"
+                                                                                  height = "17px"
+                                                                                  lineHeight = "17px"
+                                                                              |}
+                                                                              []
+                                                                          CellsComponent.render
+                                                                              {|
+                                                                                  Username = input.Username
+                                                                                  TaskIdList = taskIdList
+                                                                              |}
+                                                                      ])
+
                                                    ])
                                 ]
                         ]

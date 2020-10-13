@@ -36,7 +36,10 @@ module DayComponent =
                         | StartOfMonth -> "1px solid #ffffff3d"
                         | StartOfWeek -> "1px solid #222"
                         | _ -> ""
-                    className = Css.cellSquare
+                    height = "17px"
+                    width = "17px"
+                    lineHeight = "17px"
+                    textAlign = "center"
                 |}
                 [
                     str <| String.toLower input.Label

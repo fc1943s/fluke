@@ -38,8 +38,7 @@ module TaskNameComponent =
             |})
 
     let render =
-        React.memo (fun (input: {| TaskId: Recoil.Atoms.Task.TaskId
-                                   Props: {| paddingLeft: string |} |}) ->
+        React.memo (fun (input: {| TaskId: Recoil.Atoms.Task.TaskId |}) ->
             let ref = React.useElementRef ()
             let hovered = Listener.useElementHover ref
             let classes = useStyles {| hovered = hovered |}
@@ -50,17 +49,19 @@ module TaskNameComponent =
             Chakra.box
                 {|
                     ref = ref
-                    className =
-                        [
-                            classes.root
-                            Css.cellRectangle
-                        ]
-                        |> String.concat " "
+                    position = "relative"
+                    height = "17px"
+                    lineHeight = "17px"
+                    className = classes.root
                 |}
                 [
                     Chakra.box
-                        {| input.Props with
-                            color = if hasSelection then "#ff5656" else ""
+                        {|
+                            color =
+                                if hasSelection then
+                                    "#ff5656"
+                                else
+                                    ""
                             className =
                                 [
                                     classes.name

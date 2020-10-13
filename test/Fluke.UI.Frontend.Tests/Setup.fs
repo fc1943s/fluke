@@ -1,19 +1,16 @@
 namespace Fluke.UI.Frontend.Tests
 
-open Fable.Core
 open Fable.ReactTestingLibrary
 open Fable.React
-open Fable.Jester
 open Feliz
 open Feliz.Recoil
 open Fluke.Shared.Domain.Information
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.Components
 open Fluke.Shared
 open FSharpPlus
+open Fluke.UI.Frontend.Hooks
 
 
 module Setup =
@@ -74,7 +71,7 @@ module Setup =
 
                 match sessionData with
                 | Some sessionData ->
-                    MainComponent.SessionDataLoader.initializeSessionData user.Username setter sessionData
+                    SessionDataLoader.initializeSessionData user.Username setter sessionData
                 | None -> ()
             })
 

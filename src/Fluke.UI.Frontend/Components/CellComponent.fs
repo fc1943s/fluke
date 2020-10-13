@@ -42,12 +42,14 @@ module CellComponent =
                                    TaskId: Recoil.Atoms.Task.TaskId
                                    DateId: DateId
                                    SemiTransparent: bool |}) ->
+            Profiling.addCount "CellComponent.render"
+
             let (DateId referenceDay) = input.DateId
-            let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday referenceDay)
-            let showUser = Recoil.useValue (Recoil.Selectors.Task.showUser input.TaskId)
-            let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments (input.TaskId, input.DateId))
-            let sessions = Recoil.useValue (Recoil.Atoms.Cell.sessions (input.TaskId, input.DateId))
             let status = Recoil.useValue (Recoil.Atoms.Cell.status (input.TaskId, input.DateId))
+            let sessions = Recoil.useValue (Recoil.Atoms.Cell.sessions (input.TaskId, input.DateId))
+            let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments (input.TaskId, input.DateId))
+            let showUser = Recoil.useValue (Recoil.Selectors.Task.showUser input.TaskId)
+            let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday referenceDay)
             let selected, setSelected = Recoil.useState (Recoil.Selectors.Cell.selected (input.TaskId, input.DateId))
             let onCellClick = React.useCallbackRef (fun () -> setSelected (not selected))
 

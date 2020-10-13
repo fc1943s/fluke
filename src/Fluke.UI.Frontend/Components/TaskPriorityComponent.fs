@@ -27,7 +27,11 @@ module TaskPriorityComponent =
 
 
             Chakra.box
-                {| className = Css.cellRectangle |}
+                {|
+                    position = "relative"
+                    height = "17px"
+                    lineHeight = "17px"
+                |}
                 [
                     str priorityText
                 ])

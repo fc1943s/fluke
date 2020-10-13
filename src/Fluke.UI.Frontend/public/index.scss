@@ -1,31 +1,3 @@
-//.tooltip-container,
-//.top-right-blue-indicator,
-//.top-right-pink-indicator,
-//.bottom-right-blue-indicator,
-//.bottom-right-pink-indicator,
-//.user-indicator,
-//.tooltip-popup,
-//.cell-square,
-//.cell-rectangle,
-//.cell-start-week,
-//.cell-start-month,
-//.cell-today,
-//.cell-disabled,
-//.cell-suggested,
-//.cell-pending,
-//.cell-missed,
-//.cell-missed-today,
-//.cell-postponed,
-//.cell-postponed-until,
-//.cell-completed,
-//.cell-dismissed,
-//.cell-manual-pending,
-//.cell-session {
-//}
-
-// https://github.com/zanaptak/TypedCssClasses/issues/4
-
-
 $color-corner-blue: #005688;
 $color-corner-pink: #a91c77;
 
@@ -43,132 +15,105 @@ $cell-size: 17px;
   user-select: none;
 }
 
-#app {
-  height: 100%;
+
+@mixin cell-rectangle() {
+  position: relative;
+  height: $cell-size;
+  line-height: $cell-size;
 }
 
-.navbar {
-  height: 36px;
-  min-height: 36px;
-  display: flex;
-  justify-content: space-around;
+.cell-rectangle {
+  @include cell-rectangle();
 }
 
-.panels {
+@mixin cell-indicator() {
+  @include cell-rectangle();
 
-  .lanes-panel {
+  position: absolute;
+  top: 0;
+  width: 100%;
 
-    @mixin cell-rectangle() {
-      position: relative;
-      height: $cell-size;
-      line-height: $cell-size;
+  &::after {
+    content: '';
+    position: absolute;
+  }
+
+  &.top-right-blue-indicator::after {
+    border-top-color: $color-corner-blue;
+  }
+
+  &.top-right-pink-indicator::after {
+    border-top-color: $color-corner-pink;
+  }
+
+  &.bottom-right-blue-indicator::after {
+    border-bottom-color: $color-corner-blue;
+  }
+
+  &.bottom-right-pink-indicator::after {
+    border-bottom-color: $color-corner-pink;
+  }
+}
+
+@mixin top-right-indicator() {
+  @include cell-indicator();
+
+  &::after {
+    top: 0;
+    right: 0;
+    border-top: 8px solid #000;
+    border-left: 8px solid transparent;
+  }
+}
+
+@mixin bottom-right-indicator() {
+  @include cell-indicator();
+
+  &::after {
+    bottom: 0;
+    right: 0;
+    border-bottom: 8px solid #000;
+    border-left: 8px solid transparent;
+  }
+}
+
+.user-indicator {
+  @include bottom-right-indicator();
+}
+
+.tooltip-container {
+  @include top-right-indicator();
+
+  .tooltip-popup {
+    padding: 20px 40px;
+    //min-width: 200px;
+    //max-width: 600px;
+    width: 600px;
+    left: 100%;
+    top: 0;
+    white-space: pre-wrap;
+    position: absolute;
+    display: none;
+    z-index: 1;
+    background-color: #000c;
+    text-align: left;
+
+    h1 {
+      border-bottom: 1px solid #777;
+      margin-bottom: 3px;
     }
 
-    @mixin square-cell() {
-      @include cell-rectangle();
-      width: $cell-size;
-      text-align: center;
+    li {
+      list-style-type: square;
     }
 
-    .cell-rectangle {
-      @include cell-rectangle();
+    ul, p {
+      padding: 5px 0;
     }
+  }
 
-    .cell-square {
-      @include square-cell();
-    }
-
-
-    @mixin cell-indicator() {
-      @include cell-rectangle();
-
-      position: absolute;
-      top: 0;
-      width: 100%;
-
-      &::after {
-        content: '';
-        position: absolute;
-      }
-
-      &.top-right-blue-indicator::after {
-        border-top-color: $color-corner-blue;
-      }
-
-      &.top-right-pink-indicator::after {
-        border-top-color: $color-corner-pink;
-      }
-
-      &.bottom-right-blue-indicator::after {
-        border-bottom-color: $color-corner-blue;
-      }
-
-      &.bottom-right-pink-indicator::after {
-        border-bottom-color: $color-corner-pink;
-      }
-    }
-
-    @mixin top-right-indicator() {
-      @include cell-indicator();
-
-      &::after {
-        top: 0;
-        right: 0;
-        border-top: 8px solid #000;
-        border-left: 8px solid transparent;
-      }
-    }
-
-    @mixin bottom-right-indicator() {
-      @include cell-indicator();
-
-      &::after {
-        bottom: 0;
-        right: 0;
-        border-bottom: 8px solid #000;
-        border-left: 8px solid transparent;
-      }
-    }
-
-    .user-indicator {
-      @include bottom-right-indicator();
-    }
-
-    .tooltip-container {
-      @include top-right-indicator();
-
-      .tooltip-popup {
-        padding: 20px 40px;
-        //min-width: 200px;
-        //max-width: 600px;
-        width: 600px;
-        left: 100%;
-        top: 0;
-        white-space: pre-wrap;
-        position: absolute;
-        display: none;
-        z-index: 1;
-        background-color: #000c;
-        text-align: left;
-
-        h1 {
-          border-bottom: 1px solid #777;
-          margin-bottom: 3px;
-        }
-
-        li {
-          list-style-type: square;
-        }
-
-        ul, p {
-          padding: 5px 0;
-        }
-      }
-
-      &:hover .tooltip-popup {
-        display: block;
-      }
-    }
+  &:hover .tooltip-popup {
+    display: block;
   }
 }
 

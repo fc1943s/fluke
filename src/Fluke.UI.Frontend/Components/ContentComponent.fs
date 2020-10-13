@@ -48,22 +48,22 @@ module ContentComponent =
                     View.View.HabitTracker,
                     "Habit Tracker View",
                     Icons.bs.BsGrid,
-                    (fun () -> CalendarViewComponent.render {| Username = input.Username |})
+                    (fun () -> HabitTrackerViewComponent.render {| Username = input.Username |})
 
                     View.View.Priority,
                     "Priority View",
                     Icons.fa.FaSortNumericDownAlt,
-                    (fun () -> TasksViewComponent.render {| Username = input.Username |})
+                    (fun () -> PriorityViewComponent.render {| Username = input.Username |})
 
                     View.View.BulletJournal,
                     "Bullet Journal View",
                     Icons.bs.BsListCheck,
-                    (fun () -> WeekViewComponent.render {| Username = input.Username |})
+                    (fun () -> BulletJournalViewComponent.render {| Username = input.Username |})
 
                     View.View.Information,
                     "Information View",
                     Icons.ti.TiFlowChildren,
-                    (fun () -> GroupsViewComponent.render {| Username = input.Username |})
+                    (fun () -> InformationViewComponent.render {| Username = input.Username |})
                 ]
 
             let tabIndex =
@@ -121,7 +121,7 @@ module ContentComponent =
                                         ]
                                     Chakra.tabPanels
                                         {|
-                                            className = "panels"
+//                                            className = "panels"
                                             flex = 1
                                             overflowY = "auto"
                                             flexBasis = 0
