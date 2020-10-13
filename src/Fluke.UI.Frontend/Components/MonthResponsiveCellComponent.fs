@@ -25,6 +25,8 @@ module MonthResponsiveCellComponent =
             Chakra.box
                 {| input.Props with
                     textAlign = "center"
+                    height = "17px"
+                    lineHeight = "17px"
                     borderLeft =
                         match (weekStart, input.Date) with
                         | StartOfMonth -> "1px solid #ffffff3d"

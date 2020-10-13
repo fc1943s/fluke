@@ -41,7 +41,7 @@ module InformationViewComponent =
                                                    ()
                                                    [
                                                        Chakra.box
-                                                           {| color = "#444" |}
+                                                           {| height = "17px"; lineHeight = "17px"; color = "#444" |}
                                                            [
                                                                str informationKindName
                                                            ]
