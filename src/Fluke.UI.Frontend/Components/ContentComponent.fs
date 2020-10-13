@@ -21,7 +21,7 @@ module ContentComponent =
 
     let render =
         React.memo (fun (input: {| Username: Username; Props: {| flex: int |} |}) ->
-            let view = Recoil.useValue Recoil.Selectors.view
+            let view, setView = Recoil.useState Recoil.Atoms.view
 
             let setView view =
                 let path =
@@ -30,7 +30,9 @@ module ContentComponent =
                         string view
                     |]
 
-                Dom.window.location.href <- path
+//                Dom.window.location.href <- path
+                Router.navigatePath path
+                setView view
 
             React.useListener.onKeyDown (fun (e: KeyboardEvent) ->
                 match e.ctrlKey, e.shiftKey, e.key with

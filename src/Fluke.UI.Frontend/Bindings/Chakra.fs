@@ -22,6 +22,11 @@ module Chakra =
                  MenuButton: obj
                  MenuList: obj
                  MenuItem: obj
+                 NumberInput: obj
+                 NumberInputField: obj
+                 NumberInputStepper: obj
+                 NumberDecrementStepper: obj
+                 NumberIncrementStepper: obj
                  SimpleGrid: obj
                  Spacer: obj
                  Stack: obj
@@ -49,6 +54,11 @@ module Chakra =
     let menuButton<'T> = wrap core.MenuButton
     let menuList<'T> = wrap core.MenuList
     let menuItem<'T> = wrap core.MenuItem
+    let numberInput<'T> = wrap core.NumberInput
+    let numberInputField<'T> = wrap core.NumberInputField
+    let numberInputStepper<'T> = wrap core.NumberInputStepper
+    let numberDecrementStepper<'T> = wrap core.NumberDecrementStepper
+    let numberIncrementStepper<'T> = wrap core.NumberIncrementStepper
     let provider<'T> = wrap core.ChakraProvider
     let simpleGrid<'T> = wrap core.SimpleGrid
     let spacer<'T> = wrap core.Spacer

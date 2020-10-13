@@ -76,7 +76,7 @@ module Theme =
                                 ``*::-webkit-scrollbar-thumb:hover`` =
                                     {| background = "gray.77%" |}
                                     |> JsInterop.toPlainJsObj
-                                ``*::focus`` =
+                                ``*:focus`` =
                                     {| boxShadow = "none !important" |}
                                     |> JsInterop.toPlainJsObj
                                 ``*, *::before, *::after`` =

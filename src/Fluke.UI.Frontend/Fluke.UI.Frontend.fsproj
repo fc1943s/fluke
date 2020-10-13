@@ -26,7 +26,6 @@
         <Compile Include="Hooks\UserLoader.fs" />
         <Compile Include="Components\MonthResponsiveCellComponent.fs" />
         <Compile Include="Components\PageLoaderComponent.fs" />
-        <Compile Include="Components\TreeSelectorComponent.fs" />
         <Compile Include="Components\DayComponent.fs" />
         <Compile Include="Components\SpinnerComponent.fs" />
         <Compile Include="Components\GridHeaderComponent.fs" />
@@ -47,6 +46,8 @@
         <Compile Include="Components\DebugOverlayComponent.fs" />
         <Compile Include="Components\LogoComponent.fs" />
         <Compile Include="Components\TopBarComponent.fs" />
+        <Compile Include="Components\TreeSelectorComponent.fs" />
+        <Compile Include="Components\SettingsComponent.fs" />
         <Compile Include="Components\DockButtonComponent.fs" />
         <Compile Include="Components\DockPanelComponent.fs" />
         <Compile Include="Components\LeftDockComponent.fs" />

@@ -5,6 +5,7 @@ open Fable.React
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
+open Fluke.Shared
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
@@ -32,6 +33,29 @@ module MainComponent =
 
                 nothing)
 
+    module ViewUpdater =
+        let hook =
+            React.memo (fun () ->
+                let path = Recoil.useValue Recoil.Atoms.path
+                let setView = Recoil.useSetState Recoil.Atoms.view
+
+                React.useEffect
+                    ((fun () ->
+                        let view =
+                            match path with
+                            | [ "view"; "HabitTracker" ] -> Some View.View.HabitTracker
+                            | [ "view"; "Priority" ] -> Some View.View.Priority
+                            | [ "view"; "BulletJournal" ] -> Some View.View.BulletJournal
+                            | [ "view"; "Information" ] -> Some View.View.Information
+                            | _ -> None
+
+                        match view with
+                        | Some view -> setView view
+                        | None -> ()),
+                     [||])
+
+                nothing)
+
 
     let render =
         React.memo (fun () ->
@@ -43,6 +67,7 @@ module MainComponent =
                 //                PositionUpdater.hook ()
 //                AutoReload.hook_TEMP ()
                 DebugOverlayComponent.render ()
+                ViewUpdater.hook ()
 
                 match username with
                 | Some username ->

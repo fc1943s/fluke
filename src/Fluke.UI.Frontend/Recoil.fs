@@ -280,6 +280,13 @@ module Recoil =
                 local_storage
             }
 
+        let rec view =
+            atom {
+                key ("atom/" + nameof view)
+                def View.View.HabitTracker
+                local_storage
+            }
+
         let rec treeSelectionIds =
             atom {
                 key ("atom/" + nameof treeSelectionIds)
@@ -301,16 +308,16 @@ module Recoil =
                 local_storage
             }
 
-        let rec lanePaddingLeft =
+        let rec daysBefore =
             atom {
-                key ("atom/" + nameof lanePaddingLeft)
+                key ("atom/" + nameof daysBefore)
                 def 7
                 local_storage
             }
 
-        let rec lanePaddingRight =
+        let rec daysAfter =
             atom {
-                key ("atom/" + nameof lanePaddingRight)
+                key ("atom/" + nameof daysAfter)
                 def 7
                 local_storage
             }
@@ -438,8 +445,8 @@ module Recoil =
             selector {
                 key ("selector/" + nameof dateSequence)
                 get (fun getter ->
-                        let lanePaddingLeft = getter.get Atoms.lanePaddingLeft
-                        let lanePaddingRight = getter.get Atoms.lanePaddingRight
+                        let daysBefore = getter.get Atoms.daysBefore
+                        let daysAfter = getter.get Atoms.daysAfter
                         let position = getter.get position
 
                         let result =
@@ -449,7 +456,7 @@ module Recoil =
                                 [
                                     position.Date
                                 ]
-                                |> Rendering.getDateSequence (lanePaddingLeft, lanePaddingRight)
+                                |> Rendering.getDateSequence (daysBefore, daysAfter)
 
                         Profiling.addCount (nameof dateSequence)
                         result)

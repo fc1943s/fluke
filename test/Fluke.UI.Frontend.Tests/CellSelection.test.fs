@@ -64,8 +64,8 @@ module CellSelection =
                           ])
                      setter.set (Atoms.Session.user user.Username, Some user)
                      setter.set (Atoms.username, Some user.Username)
-                     setter.set (Atoms.lanePaddingLeft, 2)
-                     setter.set (Atoms.lanePaddingRight, 2)
+                     setter.set (Atoms.daysBefore, 2)
+                     setter.set (Atoms.daysAfter, 2)
                      setter.set (Atoms.selectedPosition, Some dslTemplate.Position)
                      setter.set (Atoms.treeStateMap, treeStateMap)
                      setter.set

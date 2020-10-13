@@ -23,7 +23,14 @@ module LeftDockComponent =
 
             let items =
                 [
-                    DockType.Settings, ("Settings", Icons.md.MdSettings, (fun () -> nothing))
+                    DockType.Settings,
+                    ("Settings",
+                     Icons.md.MdSettings,
+                     (fun () ->
+                         SettingsComponent.render
+                             {|
+                                 Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
+                             |}))
 
                     DockType.Databases,
                     ("Databases",

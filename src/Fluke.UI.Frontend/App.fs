@@ -41,11 +41,12 @@ module App =
                         root.init Recoil.initState
                         root.localStorage (fun hydrater ->
                             hydrater.setAtom Recoil.Atoms.debug
+                            hydrater.setAtom Recoil.Atoms.view
                             hydrater.setAtom Recoil.Atoms.treeSelectionIds
                             hydrater.setAtom Recoil.Atoms.selectedPosition
                             hydrater.setAtom Recoil.Atoms.cellSize
-                            hydrater.setAtom Recoil.Atoms.lanePaddingLeft
-                            hydrater.setAtom Recoil.Atoms.lanePaddingRight
+                            hydrater.setAtom Recoil.Atoms.daysBefore
+                            hydrater.setAtom Recoil.Atoms.daysAfter
                             hydrater.setAtom Recoil.Atoms.leftDock)
 
                         root.children
