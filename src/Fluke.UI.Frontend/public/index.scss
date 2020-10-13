@@ -1,3 +1,31 @@
+//.tooltip-container,
+//.top-right-blue-indicator,
+//.top-right-pink-indicator,
+//.bottom-right-blue-indicator,
+//.bottom-right-pink-indicator,
+//.user-indicator,
+//.tooltip-popup,
+//.cell-square,
+//.cell-rectangle,
+//.cell-start-week,
+//.cell-start-month,
+//.cell-today,
+//.cell-disabled,
+//.cell-suggested,
+//.cell-pending,
+//.cell-missed,
+//.cell-missed-today,
+//.cell-postponed,
+//.cell-postponed-until,
+//.cell-completed,
+//.cell-dismissed,
+//.cell-manual-pending,
+//.cell-session {
+//}
+
+
+
+
 $color-corner-blue: #005688;
 $color-corner-pink: #a91c77;
 
@@ -14,7 +42,6 @@ $cell-size: 17px;
   color: #ddd;
   user-select: none;
 }
-
 
 @mixin cell-rectangle() {
   position: relative;

@@ -70,8 +70,7 @@ module Setup =
                 let! sessionData = setter.snapshot.getPromise (Recoil.Selectors.Session.sessionData user.Username)
 
                 match sessionData with
-                | Some sessionData ->
-                    SessionDataLoader.initializeSessionData user.Username setter sessionData
+                | Some sessionData -> SessionDataLoader.initializeSessionData user.Username setter sessionData
                 | None -> ()
             })
 
@@ -102,7 +101,8 @@ module Setup =
                                            |> List.toArray
                                            |> Array.map (fun date ->
                                                (name, date),
-                                               subject.queryByTestId (sprintf "cell-%A-%A" taskId date.DateTime))
+                                               subject.queryByTestId
+                                                   (sprintf "cell-%A-%A" taskId (date.DateTime.ToShortDateString ())))
                                 })
                             |> Promise.Parallel
 

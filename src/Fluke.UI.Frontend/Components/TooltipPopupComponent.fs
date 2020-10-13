@@ -64,3 +64,4 @@ module TooltipPopupComponent =
                                     | true -> Bindings.Markdown.render text
                             ]
                     ])
+

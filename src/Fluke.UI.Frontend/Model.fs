@@ -22,6 +22,9 @@ module Model =
 
     type ActiveSession = ActiveSession of taskName: string * duration: Minute * totalDuration: Minute * totalBreakDuration: Minute
 
+    let colorCornerBlue = "#005688"
+    let colorCornerPink = "#a91c77"
+
     type Information with
         member this.Color =
             match this with

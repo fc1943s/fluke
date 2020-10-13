@@ -43,9 +43,13 @@ module TreeSelection =
                  |> List.map (fun (TreeId guid) -> subject.queryByTestId ("menu-item-" + guid.ToString ()))
                  |> List.toArray
 
-             let testMenuItemsVisibility array menuItems =
+             let testMenuItemsState array menuItems =
                  menuItems
-                 |> Array.map Option.isSome
+                 |> Array.map (fun (el: Browser.Types.HTMLElement option) ->
+                     match el with
+                     | None -> false
+                     | Some el when el.getAttribute ("data-disabled") = "true" -> false
+                     | Some _ -> true)
                  |> fun menuItemsVisibility -> Jest.expect(menuItemsVisibility).toEqual array
 
              let initialSetter (setter: CallbackMethods) =
@@ -55,7 +59,12 @@ module TreeSelection =
                      |> List.iter (fun (treeId, position) -> setter.set (Atoms.Tree.position treeId, position))
                  }
 
-             let treeSelector = TreeSelectorComponent.render {| Username = user.Username |}
+             let treeSelector =
+                 TreeSelectorComponent.render
+                     {|
+                         Username = user.Username
+                         Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
+                     |}
 
              Jest.test
                  ("tree list updates correctly with user clicks",
@@ -66,7 +75,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           true
                           true
                           true
@@ -79,7 +88,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           false
                           false
                           true
@@ -92,7 +101,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           true
                           true
                           true
@@ -105,7 +114,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           true
                           true
                           false
@@ -118,7 +127,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           true
                           true
                           false
@@ -131,7 +140,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           true
                           true
                           false
@@ -144,7 +153,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           true
                           true
                           true
@@ -157,7 +166,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           false
                           false
                           false
@@ -170,7 +179,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           false
                           false
                           false
@@ -199,7 +208,7 @@ module TreeSelection =
                       let menuItems = queryMenuItems subject
 
                       menuItems
-                      |> testMenuItemsVisibility [|
+                      |> testMenuItemsState [|
                           true
                           true
                           false

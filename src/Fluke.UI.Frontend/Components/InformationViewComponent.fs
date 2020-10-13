@@ -6,6 +6,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Model
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 

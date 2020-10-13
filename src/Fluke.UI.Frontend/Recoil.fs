@@ -383,44 +383,6 @@ module Recoil =
 
 
     module Selectors =
-
-        let rec view =
-            selector {
-                key ("selector/" + nameof view)
-                get (fun getter ->
-                        let path = getter.get Atoms.path
-
-                        let result =
-                            match path with
-                            | [ "view"; "HabitTracker" ] -> View.View.HabitTracker
-                            | [ "view"; "Priority" ] -> View.View.Priority
-                            | [ "view"; "BulletJournal" ] -> View.View.BulletJournal
-                            | [ "view"; "Information" ] -> View.View.Information
-                            | _ -> View.View.HabitTracker
-
-                        Profiling.addCount (nameof view)
-                        result)
-            }
-
-        //        let rec user =
-//            selector {
-//                key ("selector/" + nameof user)
-//                get (fun getter ->
-//                        let state = getter.get Atoms.state
-//                        let username = getter.get Atoms.username
-//
-//                        let result =
-//                            match state with
-//                            | Some state ->
-//                                match username, state.Session.User with
-//                                | Some username, Some user when user.Username = username -> Some user
-//                                | _ -> None
-//                            | None -> None
-//
-//                        Profiling.addCount (nameof user)
-//                        result)
-//            }
-
         let rec position =
             selector {
                 key ("selector/" + nameof position)
@@ -1150,7 +1112,7 @@ module Recoil =
                                 let treeStateMap = getter.get Atoms.treeStateMap
                                 let user = getter.get (Atoms.Session.user username)
                                 let dateSequence = getter.get dateSequence
-                                let view = getter.get view
+                                let view = getter.get Atoms.view
                                 let position = getter.get position
                                 //                            let getLivePosition = (getter.get Atoms.getLivePosition).Get
 //                                let treeSelectionIds = getter.get (Atoms.Session.treeSelectionIds username)

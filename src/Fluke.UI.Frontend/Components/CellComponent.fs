@@ -55,7 +55,7 @@ module CellComponent =
 
             Chakra.center
                 {|
-                    ``data-testid`` = sprintf "cell-%A-%A" input.TaskId referenceDay.DateTime
+                    ``data-testid`` = sprintf "cell-%A-%A" input.TaskId (referenceDay.DateTime.ToShortDateString ())
                     onClick = (fun (_event: MouseEvent) -> onCellClick ())
                     width = "17px"
                     height = "17px"
@@ -89,6 +89,6 @@ module CellComponent =
                         | UserStatus (user, manualCellStatus) ->
                             CellStatusUserIndicatorComponent.render {| User = user |}
                         | _ -> ()
-                    TooltipPopupComponent.render {| Attachments = attachments |}
 
+                    TooltipPopupComponent.render {| Attachments = attachments |}
                 ])

@@ -56,12 +56,7 @@ module CellSelection =
 
              let initialSetter (setter: CallbackMethods) =
                  promise {
-                     setter.set
-                         (Atoms.path,
-                          [
-                              "view"
-                              "Tasks"
-                          ])
+                     setter.set (Atoms.view, View.View.Priority)
                      setter.set (Atoms.Session.user user.Username, Some user)
                      setter.set (Atoms.username, Some user.Username)
                      setter.set (Atoms.daysBefore, 2)

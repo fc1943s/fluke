@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Feliz.MaterialUI
 open Fable.React
 open Feliz
 open Feliz.Recoil
