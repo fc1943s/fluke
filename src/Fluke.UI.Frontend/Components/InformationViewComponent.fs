@@ -12,7 +12,7 @@ open Fluke.Shared
 
 
 module InformationViewComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

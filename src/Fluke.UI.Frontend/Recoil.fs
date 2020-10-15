@@ -9,13 +9,14 @@ open System
 open FSharpPlus
 open Feliz.Recoil
 open Fluke.Shared
+open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open Fable.DateFunctions
 
 
 module Recoil =
     open Model
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
     open View
@@ -45,12 +46,12 @@ module Recoil =
 
             let rec informationId (information: Information): InformationId =
                 match information with
-                | Project ({ Name = ProjectName name }, _) -> sprintf "%s/%s" information.KindName name
-                | Area ({ Name = AreaName name }, _) -> sprintf "%s/%s" information.KindName name
-                | Resource ({ Name = ResourceName name }, _) -> sprintf "%s/%s" information.KindName name
-                | Archive x ->
-                    let (InformationId archiveId) = informationId x
-                    sprintf "%s/%s" information.KindName archiveId
+                | Archive _ ->
+                    let (InformationId archiveId) = informationId information
+                    sprintf "%s/%s" (Information.toString information) archiveId
+                | _ ->
+                    let (InformationName informationName) = information.Name
+                    sprintf "%s/%s" (Information.toString information) informationName
                 |> InformationId
 
 
@@ -953,12 +954,12 @@ module Recoil =
                                 taskIdList
                                 |> List.groupBy (fun taskId -> informationMap.[taskId])
                                 |> List.sortBy (fun (information, _) -> information.Name)
-                                |> List.groupBy (fun (information, _) -> information.KindName)
+                                |> List.groupBy (fun (information, _) -> Information.toString information)
                                 |> List.sortBy
                                     (snd
                                      >> List.head
                                      >> fst
-                                     >> fun information -> information.Order)
+                                     >> fun information -> Information.toTag information)
                                 |> List.map (fun (informationKindName, groups) ->
                                     let newGroups =
                                         groups

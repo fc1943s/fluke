@@ -6,7 +6,11 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="Core.fs" />
-        <Compile Include="Domain\Information.fs" />
+        <Compile Include="Domain\Model.fs" />
+        <Compile Include="Domain\ModelGenerated.fs">
+            <MyriadFile>Domain\Model.fs</MyriadFile>
+            <MyriadNameSpace>Fluke.Shared.Domain</MyriadNameSpace>
+        </Compile>
         <Compile Include="Domain\UserInteraction.fs" />
         <Compile Include="Domain\State.fs" />
         <Compile Include="Old.fs" />
@@ -15,7 +19,6 @@
         <Compile Include="View.fs" />
         <Compile Include="Templates.fs" />
         <Compile Include="TempData.fs" />
-
         <Compile Include="PrivateData\PrivateData.fs" />
         <Compile Include="PrivateData\Tasks.fs" />
         <Compile Include="PrivateData\InformationComments.fs" />
@@ -23,21 +26,28 @@
         <Compile Include="PrivateData\CellStatusEntries.fs" />
         <Compile Include="PrivateData\Journal.fs" />
         <Compile Include="PrivateData\Tests.fs" />
-
         <Compile Include="SharedPrivateData\SharedTasks.fs" />
-
         <Compile Include="SharedPrivateData\fc1943s\InformationComments.fs" />
         <Compile Include="SharedPrivateData\fc1943s\CellComments.fs" />
         <Compile Include="SharedPrivateData\fc1943s\CellStatusEntries.fs" />
-
         <Compile Include="SharedPrivateData\liryanne\InformationComments.fs" />
         <Compile Include="SharedPrivateData\liryanne\CellComments.fs" />
         <Compile Include="SharedPrivateData\liryanne\CellStatusEntries.fs" />
-
         <Compile Include="RootPrivateData.fs" />
-
         <Content Include="paket.references" />
-
     </ItemGroup>
+    
     <Import Project="..\..\.paket\Paket.Restore.targets" />
+    
+<!--    <ItemGroup>-->
+<!--        <MyriadSdkGenerator Include="C:\home\fs\git-repos\myriad\src\Myriad.Plugins\bin\Release\netstandard2.0\Myriad.Plugins.dll" />-->
+<!--    </ItemGroup>-->
+<!--    <ItemGroup>-->
+<!--        <Reference Include="Myriad.Core">-->
+<!--            <HintPath>C:\home\fs\git-repos\myriad\src\Myriad.Plugins\bin\Release\netstandard2.0\Myriad.Core.dll</HintPath>-->
+<!--        </Reference>-->
+<!--        <Reference Include="Myriad.Plugins">-->
+<!--            <HintPath>C:\home\fs\git-repos\myriad\src\Myriad.Plugins\bin\Release\netstandard2.0\Myriad.Plugins.dll</HintPath>-->
+<!--        </Reference>-->
+<!--    </ItemGroup>-->
 </Project>

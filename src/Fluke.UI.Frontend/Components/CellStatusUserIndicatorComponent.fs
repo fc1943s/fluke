@@ -8,7 +8,7 @@ open Fluke.Shared
 
 
 module CellStatusUserIndicatorComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

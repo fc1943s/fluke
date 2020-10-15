@@ -13,7 +13,7 @@ open Fluke.UI.Frontend.Model
 
 
 module LeftDockComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

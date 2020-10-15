@@ -8,14 +8,13 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
-open Browser
 open Feliz.Router
 open Browser.Types
 open FSharpPlus
 
 
 module ContentComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 
@@ -30,7 +29,7 @@ module ContentComponent =
                         string view
                     |]
 
-//                Dom.window.location.href <- path
+                //                Dom.window.location.href <- path
                 Router.navigatePath path
                 setView view
 
@@ -45,34 +44,37 @@ module ContentComponent =
 
             let tabs =
                 [
-                    View.View.HabitTracker,
-                    "Habit Tracker View",
-                    Icons.bs.BsGrid,
-                    (fun () -> HabitTrackerViewComponent.render {| Username = input.Username |})
-
-                    View.View.Priority,
-                    "Priority View",
-                    Icons.fa.FaSortNumericDownAlt,
-                    (fun () -> PriorityViewComponent.render {| Username = input.Username |})
-
-                    View.View.BulletJournal,
-                    "Bullet Journal View",
-                    Icons.bs.BsListCheck,
-                    (fun () -> BulletJournalViewComponent.render {| Username = input.Username |})
-
-                    View.View.Information,
-                    "Information View",
-                    Icons.ti.TiFlowChildren,
-                    (fun () -> InformationViewComponent.render {| Username = input.Username |})
+                    {|
+                        View = View.View.HabitTracker
+                        Name = "Habit Tracker View"
+                        Icon = Icons.bs.BsGrid
+                        Content = fun () -> HabitTrackerViewComponent.render {| Username = input.Username |}
+                    |}
+                    {|
+                        View = View.View.Priority
+                        Name = "Priority View"
+                        Icon = Icons.fa.FaSortNumericDownAlt
+                        Content = fun () -> PriorityViewComponent.render {| Username = input.Username |}
+                    |}
+                    {|
+                        View = View.View.BulletJournal
+                        Name = "Bullet Journal View"
+                        Icon = Icons.bs.BsListCheck
+                        Content = fun () -> BulletJournalViewComponent.render {| Username = input.Username |}
+                    |}
+                    {|
+                        View = View.View.Information
+                        Name = "Information View"
+                        Icon = Icons.ti.TiFlowChildren
+                        Content = fun () -> InformationViewComponent.render {| Username = input.Username |}
+                    |}
                 ]
 
             let tabIndex =
                 tabs
-                |> List.findIndex (fun (view', _, _, _) -> view = view')
+                |> List.findIndex (fun tab -> tab.View = view)
 
-            let handleTabsChange index =
-                let view, _, _, _ = tabs.[index]
-                setView view
+            let handleTabsChange index = setView (tabs.[index].View)
 
             Chakra.flex
                 input.Props
@@ -101,7 +103,7 @@ module ContentComponent =
                                         {| borderColor = "transparent" |}
                                         [
                                             yield! tabs
-                                                   |> List.map (fun (_, name, icon, _) ->
+                                                   |> List.map (fun tab ->
                                                        Chakra.tab
                                                            {|
                                                                padding = "12px"
@@ -115,24 +117,21 @@ module ContentComponent =
                                                                    {| color = "gray.77%"; borderColor = "gray.77%" |}
                                                            |}
                                                            [
-                                                               Chakra.box {| ``as`` = icon; marginRight = "6px" |} []
-                                                               str name
+                                                               Chakra.box
+                                                                   {| ``as`` = tab.Icon; marginRight = "6px" |}
+                                                                   []
+                                                               str tab.Name
                                                            ])
                                         ]
                                     Chakra.tabPanels
-                                        {|
-//                                            className = "panels"
-                                            flex = 1
-                                            overflowY = "auto"
-                                            flexBasis = 0
-                                        |}
+                                        {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
                                         [
                                             yield! tabs
-                                                   |> List.map (fun (_, _, _, content) ->
+                                                   |> List.map (fun tab ->
                                                        Chakra.tabPanel
                                                            {| padding = 0 |}
                                                            [
-                                                               content ()
+                                                               tab.Content ()
                                                            ])
                                         ]
                                 ]

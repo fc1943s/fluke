@@ -1,12 +1,13 @@
 namespace Fluke.Shared
 
 open FSharpPlus
+open Fluke.Shared.Domain
 
 
 module View =
-    open Domain.Information
-    open Domain.UserInteraction
-    open Domain.State
+    open Model
+    open UserInteraction
+    open State
 
 
     [<RequireQualifiedAccess>]
@@ -40,7 +41,7 @@ module View =
             taskStateList
             |> List.filter (function
                 | { Task = { Information = Archive _ } } -> false
-                | { Task = { Priority = Some priority }; Sessions = [] } when priority.Value < 5 -> false
+                | { Task = { Priority = Some priority }; Sessions = [] } when (Priority.toTag priority) + 1 < 5 -> false
                 | { Task = { Scheduling = Manual _ } } -> true
                 | _ -> false)
         | View.Information ->
@@ -74,8 +75,8 @@ module View =
             //                |> Sorting.applyManualOrder input.TaskOrderList
             |> List.sortByDescending (fun (taskState, _) ->
                 taskState.Task.Priority
-                |> Option.map (fun x -> x.Value)
-                |> Option.defaultValue 0)
+                |> Option.map Priority.toTag
+                |> Option.defaultValue -1)
         | View.BulletJournal -> input.Lanes
         | View.Information ->
             let lanes =

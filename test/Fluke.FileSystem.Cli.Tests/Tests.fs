@@ -4,11 +4,12 @@ open System.IO
 open Expecto
 open Expecto.Flip
 open Fluke.Shared
+open Fluke.Shared.Domain
 open FSharpPlus
 
 
 module Tests =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 
@@ -24,10 +25,10 @@ module Tests =
                         test "1" {
                             1 |> Expect.equal "" 1
 
-//                            let baseState = RootPrivateData.State.getBaseState ()
+                            //                            let baseState = RootPrivateData.State.getBaseState ()
 
 
-//                            let state2 =
+                            //                            let state2 =
 //                                {|
 //                                    User = baseState.Session.User
 //                                    TreeStateMap = baseState.Session.TreeStateMap
@@ -48,17 +49,15 @@ module Tests =
                             []
                             |> List.map (fun information ->
                                 match information with
-                                | Project ({ Name = ProjectName name }, _) -> Some (information.KindName, name)
-                                | Area ({ Name = AreaName name }, _) -> Some (information.KindName, name)
-                                | Resource ({ Name = ResourceName name }, _) -> Some (information.KindName, name)
-                                | Archive _ -> None)
+                                | Archive _ -> None
+                                | information -> Some (Information.toString information, information.Name))
                             |> List.choose id
                             |> List.groupBy fst
-                            |> List.map (fun (informationName, informationList) ->
-                                informationName, informationList |> List.map snd)
-                            |> List.map (fun (informationName, informationList) ->
+                            |> List.map (fun (informationKind, informationNameList) ->
+                                informationKind, informationNameList |> List.map snd)
+                            |> List.map (fun (informationKind, informationNameList) ->
                                 let getDirectoriesIo homePath =
-                                    Directory.GetDirectories (Path.Combine (homePath, informationName), "*.*")
+                                    Directory.GetDirectories (Path.Combine (homePath, informationKind), "*.*")
                                     |> Array.map (fun path ->
                                         Path.GetDirectoryName path,
                                         Path.GetFileName path,
@@ -71,8 +70,8 @@ module Tests =
                                     PrivateData.Tests.directories.Others
                                     |> List.map (fun (otherPath, otherAlias) -> getDirectoriesIo otherPath, otherAlias)
 
-                                informationList, mainDirectories, otherDirectories)
-                            |> List.map (fun (informationList, mainDirectories, otherDirectories) ->
+                                informationNameList, mainDirectories, otherDirectories)
+                            |> List.map (fun (informationNameList, mainDirectories, otherDirectories) ->
 
                                 otherDirectories
                                 |> List.iter (fun (otherDirectories, otherAlias) ->
@@ -101,7 +100,7 @@ module Tests =
                                     //                        x |> ignore
                                     )
 
-                                informationList, mainDirectories, otherDirectories)
+                                informationNameList, mainDirectories, otherDirectories)
                             |> fun x ->
                                 x |> ignore
                                 printfn "@ %A" x

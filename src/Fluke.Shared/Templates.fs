@@ -3,7 +3,7 @@ namespace Fluke.Shared
 open System
 
 module Templates =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

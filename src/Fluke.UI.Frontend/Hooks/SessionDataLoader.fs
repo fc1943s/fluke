@@ -9,7 +9,7 @@ open Fluke.UI.Frontend
 open Fluke.Shared
 
 module SessionDataLoader =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

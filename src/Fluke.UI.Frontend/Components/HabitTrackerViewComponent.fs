@@ -11,7 +11,7 @@ open Fluke.Shared
 
 
 module HabitTrackerViewComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

@@ -4,7 +4,7 @@ open System.Collections.Generic
 
 
 module Old2 =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

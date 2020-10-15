@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Bindings
 
 
 module TreeSelectorComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

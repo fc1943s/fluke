@@ -2,16 +2,16 @@
   "version": 1,
   "isRoot": true,
   "tools": {
-    "fake-cli": {
-      "version": "5.20.2",
-      "commands": [
-        "fake"
-      ]
-    },
     "paket": {
       "version": "6.0.0-alpha041",
       "commands": [
         "paket"
+      ]
+    },
+    "fake-cli": {
+      "version": "5.20.3",
+      "commands": [
+        "fake"
       ]
     },
     "dotnet-reportgenerator-globaltool": {

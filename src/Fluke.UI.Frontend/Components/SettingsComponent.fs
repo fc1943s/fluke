@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Bindings
 
 
 module SettingsComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

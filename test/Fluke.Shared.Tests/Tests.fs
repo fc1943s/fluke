@@ -10,7 +10,7 @@ open Suigetsu.Core
 
 
 module Tests =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
     open Templates

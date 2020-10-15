@@ -13,7 +13,16 @@ group Fluke.Shared
     source https://api.nuget.org/v3/index.json
 
     nuget FSharpPlus ~> 1.1
+    nuget Myriad.Core ~> 0.4
+    nuget Myriad.Sdk ~> 0.4
+    nuget Myriad.Plugins ~> 0.4
 
+
+group Fluke.UI.Backend
+    storage: none
+    source https://api.nuget.org/v3/index.json
+
+    nuget Saturn ~> 0.15 prerelease
 
 
 group Fluke.UI.Frontend
@@ -36,6 +45,7 @@ group Fluke.UI.Frontend
     nuget Fable.SimpleJson ~> 3.16
     nuget Thoth.Json ~> 4.1
 
+
 group Fluke.UI.Frontend.Tests
     storage: none
     source https://api.nuget.org/v3/index.json
@@ -51,7 +61,6 @@ group Testing
     nuget altcover ~> 7.1
     nuget Microsoft.NET.Test.Sdk ~> 16.7 prerelease
     nuget YoloDev.Expecto.TestSdk ~> 0.9
-
 
 
 group Build

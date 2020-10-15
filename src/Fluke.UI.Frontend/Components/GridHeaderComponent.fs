@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 module GridHeaderComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

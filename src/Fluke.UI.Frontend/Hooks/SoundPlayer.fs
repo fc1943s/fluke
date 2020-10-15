@@ -9,7 +9,7 @@ open Fluke.UI.Frontend
 open Fluke.Shared
 
 module SoundPlayer =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 
@@ -34,7 +34,7 @@ module SoundPlayer =
 
                         match newSession with
                         | Some (Model.ActiveSession (_, (Minute newDuration), _, _)) when oldDuration = -1.
-                                                                                          && newDuration = 0. ->
+                                                                                               && newDuration = 0. ->
                             TempAudio.playTick
                         | Some (Model.ActiveSession (_, newDuration, totalDuration, _)) when newDuration = totalDuration ->
                             TempAudio.playDing

@@ -2,8 +2,22 @@ namespace Fluke.Shared.Domain
 
 open System
 
+#if !FABLE_COMPILER
+open Myriad.Plugins
+#endif
 
-module Information =
+
+module Model =
+#if FABLE_COMPILER
+    module Generator =
+        type DuCases () =
+            inherit System.Attribute()
+
+        type Fields () =
+            inherit System.Attribute()
+#endif
+
+    [<Generator.DuCases>]
     type Information =
         | Project of project: Project * tasks: Task list
         | Area of area: Area * tasks: Task list
@@ -37,7 +51,7 @@ module Information =
 
     and Minute = Minute of float
 
-    and FlukeTime = { Hour: Hour; Minute: Minute }
+    and [<Generator.Fields>] FlukeTime = { Hour: Hour; Minute: Minute }
 
     and Hour = Hour of float
 
@@ -79,7 +93,7 @@ module Information =
         | November = 11
         | December = 12
 
-    and Priority =
+    and [<Generator.DuCases>] Priority =
         | Low1
         | Low2
         | Low3
@@ -101,20 +115,6 @@ module Information =
             | Archive information ->
                 let (InformationName name) = information.Name
                 sprintf "[%s]" name |> InformationName
-
-        member inline this.KindName =
-            match this with
-            | Project _ -> "projects"
-            | Area _ -> "areas"
-            | Resource _ -> "resources"
-            | Archive _ -> "archives"
-
-        member inline this.Order =
-            match this with
-            | Project _ -> 1
-            | Area _ -> 2
-            | Resource _ -> 3
-            | Archive _ -> 4
 
     and InformationName = InformationName of name: string
 
@@ -164,17 +164,3 @@ module Information =
             this.Hour > time.Hour
             || this.Hour = time.Hour
                && this.Minute >= time.Minute
-
-    and Priority with
-        member inline this.Value =
-            match this with
-            | Low1 -> 1
-            | Low2 -> 2
-            | Low3 -> 3
-            | Medium4 -> 4
-            | Medium5 -> 5
-            | Medium6 -> 6
-            | High7 -> 7
-            | High8 -> 8
-            | High9 -> 9
-            | Critical10 -> 10

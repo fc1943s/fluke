@@ -7,10 +7,11 @@ open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Fluke.Shared.Domain
 
 
 module TaskPriorityComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 
@@ -20,9 +21,8 @@ module TaskPriorityComponent =
 
             let priorityText =
                 priority
-                |> Option.map (fun x -> x.Value)
-                |> Option.defaultValue 0
-                |> string
+                |> Option.map (Priority.toTag >> (+) 1 >> string)
+                |> Option.defaultValue ""
 
 
             Chakra.box

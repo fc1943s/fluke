@@ -4,7 +4,7 @@ open System
 open Fluke.Shared
 
 module UserInteraction =
-    open Information
+    open Model
 
 
     type UserInteraction = UserInteraction of moment: FlukeDateTime * user: User * interaction: Interaction

@@ -5,7 +5,7 @@ open FSharpPlus
 
 
 module Rendering =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

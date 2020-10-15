@@ -13,7 +13,7 @@ open FSharpPlus
 
 module TreeSelection =
     open Model
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
     open View

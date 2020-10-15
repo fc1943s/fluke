@@ -4,7 +4,7 @@ open Fluke.Shared
 
 
 module Model =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

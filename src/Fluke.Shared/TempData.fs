@@ -5,7 +5,7 @@ open FSharpPlus
 
 
 module TempData =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
     open Templates
@@ -569,7 +569,7 @@ module TempData =
             dslData
 
     module PublicData =
-        open Domain.Information
+        open Domain.Model
         open Domain.UserInteraction
         open Domain.State
 

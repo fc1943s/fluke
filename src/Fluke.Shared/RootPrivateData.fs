@@ -122,7 +122,7 @@ module RootPrivateData =
         ()
 
     module State =
-        open Domain.Information
+        open Domain.Model
         open Domain.UserInteraction
         open Domain.State
         open Templates

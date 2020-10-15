@@ -10,7 +10,7 @@ open Fluke.Shared
 
 
 module TaskInformationNameComponent =
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 

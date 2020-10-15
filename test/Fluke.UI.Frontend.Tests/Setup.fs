@@ -4,7 +4,7 @@ open Fable.ReactTestingLibrary
 open Fable.React
 open Feliz
 open Feliz.Recoil
-open Fluke.Shared.Domain.Information
+open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
@@ -15,7 +15,7 @@ open Fluke.UI.Frontend.Hooks
 
 module Setup =
     open Model
-    open Domain.Information
+    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
     open View

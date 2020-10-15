@@ -5,7 +5,7 @@ open FSharpPlus
 
 
 module State =
-    open Information
+    open Model
     open UserInteraction
 
     //    type State =
