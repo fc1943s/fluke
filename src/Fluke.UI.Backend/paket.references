@@ -2,4 +2,5 @@ group Fluke.UI.Backend
 
 FSharp.Core
 
+Fable.Remoting.Giraffe
 Saturn

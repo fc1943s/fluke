@@ -22,13 +22,15 @@ group Fluke.UI.Backend
     storage: none
     source https://api.nuget.org/v3/index.json
 
-    nuget Saturn ~> 0.15 prerelease
+    nuget Saturn ~> 0.14
+    nuget Fable.Remoting.Giraffe ~> 4.11
 
 
 group Fluke.UI.Frontend
     storage: none
     source https://api.nuget.org/v3/index.json
 
+    nuget Fable.Remoting.Client ~> 7.0
     nuget Fable.FontAwesome.Free ~> 2.0
     nuget Fable.DateFunctions ~> 3.0
     nuget Fable.Extras ~> 0.1

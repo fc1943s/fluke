@@ -79,7 +79,6 @@ module SessionDataLoader =
             //            let position = Recoil.useValue Recoil.Selectors.position
 //                let treeSelectionIds = Recoil.useValue (Recoil.Atoms.Session.treeSelectionIds input.Username)
             let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
-            let treeStateMap = Recoil.useValue Recoil.Atoms.treeStateMap
             //                let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
             //                printfn "MainComponent.dataLoader -> Atoms.Session.treeSelectionIds = %A" treeSelectionIds
@@ -106,6 +105,16 @@ module SessionDataLoader =
 
                         match sessionData with
                         | Some sessionData ->
+                            let! treeStateMap =
+                                setter.snapshot.getAsync (Recoil.Selectors.Session.treeStateMap input.Username)
+                            let availableTreeIds =
+                                treeStateMap
+                                |> Map.toList
+                                |> List.sortBy (fun (id, treeState) -> treeState.Name)
+                                |> List.map fst
+                            setter.set (Recoil.Atoms.Session.availableTreeIds input.Username, availableTreeIds)
+
+
                             initializeSessionData input.Username setter sessionData
 
                             treeStateMap
@@ -159,4 +168,3 @@ module SessionDataLoader =
                  |])
 
             nothing)
-

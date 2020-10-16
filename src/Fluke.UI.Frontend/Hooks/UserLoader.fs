@@ -13,26 +13,16 @@ module UserLoader =
     let hook =
         React.memo (fun () ->
             let username = Recoil.useValue Recoil.Atoms.username
-            let treeStateMap = Recoil.useValue Recoil.Selectors.treeStateMap
 
             let loadUser =
                 Recoil.useCallbackRef (fun setter ->
                     async {
                         Profiling.addTimestamp "UserLoader.hook.loadUser"
-                        //                            let! treeStateMap = setter.snapshot.getAsync Recoil.Selectors.treeStateMap
-
-                        match treeStateMap with
-                        | Some (user, treeStateMap) ->
-                            let availableTreeIds =
-                                treeStateMap
-                                |> Map.toList
-                                |> List.sortBy (fun (id, treeState) -> treeState.Name)
-                                |> List.map fst
-
+                        let! user = setter.snapshot.getAsync Recoil.Selectors.currentUser
+                        match user with
+                        | Some user ->
                             setter.set (Recoil.Atoms.username, Some user.Username)
                             setter.set (Recoil.Atoms.Session.user user.Username, Some user)
-                            setter.set (Recoil.Atoms.Session.availableTreeIds user.Username, availableTreeIds)
-                            setter.set (Recoil.Atoms.treeStateMap, treeStateMap)
                         | None -> ()
                     }
                     |> Async.StartImmediate)

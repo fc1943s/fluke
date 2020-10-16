@@ -18,6 +18,7 @@
         <Compile Include="Sorting.fs" />
         <Compile Include="View.fs" />
         <Compile Include="Templates.fs" />
+    <Compile Include="Sync.fs" />
         <Compile Include="TempData.fs" />
         <Compile Include="PrivateData\PrivateData.fs" />
         <Compile Include="PrivateData\Tasks.fs" />
@@ -33,7 +34,6 @@
         <Compile Include="SharedPrivateData\liryanne\InformationComments.fs" />
         <Compile Include="SharedPrivateData\liryanne\CellComments.fs" />
         <Compile Include="SharedPrivateData\liryanne\CellStatusEntries.fs" />
-        <Compile Include="RootPrivateData.fs" />
         <Content Include="paket.references" />
     </ItemGroup>
     

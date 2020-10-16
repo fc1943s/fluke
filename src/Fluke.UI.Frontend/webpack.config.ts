@@ -27,24 +27,24 @@ enableSymlinksHmr();
 // In most cases, you'll only need to edit the CONFIG object
 // See below if you need better fine-tuning of Webpack options
 
-let port = process.env.PORT || "8085";
+let port = process.env.PORT || "33921";
 
 let CONFIG = {
     indexHtmlTemplate: './public/index.html',
     fsharpEntry: './Fluke.UI.Frontend.fsproj',
     outputDir: './dist',
     assetsDir: './public',
-    devServerPort: 8082,
+    devServerPort: 33922,
     // When using webpack-dev-server, you may need to redirect some calls
     // to a external API server. See https://webpack.js.org/configuration/dev-server/#devserver-proxy
     devServerProxy: {
-        '/api/*': {
-            target: 'http://localhost:' + port,
-            changeOrigin: true
-        },
         '/socket': {
             target: 'http://localhost:' + port,
             ws: true
+        },
+        '/Api/**': {
+            target: 'http://localhost:' + port,
+            changeOrigin: true
         },
     },
     // Use babel-preset-env to generate JS compatible with most-used browsers.

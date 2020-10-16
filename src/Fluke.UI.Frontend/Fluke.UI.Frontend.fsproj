@@ -14,6 +14,7 @@
         <Compile Include="Bindings\Markdown.fs" />
         <Compile Include="Temp\Css.fs" />
         <Compile Include="Profiling.fs" />
+        <Compile Include="Sync.fs" />
         <Compile Include="TempAudio.fs" />
         <Compile Include="Model.fs" />
         <Compile Include="Recoil.fs" />

@@ -352,12 +352,6 @@ module Recoil =
             }
 
 
-        let rec treeStateMap =
-            atom {
-                key ("atom/" + nameof treeStateMap)
-                def (Map.empty: Map<TreeId, TreeState>)
-            }
-
         let rec cellSelectionMap =
             atom {
                 key ("atom/" + nameof cellSelectionMap)
@@ -384,6 +378,18 @@ module Recoil =
 
 
     module Selectors =
+        let rec currentUser =
+            selector {
+                key ("selector/" + nameof currentUser)
+                get (fun getter ->
+                        async {
+                            let! result = Sync.api.currentUser
+
+                            Profiling.addCount (nameof currentUser)
+                            return Some result
+                        })
+            }
+
         let rec position =
             selector {
                 key ("selector/" + nameof position)
@@ -422,40 +428,6 @@ module Recoil =
                                 |> Rendering.getDateSequence (daysBefore, daysAfter)
 
                         Profiling.addCount (nameof dateSequence)
-                        result)
-            }
-
-        let rec treeStateMap =
-            selector {
-                key ("selector/" + nameof treeStateMap)
-                get (fun getter ->
-                        let position = getter.get position
-
-                        let result =
-                            match position with
-                            | Some position ->
-                                let user, treeStateList = RootPrivateData.State.getTreeStateList position
-
-                                let treeStateMap =
-                                    treeStateList
-                                    |> List.map (fun ({ Name = TreeName name } as treeState) ->
-                                        let id =
-                                            name
-                                            |> Bindings.Crypto.sha3
-                                            |> string
-                                            |> String.take 16
-                                            |> System.Text.Encoding.UTF8.GetBytes
-                                            |> Guid
-                                            |> TreeId
-
-                                        id, treeState)
-                                    |> Map.ofList
-
-                                Some (user, treeStateMap)
-                            | None -> None
-
-                        Profiling.addCount (nameof treeStateMap)
-
                         result)
             }
 
@@ -1105,12 +1077,53 @@ module Recoil =
                             result)
                 }
 
+            let rec treeStateMap =
+                selectorFamily {
+                    key (sprintf "%s/%s" (nameof Session) (nameof treeStateMap))
+                    get (fun (username: Username) getter ->
+                            async {
+                                let position = getter.get position
+                                let user = getter.get (Atoms.Session.user username)
+
+                                let! result =
+                                    match position, user with
+                                    | Some position, Some user ->
+                                        async {
+                                            printfn "will fetch treeStateList"
+                                            let! treeStateList = Sync.api.treeStateList user position
+                                            printfn "fetched %A" treeStateList.Length
+
+                                            let treeStateMap =
+                                                treeStateList
+                                                |> List.map (fun ({ Name = TreeName name } as treeState) ->
+                                                    let id =
+                                                        name
+                                                        |> Bindings.Crypto.sha3
+                                                        |> string
+                                                        |> String.take 16
+                                                        |> System.Text.Encoding.UTF8.GetBytes
+                                                        |> Guid
+                                                        |> TreeId
+
+                                                    id, treeState)
+                                                |> Map.ofList
+
+                                            return treeStateMap
+                                        }
+                                    | _ -> async { return Map.empty }
+
+                                Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof treeStateMap))
+
+                                return result
+                            })
+                }
+
             let rec sessionData =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Session) (nameof sessionData))
                     get (fun (username: Username) getter ->
                             async {
-                                let treeStateMap = getter.get Atoms.treeStateMap
+                                let treeStateMap = getter.get (treeStateMap username)
                                 let user = getter.get (Atoms.Session.user username)
                                 let dateSequence = getter.get dateSequence
                                 let view = getter.get Atoms.view
