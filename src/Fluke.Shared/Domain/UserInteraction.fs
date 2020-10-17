@@ -99,6 +99,9 @@ module UserInteraction =
         static member inline MinValue = FlukeDate.FromDateTime DateTime.MinValue
 
     and FlukeDateTime with
+        member inline this.Stringify () =
+            sprintf "%s %s" (this.Date.Stringify ()) (this.Time.Stringify ())
+
         member inline this.DateTime =
             let Year year, Day day, Hour hour, Minute minute =
                 this.Date.Year, this.Date.Day, this.Time.Hour, this.Time.Minute

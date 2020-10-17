@@ -78,7 +78,7 @@ module Server =
                     return consts.CurrentUser
                 }
                 treeStateList =
-                    fun user moment ->
+                    fun username moment ->
                         async {
                             let treeStateList = Data.getTreeStateList moment
 
@@ -86,13 +86,13 @@ module Server =
                                 treeStateList
                                 |> List.filter (fun treeState ->
                                     match treeState with
-                                    | { Owner = owner } when owner = user -> true
+                                    | { Owner = owner } when owner.Username = username -> true
                                     | { SharedWith = TreeAccess.Public } -> true
                                     | { SharedWith = TreeAccess.Private accessList } ->
                                         accessList
                                         |> List.exists (function
-                                            | (TreeAccessItem.Admin user'
-                                            | TreeAccessItem.ReadOnly user') when user' = user -> true
+                                            | (TreeAccessItem.Admin user
+                                            | TreeAccessItem.ReadOnly user) when user.Username = username -> true
                                             | _ -> false)
                                     | _ -> false)
 
@@ -104,11 +104,15 @@ module Server =
         Remoting.createApi ()
         |> Remoting.fromValue Sync.api
         |> Remoting.withBinarySerialization
+        |> Remoting.withDiagnosticsLogger (printfn "#> %s")
         |> Remoting.buildHttpHandler
 
     let app =
         application {
-            url (sprintf "http://0.0.0.0:%s/" Sync.serverPort)
+            url (sprintf "https://0.0.0.0:%s/" Sync.serverPort)
             use_router webApp
             use_gzip
+            force_ssl
         }
+
+

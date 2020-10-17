@@ -139,7 +139,7 @@ module Recoil =
                 atomFamilyFn
                 <| fun (_username: Username) ->
                     Profiling.addCount (sprintf "%s/%s" (nameof User) (nameof dayStart))
-                    FlukeTime.Create 04 00
+                    FlukeTime.Create 00 00
 
             let rec sessionLength =
                 atomFamilyFn
@@ -330,6 +330,12 @@ module Recoil =
                 local_storage
             }
 
+        let rec api =
+            atom {
+                key ("atom/" + nameof api)
+                def Sync.api
+            }
+
         let rec path =
             atom {
                 key ("atom/" + nameof path)
@@ -383,9 +389,11 @@ module Recoil =
                 key ("selector/" + nameof currentUser)
                 get (fun getter ->
                         async {
-                            let! result = Sync.api.currentUser
+                            let api = getter.get Atoms.api
+                            let! result = api.currentUser
 
                             Profiling.addCount (nameof currentUser)
+
                             return Some result
                         })
             }
@@ -416,16 +424,19 @@ module Recoil =
                 get (fun getter ->
                         let daysBefore = getter.get Atoms.daysBefore
                         let daysAfter = getter.get Atoms.daysAfter
+                        let username = getter.get Atoms.username
                         let position = getter.get position
 
                         let result =
-                            match position with
-                            | None -> []
-                            | Some position ->
-                                [
-                                    position.Date
-                                ]
+                            match position, username with
+                            | Some position, Some username ->
+                                let dayStart = getter.get (Atoms.User.dayStart username)
+                                let dateId = dateId dayStart position
+                                let (DateId referenceDay) = dateId
+                                referenceDay
+                                |> List.singleton
                                 |> Rendering.getDateSequence (daysBefore, daysAfter)
+                            | _ -> []
 
                         Profiling.addCount (nameof dateSequence)
                         result)
@@ -1083,15 +1094,13 @@ module Recoil =
                     get (fun (username: Username) getter ->
                             async {
                                 let position = getter.get position
-                                let user = getter.get (Atoms.Session.user username)
 
                                 let! result =
-                                    match position, user with
-                                    | Some position, Some user ->
+                                    match position with
+                                    | Some position ->
                                         async {
-                                            printfn "will fetch treeStateList"
-                                            let! treeStateList = Sync.api.treeStateList user position
-                                            printfn "fetched %A" treeStateList.Length
+                                            let api = getter.get Atoms.api
+                                            let! treeStateList = api.treeStateList username position
 
                                             let treeStateMap =
                                                 treeStateList

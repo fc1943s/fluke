@@ -42,6 +42,31 @@ Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Frontend.Tests", "
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Backend", "src\Fluke.UI.Backend\Fluke.UI.Backend.fsproj", "{E9318A3D-8486-480B-A961-EFB0611B391C}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Run Configurations", "Run Configurations", "{3598B239-B2BD-440B-B534-8007D49B898B}"
+ProjectSection(SolutionItems) = preProject
+	.run\dotnet test AltCover.run.xml = .run\dotnet test AltCover.run.xml
+	.run\Fluke - eventstore_down.run.xml = .run\Fluke - eventstore_down.run.xml
+	.run\Fluke - eventstore_up.run.xml = .run\Fluke - eventstore_up.run.xml
+	.run\Fluke - paket_install.run.xml = .run\Fluke - paket_install.run.xml
+	.run\Fluke - paket_outdated.run.xml = .run\Fluke - paket_outdated.run.xml
+	.run\Fluke - paket_update.run.xml = .run\Fluke - paket_update.run.xml
+	.run\Fluke - workspace.run.xml = .run\Fluke - workspace.run.xml
+	.run\Fluke.Shared.Tests - dotnet reportgenerator.run.xml = .run\Fluke.Shared.Tests - dotnet reportgenerator.run.xml
+	.run\Fluke.UI.Backend - watch run.run.xml = .run\Fluke.UI.Backend - watch run.run.xml
+	.run\Fluke.UI.Frontend - fake_Build.run.xml = .run\Fluke.UI.Frontend - fake_Build.run.xml
+	.run\Fluke.UI.Frontend - fake_FastRun.run.xml = .run\Fluke.UI.Frontend - fake_FastRun.run.xml
+	.run\Fluke.UI.Frontend - fake_Run.run.xml = .run\Fluke.UI.Frontend - fake_Run.run.xml
+	.run\Fluke.UI.Frontend - yarn install.run.xml = .run\Fluke.UI.Frontend - yarn install.run.xml
+	.run\Fluke.UI.Frontend - yarn outdated.run.xml = .run\Fluke.UI.Frontend - yarn outdated.run.xml
+	.run\Fluke.UI.Frontend - yarn run jest-watch.run.xml = .run\Fluke.UI.Frontend - yarn run jest-watch.run.xml
+	.run\Fluke.UI.Frontend - yarn run splitter-watch.run.xml = .run\Fluke.UI.Frontend - yarn run splitter-watch.run.xml
+	.run\Fluke.UI.Frontend - yarn run test-watch.run.xml = .run\Fluke.UI.Frontend - yarn run test-watch.run.xml
+	.run\Fluke.UI.Frontend - yarn run watch-backend.run.xml = .run\Fluke.UI.Frontend - yarn run watch-backend.run.xml
+	.run\Fluke.UI.Frontend - yarn run watch.run.xml = .run\Fluke.UI.Frontend - yarn run watch.run.xml
+	.run\Fluke.UI.Frontend - yarn run webpack-dev-server.run.xml = .run\Fluke.UI.Frontend - yarn run webpack-dev-server.run.xml
+	.run\Mold - docker_ps.run.xml = .run\Mold - docker_ps.run.xml
+EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

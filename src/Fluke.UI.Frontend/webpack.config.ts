@@ -39,11 +39,12 @@ let CONFIG = {
     // to a external API server. See https://webpack.js.org/configuration/dev-server/#devserver-proxy
     devServerProxy: {
         '/socket': {
-            target: 'http://localhost:' + port,
+            target: 'https://localhost:' + port,
             ws: true
         },
         '/Api/**': {
-            target: 'http://localhost:' + port,
+            target: 'https://localhost:' + port,
+            secure: false,
             changeOrigin: true
         },
     },
@@ -133,6 +134,7 @@ module.exports = {
         contentBase: CONFIG.assetsDir,
         port: CONFIG.devServerPort,
         proxy: CONFIG.devServerProxy,
+        https: true,
         historyApiFallback: true,
         hot: true,
         inline: true

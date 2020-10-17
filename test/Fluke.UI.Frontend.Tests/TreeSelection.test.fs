@@ -59,7 +59,7 @@ module TreeSelection =
                      |> List.iter (fun (treeId, position) -> setter.set (Atoms.Tree.position treeId, position))
                  }
 
-             let treeSelector =
+             let getTreeSelector () =
                  TreeSelectorComponent.render
                      {|
                          Username = user.Username
@@ -69,7 +69,7 @@ module TreeSelection =
              Jest.test
                  ("tree list updates correctly with user clicks",
                   promise {
-                      let! subject, peek = treeSelector |> Setup.render
+                      let! subject, peek = getTreeSelector () |> Setup.render
                       do! peek initialSetter
 
                       let menuItems = queryMenuItems subject
@@ -191,7 +191,7 @@ module TreeSelection =
              Jest.test
                  ("tree list populated correctly with initial data",
                   promise {
-                      let! subject, peek = treeSelector |> Setup.render
+                      let! subject, peek = getTreeSelector () |> Setup.render
                       do! peek initialSetter
 
                       do! peek (fun setter ->

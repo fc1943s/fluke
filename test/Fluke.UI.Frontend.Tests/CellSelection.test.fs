@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Tests
 
 open System
+open Fable.Core
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz.Recoil
@@ -9,11 +10,13 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Components
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Recoil
 open Fluke.Shared
 open FSharpPlus
 
 module CellSelection =
+    open Sync
     open Model
     open Domain.Model
     open Domain.UserInteraction
@@ -47,30 +50,44 @@ module CellSelection =
 
              let treeState = treeStateFromDslTemplate user "Test" dslTemplate
 
-             let treeStateMap =
-                 let treeId = TreeId Guid.Empty
-                 [
-                     treeId, treeState
-                 ]
-                 |> Map.ofList
-
              let initialSetter (setter: CallbackMethods) =
                  promise {
+                     setter.set
+                         (Atoms.api,
+                          {
+                              currentUser = async { return user }
+                              treeStateList =
+                                  fun username moment ->
+                                      async {
+                                          return [
+                                              treeState
+                                          ]
+                                      }
+                          })
                      setter.set (Atoms.view, View.View.Priority)
-                     setter.set (Atoms.Session.user user.Username, Some user)
-                     setter.set (Atoms.username, Some user.Username)
                      setter.set (Atoms.daysBefore, 2)
                      setter.set (Atoms.daysAfter, 2)
                      setter.set (Atoms.selectedPosition, Some dslTemplate.Position)
-                     setter.set (Atoms.treeStateMap, treeStateMap)
-                     setter.set
-                         (Atoms.treeSelectionIds,
-                          [|
-                              treeStateMap |> Map.keys |> Seq.head
-                          |])
                  }
 
-             let priorityView =
+             let selectTree (setter: CallbackMethods) =
+                 promise {
+                     let! username = setter.snapshot.getPromise Atoms.username
+
+                     match username with
+                     | Some username ->
+                         let! treeStateMap = setter.snapshot.getPromise (Selectors.Session.treeStateMap username)
+                         let treeId = treeStateMap |> Map.keys |> Seq.head
+
+                         setter.set
+                             (Atoms.treeSelectionIds,
+                              [|
+                                  treeId
+                              |])
+                     | None -> ()
+                 }
+
+             let getPriorityView () =
                  Chakra.box
                      ()
                      [
@@ -95,12 +112,19 @@ module CellSelection =
                          Jest.expect(toString cellSelectionMap).toEqual(toString expected)
                      })
 
+             let initialize peek =
+                 promise {
+                     do! peek initialSetter
+                     do! peek (fun (setter: CallbackMethods) -> promise { do! UserLoader.loadUser setter })
+                     do! peek selectTree
+                     do! Setup.initializeSessionData user peek
+                 }
+
              Jest.test
                  ("single cell toggle",
                   promise {
-                      let! subject, peek = priorityView |> Setup.render
-                      do! peek initialSetter
-                      do! Setup.initializeSessionData user peek
+                      let! subject, peek = getPriorityView () |> Setup.render
+                      do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
                       RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
@@ -139,9 +163,8 @@ module CellSelection =
              Jest.test
                  ("ctrl pressed",
                   promise {
-                      let! subject, peek = priorityView |> Setup.render
-                      do! peek initialSetter
-                      do! Setup.initializeSessionData user peek
+                      let! subject, peek = getPriorityView () |> Setup.render
+                      do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
                       RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
@@ -164,9 +187,8 @@ module CellSelection =
              Jest.test
                  ("horizontal shift pressed",
                   promise {
-                      let! subject, peek = priorityView |> Setup.render
-                      do! peek initialSetter
-                      do! Setup.initializeSessionData user peek
+                      let! subject, peek = getPriorityView () |> Setup.render
+                      do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
                       RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
@@ -190,9 +212,8 @@ module CellSelection =
              Jest.test
                  ("vertical shift pressed",
                   promise {
-                      let! subject, peek = priorityView |> Setup.render
-                      do! peek initialSetter
-                      do! Setup.initializeSessionData user peek
+                      let! subject, peek = getPriorityView () |> Setup.render
+                      do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
                       RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
@@ -221,9 +242,8 @@ module CellSelection =
              Jest.test
                  ("box selection",
                   promise {
-                      let! subject, peek = priorityView |> Setup.render
-                      do! peek initialSetter
-                      do! Setup.initializeSessionData user peek
+                      let! subject, peek = getPriorityView () |> Setup.render
+                      do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
                       RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
@@ -313,4 +333,5 @@ module CellSelection =
                           |> Map.ofList
                           |> expectSelection peek
                   })
+
              ()))

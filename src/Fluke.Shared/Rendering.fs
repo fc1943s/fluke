@@ -116,7 +116,7 @@ module Rendering =
         let rec loop renderState =
             function
             | moment :: tail ->
-                let dateId = dateId dayStart moment
+                let (DateId referenceDay) as dateId = dateId dayStart moment
 
                 let cellState = taskState.CellStateMap |> Map.tryFind dateId
 
@@ -178,9 +178,9 @@ module Rendering =
                             let isDateMatched =
                                 recurrencyList
                                 |> List.map (function
-                                    | Weekly dayOfWeek -> dayOfWeek = moment.DateTime.DayOfWeek
-                                    | Monthly day -> day = moment.Date.Day
-                                    | Yearly (day, month) -> day = moment.Date.Day && month = moment.Date.Month)
+                                    | Weekly dayOfWeek -> dayOfWeek = referenceDay.DateTime.DayOfWeek
+                                    | Monthly day -> day = referenceDay.Day
+                                    | Yearly (day, month) -> day = referenceDay.Day && month = referenceDay.Month)
                                 |> List.exists id
 
                             match renderState, group with

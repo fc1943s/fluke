@@ -17,7 +17,9 @@
     "test": "jest",
     "splitter-watch": "fable-splitter --watch --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
     "jest-watch": "jest --watchAll --runInBand",
-    "test-watch": "concurrently --restart-tries=10000 \"yarn splitter-watch\" \"yarn jest-watch\""
+    "test-watch": "concurrently --restart-tries=10000 \"yarn splitter-watch\" \"yarn jest-watch\"",
+    "watch-backend": "cd ../Fluke.UI.Backend && dotnet watch run",
+    "watch": "concurrently --restart-tries=10000 \"yarn watch-backend\" \"yarn webpack-dev-server\""
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",

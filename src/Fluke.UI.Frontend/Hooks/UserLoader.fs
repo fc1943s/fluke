@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Hooks
 
+open Fable.Core
 open FSharpPlus
 open Fable.React
 open Feliz
@@ -10,6 +11,22 @@ open Fluke.Shared
 
 
 module UserLoader =
+    let loadUser (setter: CallbackMethods) =
+        promise {
+            let! user = setter.snapshot.getPromise Recoil.Selectors.currentUser
+
+            match user with
+            | Some user ->
+                setter.set (Recoil.Atoms.username, Some user.Username)
+                setter.set (Recoil.Atoms.Session.user user.Username, Some user)
+                setter.set (Recoil.Atoms.User.color user.Username, user.Color)
+                setter.set (Recoil.Atoms.User.dayStart user.Username, user.DayStart)
+                setter.set (Recoil.Atoms.User.sessionLength user.Username, user.SessionLength)
+                setter.set (Recoil.Atoms.User.weekStart user.Username, user.WeekStart)
+                setter.set (Recoil.Atoms.User.sessionBreakLength user.Username, user.SessionBreakLength)
+            | None -> ()
+        }
+
     let hook =
         React.memo (fun () ->
             let username = Recoil.useValue Recoil.Atoms.username
@@ -18,12 +35,7 @@ module UserLoader =
                 Recoil.useCallbackRef (fun setter ->
                     async {
                         Profiling.addTimestamp "UserLoader.hook.loadUser"
-                        let! user = setter.snapshot.getAsync Recoil.Selectors.currentUser
-                        match user with
-                        | Some user ->
-                            setter.set (Recoil.Atoms.username, Some user.Username)
-                            setter.set (Recoil.Atoms.Session.user user.Username, Some user)
-                        | None -> ()
+                        do! loadUser setter |> Async.AwaitPromise
                     }
                     |> Async.StartImmediate)
 

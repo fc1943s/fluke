@@ -1,0 +1,13 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Fluke.UI.Frontend - yarn run watch-backend" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/src/Fluke.UI.Frontend/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="watch-backend" />
+    </scripts>
+    <node-interpreter value="project" />
+    <package-manager value="yarn" />
+    <envs />
+    <method v="2" />
+  </configuration>
+</component>
