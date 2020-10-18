@@ -4,3 +4,4 @@ FSharp.Core
 
 Fable.Remoting.Giraffe
 Saturn
+Thoth.Json.Net

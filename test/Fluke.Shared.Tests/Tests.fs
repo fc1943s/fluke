@@ -37,10 +37,7 @@ module Tests =
 
 
     let testWithTemplateData (dslTemplate: DslTemplate) =
-
-        let user = getUsers().fluke
-
-        let treeState = treeStateFromDslTemplate user dslTemplate
+        let treeState = treeStateFromDslTemplate testUser dslTemplate
 
         dslTemplate.Tasks
         |> List.iter (fun taskTemplate ->
@@ -84,7 +81,7 @@ module Tests =
                 | [] -> []
                 | expectedStatus ->
                     let laneStatusMap =
-                        Rendering.renderLane user.DayStart dslTemplate.Position dateSequence taskState
+                        Rendering.renderLane testUser.DayStart dslTemplate.Position dateSequence taskState
                         |> fun (_taskState, cells) ->
                             cells
                             |> List.map (fun ({ DateId = DateId referenceDay }, status) -> referenceDay, status)
@@ -116,7 +113,7 @@ module Tests =
                     let sessionData =
                         View.getSessionData
                             {|
-                                User = user
+                                User = testUser
                                 DateSequence = dateSequence
                                 View = View.View.HabitTracker
                                 Position = dslTemplate.Position
@@ -134,7 +131,8 @@ module Tests =
                     |> List.map (fun (date, count) ->
                         let sessionCount =
                             taskState.Sessions
-                            |> List.filter (fun (TaskSession (start, _, _)) -> isToday user.DayStart start (DateId date))
+                            |> List.filter (fun (TaskSession (start, _, _)) ->
+                                isToday testUser.DayStart start (DateId date))
                             |> List.length
 
                         count, sessionCount)
@@ -167,9 +165,7 @@ module Tests =
                 ])
 
     let getTreeTests () =
-        let users = getUsers ()
-        let user = users.fluke
-        let tree = getTree user
+        let tree = getTree testUser
         let tests = createTests tree
         tests
 
@@ -177,7 +173,6 @@ module Tests =
 
     [<Tests>]
     let tests =
-        let user = getUsers().fluke
         testList
             "Tests"
             [
@@ -209,13 +204,13 @@ module Tests =
                                 let dslData =
                                     TempData.Testing.createLaneSortingDslData
                                         {|
-                                            User = user
+                                            User = testUser
                                             Position = props.Position
                                             Expected = props.Expected
                                             Data = props.Data
                                         |}
 
-                                TreeState.Create (name = TreeName "Test", owner = user)
+                                TreeState.Create (name = TreeName "Test", owner = testUser)
                                 |> mergeDslDataIntoTreeState dslData
 
                             let dateSequence =
@@ -228,24 +223,24 @@ module Tests =
 
                             treeState.TaskStateMap
                             |> Map.values
-                            |> Seq.map (Rendering.renderLane user.DayStart props.Position dateSequence)
+                            |> Seq.map (Rendering.renderLane testUser.DayStart props.Position dateSequence)
                             |> Seq.toList
                             |> fun lanes ->
                                 match props.Sort with
                                 | NoSorting -> lanes
                                 | Frequency -> Sorting.sortLanesByFrequency lanes
                                 | IncomingRecurrency ->
-                                    Sorting.sortLanesByIncomingRecurrency user.DayStart props.Position lanes
-                                | TimeOfDay -> Sorting.sortLanesByTimeOfDay user.DayStart props.Position lanes
+                                    Sorting.sortLanesByIncomingRecurrency testUser.DayStart props.Position lanes
+                                | TimeOfDay -> Sorting.sortLanesByTimeOfDay testUser.DayStart props.Position lanes
                                 | All ->
                                     lanes
                                     |> Sorting.sortLanesByFrequency
-                                    |> Sorting.sortLanesByIncomingRecurrency user.DayStart props.Position
-                                    |> Sorting.sortLanesByTimeOfDay user.DayStart props.Position //input.TaskOrderList
+                                    |> Sorting.sortLanesByIncomingRecurrency testUser.DayStart props.Position
+                                    |> Sorting.sortLanesByTimeOfDay testUser.DayStart props.Position //input.TaskOrderList
                             |> List.map (fun ({ Task = { Name = TaskName name } }, _) -> name)
                             |> Expect.equal "" props.Expected
 
-                        let treeMap = getTreeMap user
+                        let treeMap = getTreeMap testUser
 
                         let dslTemplate = treeMap.["Lane Sorting/Default/All task types mixed"]
 

@@ -23,18 +23,17 @@ module CellSelection =
     open Domain.State
     open View
     open Templates
+    open TempData
 
     Jest.describe
         ("cell selection",
          (fun () ->
-             let user = Setup.getUser ()
-
              let dslTemplate =
                  {
                      Position =
                          {
                              Date = FlukeDate.Create 2020 Month.January 10
-                             Time = user.DayStart
+                             Time = testUser.DayStart
                          }
                      Tasks =
                          [
@@ -48,14 +47,14 @@ module CellSelection =
                              })
                  }
 
-             let treeState = treeStateFromDslTemplate user "Test" dslTemplate
+             let treeState = treeStateFromDslTemplate testUser "Test" dslTemplate
 
              let initialSetter (setter: CallbackMethods) =
                  promise {
                      setter.set
                          (Atoms.api,
                           {
-                              currentUser = async { return user }
+                              currentUser = async { return testUser }
                               treeStateList =
                                   fun username moment ->
                                       async {
@@ -92,7 +91,7 @@ module CellSelection =
                      ()
                      [
                          //                     MainComponent.SessionDataLoader.hook {| Username = user.Username |}
-                         PriorityViewComponent.render {| Username = user.Username |}
+                         PriorityViewComponent.render {| Username = testUser.Username |}
                      ]
 
              let expectSelection peek expected =
@@ -117,7 +116,7 @@ module CellSelection =
                      do! peek initialSetter
                      do! peek (fun (setter: CallbackMethods) -> promise { do! UserLoader.loadUser setter })
                      do! peek selectTree
-                     do! Setup.initializeSessionData user peek
+                     do! Setup.initializeSessionData testUser peek
                  }
 
              Jest.test

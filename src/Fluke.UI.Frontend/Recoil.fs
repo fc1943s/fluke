@@ -942,7 +942,7 @@ module Recoil =
                                     (snd
                                      >> List.head
                                      >> fst
-                                     >> fun information -> Information.toTag information)
+                                     >> Information.toTag)
                                 |> List.map (fun (informationKindName, groups) ->
                                     let newGroups =
                                         groups

@@ -18,13 +18,12 @@ module TreeSelection =
     open Domain.State
     open View
     open Templates
+    open TempData
 
 
     Jest.describe
         ("tree selection",
          (fun () ->
-             let user = Setup.getUser ()
-
              let position1 = FlukeDateTime.FromDateTime DateTime.MinValue
              let position2 = FlukeDateTime.FromDateTime DateTime.MaxValue
 
@@ -54,7 +53,7 @@ module TreeSelection =
 
              let initialSetter (setter: CallbackMethods) =
                  promise {
-                     setter.set (Atoms.Session.availableTreeIds user.Username, treeList |> List.map fst)
+                     setter.set (Atoms.Session.availableTreeIds testUser.Username, treeList |> List.map fst)
                      treeList
                      |> List.iter (fun (treeId, position) -> setter.set (Atoms.Tree.position treeId, position))
                  }
@@ -62,7 +61,7 @@ module TreeSelection =
              let getTreeSelector () =
                  TreeSelectorComponent.render
                      {|
-                         Username = user.Username
+                         Username = testUser.Username
                          Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
                      |}
 

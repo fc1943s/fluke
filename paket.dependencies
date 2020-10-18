@@ -24,6 +24,7 @@ group Fluke.UI.Backend
 
     nuget Saturn ~> 0.14
     nuget Fable.Remoting.Giraffe ~> 4.11
+    nuget Thoth.Json.Net ~> 5.0
 
 
 group Fluke.UI.Frontend
@@ -45,7 +46,6 @@ group Fluke.UI.Frontend
     nuget Feliz.Router ~> 3.2
     nuget Feliz.MaterialUI ~> 1.2
     nuget Fable.SimpleJson ~> 3.16
-    nuget Thoth.Json ~> 4.1
 
 
 group Fluke.UI.Frontend.Tests

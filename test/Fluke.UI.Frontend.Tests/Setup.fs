@@ -60,10 +60,6 @@ module Setup =
             return subject, peekFn
         }
 
-    let getUser () =
-        let users = TempData.getUsers ()
-        users.fluke
-
     let initializeSessionData user peek =
         peek (fun (setter: CallbackMethods) ->
             promise {

@@ -8,10 +8,21 @@ open Fluke.Shared.Domain
 open FSharpPlus
 
 
+
 module Tests =
     open Domain.Model
     open Domain.UserInteraction
     open Domain.State
+
+    module Data =
+        let directories =
+            {|
+                Main = @"C:\home"
+                Others =
+                    [
+                        @"C:\home\fs\onedrive\home", "onedrive"
+                    ]
+            |}
 
     let tests =
         testList
@@ -64,10 +75,10 @@ module Tests =
                                         (FileInfo path).Attributes.HasFlag FileAttributes.ReparsePoint)
                                     |> Array.toList
 
-                                let mainDirectories = getDirectoriesIo PrivateData.Tests.directories.Main
+                                let mainDirectories = getDirectoriesIo Data.directories.Main
 
                                 let otherDirectories =
-                                    PrivateData.Tests.directories.Others
+                                    Data.directories.Others
                                     |> List.map (fun (otherPath, otherAlias) -> getDirectoriesIo otherPath, otherAlias)
 
                                 informationNameList, mainDirectories, otherDirectories)

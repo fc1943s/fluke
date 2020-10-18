@@ -8,7 +8,10 @@ module Icons =
     let bs: {| BsGrid: obj; BsListCheck: obj |} = jsNative
 
     [<ImportAll "react-icons/fa">]
-    let fa: {| FaMinus: obj; FaSortNumericDownAlt: obj |} = jsNative
+    let fa: {| FaMinus: obj
+               FaRegClock: obj
+               FaRegUser: obj
+               FaSortNumericDownAlt: obj |} = jsNative
 
     [<ImportAll "react-icons/fi">]
     let fi: {| FiDatabase: obj |} = jsNative
@@ -28,6 +31,8 @@ module Icons =
     let bsGrid () = wrap bs.BsGrid
     let bsListCheck () = wrap bs.BsListCheck
     let faMinus () = wrap fa.FaMinus
+    let faRegClock () = wrap fa.FaRegClock
+    let faRegUser () = wrap fa.FaRegUser
     let faSortNumericDownAlt () = wrap fa.FaSortNumericDownAlt
     let fiDatabase () = wrap fi.FiDatabase
     let giHourglass () = wrap gi.GiHourglass

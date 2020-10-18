@@ -20,20 +20,6 @@
         <Compile Include="Templates.fs" />
     <Compile Include="Sync.fs" />
         <Compile Include="TempData.fs" />
-        <Compile Include="PrivateData\PrivateData.fs" />
-        <Compile Include="PrivateData\Tasks.fs" />
-        <Compile Include="PrivateData\InformationComments.fs" />
-        <Compile Include="PrivateData\CellComments.fs" />
-        <Compile Include="PrivateData\CellStatusEntries.fs" />
-        <Compile Include="PrivateData\Journal.fs" />
-        <Compile Include="PrivateData\Tests.fs" />
-        <Compile Include="SharedPrivateData\SharedTasks.fs" />
-        <Compile Include="SharedPrivateData\fc1943s\InformationComments.fs" />
-        <Compile Include="SharedPrivateData\fc1943s\CellComments.fs" />
-        <Compile Include="SharedPrivateData\fc1943s\CellStatusEntries.fs" />
-        <Compile Include="SharedPrivateData\liryanne\InformationComments.fs" />
-        <Compile Include="SharedPrivateData\liryanne\CellComments.fs" />
-        <Compile Include="SharedPrivateData\liryanne\CellStatusEntries.fs" />
         <Content Include="paket.references" />
     </ItemGroup>
     
