@@ -336,6 +336,16 @@ module Recoil =
                 def Sync.api
             }
 
+        let rec gun =
+            atom {
+                key ("atom/" + nameof gun)
+                def (async {
+                    printfn "creating gun"
+                    let gun = Bindings.Gun.gun ()
+                    return gun
+                })
+            }
+
         let rec path =
             atom {
                 key ("atom/" + nameof path)
@@ -405,7 +415,9 @@ module Recoil =
                         let _positionTrigger = getter.get Atoms.positionTrigger
                         let getLivePosition = getter.get Atoms.getLivePosition
                         let selectedPosition = getter.get Atoms.selectedPosition
-                        //
+
+//                        let selectedPosition = Some (FlukeDateTime.Create 2020 Month.October 19 07 00)
+
                         let result =
                             selectedPosition
                             |> Option.defaultValue (getLivePosition.Get ())
@@ -721,6 +733,11 @@ module Recoil =
                                 | Some username, Some position ->
                                     let dayStart = getter.get (Atoms.User.dayStart username)
 
+                                    //                                    printfn
+//                                        "isToday dayStart=%A; position=%A; date=%A"
+//                                        (dayStart.Stringify ())
+//                                        (position.Stringify ())
+//                                        (date.Stringify ())
                                     Domain.UserInteraction.isToday dayStart position (DateId date)
                                 | _ -> false
 

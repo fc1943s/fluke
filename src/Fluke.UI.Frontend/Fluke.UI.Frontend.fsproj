@@ -12,6 +12,7 @@
         <Compile Include="Bindings\Chakra.fs" />
         <Compile Include="Bindings\Icons.fs" />
         <Compile Include="Bindings\Markdown.fs" />
+        <Compile Include="Bindings\Gun.fs" />
         <Compile Include="Temp\Css.fs" />
         <Compile Include="Profiling.fs" />
         <Compile Include="Sync.fs" />
@@ -59,6 +60,7 @@
         <Content Include="package.json" />
         <Content Include="webpack.config.ts" />
         <Content Include="paket.references" />
+        <Content Include=".tsconfig" />
         <Content Include="public\index.html" />
         <Content Include="public\index.scss" />
         <Content Include="public\index.tsx" />

@@ -31,7 +31,7 @@ let port = process.env.PORT || "33921";
 
 let CONFIG = {
     indexHtmlTemplate: './public/index.html',
-    fsharpEntry: './Fluke.UI.Frontend.fsproj',
+    fsharpEntry: './App.fs.js',
     outputDir: './dist',
     assetsDir: './public',
     devServerPort: 33922,
@@ -128,6 +128,9 @@ module.exports = {
         modules: ['node_modules', path.resolve(__dirname, "node_modules")],
         symlinks: false
    },
+    stats: {
+        warningsFilter: [/critical dependency:/i],
+    },
     // Configuration for webpack-dev-server
     devServer: {
         publicPath: "/",
@@ -145,15 +148,6 @@ module.exports = {
     // - file-loader: Moves files referenced in the code (fonts, images) into output folder
     module: {
         rules: [
-            {
-                test: /\.fs(x|proj)?$/,
-                use: {
-                    loader: "fable-loader",
-                    options: {
-                        babel: CONFIG.babel
-                    }
-                },
-            },
             {
                 test: /\.[tj]sx?$/,
                 exclude: /node_modules/,

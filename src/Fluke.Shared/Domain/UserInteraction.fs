@@ -70,6 +70,9 @@ module UserInteraction =
     and [<RequireQualifiedAccess>] CellInteraction =
         | Attachment of attachment: Attachment
         | StatusChange of cellStatusChange: CellStatusChange
+        | Selection of selected: Selection
+
+    and Selection = Selection of selection: bool
 
     and [<RequireQualifiedAccess>] CellStatusChange =
         | Postpone of until: FlukeTime option
@@ -99,8 +102,7 @@ module UserInteraction =
         static member inline MinValue = FlukeDate.FromDateTime DateTime.MinValue
 
     and FlukeDateTime with
-        member inline this.Stringify () =
-            sprintf "%s %s" (this.Date.Stringify ()) (this.Time.Stringify ())
+        member inline this.Stringify () = sprintf "%s %s" (this.Date.Stringify ()) (this.Time.Stringify ())
 
         member inline this.DateTime =
             let Year year, Day day, Hour hour, Minute minute =

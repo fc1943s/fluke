@@ -62,6 +62,7 @@ module State =
     and CellState =
         {
             Status: CellStatus
+            Selected: Selection
             Attachments: Attachment list
             Sessions: TaskSession list
         }
@@ -122,7 +123,7 @@ module State =
 
         let newTreeState =
             (treeState, userInteractionList)
-            ||> List.fold (fun treeState (UserInteraction (moment, user, interaction)) ->
+            ||> List.fold (fun treeState (UserInteraction (_moment, user, interaction)) ->
                     match interaction with
                     | Interaction.Information (information, informationInteraction) ->
                         let informationState =
@@ -179,7 +180,7 @@ module State =
                                 let newSortList = (top, bottom) :: taskState.SortList
 
                                 { taskState with SortList = newSortList }
-                            | TaskInteraction.Session (TaskSession (start, duration, breakDuration) as session) ->
+                            | TaskInteraction.Session (TaskSession (_start, _duration, _breakDuration) as session) ->
                                 let newSessions = session :: taskState.Sessions
 
                                 { taskState with Sessions = newSessions }
@@ -210,7 +211,7 @@ module State =
                             |> Map.add task newTaskState
 
                         { treeState with TaskStateMap = newTaskStateMap }
-                    | Interaction.Cell ({ Task = task; DateId = dateId } as cellAddress, cellInteraction) ->
+                    | Interaction.Cell ({ Task = task; DateId = dateId } as _cellAddress, cellInteraction) ->
                         let taskState =
                             treeState.TaskStateMap
                             |> Map.tryFind task
@@ -230,6 +231,7 @@ module State =
                             |> Option.defaultValue
                                 {
                                     Status = CellStatus.Disabled
+                                    Selected = Selection false
                                     Attachments = []
                                     Sessions = []
                                 }
@@ -256,6 +258,9 @@ module State =
                                         Status = CellStatus.UserStatus (user, manualCellStatus)
                                     }
 
+                                newCellState
+                            | CellInteraction.Selection selected ->
+                                let newCellState = { cellState with Selected = selected }
                                 newCellState
 
                         let newTaskState =
