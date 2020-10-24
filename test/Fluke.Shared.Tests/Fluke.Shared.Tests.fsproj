@@ -1,19 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>netcoreapp5.0</TargetFramework>
-    <LangVersion>preview</LangVersion>
-    <OutputType>Exe</OutputType>
-    <GenerateProgramFile>false</GenerateProgramFile>
-  </PropertyGroup>
-  <ItemGroup>
-    <Compile Include="Tests.fs" />
-    <Compile Include="Main.fs" />
-    <Content Include="paket.references" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Testing\Suigetsu.Testing.fsproj" />
-    <ProjectReference Include="..\..\src\Fluke.Shared\Fluke.Shared.fsproj" />
-  </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+    <PropertyGroup>
+        <TargetFramework>net5.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <GenerateProgramFile>false</GenerateProgramFile>
+    </PropertyGroup>
+    <ItemGroup>
+        <Compile Include="Tests.fs"/>
+        <Compile Include="Main.fs"/>
+        <Content Include="paket.references"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Fluke.Shared\Fluke.Shared.fsproj"/>
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets"/>
 </Project>

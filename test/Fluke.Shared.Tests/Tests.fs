@@ -6,7 +6,6 @@ open FSharpPlus
 open Fluke.Shared
 open Expecto.Flip
 open Fluke.Shared.TempData
-open Suigetsu.Core
 
 
 module Tests =

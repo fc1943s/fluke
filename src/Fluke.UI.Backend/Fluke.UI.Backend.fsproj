@@ -1,17 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-      <TargetFramework>netcoreapp5.0</TargetFramework>
-      <LangVersion>preview</LangVersion>
-  </PropertyGroup>
-  <ItemGroup>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net5.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
 
-    <Compile Include="Server.fs" />
-    <Compile Include="Program.fs" />
+        <Compile Include="Server.fs"/>
+        <Compile Include="Program.fs"/>
 
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
-  </ItemGroup>
-  <Import Project="..\..\.paket\Paket.Restore.targets" />
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj"/>
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets"/>
 </Project>

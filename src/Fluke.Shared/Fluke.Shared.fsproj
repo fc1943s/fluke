@@ -1,26 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <TargetFramework>netcoreapp5.0</TargetFramework>
-        <LangVersion>preview</LangVersion>
+        <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="Core.fs" />
-        <Compile Include="Domain\Model.fs" />
+        <Compile Include="Core.fs"/>
+        <Compile Include="Domain\Model.fs"/>
         <Compile Include="Domain\ModelGenerated.fs">
             <MyriadFile>Domain\Model.fs</MyriadFile>
             <MyriadNameSpace>Fluke.Shared.Domain</MyriadNameSpace>
         </Compile>
-        <Compile Include="Domain\UserInteraction.fs" />
-        <Compile Include="Domain\State.fs" />
-        <Compile Include="Old.fs" />
-        <Compile Include="Rendering.fs" />
-        <Compile Include="Sorting.fs" />
-        <Compile Include="View.fs" />
-        <Compile Include="Templates.fs" />
-    <Compile Include="Sync.fs" />
-        <Compile Include="TempData.fs" />
-        <Content Include="paket.references" />
+        <Compile Include="Domain\UserInteraction.fs"/>
+        <Compile Include="Domain\State.fs"/>
+        <Compile Include="Old.fs"/>
+        <Compile Include="Rendering.fs"/>
+        <Compile Include="Sorting.fs"/>
+        <Compile Include="View.fs"/>
+        <Compile Include="Templates.fs"/>
+        <Compile Include="Sync.fs"/>
+        <Compile Include="TempData.fs"/>
+        <Content Include="paket.references"/>
     </ItemGroup>
     
     <Import Project="..\..\.paket\Paket.Restore.targets" />

@@ -20,24 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D9ACD469-4
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ext", "ext", "{324E3A97-C70E-49FC-B512-42A855CFB4B9}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.Core", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Core\Suigetsu.Core.fsproj", "{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.CoreCLR", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.CoreCLR\Suigetsu.CoreCLR.fsproj", "{C18B4D7D-1232-444B-8F27-2A590CA552CD}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.Testing", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.Testing\Suigetsu.Testing.fsproj", "{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.UI.Frontend.ElmishBridge", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI.Frontend.ElmishBridge\Suigetsu.UI.Frontend.ElmishBridge.fsproj", "{06F44E61-A596-467E-974C-240FE08F0A04}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.UI", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI\Suigetsu.UI.fsproj", "{1060C22D-A36B-4430-9489-678AA6BF6E3B}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Suigetsu.UI.Frontend.React", "paket-files\github.com\fc1943s\Suigetsu\src\Suigetsu.UI.Frontend.React\Suigetsu.UI.Frontend.React.fsproj", "{ED2436F4-4E74-4BB0-A6C6-7ACFF23B2488}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Elmish.Bridge.Client", "paket-files\github.com\fc1943s\Suigetsu\paket-files\github.com\fc1943s\Elmish.Bridge\src\Client\Elmish.Bridge.Client.fsproj", "{F664291D-7A33-43F8-89CF-938388193C1B}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.FileSystem.Cli.Tests", "test\Fluke.FileSystem.Cli.Tests\Fluke.FileSystem.Cli.Tests.fsproj", "{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}"
-EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.FileSystem.Cli", "src\Fluke.FileSystem.Cli\Fluke.FileSystem.Cli.fsproj", "{A96ECBAD-209E-47DF-8E90-3092FB51E942}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Frontend.Tests", "test\Fluke.UI.Frontend.Tests\Fluke.UI.Frontend.Tests.fsproj", "{072F5897-B05D-4F7B-B21A-30405947AA79}"
 EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "Fluke.UI.Backend", "src\Fluke.UI.Backend\Fluke.UI.Backend.fsproj", "{E9318A3D-8486-480B-A961-EFB0611B391C}"
@@ -65,6 +47,7 @@ ProjectSection(SolutionItems) = preProject
 	.run\Fluke.UI.Frontend - yarn run watch.run.xml = .run\Fluke.UI.Frontend - yarn run watch.run.xml
 	.run\Fluke.UI.Frontend - yarn run webpack-dev-server.run.xml = .run\Fluke.UI.Frontend - yarn run webpack-dev-server.run.xml
 	.run\Mold - docker_ps.run.xml = .run\Mold - docker_ps.run.xml
+	.run\Fluke.UI.Frontend - yarn run build.run.xml = .run\Fluke.UI.Frontend - yarn run build.run.xml
 EndProjectSection
 EndProject
 Global
@@ -85,42 +68,6 @@ Global
 		{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{C18B4D7D-1232-444B-8F27-2A590CA552CD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C18B4D7D-1232-444B-8F27-2A590CA552CD}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C18B4D7D-1232-444B-8F27-2A590CA552CD}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C18B4D7D-1232-444B-8F27-2A590CA552CD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44}.Release|Any CPU.Build.0 = Release|Any CPU
-		{06F44E61-A596-467E-974C-240FE08F0A04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{06F44E61-A596-467E-974C-240FE08F0A04}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{06F44E61-A596-467E-974C-240FE08F0A04}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{06F44E61-A596-467E-974C-240FE08F0A04}.Release|Any CPU.Build.0 = Release|Any CPU
-		{1060C22D-A36B-4430-9489-678AA6BF6E3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1060C22D-A36B-4430-9489-678AA6BF6E3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1060C22D-A36B-4430-9489-678AA6BF6E3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1060C22D-A36B-4430-9489-678AA6BF6E3B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ED2436F4-4E74-4BB0-A6C6-7ACFF23B2488}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ED2436F4-4E74-4BB0-A6C6-7ACFF23B2488}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ED2436F4-4E74-4BB0-A6C6-7ACFF23B2488}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ED2436F4-4E74-4BB0-A6C6-7ACFF23B2488}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F664291D-7A33-43F8-89CF-938388193C1B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F664291D-7A33-43F8-89CF-938388193C1B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F664291D-7A33-43F8-89CF-938388193C1B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F664291D-7A33-43F8-89CF-938388193C1B}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A96ECBAD-209E-47DF-8E90-3092FB51E942}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A96ECBAD-209E-47DF-8E90-3092FB51E942}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A96ECBAD-209E-47DF-8E90-3092FB51E942}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A96ECBAD-209E-47DF-8E90-3092FB51E942}.Release|Any CPU.Build.0 = Release|Any CPU
 		{072F5897-B05D-4F7B-B21A-30405947AA79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{072F5897-B05D-4F7B-B21A-30405947AA79}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{072F5897-B05D-4F7B-B21A-30405947AA79}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -134,15 +81,6 @@ Global
 		{58AF0C5F-09F6-4F4A-9A56-3F6676BD5B86} = {D9ACD469-4657-4966-9E60-BCE40BC88944}
 		{1BC0C538-C979-4F53-AE78-01857D7AB278} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
 		{AFA98DD0-9BA8-4BB8-9115-AD4F5792A427} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
-		{C1C0F620-9F2B-4845-8BB6-F93DD6C2DA8F} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
-		{C18B4D7D-1232-444B-8F27-2A590CA552CD} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
-		{84E8C3DD-4E3A-4B2C-9864-D8D363732E44} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
-		{06F44E61-A596-467E-974C-240FE08F0A04} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
-		{1060C22D-A36B-4430-9489-678AA6BF6E3B} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
-		{ED2436F4-4E74-4BB0-A6C6-7ACFF23B2488} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
-		{F664291D-7A33-43F8-89CF-938388193C1B} = {324E3A97-C70E-49FC-B512-42A855CFB4B9}
-		{B508ECC1-D3CF-4ECC-AEFF-6DE59A4FB3AC} = {D9ACD469-4657-4966-9E60-BCE40BC88944}
-		{A96ECBAD-209E-47DF-8E90-3092FB51E942} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
 		{072F5897-B05D-4F7B-B21A-30405947AA79} = {D9ACD469-4657-4966-9E60-BCE40BC88944}
 		{E9318A3D-8486-480B-A961-EFB0611B391C} = {74A00DAC-A1C6-400D-8181-30373D536EB9}
 	EndGlobalSection

@@ -1,11 +1,10 @@
-framework: netcoreapp5.0
+framework: net5.0
 
 group Main
     storage: none
     source https://api.nuget.org/v3/index.json
 
-    nuget FSharp.Core ~> 4.7
-    git https://github.com/fc1943s/Suigetsu.git master build: "powershell –ExecutionPolicy Bypass ./build.ps1"
+    nuget FSharp.Core ~> 5.0
 
 
 group Fluke.Shared
@@ -39,7 +38,7 @@ group Fluke.UI.Frontend
     nuget Fulma ~> 2.10
     nuget Fulma.Extensions.Wikiki.PageLoader ~> 2.0
     nuget Fulma.Extensions.Wikiki.Slider ~> 2.0
-    nuget Feliz ~> 1.13
+    nuget Feliz ~> 1.16
     nuget Feliz.Bulma ~> 2.3
     nuget Feliz.Recoil ~> 0.17
     nuget Feliz.UseListener ~> 0.6
@@ -52,8 +51,8 @@ group Fluke.UI.Frontend.Tests
     storage: none
     source https://api.nuget.org/v3/index.json
 
-    nuget Fable.Jester ~> 0.28
-    nuget Fable.ReactTestingLibrary ~> 0.28
+    nuget Fable.Jester ~> 0.29
+    nuget Fable.ReactTestingLibrary ~> 0.29
 
 
 group Testing
