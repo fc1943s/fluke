@@ -27,7 +27,7 @@ module App =
                                     Chakra.darkMode
                                         ()
                                         [
-                                            Components.MainComponent.render ()
+                                            Components.Main.render ()
                                         ]
                                 ]
                         ]
@@ -40,9 +40,6 @@ module App =
             Recoil.useTransactionObserver (fun snapshot ->
                 let nodes = snapshot.snapshot?getNodes_UNSTABLE ({| isModified = true |})
                 nodes
-                |> Seq.filter (fun modifiedAtom ->
-                    //                    modifiedAtom.key.length < 36
-                    true)
                 |> Seq.iter (fun modifiedAtom ->
                     let atomLoadable = snapshot.snapshot.getLoadable modifiedAtom
                     match atomLoadable.state () with
@@ -58,15 +55,16 @@ module App =
                 [
                     Recoil.root [
                         root.init Recoil.initState
-                        root.localStorage (fun hydrater ->
-                            hydrater.setAtom Recoil.Atoms.debug
-                            hydrater.setAtom Recoil.Atoms.view
-                            hydrater.setAtom Recoil.Atoms.treeSelectionIds
-                            hydrater.setAtom Recoil.Atoms.selectedPosition
-                            hydrater.setAtom Recoil.Atoms.cellSize
-                            hydrater.setAtom Recoil.Atoms.daysBefore
-                            hydrater.setAtom Recoil.Atoms.daysAfter
-                            hydrater.setAtom Recoil.Atoms.leftDock)
+                        root.localStorage (fun hydrater -> ()
+                            //                            hydrater.setAtom Recoil.Atoms.debug
+//                            hydrater.setAtom Recoil.Atoms.view
+//                            hydrater.setAtom Recoil.Atoms.treeSelectionIds
+//                            hydrater.setAtom Recoil.Atoms.selectedPosition
+//                            hydrater.setAtom Recoil.Atoms.cellSize
+//                            hydrater.setAtom Recoil.Atoms.daysBefore
+//                            hydrater.setAtom Recoil.Atoms.daysAfter
+//                            hydrater.setAtom Recoil.Atoms.leftDock
+                            )
 
                         root.children [
                             persistenceObserver ()

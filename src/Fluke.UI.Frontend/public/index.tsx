@@ -11,9 +11,17 @@ interface AppState {
 }
 
 window['A'] = () => {
-    const gun = Gun<AppState>();
+    const gun = Gun<AppState>(["http://localhost:8765/gun"]);
     const user = gun.user();
     console.log('user', user);
+
+    user.create('fc1943s', 'pw1', ack => {
+        console.log('fc1943s ack', ack);
+    })
+
+    user.create('liryanne', 'pw1', ack => {
+        console.log('liryanne ack', ack);
+    })
 
     return;
 

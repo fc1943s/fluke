@@ -1,0 +1,17 @@
+{
+  "name": "gun-backend",
+  "version": "0.0.1",
+  "description": "",
+  "main": "server.js",
+  "author": "fc1943s",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "gun": "^0.2020"
+  },
+  "devDependencies": {
+  }
+}

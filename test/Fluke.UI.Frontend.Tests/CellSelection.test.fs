@@ -91,7 +91,7 @@ module CellSelection =
                      ()
                      [
                          //                     MainComponent.SessionDataLoader.hook {| Username = user.Username |}
-                         PriorityViewComponent.render {| Username = testUser.Username |}
+                         PriorityView.render {| Username = testUser.Username |}
                      ]
 
              let expectSelection peek expected =

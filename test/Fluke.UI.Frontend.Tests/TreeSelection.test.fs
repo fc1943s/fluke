@@ -59,7 +59,7 @@ module TreeSelection =
                  }
 
              let getTreeSelector () =
-                 TreeSelectorComponent.render
+                 TreeSelector.render
                      {|
                          Username = testUser.Username
                          Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
