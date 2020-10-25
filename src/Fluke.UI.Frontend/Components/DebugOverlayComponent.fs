@@ -27,17 +27,18 @@ module DebugOverlayComponent =
                 if not debug then
                     ()
                 else
-                    let indent n = String (' ', n)
-
                     let json =
-                        Profiling.profilingState
-                        |> Fable.SimpleJson.SimpleJson.stringify
-                        |> JS.JSON.parse
+                        {|
+                            CallCount =
+                                Profiling.profilingState.CallCount
+                                |> Seq.map (fun (KeyValue (k, v)) -> k, box <| string v)
+                                |> JsInterop.createObj
+                            Timestamps =
+                                Profiling.profilingState.Timestamps
+                                |> Seq.map (fun (k, v) -> sprintf "%A = %A" k v)
+                                |> Seq.toList
+                        |}
                         |> fun obj -> JS.JSON.stringify (obj, unbox null, 4)
-                        |> String.replace (sprintf ",\n%s" (indent 3)) ""
-                        |> String.replace (indent 1) ""
-                        |> String.replace "][\n" ""
-                        |> String.replace "\"" " "
 
                     if json = oldJson then
                         ()

@@ -11,7 +11,7 @@ group Fluke.Shared
     storage: none
     source https://api.nuget.org/v3/index.json
 
-    nuget FSharpPlus ~> 1.1
+    nuget FSharpPlus ~> 1.2 prerelease
     nuget Myriad.Core ~> 0.4
     nuget Myriad.Sdk ~> 0.4
     nuget Myriad.Plugins ~> 0.4
@@ -32,7 +32,7 @@ group Fluke.UI.Frontend
 
     nuget Fable.Remoting.Client ~> 7.0
     nuget Fable.FontAwesome.Free ~> 2.0
-    nuget Fable.DateFunctions ~> 3.0
+    nuget Fable.DateFunctions ~> 3.1
     nuget Fable.Extras ~> 0.1
     nuget Zanaptak.TypedCssClasses ~> 0.4
     nuget Fulma ~> 2.10
@@ -45,6 +45,7 @@ group Fluke.UI.Frontend
     nuget Feliz.Router ~> 3.2
     nuget Feliz.MaterialUI ~> 1.2
     nuget Fable.SimpleJson ~> 3.16
+    nuget Thoth.Json ~> 5.0
 
 
 group Fluke.UI.Frontend.Tests
