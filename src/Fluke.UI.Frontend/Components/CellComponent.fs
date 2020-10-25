@@ -51,10 +51,10 @@ module CellComponent =
             let showUser = Recoil.useValue (Recoil.Selectors.Task.showUser input.TaskId)
             let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday referenceDay)
             let selected, setSelected = Recoil.useState (Recoil.Selectors.Cell.selected (input.TaskId, input.DateId))
-            let gun = Recoil.useValue Recoil.Atoms.gun
+//            let gun = Recoil.useValue Recoil.Atoms.gun
             let onCellClick = React.useCallbackRef (fun () ->
                 setSelected (not selected)
-                gun.get("test").get("test2").put(1)
+//                gun.get("test").get("test2").put(1)
             )
 
             Chakra.center

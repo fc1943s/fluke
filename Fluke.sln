@@ -45,9 +45,7 @@ ProjectSection(SolutionItems) = preProject
 	.run\Fluke.UI.Frontend - yarn run test-watch.run.xml = .run\Fluke.UI.Frontend - yarn run test-watch.run.xml
 	.run\Fluke.UI.Frontend - yarn run watch-backend.run.xml = .run\Fluke.UI.Frontend - yarn run watch-backend.run.xml
 	.run\Fluke.UI.Frontend - yarn run watch.run.xml = .run\Fluke.UI.Frontend - yarn run watch.run.xml
-	.run\Fluke.UI.Frontend - yarn run webpack-dev-server.run.xml = .run\Fluke.UI.Frontend - yarn run webpack-dev-server.run.xml
 	.run\Mold - docker_ps.run.xml = .run\Mold - docker_ps.run.xml
-	.run\Fluke.UI.Frontend - yarn run build.run.xml = .run\Fluke.UI.Frontend - yarn run build.run.xml
 EndProjectSection
 EndProject
 Global

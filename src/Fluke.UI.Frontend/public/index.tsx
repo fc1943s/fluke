@@ -1,4 +1,5 @@
 import * as Gun from 'gun';
+require('gun/sea');
 
 interface AppState {
     users: { username: string }[],
@@ -9,8 +10,13 @@ interface AppState {
     trees: { position: string }[]
 }
 
-function A() {
+window['A'] = () => {
     const gun = Gun<AppState>();
+    const user = gun.user();
+    console.log('user', user);
+
+    return;
+
     const users = gun.get("users");
     const testUser = users.set({username: "fluke"});
 
@@ -24,7 +30,7 @@ function A() {
     const cells2 = task2.get("cells");
     const cell2 = cells2.set({date: '2020-03-09', status: 'Postponed None'});
 
-    const event = { selected: true };
+    const event = {selected: true};
 
     const trees = gun.get("trees");
     trees.set({position: '2020-03-10 14:00'});
