@@ -40,7 +40,8 @@ module Content =
                                              ],
                                              LoadingScreen.render ())
 
-                                    | None -> UserLoader.render ()
+//                                    | None -> UserLoader.render ()
+                                    | None -> LoginScreen.render ()
                                 ]
                         ]
                 ])

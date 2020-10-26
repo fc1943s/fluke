@@ -336,14 +336,13 @@ module Recoil =
                 def Sync.api
             }
 
-        let rec gun =
+        let rec peers =
             atom {
-                key ("atom/" + nameof gun)
-                def (async {
-                    printfn "creating gun"
-                    let gun = Bindings.Gun.gun ()
-                    return gun
-                })
+                key ("atom/" + nameof peers)
+                def
+                    [|
+                        "http://localhost:8765/gun"
+                    |]
             }
 
         let rec path =
@@ -394,6 +393,16 @@ module Recoil =
 
 
     module Selectors =
+        let rec gun =
+            selector {
+                key ("selector/" + nameof gun)
+                get (fun getter ->
+                        let peers = getter.get Atoms.peers
+                        let gun = Bindings.Gun.gun peers
+                        Profiling.addCount (nameof gun)
+                        {| Gun = gun |})
+            }
+
         let rec currentUser =
             selector {
                 key ("selector/" + nameof currentUser)
@@ -416,7 +425,7 @@ module Recoil =
                         let getLivePosition = getter.get Atoms.getLivePosition
                         let selectedPosition = getter.get Atoms.selectedPosition
 
-//                        let selectedPosition = Some (FlukeDateTime.Create 2020 Month.October 19 07 00)
+                        //                        let selectedPosition = Some (FlukeDateTime.Create 2020 Month.October 19 07 00)
 
                         let result =
                             selectedPosition
@@ -955,11 +964,7 @@ module Recoil =
                                 |> List.groupBy (fun taskId -> informationMap.[taskId])
                                 |> List.sortBy (fun (information, _) -> information.Name)
                                 |> List.groupBy (fun (information, _) -> Information.toString information)
-                                |> List.sortBy
-                                    (snd
-                                     >> List.head
-                                     >> fst
-                                     >> Information.toTag)
+                                |> List.sortBy (snd >> List.head >> fst >> Information.toTag)
                                 |> List.map (fun (informationKindName, groups) ->
                                     let newGroups =
                                         groups

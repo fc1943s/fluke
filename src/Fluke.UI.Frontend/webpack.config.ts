@@ -18,6 +18,7 @@ function enableSymlinksHmr() {
         return original;
     };
 }
+
 enableSymlinksHmr();
 
 
@@ -90,15 +91,15 @@ module.exports = {
     // In production, have a single entry but use mini-css-extract-plugin to move the styles to a separate file.
     entry: {
         app: [CONFIG.fsharpEntry]
-    } ,
+    },
     // Add a hash to the output file name in production
     // to prevent browser caching if code changes
     output: {
         publicPath: "/",
         path: path.join(__dirname, CONFIG.outputDir),
-        filename: isProduction ? '[name].[hash].js' : '[name].js',
+        filename: isProduction ? '[name].[contenthash].js' : '[name].js',
         devtoolModuleFilenameTemplate: info =>
-          path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
+            path.resolve(info.absoluteResourcePath).replace(/\\/g, '/'),
     },
     mode: isProduction ? "production" : "development",
     devtool: isProduction ? "nosources-source-map" : "eval-source-map",
@@ -106,8 +107,8 @@ module.exports = {
         // Split the code coming from npm packages into a different file.
         // 3rd party dependencies change less often, let the browser cache them.
         splitChunks: {
-                    chunks: "all"
-                }
+            chunks: "all"
+        }
     },
     // Besides the HtmlPlugin, we use the following plugins:
     // PRODUCTION
@@ -117,8 +118,8 @@ module.exports = {
     //      - HotModuleReplacementPlugin: Enables hot reloading when code changes without refreshing
     plugins: isProduction ?
         commonPlugins.concat([
-            new MiniCssExtractPlugin({ filename: 'style.css' }),
-            new CopyWebpackPlugin([{ from: CONFIG.assetsDir }]),
+            new MiniCssExtractPlugin({filename: 'style.css'}),
+            new CopyWebpackPlugin({patterns: [{from: CONFIG.assetsDir}]}),
         ])
         : commonPlugins.concat([
             new webpack.HotModuleReplacementPlugin(),
@@ -127,7 +128,7 @@ module.exports = {
         // See https://github.com/fable-compiler/Fable/issues/1490
         modules: ['node_modules', path.resolve(__dirname, "node_modules")],
         symlinks: false
-   },
+    },
     stats: {
         warningsFilter: [/critical dependency:/i],
     },

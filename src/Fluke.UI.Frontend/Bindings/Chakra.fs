@@ -17,7 +17,9 @@ module Chakra =
                  extendTheme: obj -> obj
                  Flex: obj
                  Grid: obj
+                 HStack: obj
                  IconButton: obj
+                 Input: obj
                  Menu: obj
                  MenuButton: obj
                  MenuList: obj
@@ -50,7 +52,9 @@ module Chakra =
     let darkMode<'T> = wrap core.DarkMode
     let flex<'T> = wrap core.Flex
     let grid<'T> = wrap core.Grid
+    let hStack<'T> = wrap core.HStack
     let iconButton<'T> = wrap core.IconButton
+    let input<'T> = wrap core.Input
     let menu<'T> = wrap core.Menu
     let menuButton<'T> = wrap core.MenuButton
     let menuList<'T> = wrap core.MenuList
