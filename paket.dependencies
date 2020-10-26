@@ -35,9 +35,6 @@ group Fluke.UI.Frontend
     nuget Fable.DateFunctions ~> 3.1
     nuget Fable.Extras ~> 0.1
     nuget Zanaptak.TypedCssClasses ~> 0.4
-    nuget Fulma ~> 2.10
-    nuget Fulma.Extensions.Wikiki.PageLoader ~> 2.0
-    nuget Fulma.Extensions.Wikiki.Slider ~> 2.0
     nuget Feliz ~> 1.16
     nuget Feliz.Bulma ~> 2.3
     nuget Feliz.Recoil ~> 0.17

@@ -50,9 +50,9 @@ module SoundPlayer =
 
                     oldActiveSessions.current <- activeSessions),
                  [|
-                     sessionLength :> obj
-                     sessionBreakLength :> obj
-                     activeSessions :> obj
+                     box sessionLength
+                     box sessionBreakLength
+                     box activeSessions
                  |])
 
             nothing)

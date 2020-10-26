@@ -3,36 +3,14 @@ namespace Fluke.UI.Frontend
 open Fable.React
 open Feliz
 open Feliz.Recoil
-open Feliz.Router
-open Browser.Dom
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
+open Fluke.UI.Frontend.Components
 open Fable.Core.JsInterop
 open Fluke.UI.Frontend.Bindings
 
 
 module App =
-
-    let router =
-        React.memo (fun () ->
-            Profiling.addTimestamp "router.render"
-            let theme = Theme.useTheme ()
-            React.router
-                [
-                    router.children
-                        [
-                            Chakra.provider
-                                {| resetCSS = true; theme = theme |}
-                                [
-                                    Chakra.darkMode
-                                        ()
-                                        [
-                                            Components.Main.render ()
-                                        ]
-                                ]
-                        ]
-                ])
-
     let persistenceObserver =
         React.memo (fun () ->
             Profiling.addTimestamp "persistenceObserver.render"
@@ -48,37 +26,54 @@ module App =
 
             nothing)
 
-    let appMain =
+    module RootWrapper =
+        let render children =
+            React.memo (fun (input: {| Children: seq<ReactElement> |}) ->
+                let theme = Theme.useTheme ()
+
+                React.strictMode
+                    [
+                        Recoil.root [
+                            root.init Recoil.initState
+                            root.localStorage (fun hydrater -> ()
+                                //                            hydrater.setAtom Recoil.Atoms.debug
+                                //                            hydrater.setAtom Recoil.Atoms.view
+                                //                            hydrater.setAtom Recoil.Atoms.treeSelectionIds
+                                //                            hydrater.setAtom Recoil.Atoms.selectedPosition
+                                //                            hydrater.setAtom Recoil.Atoms.cellSize
+                                //                            hydrater.setAtom Recoil.Atoms.daysBefore
+                                //                            hydrater.setAtom Recoil.Atoms.daysAfter
+                                //                            hydrater.setAtom Recoil.Atoms.leftDock
+                                )
+
+                            root.children [
+                                persistenceObserver ()
+                                Chakra.provider
+                                    {| resetCSS = true; theme = theme |}
+                                    [
+                                        Chakra.darkMode
+                                            ()
+                                            [
+                                                yield! input.Children
+                                            ]
+                                    ]
+                            ]
+                        ]
+                    ])
+            |> fun cmp -> cmp {| Children = children |}
+
+    let render =
         React.memo (fun () ->
             Profiling.addTimestamp "appMain.render"
-            React.strictMode
-                [
-                    Recoil.root [
-                        root.init Recoil.initState
-                        root.localStorage (fun hydrater -> ()
-                            //                            hydrater.setAtom Recoil.Atoms.debug
-//                            hydrater.setAtom Recoil.Atoms.view
-//                            hydrater.setAtom Recoil.Atoms.treeSelectionIds
-//                            hydrater.setAtom Recoil.Atoms.selectedPosition
-//                            hydrater.setAtom Recoil.Atoms.cellSize
-//                            hydrater.setAtom Recoil.Atoms.daysBefore
-//                            hydrater.setAtom Recoil.Atoms.daysAfter
-//                            hydrater.setAtom Recoil.Atoms.leftDock
-                            )
 
-                        root.children [
-                            persistenceObserver ()
-                            router ()
-                        ]
-                    ]
-                ])
+            RootWrapper.render [
+                DebugOverlay.render ()
 
-    importAll "typeface-roboto-condensed"
+                CtrlListener.render ()
+                ShiftListener.render ()
+                SelectionListener.render ()
+                ViewUpdater.render ()
+                PositionUpdater.render ()
 
-    importAll "./public/index.scss"
-    importAll "./public/index.tsx"
-    importAll "./public/index.ts"
-    importAll "./public/index.jsx"
-    importAll "./public/index.js"
-
-    React.render (document.getElementById "root") (appMain ())
+                Content.render ()
+            ])

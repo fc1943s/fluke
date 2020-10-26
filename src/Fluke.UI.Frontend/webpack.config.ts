@@ -31,7 +31,7 @@ let port = process.env.PORT || "33921";
 
 let CONFIG = {
     indexHtmlTemplate: './public/index.html',
-    fsharpEntry: './App.fs.js',
+    fsharpEntry: './Main.fs.js',
     outputDir: './dist',
     assetsDir: './public',
     devServerPort: 33922,

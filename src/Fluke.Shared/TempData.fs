@@ -4,6 +4,10 @@ open System
 open FSharpPlus
 
 
+module LintTests =
+    type ExampleInterface =
+       abstract member print : unit -> unit
+
 module TempData =
     open Domain.Model
     open Domain.UserInteraction

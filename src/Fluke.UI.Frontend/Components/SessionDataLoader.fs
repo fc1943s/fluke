@@ -164,7 +164,7 @@ module SessionDataLoader =
 
                  // TODO: return a cleanup?
                  [|
-                     sessionData :> obj
+                     box sessionData
                  |])
 
             nothing)

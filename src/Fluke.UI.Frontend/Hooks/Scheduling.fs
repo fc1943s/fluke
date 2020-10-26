@@ -21,7 +21,7 @@ module Scheduling =
         React.useEffect
             ((fun () -> savedCallback.current <- fn),
              [|
-                 fn :> obj
+                 box fn
              |])
 
         React.useEffect
@@ -35,5 +35,5 @@ module Scheduling =
                     member _.Dispose () = clear id
                 }),
              [|
-                 duration :> obj
+                 box duration
              |])

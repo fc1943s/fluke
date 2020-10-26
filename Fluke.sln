@@ -4,6 +4,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "repo", "repo", "{AC1CE2EB-7
 		paket.dependencies = paket.dependencies
 		README.md = README.md
 		.config/dotnet-tools.json = .config/dotnet-tools.json
+		fsharplint.json = fsharplint.json
+		Directory.Build.targets = Directory.Build.targets
 		.gitignore = .gitignore
 		docker-compose.yml = docker-compose.yml
 	EndProjectSection

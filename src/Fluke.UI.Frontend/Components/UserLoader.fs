@@ -45,7 +45,7 @@ module UserLoader =
                     | Some _ -> ()
                     | None -> loadUser ()),
                  [|
-                     username :> obj
+                     box username
                  |])
 
             nothing)

@@ -25,6 +25,12 @@
       "commands": [
         "fable"
       ]
+    },
+    "dotnet-fsharplint": {
+      "version": "0.16.5",
+      "commands": [
+        "dotnet-fsharplint"
+      ]
     }
   }
 }

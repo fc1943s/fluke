@@ -29,6 +29,7 @@ module Chakra =
                  NumberIncrementStepper: obj
                  SimpleGrid: obj
                  Spacer: obj
+                 Spinner: obj
                  Stack: obj
                  TabList: obj
                  TabPanel: obj
@@ -62,6 +63,7 @@ module Chakra =
     let provider<'T> = wrap core.ChakraProvider
     let simpleGrid<'T> = wrap core.SimpleGrid
     let spacer<'T> = wrap core.Spacer
+    let spinner<'T> = wrap core.Spinner
     let stack<'T> = wrap core.Stack
     let tabList<'T> = wrap core.TabList
     let tabPanel<'T> = wrap core.TabPanel
