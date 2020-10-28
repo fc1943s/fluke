@@ -37,7 +37,8 @@ module Chakra =
                  TabPanel: obj
                  TabPanels: obj
                  Tab: obj
-                 Tabs: obj |} = jsNative
+                 Tabs: obj
+                 useToast: unit -> System.Func<obj, unit> |} = jsNative
 
     [<ImportAll "@chakra-ui/theme-tools">]
     let theme: {| mode: string * string -> obj -> obj |} = jsNative
@@ -74,3 +75,40 @@ module Chakra =
     let tabPanels<'T> = wrap core.TabPanels
     let tab<'T> = wrap core.Tab
     let tabs<'T> = wrap core.Tabs
+
+
+    type ToastState =
+        {
+            Title: string
+            Status: string
+            Description: string
+            Duration: int
+            IsClosable: bool
+        }
+
+    type ToastBuilder () =
+        member inline _.Yield _ =
+            {
+                Title = "Error"
+                Status = "error"
+                Description = "Message"
+                Duration = 4000
+                IsClosable = true
+            }
+
+        [<CustomOperation("description")>]
+        member inline this.Description (state, description) = { state with Description = description }
+
+        [<CustomOperation("title")>]
+        member inline _.Title (state, title) = { state with Title = title }
+
+        [<CustomOperation("status")>]
+        member inline _.Status (state, status) = { state with Status = status }
+
+        member inline _.Run (state: ToastState) =
+            fun () ->
+                let toast = core.useToast ()
+                toast.Invoke state
+
+    let useToast = ToastBuilder ()
+

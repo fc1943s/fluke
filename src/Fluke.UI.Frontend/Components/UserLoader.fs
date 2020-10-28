@@ -11,19 +11,18 @@ open Fluke.Shared
 
 
 module UserLoader =
-    let loadUser (setter: CallbackMethods) =
+    let loadUser (setter: CallbackMethods) username =
         promise {
-            let! user = setter.snapshot.getPromise Recoil.Selectors.currentUser
+            let! user = setter.snapshot.getPromise Recoil.Selectors.apiCurrentUser
 
             match user with
             | Some user ->
-                setter.set (Recoil.Atoms.username, Some user.Username)
-                setter.set (Recoil.Atoms.Session.user user.Username, Some user)
-                setter.set (Recoil.Atoms.User.color user.Username, user.Color)
-                setter.set (Recoil.Atoms.User.dayStart user.Username, user.DayStart)
-                setter.set (Recoil.Atoms.User.sessionLength user.Username, user.SessionLength)
-                setter.set (Recoil.Atoms.User.weekStart user.Username, user.WeekStart)
-                setter.set (Recoil.Atoms.User.sessionBreakLength user.Username, user.SessionBreakLength)
+                if user.Username = username then
+                    setter.set (Recoil.Atoms.User.color user.Username, user.Color)
+                    setter.set (Recoil.Atoms.User.dayStart user.Username, user.DayStart)
+                    setter.set (Recoil.Atoms.User.sessionLength user.Username, user.SessionLength)
+                    setter.set (Recoil.Atoms.User.weekStart user.Username, user.WeekStart)
+                    setter.set (Recoil.Atoms.User.sessionBreakLength user.Username, user.SessionBreakLength)
             | None -> ()
         }
 
@@ -32,18 +31,18 @@ module UserLoader =
             let username = Recoil.useValue Recoil.Atoms.username
 
             let loadUser =
-                Recoil.useCallbackRef (fun setter ->
+                Recoil.useCallbackRef (fun setter username ->
                     async {
                         Profiling.addTimestamp "UserLoader.render.loadUser"
-                        do! loadUser setter |> Async.AwaitPromise
+                        do! loadUser setter username |> Async.AwaitPromise
                     }
                     |> Async.StartImmediate)
 
             React.useEffect
                 ((fun () ->
                     match username with
-                    | Some _ -> ()
-                    | None -> loadUser ()),
+                    | Some username -> loadUser username
+                    | None -> ()),
                  [|
                      box username
                  |])

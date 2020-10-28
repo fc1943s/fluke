@@ -12,48 +12,18 @@ interface AppState {
     trees: { position: string }[]
 }
 
-const createUser = async function (user, username, password, option = {}) {
-    return (new Promise((res) => {
-        user.create(username, password, res, option);
-    }));
-}
-const authUser = async function (user, username, password, option = {}) {
-    return (new Promise((res) => {
-        user.auth(username, password, res, option);
-    }));
-}
-
+const gun = Gun<AppState>(["http://localhost:8765/gun"]);
+window['gun'] = gun;
 
 window['login'] = async (username = 'fc1943s', password = 'pw1') => {
-    const gun = Gun<AppState>(["http://localhost:8765/gun"]);
     const user = gun.user();
     console.log('user', user);
     const userData = await gun.get('~@' + username).promOnce();
 
     if (userData) {
         console.log('user already exists', userData);
-    } else {
-        const ack = await createUser(user, 'username', 'pw1');
-        if (ack.err) {
-            console.log("error creating user", ack);
-        } else {
-            console.log("create user ack", ack);
-        }
     }
 }
-window['auth'] = async (username = 'fc1943s', password = 'pw1') => {
-    const gun = Gun<AppState>(["http://localhost:8765/gun"]);
-    const user = gun.user();
-    console.log('user', user);
-
-    const ack = await authUser(user, 'username', 'pw1');
-    if (ack.err) {
-        console.log("error authing user", ack);
-    } else {
-        console.log("auth user ack", ack);
-    }
-}
-
 
 window['A'] = async () => {
 

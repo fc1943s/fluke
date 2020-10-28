@@ -112,7 +112,8 @@ module Tests =
                     let sessionData =
                         View.getSessionData
                             {|
-                                User = testUser
+                                Username = testUser.Username
+                                DayStart = testUser.DayStart
                                 DateSequence = dateSequence
                                 View = View.View.HabitTracker
                                 Position = dslTemplate.Position

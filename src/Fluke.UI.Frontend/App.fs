@@ -21,7 +21,9 @@ module App =
                 |> Seq.iter (fun modifiedAtom ->
                     let atomLoadable = snapshot.snapshot.getLoadable modifiedAtom
                     match atomLoadable.state () with
-                    | LoadableState.HasValue value -> printfn "persisting1 <%A> <%A>" modifiedAtom.key value
+                    | LoadableState.HasValue value ->
+                        if false then
+                            printfn "persisting1 <%A> <%A>" modifiedAtom.key value
                     | _ -> ()))
 
             nothing)
@@ -74,6 +76,8 @@ module App =
                 SelectionListener.render ()
                 ViewUpdater.render ()
                 PositionUpdater.render ()
+                GunObserver.render ()
+                UserLoader.render ()
 
                 Content.render ()
             ])

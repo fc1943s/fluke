@@ -5,14 +5,13 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Model
 open Fluke.UI.Frontend.Bindings
 
 module DockPanel =
     let render =
         React.memo (fun (input: {| Name: string
                                    Icon: obj
-                                   Atom: RecoilValue<DockType option, ReadWrite>
+                                   Atom: RecoilValue<TempUI.DockType option, ReadWrite>
                                    Children: ReactElement list |}) ->
             let setAtom = Recoil.useSetState input.Atom
             Chakra.stack

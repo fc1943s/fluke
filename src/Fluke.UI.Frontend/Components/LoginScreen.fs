@@ -1,35 +1,63 @@
 namespace Fluke.UI.Frontend.Components
 
 open Browser.Types
-open Fable.Core
 open Feliz
 open Feliz.UseListener
-open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Hooks
 open Fable.React
 
 
 module LoginScreen =
     let render =
         React.memo (fun () ->
-            let username, setUsername = React.useState ""
-            let password, setPassword = React.useState ""
-            let gun = Recoil.useValue Recoil.Selectors.gun
+            let usernameField, setUsernameField = React.useState ""
+            let passwordField, setPasswordField = React.useState ""
+            let signIn = Auth.useSignIn ()
+            let signUp = Auth.useSignUp ()
 
-            let signIn () =
+            let toast = Chakra.core.useToast ()
+
+            let signInClick () =
                 promise {
-                    let user = gun.Gun.user ()
-                    let! ack = Gun.authUser user username password
-                    if JsInterop.isNullOrUndefined ack.err then
-                        printfn "no errors found.  fluke.ack obj"
-                        Bindings.Dom.set "ack" ack
-                    else
-                        printfn "ack error %A" ack.err
-                    ()
+                    match! signIn usernameField passwordField with
+                    | Ok () -> printfn "logged"
+                    | Error error ->
+                        toast.Invoke
+                            {|
+                                title = "Error"
+                                status = "error"
+                                description = error
+                                duration = 4000
+                                isClosable = true
+                            |}
                 }
 
-            let signUp () = ()
+            let signUpClick () =
+                promise {
+                    match! signUp usernameField passwordField with
+                    | Ok () ->
+                        setUsernameField ""
+                        setPasswordField ""
+
+                        toast.Invoke
+                            {|
+                                title = "Success"
+                                status = "success"
+                                description = "User registered successfully! Please log in"
+                                duration = 4000
+                                isClosable = true
+                            |}
+                    | Error error ->
+                        toast.Invoke
+                            {|
+                                title = "Error"
+                                status = "error"
+                                description = error
+                                duration = 4000
+                                isClosable = true
+                            |}
+                }
 
             Chakra.center
                 {| flex = 1 |}
@@ -39,16 +67,16 @@ module LoginScreen =
                         [
                             Chakra.input
                                 {|
-                                    value = username
-                                    onChange = fun (e: KeyboardEvent) -> setUsername e.Value
+                                    value = usernameField
+                                    onChange = fun (e: KeyboardEvent) -> setUsernameField e.Value
                                     placeholder = "Username"
                                 |}
                                 []
 
                             Chakra.input
                                 {|
-                                    value = password
-                                    onChange = fun (e: KeyboardEvent) -> setPassword e.Value
+                                    value = passwordField
+                                    onChange = fun (e: KeyboardEvent) -> setPasswordField e.Value
                                     placeholder = "Password"
                                 |}
                                 []
@@ -57,12 +85,12 @@ module LoginScreen =
                                 {| align = "stretch" |}
                                 [
                                     Chakra.button
-                                        {| flex = 1; onClick = signIn |}
+                                        {| flex = 1; onClick = signInClick |}
                                         [
                                             str "Sign In"
                                         ]
                                     Chakra.button
-                                        {| onClick = signUp |}
+                                        {| onClick = signUpClick |}
                                         [
                                             str "Sign Up"
                                         ]

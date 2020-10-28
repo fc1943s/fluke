@@ -14,6 +14,7 @@ module Content =
         React.memo (fun () ->
             Profiling.addTimestamp "mainComponent.render"
             let username = Recoil.useValue Recoil.Atoms.username
+            let sessionRestored = Recoil.useValue Recoil.Atoms.sessionRestored
 
             React.router
                 [
@@ -22,26 +23,28 @@ module Content =
                             Chakra.flex
                                 {| minHeight = "100vh" |}
                                 [
-                                    match username with
-                                    | Some username ->
-                                        React.suspense
-                                            ([
-                                                SessionDataLoader.render {| Username = username |}
-                                                SoundPlayer.render {| Username = username |}
+                                    match sessionRestored with
+                                    | false -> LoadingScreen.render ()
+                                    | true ->
+                                        match username with
+                                        | Some username ->
+                                            React.suspense
+                                                ([
+                                                    SessionDataLoader.render {| Username = username |}
+                                                    SoundPlayer.render {| Username = username |}
 
-                                                Chakra.stack
-                                                    {| spacing = 0; flex = 1 |}
-                                                    [
-                                                        TopBar.render ()
-                                                        HomeScreen.render
-                                                            {| Username = username; Props = {| flex = 1 |} |}
-                                                        StatusBar.render {| Username = username |}
-                                                    ]
-                                             ],
-                                             LoadingScreen.render ())
+                                                    Chakra.stack
+                                                        {| spacing = 0; flex = 1 |}
+                                                        [
+                                                            TopBar.render ()
+                                                            HomeScreen.render
+                                                                {| Username = username; Props = {| flex = 1 |} |}
+                                                            StatusBar.render {| Username = username |}
+                                                        ]
+                                                 ],
+                                                 LoadingScreen.render ())
 
-//                                    | None -> UserLoader.render ()
-                                    | None -> LoginScreen.render ()
+                                        | None -> LoginScreen.render ()
                                 ]
                         ]
                 ])

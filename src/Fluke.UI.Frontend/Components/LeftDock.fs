@@ -9,7 +9,6 @@ open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open FSharpPlus
-open Fluke.UI.Frontend.Model
 
 
 module LeftDock =
@@ -23,7 +22,7 @@ module LeftDock =
 
             let items =
                 [
-                    DockType.Settings,
+                    TempUI.DockType.Settings,
                     ("Settings",
                      Icons.md.MdSettings,
                      (fun () ->
@@ -32,7 +31,7 @@ module LeftDock =
                                  Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
                              |}))
 
-                    DockType.Databases,
+                    TempUI.DockType.Databases,
                     ("Databases",
                      Icons.fi.FiDatabase,
                      (fun () ->

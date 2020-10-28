@@ -5,7 +5,6 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Model
 open Fluke.UI.Frontend.Bindings
 
 
@@ -13,8 +12,8 @@ module DockButton =
     let render =
         React.memo (fun (input: {| Name: string
                                    Icon: obj
-                                   Atom: RecoilValue<DockType option, ReadWrite>
-                                   DockType: DockType |}) ->
+                                   Atom: RecoilValue<TempUI.DockType option, ReadWrite>
+                                   DockType: TempUI.DockType |}) ->
             let atom, setAtom = Recoil.useState input.Atom
             Chakra.button
                 {|

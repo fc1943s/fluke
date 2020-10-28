@@ -95,7 +95,8 @@ module View =
                 informationState.Information, lanes)
             |> List.collect snd
 
-    let getSessionData (input: {| User: User
+    let getSessionData (input: {| Username: Username
+                                  DayStart: FlukeTime
                                   DateSequence: FlukeDate list
                                   View: View
                                   Position: FlukeDateTime
@@ -130,7 +131,7 @@ module View =
                     let sessionsMap =
                         taskState.Sessions
                         |> List.map (fun (TaskSession (start, duration, breakDuration) as session) ->
-                            let dateId = dateId input.User.DayStart start
+                            let dateId = dateId input.DayStart start
                             dateId, session)
                         |> List.groupBy fst
                         |> Map.ofList
@@ -169,7 +170,7 @@ module View =
             ((Map.empty, Map.empty), treeSelection)
             ||> List.fold (fun (informationStateMap, taskStateMap) treeState ->
                     match treeState with
-                    | treeState when hasAccess treeState input.User ->
+                    | treeState when hasAccess treeState input.Username ->
                         let newInformationStateMap =
                             mergeInformationStateMap informationStateMap treeState.InformationStateMap
 
@@ -197,7 +198,7 @@ module View =
 
         let filteredLanes =
             filteredTaskStateList
-            |> List.map (Rendering.renderLane input.User.DayStart input.Position input.DateSequence)
+            |> List.map (Rendering.renderLane input.DayStart input.Position input.DateSequence)
 
         //            let taskOrderList = RootPrivateData.treeData.TaskOrderList // @ RootPrivateData.taskOrderList
 //            let taskOrderList = [] // @ RootPrivateData.taskOrderList
@@ -208,7 +209,7 @@ module View =
             sortLanes
                 {|
                     View = input.View
-                    DayStart = input.User.DayStart
+                    DayStart = input.DayStart
                     Position = input.Position
                     InformationStateList = informationStateList
                     Lanes = filteredLanes

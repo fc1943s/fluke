@@ -36,7 +36,7 @@ group Fluke.UI.Frontend
     nuget Fable.Extras ~> 0.1
     nuget Zanaptak.TypedCssClasses ~> 0.4
     nuget Feliz ~> 1.16
-    nuget Feliz.Bulma ~> 2.3
+    nuget Feliz.Bulma ~> 2.4
     nuget Feliz.Recoil ~> 0.17
     nuget Feliz.UseListener ~> 0.6
     nuget Feliz.Router ~> 3.2

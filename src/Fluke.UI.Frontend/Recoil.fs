@@ -16,7 +16,6 @@ open Fable.DateFunctions
 
 module Recoil =
     open Model
-    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
     open View
@@ -122,7 +121,6 @@ module Recoil =
 
 
         module rec User =
-
             let rec color =
                 atomFamilyFn
                 <| fun (_username: Username) ->
@@ -163,11 +161,11 @@ module Recoil =
 //                <| fun (_username: Username) ->
 //                    Profiling.addCount (nameof sessionData)
 //                    None: SessionData option
-            let rec user =
-                atomFamilyFn
-                <| fun (_username: Username) ->
-                    Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof user))
-                    None: User option
+//            let rec user =
+//                atomFamilyFn
+//                <| fun (_username: Username) ->
+//                    Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof user))
+//                    None: User option
 
             //            let rec treeSelectionIds =
 //                atomFamilyFn
@@ -326,7 +324,7 @@ module Recoil =
         let rec leftDock =
             atom {
                 key ("atom/" + nameof leftDock)
-                def (None: DockType option)
+                def (None: TempUI.DockType option)
                 local_storage
             }
 
@@ -345,6 +343,18 @@ module Recoil =
                     |]
             }
 
+        let rec username =
+            atom {
+                key ("atom/" + nameof username)
+                def None
+            }
+
+        let rec sessionRestored =
+            atom {
+                key ("atom/" + nameof sessionRestored)
+                def false
+            }
+
         let rec path =
             atom {
                 key ("atom/" + nameof path)
@@ -359,13 +369,6 @@ module Recoil =
                          Get = fun () -> FlukeDateTime.FromDateTime DateTime.Now
                      |})
             }
-
-        let rec username =
-            atom {
-                key ("atom/" + nameof username)
-                def None
-            }
-
 
         let rec cellSelectionMap =
             atom {
@@ -399,19 +402,20 @@ module Recoil =
                 get (fun getter ->
                         let peers = getter.get Atoms.peers
                         let gun = Bindings.Gun.gun peers
+
                         Profiling.addCount (nameof gun)
-                        {| Gun = gun |})
+                        {| root = gun |})
             }
 
-        let rec currentUser =
+        let rec apiCurrentUser =
             selector {
-                key ("selector/" + nameof currentUser)
+                key ("selector/" + nameof apiCurrentUser)
                 get (fun getter ->
                         async {
                             let api = getter.get Atoms.api
                             let! result = api.currentUser
 
-                            Profiling.addCount (nameof currentUser)
+                            Profiling.addCount (nameof apiCurrentUser)
 
                             return Some result
                         })
@@ -927,7 +931,8 @@ module Recoil =
 
                                     duration
                                     |> Option.map (fun duration ->
-                                        ActiveSession (taskName, Minute duration, sessionLength, sessionBreakLength)))
+                                        TempUI.ActiveSession
+                                            (taskName, Minute duration, sessionLength, sessionBreakLength)))
                                 |> List.choose id
 
                             Profiling.addCount (sprintf "%s/%s" (nameof Session) (nameof activeSessions))
@@ -1155,17 +1160,17 @@ module Recoil =
                     get (fun (username: Username) getter ->
                             async {
                                 let treeStateMap = getter.get (treeStateMap username)
-                                let user = getter.get (Atoms.Session.user username)
                                 let dateSequence = getter.get dateSequence
                                 let view = getter.get Atoms.view
                                 let position = getter.get position
                                 //                            let getLivePosition = (getter.get Atoms.getLivePosition).Get
 //                                let treeSelectionIds = getter.get (Atoms.Session.treeSelectionIds username)
                                 let treeSelectionIds = getter.get Atoms.treeSelectionIds
+                                let dayStart = getter.get (Atoms.User.dayStart username)
 
                                 let result =
-                                    match user, position, treeStateMap.Count with
-                                    | Some user, Some position, treeCount when treeCount > 0 ->
+                                    match position, treeStateMap.Count with
+                                    | Some position, treeCount when treeCount > 0 ->
                                         //                                    let newTreeSelectionIds =
 //                                        if treeSelectionIds.IsEmpty then
 //                                            state.Session.TreeSelection
@@ -1174,9 +1179,11 @@ module Recoil =
 //                                            treeSelectionIds
 
                                         let newSession =
+                                            printfn "Recoil.sessionData: Invoking getSessionData. dayStart: %A" dayStart
                                             getSessionData
                                                 {|
-                                                    User = user
+                                                    Username = username
+                                                    DayStart = dayStart
                                                     DateSequence = dateSequence
                                                     View = view
                                                     Position = position

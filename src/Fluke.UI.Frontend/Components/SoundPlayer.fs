@@ -6,12 +6,11 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.Shared
+open Fluke.Shared.Domain
 
 module SoundPlayer =
-    open Domain.Model
-    open Domain.UserInteraction
-    open Domain.State
+    open Model
+    open UserInteraction
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
@@ -25,18 +24,19 @@ module SoundPlayer =
             React.useEffect
                 ((fun () ->
                     oldActiveSessions.current
-                    |> List.map (fun (Model.ActiveSession (oldTaskName, (Minute oldDuration), _, _)) ->
+                    |> List.map (fun (TempUI.ActiveSession (oldTaskName, (Minute oldDuration), _, _)) ->
                         let newSession =
                             activeSessions
-                            |> List.tryFind (fun (Model.ActiveSession (taskName, (Minute duration), _, _)) ->
+                            |> List.tryFind (fun (TempUI.ActiveSession (taskName, (Minute duration), _, _)) ->
                                 taskName = oldTaskName
                                 && duration = oldDuration + 1.)
 
                         match newSession with
-                        | Some (Model.ActiveSession (_, (Minute newDuration), _, _)) when oldDuration = -1.
-                                                                                               && newDuration = 0. ->
+                        | Some (TempUI.ActiveSession (_, (Minute newDuration), _, _)) when oldDuration = -1.
+                                                                                           && newDuration = 0. ->
                             TempAudio.playTick
-                        | Some (Model.ActiveSession (_, newDuration, totalDuration, _)) when newDuration = totalDuration ->
+                        | Some (TempUI.ActiveSession (_, newDuration, totalDuration, _)) when newDuration =
+                                                                                                  totalDuration ->
                             TempAudio.playDing
                         | None ->
                             if oldDuration = sessionLength

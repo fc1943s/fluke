@@ -7,18 +7,16 @@ open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
-open Fluke.Shared
-open Fluke.UI.Frontend.Model
+open Fluke.Shared.Domain
 
 
 module StatusBar =
-    open Domain.Model
-    open Domain.UserInteraction
-    open Domain.State
+    open Model
+    open UserInteraction
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
-            let user = Recoil.useValue (Recoil.Atoms.Session.user input.Username)
+            let (Username username) = input.Username
             let position = Recoil.useValue Recoil.Selectors.position
             let activeSessions = Recoil.useValue (Recoil.Selectors.Session.activeSessions input.Username)
 
@@ -29,21 +27,18 @@ module StatusBar =
                     align = "center"
                 |}
                 [
-                    match user with
-                    | Some ({ Username = Username username }) ->
-                        Chakra.flex
-                            ()
-                            [
-                                Chakra.box
-                                    {|
-                                        ``as`` = Icons.fa.FaRegUser
-                                        marginRight = "4px"
-                                    |}
-                                    []
+                    Chakra.flex
+                        ()
+                        [
+                            Chakra.box
+                                {|
+                                    ``as`` = Icons.fa.FaRegUser
+                                    marginRight = "4px"
+                                |}
+                                []
 
-                                str (sprintf "User: %s" username)
-                            ]
-                    | None -> ()
+                            str (sprintf "User: %s" username)
+                        ]
 
                     Chakra.spacer () []
 
@@ -58,10 +53,7 @@ module StatusBar =
                                 []
 
                             activeSessions
-                            |> List.map (fun (ActiveSession (taskName,
-                                                             (Minute duration),
-                                                             (Minute totalDuration),
-                                                             (Minute totalBreakDuration))) ->
+                            |> List.map (fun (TempUI.ActiveSession (taskName, (Minute duration), (Minute totalDuration), (Minute totalBreakDuration))) ->
                                 let sessionType, color, duration, left =
                                     let left = totalDuration - duration
                                     match duration < totalDuration with

@@ -14,7 +14,7 @@ module Icons =
                FaSortNumericDownAlt: obj |} = jsNative
 
     [<ImportAll "react-icons/fi">]
-    let fi: {| FiDatabase: obj |} = jsNative
+    let fi: {| FiDatabase: obj; FiLogOut: obj |} = jsNative
 
     [<ImportAll "react-icons/gi">]
     let gi: {| GiHourglass: obj |} = jsNative
@@ -35,6 +35,7 @@ module Icons =
     let faRegUser () = wrap fa.FaRegUser
     let faSortNumericDownAlt () = wrap fa.FaSortNumericDownAlt
     let fiDatabase () = wrap fi.FiDatabase
+    let fiLogOut () = wrap fi.FiLogOut
     let giHourglass () = wrap gi.GiHourglass
     let mdSettings () = wrap md.MdSettings
     let tiFlowChildren () = wrap ti.TiFlowChildren

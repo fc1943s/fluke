@@ -2,6 +2,8 @@ namespace Fluke.UI.Backend
 
 open System
 open System.IO
+open Fable.Remoting.Json
+open Newtonsoft.Json
 open Saturn
 open Fluke.Shared
 open FSharpPlus
@@ -13,6 +15,15 @@ module Server =
     open Domain.State
     open Domain.UserInteraction
     open Templates
+
+    module Json =
+        let converter = FableJsonConverter ()
+
+        let deserialize<'a> (json: string) =
+            if typeof<'a> = typeof<string> then
+                unbox<'a> (box json)
+            else
+                JsonConvert.DeserializeObject (json, typeof<'a>, converter) :?> 'a
 
     module Sync =
         open Sync
@@ -44,23 +55,14 @@ module Server =
                 currentUser =
                     async {
                         let currentUserJson = readFile "currentUser.json"
-                        return match Thoth.Json.Net.Decode.Auto.fromString currentUserJson with
-                               | Ok currentUser -> currentUser
-                               | Error error ->
-                                   printfn "currentUser error: %A" error
-                                   TempData.testUser
+                        return Json.deserialize<User> currentUserJson
                     }
                 treeStateList =
                     fun username moment ->
                         async {
                             let treeStateListJson = readFile "treeStateList.json"
 
-                            let treeStateList =
-                                match Thoth.Json.Net.Decode.Auto.fromString treeStateListJson with
-                                | Ok treeStateList -> treeStateList
-                                | Error error ->
-                                    printfn "treeStateList error: %A" error
-                                    []
+                            let treeStateList = Json.deserialize<TreeState list> treeStateListJson
 
                             let templates =
                                 getTreeMap TempData.testUser

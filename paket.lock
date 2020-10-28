@@ -724,7 +724,7 @@ NUGET
       Fable.React (>= 7.0.1) - restriction: >= netstandard2.0
       Feliz.CompilerPlugins (>= 0.1) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7.2) - restriction: >= netstandard2.0
-    Feliz.Bulma (2.3)
+    Feliz.Bulma (2.4)
       Feliz (>= 0.68.2) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
     Feliz.CompilerPlugins (0.1) - restriction: >= netstandard2.0
@@ -750,17 +750,6 @@ NUGET
       Feliz (>= 1.13.2 < 2.0)
       FSharp.Core (>= 4.7.2 < 5.0)
     FSharp.Core (4.7.2)
-    Fulma (2.10)
-      Fable.Core (>= 3.0) - restriction: >= netstandard2.0
-      Fable.React (>= 5.1) - restriction: >= netstandard2.0
-    Fulma.Extensions.Wikiki.PageLoader (2.0.1)
-      Fable.Core (>= 3.0) - restriction: >= netstandard2.0
-      Fable.React (>= 5.1) - restriction: >= netstandard2.0
-      Fulma (>= 2.1.1) - restriction: >= netstandard2.0
-    Fulma.Extensions.Wikiki.Slider (2.0.1)
-      Fable.Core (>= 3.0) - restriction: >= netstandard2.0
-      Fable.React (>= 5.1) - restriction: >= netstandard2.0
-      Fulma (>= 2.1.1) - restriction: >= netstandard2.0
     System.Reflection.Emit.ILGeneration (4.7) - restriction: || (&& (< monoandroid) (< net45) (< netcoreapp2.0) (>= netstandard2.0) (< netstandard2.1) (< xamarinios) (< xamarinmac)) (&& (>= netstandard2.0) (< portable-net45+wp8) (>= win8)) (&& (>= netstandard2.0) (< portable-net45+wp8) (< win8)) (&& (>= netstandard2.0) (>= uap10.1))
     System.Reflection.Emit.Lightweight (4.7) - restriction: && (< net45) (>= netstandard2.0)
       System.Reflection.Emit.ILGeneration (>= 4.7) - restriction: || (&& (< monoandroid) (< monotouch) (< net45) (>= netstandard1.0) (< netstandard2.0) (< win8) (< wp8) (< wpa81) (< xamarintvos) (< xamarinwatchos)) (&& (< monoandroid) (< net45) (< netcoreapp2.0) (>= netstandard2.0) (< netstandard2.1) (< xamarinios) (< xamarinmac)) (&& (< netstandard2.0) (>= wpa81)) (&& (>= portable-net45+win8+wp8+wpa81) (< portable-net45+wp8) (< win8)) (&& (< portable-net45+wp8) (>= win8)) (>= uap10.1)

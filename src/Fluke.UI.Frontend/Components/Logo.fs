@@ -2,7 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Feliz.UseListener
-open Fluke.UI.Frontend.Model
+open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
@@ -17,15 +17,15 @@ module Logo =
                     columns = 2
                     height = "16px"
                     width = "16px"
-                    borderColor = Disabled.CellColor
+                    borderColor = TempUI.cellStatusColor Disabled
                     border = "1px solid"
                 |}
                 [
                     yield! [
-                               Missed.CellColor
-                               Pending.CellColor
-                               (Postponed None).CellColor
-                               Completed.CellColor
+                               TempUI.cellStatusColor Missed
+                               TempUI.cellStatusColor Pending
+                               TempUI.manualCellStatusColor (Postponed None)
+                               TempUI.manualCellStatusColor Completed
                            ]
                            |> List.map (fun color ->
                                Chakra.box

@@ -109,15 +109,15 @@ module State =
             information, informationState)
         |> Map.ofList
 
-    let hasAccess treeState user =
+    let hasAccess treeState username =
         match treeState with
-        | { Owner = owner } when owner = user -> true
+        | { Owner = owner } when owner.Username = username -> true
         | { SharedWith = TreeAccess.Public } -> true
         | { SharedWith = TreeAccess.Private accessList } ->
             accessList
             |> List.exists (function
                 | TreeAccessItem.Admin dbUser
-                | TreeAccessItem.ReadOnly dbUser -> dbUser = user)
+                | TreeAccessItem.ReadOnly dbUser -> dbUser.Username = username)
 
     let treeStateWithInteractions (userInteractionList: UserInteraction list) (treeState: TreeState) =
 

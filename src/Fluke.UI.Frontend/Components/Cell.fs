@@ -7,14 +7,12 @@ open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.Model
-open Fluke.Shared
+open Fluke.Shared.Domain
 
 
 module Cell =
-    open Domain.Model
-    open Domain.UserInteraction
-    open Domain.State
+    open UserInteraction
+    open State
 
     let useStyles =
         Styles.makeStyles (fun (styles: StyleCreator<{| hovered: bool |}>) _theme ->
@@ -65,7 +63,7 @@ module Cell =
                     height = "17px"
                     lineHeight = "17px"
                     backgroundColor =
-                        status.CellColor
+                        (TempUI.cellStatusColor status)
                         + (if isToday then
                             "aa"
                            elif input.SemiTransparent then

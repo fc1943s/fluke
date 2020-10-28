@@ -17,11 +17,13 @@
         <Compile Include="Profiling.fs" />
         <Compile Include="Sync.fs" />
         <Compile Include="TempAudio.fs" />
-        <Compile Include="Model.fs" />
+        <Compile Include="TempUI.fs" />
         <Compile Include="Recoil.fs" />
         <Compile Include="Hooks\Scheduling.fs" />
         <Compile Include="Hooks\Listener.fs" />
         <Compile Include="Hooks\Theme.fs" />
+        <Compile Include="Hooks\React.fs" />
+        <Compile Include="Hooks\Auth.fs" />
         <Compile Include="Components\MonthResponsiveCell.fs" />
         <Compile Include="Components\Day.fs" />
         <Compile Include="Components\Spinner.fs" />
@@ -60,6 +62,7 @@
         <Compile Include="Components\SelectionListener.fs" />
         <Compile Include="Components\CtrlListener.fs" />
         <Compile Include="Components\ShiftListener.fs" />
+        <Compile Include="Components\GunObserver.fs" />
         <Compile Include="Components\Content.fs" />
         <Compile Include="App.fs" />
         <Compile Include="Main.fs" />
