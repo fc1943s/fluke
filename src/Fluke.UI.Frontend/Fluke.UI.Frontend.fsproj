@@ -66,8 +66,13 @@
         <Compile Include="Components\Content.fs" />
         <Compile Include="App.fs" />
         <Compile Include="Main.fs" />
+        <Compile Include="Tests\Core\ReactErrorBoundary.fs" />
+        <Compile Include="Tests\Core\Setup.fs" />
+        <Compile Include="Tests\CellSelection.test.fs" />
+        <Compile Include="Tests\TreeSelection.test.fs" />
         <Content Include="package.json" />
         <Content Include="webpack.config.ts" />
+        <Content Include="babel.config.js" />
         <Content Include="paket.references" />
         <Content Include=".tsconfig" />
         <Content Include="public\index.html" />

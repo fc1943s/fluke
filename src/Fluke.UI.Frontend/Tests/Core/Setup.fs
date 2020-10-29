@@ -1,4 +1,4 @@
-namespace Fluke.UI.Frontend.Tests
+namespace Fluke.UI.Frontend.Tests.Core
 
 open Fable.ReactTestingLibrary
 open Fable.React
@@ -8,19 +8,14 @@ open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
-open Fluke.Shared
+open Fluke.Shared.Domain
 open FSharpPlus
+open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Hooks
 
 
 module Setup =
-    open Model
-    open Domain.Model
-    open Domain.UserInteraction
-    open Domain.State
-    open View
-    open Templates
-
+    open State
 
     let rootWrapper cmp =
         React.memo (fun () ->

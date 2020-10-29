@@ -11,17 +11,13 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "webpack": "webpack",
-    "pretest": "fable-splitter --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
-    "test": "jest",
-    "splitter-watch": "fable-splitter --watch --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
-
-    "jest-watch": "jest --watchAll --runInBand",
-    "test-watch": "concurrently --restart-tries=10000 \"yarn splitter-watch\" \"yarn jest-watch\"",
-    "watch-backend": "cd ../Fluke.UI.Backend && dotnet watch run",
-    "watch-frontend-build": "dotnet fable watch ./Fluke.UI.Frontend.fsproj",
-    "watch-frontend": "webpack-dev-server",
-    "watch": "concurrently \"npm:watch-*\""
+    "watch:frontend-build": "dotnet fable watch ./Fluke.UI.Frontend.fsproj",
+    "watch:frontend": "webpack-dev-server",
+    "watch:backend": "cd ../Fluke.UI.Backend && dotnet watch run",
+    "watch": "concurrently \"npm:watch:*\"",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand",
+    "test:watch": "concurrently \"npm:watch:frontend-build\" \"npm:test\"",
+    "webpack": "webpack"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",
@@ -80,12 +76,12 @@
     "node-sass": "^4.14",
     "file-loader": "^6.2",
 
-    "fable-splitter": "^2.2",
-
     "jest": "^26.6",
     "@testing-library/react": "^11.1",
     "@testing-library/user-event": "^12.1",
     "@testing-library/jest-dom": "^5.11",
+    "babel-jest": "^26.6",
+    "jest-environment-jsdom-latest": "^21.0",
 
     "concurrently": "^5.3"
   }

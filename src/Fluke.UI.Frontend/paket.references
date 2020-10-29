@@ -14,3 +14,5 @@ Feliz.Router
 Feliz.MaterialUI
 Fable.SimpleJson
 Thoth.Json
+Fable.Jester
+Fable.ReactTestingLibrary

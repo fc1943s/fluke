@@ -1,7 +1,5 @@
 namespace Fluke.UI.Frontend.Tests
 
-open System
-open Fable.Core
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz.Recoil
@@ -10,18 +8,13 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Hooks
+open Fluke.UI.Frontend.Tests.Core
 open Fluke.UI.Frontend.Recoil
 open Fluke.Shared
 open FSharpPlus
 
 module CellSelection =
     open Sync
-    open Model
-    open Domain.Model
-    open Domain.UserInteraction
-    open Domain.State
-    open View
     open Templates
     open TempData
 
@@ -114,7 +107,8 @@ module CellSelection =
              let initialize peek =
                  promise {
                      do! peek initialSetter
-                     do! peek (fun (setter: CallbackMethods) -> promise { do! UserLoader.loadUser setter })
+                     do! peek (fun (setter: CallbackMethods) ->
+                             promise { do! UserLoader.loadUser setter testUser.Username })
                      do! peek selectTree
                      do! Setup.initializeSessionData testUser peek
                  }

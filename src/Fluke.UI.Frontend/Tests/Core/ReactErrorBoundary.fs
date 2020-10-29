@@ -1,4 +1,4 @@
-namespace Fluke.UI.Frontend.Tests
+namespace Fluke.UI.Frontend.Tests.Core
 
 open Fable.React
 open Feliz
