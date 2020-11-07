@@ -35,27 +35,13 @@ module SessionDataLoader =
         |> List.iter (fun taskState ->
             let taskId = Recoil.Atoms.Task.taskId taskState.Task
             setter.set (Recoil.Atoms.Task.name taskId, taskState.Task.Name)
-
             setter.set (Recoil.Atoms.Task.informationId taskId, recoilInformationMap.[taskState.Task.Information])
-
             setter.set (Recoil.Atoms.Task.pendingAfter taskId, taskState.Task.PendingAfter)
-
             setter.set (Recoil.Atoms.Task.missedAfter taskId, taskState.Task.MissedAfter)
-
             setter.set (Recoil.Atoms.Task.scheduling taskId, taskState.Task.Scheduling)
-
             setter.set (Recoil.Atoms.Task.priority taskId, taskState.Task.Priority)
-
             setter.set (Recoil.Atoms.Task.attachments taskId, taskState.Attachments)
-
             setter.set (Recoil.Atoms.Task.duration taskId, taskState.Task.Duration)
-
-            //                                        dateSequence
-//                                        |> List.iter (fun date ->
-//                                            let cellId = Recoil.Atoms.Cell.cellId taskId (DateId date)
-//
-//                                            setter.set (Recoil.Atoms.Cell.taskId cellId, taskId)
-//                                            setter.set (Recoil.Atoms.Cell.date cellId, date))
 
             taskState.CellStateMap
             |> Map.filter (fun dateId cellState ->
@@ -76,31 +62,11 @@ module SessionDataLoader =
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
-            //            let position = Recoil.useValue Recoil.Selectors.position
-//                let treeSelectionIds = Recoil.useValue (Recoil.Atoms.Session.treeSelectionIds input.Username)
             let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
-            //                let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
-
-            //                printfn "MainComponent.dataLoader -> Atoms.Session.treeSelectionIds = %A" treeSelectionIds
-//                printfn
-//                    "MainComponent.SessionDataLoader.hook -> Selectors.Session.sessionData.IsSome = %A"
-//                    sessionData.IsSome
-
-            //                let treeSelectionIdsMemo =
-//                    React.useMemo (fun () ->
-//                        printfn
-//                            "MainComponent.dataLoader -> treeSelectionIdsMemo -> Atoms.Session.treeSelectionIds = %A"
-//                            treeSelectionIds
-//                        treeSelectionIds,
-//                        [|
-//                            treeSelectionIds
-//                        |])
-
 
             let loadState =
                 Recoil.useCallbackRef (fun setter ->
                     async {
-                        //                        do! Async.Sleep 1000
                         Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
 
                         match sessionData with
@@ -124,35 +90,9 @@ module SessionDataLoader =
                                 setter.set (Recoil.Atoms.Tree.sharedWith id, treeState.SharedWith)
                                 setter.set (Recoil.Atoms.Tree.position id, treeState.Position))
 
-
-                        //                                    printfn
-//                                        "MainComponent.SessionDataLoader.hook.loadState -> Atoms.Session.taskIdList[.Length] <- %A"
-//                                        taskIdList.Length
-
                         | None -> ()
 
-
-
-
-
-
-                        //                            let! state = setter.snapshot.getAsync (Recoil.Selectors.Session.state input.Username)
-                        //
-                        //                            printfn
-                        //                                "MainComponent.dataLoader -> loadState -> let! state = %A"
-                        //                                (if state.IsNone then
-                        //                                    "None"
-                        //                                 else
-                        //                                     "Some ?")
-                        //
-                        //                            Ext.setDom (nameof state) state
-
-
                         Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
-
-                        //                            setter.set (Recoil.Selectors.Session.state input.Username, state)
-
-                        Profiling.addTimestamp "dataLoader.loadStateCallback[2]"
                     }
                     |> Async.StartImmediate)
 

@@ -9,6 +9,7 @@
         <Compile Include="Bindings\JS.fs" />
         <Compile Include="Bindings\Crypto.fs" />
         <Compile Include="Bindings\React.fs" />
+        <Compile Include="Bindings\Recoil.fs" />
         <Compile Include="Bindings\Chakra.fs" />
         <Compile Include="Bindings\Icons.fs" />
         <Compile Include="Bindings\Markdown.fs" />

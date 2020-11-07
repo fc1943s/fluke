@@ -18,6 +18,7 @@ window['gun'] = gun;
 window['login'] = async (username = 'fc1943s', password = 'pw1') => {
     const user = gun.user();
     console.log('user', user);
+    // @ts-ignore
     const userData = await gun.get('~@' + username).promOnce();
 
     if (userData) {
