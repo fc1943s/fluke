@@ -8,10 +8,13 @@ open Feliz.Router
 open System
 open FSharpPlus
 open Feliz.Recoil
+open Fable.Core
 open Fluke.Shared
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open Fable.DateFunctions
+open Fable.Core.JsInterop
+open Feliz
 
 
 module Recoil =
@@ -19,6 +22,49 @@ module Recoil =
     open Domain.UserInteraction
     open Domain.State
     open View
+
+
+    type EffectProps<'T> =
+        {
+            node: {| key: string |}
+            onSet: ('T -> unit) -> unit
+            setSelf: 'T -> unit
+        }
+
+    type AtomCE.AtomBuilder with
+        [<CustomOperation("effects")>]
+        member inline _.Effects (state: AtomState.ReadWrite<'T, _, _>, f: (EffectProps<'T> -> (unit -> unit)) list)
+            : ((EffectProps<'T> -> (unit -> unit)) list) * AtomState.ReadWrite<'T, 'U, 'V>
+            =
+            (f,
+             {
+                 Key = state.Key
+                 Def = state.Def
+                 Persist = state.Persist
+                 DangerouslyAllowMutability = state.DangerouslyAllowMutability
+             })
+
+        member inline _.Run<'T, 'V>
+            ((effects, atom): ((EffectProps<'T> -> (unit -> unit)) list) * AtomState.ReadWrite<'T, 'T, 'V>)
+            =
+            Bindings.Recoil.atom<'T>
+                ([
+                    "key" ==> atom.Key
+                    "default" ==> atom.Def
+                    "effects_UNSTABLE" ==> effects
+                    match atom.Persist with
+                    | Some persist ->
+                        "persistence_UNSTABLE"
+                        ==> PersistenceSettings.CreateObj persist
+                    | None -> ()
+                    match atom.DangerouslyAllowMutability with
+                    | Some dangerouslyAllowMutability ->
+                        "dangerouslyAllowMutability"
+                        ==> dangerouslyAllowMutability
+                    | None -> ()
+                 ]
+                 |> createObj)
+
 
 
     module Atoms =
@@ -276,56 +322,70 @@ module Recoil =
             atom {
                 key ("atom/" + nameof debug)
                 def false
-                local_storage
             }
 
         let rec view =
             atom {
                 key ("atom/" + nameof view)
                 def View.View.HabitTracker
-                local_storage
             }
 
         let rec treeSelectionIds =
             atom {
                 key ("atom/" + nameof treeSelectionIds)
                 def ([||]: TreeId [])
-                local_storage
             }
 
         let rec selectedPosition =
             atom {
                 key ("atom/" + nameof selectedPosition)
                 def (None: FlukeDateTime option)
-                local_storage
             }
 
         let rec cellSize =
             atom {
                 key ("atom/" + nameof cellSize)
                 def 17
-                local_storage
             }
+
+
+
 
         let rec daysBefore =
             atom {
                 key ("atom/" + nameof daysBefore)
                 def 7
-                local_storage
+                log
+
+                effects [
+                    (fun { node = node; onSet = onSet; setSelf = setSelf } ->
+                        let storage = Browser.Dom.window.localStorage.getItem node.key
+                        let value: {| value: obj |} option = unbox JS.JSON.parse storage
+                        match value with
+                        | Some value -> setSelf (unbox value.value)
+                        | _ -> ()
+
+                        onSet (fun value ->
+                            Browser.Dom.window.localStorage.setItem
+                                (node.key, JS.JSON.stringify {| value = string value |}))
+
+                        //    // Subscribe to storage updates
+                        //    storage.subscribe(value => setSelf(value));
+
+                        fun () -> printfn "> unsubscribe")
+                ]
             }
 
         let rec daysAfter =
             atom {
                 key ("atom/" + nameof daysAfter)
                 def 7
-                local_storage
             }
 
         let rec leftDock =
             atom {
                 key ("atom/" + nameof leftDock)
                 def (None: TempUI.DockType option)
-                local_storage
             }
 
         let rec api =
@@ -337,10 +397,7 @@ module Recoil =
         let rec peers =
             atom {
                 key ("atom/" + nameof peers)
-                def
-                    [|
-                        "http://localhost:8765/gun"
-                    |]
+                def [| "http://localhost:8765/gun" |]
             }
 
         let rec username =
@@ -364,6 +421,7 @@ module Recoil =
         let rec getLivePosition =
             atom {
                 key ("atom/" + nameof getLivePosition)
+
                 def
                     ({|
                          Get = fun () -> FlukeDateTime.FromDateTime DateTime.Now
@@ -399,6 +457,7 @@ module Recoil =
         let rec gun =
             selector {
                 key ("selector/" + nameof gun)
+
                 get (fun getter ->
                         let peers = getter.get Atoms.peers
                         let gun = Bindings.Gun.gun peers
@@ -410,6 +469,7 @@ module Recoil =
         let rec apiCurrentUser =
             selector {
                 key ("selector/" + nameof apiCurrentUser)
+
                 get (fun getter ->
                         async {
                             let api = getter.get Atoms.api
@@ -424,6 +484,7 @@ module Recoil =
         let rec position =
             selector {
                 key ("selector/" + nameof position)
+
                 get (fun getter ->
                         let _positionTrigger = getter.get Atoms.positionTrigger
                         let getLivePosition = getter.get Atoms.getLivePosition
@@ -438,6 +499,7 @@ module Recoil =
 
                         Profiling.addCount (nameof position)
                         result)
+
                 set (fun setter _newValue ->
                         setter.set (Atoms.positionTrigger, (fun x -> x + 1))
                         Profiling.addCount (nameof position + " (SET)"))
@@ -446,6 +508,7 @@ module Recoil =
         let rec dateSequence =
             selector {
                 key ("selector/" + nameof dateSequence)
+
                 get (fun getter ->
                         let daysBefore = getter.get Atoms.daysBefore
                         let daysAfter = getter.get Atoms.daysAfter
@@ -458,6 +521,7 @@ module Recoil =
                                 let dayStart = getter.get (Atoms.User.dayStart username)
                                 let dateId = dateId dayStart position
                                 let (DateId referenceDay) = dateId
+
                                 referenceDay
                                 |> List.singleton
                                 |> Rendering.getDateSequence (daysBefore, daysAfter)
@@ -603,10 +667,12 @@ module Recoil =
         let rec cellSelectionMap =
             selector {
                 key ("selector/" + nameof cellSelectionMap)
+
                 get (fun getter ->
                         let selection = getter.get Atoms.cellSelectionMap
                         Profiling.addCount (nameof selection)
                         selection)
+
                 set (fun setter (newSelection: Map<Atoms.Task.TaskId, Set<FlukeDate>>) ->
                         let cellSelectionMap = setter.get Atoms.cellSelectionMap
 
@@ -737,6 +803,7 @@ module Recoil =
             let isToday =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof FlukeDate) (nameof isToday))
+
                     get (fun (date: FlukeDate) getter ->
                             let username = getter.get Atoms.username
                             let position = getter.get position
@@ -761,6 +828,7 @@ module Recoil =
             let rec hasSelection =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof FlukeDate) (nameof hasSelection))
+
                     get (fun (date: FlukeDate) getter ->
                             let cellSelectionMap = getter.get cellSelectionMap
 
@@ -772,7 +840,7 @@ module Recoil =
                             Profiling.addCount (sprintf "%s/%s" (nameof FlukeDate) (nameof hasSelection))
                             result
 
-                        )
+                            )
                 }
 
         module rec Information =
@@ -782,8 +850,10 @@ module Recoil =
             let rec lastSession =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Task) (nameof lastSession))
+
                     get (fun (taskId: Atoms.Task.TaskId) getter ->
                             let username = getter.get Atoms.username
+
                             match username with
                             | Some username ->
                                 let dateSequence = getter.get dateSequence
@@ -794,6 +864,7 @@ module Recoil =
                                     |> List.rev
                                     |> List.tryPick (fun date ->
                                         let sessions = getter.get (Atoms.Cell.sessions (taskId, DateId date))
+
                                         sessions
                                         |> List.sortByDescending (fun (TaskSession (start, _, _)) -> start.DateTime)
                                         |> List.tryHead)
@@ -806,6 +877,7 @@ module Recoil =
             let rec activeSession =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Task) (nameof activeSession))
+
                     get (fun (taskId: Atoms.Task.TaskId) getter ->
                             let position = getter.get position
                             let lastSession = getter.get (lastSession taskId)
@@ -833,6 +905,7 @@ module Recoil =
             let rec showUser =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Task) (nameof showUser))
+
                     get (fun (taskId: Atoms.Task.TaskId) getter ->
                             //                            let username = getter.get Atoms.username
 //                            match username with
@@ -857,13 +930,14 @@ module Recoil =
 
                             Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof showUser))
                             result
-                        //                            | None -> false
-                        )
+                            //                            | None -> false
+                            )
                 }
 
             let rec hasSelection =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Task) (nameof hasSelection))
+
                     get (fun (taskId: Atoms.Task.TaskId) getter ->
                             let cellSelectionMap = getter.get cellSelectionMap
 
@@ -917,12 +991,14 @@ module Recoil =
             let rec activeSessions =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Session) (nameof activeSessions))
+
                     get (fun (username: Username) getter ->
                             let taskIdList = getter.get (Atoms.Session.taskIdList username)
 
                             let result =
                                 let sessionLength = getter.get (Atoms.User.sessionLength username)
                                 let sessionBreakLength = getter.get (Atoms.User.sessionBreakLength username)
+
                                 taskIdList
                                 |> List.map (fun taskId ->
                                     let (TaskName taskName) = getter.get (Atoms.Task.name taskId)
@@ -942,6 +1018,7 @@ module Recoil =
             let rec tasksByInformationKind =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Session) (nameof tasksByInformationKind))
+
                     get (fun (username: Username) getter ->
                             let taskIdList = getter.get (Atoms.Session.taskIdList username)
 
@@ -987,6 +1064,7 @@ module Recoil =
             let rec weekCellsMap =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Session) (nameof weekCellsMap))
+
                     get (fun (username: Username) getter ->
                             let position = getter.get position
                             let taskIdList = getter.get (Atoms.Session.taskIdList username)
@@ -1118,6 +1196,7 @@ module Recoil =
             let rec treeStateMap =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Session) (nameof treeStateMap))
+
                     get (fun (username: Username) getter ->
                             async {
                                 let position = getter.get position
@@ -1157,6 +1236,7 @@ module Recoil =
             let rec sessionData =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Session) (nameof sessionData))
+
                     get (fun (username: Username) getter ->
                             async {
                                 let treeStateMap = getter.get (treeStateMap username)
@@ -1166,6 +1246,7 @@ module Recoil =
                                 //                            let getLivePosition = (getter.get Atoms.getLivePosition).Get
 //                                let treeSelectionIds = getter.get (Atoms.Session.treeSelectionIds username)
                                 let treeSelectionIds = getter.get Atoms.treeSelectionIds
+
                                 let dayStart = getter.get (Atoms.User.dayStart username)
 
                                 let result =
@@ -1179,7 +1260,6 @@ module Recoil =
 //                                            treeSelectionIds
 
                                         let newSession =
-                                            printfn "Recoil.sessionData: Invoking getSessionData. dayStart: %A" dayStart
                                             getSessionData
                                                 {|
                                                     Username = username
@@ -1268,11 +1348,13 @@ module Recoil =
             let rec selected =
                 selectorFamily {
                     key (sprintf "%s/%s" (nameof Cell) (nameof selected))
+
                     get (fun (taskId: Atoms.Task.TaskId, dateId: DateId) getter ->
                             let selected = getter.get (Atoms.Cell.selected (taskId, dateId))
 
                             Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof selected))
                             selected)
+
                     set (fun (taskId: Atoms.Task.TaskId, (DateId referenceDay)) setter (newValue: bool) ->
                             let username = setter.get Atoms.username
 

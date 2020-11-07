@@ -49,13 +49,14 @@ module CellSelection =
                           {
                               currentUser = async { return testUser }
                               treeStateList =
-                                  fun username moment ->
+                                  fun _username _moment ->
                                       async {
                                           return [
                                               treeState
                                           ]
                                       }
                           })
+                     setter.set (Atoms.username, Some testUser.Username)
                      setter.set (Atoms.view, View.View.Priority)
                      setter.set (Atoms.daysBefore, 2)
                      setter.set (Atoms.daysAfter, 2)
@@ -83,7 +84,7 @@ module CellSelection =
                  Chakra.box
                      ()
                      [
-                         //                     MainComponent.SessionDataLoader.hook {| Username = user.Username |}
+                         UserLoader.render ()
                          PriorityView.render {| Username = testUser.Username |}
                      ]
 
@@ -107,8 +108,6 @@ module CellSelection =
              let initialize peek =
                  promise {
                      do! peek initialSetter
-                     do! peek (fun (setter: CallbackMethods) ->
-                             promise { do! UserLoader.loadUser setter testUser.Username })
                      do! peek selectTree
                      do! Setup.initializeSessionData testUser peek
                  }

@@ -41,11 +41,11 @@ ProjectSection(SolutionItems) = preProject
 	.run\Fluke.UI.Frontend - yarn install.run.xml = .run\Fluke.UI.Frontend - yarn install.run.xml
 	.run\Fluke.UI.Frontend - yarn outdated.run.xml = .run\Fluke.UI.Frontend - yarn outdated.run.xml
 	.run\Fluke.UI.Frontend - yarn run jest-watch.run.xml = .run\Fluke.UI.Frontend - yarn run jest-watch.run.xml
-	.run\Fluke.UI.Frontend - yarn run splitter-watch.run.xml = .run\Fluke.UI.Frontend - yarn run splitter-watch.run.xml
 	.run\Fluke.UI.Frontend - yarn run test-watch.run.xml = .run\Fluke.UI.Frontend - yarn run test-watch.run.xml
 	.run\Fluke.UI.Frontend - yarn run watch-backend.run.xml = .run\Fluke.UI.Frontend - yarn run watch-backend.run.xml
 	.run\Fluke.UI.Frontend - yarn run watch.run.xml = .run\Fluke.UI.Frontend - yarn run watch.run.xml
 	.run\Mold - docker_ps.run.xml = .run\Mold - docker_ps.run.xml
+	.run\Fluke.UI.Frontend - yarn run watch_frontend.run.xml = .run\Fluke.UI.Frontend - yarn run watch_frontend.run.xml
 EndProjectSection
 EndProject
 Global

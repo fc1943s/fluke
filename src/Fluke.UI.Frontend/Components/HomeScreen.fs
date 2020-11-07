@@ -21,6 +21,8 @@ module HomeScreen =
         React.memo (fun (input: {| Username: Username; Props: {| flex: int |} |}) ->
             let view = Recoil.useValue Recoil.Atoms.view
 
+            printfn "current view: %A" view
+
             let setView view =
                 [|
                     "view"

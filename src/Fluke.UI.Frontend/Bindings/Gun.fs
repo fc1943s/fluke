@@ -1,8 +1,6 @@
 namespace Fluke.UI.Frontend.Bindings
 
-open Fable.React
 open Fable.Core.JsInterop
-open Feliz
 open Feliz.Recoil
 
 
@@ -15,7 +13,7 @@ module Gun =
     type IGunUser =
         abstract create: alias:string * pass:string * cb:({| err: string option; pub: string option |} -> unit) -> unit
         abstract auth: alias:string * pass:string * cb:({| err: string option; pub: string option |} -> unit) -> unit
-        abstract recall: {| sessionStorage: bool |} * System.Func<{| put: {| alias:string |} option |}, unit> -> unit
+        abstract recall: {| sessionStorage: bool |} * System.Func<{| put: {| alias: string |} option |}, unit> -> unit
         abstract is: {| alias: string option; pub: string option |}
         abstract leave: unit -> unit
 
@@ -28,7 +26,17 @@ module Gun =
     let gun: string [] -> IGunChainReference<AppState> = importDefault "gun"
 
     let createUser (user: IGunUser) username password =
-        Promise.create (fun res _err -> user.create (username, password, res))
+        Promise.create (fun res err ->
+            try
+                user.create (username, password, res)
+            with ex ->
+                printfn "createUser error: %A" ex
+                err ex)
 
     let authUser (user: IGunUser) username password =
-        Promise.create (fun res _err -> user.auth (username, password, res))
+        Promise.create (fun res err ->
+            try
+                user.auth (username, password, res)
+            with ex ->
+                printfn "authUser error: %A" ex
+                err ex)

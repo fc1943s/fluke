@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Fluke.UI.Frontend - yarn run splitter-watch" type="js.build_tools.npm">
+  <configuration default="false" name="Fluke.UI.Frontend - yarn run watch:frontend" type="js.build_tools.npm">
     <package-json value="$PROJECT_DIR$/src/Fluke.UI.Frontend/package.json" />
     <command value="run" />
     <scripts>
-      <script value="splitter-watch" />
+      <script value="watch:frontend" />
     </scripts>
     <node-interpreter value="project" />
     <package-manager value="yarn" />

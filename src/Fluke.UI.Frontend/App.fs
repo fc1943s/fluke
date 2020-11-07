@@ -37,7 +37,7 @@ module App =
                     [
                         Recoil.root [
                             root.init Recoil.initState
-                            root.localStorage (fun hydrater -> ()
+                            root.localStorage (fun _hydrater -> ()
                                 //                            hydrater.setAtom Recoil.Atoms.debug
                                 //                            hydrater.setAtom Recoil.Atoms.view
                                 //                            hydrater.setAtom Recoil.Atoms.treeSelectionIds
@@ -75,7 +75,7 @@ module App =
                 ShiftListener.render ()
                 SelectionListener.render ()
                 ViewUpdater.render ()
-                PositionUpdater.render ()
+//                PositionUpdater.render ()
                 GunObserver.render ()
                 UserLoader.render ()
 

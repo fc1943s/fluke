@@ -19,18 +19,15 @@ module Setup =
 
     let rootWrapper cmp =
         React.memo (fun () ->
-            React.strictMode
-                [
-                    Recoil.root
-                        [
-                            root.children
-                                [
-                                    cmp
-                                ]
-                        ]
-                ]
-            |> ReactErrorBoundary.renderCatchFn (fun (error, info) -> printfn "ERROR %A %A" info.componentStack error)
-                   (str "error"))
+            React.strictMode [
+                Recoil.root [ root.children [ cmp ] ]
+            ]
+            |> ReactErrorBoundary.renderCatchFn (fun (error, info) ->
+                printfn "ReactErrorBoundary Error: %A %A" info.componentStack error) (str "error"))
+
+    let handlePromise promise =
+        promise
+        |> Promise.catch (fun ex -> Fable.Core.JS.console.error (box ex))
 
     let render (cmp: ReactElement) =
         promise {
@@ -39,19 +36,14 @@ module Setup =
 
             let cmpWrapper =
                 React.memo (fun () ->
-
-                    let peek =
+                    peekFn <-
                         Recoil.useCallbackRef (fun (setter: CallbackMethods) (fn: CallbackMethods -> Fable.Core.JS.Promise<unit>) ->
-                            fn setter |> Promise.start
-                            RTL.waitFor id)
-
-                    peekFn <- peek
+                            RTL.waitFor (fn setter |> handlePromise))
 
                     cmp)
 
             let subject = RTL.render ((rootWrapper (cmpWrapper ())) ())
             do! RTL.waitFor id
-
             return subject, peekFn
         }
 
@@ -75,6 +67,7 @@ module Setup =
     let getCellMap (subject: Bindings.render<_, _>) peek =
         promise {
             let mutable cellMap = Map.empty
+
             do! peek (fun (setter: CallbackMethods) ->
                     promise {
                         let! dateSequence = setter.snapshot.getPromise Recoil.Selectors.dateSequence
@@ -88,12 +81,13 @@ module Setup =
                                 promise {
                                     let! name = setter.snapshot.getPromise (Recoil.Atoms.Task.name taskId)
 
-                                    return dateSequence
-                                           |> List.toArray
-                                           |> Array.map (fun date ->
-                                               (name, date),
-                                               subject.queryByTestId
-                                                   (sprintf "cell-%A-%A" taskId (date.DateTime.ToShortDateString ())))
+                                    return
+                                        dateSequence
+                                        |> List.toArray
+                                        |> Array.map (fun date ->
+                                            (name, date),
+                                            subject.queryByTestId
+                                                (sprintf "cell-%A-%A" taskId (date.DateTime.ToShortDateString ())))
                                 })
                             |> Promise.Parallel
 

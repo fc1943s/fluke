@@ -22,7 +22,7 @@ group Fluke.UI.Backend
     source https://api.nuget.org/v3/index.json
 
     nuget Saturn ~> 0.14
-    nuget Fable.Remoting.Giraffe ~> 4.11
+    nuget Fable.Remoting.Giraffe ~> 4.12
     nuget Thoth.Json.Net ~> 5.0
 
 
@@ -33,7 +33,7 @@ group Fluke.UI.Frontend
     nuget Fable.Remoting.Client ~> 7.0
     nuget Fable.FontAwesome.Free ~> 2.0
     nuget Fable.DateFunctions ~> 3.1
-    nuget Fable.Extras ~> 0.1
+    nuget Fable.Extras ~> 0.2
     nuget Zanaptak.TypedCssClasses ~> 0.4
     nuget Feliz ~> 1.16
     nuget Feliz.Bulma ~> 2.4

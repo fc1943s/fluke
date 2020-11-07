@@ -44,8 +44,11 @@ module TreeSelection =
                  |> Array.map (fun (el: Browser.Types.HTMLElement option) ->
                      match el with
                      | None -> false
-                     | Some el when el.getAttribute ("data-disabled") = "true" -> false
-                     | Some _ -> true)
+                     | Some el ->
+                         match el.getAttribute "data-disabled" |> Option.ofObj with
+                         | Some _ -> false
+                         | None -> true)
+
                  |> fun menuItemsVisibility -> Jest.expect(menuItemsVisibility).toEqual array
 
              let initialSetter (setter: CallbackMethods) =
