@@ -19,11 +19,15 @@ module Gun =
 
     type IGunChainReference<'T> =
         abstract get: string -> IGunChainReference<'U>
+        abstract set: 'V -> IGunChainReference<'U>
         abstract put: 'V -> IGunChainReference<'U>
         abstract user: unit -> IGunUser
+        abstract on: ('T -> unit) -> unit
+        abstract off: unit -> unit
+        abstract once: ('T -> unit) -> unit
         abstract on: event:string * (unit -> unit) -> unit
 
-    let gun: string [] -> IGunChainReference<AppState> = importDefault "gun"
+    let gun: {| peers: string []; radisk: bool |} -> IGunChainReference<AppState> = importDefault "gun"
 
     let createUser (user: IGunUser) username password =
         Promise.create (fun res err ->

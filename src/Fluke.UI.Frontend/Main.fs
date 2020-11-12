@@ -14,4 +14,4 @@ module Main =
     importAll "./public/index.jsx"
     importAll "./public/index.js"
 
-    React.render (document.getElementById "root") (App.render ())
+    React.render (document.getElementById "root") (React.strictMode [ App.render () ])

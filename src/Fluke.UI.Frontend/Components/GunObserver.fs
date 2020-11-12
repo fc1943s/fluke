@@ -23,6 +23,7 @@ module GunObserver =
                 ((fun () ->
                     let recall = Browser.Dom.window.sessionStorage.getItem "recall"
                     printfn "recall %A" recall
+
                     match recall with
                     | null
                     | "" -> setSessionRestored true
@@ -30,18 +31,21 @@ module GunObserver =
 
                     let user = gun.root.user ()
                     printfn "before recall"
+
                     try
                         user.recall
                             ({| sessionStorage = true |},
                              (fun ack ->
                                  match ack.put with
-                                 | Some put ->
-                                     setSessionRestored true
-                                     setUsername (Some (UserInteraction.Username put.alias))
+                                 | Some put -> setUsername (Some (UserInteraction.Username put.alias))
                                  | None -> printfn "Empty ack"
+
+                                 setSessionRestored true
+
                                  printfn "ACK %A" ack.put
                                  Dom.set "ack" ack))
                     with ex -> printfn "ERROR: %A" ex
+
                     printfn "after recall"),
                  [|
                      box gun

@@ -13,10 +13,12 @@ open Fluke.UI.Frontend.Recoil
 open Fluke.Shared
 open FSharpPlus
 
+
 module CellSelection =
     open Sync
     open Templates
     open TempData
+
 
     Jest.describe
         ("cell selection",
@@ -51,11 +53,13 @@ module CellSelection =
                               treeStateList =
                                   fun _username _moment ->
                                       async {
-                                          return [
-                                              treeState
-                                          ]
+                                          return
+                                              [
+                                                  treeState
+                                              ]
                                       }
                           })
+
                      setter.set (Atoms.username, Some testUser.Username)
                      setter.set (Atoms.view, View.View.Priority)
                      setter.set (Atoms.daysBefore, 2)
@@ -102,7 +106,10 @@ module CellSelection =
                  peek (fun (setter: CallbackMethods) ->
                      promise {
                          let! cellSelectionMap = setter.snapshot.getPromise Atoms.cellSelectionMap
-                         Jest.expect(toString cellSelectionMap).toEqual(toString expected)
+
+                         Jest
+                             .expect(toString cellSelectionMap)
+                             .toEqual(toString expected)
                      })
 
              let initialize peek =
@@ -119,31 +126,35 @@ module CellSelection =
                       do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
-                      RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09]
+                              .Value
 
                       do! [
                               treeState |> Setup.taskIdByName "2",
-                              set
-                                  [
-                                      FlukeDate.Create 2020 Month.January 09
-                                  ]
+                              set [
+                                  FlukeDate.Create 2020 Month.January 09
+                              ]
                           ]
                           |> Map.ofList
                           |> expectSelection peek
 
-                      RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
+                              .Value
 
                       do! [
                               treeState |> Setup.taskIdByName "2",
-                              set
-                                  [
-                                      FlukeDate.Create 2020 Month.January 11
-                                  ]
+                              set [
+                                  FlukeDate.Create 2020 Month.January 11
+                              ]
                           ]
                           |> Map.ofList
                           |> expectSelection peek
 
-                      RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
+                              .Value
 
                       do! [
                               treeState |> Setup.taskIdByName "2", Set.empty
@@ -159,11 +170,15 @@ module CellSelection =
                       do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
-                      RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09]
+                              .Value
 
                       do! peek (fun setter -> promise { setter.set (Atoms.ctrlPressed, true) })
 
-                      RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
+                              .Value
 
                       do! [
                               treeState |> Setup.taskIdByName "2",
@@ -183,11 +198,15 @@ module CellSelection =
                       do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
-                      RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09]
+                              .Value
 
                       do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
-                      RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
+                              .Value
 
                       do! [
                               treeState |> Setup.taskIdByName "2",
@@ -208,24 +227,26 @@ module CellSelection =
                       do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
-                      RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09]
+                              .Value
 
                       do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
-                      RTL.fireEvent.click cellMap.[TaskName "3", FlukeDate.Create 2020 Month.January 09].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "3", FlukeDate.Create 2020 Month.January 09]
+                              .Value
 
                       do! [
                               treeState |> Setup.taskIdByName "2",
-                              set
-                                  [
-                                      FlukeDate.Create 2020 Month.January 09
-                                  ]
+                              set [
+                                  FlukeDate.Create 2020 Month.January 09
+                              ]
 
                               treeState |> Setup.taskIdByName "3",
-                              set
-                                  [
-                                      FlukeDate.Create 2020 Month.January 09
-                                  ]
+                              set [
+                                  FlukeDate.Create 2020 Month.January 09
+                              ]
                           ]
                           |> Map.ofList
                           |> expectSelection peek
@@ -238,11 +259,15 @@ module CellSelection =
                       do! initialize peek
                       let! cellMap = Setup.getCellMap subject peek
 
-                      RTL.fireEvent.click cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 09]
+                              .Value
 
                       do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
-                      RTL.fireEvent.click cellMap.[TaskName "3", FlukeDate.Create 2020 Month.January 10].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "3", FlukeDate.Create 2020 Month.January 10]
+                              .Value
 
                       do! [
                               treeState |> Setup.taskIdByName "2",
@@ -260,7 +285,9 @@ module CellSelection =
                           |> Map.ofList
                           |> expectSelection peek
 
-                      RTL.fireEvent.click cellMap.[TaskName "4", FlukeDate.Create 2020 Month.January 11].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "4", FlukeDate.Create 2020 Month.January 11]
+                              .Value
 
                       do! [
                               treeState |> Setup.taskIdByName "2",
@@ -287,7 +314,9 @@ module CellSelection =
                           |> Map.ofList
                           |> expectSelection peek
 
-                      RTL.fireEvent.click cellMap.[TaskName "1", FlukeDate.Create 2020 Month.January 08].Value
+                      RTL.fireEvent.click
+                          cellMap.[TaskName "1", FlukeDate.Create 2020 Month.January 08]
+                              .Value
 
                       do! [
                               treeState |> Setup.taskIdByName "1",

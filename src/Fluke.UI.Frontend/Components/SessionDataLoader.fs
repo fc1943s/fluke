@@ -73,11 +73,13 @@ module SessionDataLoader =
                         | Some sessionData ->
                             let! treeStateMap =
                                 setter.snapshot.getAsync (Recoil.Selectors.Session.treeStateMap input.Username)
+
                             let availableTreeIds =
                                 treeStateMap
                                 |> Map.toList
                                 |> List.sortBy (fun (id, treeState) -> treeState.Name)
                                 |> List.map fst
+
                             setter.set (Recoil.Atoms.Session.availableTreeIds input.Username, availableTreeIds)
 
 
@@ -97,6 +99,7 @@ module SessionDataLoader =
                     |> Async.StartImmediate)
 
             Profiling.addTimestamp "dataLoader render"
+
             React.useEffect
                 ((fun () ->
                     Profiling.addTimestamp "dataLoader effect"
