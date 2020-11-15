@@ -105,7 +105,7 @@ module CellSelection =
 
                  peek (fun (setter: CallbackMethods) ->
                      promise {
-                         let! cellSelectionMap = setter.snapshot.getPromise Atoms.cellSelectionMap
+                         let! cellSelectionMap = setter.snapshot.getPromise Selectors.cellSelectionMap
 
                          Jest
                              .expect(toString cellSelectionMap)

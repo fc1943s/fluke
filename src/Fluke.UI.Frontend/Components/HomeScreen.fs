@@ -8,7 +8,6 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
-open Feliz.Router
 open FSharpPlus
 
 
@@ -19,16 +18,8 @@ module HomeScreen =
 
     let render =
         React.memo (fun (input: {| Username: Username; Props: {| flex: int |} |}) ->
-            let view = Recoil.useValue Recoil.Atoms.view
+            let view, setView = Recoil.useState Recoil.Atoms.view
 
-            printfn "current view: %A" view
-
-            let setView view =
-                [|
-                    "view"
-                    string view
-                |]
-                |> Router.navigate
 
             let tabs =
                 [
@@ -62,6 +53,8 @@ module HomeScreen =
                 tabs
                 |> List.findIndex (fun tab -> tab.View = view)
 
+            printfn "HomeScreen.render. current view: %A. tabIndex: %A" view tabIndex
+
             let handleTabsChange index = setView (tabs.[index].View)
 
             Chakra.flex
@@ -90,37 +83,37 @@ module HomeScreen =
                                     Chakra.tabList
                                         {| borderColor = "transparent" |}
                                         [
-                                            yield! tabs
-                                                   |> List.map (fun tab ->
-                                                       Chakra.tab
-                                                           {|
-                                                               padding = "12px"
-                                                               color = "gray.45%"
-                                                               _hover =
-                                                                   {|
-                                                                       borderBottomColor = "gray.45%"
-                                                                       borderBottom = "2px solid"
-                                                                   |}
-                                                               _selected =
-                                                                   {| color = "gray.77%"; borderColor = "gray.77%" |}
-                                                           |}
-                                                           [
-                                                               Chakra.box
-                                                                   {| ``as`` = tab.Icon; marginRight = "6px" |}
-                                                                   []
-                                                               str tab.Name
-                                                           ])
+                                            yield!
+                                                tabs
+                                                |> List.map (fun tab ->
+                                                    Chakra.tab
+                                                        {|
+                                                            padding = "12px"
+                                                            color = "gray.45%"
+                                                            _hover =
+                                                                {|
+                                                                    borderBottomColor = "gray.45%"
+                                                                    borderBottom = "2px solid"
+                                                                |}
+                                                            _selected =
+                                                                {| color = "gray.77%"; borderColor = "gray.77%" |}
+                                                        |}
+                                                        [
+                                                            Chakra.box {| ``as`` = tab.Icon; marginRight = "6px" |} []
+                                                            str tab.Name
+                                                        ])
                                         ]
                                     Chakra.tabPanels
                                         {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
                                         [
-                                            yield! tabs
-                                                   |> List.map (fun tab ->
-                                                       Chakra.tabPanel
-                                                           {| padding = 0 |}
-                                                           [
-                                                               tab.Content ()
-                                                           ])
+                                            yield!
+                                                tabs
+                                                |> List.map (fun tab ->
+                                                    Chakra.tabPanel
+                                                        {| padding = 0 |}
+                                                        [
+                                                            tab.Content ()
+                                                        ])
                                         ]
                                 ]
                         ]

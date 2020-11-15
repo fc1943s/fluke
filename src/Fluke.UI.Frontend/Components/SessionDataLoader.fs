@@ -52,7 +52,8 @@ module SessionDataLoader =
                 setter.set (Recoil.Atoms.Cell.status (taskId, dateId), cellState.Status)
                 setter.set (Recoil.Atoms.Cell.attachments (taskId, dateId), cellState.Attachments)
                 setter.set (Recoil.Atoms.Cell.sessions (taskId, dateId), cellState.Sessions)
-                setter.set (Recoil.Atoms.Cell.selected (taskId, dateId), false)))
+                //                setter.set (Recoil.Atoms.Cell.selected (taskId, dateId), false)
+                ))
 
         let taskIdList =
             sessionData.TaskList

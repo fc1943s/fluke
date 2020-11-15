@@ -1,21 +1,17 @@
 namespace Fluke.UI.Frontend
 
-
-
 #nowarn "40"
 
 open System
 open FSharpPlus
-open Feliz.Router
 open Feliz.Recoil
-open Fable.Core
 open Fluke.Shared
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core.JsInterop
-open Feliz
+open Fable.Core
 
 
 module Recoil =
@@ -24,6 +20,25 @@ module Recoil =
     open Domain.State
     open View
 
+    [<Emit "process.env.JEST_WORKER_ID">]
+    let jestWorkerId: bool = jsNative
+
+    let gunTmp =
+        Gun.gun
+            ({|
+                 peers =
+                     if jestWorkerId then
+                         null
+                     else
+                         [|
+                             "http://localhost:8765/gun"
+                         |]
+                 radisk = false
+             |}
+             |> Fable.Core.JsInterop.toPlainJsObj
+             |> unbox)
+
+    Browser.Dom.window?gunTmp <- gunTmp
 
     module Atoms =
         module rec Information =
@@ -289,28 +304,105 @@ module Recoil =
                             Profiling.addCount (sprintf "%s/%s" (nameof Cell) (nameof selected))
                             false)
 
-                    effects (fun (_taskId: Task.TaskId, _dateId: DateId) ->
+                    effects (fun (taskId: Task.TaskId, dateId: DateId) ->
                         [
-                            (fun { node = node; onSet = onSet; setSelf = setSelf; trigger = trigger } ->
-                                printfn "CELL SELECTED RENDER . taskid: %A dateId: %A. trigger: %A" _taskId _dateId trigger
+                            (fun { node = node
+                                   onSet = onSet
+                                   setSelf = setSelf
+                                   trigger = trigger } ->
+
+                                let taskIdHash =
+                                    Crypto
+                                        .sha3(string taskId)
+                                        .toString(Crypto.crypto.enc.Hex)
+
+                                let dateIdHash =
+                                    Crypto
+                                        .sha3(string dateId)
+                                        .toString(Crypto.crypto.enc.Hex)
+
+                                let tasks = gunTmp.get "tasks"
+                                let task = tasks.get taskIdHash
+                                let cells = task.get ("cells")
+                                let cell = cells.get dateIdHash
+                                let selected = cell.get "selected"
+
+                                match trigger with
+                                | "get" ->
+                                    selected.on (fun value ->
+                                        printfn
+                                            "GET@@ CELL SELECTED RENDER . taskid: %A dateId: %A. node: %A"
+                                            taskId
+                                            dateId
+                                            node
+
+                                        setSelf (value))
+                                | _ -> ()
+
+                                //                                        // Subscribe to storage updates
+                                //                                        storage.subscribe(value => setSelf(value));
+
+
+
+
+                                printfn
+                                    "CELL SELECTED RENDER . taskid: %A dateId: %A. trigger: %A"
+                                    taskId
+                                    dateId
+                                    trigger
                                 //                            let storage = Browser.Dom.window.localStorage.getItem node.key
-//                            let value: {| value: obj |} option = unbox JS.JSON.parse storage
-//
-//                            match value with
-//                            | Some value -> setSelf (unbox value.value)
-//                            | _ -> ()
-//
+                                //                            let value: {| value: obj |} option = unbox JS.JSON.parse storage
+                                //
+                                //                            match value with
+                                //                            | Some value -> setSelf (unbox value.value)
+                                //                            | _ -> ()
+                                //
                                 onSet (fun value oldValue ->
-                                    printfn "oldValue: %A; newValue: %A; trigger %A" oldValue value trigger
-                                    //                                    Browser.Dom.window.localStorage.setItem
-//                                        (node.key, JS.JSON.stringify {| value = string value |}))
+
+                                    let tasks = gunTmp.get "tasks"
+
+                                    let task =
+                                        gunTmp
+                                            .get(taskIdHash)
+                                            .put({| id = taskIdHash; name = "taskName1" |})
+
+                                    tasks.set task |> ignore
+
+                                    let cells = task.get "cells"
+
+                                    let cell =
+                                        gunTmp
+                                            .get(dateIdHash)
+                                            .put({| dateId = dateIdHash; selected = value |})
+
+                                    cells.set cell |> ignore
+                                    //                                    let cell = cells.set ({| dateId = string _dateId |})
+//                                    cell.put {| selected = value |} |> ignore
+
+
+                                    //    const tasks = gun.get("tasks");
+//    const task1 = gun.get("taskId1").put({id: 'taskId1', name: 'taskName1'});
+//    tasks.set(task1);
 //
-//                                        // Subscribe to storage updates
-//                                        storage.subscribe(value => setSelf(value));
+//    const cells = task1.get("cells");
+//    const cell1 = gun.get("dateId1").put({dateId: 'dateId1'});
+//    const cell = cells.set(cell1);
+//
+//    cell.put({selected: true});
+
+                                    printfn "oldValue: %A; newValue: %A" oldValue value
+                                    //                                    Browser.Dom.window.localStorage.setItem
+                                    //                                        (node.key, JS.JSON.stringify {| value = string value |}))
+                                    //
+                                    //                                        // Subscribe to storage updates
+                                    //                                        storage.subscribe(value => setSelf(value));
 
                                     )
 
-                                fun () -> printfn "> unsubscribe cell")
+
+                                fun () ->
+                                    printfn "> unsubscribe cell"
+                                    selected.off ())
                         ])
                 }
 
@@ -379,6 +471,7 @@ module Recoil =
             atom {
                 key ("atom/" + nameof debug)
                 def false
+                local_storage
             }
 
         let rec view =
@@ -391,12 +484,14 @@ module Recoil =
             atom {
                 key ("atom/" + nameof treeSelectionIds)
                 def ([||]: TreeId [])
+                local_storage
             }
 
         let rec selectedPosition =
             atom {
                 key ("atom/" + nameof selectedPosition)
                 def (None: FlukeDateTime option)
+                local_storage
             }
 
         let rec cellSize =
@@ -405,46 +500,27 @@ module Recoil =
                 def 17
             }
 
-
-
-
         let rec daysBefore =
             atom {
                 key ("atom/" + nameof daysBefore)
                 def 7
                 log
 
-                effects [
-                    (fun { node = node; onSet = onSet; setSelf = setSelf } ->
-                        let storage = Browser.Dom.window.localStorage.getItem node.key
-                        let value: {| value: obj |} option = unbox JS.JSON.parse storage
-
-                        match value with
-                        | Some value -> setSelf (unbox value.value)
-                        | _ -> ()
-
-                        onSet (fun value _oldValue ->
-                            printfn "onSet. oldValue: %Avalue: %A" _oldValue value
-                            Browser.Dom.window.localStorage.setItem
-                                (node.key, JS.JSON.stringify {| value = string value |}))
-
-                        //    // Subscribe to storage updates
-                        //    storage.subscribe(value => setSelf(value));
-
-                        fun () -> printfn "> unsubscribe")
-                ]
+                local_storage
             }
 
         let rec daysAfter =
             atom {
                 key ("atom/" + nameof daysAfter)
                 def 7
+                local_storage
             }
 
         let rec leftDock =
             atom {
                 key ("atom/" + nameof leftDock)
                 def (None: TempUI.DockType option)
+                local_storage
             }
 
         let rec api =
@@ -471,12 +547,6 @@ module Recoil =
                 def false
             }
 
-        let rec path =
-            atom {
-                key ("atom/" + nameof path)
-                def (Router.currentPath ())
-            }
-
         let rec getLivePosition =
             atom {
                 key ("atom/" + nameof getLivePosition)
@@ -485,12 +555,6 @@ module Recoil =
                     ({|
                          Get = fun () -> FlukeDateTime.FromDateTime DateTime.Now
                      |})
-            }
-
-        let rec cellSelectionMap =
-            atom {
-                key ("atom/" + nameof cellSelectionMap)
-                def (Map.empty: Map<Task.TaskId, Set<FlukeDate>>)
             }
 
         let rec ctrlPressed =
@@ -519,7 +583,8 @@ module Recoil =
 
                 get (fun getter ->
                         let peers = getter.get Atoms.peers
-                        let gun = Bindings.Gun.gun peers
+                        //                        let gun = Gun.gun peers
+                        let gun = gunTmp
 
                         Profiling.addCount (nameof gun)
                         {| root = gun |})
@@ -722,141 +787,68 @@ module Recoil =
 //                        Profiling.addCount (nameof state + " (SET)"))
 //            }
 
-        /// [1]
         let rec cellSelectionMap =
             selector {
                 key ("selector/" + nameof cellSelectionMap)
 
                 get (fun getter ->
-                        let selection = getter.get Atoms.cellSelectionMap
-                        Profiling.addCount (nameof selection)
-                        selection)
+                        let username = getter.get Atoms.username
+
+                        match username with
+                        | Some username ->
+                            let taskIdList = getter.get (Atoms.Session.taskIdList username)
+                            let dateSequence = getter.get dateSequence
+
+                            let result =
+                                taskIdList
+                                |> List.map (fun taskId ->
+                                    let dates =
+                                        dateSequence
+                                        |> List.map (fun date ->
+                                            date, getter.get (Atoms.Cell.selected (taskId, DateId date)))
+                                        |> List.filter snd
+                                        |> List.map fst
+                                        |> Set.ofList
+
+                                    taskId, dates)
+                                |> Map.ofList
+
+                            Profiling.addCount (nameof cellSelectionMap)
+                            result
+                        | None -> Map.empty)
 
                 set (fun setter (newSelection: Map<Atoms.Task.TaskId, Set<FlukeDate>>) ->
-                        let cellSelectionMap = setter.get Atoms.cellSelectionMap
+                        let cellSelectionMap = setter.get cellSelectionMap
 
-                        let operationsByTask =
-                            let taskIdSet =
-                                seq {
-                                    yield! cellSelectionMap |> Map.keys
-                                    yield! newSelection |> Map.keys
-                                }
-                                |> Set.ofSeq
-
-                            taskIdSet
-                            |> Seq.map (fun taskId ->
-                                let taskSelection =
-                                    cellSelectionMap
-                                    |> Map.tryFind taskId
-                                    |> Option.defaultValue Set.empty
-
-                                let newTaskSelection =
+                        let operations =
+                            cellSelectionMap
+                            |> Map.toList
+                            |> List.collect (fun (taskId, dates) ->
+                                let newDates =
                                     newSelection
                                     |> Map.tryFind taskId
                                     |> Option.defaultValue Set.empty
 
-                                let datesToIgnore = Set.intersect taskSelection newTaskSelection
+                                let deselect =
+                                    newDates
+                                    |> Set.difference dates
+                                    |> Set.toList
+                                    |> List.map (fun date -> taskId, date, false)
 
-                                let datesToUnselect =
-                                    datesToIgnore
-                                    |> Set.difference taskSelection
-                                    |> Seq.map (fun date -> date, false)
+                                let select =
+                                    dates
+                                    |> Set.difference newDates
+                                    |> Set.toList
+                                    |> List.map (fun date -> taskId, date, true)
 
-                                let datesToSelect =
-                                    datesToIgnore
-                                    |> Set.difference newTaskSelection
-                                    |> Seq.map (fun date -> date, true)
+                                deselect @ select)
 
-                                taskId, Seq.append datesToSelect datesToUnselect)
+                        operations
+                        |> List.iter (fun (taskId, date, selected) ->
+                            setter.set (Atoms.Cell.selected (taskId, DateId date), selected))
 
-                        operationsByTask
-                        |> Seq.iter (fun (taskId, operations) ->
-                            operations
-                            |> Seq.iter (fun (date, selected) ->
-                                setter.set (Atoms.Cell.selected (taskId, DateId date), selected)))
-
-                        setter.set (Atoms.cellSelectionMap, newSelection)
                         Profiling.addCount (nameof cellSelectionMap + " (SET)"))
             }
-        /// [3]
-//        let rec selectedCells =
-//            selector {
-//                key ("selector/" + nameof selectedCells)
-//                get (fun getter ->
-//                        let selection = Recoil.useValue selection
-//
-//                        let selectionCellIds =
-//                            selection
-//                            |> Seq.collect (fun (KeyValue (taskId, dates)) ->
-//                                dates
-//                                |> Seq.map DateId
-//                                |> Seq.map (Atoms.RecoilCell.cellId taskId))
-//
-//                        let result =
-//                            selectionCellIds
-//                            |> Seq.map (Atoms.RecoilCell.cellFamily >> getter.get)
-//                            |> Seq.toList
-//
-//                        Profiling.addCount (nameof selectedCells)
-//                        result)
-//            }
-        /// [4]
-//        // TODO: Remove View and check performance
-//        let rec stateAsync =
-//            selectorFamily {
-//                key ("selectorFamily/" + nameof stateAsync)
-//                get (fun (view: View) getter ->
-//                        async {
-//                            Profiling.addTimestamp "stateAsync.get[0]"
-//                            let state = getter.get Atoms.state
-//                            let position = getter.get position
-//
-//                            let result =
-//                                match state, position with
-//                                | Some state, Some position ->
-//                                    match state.Session.User with
-//                                    | Some user ->
-//                                        let dateSequence = getter.get dateSequence
-//
-//                                        let treeSelectionIds =
-//                                            getter.get (Atoms.RecoilSession.treeSelectionIdsFamily user.Username)
-//
-//                                        let newTreeSelectionIds =
-//                                            if treeSelectionIds.IsEmpty then
-//                                                state.Session.TreeSelection
-//                                                |> Set.map (fun treeState -> treeState.Id)
-//                                            else
-//                                                treeSelectionIds
-//
-//                                        Profiling.addTimestamp "stateAsync.get[1]"
-//
-//                                        let newState =
-//                                            FakeBackend.getState
-//                                                {|
-//                                                    User = user
-//                                                    DateSequence = dateSequence
-//                                                    View = view
-//                                                    Position = position
-//                                                    TreeSelectionIds = newTreeSelectionIds
-//                                                    TreeStateMap = state.Session.TreeStateMap
-//                                                    GetLivePosition = state.Session.GetLivePosition
-//                                                |}
-//
-//                                        Profiling.addTimestamp "stateAsync.get[2]"
-//                                        Profiling.addCount (nameof stateAsync)
-//
-//                                        printfn
-//                                            "B %A A %A"
-//                                            state.Session.InformationStateMap.Count
-//                                            newState.Session.InformationStateMap.Count
-//
-//                                        Some newState
-//                                    | _ -> None
-//                                | _ -> None
-//
-//                            return result
-//                        })
-//            }
 
         module rec FlukeDate =
             let isToday =
@@ -889,17 +881,20 @@ module Recoil =
                     key (sprintf "%s/%s" (nameof FlukeDate) (nameof hasSelection))
 
                     get (fun (date: FlukeDate) getter ->
-                            let cellSelectionMap = getter.get cellSelectionMap
+                            let username = getter.get Atoms.username
 
-                            let result =
-                                cellSelectionMap
-                                |> Map.values
-                                |> Seq.exists (fun dateSequence -> dateSequence |> Set.contains date)
+                            match username with
+                            | Some username ->
+                                let taskIdList = getter.get (Atoms.Session.taskIdList username)
 
-                            Profiling.addCount (sprintf "%s/%s" (nameof FlukeDate) (nameof hasSelection))
-                            result
+                                let result =
+                                    taskIdList
+                                    |> List.exists (fun taskId ->
+                                        getter.get (Atoms.Cell.selected (taskId, DateId date)))
 
-                            )
+                                Profiling.addCount (sprintf "%s/%s" (nameof FlukeDate) (nameof hasSelection))
+                                result
+                            | None -> false)
                 }
 
         module rec Information =
@@ -916,7 +911,7 @@ module Recoil =
                             match username with
                             | Some username ->
                                 let dateSequence = getter.get dateSequence
-                                let taskIdList = getter.get (Atoms.Session.taskIdList username)
+                                let _taskIdList = getter.get (Atoms.Session.taskIdList username)
 
                                 let result =
                                     dateSequence
@@ -998,14 +993,11 @@ module Recoil =
                     key (sprintf "%s/%s" (nameof Task) (nameof hasSelection))
 
                     get (fun (taskId: Atoms.Task.TaskId) getter ->
-                            let cellSelectionMap = getter.get cellSelectionMap
+                            let dateSequence = getter.get dateSequence
 
                             let result =
-                                cellSelectionMap
-                                |> Map.tryFind taskId
-                                |> Option.defaultValue Set.empty
-                                |> Set.isEmpty
-                                |> not
+                                dateSequence
+                                |> List.exists (fun date -> getter.get (Atoms.Cell.selected (taskId, DateId date)))
 
                             Profiling.addCount (sprintf "%s/%s" (nameof Task) (nameof hasSelection))
                             result)
@@ -1272,7 +1264,7 @@ module Recoil =
                                                 |> List.map (fun ({ Name = TreeName name } as treeState) ->
                                                     let id =
                                                         name
-                                                        |> Bindings.Crypto.sha3
+                                                        |> Crypto.sha3
                                                         |> string
                                                         |> String.take 16
                                                         |> System.Text.Encoding.UTF8.GetBytes
@@ -1453,11 +1445,11 @@ module Recoil =
 
                                             oldSelection |> Map.add taskId newSet
 
-                                        let oldSelection = setter.get Atoms.cellSelectionMap
+                                        let oldSelection = setter.get cellSelectionMap
                                         swapSelection oldSelection taskId referenceDay
                                     | true, _ ->
                                         let taskIdList = setter.get (Atoms.Session.taskIdList username)
-                                        let oldCellSelectionMap = setter.get Atoms.cellSelectionMap
+                                        let oldCellSelectionMap = setter.get cellSelectionMap
 
                                         let initialTaskIdSet =
                                             oldCellSelectionMap
@@ -1507,7 +1499,7 @@ module Recoil =
 
     /// [1]
 
-    let initState (initializer: MutableSnapshot) = ()
+    let initState (_initializer: MutableSnapshot) = ()
     //        let baseState = RootPrivateData.State.getBaseState ()
 
     //        let state2 = {| User =state.User; TreeStateMap = state.TreeStateMap |}

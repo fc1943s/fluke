@@ -59,39 +59,42 @@ module LeftDock =
                                     height = "24px"
                                 |}
                                 [
-                                    yield! items
-                                           |> List.map (fun (dockType, (name, icon, _)) ->
-                                               DockButton.render
-                                                   {|
-                                                       DockType = dockType
-                                                       Name = name
-                                                       Icon = icon
-                                                       Atom = Recoil.Atoms.leftDock
-                                                   |})
+                                    yield!
+                                        items
+                                        |> List.map (fun (dockType, (name, icon, _)) ->
+                                            DockButton.render
+                                                {|
+                                                    DockType = dockType
+                                                    Name = name
+                                                    Icon = icon
+                                                    Atom = Recoil.Atoms.leftDock
+                                                |})
                                 ]
                         ]
 
                     match leftDock with
                     | None -> nothing
                     | Some leftDock ->
-                        let name, icon, content = itemsMap.[leftDock]
-                        Chakra.flex
-                            {|
-                                width = "300px"
-                                borderRightColor = "gray.16%"
-                                borderRight = "1px solid"
-                                flex = 1
-                            |}
-                            [
-                                DockPanel.render
-                                    {|
-                                        Name = name
-                                        Icon = icon
-                                        Atom = Recoil.Atoms.leftDock
-                                        Children =
-                                            [
-                                                content ()
-                                            ]
-                                    |}
-                            ]
+                        match itemsMap |> Map.tryFind leftDock with
+                        | None -> nothing
+                        | Some (name, icon, content) ->
+                            Chakra.flex
+                                {|
+                                    width = "300px"
+                                    borderRightColor = "gray.16%"
+                                    borderRight = "1px solid"
+                                    flex = 1
+                                |}
+                                [
+                                    DockPanel.render
+                                        {|
+                                            Name = name
+                                            Icon = icon
+                                            Atom = Recoil.Atoms.leftDock
+                                            Children =
+                                                [
+                                                    content ()
+                                                ]
+                                        |}
+                                ]
                 ])

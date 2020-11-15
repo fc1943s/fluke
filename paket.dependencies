@@ -32,7 +32,7 @@ group Fluke.UI.Frontend
 
     nuget Fable.Remoting.Client ~> 7.1
     nuget Fable.FontAwesome.Free ~> 2.0
-    nuget Fable.DateFunctions ~> 3.1
+    nuget Fable.DateFunctions ~> 3.2
     nuget Fable.Extras ~> 0.2
     nuget Zanaptak.TypedCssClasses ~> 0.4
     nuget Feliz ~> 1.16
