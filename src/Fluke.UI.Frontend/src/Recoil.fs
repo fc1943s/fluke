@@ -35,7 +35,7 @@ module Recoil =
                          |]
                  radisk = false
              |}
-             |> Fable.Core.JsInterop.toPlainJsObj
+             |> toPlainJsObj
              |> unbox)
 
     Browser.Dom.window?gunTmp <- gunTmp
@@ -582,13 +582,14 @@ module Recoil =
                 key ("selector/" + nameof gun)
 
                 get (fun getter ->
-                        let peers = getter.get Atoms.peers
+                        let _peers = getter.get Atoms.peers
                         //                        let gun = Gun.gun peers
                         let gun = gunTmp
 
                         Profiling.addCount (nameof gun)
                         {| root = gun |})
             }
+
 
         let rec apiCurrentUser =
             selector {
@@ -597,11 +598,12 @@ module Recoil =
                 get (fun getter ->
                         async {
                             let api = getter.get Atoms.api
-                            let! result = api.currentUser
+
+                            let! result = api.currentUser |> Sync.handleRequest
 
                             Profiling.addCount (nameof apiCurrentUser)
 
-                            return Some result
+                            return result
                         })
             }
 
@@ -1257,10 +1259,14 @@ module Recoil =
                                     | Some position ->
                                         async {
                                             let api = getter.get Atoms.api
-                                            let! treeStateList = api.treeStateList username position
+
+                                            let! treeStateList =
+                                                api.treeStateList username position
+                                                |> Sync.handleRequest
 
                                             let treeStateMap =
                                                 treeStateList
+                                                |> Option.defaultValue []
                                                 |> List.map (fun ({ Name = TreeName name } as treeState) ->
                                                     let id =
                                                         name

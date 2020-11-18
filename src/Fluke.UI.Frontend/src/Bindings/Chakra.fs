@@ -6,7 +6,7 @@ open Fable.Core
 module Chakra =
     open React
 
-    [<ImportAll "@chakra-ui/core">]
+    [<ImportAll "@chakra-ui/react">]
     let core: {| Box: obj
                  Button: obj
                  Center: obj

@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
+open Fable.React
 open Feliz.UseListener
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
@@ -10,6 +11,7 @@ module TopBar =
     let render =
         React.memo (fun () ->
             let logout = Auth.useLogout ()
+
             Chakra.flex
                 {|
                     height = "31px"
@@ -19,6 +21,23 @@ module TopBar =
                 |}
                 [
                     Logo.render ()
+
+                    Chakra.box
+                        {| marginLeft = "4px" |}
+                        [
+                            str "Fluke"
+                        ]
+
+                    Button.render
+                        {|
+                            icon = Icons.fiLogOut
+                            rightIcon = false
+                            props = {| marginLeft = "37px" |}
+                            children =
+                                [
+                                    str "Add Task"
+                                ]
+                        |}
 
                     Chakra.spacer () []
 

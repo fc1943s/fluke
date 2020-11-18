@@ -30,8 +30,8 @@ module RootWrapper =
 
             nothing)
 
-    let render children =
-        React.memo (fun (input: {| Children: seq<ReactElement> |}) ->
+    let render =
+        React.memo (fun (input: {| Children: ReactElement list |}) ->
             let theme = Theme.useTheme ()
 
             Recoil.root [
@@ -49,4 +49,3 @@ module RootWrapper =
                         ]
                 ]
             ])
-        |> fun cmp -> cmp {| Children = children |}

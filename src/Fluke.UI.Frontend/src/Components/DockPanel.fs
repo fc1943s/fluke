@@ -14,6 +14,7 @@ module DockPanel =
                                    Atom: RecoilValue<TempUI.DockType option, ReadWrite>
                                    Children: ReactElement list |}) ->
             let setAtom = Recoil.useSetState input.Atom
+
             Chakra.stack
                 {| spacing = 0; flex = 1 |}
                 [

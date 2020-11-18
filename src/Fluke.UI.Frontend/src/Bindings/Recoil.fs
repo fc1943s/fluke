@@ -4,7 +4,6 @@ open Feliz.Recoil
 open Fluke.UI.Frontend
 open Fable.Core.JsInterop
 open Feliz
-open Fable.SimpleJson
 
 
 module Recoil =
