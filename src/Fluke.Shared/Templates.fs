@@ -102,7 +102,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Scheduled)
                                         ]
                                     Expected = []
                                 }
@@ -126,7 +126,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 10, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Scheduled)
                                         ]
                                     Expected = []
                                 }
@@ -139,7 +139,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 04, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 04, Scheduled)
                                             DslStatusEntry (FlukeDate.Create 2020 Month.March 06, Dismissed)
                                         ]
                                     Expected = []
@@ -373,7 +373,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 9, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 9, Scheduled)
                                         ]
                                     Expected =
                                         [
@@ -383,7 +383,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 9,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
@@ -495,8 +495,8 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 26, ManualPending)
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 30, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 26, Scheduled)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 30, Scheduled)
                                         ]
                                     Expected =
                                         [
@@ -506,7 +506,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 26,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 27,
                                             [
@@ -522,7 +522,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 30,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 31,
                                             [
@@ -550,7 +550,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 25, Scheduled)
                                             DslStatusEntry (FlukeDate.Create 2020 Month.March 26, Completed)
                                         ]
                                     Expected =
@@ -561,7 +561,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 25,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 26,
                                             [
@@ -601,7 +601,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 25, Scheduled)
                                         ]
                                     Expected =
                                         [
@@ -611,7 +611,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 25,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 26,
                                             [
@@ -1074,8 +1074,8 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 30, ManualPending)
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 31, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 30, Scheduled)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 31, Scheduled)
                                         ]
                                     Expected =
                                         [
@@ -1093,11 +1093,11 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 30,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 31,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.April 01,
                                             [
@@ -1756,7 +1756,7 @@ module Templates =
             | ManualCellStatus.Completed -> CellStatusChange.Complete
             | ManualCellStatus.Dismissed -> CellStatusChange.Dismiss
             | ManualCellStatus.Postponed until -> CellStatusChange.Postpone until
-            | ManualCellStatus.ManualPending -> CellStatusChange.Schedule
+            | ManualCellStatus.Scheduled -> CellStatusChange.Schedule
 
         let cellInteraction = CellInteraction.StatusChange cellStatusChange
 

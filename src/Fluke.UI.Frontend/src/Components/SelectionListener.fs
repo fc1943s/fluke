@@ -20,6 +20,7 @@ module SelectionListener =
                     if not cellSelectionMap.IsEmpty then
                         if e.key = "Escape" && e.``type`` = "keydown" then
                             setter.set (Recoil.Selectors.cellSelectionMap, Map.empty)
+                            setter.set (Recoil.Atoms.selectedCell, None)
 
                         if e.key = "R" && e.``type`` = "keydown" then
                             let newMap =

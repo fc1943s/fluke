@@ -37,7 +37,7 @@ module TempUI =
         | Postponed _ -> "#b08200"
         | Completed -> "#339933"
         | Dismissed -> "#673ab7"
-        | ManualPending -> "#003038"
+        | Scheduled -> "#003038"
     //                | Session -> "#a9a9a9"
 
     let rec cellStatusColor =

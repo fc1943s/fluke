@@ -49,7 +49,7 @@ module Sorting =
                 |> List.tryFindIndex (function
                     | { DateId = DateId referenceDay },
                       (CellStatus.Pending
-                      | CellStatus.UserStatus (_, ManualCellStatus.ManualPending)) when referenceDay.DateTime > position.Date.DateTime ->
+                      | CellStatus.UserStatus (_, ManualCellStatus.Scheduled)) when referenceDay.DateTime > position.Date.DateTime ->
                         true
                     | _ -> false)
                 |> Option.defaultValue cells.Length)
@@ -91,7 +91,7 @@ module Sorting =
                     | CellStatus.MissedToday, _ -> Some TaskOrderList
                     | _ -> None)
                     (function
-                    | CellStatus.UserStatus (user, ManualCellStatus.ManualPending), _ -> Some TaskOrderList
+                    | CellStatus.UserStatus (user, ManualCellStatus.Scheduled), _ -> Some TaskOrderList
                     | _ -> None)
                     (function
                     | ((CellStatus.UserStatus (_, WasPostponed))

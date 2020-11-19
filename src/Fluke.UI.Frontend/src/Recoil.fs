@@ -330,11 +330,11 @@ module Recoil =
                                 match trigger with
                                 | "get" ->
                                     selected.on (fun value ->
-                                        printfn
-                                            "GET@@ CELL SELECTED RENDER . taskid: %A dateId: %A. node: %A"
-                                            taskId
-                                            dateId
-                                            node
+                                        //                                        printfn
+//                                            "GET@@ CELL SELECTED RENDER . taskid: %A dateId: %A. node: %A"
+//                                            taskId
+//                                            dateId
+//                                            node
 
                                         setSelf (value))
                                 | _ -> ()
@@ -345,11 +345,11 @@ module Recoil =
 
 
 
-                                printfn
-                                    "CELL SELECTED RENDER . taskid: %A dateId: %A. trigger: %A"
-                                    taskId
-                                    dateId
-                                    trigger
+                                //                                printfn
+//                                    "CELL SELECTED RENDER . taskid: %A dateId: %A. trigger: %A"
+//                                    taskId
+//                                    dateId
+//                                    trigger
                                 //                            let storage = Browser.Dom.window.localStorage.getItem node.key
                                 //                            let value: {| value: obj |} option = unbox JS.JSON.parse storage
                                 //
@@ -492,6 +492,12 @@ module Recoil =
                 key ("atom/" + nameof selectedPosition)
                 def (None: FlukeDateTime option)
                 local_storage
+            }
+
+        let rec selectedCell =
+            atom {
+                key ("atom/" + nameof selectedCell)
+                def (None: (Task.TaskId * DateId) option)
             }
 
         let rec cellSize =

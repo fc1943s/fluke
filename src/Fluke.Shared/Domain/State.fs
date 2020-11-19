@@ -76,10 +76,10 @@ module State =
         | UserStatus of user: User * status: ManualCellStatus
 
     and ManualCellStatus =
-        | Postponed of until: FlukeTime option
         | Completed
+        | Postponed of until: FlukeTime option
         | Dismissed
-        | ManualPending
+        | Scheduled
 
     type TreeId = TreeId of guid: Guid
 
@@ -251,7 +251,7 @@ module State =
                                     | CellStatusChange.Complete -> ManualCellStatus.Completed
                                     | CellStatusChange.Dismiss -> ManualCellStatus.Dismissed
                                     | CellStatusChange.Postpone until -> ManualCellStatus.Postponed until
-                                    | CellStatusChange.Schedule -> ManualCellStatus.ManualPending
+                                    | CellStatusChange.Schedule -> ManualCellStatus.Scheduled
 
                                 let newCellState =
                                     { cellState with

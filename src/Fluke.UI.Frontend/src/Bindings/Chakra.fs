@@ -38,6 +38,7 @@ module Chakra =
                  TabPanels: obj
                  Tab: obj
                  Tabs: obj
+                 Tooltip: obj
                  useToast: unit -> System.Func<obj, unit> |} = jsNative
 
     [<ImportAll "@chakra-ui/theme-tools">]
@@ -75,6 +76,7 @@ module Chakra =
     let tabPanels<'T> = wrap core.TabPanels
     let tab<'T> = wrap core.Tab
     let tabs<'T> = wrap core.Tabs
+    let tooltip<'T> = wrap core.Tooltip
 
 
     type ToastState =

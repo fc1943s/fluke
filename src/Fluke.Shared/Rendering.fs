@@ -129,7 +129,7 @@ module Rendering =
                             match manualCellStatus, group with
                             | Postponed (Some _), BeforeToday -> renderState
                             | (Postponed None
-                              | ManualPending),
+                              | Scheduled),
                               BeforeToday -> WaitingEvent
                             | Postponed None, Today -> DayMatch
                             | _ -> Counting 1
