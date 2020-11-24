@@ -14,11 +14,11 @@ module Tests =
     open Domain.State
     open Templates
 
-    let treeStateFromDslTemplate user dslTemplate =
+    let databaseStateFromDslTemplate user dslTemplate =
         let dslDataList =
             dslTemplate.Tasks
             |> List.map (fun templateTask ->
-                TempData.Testing.createLaneRenderingDslData
+                Testing.createLaneRenderingDslData
                     {|
                         User = user
                         Position = dslTemplate.Position
@@ -26,23 +26,25 @@ module Tests =
                         Events = templateTask.Events
                     |})
 
-        let treeState = TreeState.Create (name = TreeName "Test", owner = user)
+        let databaseState = DatabaseState.Create (name = DatabaseName "Test", owner = user, dayStart = user.DayStart)
 
-        let newTreeState =
-            (treeState, dslDataList)
-            ||> List.fold (fun treeState dslData -> treeState |> mergeDslDataIntoTreeState dslData)
+        let newDatabaseState =
+            (databaseState, dslDataList)
+            ||> List.fold (fun databaseState dslData ->
+                    databaseState
+                    |> mergeDslDataIntoDatabaseState dslData)
 
-        newTreeState
+        newDatabaseState
 
 
     let testWithTemplateData (dslTemplate: DslTemplate) =
-        let treeState = treeStateFromDslTemplate testUser dslTemplate
+        let databaseState = databaseStateFromDslTemplate testUser dslTemplate
 
         dslTemplate.Tasks
         |> List.iter (fun taskTemplate ->
             let dateSequence = taskTemplate.Expected |> List.map fst
 
-            let taskState = treeState.TaskStateMap.[taskTemplate.Task]
+            let taskState = databaseState.TaskStateMap.[taskTemplate.Task]
 
             let expectedCellMetadataList =
                 taskTemplate.Expected
@@ -100,11 +102,11 @@ module Tests =
                 match expectedSessions with
                 | [] -> []
                 | expectedSessions ->
-                    let treeId = TreeId Guid.Empty
+                    let databaseId = DatabaseId Guid.Empty
 
-                    let treeStateMap =
+                    let databaseStateMap =
                         [
-                            treeId, treeState
+                            databaseId, databaseState
                         ]
                         |> Map.ofList
 
@@ -117,10 +119,10 @@ module Tests =
                                 DateSequence = dateSequence
                                 View = View.View.HabitTracker
                                 Position = dslTemplate.Position
-                                TreeStateMap = treeStateMap
-                                TreeSelectionIds =
+                                DatabaseStateMap = databaseStateMap
+                                SelectedDatabaseIds =
                                     [
-                                        treeId
+                                        databaseId
                                     ]
                                     |> set
                             |}
@@ -147,26 +149,28 @@ module Tests =
 
 
 
-    let createTests testTree =
-        testTree
+    let createTests testDatabase =
+        testDatabase
         |> List.map (fun (name1, list) ->
             testList
                 name1
                 [
-                    yield! list
-                           |> List.map (fun (name2, list) ->
-                               testList
-                                   name2
-                                   [
-                                       yield! list
-                                              |> List.map (fun (name3, dslTemplate: DslTemplate) ->
-                                                  test name3 { testWithTemplateData dslTemplate })
-                                   ])
+                    yield!
+                        list
+                        |> List.map (fun (name2, list) ->
+                            testList
+                                name2
+                                [
+                                    yield!
+                                        list
+                                        |> List.map (fun (name3, dslTemplate: DslTemplate) ->
+                                            test name3 { testWithTemplateData dslTemplate })
+                                ])
                 ])
 
-    let getTreeTests () =
-        let tree = getTree testUser
-        let tests = createTests tree
+    let getDatabaseTests () =
+        let database = getDatabase testUser
+        let tests = createTests database
         tests
 
 
@@ -176,7 +180,7 @@ module Tests =
         testList
             "Tests"
             [
-                yield! getTreeTests ()
+                yield! getDatabaseTests ()
 
                 testList
                     "Lane Sorting"
@@ -200,9 +204,9 @@ module Tests =
                                                                Data: (Task * DslTask list) list
                                                                Expected: string list
                                                                Position: FlukeDateTime |}) =
-                            let treeState =
+                            let databaseState =
                                 let dslData =
-                                    TempData.Testing.createLaneSortingDslData
+                                    Testing.createLaneSortingDslData
                                         {|
                                             User = testUser
                                             Position = props.Position
@@ -210,18 +214,19 @@ module Tests =
                                             Data = props.Data
                                         |}
 
-                                TreeState.Create (name = TreeName "Test", owner = testUser)
-                                |> mergeDslDataIntoTreeState dslData
+                                DatabaseState.Create
+                                    (name = DatabaseName "Test", owner = testUser, dayStart = testUser.DayStart)
+                                |> mergeDslDataIntoDatabaseState dslData
 
                             let dateSequence =
-                                treeState.TaskStateMap
+                                databaseState.TaskStateMap
                                 |> Map.values
                                 |> Seq.collect (fun taskState -> taskState.CellStateMap |> Map.keys)
                                 |> Seq.toList
                                 |> List.map (fun (DateId referenceDay) -> referenceDay)
                                 |> Rendering.getDateSequence (35, 35)
 
-                            treeState.TaskStateMap
+                            databaseState.TaskStateMap
                             |> Map.values
                             |> Seq.map (Rendering.renderLane testUser.DayStart props.Position dateSequence)
                             |> Seq.toList
@@ -240,9 +245,9 @@ module Tests =
                             |> List.map (fun ({ Task = { Name = TaskName name } }, _) -> name)
                             |> Expect.equal "" props.Expected
 
-                        let treeMap = getTreeMap testUser
+                        let databaseMap = getDatabaseMap testUser
 
-                        let dslTemplate = treeMap.["Lane Sorting/Default/All task types mixed"]
+                        let dslTemplate = databaseMap.["Lane Sorting/Default/All task types mixed"]
 
 
                         test "All task types mixed: No Sorting" {
@@ -280,6 +285,7 @@ module Tests =
                                         ]
                                 |}
                         }
+
                         test "All task types mixed: Sort by Frequency" {
                             testWithLaneSortingData
                                 {|

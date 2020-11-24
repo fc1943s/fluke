@@ -24,4 +24,3 @@ const interval = setInterval(() => {
         ReactDOM.render(<Counter/>, container);
     }
 }, 100);
-

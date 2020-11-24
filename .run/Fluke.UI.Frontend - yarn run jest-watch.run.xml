@@ -1,9 +1,9 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="Fluke.UI.Frontend - yarn run jest-watch" type="js.build_tools.npm">
+  <configuration default="false" name="Fluke.UI.Frontend - yarn run test-build-watch" type="js.build_tools.npm">
     <package-json value="$PROJECT_DIR$/src/Fluke.UI.Frontend/package.json" />
     <command value="run" />
     <scripts>
-      <script value="jest-watch" />
+      <script value="test-build-watch" />
     </scripts>
     <node-interpreter value="project" />
     <package-manager value="yarn" />

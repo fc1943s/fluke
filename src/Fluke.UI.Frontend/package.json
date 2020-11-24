@@ -11,17 +11,14 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "webpack": "webpack",
-    "pretest": "fable-splitter --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
-    "test": "jest",
-    "splitter-watch": "fable-splitter --watch --config ../../test/Fluke.UI.Frontend.Tests/splitter.config.js",
-
-    "jest-watch": "jest --watchAll --runInBand",
-    "test-watch": "concurrently --restart-tries=10000 \"yarn splitter-watch\" \"yarn jest-watch\"",
-    "watch-backend": "cd ../Fluke.UI.Backend && dotnet watch run",
-    "watch-frontend-build": "dotnet fable watch ./Fluke.UI.Frontend.fsproj",
-    "watch-frontend": "webpack-dev-server",
-    "watch": "concurrently \"npm:watch-*\""
+    "watch:frontend-build": "dotnet fable watch ./Fluke.UI.Frontend.fsproj",
+    "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
+    "watch:backend": "cd ../Fluke.UI.Backend && dotnet watch run",
+    "watch": "concurrently \"yarn:watch:*\"",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --env=jest-environment-jsdom-sixteen --testNamePattern=",
+    "test-watch": "yarn test --watchAll",
+    "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",
@@ -37,14 +34,14 @@
     "recoil": "facebookexperimental/Recoil.git#nightly",
 
     "formik": "^2.2",
-    "yup": "^0.29",
+    "yup": "^0.31",
 
-    "@material-ui/core": "^4.11",
-
-    "@chakra-ui/core": "^1.0.0-rc.7",
-    "@chakra-ui/system": "^1.0.0-rc.7",
-    "@chakra-ui/theme-tools": "^1.0.0-rc.7",
-    "@chakra-ui/media-query": "^1.0.0-rc.7",
+    "@chakra-ui/react": "^1.0.0",
+    "@chakra-ui/system": "^1.0.0",
+    "@chakra-ui/theme-tools": "^1.0.0",
+    "@chakra-ui/media-query": "^1.0.0",
+    "@emotion/react": "^11.1",
+    "@emotion/styled": "^11.0",
     "framer-motion": "^2.9",
 
     "react-markdown": "^5.0",
@@ -54,39 +51,61 @@
     "gun": "^0.2020"
   },
   "devDependencies": {
+    "@types/react": "^17.0",
     "@types/gun": "^0.9",
-    "webpack": "^4.44",
-    "@types/webpack": "^4.41",
-    "webpack-cli": "^3.3",
-    "webpack-dev-server": "^3.11",
-    "@types/webpack-dev-server": "^3.11",
 
-    "typescript": "^4.0",
+    "typescript": "^4.1",
     "ts-node": "^9.0",
     "@types/node" : "^14.14",
 
-    "html-webpack-plugin": "^4.5",
-    "copy-webpack-plugin": "^6.2",
-    "mini-css-extract-plugin": "^1.2",
+    "eslint": "^7.14",
+    "@typescript-eslint/eslint-plugin": "^4.8",
+    "@typescript-eslint/parser": "^4.8",
+    "eslint-config-airbnb": "^18.2",
+    "eslint-plugin-import": "^2.22.1",
+    "eslint-plugin-jsx-a11y": "^6.4",
+    "eslint-plugin-react": "^7.21",
+    "eslint-plugin-react-hooks": "^4.2",
+    "eslint-plugin-jest-dom": "^3.2",
 
     "@babel/core": "^7.12",
     "@babel/preset-env": "^7.12",
     "@babel/preset-typescript": "^7.12",
     "@babel/preset-react": "^7.12",
-    "babel-loader": "^8.1",
-    "style-loader": "^2.0",
-    "css-loader": "^5.0",
-    "sass-loader": "^10.0",
-    "node-sass": "^4.14",
+    "babel-loader": "^8.2",
     "file-loader": "^6.2",
 
-    "fable-splitter": "^2.2",
-
     "jest": "^26.6",
-    "@testing-library/react": "^11.1",
-    "@testing-library/user-event": "^12.1",
+    "@testing-library/react": "^11.2",
+    "@testing-library/user-event": "^12.2",
     "@testing-library/jest-dom": "^5.11",
+    "babel-jest": "^26.6",
+    "jest-environment-jsdom-sixteen": "^1.0",
+
+    "patch-package": "^6.2",
+    "postinstall-postinstall": "^2.1",
+
+    "cross-env": "^7.0",
+    "react-scripts": "^4.0",
+    "react-app-rewired": "^2.1",
+    "customize-cra": "^1.0",
+    "customize-cra-react-refresh": "^1.1",
+
+    "react-refresh": "^0.9",
 
     "concurrently": "^5.3"
-  }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "proxy": "https://localhost:33921"
 }

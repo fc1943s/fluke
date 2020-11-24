@@ -6,11 +6,11 @@ Fable.Remoting.Client
 Fable.FontAwesome.Free
 Fable.DateFunctions
 Fable.Extras
-Zanaptak.TypedCssClasses
 Feliz.Bulma
 Feliz.Recoil
 Feliz.UseListener
 Feliz.Router
-Feliz.MaterialUI
 Fable.SimpleJson
 Thoth.Json
+Fable.Jester
+Fable.ReactTestingLibrary

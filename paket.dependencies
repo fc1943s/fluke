@@ -22,7 +22,7 @@ group Fluke.UI.Backend
     source https://api.nuget.org/v3/index.json
 
     nuget Saturn ~> 0.14
-    nuget Fable.Remoting.Giraffe ~> 4.11
+    nuget Fable.Remoting.Giraffe ~> 4.13
     nuget Thoth.Json.Net ~> 5.0
 
 
@@ -30,27 +30,20 @@ group Fluke.UI.Frontend
     storage: none
     source https://api.nuget.org/v3/index.json
 
-    nuget Fable.Remoting.Client ~> 7.0
+    nuget Fable.Core # ~> 4.0 prerelease
+    nuget Fable.Remoting.Client ~> 7.2
     nuget Fable.FontAwesome.Free ~> 2.0
-    nuget Fable.DateFunctions ~> 3.1
-    nuget Fable.Extras ~> 0.1
-    nuget Zanaptak.TypedCssClasses ~> 0.4
-    nuget Feliz ~> 1.16
-    nuget Feliz.Bulma ~> 2.4
-    nuget Feliz.Recoil ~> 0.17
-    nuget Feliz.UseListener ~> 0.6
-    nuget Feliz.Router ~> 3.2
-    nuget Feliz.MaterialUI ~> 1.2
-    nuget Fable.SimpleJson ~> 3.16
-    nuget Thoth.Json ~> 5.0
-
-
-group Fluke.UI.Frontend.Tests
-    storage: none
-    source https://api.nuget.org/v3/index.json
-
+    nuget Fable.DateFunctions ~> 3.2
+    nuget Fable.SimpleJson ~> 3.17
+    nuget Fable.Extras ~> 0.2
     nuget Fable.Jester ~> 0.29
     nuget Fable.ReactTestingLibrary ~> 0.29
+    nuget Feliz ~> 1.17
+    nuget Feliz.Bulma ~> 2.4
+    nuget Feliz.Recoil ~> 0.19
+    nuget Feliz.UseListener ~> 0.6
+    nuget Feliz.Router ~> 3.2
+    nuget Thoth.Json ~> 5.0
 
 
 group Testing

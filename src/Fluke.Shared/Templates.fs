@@ -55,7 +55,7 @@ module Templates =
         | Multiple of DslTemplate
 
 
-    let getTree user =
+    let getDatabase (user: User) =
         [
             "Lane Sorting",
             [
@@ -102,7 +102,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Scheduled)
                                         ]
                                     Expected = []
                                 }
@@ -126,7 +126,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 10, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Scheduled)
                                         ]
                                     Expected = []
                                 }
@@ -139,7 +139,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 04, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 04, Scheduled)
                                             DslStatusEntry (FlukeDate.Create 2020 Month.March 06, Dismissed)
                                         ]
                                     Expected = []
@@ -226,12 +226,7 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Name = TaskName "13"
-                                            Scheduling =
-                                                Recurrency
-                                                    (Fixed
-                                                        [
-                                                            Weekly DayOfWeek.Tuesday
-                                                        ])
+                                            Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Tuesday ])
                                         }
                                     Events = []
                                     Expected = []
@@ -241,12 +236,7 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Name = TaskName "14"
-                                            Scheduling =
-                                                Recurrency
-                                                    (Fixed
-                                                        [
-                                                            Weekly DayOfWeek.Wednesday
-                                                        ])
+                                            Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ])
                                         }
                                     Events = []
                                     Expected = []
@@ -256,12 +246,7 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Name = TaskName "15"
-                                            Scheduling =
-                                                Recurrency
-                                                    (Fixed
-                                                        [
-                                                            Weekly DayOfWeek.Friday
-                                                        ])
+                                            Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Friday ])
                                         }
                                     Events =
                                         [
@@ -373,7 +358,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 9, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 9, Scheduled)
                                         ]
                                     Expected =
                                         [
@@ -383,7 +368,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 9,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
@@ -495,8 +480,8 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 26, ManualPending)
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 30, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 26, Scheduled)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 30, Scheduled)
                                         ]
                                     Expected =
                                         [
@@ -506,7 +491,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 26,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 27,
                                             [
@@ -522,7 +507,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 30,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 31,
                                             [
@@ -550,7 +535,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 25, Scheduled)
                                             DslStatusEntry (FlukeDate.Create 2020 Month.March 26, Completed)
                                         ]
                                     Expected =
@@ -561,7 +546,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 25,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 26,
                                             [
@@ -601,7 +586,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 25, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 25, Scheduled)
                                         ]
                                     Expected =
                                         [
@@ -611,7 +596,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 25,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 26,
                                             [
@@ -1074,8 +1059,8 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 30, ManualPending)
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 31, ManualPending)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 30, Scheduled)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 31, Scheduled)
                                         ]
                                     Expected =
                                         [
@@ -1093,11 +1078,11 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 30,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 31,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, ManualPending))
+                                                TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.April 01,
                                             [
@@ -1130,12 +1115,7 @@ module Templates =
                                 {
                                     Task =
                                         { Task.Default with
-                                            Scheduling =
-                                                Recurrency
-                                                    (Fixed
-                                                        [
-                                                            Weekly DayOfWeek.Saturday
-                                                        ])
+                                            Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ])
                                         }
                                     Events =
                                         [
@@ -1171,12 +1151,7 @@ module Templates =
                                 {
                                     Task =
                                         { Task.Default with
-                                            Scheduling =
-                                                Recurrency
-                                                    (Fixed
-                                                        [
-                                                            Weekly DayOfWeek.Wednesday
-                                                        ])
+                                            Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ])
                                         }
                                     Events =
                                         [
@@ -1214,12 +1189,7 @@ module Templates =
                                 {
                                     Task =
                                         { Task.Default with
-                                            Scheduling =
-                                                Recurrency
-                                                    (Fixed
-                                                        [
-                                                            Weekly DayOfWeek.Saturday
-                                                        ])
+                                            Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ])
                                         }
                                     Events =
                                         [
@@ -1257,12 +1227,7 @@ module Templates =
                                 {
                                     Task =
                                         { Task.Default with
-                                            Scheduling =
-                                                Recurrency
-                                                    (Fixed
-                                                        [
-                                                            Weekly DayOfWeek.Wednesday
-                                                        ])
+                                            Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Wednesday ])
                                         }
                                     Events = []
                                     Expected =
@@ -1293,12 +1258,7 @@ module Templates =
                                 {
                                     Task =
                                         { Task.Default with
-                                            Scheduling =
-                                                Recurrency
-                                                    (Fixed
-                                                        [
-                                                            Weekly DayOfWeek.Saturday
-                                                        ])
+                                            Scheduling = Recurrency (Fixed [ Weekly DayOfWeek.Saturday ])
                                         }
                                     Events = []
                                     Expected =
@@ -1719,16 +1679,16 @@ module Templates =
             ]
         ]
 
-    let getTreeMap user =
-        let tree = getTree user
+    let getDatabaseMap user =
+        let database = getDatabase user
 
-        tree
+        database
         |> List.collect (fun (name1, list) ->
             list
             |> List.collect (fun (name2, list) ->
                 list
                 |> List.map (fun (name3, dslTemplate) ->
-                    let name = sprintf "%s/%s/%s" name1 name2 name3
+                    let name = $"{name1}/{name2}/{name3}"
 
                     let newDslTemplate =
                         { dslTemplate with
@@ -1756,7 +1716,7 @@ module Templates =
             | ManualCellStatus.Completed -> CellStatusChange.Complete
             | ManualCellStatus.Dismissed -> CellStatusChange.Dismiss
             | ManualCellStatus.Postponed until -> CellStatusChange.Postpone until
-            | ManualCellStatus.ManualPending -> CellStatusChange.Schedule
+            | ManualCellStatus.Scheduled -> CellStatusChange.Schedule
 
         let cellInteraction = CellInteraction.StatusChange cellStatusChange
 
@@ -1845,9 +1805,9 @@ module Templates =
                                         | Some task -> task
                                         | None ->
                                             failwithf
-                                                "DslTaskSort. Task not found: %A. Map length: %A"
-                                                taskName
-                                                sortTaskMap.Count)
+                                                $"DslTaskSort. Task not found: {taskName}. Map length: {
+                                                                                                            sortTaskMap.Count
+                                                }")
 
                                 let interaction =
                                     Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
@@ -1945,22 +1905,23 @@ module Templates =
 
         dslData
 
-    let mergeDslDataIntoTreeState (dslData: DslData) (treeState: TreeState) =
+    let mergeDslDataIntoDatabaseState (dslData: DslData) (databaseState: DatabaseState) =
 
-        let newInformationStateMap = mergeInformationStateMap treeState.InformationStateMap dslData.InformationStateMap
+        let newInformationStateMap =
+            mergeInformationStateMap databaseState.InformationStateMap dslData.InformationStateMap
 
         let taskStateList, userInteractionsBundle = dslData.TaskStateList |> List.unzip
 
 
         let userInteractions = userInteractionsBundle |> List.collect id
 
-        let newTreeState = treeStateWithInteractions userInteractions treeState
+        let newDatabaseState = databaseStateWithInteractions userInteractions databaseState
 
         let newTaskStateMap =
-            (newTreeState.TaskStateMap, taskStateList)
+            (newDatabaseState.TaskStateMap, taskStateList)
             ||> List.fold (fun taskStateMap taskState ->
                     let oldTaskState =
-                        newTreeState.TaskStateMap
+                        newDatabaseState.TaskStateMap
                         |> Map.tryFind taskState.Task
 
                     let newTaskState =
@@ -1972,14 +1933,14 @@ module Templates =
                     |> Map.add taskState.Task newTaskState)
 
         let result =
-            { newTreeState with
+            { newDatabaseState with
                 InformationStateMap = newInformationStateMap
                 TaskStateMap = newTaskStateMap
             }
 
         result
 
-    let treeStateFromDslTemplate user templateName dslTemplate =
+    let databaseStateFromDslTemplate user databaseId templateName dslTemplate =
         let dslDataList =
             dslTemplate.Tasks
             |> List.map (fun templateTask ->
@@ -1991,15 +1952,19 @@ module Templates =
                         Events = templateTask.Events
                     |})
 
-        let treeState =
-            TreeState.Create
-                (name = TreeName templateName,
+        let databaseState =
+            DatabaseState.Create
+                (id = databaseId,
+                 name = DatabaseName templateName,
+                 dayStart = user.DayStart,
                  owner = user,
                  position = dslTemplate.Position,
-                 sharedWith = TreeAccess.Public)
+                 sharedWith = DatabaseAccess.Public)
 
-        let newTreeState =
-            (treeState, dslDataList)
-            ||> List.fold (fun treeState dslData -> treeState |> mergeDslDataIntoTreeState dslData)
+        let newDatabaseState =
+            (databaseState, dslDataList)
+            ||> List.fold (fun databaseState dslData ->
+                    databaseState
+                    |> mergeDslDataIntoDatabaseState dslData)
 
-        newTreeState
+        newDatabaseState

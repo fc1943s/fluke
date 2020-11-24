@@ -100,31 +100,31 @@ module View =
                                   DateSequence: FlukeDate list
                                   View: View
                                   Position: FlukeDateTime
-                                  TreeStateMap: Map<TreeId, TreeState>
-                                  TreeSelectionIds: Set<TreeId> |}) =
+                                  DatabaseStateMap: Map<DatabaseId, DatabaseState>
+                                  SelectedDatabaseIds: Set<DatabaseId> |}) =
         //                                GetLivePosition: unit -> FlukeDateTime
-        //            let treeSelectionIds =
-//                input.State.Session.TreeSelection
-//                |> Set.map (fun treeState -> treeState.Id)
+        //            let selectedDatabaseIds =
+//                input.State.Session.DatabaseSelection
+//                |> Set.map (fun databaseState -> databaseState.Id)
 
         //
-        let treeSelection =
-            input.TreeSelectionIds
+        let databaseStateList =
+            input.SelectedDatabaseIds
             |> Set.toList
-            |> List.choose (fun treeId -> input.TreeStateMap |> Map.tryFind treeId)
+            |> List.choose (fun databaseId -> input.DatabaseStateMap |> Map.tryFind databaseId)
 
         let informationStateList =
-            treeSelection
-            |> List.collect (fun treeState ->
-                treeState.InformationStateMap
+            databaseStateList
+            |> List.collect (fun databaseState ->
+                databaseState.InformationStateMap
                 |> Map.values
                 |> Seq.distinctBy (fun informationState -> informationState.Information.Name)
                 |> Seq.toList)
 
         let taskStateList =
-            treeSelection
-            |> List.collect (fun treeState ->
-                treeState.TaskStateMap
+            databaseStateList
+            |> List.collect (fun databaseState ->
+                databaseState.TaskStateMap
                 |> Map.values
                 |> Seq.toList
                 |> List.map (fun taskState ->
@@ -167,14 +167,14 @@ module View =
 
         // TODO: this might be needed
         let informationStateMap, taskStateMap =
-            ((Map.empty, Map.empty), treeSelection)
-            ||> List.fold (fun (informationStateMap, taskStateMap) treeState ->
-                    match treeState with
-                    | treeState when hasAccess treeState input.Username ->
+            ((Map.empty, Map.empty), databaseStateList)
+            ||> List.fold (fun (informationStateMap, taskStateMap) databaseState ->
+                    match databaseState with
+                    | databaseState when hasAccess databaseState.Database input.Username ->
                         let newInformationStateMap =
-                            mergeInformationStateMap informationStateMap treeState.InformationStateMap
+                            mergeInformationStateMap informationStateMap databaseState.InformationStateMap
 
-                        let newTaskStateMap = mergeTaskStateMap taskStateMap treeState.TaskStateMap
+                        let newTaskStateMap = mergeTaskStateMap taskStateMap databaseState.TaskStateMap
                         newInformationStateMap, newTaskStateMap
                     | _ -> informationStateMap, taskStateMap)
 
@@ -200,7 +200,7 @@ module View =
             filteredTaskStateList
             |> List.map (Rendering.renderLane input.DayStart input.Position input.DateSequence)
 
-        //            let taskOrderList = RootPrivateData.treeData.TaskOrderList // @ RootPrivateData.taskOrderList
+        //            let taskOrderList = RootPrivateData.databaseData.TaskOrderList // @ RootPrivateData.taskOrderList
 //            let taskOrderList = [] // @ RootPrivateData.taskOrderList
 
 

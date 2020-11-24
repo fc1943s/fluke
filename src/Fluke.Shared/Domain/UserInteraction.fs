@@ -88,7 +88,7 @@ module UserInteraction =
 
         member inline this.Stringify () =
             let { Year = Year year; Month = month; Day = Day day } = this
-            sprintf "%d-%02d-%02d" year (int month) day
+            $"%d{year}-%02d{int month}-%02d{day}"
 
         static member inline Create year month day: FlukeDate = { Year = Year year; Month = month; Day = Day day }
 
@@ -102,7 +102,7 @@ module UserInteraction =
         static member inline MinValue = FlukeDate.FromDateTime DateTime.MinValue
 
     and FlukeDateTime with
-        member inline this.Stringify () = sprintf "%s %s" (this.Date.Stringify ()) (this.Time.Stringify ())
+        member inline this.Stringify () = $"{this.Date.Stringify ()} {this.Time.Stringify ()}"
 
         member inline this.DateTime =
             let Year year, Day day, Hour hour, Minute minute =

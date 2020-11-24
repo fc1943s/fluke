@@ -10,7 +10,7 @@ module Sync =
     type Api =
         {
             currentUser: Async<User>
-            treeStateList: Username -> FlukeDateTime -> Async<TreeState list>
+            databaseStateList: Username -> FlukeDateTime -> Async<DatabaseState list>
         }
 
     let serverPort = "33921"
