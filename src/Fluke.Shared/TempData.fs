@@ -146,8 +146,8 @@ module TempData =
 
 
 
-    let dslTreeWithUser (user: User) (dslTree: (Information * (string * DslTask list) list) list) =
-        dslTree
+    let dslDatabaseWithUser (user: User) (dslDatabase: (Information * (string * DslTask list) list) list) =
+        dslDatabase
         |> List.map (fun (information, tasks) ->
             let newTasks =
                 tasks
@@ -158,12 +158,12 @@ module TempData =
 
             information, newTasks)
 
-    //        taskTree
+    //        taskDatabase
 //        |> List.map (fun x -> x |> Tuple2.mapItem2 (fun x -> x |> List.map (fun x -> x |> Tuple2.mapItem2 (fun (a,b) -> x |> List.map (fun (event:DslTask) -> event, user)))))
 
-    //    let createTreeData dayStart position taskTree =
+    //    let createDatabaseData dayStart position taskDatabase =
 //        let taskStateList =
-//            taskTree
+//            taskDatabase
 //            |> List.collect (fun (information, tasks) ->
 //                tasks
 //                |> List.map (fun (taskName, events: (DslTask * User) list) ->
@@ -176,7 +176,7 @@ module TempData =
 //                    createTaskState dayStart position task events))
 //
 //        let informationList =
-//            taskTree |> List.map fst |> List.distinct
+//            taskDatabase |> List.map fst |> List.distinct
 //
 //        let taskOrderList =
 //            taskStateList
@@ -197,23 +197,23 @@ module TempData =
 //        {
 //            User: User option
 //            GetLivePosition: unit -> FlukeDateTime
-//            TreeStateMap: Map<TreeState, bool>
+//            DatabaseStateMap: Map<DatabaseState, bool>
 //        }
 
 
 
-    let mergeTreeState (oldValue: TreeState) (newValue: TreeState) =
+    let mergeDatabaseState (oldValue: DatabaseState) (newValue: DatabaseState) =
         { oldValue with
             InformationStateMap = mergeInformationStateMap oldValue.InformationStateMap newValue.InformationStateMap
             TaskStateMap = mergeTaskStateMap oldValue.TaskStateMap newValue.TaskStateMap
         }
 
-    let mergeTreeStateMap (oldMap: Map<TreeId, TreeState>) (newMap: Map<TreeId, TreeState>) =
-        Map.unionWith mergeTreeState oldMap newMap
+    let mergeDatabaseStateMap (oldMap: Map<DatabaseId, DatabaseState>) (newMap: Map<DatabaseId, DatabaseState>) =
+        Map.unionWith mergeDatabaseState oldMap newMap
 
 
 
-    let createDslData moment taskContainerFactory (dslTree: (Information * (string * (DslTask * User) list) list) list) =
+    let createDslData moment taskContainerFactory (dslDatabase: (Information * (string * (DslTask * User) list) list) list) =
 
         let taskMap, taskStateList =
             let (|FirstPass|SecondPass|) =
@@ -223,7 +223,7 @@ module TempData =
 
             let rec loop pass taskMap =
                 let newTaskMap, newTaskStateList =
-                    ((taskMap, []), dslTree)
+                    ((taskMap, []), dslDatabase)
                     ||> List.fold (fun (taskMap, taskStateList) (information, tasks) ->
                             ((taskMap, taskStateList), tasks)
                             ||> List.fold (fun (taskMap, taskStateList) (taskName, dslTasks) ->
@@ -273,7 +273,7 @@ module TempData =
 //            (taskStateList |> List.filter (fun (taskState, interactions) -> let (TaskName taskName) = taskState.Task.Name in taskName.Contains "week view"))
 
         let informationStateMap =
-            dslTree
+            dslDatabase
             |> List.map fst
             |> List.distinct
             |> informationListToStateMap
@@ -297,13 +297,13 @@ module TempData =
             |> List.map fst
 
         if not duplicated.IsEmpty then
-            failwithf "Duplicated task names: %A" duplicated
+            failwithf $"Duplicated task names: {duplicated}"
 
         let tasks =
             taskContainerFactory (fun taskName ->
                 taskMap
                 |> Map.tryFind taskName
-                |> Option.orElseWith (fun () -> failwithf "createDslData. Task not found: %A" taskName))
+                |> Option.orElseWith (fun () -> failwithf $"createDslData. Task not found: {taskName}"))
 
 
         //        let taskOrderList = getTaskOrderList [] (taskStateList |> List.map fst) []
@@ -323,16 +323,16 @@ module TempData =
 
     module Testing =
 
-        //        let dslDataToTreeState user dslData =
+        //        let dslDataToDatabaseState user dslData =
 //            let userInteractions =
 //                dslData.TaskStateList |> List.collect snd
 //
-//            let treeStateWithoutInteractions: TreeState =
+//            let databaseStateWithoutInteractions: DatabaseState =
 //                {
 //                    Id =
-//                        TreeId
+//                        DatabaseId
 //                        <| Guid "17A1AA3D-95C7-424E-BD6D-7C12B33CED37"
-//                    Name = State.TreeName "dslDataToState"
+//                    Name = State.DatabaseName "dslDataToState"
 //                    Owner = user
 //                    SharedWith = []
 //                    Position = None
@@ -340,8 +340,8 @@ module TempData =
 //                    TaskStateMap = Map.empty
 //                }
 //
-//            treeStateWithoutInteractions
-//            |> TreeStateWithInteractions userInteractions
+//            databaseStateWithoutInteractions
+//            |> DatabaseStateWithInteractions userInteractions
 
         let createLaneRenderingDslData (input: {| User: User
                                                   Position: FlukeDateTime
@@ -372,16 +372,16 @@ module TempData =
 
             //            let getLivePosition = fun () -> input.Position
 
-            //            let treeState = dslDataToTreeState input.User dslData
+            //            let databaseState = dslDataToDatabaseState input.User dslData
 
-            //            let treeStateMap =
-//                [ treeState.Id, (treeState, true) ] |> Map.ofList
+            //            let databaseStateMap =
+//                [ databaseState.Id, (databaseState, true) ] |> Map.ofList
 
             //            let state =
 //                {
 //                    User = Some input.User
 //                    GetLivePosition = getLivePosition
-//                    TreeStateMap = treeStateMap
+//                    DatabaseStateMap = databaseStateMap
 //                }
 
             dslData
@@ -420,16 +420,16 @@ module TempData =
 
             //            let getLivePosition = fun () -> input.Position
 //
-//            let treeState = dslDataToTreeState input.User dslData
+//            let databaseState = dslDataToDatabaseState input.User dslData
 //
-//            let treeStateMap =
-//                [ treeState.Id, (treeState, true) ] |> Map.ofList
+//            let databaseStateMap =
+//                [ databaseState.Id, (databaseState, true) ] |> Map.ofList
 //
 //            let state =
 //                {
 //                    User = Some input.User
 //                    GetLivePosition = getLivePosition
-//                    TreeStateMap = treeStateMap
+//                    DatabaseStateMap = databaseStateMap
 //                }
 
             dslData

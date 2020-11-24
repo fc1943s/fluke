@@ -72,26 +72,26 @@ module SessionDataLoader =
 
                         match sessionData with
                         | Some sessionData ->
-                            let! treeStateMap =
-                                setter.snapshot.getAsync (Recoil.Selectors.Session.treeStateMap input.Username)
+                            let! databaseStateMap =
+                                setter.snapshot.getAsync (Recoil.Selectors.Session.databaseStateMap input.Username)
 
-                            let availableTreeIds =
-                                treeStateMap
+                            let availableDatabaseIds =
+                                databaseStateMap
                                 |> Map.toList
-                                |> List.sortBy (fun (id, treeState) -> treeState.Name)
+                                |> List.sortBy (fun (id, databaseState) -> databaseState.Database.Name)
                                 |> List.map fst
 
-                            setter.set (Recoil.Atoms.Session.availableTreeIds input.Username, availableTreeIds)
+                            setter.set (Recoil.Atoms.Session.availableDatabaseIds input.Username, availableDatabaseIds)
 
 
                             initializeSessionData input.Username setter sessionData
 
-                            treeStateMap
-                            |> Map.iter (fun id treeState ->
-                                setter.set (Recoil.Atoms.Tree.name id, treeState.Name)
-                                setter.set (Recoil.Atoms.Tree.owner id, Some treeState.Owner)
-                                setter.set (Recoil.Atoms.Tree.sharedWith id, treeState.SharedWith)
-                                setter.set (Recoil.Atoms.Tree.position id, treeState.Position))
+                            databaseStateMap
+                            |> Map.iter (fun id databaseState ->
+                                setter.set (Recoil.Atoms.Database.name id, databaseState.Database.Name)
+                                setter.set (Recoil.Atoms.Database.owner id, Some databaseState.Database.Owner)
+                                setter.set (Recoil.Atoms.Database.sharedWith id, databaseState.Database.SharedWith)
+                                setter.set (Recoil.Atoms.Database.position id, databaseState.Database.Position))
 
                         | None -> ()
 

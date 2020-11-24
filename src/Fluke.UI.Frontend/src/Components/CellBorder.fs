@@ -11,9 +11,7 @@ open Fluke.Shared
 
 
 module CellBorder =
-    open Domain.Model
     open Domain.UserInteraction
-    open Domain.State
 
     let render =
         React.memo (fun (input: {| Username: Username; Date: FlukeDate |}) ->
@@ -34,3 +32,4 @@ module CellBorder =
                     |}
                     [])
             |> Option.defaultValue nothing)
+

@@ -12,9 +12,7 @@ open FSharpPlus
 
 
 module HomeScreen =
-    open Domain.Model
     open Domain.UserInteraction
-    open Domain.State
 
     let render =
         React.memo (fun (input: {| Username: Username; Props: {| flex: int |} |}) ->
@@ -53,7 +51,7 @@ module HomeScreen =
                 tabs
                 |> List.findIndex (fun tab -> tab.View = view)
 
-            printfn "HomeScreen.render. current view: %A. tabIndex: %A" view tabIndex
+            printfn $"HomeScreen.render. current view: {view}. tabIndex: {tabIndex}"
 
             let handleTabsChange index = setView (tabs.[index].View)
 
@@ -118,3 +116,4 @@ module HomeScreen =
                                 ]
                         ]
                 ])
+

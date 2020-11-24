@@ -12,9 +12,7 @@ open Fluke.Shared
 
 
 module BulletJournalView =
-    open Domain.Model
     open Domain.UserInteraction
-    open Domain.State
 
     let render =
         React.memo (fun (input: {| Username: Username |}) ->
@@ -23,56 +21,58 @@ module BulletJournalView =
             Chakra.box
                 ()
                 [
-                    yield! weekCellsMap
-                           |> List.map (fun week ->
-                               Chakra.flex
-                                   {| marginTop = "15px"; marginBottom = "15px" |}
-                                   [
-                                       yield! week
-                                              |> Map.keys
-                                              |> Seq.map (fun ((DateId referenceDay) as dateId) ->
-                                                  let cells = week.[dateId]
+                    yield!
+                        weekCellsMap
+                        |> List.map (fun week ->
+                            Chakra.flex
+                                {| marginTop = "15px"; marginBottom = "15px" |}
+                                [
+                                    yield!
+                                        week
+                                        |> Map.keys
+                                        |> Seq.map (fun ((DateId referenceDay) as dateId) ->
+                                            let cells = week.[dateId]
 
-                                                  Chakra.box
-                                                      {| paddingLeft = "10px"; paddingRight = "10px" |}
-                                                      [
-                                                          Chakra.box
-                                                              {|
-                                                                  marginBottom = "3px"
-                                                                  borderBottom = "1px solid #333"
-                                                                  fontSize = "14px"
-                                                                  color =
-                                                                      if cells |> List.forall (fun x -> x.IsToday) then
-                                                                          "#777"
-                                                                      else
-                                                                          ""
-                                                              |}
-                                                              [
-                                                                  referenceDay.DateTime.Format "EEEE, dd MMM yyyy"
-                                                                  |> String.toLower
-                                                                  |> str
-                                                              ]
+                                            Chakra.box
+                                                {| paddingLeft = "10px"; paddingRight = "10px" |}
+                                                [
+                                                    Chakra.box
+                                                        {|
+                                                            marginBottom = "3px"
+                                                            borderBottom = "1px solid #333"
+                                                            fontSize = "14px"
+                                                            color =
+                                                                if cells |> List.forall (fun x -> x.IsToday) then
+                                                                    "#777"
+                                                                else
+                                                                    ""
+                                                        |}
+                                                        [
+                                                            referenceDay.DateTime.Format "EEEE, dd MMM yyyy"
+                                                            |> String.toLower
+                                                            |> str
+                                                        ]
 
 
-                                                          yield! cells
-                                                                 |> List.map (fun cell ->
-                                                                     Chakra.flex
-                                                                         ()
-                                                                         [
-                                                                             Cell.render
-                                                                                 {|
-                                                                                     Username = input.Username
-                                                                                     DateId = dateId
-                                                                                     TaskId = cell.TaskId
-                                                                                     SemiTransparent = false
-                                                                                 |}
-                                                                             Chakra.box
-                                                                                 {| paddingLeft = "4px" |}
-                                                                                 [
-                                                                                     TaskName.render
-                                                                                         {| TaskId = cell.TaskId |}
-                                                                                 ]
-                                                                         ])
-                                                      ])
-                                   ])
+                                                    yield!
+                                                        cells
+                                                        |> List.map (fun cell ->
+                                                            Chakra.flex
+                                                                ()
+                                                                [
+                                                                    Cell.render
+                                                                        {|
+                                                                            Username = input.Username
+                                                                            DateId = dateId
+                                                                            TaskId = cell.TaskId
+                                                                            SemiTransparent = false
+                                                                        |}
+                                                                    Chakra.box
+                                                                        {| paddingLeft = "4px" |}
+                                                                        [
+                                                                            TaskName.render {| TaskId = cell.TaskId |}
+                                                                        ]
+                                                                ])
+                                                ])
+                                ])
                 ])

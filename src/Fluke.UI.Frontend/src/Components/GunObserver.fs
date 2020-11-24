@@ -22,7 +22,7 @@ module GunObserver =
             React.useEffect
                 ((fun () ->
                     let recall = Browser.Dom.window.sessionStorage.getItem "recall"
-                    printfn "recall %A" recall
+                    printfn $"recall {recall}"
 
                     match recall with
                     | null
@@ -42,9 +42,9 @@ module GunObserver =
 
                                  setSessionRestored true
 
-                                 printfn "ACK %A" ack.put
+                                 printfn $"ACK {ack.put}"
                                  Dom.set "ack" ack))
-                    with ex -> printfn "ERROR: %A" ex
+                    with ex -> printfn $"ERROR: {ex}"
 
                     printfn "after recall"),
                  [|

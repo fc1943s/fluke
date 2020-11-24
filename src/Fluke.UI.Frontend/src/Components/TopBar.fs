@@ -28,18 +28,10 @@ module TopBar =
                             str "Fluke"
                         ]
 
-                    Button.render
-                        {|
-                            icon = Icons.fiLogOut
-                            rightIcon = false
-                            props = {| marginLeft = "37px" |}
-                            children =
-                                [
-                                    str "Add Task"
-                                ]
-                        |}
+                    AddDatabaseButton.render {| props = {| marginLeft = "37px" |} |}
+                    AddTaskButton.render {| props = {| marginLeft = "10px" |} |}
 
-                    Chakra.spacer () []
+                    Chakra.spacer {|  |} []
 
                     Chakra.iconButton
                         {|
@@ -54,3 +46,4 @@ module TopBar =
                         |}
                         []
                 ])
+

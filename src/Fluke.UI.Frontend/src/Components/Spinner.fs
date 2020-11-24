@@ -6,4 +6,6 @@ open Fluke.UI.Frontend.Bindings
 
 
 module Spinner =
-    let render = React.memo (fun () -> Chakra.spinner {| size = "xl" |} [])
+    let render =
+        React.memo (fun () -> Chakra.spinner {| size = "xl" |} [])
+

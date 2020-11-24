@@ -16,29 +16,38 @@ module State =
     type SessionData =
         {
             //            User: User option
-//            TreeSelection: Set<TreeState>
+//            SelectedDatabaseIds: Set<DatabaseState>
             TaskList: Task list
             InformationStateMap: Map<Information, InformationState>
             TaskStateMap: Map<Task, TaskState>
         }
 
-    and TreeState =
+    and Database =
         {
-            Name: TreeName
+            Id: DatabaseId
+            Name: DatabaseName
             Owner: User
-            SharedWith: TreeAccess
+            SharedWith: DatabaseAccess
             Position: FlukeDateTime option
+            DayStart: FlukeTime
+        }
+
+    and DatabaseId = DatabaseId of guid: Guid
+
+    and DatabaseName = DatabaseName of name: string
+
+    and DatabaseState =
+        {
+            Database: Database
             InformationStateMap: Map<Information, InformationState>
             TaskStateMap: Map<Task, TaskState>
         }
 
-    and TreeName = TreeName of name: string
-
-    and [<RequireQualifiedAccess>] TreeAccess =
+    and [<RequireQualifiedAccess>] DatabaseAccess =
         | Public
-        | Private of TreeAccessItem list
+        | Private of DatabaseAccessItem list
 
-    and [<RequireQualifiedAccess>] TreeAccessItem =
+    and [<RequireQualifiedAccess>] DatabaseAccessItem =
         | Admin of user: User
         | ReadOnly of user: User
 
@@ -81,17 +90,21 @@ module State =
         | Dismissed
         | Scheduled
 
-    type TreeId = TreeId of guid: Guid
 
 
 
-    and TreeState with
-        static member inline Create (name, owner, ?sharedWith, ?position): TreeState =
+    and DatabaseState with
+        static member inline Create (name, owner, dayStart, ?id, ?sharedWith, ?position) =
             {
-                Name = name
-                Owner = owner
-                SharedWith = defaultArg sharedWith (TreeAccess.Private [])
-                Position = position
+                Database =
+                    {
+                        Id = Option.defaultValue (DatabaseId (Guid.NewGuid ())) id
+                        Name = name
+                        Owner = owner
+                        SharedWith = defaultArg sharedWith (DatabaseAccess.Private [])
+                        Position = position
+                        DayStart = dayStart
+                    }
                 InformationStateMap = Map.empty
                 TaskStateMap = Map.empty
             }
@@ -109,25 +122,25 @@ module State =
             information, informationState)
         |> Map.ofList
 
-    let hasAccess treeState username =
-        match treeState with
+    let hasAccess database username =
+        match database with
         | { Owner = owner } when owner.Username = username -> true
-        | { SharedWith = TreeAccess.Public } -> true
-        | { SharedWith = TreeAccess.Private accessList } ->
+        | { SharedWith = DatabaseAccess.Public } -> true
+        | { SharedWith = DatabaseAccess.Private accessList } ->
             accessList
             |> List.exists (function
-                | TreeAccessItem.Admin dbUser
-                | TreeAccessItem.ReadOnly dbUser -> dbUser.Username = username)
+                | DatabaseAccessItem.Admin dbUser
+                | DatabaseAccessItem.ReadOnly dbUser -> dbUser.Username = username)
 
-    let treeStateWithInteractions (userInteractionList: UserInteraction list) (treeState: TreeState) =
+    let databaseStateWithInteractions (userInteractionList: UserInteraction list) (databaseState: DatabaseState) =
 
-        let newTreeState =
-            (treeState, userInteractionList)
-            ||> List.fold (fun treeState (UserInteraction (_moment, user, interaction)) ->
+        let newDatabaseState =
+            (databaseState, userInteractionList)
+            ||> List.fold (fun databaseState (UserInteraction (_moment, user, interaction)) ->
                     match interaction with
                     | Interaction.Information (information, informationInteraction) ->
                         let informationState =
-                            treeState.InformationStateMap
+                            databaseState.InformationStateMap
                             |> Map.tryFind information
                             |> Option.defaultValue
                                 {
@@ -140,6 +153,7 @@ module State =
                             match informationInteraction with
                             | InformationInteraction.Attachment attachment ->
                                 let attachments = attachment :: informationState.Attachments
+
                                 { informationState with
                                     Attachments = attachments
                                 }
@@ -148,16 +162,16 @@ module State =
                                 { informationState with SortList = sortList }
 
                         let newInformationStateMap =
-                            treeState.InformationStateMap
+                            databaseState.InformationStateMap
                             |> Map.add information newInformationState
 
-                        { treeState with
+                        { databaseState with
                             InformationStateMap = newInformationStateMap
                         }
 
                     | Interaction.Task (task, taskInteraction) ->
                         let taskState =
-                            treeState.TaskStateMap
+                            databaseState.TaskStateMap
                             |> Map.tryFind task
                             |> Option.defaultValue
                                 {
@@ -207,13 +221,15 @@ module State =
                             | TaskInteraction.Archive -> taskState
 
                         let newTaskStateMap =
-                            treeState.TaskStateMap
+                            databaseState.TaskStateMap
                             |> Map.add task newTaskState
 
-                        { treeState with TaskStateMap = newTaskStateMap }
+                        { databaseState with
+                            TaskStateMap = newTaskStateMap
+                        }
                     | Interaction.Cell ({ Task = task; DateId = dateId } as _cellAddress, cellInteraction) ->
                         let taskState =
-                            treeState.TaskStateMap
+                            databaseState.TaskStateMap
                             |> Map.tryFind task
                             |> Option.defaultValue
                                 {
@@ -271,12 +287,14 @@ module State =
                             }
 
                         let newTaskStateMap =
-                            treeState.TaskStateMap
+                            databaseState.TaskStateMap
                             |> Map.add task newTaskState
 
-                        { treeState with TaskStateMap = newTaskStateMap })
+                        { databaseState with
+                            TaskStateMap = newTaskStateMap
+                        })
 
-        newTreeState
+        newDatabaseState
 
     let mergeInformationStateMap (oldMap: Map<Information, InformationState>)
                                  (newMap: Map<Information, InformationState>)

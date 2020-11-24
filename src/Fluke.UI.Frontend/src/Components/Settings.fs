@@ -1,19 +1,13 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fluke.Shared
 open Feliz
 open Fable.React
 open Feliz.Recoil
-open FSharpPlus
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 
 
 module Settings =
-    open Domain.Model
-    open Domain.UserInteraction
-    open Domain.State
-
     let render =
         React.memo (fun (input: {| Props: {| flex: int; overflowY: string; flexBasis: int |} |}) ->
             let daysBefore, setDaysBefore = Recoil.useState (Recoil.Atoms.daysBefore)
@@ -68,3 +62,4 @@ module Settings =
                                 ]
                         ]
                 ])
+

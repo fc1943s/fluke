@@ -286,7 +286,7 @@ GROUP Fluke.Shared
 STORAGE: NONE
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    Fantomas (4.3.0-alpha-005) - restriction: >= netstandard2.0
+    Fantomas (4.3.0-alpha-007) - restriction: >= netstandard2.0
       FSharp.Compiler.Service (>= 38.0) - restriction: >= netstandard2.0
       FSharp.Core (>= 5.0) - restriction: >= netstandard2.0
     FsAst (0.6) - restriction: >= netstandard2.0
@@ -295,7 +295,7 @@ NUGET
     FSharp.Compiler.Service (38.0) - restriction: >= netstandard2.0
       FSharp.Core (5.0) - restriction: >= netstandard2.0
     FSharp.Core (5.0) - restriction: || (>= net45) (>= netstandard2.0)
-    FSharpPlus (1.2.0-ci01568)
+    FSharpPlus (1.2.0-ci01665)
       FSharp.Core (>= 4.6.2) - restriction: || (>= net45) (>= netstandard2.0)
       System.ValueTuple (>= 4.4) - restriction: >= net45
     Microsoft.Build.Tasks.Git (1.0) - restriction: >= netstandard2.0
@@ -321,8 +321,8 @@ NUGET
   remote: https://api.nuget.org/v3/index.json
     Fable.Core (3.1.6) - restriction: && (< net46) (>= netstandard2.0)
       FSharp.Core (>= 4.7.1) - restriction: >= netstandard2.0
-    Fable.Remoting.Giraffe (4.12)
-      Fable.Remoting.Server (>= 5.11) - restriction: >= netstandard2.0
+    Fable.Remoting.Giraffe (4.13)
+      Fable.Remoting.Server (>= 5.12) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.6.2) - restriction: >= netstandard2.0
       Giraffe (>= 3.6) - restriction: >= netstandard2.0
     Fable.Remoting.Json (2.12) - restriction: >= netstandard2.0
@@ -331,9 +331,9 @@ NUGET
     Fable.Remoting.MsgPack (1.6.2) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.6.2) - restriction: || (>= net45) (>= netstandard2.0)
       TypeShape (>= 8.0.1) - restriction: || (>= net45) (>= netstandard2.0)
-    Fable.Remoting.Server (5.11) - restriction: >= netstandard2.0
+    Fable.Remoting.Server (5.12) - restriction: >= netstandard2.0
       Fable.Remoting.Json (>= 2.12) - restriction: || (>= net462) (>= netstandard2.0)
-      Fable.Remoting.MsgPack (>= 1.6.1) - restriction: || (>= net462) (>= netstandard2.0)
+      Fable.Remoting.MsgPack (>= 1.6.2) - restriction: || (>= net462) (>= netstandard2.0)
       FSharp.Core (>= 4.6.2) - restriction: || (>= net462) (>= netstandard2.0)
       TypeShape (>= 8.0.1) - restriction: || (>= net462) (>= netstandard2.0)
     FSharp.Control.Websockets (0.2.2) - restriction: >= netcoreapp3.1
@@ -463,9 +463,9 @@ NUGET
       Fable.Promise (>= 2.1 < 3.0)
       Feliz (>= 1.17 < 2.0)
       FSharp.Core (>= 4.7.2)
-    Fable.Node (1.0.2)
+    Fable.Node (1.2)
       Fable.Core (>= 3.1.2) - restriction: >= netstandard2.0
-      FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
+      FSharp.Core (>= 5.0) - restriction: >= netstandard2.0
     Fable.Parsimmon (4.1) - restriction: >= netstandard2.0
       Fable.Core (>= 3.0) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.6.2) - restriction: >= netstandard2.0
@@ -511,9 +511,6 @@ NUGET
     Feliz.CompilerPlugins (0.4) - restriction: >= netstandard2.0
       Fable.AST (>= 3.0.0-nagareyama-beta-002) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7.1) - restriction: >= netstandard2.0
-    Feliz.MaterialUI (1.2.2)
-      Feliz (>= 1.5 < 2.0)
-      FSharp.Core (>= 4.7 < 5.0)
     Feliz.Recoil (0.19.2)
       Fable.Core (>= 3.1.6 < 4.0)
       Fable.Extras (>= 0.2.2 < 1.0)
@@ -531,14 +528,12 @@ NUGET
       Fable.Core (>= 3.1.6 < 4.0)
       Feliz (>= 1.17 < 2.0)
       FSharp.Core (>= 4.7.2)
-    FSharp.Core (4.7.2)
+    FSharp.Core (5.0)
     Thoth.Json (5.0)
       Fable.Core (>= 3.1.4) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.7) - restriction: >= netstandard2.0
     TypeShape (9.0) - restriction: >= netstandard2.0
       FSharp.Core (>= 4.3.2) - restriction: >= netstandard2.0
-    Zanaptak.TypedCssClasses (0.4)
-      FSharp.Core (>= 4.3.4) - restriction: >= netstandard2.0
 
 GROUP Testing
 STORAGE: NONE

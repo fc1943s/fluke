@@ -16,6 +16,7 @@ coverage.xml
 .fake/
 
 ### JS
+.eslintcache
 node_modules/
 
 ### Output

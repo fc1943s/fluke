@@ -34,7 +34,7 @@ module Gun =
             try
                 user.create (username, password, res)
             with ex ->
-                printfn "createUser error: %A" ex
+                printfn $"createUser error: {ex}"
                 err ex)
 
     let authUser (user: IGunUser) username password =
@@ -42,5 +42,5 @@ module Gun =
             try
                 user.auth (username, password, res)
             with ex ->
-                printfn "authUser error: %A" ex
+                printfn "authUser error: {ex}"
                 err ex)

@@ -37,7 +37,7 @@ module StatusBar =
                                 |}
                                 []
 
-                            str (sprintf "User: %s" username)
+                            str $"User: {username}"
                         ]
 
                     Chakra.spacer () []
@@ -53,9 +53,13 @@ module StatusBar =
                                 []
 
                             activeSessions
-                            |> List.map (fun (TempUI.ActiveSession (taskName, (Minute duration), (Minute totalDuration), (Minute totalBreakDuration))) ->
+                            |> List.map (fun (TempUI.ActiveSession (taskName,
+                                                                    (Minute duration),
+                                                                    (Minute totalDuration),
+                                                                    (Minute totalBreakDuration))) ->
                                 let sessionType, color, duration, left =
                                     let left = totalDuration - duration
+
                                     match duration < totalDuration with
                                     | true -> "Session", "#7cca7c", duration, left
                                     | false -> "Break", "#ca7c7c", -left, totalBreakDuration + left
@@ -63,13 +67,10 @@ module StatusBar =
                                 Chakra.box
                                     {| color = color |}
                                     [
-                                        sprintf
-                                            "%s: Task[ %s ]; Duration[ %.1f ]; Left[ %.1f ]"
-                                            sessionType
-                                            taskName
-                                            duration
-                                            left
-                                        |> str
+                                        str
+                                            $"{sessionType}: Task[ {taskName} ]; Duration[ %.1f{duration} ]; Left[ %.1f{
+                                                                                                                            left
+                                            } ]"
                                     ])
                             |> List.intersperse (br [])
                             |> function
@@ -92,7 +93,8 @@ module StatusBar =
                                     |}
                                     []
 
-                                str (sprintf "Position: %s" (position.Stringify ()))
+                                str $"Position: {position.Stringify ()}"
                             ]
                     | None -> ()
+
                 ])

@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Feliz.MaterialUI
 open Fable.React
 open Feliz
 open Feliz.Recoil
@@ -13,35 +12,11 @@ open Fluke.Shared
 
 module TaskName =
     open Domain.Model
-    open Domain.UserInteraction
-    open Domain.State
-
-    let useStyles =
-        Styles.makeStyles (fun (styles: StyleCreator<{| hovered: bool |}>) _theme ->
-            {|
-                root =
-                    styles.create (fun props ->
-                        [
-                            if props.hovered then
-                                style.zIndex 1
-                        ])
-                name =
-                    styles.create (fun props ->
-                        [
-                            style.overflow.hidden
-                            if props.hovered then
-                                style.backgroundColor "#333"
-                            else
-                                style.whitespace.nowrap
-                                style.textOverflow.ellipsis
-                        ])
-            |})
 
     let render =
         React.memo (fun (input: {| TaskId: Recoil.Atoms.Task.TaskId |}) ->
             let ref = React.useElementRef ()
             let hovered = Listener.useElementHover ref
-            let classes = useStyles {| hovered = hovered |}
             let hasSelection = Recoil.useValue (Recoil.Selectors.Task.hasSelection input.TaskId)
             let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name input.TaskId)
             let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments input.TaskId)
@@ -52,24 +27,38 @@ module TaskName =
                     position = "relative"
                     height = "17px"
                     lineHeight = "17px"
-                    className = classes.root
+                    zIndex =
+                        if hovered then
+                            Some 1
+                        else
+                            None
                 |}
                 [
                     Chakra.box
                         {|
                             color =
                                 if hasSelection then
-                                    "#ff5656"
+                                    Some "#ff5656"
                                 else
-                                    ""
-                            className =
-                                [
-                                    classes.name
-                                ]
-                                |> String.concat " "
+                                    None
+                            overflow = "hidden"
+                            backgroundColor =
+                                if hovered then
+                                    Some "#333"
+                                else
+                                    None
+                            whiteSpace =
+                                if not hovered then
+                                    Some "nowrap"
+                                else
+                                    None
+                            textOverflow =
+                                if not hovered then
+                                    Some "ellipsis"
+                                else
+                                    None
                         |}
                         [
-
                             str taskName
                         ]
                     TooltipPopup.render {| Attachments = attachments |}

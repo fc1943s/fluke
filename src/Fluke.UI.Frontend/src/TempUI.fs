@@ -19,7 +19,8 @@ module TempUI =
         | Databases
         | Settings
 
-    type ActiveSession = ActiveSession of taskName: string * duration: Minute * totalDuration: Minute * totalBreakDuration: Minute
+    type ActiveSession =
+        ActiveSession of taskName: string * duration: Minute * totalDuration: Minute * totalBreakDuration: Minute
 
     let colorCornerBlue = "#005688"
     let colorCornerPink = "#a91c77"
@@ -29,7 +30,7 @@ module TempUI =
         | Project _ -> "#999"
         | Area _ -> "#666"
         | Resource _ -> "#333"
-        | Archive archive -> sprintf "[%s]" (informationColor archive)
+        | Archive archive -> $"[{informationColor archive}]"
 
     let manualCellStatusColor =
         function
@@ -48,3 +49,4 @@ module TempUI =
         | Missed -> "#990022"
         | MissedToday -> "#530011"
         | UserStatus (_user, manualCellStatus) -> manualCellStatusColor manualCellStatus
+

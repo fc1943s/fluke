@@ -26,7 +26,7 @@ module Router =
                          (Atoms.api,
                           {
                               currentUser = async { return testUser }
-                              treeStateList = fun _username _moment -> async { return [] }
+                              databaseStateList = fun _username _moment -> async { return [] }
                           })
 
                      setter.set (Atoms.username, Some testUser.Username)
@@ -34,7 +34,7 @@ module Router =
 
              let getComponent () =
                  Chakra.box
-                     ()
+                     {||}
                      [
                          RouterObserver.render ()
                      ]

@@ -35,7 +35,7 @@ module LeftDock =
                     ("Databases",
                      Icons.fi.FiDatabase,
                      (fun () ->
-                         TreeSelector.render
+                         Databases.render
                              {|
                                  Username = input.Username
                                  Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
@@ -91,7 +91,7 @@ module LeftDock =
                                             Name = name
                                             Icon = icon
                                             Atom = Recoil.Atoms.leftDock
-                                            Children =
+                                            children =
                                                 [
                                                     content ()
                                                 ]

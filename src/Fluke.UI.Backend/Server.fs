@@ -35,7 +35,7 @@ module Server =
                 let getEnvVar name =
                     match Environment.GetEnvironmentVariable name with
                     | null
-                    | "" -> sprintf "Invalid EnvVar: %s" name |> Error
+                    | "" -> Error $"Invalid EnvVar: {name}"
                     | s -> s |> Ok
 
                 match getEnvVar "FLUKE_TEMP_DATA_PATH" with
@@ -45,10 +45,10 @@ module Server =
                     try
                         File.ReadAllText fullPath
                     with ex ->
-                        printfn "path readAllText error: %A %A" fullPath ex
+                        printfn $"path readAllText error: {fullPath} {ex}"
                         ""
                 | Error error ->
-                    printfn "%s" error
+                    printfn $"{error}"
                     ""
 
             {
@@ -57,36 +57,40 @@ module Server =
                         let currentUserJson = readFile "currentUser.json"
                         return Json.deserialize<User> currentUserJson
                     }
-                treeStateList =
+                databaseStateList =
                     fun username moment ->
                         async {
-                            let treeStateListJson = readFile "treeStateList.json"
+                            let databaseStateListJson = readFile "databaseStateList.json"
 
-                            let treeStateList = Json.deserialize<TreeState list> treeStateListJson
+                            let databaseStateList = Json.deserialize<DatabaseState list> databaseStateListJson
 
                             let templates =
-                                getTreeMap TempData.testUser
+                                getDatabaseMap TempData.testUser
                                 |> Map.toList
                                 |> List.map (fun (templateName, dslTemplate) ->
-                                    treeStateFromDslTemplate TempData.testUser templateName dslTemplate)
+                                    databaseStateFromDslTemplate
+                                        TempData.testUser
+                                        (DatabaseId (Guid.NewGuid ()))
+                                        templateName
+                                        dslTemplate)
 
-                            let treesWithAccess =
-                                treeStateList
+                            let databasesWithAccess =
+                                databaseStateList
                                 |> List.append templates
-                                |> List.filter (fun treeState ->
-                                    match treeState with
+                                |> List.filter (fun databaseState ->
+                                    match databaseState.Database with
                                     | { Owner = owner } when owner.Username = username -> true
-                                    | { SharedWith = TreeAccess.Public } -> true
-                                    | { SharedWith = TreeAccess.Private accessList } ->
+                                    | { SharedWith = DatabaseAccess.Public } -> true
+                                    | { SharedWith = DatabaseAccess.Private accessList } ->
                                         accessList
                                         |> List.exists (function
-                                            | (TreeAccessItem.Admin user
-                                            | TreeAccessItem.ReadOnly user) when user.Username = username -> true
+                                            | (DatabaseAccessItem.Admin user
+                                            | DatabaseAccessItem.ReadOnly user) when user.Username = username -> true
                                             | _ -> false)
                                     | _ -> false)
 
 
-                            return treesWithAccess
+                            return databasesWithAccess
                         }
             }
 
@@ -99,7 +103,7 @@ module Server =
 
     let app =
         application {
-            url (sprintf "https://0.0.0.0:%s/" Sync.serverPort)
+            url $"https://0.0.0.0:{Sync.serverPort}/"
             use_router webApp
             use_gzip
             force_ssl

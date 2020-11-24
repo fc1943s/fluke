@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Hooks
 
+open Fable.React.Props
 open Feliz
 open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
@@ -66,6 +67,12 @@ module Theme =
                                         lineHeight = "12px"
                                         fontFeatureSettings = "pnum"
                                         fontVariantNumeric = "proportional-nums"
+                                        margin = 0
+                                        padding = 0
+                                        boxSizing = "border-box"
+                                        fontSize = "12px"
+                                        color = "#ddd"
+                                        userSelect = "none"
                                     |}
                                     |> JsInterop.toPlainJsObj
                                 ``*::-webkit-scrollbar`` = {| width = "6px" |} |> JsInterop.toPlainJsObj
@@ -82,6 +89,17 @@ module Theme =
                                 ``*, *::before, *::after`` =
                                     {| wordWrap = "break-word" |}
                                     |> JsInterop.toPlainJsObj
+                                ``.markdown-container h1`` =
+                                    {|
+                                        borderBottom = "1px solid #777"
+                                        marginBottom = "3px"
+                                    |}
+                                    |> JsInterop.toPlainJsObj
+                                ``.markdown-container li`` =
+                                    {| listStyleType = "square" |}
+                                    |> JsInterop.toPlainJsObj
+                                ``.markdown-container ul, .tooltip-popup p`` =
+                                    {| padding = "5px 0" |} |> JsInterop.toPlainJsObj
                             |}
                             |> JsInterop.toPlainJsObj
                 |}

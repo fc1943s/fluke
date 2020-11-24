@@ -42,7 +42,7 @@ module Old2 =
 
     type OldLane = OldLane of task: TaskState * cells: (CellAddress * CellStatus) list
 
-    //    type TreeData =
+    //    type DatabaseData =
 //        {
 //            GetLivePosition: (unit -> FlukeDateTime)
 //            InformationList: Information list
@@ -144,7 +144,7 @@ module Old2 =
                     taskMap
                     |> Map.tryFind (information, TaskName taskName)
                     |> function
-                    | None -> failwithf "Invalid task: '%A/%s'" information taskName
+                    | None -> failwithf $"Invalid task: '{information}/{taskName}'"
                     | Some taskState ->
                         {
                             Task = taskState.Task

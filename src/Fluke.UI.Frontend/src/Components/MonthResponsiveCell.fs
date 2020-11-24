@@ -11,9 +11,7 @@ open Feliz.Recoil
 
 
 module MonthResponsiveCell =
-    open Domain.Model
     open Domain.UserInteraction
-    open Domain.State
 
     let render =
         React.memo (fun (input: {| Username: Username

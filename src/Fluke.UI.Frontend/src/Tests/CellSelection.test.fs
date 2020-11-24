@@ -1,8 +1,10 @@
 namespace Fluke.UI.Frontend.Tests
 
+open System
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz.Recoil
+open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
@@ -42,7 +44,8 @@ module CellSelection =
                              })
                  }
 
-             let treeState = treeStateFromDslTemplate testUser "Test" dslTemplate
+             let databaseState =
+                 databaseStateFromDslTemplate testUser (State.DatabaseId (Guid.NewGuid ())) "Test" dslTemplate
 
              let initialSetter (setter: CallbackMethods) =
                  promise {
@@ -50,12 +53,12 @@ module CellSelection =
                          (Atoms.api,
                           {
                               currentUser = async { return testUser }
-                              treeStateList =
+                              databaseStateList =
                                   fun _username _moment ->
                                       async {
                                           return
                                               [
-                                                  treeState
+                                                  databaseState
                                               ]
                                       }
                           })
@@ -67,19 +70,21 @@ module CellSelection =
                      setter.set (Atoms.selectedPosition, Some dslTemplate.Position)
                  }
 
-             let selectTree (setter: CallbackMethods) =
+             let selectDatabase (setter: CallbackMethods) =
                  promise {
                      let! username = setter.snapshot.getPromise Atoms.username
 
                      match username with
                      | Some username ->
-                         let! treeStateMap = setter.snapshot.getPromise (Selectors.Session.treeStateMap username)
-                         let treeId = treeStateMap |> Map.keys |> Seq.head
+                         let! databaseStateMap =
+                             setter.snapshot.getPromise (Selectors.Session.databaseStateMap username)
+
+                         let databaseId = databaseStateMap |> Map.keys |> Seq.head
 
                          setter.set
-                             (Atoms.treeSelectionIds,
+                             (Atoms.selectedDatabaseIds,
                               [|
-                                  treeId
+                                  databaseId
                               |])
                      | None -> ()
                  }
@@ -115,7 +120,7 @@ module CellSelection =
              let initialize peek =
                  promise {
                      do! peek initialSetter
-                     do! peek selectTree
+                     do! peek selectDatabase
                      do! Setup.initializeSessionData testUser peek
                  }
 
@@ -131,7 +136,7 @@ module CellSelection =
                               .Value
 
                       do! [
-                              treeState |> Setup.taskIdByName "2",
+                              databaseState |> Setup.taskIdByName "2",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                               ]
@@ -144,7 +149,7 @@ module CellSelection =
                               .Value
 
                       do! [
-                              treeState |> Setup.taskIdByName "2",
+                              databaseState |> Setup.taskIdByName "2",
                               set [
                                   FlukeDate.Create 2020 Month.January 11
                               ]
@@ -157,7 +162,7 @@ module CellSelection =
                               .Value
 
                       do! [
-                              treeState |> Setup.taskIdByName "2", Set.empty
+                              databaseState |> Setup.taskIdByName "2", Set.empty
                           ]
                           |> Map.ofList
                           |> expectSelection peek
@@ -181,7 +186,7 @@ module CellSelection =
                               .Value
 
                       do! [
-                              treeState |> Setup.taskIdByName "2",
+                              databaseState |> Setup.taskIdByName "2",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                                   FlukeDate.Create 2020 Month.January 11
@@ -209,7 +214,7 @@ module CellSelection =
                               .Value
 
                       do! [
-                              treeState |> Setup.taskIdByName "2",
+                              databaseState |> Setup.taskIdByName "2",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                                   FlukeDate.Create 2020 Month.January 10
@@ -238,12 +243,12 @@ module CellSelection =
                               .Value
 
                       do! [
-                              treeState |> Setup.taskIdByName "2",
+                              databaseState |> Setup.taskIdByName "2",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                               ]
 
-                              treeState |> Setup.taskIdByName "3",
+                              databaseState |> Setup.taskIdByName "3",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                               ]
@@ -270,13 +275,13 @@ module CellSelection =
                               .Value
 
                       do! [
-                              treeState |> Setup.taskIdByName "2",
+                              databaseState |> Setup.taskIdByName "2",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                                   FlukeDate.Create 2020 Month.January 10
                               ]
 
-                              treeState |> Setup.taskIdByName "3",
+                              databaseState |> Setup.taskIdByName "3",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                                   FlukeDate.Create 2020 Month.January 10
@@ -290,21 +295,21 @@ module CellSelection =
                               .Value
 
                       do! [
-                              treeState |> Setup.taskIdByName "2",
+                              databaseState |> Setup.taskIdByName "2",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                                   FlukeDate.Create 2020 Month.January 10
                                   FlukeDate.Create 2020 Month.January 11
                               ]
 
-                              treeState |> Setup.taskIdByName "3",
+                              databaseState |> Setup.taskIdByName "3",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                                   FlukeDate.Create 2020 Month.January 10
                                   FlukeDate.Create 2020 Month.January 11
                               ]
 
-                              treeState |> Setup.taskIdByName "4",
+                              databaseState |> Setup.taskIdByName "4",
                               set [
                                   FlukeDate.Create 2020 Month.January 09
                                   FlukeDate.Create 2020 Month.January 10
@@ -319,7 +324,7 @@ module CellSelection =
                               .Value
 
                       do! [
-                              treeState |> Setup.taskIdByName "1",
+                              databaseState |> Setup.taskIdByName "1",
                               set [
                                   FlukeDate.Create 2020 Month.January 08
                                   FlukeDate.Create 2020 Month.January 09
@@ -327,7 +332,7 @@ module CellSelection =
                                   FlukeDate.Create 2020 Month.January 11
                               ]
 
-                              treeState |> Setup.taskIdByName "2",
+                              databaseState |> Setup.taskIdByName "2",
                               set [
                                   FlukeDate.Create 2020 Month.January 08
                                   FlukeDate.Create 2020 Month.January 09
@@ -335,7 +340,7 @@ module CellSelection =
                                   FlukeDate.Create 2020 Month.January 11
                               ]
 
-                              treeState |> Setup.taskIdByName "3",
+                              databaseState |> Setup.taskIdByName "3",
                               set [
                                   FlukeDate.Create 2020 Month.January 08
                                   FlukeDate.Create 2020 Month.January 09
@@ -343,7 +348,7 @@ module CellSelection =
                                   FlukeDate.Create 2020 Month.January 11
                               ]
 
-                              treeState |> Setup.taskIdByName "4",
+                              databaseState |> Setup.taskIdByName "4",
                               set [
                                   FlukeDate.Create 2020 Month.January 08
                                   FlukeDate.Create 2020 Month.January 09

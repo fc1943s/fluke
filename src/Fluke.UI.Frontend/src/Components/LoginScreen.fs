@@ -63,7 +63,7 @@ module LoginScreen =
                 {| flex = 1 |}
                 [
                     Chakra.stack
-                        ()
+                        {|  |}
                         [
                             Chakra.input
                                 {|
@@ -97,3 +97,4 @@ module LoginScreen =
                                 ]
                         ]
                 ])
+

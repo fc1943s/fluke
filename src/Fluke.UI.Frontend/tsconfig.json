@@ -12,14 +12,15 @@
     "isolatedModules": true,
     "noEmit": true,
     "noEmitOnError": true,
-    "jsx": "react",
+    "jsx": "react-jsx",
     "target": "es2020",
     "lib": [
       "dom",
       "dom.iterable",
       "esnext"
     ],
-    "plugins": []
+    "plugins": [],
+    "noFallthroughCasesInSwitch": true
   },
   "include": [
     "src"

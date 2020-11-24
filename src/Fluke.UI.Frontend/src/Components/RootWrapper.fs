@@ -25,13 +25,13 @@ module RootWrapper =
                     match atomLoadable.state () with
                     | LoadableState.HasValue value ->
                         if false then
-                            printfn "persisting1 <%A> <%A>" modifiedAtom.key value
+                            printfn $"persisting1 <{modifiedAtom.key}> <{value}>"
                     | _ -> ()))
 
             nothing)
 
-    let render =
-        React.memo (fun (input: {| Children: ReactElement list |}) ->
+    let render children =
+        React.memo (fun () ->
             let theme = Theme.useTheme ()
 
             Recoil.root [
@@ -42,10 +42,9 @@ module RootWrapper =
                         [
                             persistenceObserver ()
                             React.router [
-                                router.children [
-                                    yield! input.Children
-                                ]
+                                router.children [ yield! children ]
                             ]
                         ]
                 ]
             ])
+        |> React.bindComponent {||} children

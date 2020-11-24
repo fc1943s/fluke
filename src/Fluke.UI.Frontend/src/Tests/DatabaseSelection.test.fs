@@ -13,30 +13,30 @@ open Fluke.Shared
 open Fluke.Shared.Domain
 open FSharpPlus
 
-module TreeSelection =
+module DatabaseSelection =
     open State
     open TempData
 
 
     Jest.describe
-        ("tree selection",
+        ("database selection",
          (fun () ->
              let position1 = FlukeDateTime.FromDateTime DateTime.MinValue
              let position2 = FlukeDateTime.FromDateTime DateTime.MaxValue
 
-             let treeList =
+             let databaseList =
                  [
-                     TreeId (Guid "F8488D67-0305-40AA-8CAB-AF46E486F1DC"), Some position1
-                     TreeId (Guid "63F40B3D-5B5F-419C-ADA2-5A5CDCA180DD"), Some position1
-                     TreeId (Guid "43B942D6-880E-4788-A6B2-EB670CD48B14"), Some position2
-                     TreeId (Guid "4F2CEB09-F646-4EFE-AC34-A3BDA24DDB71"), None
-                     TreeId (Guid "C1D06F9A-154A-4BBC-9D7F-0C78C6C44C5C"), None
+                     DatabaseId (Guid "F8488D67-0305-40AA-8CAB-AF46E486F1DC"), Some position1
+                     DatabaseId (Guid "63F40B3D-5B5F-419C-ADA2-5A5CDCA180DD"), Some position1
+                     DatabaseId (Guid "43B942D6-880E-4788-A6B2-EB670CD48B14"), Some position2
+                     DatabaseId (Guid "4F2CEB09-F646-4EFE-AC34-A3BDA24DDB71"), None
+                     DatabaseId (Guid "C1D06F9A-154A-4BBC-9D7F-0C78C6C44C5C"), None
                  ]
 
              let queryMenuItems (subject: Bindings.render<_, _>) =
-                 treeList
+                 databaseList
                  |> List.map fst
-                 |> List.map (fun (TreeId guid) -> subject.queryByTestId ("menu-item-" + guid.ToString ()))
+                 |> List.map (fun (DatabaseId guid) -> subject.queryByTestId ("menu-item-" + guid.ToString ()))
                  |> List.toArray
 
              let testMenuItemsState array menuItems =
@@ -53,22 +53,23 @@ module TreeSelection =
 
              let initialSetter (setter: CallbackMethods) =
                  promise {
-                     setter.set (Atoms.Session.availableTreeIds testUser.Username, treeList |> List.map fst)
-                     treeList
-                     |> List.iter (fun (treeId, position) -> setter.set (Atoms.Tree.position treeId, position))
+                     setter.set (Atoms.Session.availableDatabaseIds testUser.Username, databaseList |> List.map fst)
+
+                     databaseList
+                     |> List.iter (fun (databaseId, position) -> setter.set (Atoms.Database.position databaseId, position))
                  }
 
-             let getTreeSelector () =
-                 TreeSelector.render
+             let getDatabaseSelector () =
+                 Databases.render
                      {|
                          Username = testUser.Username
                          Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
                      |}
 
              Jest.test
-                 ("tree list updates correctly with user clicks",
+                 ("database list updates correctly with user clicks",
                   promise {
-                      let! subject, peek = getTreeSelector () |> Setup.render
+                      let! subject, peek = getDatabaseSelector () |> Setup.render
                       do! peek initialSetter
 
                       let menuItems = queryMenuItems subject
@@ -188,20 +189,20 @@ module TreeSelection =
                   })
 
              Jest.test
-                 ("tree list populated correctly with initial data",
+                 ("database list populated correctly with initial data",
                   promise {
-                      let! subject, peek = getTreeSelector () |> Setup.render
+                      let! subject, peek = getDatabaseSelector () |> Setup.render
                       do! peek initialSetter
 
                       do! peek (fun setter ->
                               promise {
                                   setter.set
-                                      (Atoms.treeSelectionIds,
+                                      (Atoms.selectedDatabaseIds,
                                        [|
-                                           fst treeList.Head
+                                           fst databaseList.Head
                                        |])
 
-                                  setter.set (Atoms.selectedPosition, snd treeList.Head)
+                                  setter.set (Atoms.selectedPosition, snd databaseList.Head)
                               })
 
                       let menuItems = queryMenuItems subject

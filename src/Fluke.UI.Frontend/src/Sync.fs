@@ -25,8 +25,8 @@ module Sync =
                         let responseText: string = ex.ResponseText
                         let statusCode: int = ex.StatusCode
 
-                        printfn "Proxy exception: %A. responseText=%A; statusCode=%A" ex.Message responseText statusCode
-                    | ex -> printfn "API exception: %A" ex
+                        printfn $"Proxy exception: {ex.Message}. responseText={responseText}; statusCode={statusCode}"
+                    | ex -> printfn $"API exception: {ex}"
 
                     None
         }

@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Feliz.MaterialUI
 open Browser.Types
 open Fable.React
 open Feliz
@@ -15,27 +14,6 @@ module Cell =
     open UserInteraction
     open State
 
-    let useStyles =
-        Styles.makeStyles (fun (styles: StyleCreator<{| hovered: bool |}>) _theme ->
-            {|
-                root =
-                    styles.create (fun props ->
-                        [
-                            if props.hovered then
-                                style.zIndex 1
-                        ])
-                name =
-                    styles.create (fun props ->
-                        [
-                            style.overflow.hidden
-                            if props.hovered then
-                                style.backgroundColor "#222"
-                            else
-                                style.whitespace.nowrap
-                                style.textOverflow.ellipsis
-                        ])
-            |})
-
     let render =
         React.memo (fun (input: {| Username: Username
                                    TaskId: Recoil.Atoms.Task.TaskId
@@ -44,6 +22,7 @@ module Cell =
             Profiling.addCount "CellComponent.render"
 
             let (DateId referenceDay) = input.DateId
+            let isTesting = Recoil.useValue Recoil.Atoms.isTesting
             let status = Recoil.useValue (Recoil.Atoms.Cell.status (input.TaskId, input.DateId))
             let sessions = Recoil.useValue (Recoil.Atoms.Cell.sessions (input.TaskId, input.DateId))
             let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments (input.TaskId, input.DateId))
@@ -56,13 +35,27 @@ module Cell =
             let onCellClick =
                 React.useCallbackRef (fun () ->
                     setSelected (not selected)
-                    setSelectedCell (Some (input.TaskId, input.DateId))
+
+                    if not isMainSelection then
+                        setSelectedCell (Some (input.TaskId, input.DateId))
                     //                gun.get("test").get("test2").put(1)
                     )
 
+            let selectableStatusList =
+                [
+                    Completed
+                    Postponed None
+                    Dismissed
+                    Scheduled
+                ]
+
             Chakra.center
                 {|
-                    ``data-testid`` = sprintf "cell-%A-%A" input.TaskId (referenceDay.DateTime.ToShortDateString ())
+                    ``data-testid`` =
+                        if isTesting then
+                            Some $"cell-{input.TaskId}-{referenceDay.DateTime.ToShortDateString ()}"
+                        else
+                            None
                     onClick = (fun (_event: MouseEvent) -> onCellClick ())
                     width = "17px"
                     height = "17px"
@@ -85,28 +78,23 @@ module Cell =
                 |}
                 [
                     if isMainSelection then
-                        Chakra.box
-                            ()
+                        Chakra.stack
+                            {|
+                                spacing = 0
+                                borderWidth = "1px"
+                                borderColor = TempUI.cellStatusColor Disabled
+                                position = "absolute"
+                                top = "10px"
+                                left = "10px"
+                                zIndex = 1
+                                boxShadow = "0px 0px 2px 1px #262626"
+                            |}
                             [
                                 Chakra.simpleGrid
-                                    {|
-                                        columns = 2
-                                        borderWidth = "1px"
-                                        borderColor = TempUI.cellStatusColor Disabled
-                                        position = "absolute"
-                                        top = "10px"
-                                        left = "10px"
-                                        zIndex = 1
-                                        boxShadow = "0px 0px 2px 1px #262626"
-                                    |}
+                                    {| columns = 2 |}
                                     [
                                         yield!
-                                            [
-                                                Completed
-                                                Postponed None
-                                                Dismissed
-                                                Scheduled
-                                            ]
+                                            selectableStatusList
                                             |> List.map (fun status ->
                                                 let color = TempUI.manualCellStatusColor status
 
@@ -120,18 +108,16 @@ module Cell =
                                                                     ()
                                                                     [
                                                                         match until with
-                                                                        | None -> "Postponed until tomorrow"
+                                                                        | None -> "Postpone until tomorrow"
                                                                         | Some until ->
-                                                                            sprintf
-                                                                                "Postponed until X (30s remaining) %A"
-                                                                                until
+                                                                            $"Postpone until X (30s remaining) {until}"
                                                                         |> str
                                                                     ]
                                                             | Completed ->
                                                                 Chakra.box
                                                                     ()
                                                                     [
-                                                                        str "Completed"
+                                                                        str "Complete"
                                                                     ]
                                                             | Dismissed ->
                                                                 Chakra.box
@@ -140,7 +126,7 @@ module Cell =
                                                                         Chakra.box
                                                                             ()
                                                                             [
-                                                                                str "Dismissed"
+                                                                                str "Dismiss"
                                                                             ]
                                                                         Chakra.box
                                                                             ()
@@ -155,7 +141,7 @@ module Cell =
                                                                         Chakra.box
                                                                             ()
                                                                             [
-                                                                                str "Scheduled"
+                                                                                str "Schedule"
                                                                             ]
                                                                         Chakra.box
                                                                             {| marginTop = "8px" |}
@@ -185,6 +171,31 @@ overriding any other behavior.
                                                             []
                                                     ])
                                     ]
+                                match status with
+                                | UserStatus (_, status) when selectableStatusList |> List.contains status ->
+                                    Chakra.tooltip
+                                        {|
+                                            bg = "gray.10%"
+                                            label = "Clear"
+                                            placement = "bottom"
+                                            hasArrow = true
+                                        |}
+                                        [
+                                            Chakra.iconButton
+                                                {|
+                                                    icon = Icons.mdClear ()
+                                                    backgroundColor = TempUI.cellStatusColor Disabled
+                                                    _hover = {| opacity = 0.8 |}
+                                                    variant = "outline"
+                                                    border = 0
+                                                    width = "30px"
+                                                    height = "15px"
+                                                    borderRadius = 0
+                                                    onClick = fun () -> ()
+                                                |}
+                                                []
+                                        ]
+                                | _ -> ()
                             ]
                     CellSessionIndicator.render {| Status = status; Sessions = sessions |}
                     if not selected then
@@ -195,7 +206,7 @@ overriding any other behavior.
                             |}
                     if showUser then
                         match status with
-                        | UserStatus (user, manualCellStatus) -> CellStatusUserIndicator.render {| User = user |}
+                        | UserStatus (user, _manualCellStatus) -> CellStatusUserIndicator.render {| User = user |}
                         | _ -> ()
 
                     TooltipPopup.render {| Attachments = attachments |}

@@ -12,20 +12,16 @@ module App =
         React.memo (fun () ->
             Profiling.addTimestamp "appMain.render"
 
-            RootWrapper.render
-                {|
-                    Children =
-                        [
-                            DebugOverlay.render ()
+            RootWrapper.render [
+                DebugOverlay.render ()
 
-                            CtrlListener.render ()
-                            ShiftListener.render ()
-                            SelectionListener.render ()
-                            RouterObserver.render ()
-                            //                PositionUpdater.render ()
-                            GunObserver.render ()
-                            UserLoader.render ()
+                CtrlListener.render ()
+                ShiftListener.render ()
+                SelectionListener.render ()
+                RouterObserver.render ()
+                //                PositionUpdater.render ()
+                GunObserver.render ()
+                UserLoader.render ()
 
-                            Content.render ()
-                        ]
-                |})
+                Content.render ()
+            ])

@@ -10,9 +10,7 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 module Day =
-    open Domain.Model
     open Domain.UserInteraction
-    open Domain.State
 
     let render =
         React.memo (fun (input: {| Username: Username
@@ -44,3 +42,4 @@ module Day =
                 [
                     str <| String.toLower input.Label
                 ])
+

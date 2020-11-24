@@ -3,16 +3,17 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.Recoil
-open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 
 module DockPanel =
+
+
     let render =
-        React.memo (fun (input: {| Name: string
-                                   Icon: obj
-                                   Atom: RecoilValue<TempUI.DockType option, ReadWrite>
-                                   Children: ReactElement list |}) ->
+        Feliz.React.memo (fun (input: {| Name: string
+                                         Icon: obj
+                                         Atom: RecoilValue<TempUI.DockType option, ReadWrite>
+                                         children: seq<ReactElement> |}) ->
             let setAtom = Recoil.useSetState input.Atom
 
             Chakra.stack
@@ -29,7 +30,7 @@ module DockPanel =
                             Chakra.box {| ``as`` = input.Icon; marginRight = "6px" |} []
                             str input.Name
 
-                            Chakra.spacer () []
+                            Chakra.spacer {|  |} []
 
                             Chakra.iconButton
                                 {|
@@ -54,6 +55,6 @@ module DockPanel =
                             flex = 1
                         |}
                         [
-                            yield! input.Children
+                            yield! input.children
                         ]
                 ])

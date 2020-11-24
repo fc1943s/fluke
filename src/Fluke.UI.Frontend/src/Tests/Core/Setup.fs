@@ -23,7 +23,7 @@ module Setup =
                 Recoil.root [ root.children [ cmp ] ]
             ]
             |> ReactErrorBoundary.renderCatchFn (fun (error, info) ->
-                printfn "ReactErrorBoundary Error: %A %A" info.componentStack error) (str "error"))
+                printfn $"ReactErrorBoundary Error: {info.componentStack} {error}") (str "error"))
 
     let handlePromise promise =
         promise
@@ -57,8 +57,8 @@ module Setup =
                 | None -> ()
             })
 
-    let taskIdByName name treeState =
-        treeState.TaskStateMap
+    let taskIdByName name databaseState =
+        databaseState.TaskStateMap
         |> Map.pick (fun task _ ->
             match task with
             | { Name = TaskName taskName } when taskName = name -> Some (Recoil.Atoms.Task.taskId task)
@@ -86,8 +86,7 @@ module Setup =
                                         |> List.toArray
                                         |> Array.map (fun date ->
                                             (name, date),
-                                            subject.queryByTestId
-                                                (sprintf "cell-%A-%A" taskId (date.DateTime.ToShortDateString ())))
+                                            subject.queryByTestId $"cell-{taskId}-{date.DateTime.ToShortDateString ()}")
                                 })
                             |> Promise.Parallel
 

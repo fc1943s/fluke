@@ -5,7 +5,6 @@
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="src\Temp\Css.fs" />
         <Compile Include="src\Bindings\Dom.fs" />
         <Compile Include="src\Bindings\JS.fs" />
         <Compile Include="src\Bindings\Crypto.fs" />
@@ -25,6 +24,8 @@
         <Compile Include="src\Hooks\Theme.fs" />
         <Compile Include="src\Hooks\React.fs" />
         <Compile Include="src\Hooks\Auth.fs" />
+        <Compile Include="src\Components\Empty.fs" />
+        <Compile Include="src\Components\Input.fs" />
         <Compile Include="src\Components\MonthResponsiveCell.fs" />
         <Compile Include="src\Components\Day.fs" />
         <Compile Include="src\Components\Spinner.fs" />
@@ -41,13 +42,18 @@
         <Compile Include="src\Components\Cell.fs" />
         <Compile Include="src\Components\Cells.fs" />
         <Compile Include="src\Components\HabitTrackerView.fs" />
+        <Compile Include="src\Components\Modal.fs" />
         <Compile Include="src\Components\PriorityView.fs" />
         <Compile Include="src\Components\BulletJournalView.fs" />
         <Compile Include="src\Components\InformationView.fs" />
         <Compile Include="src\Components\DebugOverlay.fs" />
         <Compile Include="src\Components\Logo.fs" />
+        <Compile Include="src\Components\TaskForm.fs" />
+        <Compile Include="src\Components\DatabaseForm.fs" />
+        <Compile Include="src\Components\AddTaskButton.fs" />
+        <Compile Include="src\Components\AddDatabaseButton.fs" />
         <Compile Include="src\Components\TopBar.fs" />
-        <Compile Include="src\Components\TreeSelector.fs" />
+        <Compile Include="src\Components\Databases.fs" />
         <Compile Include="src\Components\Settings.fs" />
         <Compile Include="src\Components\DockButton.fs" />
         <Compile Include="src\Components\DockPanel.fs" />
@@ -74,9 +80,8 @@
         <Compile Include="src\Tests\Core\Setup.fs" />
         <Compile Include="src\Tests\CellSelection.test.fs" />
         <Compile Include="src\Tests\Router.test.fs" />
-        <Compile Include="src\Tests\TreeSelection.test.fs" />
+        <Compile Include="src\Tests\DatabaseSelection.test.fs" />
         <Content Include="public\index.html" />
-        <Content Include="public\index.scss" />
         <Content Include="public\index.tsx" />
         <Content Include="public\index.ts" />
         <Content Include="public\index.jsx" />

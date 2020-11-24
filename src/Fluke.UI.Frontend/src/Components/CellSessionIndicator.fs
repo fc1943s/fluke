@@ -3,13 +3,11 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.UseListener
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
 module CellSessionIndicator =
-    open Domain.Model
     open Domain.UserInteraction
     open Domain.State
 
@@ -30,3 +28,4 @@ module CellSessionIndicator =
                     | x when x > 0 -> str (string x)
                     | _ -> ()
                 ])
+

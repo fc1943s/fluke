@@ -7,16 +7,10 @@ open Feliz.Recoil
 open FSharpPlus
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
-open Fluke.Shared
-open System
 open Fable.Core
 open Fluke.UI.Frontend.Hooks
 
 module DebugOverlay =
-    open Domain.Model
-    open Domain.UserInteraction
-    open Domain.State
-
     let render =
         React.memo (fun () ->
             let text, setText = React.useState ""
@@ -35,7 +29,7 @@ module DebugOverlay =
                                 |> JsInterop.createObj
                             Timestamps =
                                 Profiling.profilingState.Timestamps
-                                |> Seq.map (fun (k, v) -> sprintf "%A = %A" k v)
+                                |> Seq.map (fun (k, v) -> $"{k} = {v}")
                                 |> Seq.toList
                         |}
                         |> fun obj -> JS.JSON.stringify (obj, unbox null, 4)
@@ -53,8 +47,8 @@ module DebugOverlay =
                             id = "test1"
                             position = "absolute"
                             width = "100px"
-                            height = "100px"
-                            top = 0
+                            height = "80px"
+                            top = "40px"
                             right = 0
                             backgroundColor = "#ccc3"
                             zIndex = 1
@@ -103,10 +97,7 @@ module DebugOverlay =
                         if debug then
                             Html.pre [
                                 prop.id "diag"
-                                prop.children
-                                    [
-                                        str text
-                                    ]
+                                prop.children [ str text ]
                             ]
                     ]
             ])

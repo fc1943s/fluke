@@ -11,7 +11,7 @@ interface AppState {
         name?: string,
         cells?: { dateId: string, status?: string, selected?: boolean }[]
     }[],
-    trees: { position: string }[],
+    databases: { position: string }[],
     taskId1: {}
 }
 
@@ -62,6 +62,6 @@ window.A = async () => {
   //
   // const event = {selected: true};
   //
-  // const trees = gun.get("trees");
-  // trees.set({position: '2020-03-10 14:00'});
+  // const databases = gun.get("databases");
+  // databases.set({position: '2020-03-10 14:00'});
 };

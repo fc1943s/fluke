@@ -74,7 +74,6 @@ const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 // The HtmlWebpackPlugin allows us to use a template for the index.html page
 // and automatically injects <script> or <link> tags for generated bundles.
@@ -116,7 +115,6 @@ module.exports = {
   //      - HotModuleReplacementPlugin: Enables hot reloading when code changes without refreshing
   plugins: isProduction
     ? commonPlugins.concat([
-      new MiniCssExtractPlugin({ filename: 'style.css' }),
       new CopyWebpackPlugin({ patterns: [{ from: CONFIG.assetsDir }] }),
     ])
     : commonPlugins.concat([
@@ -154,16 +152,6 @@ module.exports = {
           loader: 'babel-loader',
           options: CONFIG.babel,
         },
-      },
-      {
-        test: /\.(sass|scss|css)$/,
-        use: [
-          isProduction
-            ? MiniCssExtractPlugin.loader
-            : 'style-loader',
-          'css-loader',
-          'sass-loader',
-        ],
       },
       {
         test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)(\?.*)?$/,

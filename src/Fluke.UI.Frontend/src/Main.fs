@@ -9,7 +9,6 @@ module Main =
 
     importAll "typeface-roboto-condensed"
 
-    importAll "../public/index.scss"
     importAll "../public/index.tsx"
     importAll "../public/index.ts"
     importAll "../public/index.jsx"

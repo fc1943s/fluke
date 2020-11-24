@@ -15,6 +15,7 @@ module DockButton =
                                    Atom: RecoilValue<TempUI.DockType option, ReadWrite>
                                    DockType: TempUI.DockType |}) ->
             let atom, setAtom = Recoil.useState input.Atom
+
             Chakra.button
                 {|
                     height = "100%"
@@ -39,3 +40,4 @@ module DockButton =
                     Chakra.box {| ``as`` = input.Icon; marginRight = "6px" |} []
                     str input.Name
                 ])
+

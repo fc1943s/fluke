@@ -13,7 +13,6 @@ module InformationName =
 
     let render =
         React.memo (fun (input: {| InformationId: Recoil.Atoms.Information.InformationId |}) ->
-            //            let informationId = Recoil.useValue (Recoil.Atoms.Task.informationId input.TaskId)
             let information = Recoil.useValue (Recoil.Atoms.Information.wrappedInformation input.InformationId)
             let attachments = Recoil.useValue (Recoil.Atoms.Information.attachments input.InformationId)
             let (Model.InformationName informationName) = information.Name
@@ -37,3 +36,4 @@ module InformationName =
 
                     TooltipPopup.render {| Attachments = attachments |}
                 ])
+

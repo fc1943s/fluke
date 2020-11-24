@@ -13,6 +13,7 @@ module Chakra =
                  ChakraProvider: obj
                  Checkbox: obj
                  CheckboxGroup: obj
+                 Circle: obj
                  DarkMode: obj
                  extendTheme: obj -> obj
                  Flex: obj
@@ -24,6 +25,11 @@ module Chakra =
                  MenuButton: obj
                  MenuList: obj
                  MenuItem: obj
+                 Modal: obj
+                 ModalBody: obj
+                 ModalCloseButton: obj
+                 ModalContent: obj
+                 ModalOverlay: obj
                  NumberInput: obj
                  NumberInputField: obj
                  NumberInputStepper: obj
@@ -46,37 +52,43 @@ module Chakra =
 
 
 
-    let box<'T> = wrap core.Box
-    let button<'T> = wrap core.Button
-    let center<'T> = wrap core.Center
-    let checkbox<'T> = wrap core.Checkbox
-    let checkboxGroup<'T> = wrap core.CheckboxGroup
-    let darkMode<'T> = wrap core.DarkMode
-    let flex<'T> = wrap core.Flex
-    let grid<'T> = wrap core.Grid
-    let hStack<'T> = wrap core.HStack
-    let iconButton<'T> = wrap core.IconButton
-    let input<'T> = wrap core.Input
-    let menu<'T> = wrap core.Menu
-    let menuButton<'T> = wrap core.MenuButton
-    let menuList<'T> = wrap core.MenuList
-    let menuItem<'T> = wrap core.MenuItem
-    let numberInput<'T> = wrap core.NumberInput
-    let numberInputField<'T> = wrap core.NumberInputField
-    let numberInputStepper<'T> = wrap core.NumberInputStepper
-    let numberDecrementStepper<'T> = wrap core.NumberDecrementStepper
-    let numberIncrementStepper<'T> = wrap core.NumberIncrementStepper
-    let provider<'T> = wrap core.ChakraProvider
-    let simpleGrid<'T> = wrap core.SimpleGrid
-    let spacer<'T> = wrap core.Spacer
-    let spinner<'T> = wrap core.Spinner
-    let stack<'T> = wrap core.Stack
-    let tabList<'T> = wrap core.TabList
-    let tabPanel<'T> = wrap core.TabPanel
-    let tabPanels<'T> = wrap core.TabPanels
-    let tab<'T> = wrap core.Tab
-    let tabs<'T> = wrap core.Tabs
-    let tooltip<'T> = wrap core.Tooltip
+    let box<'T> = composeComponent core.Box
+    let button<'T> = composeComponent core.Button
+    let center<'T> = composeComponent core.Center
+    let checkbox<'T> = composeComponent core.Checkbox
+    let checkboxGroup<'T> = composeComponent core.CheckboxGroup
+    let circle<'T> = composeComponent core.Circle
+    let darkMode<'T> = composeComponent core.DarkMode
+    let flex<'T> = composeComponent core.Flex
+    let grid<'T> = composeComponent core.Grid
+    let hStack<'T> = composeComponent core.HStack
+    let iconButton<'T> = composeComponent core.IconButton
+    let input<'T> = composeComponent core.Input
+    let menu<'T> = composeComponent core.Menu
+    let menuButton<'T> = composeComponent core.MenuButton
+    let menuList<'T> = composeComponent core.MenuList
+    let menuItem<'T> = composeComponent core.MenuItem
+    let modal<'T> = composeComponent core.Modal
+    let modalBody<'T> = composeComponent core.ModalBody
+    let modalContent<'T> = composeComponent core.ModalContent
+    let modalCloseButton<'T> = composeComponent core.ModalCloseButton
+    let modalOverlay<'T> = composeComponent core.ModalOverlay
+    let numberInput<'T> = composeComponent core.NumberInput
+    let numberInputField<'T> = composeComponent core.NumberInputField
+    let numberInputStepper<'T> = composeComponent core.NumberInputStepper
+    let numberDecrementStepper<'T> = composeComponent core.NumberDecrementStepper
+    let numberIncrementStepper<'T> = composeComponent core.NumberIncrementStepper
+    let provider<'T> = composeComponent core.ChakraProvider
+    let simpleGrid<'T> = composeComponent core.SimpleGrid
+    let spacer<'T> = composeComponent core.Spacer
+    let spinner<'T> = composeComponent core.Spinner
+    let stack<'T> = composeComponent core.Stack
+    let tabList<'T> = composeComponent core.TabList
+    let tabPanel<'T> = composeComponent core.TabPanel
+    let tabPanels<'T> = composeComponent core.TabPanels
+    let tab<'T> = composeComponent core.Tab
+    let tabs<'T> = composeComponent core.Tabs
+    let tooltip<'T> = composeComponent core.Tooltip
 
 
     type ToastState =
@@ -113,4 +125,3 @@ module Chakra =
                 toast.Invoke state
 
     let useToast = ToastBuilder ()
-

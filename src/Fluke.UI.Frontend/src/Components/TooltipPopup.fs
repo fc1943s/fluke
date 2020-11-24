@@ -1,20 +1,15 @@
 namespace Fluke.UI.Frontend.Components
 
-open System
-open FSharpPlus
 open Fable.React
 open Feliz
 open Feliz.UseListener
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 
 module TooltipPopup =
-    open Domain.Model
     open Domain.UserInteraction
-    open Domain.State
 
     let render =
         React.memo (fun (input: {| Attachments: Attachment list |}) ->
@@ -38,29 +33,64 @@ module TooltipPopup =
                 Chakra.box
                     {|
                         ref = tooltipContainerRef
-                        className =
-                            [
-                                Css.tooltipContainer
-                                match user with
-                                | { Color = UserColor.Blue } -> Css.topRightBlueIndicator
-                                | { Color = UserColor.Pink } -> Css.topRightPinkIndicator
-                                | _ -> ()
-                            ]
-                            |> String.concat " "
+                        height = "17px"
+                        lineHeight = "17px"
+                        position = "absolute"
+                        top = 0
+                        width = "100%"
+                        _after =
+                            {|
+                                borderTopColor =
+                                    match user with
+                                    | { Color = UserColor.Blue } -> Some "#005688"
+                                    | { Color = UserColor.Pink } -> Some "#a91c77"
+                                    | _ -> None
+                                borderTopWidth = "8px"
+                                borderLeftColor = "transparent"
+                                borderLeftWidth = "8px"
+                                position = "absolute"
+                                content = "\"\""
+                                top = 0
+                                right = 0
+                            |}
                     |}
 
                     [
-                        Chakra.box
-                            {| className = Css.tooltipPopup |}
-                            [
-                                comments
-                                |> List.map (fun (({ Username = Username username } as user), (Comment.Comment comment)) ->
-                                    sprintf "%s:%s%s" username Environment.NewLine (comment.Trim ()))
-                                |> List.map ((+) Environment.NewLine)
-                                |> String.concat (Environment.NewLine + Environment.NewLine)
-                                |> fun text ->
-                                    match hovered with
-                                    | false -> nothing
-                                    | true -> Bindings.Markdown.render text
-                            ]
+                        if hovered then
+                            Chakra.stack
+                                {|
+                                    className = "markdown-container"
+                                    spacing = "20px"
+                                    padding = "20px 40px"
+                                    minWidth = "200px"
+                                    maxWidth = "600px"
+                                    width = "600px"
+                                    left = "100%"
+                                    top = 0
+                                    whiteSpace = "pre-wrap"
+                                    position = "absolute"
+                                    zIndex = 1
+                                    backgroundColor = "#000c"
+                                    textAlign = "left"
+                                |}
+
+                                [
+                                    yield!
+                                        comments
+                                        |> List.map (fun ({ Username = Username username }, (Comment.Comment comment)) ->
+                                            Chakra.box
+                                                {|  |}
+                                                [
+                                                    Chakra.box
+                                                        {| fontWeight = "normal" |}
+                                                        [
+                                                            str $"{username}:"
+                                                        ]
+                                                    Chakra.box
+                                                        {|  |}
+                                                        [
+                                                            comment.Trim () |> Markdown.render
+                                                        ]
+                                                ])
+                                ]
                     ])
