@@ -22,18 +22,16 @@
         <Compile Include="TempData.fs"/>
         <Content Include="paket.references"/>
     </ItemGroup>
-    
-    <Import Project="..\..\.paket\Paket.Restore.targets" />
-    
-<!--    <ItemGroup>-->
-<!--        <MyriadSdkGenerator Include="C:\home\fs\git-repos\myriad\src\Myriad.Plugins\bin\Release\netstandard2.0\Myriad.Plugins.dll" />-->
-<!--    </ItemGroup>-->
-<!--    <ItemGroup>-->
-<!--        <Reference Include="Myriad.Core">-->
-<!--            <HintPath>C:\home\fs\git-repos\myriad\src\Myriad.Plugins\bin\Release\netstandard2.0\Myriad.Core.dll</HintPath>-->
-<!--        </Reference>-->
-<!--        <Reference Include="Myriad.Plugins">-->
-<!--            <HintPath>C:\home\fs\git-repos\myriad\src\Myriad.Plugins\bin\Release\netstandard2.0\Myriad.Plugins.dll</HintPath>-->
-<!--        </Reference>-->
-<!--    </ItemGroup>-->
+    <ItemGroup>
+        <MyriadSdkGenerator Include="C:\home\fs\git-repos\myriad\src\Myriad.Plugins\bin\Release\netstandard2.0\Myriad.Plugins.dll"/>
+    </ItemGroup>
+    <ItemGroup>
+        <Reference Include="Myriad.Core">
+            <HintPath>C:\home\fs\git-repos\myriad\src\Myriad.Plugins\bin\Release\netstandard2.0\Myriad.Core.dll</HintPath>
+        </Reference>
+        <Reference Include="Myriad.Plugins">
+            <HintPath>C:\home\fs\git-repos\myriad\src\Myriad.Plugins\bin\Release\netstandard2.0\Myriad.Plugins.dll</HintPath>
+        </Reference>
+    </ItemGroup>
+    <Import Project="..\..\.paket\Paket.Restore.targets"/>
 </Project>
