@@ -1,9 +1,10 @@
 namespace Fluke.UI.Frontend
 
 open Browser.Dom
-open Fluke.UI.Frontend
 open Fable.Core.JsInterop
+open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
+
 
 module Main =
 
@@ -14,4 +15,4 @@ module Main =
     importAll "../public/index.jsx"
     importAll "../public/index.js"
 
-    React.render (document.getElementById "root") (React.strictMode [ App.render () ])
+    React.render (document.getElementById "root") (React.strictMode [ App.app () ])

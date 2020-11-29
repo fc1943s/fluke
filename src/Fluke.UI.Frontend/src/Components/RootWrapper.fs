@@ -11,31 +11,32 @@ open Fluke.UI.Frontend.Bindings
 
 
 module RootWrapper =
-    let persistenceObserver =
-        React.memo (fun () ->
-            Profiling.addTimestamp "persistenceObserver.render"
 
-            Recoil.useTransactionObserver (fun snapshot ->
-                let nodes = snapshot.snapshot?getNodes_UNSTABLE ({| isModified = true |})
+    [<ReactComponent>]
+    let persistenceObserver () =
+        Profiling.addTimestamp "persistenceObserver.render"
 
-                nodes
-                |> Seq.iter (fun modifiedAtom ->
-                    let atomLoadable = snapshot.snapshot.getLoadable modifiedAtom
+        Recoil.useTransactionObserver (fun snapshot ->
+            let nodes = snapshot.snapshot?getNodes_UNSTABLE ({| isModified = true |})
 
-                    match atomLoadable.state () with
-                    | LoadableState.HasValue value ->
-                        if false then
-                            printfn $"persisting1 <{modifiedAtom.key}> <{value}>"
-                    | _ -> ()))
+            nodes
+            |> Seq.iter (fun modifiedAtom ->
+                let atomLoadable = snapshot.snapshot.getLoadable modifiedAtom
 
-            nothing)
+                match atomLoadable.state () with
+                | LoadableState.HasValue value ->
+                    if false then
+                        printfn $"persisting1 <{modifiedAtom.key}> <{value}>"
+                | _ -> ()))
 
-    let render children =
+        nothing
+
+    let rootWrapper children =
         React.memo (fun () ->
             let theme = Theme.useTheme ()
 
             Recoil.root [
-                root.init Recoil.initState
+                root.init (fun _ -> ())
                 root.children [
                     Chakra.provider
                         {| resetCSS = true; theme = theme |}
@@ -47,4 +48,4 @@ module RootWrapper =
                         ]
                 ]
             ])
-        |> React.bindComponent {||} children
+        |> React.bindComponent {|  |} children

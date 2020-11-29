@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open System.Globalization
 open Fable.React
 open Feliz
 open System
@@ -9,14 +8,15 @@ open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
-open Feliz.UseListener
 
-module DatabaseForm =
+
+module EditDatabase =
     open State
     open Model
 
     module DatabaseAccessIndicator =
-        let render () =
+        [<ReactComponent>]
+        let databaseAccessIndicator () =
             Chakra.stack
                 {| direction = "row"; spacing = "15px" |}
                 [
@@ -54,11 +54,11 @@ module DatabaseForm =
                 ]
 
     module Fields =
-        let render databaseId =
+        let fields databaseId =
             Chakra.stack
                 {| spacing = "15px" |}
                 [
-                    Input.render
+                    Input.input
                         {|
                             Label = Some "Name"
                             Placeholder = sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
@@ -68,7 +68,7 @@ module DatabaseForm =
                             OnValidate = DatabaseName >> Some
                         |}
 
-                    Input.render
+                    Input.input
                         {|
                             Label = Some "Day starts at"
                             Placeholder = "00:00"
@@ -87,31 +87,50 @@ module DatabaseForm =
                                     str "Access:"
                                 ]
 
-                            DatabaseAccessIndicator.render ()
+                            DatabaseAccessIndicator.databaseAccessIndicator ()
                         ]
                 ]
 
-    let render =
-        React.memo (fun (input: {| Username: UserInteraction.Username
-                                   DatabaseId: State.DatabaseId |}) ->
+    [<ReactComponent>]
+    let editDatabase (input: {| Username: UserInteraction.Username
+                                DatabaseId: State.DatabaseId
+                                OnSave: Async<unit> |}) =
+        let onSave =
+            Recoil.useCallbackRef (fun (setter: CallbackMethods) ->
+                async {
+                    let eventId = Recoil.Atoms.Events.EventId (Fable.Core.JS.Constructors.Date.now (), Guid.NewGuid ())
+                    let! name = setter.snapshot.getAsync (Recoil.Atoms.Database.name input.DatabaseId)
+                    let! dayStart = setter.snapshot.getAsync (Recoil.Atoms.Database.dayStart input.DatabaseId)
 
-            let availableDatabaseIds, setAvailableDatabaseIds =
-                Recoil.useState (Recoil.Atoms.Session.availableDatabaseIds input.Username)
+                    let! availableDatabaseIds =
+                        setter.snapshot.getAsync (Recoil.Atoms.Session.availableDatabaseIds input.Username)
 
-            Chakra.stack
-                {| spacing = "25px" |}
-                [
-                    Chakra.box
-                        {| fontSize = "15px" |}
-                        [
-                            str "Add Database"
-                        ]
+                    let event = Recoil.Atoms.Events.Event.AddDatabase (eventId, name, dayStart)
+                    setter.set (Recoil.Atoms.Events.events eventId, event)
 
-                    Fields.render input.DatabaseId
+                    setter.set
+                        (Recoil.Atoms.Session.availableDatabaseIds input.Username,
+                         (input.DatabaseId :: availableDatabaseIds))
 
-                    Chakra.button
-                        {|  |}
-                        [
-                            str "Save"
-                        ]
-                ])
+                    printfn $"event {event}"
+                    do! input.OnSave
+                }
+                |> Async.StartImmediate)
+
+        Chakra.stack
+            {| spacing = "25px" |}
+            [
+                Chakra.box
+                    {| fontSize = "15px" |}
+                    [
+                        str "Add Database"
+                    ]
+
+                Fields.fields input.DatabaseId
+
+                Chakra.button
+                    {| onClick = onSave |}
+                    [
+                        str "Save"
+                    ]
+            ]

@@ -93,8 +93,8 @@ module CellSelection =
                  Chakra.box
                      ()
                      [
-                         UserLoader.render ()
-                         PriorityView.render {| Username = testUser.Username |}
+                         UserLoader.userLoader ()
+                         PriorityView.priorityView {| Username = testUser.Username |}
                      ]
 
              let expectSelection peek expected =

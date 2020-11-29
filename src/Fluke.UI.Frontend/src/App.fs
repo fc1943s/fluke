@@ -2,26 +2,25 @@ namespace Fluke.UI.Frontend
 
 open Feliz
 open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Components
-open Fluke.UI.Frontend.Bindings
 
 
 module App =
-    let render =
-        React.memo (fun () ->
-            Profiling.addTimestamp "appMain.render"
 
-            RootWrapper.render [
-                DebugOverlay.render ()
+    [<ReactComponent>]
+    let app () =
+        Profiling.addTimestamp "appMain.render"
 
-                CtrlListener.render ()
-                ShiftListener.render ()
-                SelectionListener.render ()
-                RouterObserver.render ()
-                //                PositionUpdater.render ()
-                GunObserver.render ()
-                UserLoader.render ()
+        RootWrapper.rootWrapper [
+            DebugOverlay.debugOverlay ()
 
-                Content.render ()
-            ])
+            CtrlListener.ctrlListener ()
+            ShiftListener.shiftListener ()
+            SelectionListener.selectionListener ()
+            RouterObserver.routerObserver ()
+            //                PositionUpdater.render ()
+            GunObserver.gunObserver ()
+            UserLoader.userLoader ()
+
+            Content.content ()
+        ]

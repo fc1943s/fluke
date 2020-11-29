@@ -8,37 +8,45 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
 
 module AddDatabaseButton =
-    let render =
-        React.memo (fun (input: {| props: {| marginLeft: string |} |}) ->
-            let username = Recoil.useValue Recoil.Atoms.username
-            let formDatabaseId, setformDatabaseId = Recoil.useState (Recoil.Atoms.formDatabaseId)
 
-            React.fragment [
-                Button.render
-                    {|
-                        Icon = Icons.faPlus
-                        RightIcon = false
-                        props =
-                            {|
-                                marginLeft = input.props.marginLeft
-                                onClick = fun () -> setformDatabaseId (Some (Recoil.Atoms.Database.newDatabaseId ()))
-                            |}
-                        children =
-                            [
-                                str "Add Database"
-                            ]
-                    |}
+    [<ReactComponent>]
+    let addDatabaseButton (input: {| props: {| marginLeft: string |} |}) =
+        let username = Recoil.useValue Recoil.Atoms.username
+        let formDatabaseId, setFormDatabaseId = Recoil.useState (Recoil.Atoms.formDatabaseId)
 
-                Modal.render
-                    {|
-                        IsOpen = formDatabaseId.IsSome
-                        OnClose = fun () -> setformDatabaseId None
-                        children =
-                            [
-                                match formDatabaseId, username with
-                                | Some databaseId, Some username ->
-                                    DatabaseForm.render {| Username = username; DatabaseId = databaseId |}
-                                | _ -> ()
-                            ]
-                    |}
-            ])
+
+
+        React.fragment [
+            Button.button
+                {|
+                    Icon = Icons.faPlus
+                    RightIcon = false
+                    props =
+                        {|
+                            marginLeft = input.props.marginLeft
+                            onClick = fun () -> setFormDatabaseId (Some (Recoil.Atoms.Database.newDatabaseId ()))
+                        |}
+                    children =
+                        [
+                            str "Add Database"
+                        ]
+                |}
+
+            Modal.modal
+                {|
+                    IsOpen = formDatabaseId.IsSome
+                    OnClose = fun () -> setFormDatabaseId None
+                    children =
+                        [
+                            match formDatabaseId, username with
+                            | Some databaseId, Some username ->
+                                EditDatabase.editDatabase
+                                    {|
+                                        Username = username
+                                        DatabaseId = databaseId
+                                        OnSave = async { setFormDatabaseId None }
+                                    |}
+                            | _ -> ()
+                        ]
+                |}
+        ]

@@ -49,7 +49,7 @@
         <Compile Include="src\Components\DebugOverlay.fs" />
         <Compile Include="src\Components\Logo.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
-        <Compile Include="src\Components\DatabaseForm.fs" />
+        <Compile Include="src\Components\EditDatabase.fs" />
         <Compile Include="src\Components\AddTaskButton.fs" />
         <Compile Include="src\Components\AddDatabaseButton.fs" />
         <Compile Include="src\Components\TopBar.fs" />

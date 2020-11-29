@@ -41,6 +41,23 @@ module Recoil =
     Browser.Dom.window?gunTmp <- gunTmp
 
     module Atoms =
+        module rec Events =
+            type EventId = EventId of position: float * guid: Guid
+
+            [<RequireQualifiedAccess>]
+            type Event =
+                | AddDatabase of id: EventId * name: DatabaseName * dayStart: FlukeTime
+                | NoOp
+
+            let rec events =
+                atomFamily {
+                    key ($"{nameof Events}/{nameof events}")
+
+                    def (fun (_eventId: EventId) ->
+                            Profiling.addCount ($"{nameof Events}/{nameof events}")
+                            Event.NoOp)
+                }
+
         module rec Information =
             type InformationId = InformationId of id: string
 
@@ -133,18 +150,6 @@ module Recoil =
                             Task.Default.Priority)
                 }
 
-
-            //            let rec sessionsFamily =
-//                atomFamily {
-//                    key ($"{nameof RecoilTask}/{nameof sessionsFamily}")
-//                    def (fun (_taskId: TaskId) ->
-//                            Profiling.addCount (nameof sessionsFamily)
-//                            []) // TODO: move from here?
-//                }
-            //            let rec commentsFamily = atomFamily {
-//                key ($"{nameof RecoilTask}/{nameof commentsFamily}")
-//                def (fun (_taskId: TaskId) -> Profiling.addCount  (nameof commentsFamily); []) // TODO: move from here?
-//            }
             let rec attachments =
                 atomFamily {
                     key ($"{nameof Task}/{nameof attachments}")
@@ -216,23 +221,6 @@ module Recoil =
 
 
         module rec Session =
-
-            //            let rec sessionData =
-//                atomFamilyFn
-//                <| fun (_username: Username) ->
-//                    Profiling.addCount (nameof sessionData)
-//                    None: SessionData option
-//            let rec user =
-//                atomFamilyFn
-//                <| fun (_username: Username) ->
-//                    Profiling.addCount ($"{nameof Session}/{nameof user}")
-//                    None: User option
-
-            //            let rec selectedDatabaseIds =
-//                atomFamilyFn
-//                <| fun (_username: Username) ->
-//                    Profiling.addCount (nameof selectedDatabaseIds)
-//                    Set.empty: Set<DatabaseId>
 
             let rec availableDatabaseIds =
                 atomFamily {
@@ -650,8 +638,6 @@ module Recoil =
                         let getLivePosition = getter.get Atoms.getLivePosition
                         let selectedPosition = getter.get Atoms.selectedPosition
 
-                        //                        let selectedPosition = Some (FlukeDateTime.Create 2020 Month.October 19 07 00)
-
                         let result =
                             selectedPosition
                             |> Option.defaultValue (getLivePosition.Get ())
@@ -690,138 +676,6 @@ module Recoil =
                         Profiling.addCount (nameof dateSequence)
                         result)
             }
-
-        //        let rec state =
-//            selector {
-//                key ("selector/" + nameof state)
-//                get (fun getter ->
-//                        let state = getter.get Atoms.state
-//                        Profiling.addCount (nameof state)
-//                        state)
-//                set (fun setter (newValue: State option) ->
-//                        let dateSequence = setter.get dateSequence
-//
-//                        Profiling.addTimestamp "state.set[0]"
-//
-//                        printfn
-//                            "dateSequence database newValue==none=%A dateSequence.length=%A"
-//                            newValue.IsNone
-//                            dateSequence.Length
-//
-//                        match newValue with
-//                        | Some state ->
-//                            match state.Session with
-//                            | { User = None } ->
-//                                setter.set (Atoms.state, None)
-//                                setter.reset Atoms.getLivePosition
-//                                setter.set (Atoms.username, None)
-//                            | { User = Some user } as session ->
-//                                setter.set (Atoms.state, newValue)
-//                                setter.set (Atoms.getLivePosition, {| Get = session.GetLivePosition |})
-//                                setter.set (Atoms.username, Some user.Username)
-//
-//                                let recoilSession = setter.get (Atoms.RecoilSession.sessionFamily user.Username)
-//
-//                                let selectedDatabaseIds =
-//                                    state.Session.DatabaseSelection
-//                                    |> Set.map (fun databaseState -> databaseState.Id)
-//
-//                                let availableDatabaseIds =
-//                                    state.Session.DatabaseStateMap
-//                                    |> Map.values
-//                                    |> Seq.map (fun databaseState -> databaseState.Id)
-//                                    |> Seq.toList
-//
-//                                let taskIdList =
-//                                    state.Session.TaskList
-//                                    |> List.map (fun task -> Atoms.RecoilTask.taskId task)
-//
-//                                setter.set (recoilSession.User, Some user)
-//                                setter.set (recoilSession.SelectedDatabaseIds, selectedDatabaseIds)
-//                                setter.set (recoilSession.AvailableDatabaseIds, availableDatabaseIds)
-//                                setter.set (recoilSession.TaskIdList, taskIdList)
-//
-//                            let recoilInformationMap =
-//                                state.Session.TaskList
-//                                |> Seq.map (fun task -> task.Information)
-//                                |> Seq.distinct
-//                                |> Seq.map (fun information -> state.Session.InformationStateMap.[information])
-//                                |> Seq.map (fun informationState ->
-//
-//
-//                                    let informationId =
-//                                        Atoms.RecoilInformation.informationId informationState.Information
-//
-//                                    setter.set
-//                                        (Atoms.RecoilInformation.wrappedInformation informationId,
-//                                         informationState.Information)
-//                                    setter.set
-//                                        (Atoms.RecoilInformation.attachments informationId, informationState.Attachments)
-//                                    informationState.Information, informationId)
-//                                |> Map.ofSeq
-//
-//                            Profiling.addTimestamp "state.set[1]"
-//
-//                            state.Session.TaskList
-//                            |> List.map (fun task -> state.Session.TaskStateMap.[task])
-//                            |> List.iter (fun taskState ->
-//                                let task = taskState.Task
-//                                let taskId = Atoms.RecoilTask.taskId task
-//
-//                                let recoilTask = setter.get (Atoms.RecoilTask.taskFamily taskId)
-//
-//                                setter.set (recoilTask.Id, taskId)
-//                                setter.set (recoilTask.Name, task.Name)
-//                                setter.set (recoilTask.InformationId, recoilInformationMap.[task.Information])
-//                                setter.set (recoilTask.PendingAfter, task.PendingAfter)
-//                                setter.set (recoilTask.MissedAfter, task.MissedAfter)
-//                                setter.set (recoilTask.Scheduling, task.Scheduling)
-//                                setter.set (recoilTask.Priority, task.Priority)
-//                                //                                setter.set (recoilTask.Sessions, taskState.Sessions) // TODO: move from here
-//                                setter.set (recoilTask.Attachments, taskState.Attachments)
-//                                setter.set (recoilTask.Duration, task.Duration)
-//
-//                                dateSequence
-//                                |> List.iter (fun date ->
-//                                    let cellId = Atoms.RecoilCell.cellId taskId (DateId date)
-//
-//                                    let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
-//
-//                                    setter.set (recoilCell.Id, cellId)
-//                                    setter.set (recoilCell.TaskId, taskId)
-//                                    setter.set (recoilCell.Date, date))
-//
-//                                taskState.CellStateMap
-//                                |> Map.filter (fun dateId cellState ->
-//                                    (<>) cellState.Status Disabled
-//                                    || not cellState.Attachments.IsEmpty
-//                                    || not cellState.Sessions.IsEmpty)
-//                                |> Map.iter (fun dateId cellState ->
-//                                    let cellId = Atoms.RecoilCell.cellId taskId dateId
-//
-//                                    let recoilCell = setter.get (Atoms.RecoilCell.cellFamily cellId)
-//
-//                                    setter.set (recoilCell.Status, cellState.Status)
-//                                    setter.set (recoilCell.Attachments, cellState.Attachments)
-//                                    setter.set (recoilCell.Sessions, cellState.Sessions)
-//                                    setter.set (recoilCell.Selected, false)))
-//
-//
-//                            state.Session.DatabaseStateMap
-//                            |> Map.values
-//                            |> Seq.iter (fun databaseState ->
-//                                let recoilDatabase = setter.get (Atoms.RecoilDatabase.databaseFamily databaseState.Id)
-//
-//                                setter.set (recoilDatabase.Name, databaseState.Name)
-//                                setter.set (recoilDatabase.Owner, Some databaseState.Owner)
-//                                setter.set (recoilDatabase.SharedWith, databaseState.SharedWith)
-//                                setter.set (recoilDatabase.Position, databaseState.Position))
-//
-//                        | _ -> ()
-//
-//                        Profiling.addTimestamp "state.set[2]"
-//                        Profiling.addCount (nameof state + " (SET)"))
-//            }
 
         let rec cellSelectionMap =
             selector {
@@ -909,11 +763,6 @@ module Recoil =
                                 | Some username, Some position ->
                                     let dayStart = getter.get (Atoms.User.dayStart username)
 
-                                    //                                    printfn
-//                                        "isToday dayStart=%A; position=%A; date=%A"
-//                                        (dayStart.Stringify ())
-//                                        (position.Stringify ())
-//                                        (date.Stringify ())
                                     Domain.UserInteraction.isToday dayStart position (DateId date)
                                 | _ -> false
 
@@ -1049,41 +898,6 @@ module Recoil =
                 }
 
         module rec Session =
-            //            let rec currentTaskList =
-//                selectorFamily {
-//                    key ("selector/" + nameof currentTaskList)
-//                    get (fun (username: Username) getter ->
-//                            let taskIdList = getter.get (Atoms.Session.taskIdList username)
-//
-//                            printfn "Selectors.currentTaskList -> taskIdList.Length = %A" taskIdList.Length
-//
-//                            let result =
-//                                taskIdList
-//                                |> List.map (fun taskId ->
-//                                    let informationId = getter.get (Atoms.Task.informationId taskId)
-//
-//                                    {|
-//                                        Id = taskId
-//                                        Name = getter.get (Atoms.Task.name taskId)
-//                                        Information = getter.get (Atoms.Information.wrappedInformation informationId)
-//                                        InformationAttachments =
-//                                            getter.get (Atoms.Information.attachments informationId)
-//                                        Scheduling = getter.get (Atoms.Task.scheduling taskId)
-//                                        PendingAfter = getter.get (Atoms.Task.pendingAfter taskId)
-//                                        MissedAfter = getter.get (Atoms.Task.missedAfter taskId)
-//                                        Priority = getter.get (Atoms.Task.priority taskId)
-//                                        Attachments = getter.get (Atoms.Task.attachments taskId)
-//                                        Duration = getter.get (Atoms.Task.duration taskId)
-//                                    |})
-//
-//                            //
-//                            //                            |> List.map (fun task ->
-//                            //                                getter.get (Atoms.RecoilTask.taskFamily (Atoms.RecoilTask.taskId task)))
-//
-//                            Profiling.addCount (nameof currentTaskList)
-//                            result)
-//                }
-
             let rec activeSessions =
                 selectorFamily {
                     key ($"{nameof Session}/{nameof activeSessions}")
@@ -1124,18 +938,6 @@ module Recoil =
                                 |> List.map (fun (taskId, informationId) ->
                                     taskId, getter.get (Atoms.Information.wrappedInformation informationId))
                                 |> Map.ofList
-
-                            //                        let sessionData = Recoil.useValue (Session.sessionData username)
-
-                            //                        let taskList =
-//                            match sessionData with
-//                            | Some sesionData -> sessionData.Value.TaskList
-//                            | None -> []
-
-                            //                        let groupMap =
-//                            taskList
-//                            |> List.map (fun x -> x.Information, x)
-//                            |> Map.ofList
 
                             let informationKindGroups =
                                 taskIdList
@@ -1242,12 +1044,6 @@ module Recoil =
                                                         cells
                                                         |> List.map (fun cell ->
                                                             let taskState =
-                                                                //                                                            let informationId = getter.get cell.Task.InformationId
-                                                                //
-                                                                //                                                            let information =
-                                                                //                                                                getter.get
-                                                                //                                                                    (Atoms.RecoilInformation.informationFamily
-                                                                //                                                                        informationId)
 
                                                                 let task = taskMap.[cell.TaskId]
 
@@ -1256,7 +1052,6 @@ module Recoil =
                                                                     Sessions = taskSessions
                                                                     Attachments = []
                                                                     SortList = []
-                                                                    //                                                        UserInteractions = cell.Task.UserInteractions
                                                                     InformationMap = Map.empty
                                                                     CellStateMap = Map.empty
                                                                 }
@@ -1343,8 +1138,6 @@ module Recoil =
                                 let dateSequence = getter.get dateSequence
                                 let view = getter.get Atoms.view
                                 let position = getter.get position
-                                //                            let getLivePosition = (getter.get Atoms.getLivePosition).Get
-//                                let selectedDatabaseIds = getter.get (Atoms.Session.selectedDatabaseIds username)
                                 let selectedDatabaseIds = getter.get Atoms.selectedDatabaseIds
 
                                 let dayStart = getter.get (Atoms.User.dayStart username)
@@ -1352,12 +1145,6 @@ module Recoil =
                                 let result =
                                     match position, databaseStateMap.Count with
                                     | Some position, databaseCount when databaseCount > 0 ->
-                                        //                                    let newSelectedDatabaseIds =
-//                                        if selectedDatabaseIds.IsEmpty then
-//                                            state.Session.DatabaseSelection
-//                                            |> Set.map (fun databaseState -> databaseState.Id)
-//                                        else
-//                                            selectedDatabaseIds
 
                                         let newSession =
                                             getSessionData
@@ -1370,7 +1157,6 @@ module Recoil =
                                                     SelectedDatabaseIds = selectedDatabaseIds |> Set.ofArray
                                                     DatabaseStateMap = databaseStateMap
                                                 |}
-                                        //                                                GetLivePosition = getLivePosition
 
                                         Some newSession
                                     | _ -> None
@@ -1380,68 +1166,6 @@ module Recoil =
                                 return result
                             })
                 }
-
-        //            let rec currentSession =
-//                selectorFamily {
-//                    key ("selector/" + nameof currentSession)
-//                    get (fun (username: Username) getter ->
-//                            let state = getter.get (Atoms.Session.sessionData username)
-//
-//                            let result =
-//                                match state with
-//                                | Some state -> Some state.Session
-//                                | None -> None
-//
-//                            Profiling.addCount (nameof currentSession)
-//                            result)
-//                }
-//            ()
-
-
-
-        module rec Database =
-            //            let rec taskListFamily =
-//                selectorFamily {
-//                    key ($"{nameof RecoilDatabase}/{nameof taskListFamily}")
-//                    get (fun (databaseId: DatabaseId) getter ->
-//                            let taskIdList =
-//                                getter.get (Atoms.RecoilDatabase.taskIdListFamily databaseId)
-//
-//                            let taskList =
-//                                match state with
-//                                | Some state ->
-//                                    taskIdList
-//                                    |> List.map (fun taskId ->
-//                                        let task =
-//                                            getter.get (Atoms.RecoilTask.taskFamily taskId)
-//
-//                                        let informationId = getter.get task.InformationId
-//
-//                                        let information =
-//                                            getter.get (Atoms.RecoilInformation.informationFamily informationId)
-//
-//                                        {|
-//                                            Id = taskId
-//                                            Name = getter.get task.Name
-//                                            Information = getter.get information.WrappedInformation
-//                                            InformationAttachments = getter.get information.Attachments
-//                                            Scheduling = getter.get task.Scheduling
-//                                            PendingAfter = getter.get task.PendingAfter
-//                                            MissedAfter = getter.get task.MissedAfter
-//                                            Priority = getter.get task.Priority
-//    //                                        Sessions = getter.get task.Sessions
-//                                            Attachments = getter.get task.Attachments
-//                                            Duration = getter.get task.Duration
-//                                        |})
-//                                | None -> []
-//
-//                            Profiling.addCount ($"{nameof RecoilDatabase}/{nameof taskListFamily}")
-//                            taskList)
-//                }
-            ()
-        //
-
-
 
 
         module rec Cell =
@@ -1545,345 +1269,3 @@ module Recoil =
 
                             Profiling.addCount ($"{nameof Cell}/{nameof selected} (SET)"))
                 }
-
-    /// [1]
-
-    let initState (_initializer: MutableSnapshot) = ()
-    //        let baseState = RootPrivateData.State.getBaseState ()
-
-    //        let state2 = {| User =state.User; DatabaseStateMap = state.DatabaseStateMap |}
-//
-//        let simpleJson = Fable.SimpleJson.SimpleJson.stringify state2
-//        let thothJson = Thoth.Json.Encode.Auto.toString(4, state2)
-//
-//        Ext.setDom (nameof baseState) baseState
-    //        Browser.Dom.window?flukeStateSimple <- simpleJson
-//        Browser.Dom.window?flukeStateThoth <- thothJson
-
-    //        match baseState.Session.User with
-//        | Some user ->
-//            initializer.set (Atoms.state, Some baseState)
-//            initializer.set (Atoms.getLivePosition, {| Get = baseState.Session.GetLivePosition |})
-//            initializer.set (Atoms.username, Some user.Username)
-//            initializer.set (Atoms.Session.user user.Username, Some user)
-//        | None -> ()
-
-    (************************* END *************************)
-
-
-
-
-
-    //                    {|
-//                        Name = "task1"
-//                        Information = Area { Name = "area1" }
-//                        Scheduling = Recurrency (Offset (Days 1))
-//                        PendingAfter = None
-//                        MissedAfter = None
-//                        Priority = Critical10
-//                        Duration = Some 30
-//                        Sessions = [
-//                            flukeDateTime 2020 Month.May 20 02 05
-//                            flukeDateTime 2020 Month.May 31 00 09
-//                            flukeDateTime 2020 Month.May 31 23 21
-//                            flukeDateTime 2020 Month.June 04 01 16
-//                            flukeDateTime 2020 Month.June 20 15 53
-//                        ]
-//                        Lane = [
-//                            (FlukeDate.Create 2020 Month.June 13), Completed
-//                        ]
-//                        Comments = [
-//                            Comment (TempData.Users.fc1943s, "fc1943s: task1 comment")
-//                            Comment (TempData.Users.liryanne, "liryanne: task1 comment")
-//                        ]
-//                    |}
-//
-//                    {|
-//                        Name = "task2"
-//                        Information = Area { Name = "area2" }
-//                        Scheduling = Recurrency (Offset (Days 1))
-//                        PendingAfter = None
-//                        MissedAfter = FlukeTime.Create 09 00 |> Some
-//                        Priority = Critical10
-//                        Duration = Some 5
-//                        Sessions = []
-//                        Lane = []
-//                        Comments = []
-//                    |}
-//
-//                {|
-//                    Id = DatabaseId "liryanne/shared"
-//                    Access = [ DatabaseAccess.Owner TempData.Users.liryanne
-//                               DatabaseAccess.Admin TempData.Users.fc1943s ]
-//                    InformationList = []
-//                    Tasks = []
-//                |}
-//
-//                {|
-//                    Id = DatabaseId "fluke/samples/laneSorting/frequency"
-//                    Access = [ DatabaseAccess.ReadOnly TempData.Users.liryanne
-//                               DatabaseAccess.ReadOnly TempData.Users.fc1943s ]
-//                    InformationList = []
-//                    Tasks = []
-//                |}
-//
-//                {|
-//                    Id = DatabaseId "fluke/samples/laneSorting/timeOfDay"
-//                    Access = [ DatabaseAccess.ReadOnly TempData.Users.liryanne
-//                               DatabaseAccess.ReadOnly TempData.Users.fc1943s ]
-//                    InformationList = []
-//                    Tasks = []
-//                |}
-//            databaseList
-//            |> List.tryFind (fun database -> database.Id = databaseId && hasAccess database user)
-
-
-    //        let state = {|
-//            Input_User = TempData.Users.fc1943s
-//            Input_View = View.Calendar
-//            Input_Position = FlukeDate.Create 2020 Month.June 28
-//            DatabaseList = [
-//                {|
-//                    Id = DatabaseId "fc1943s/database/default"
-//                    Access = [ DatabaseAccess.Owner TempData.Users.fc1943s ]
-//                    InformationList = [
-//                        {|
-//                            Information = Area { Name = "area1" }
-//                            Comments = [
-//                                Comment (TempData.Users.fc1943s, "fc1943s: area1 area/information comment")
-//                                Comment (TempData.Users.liryanne, "liryanne: area1 area/information comment")
-//                            ]
-//                        |}
-//
-//                        {|
-//                            Information = Area { Name = "area2" }
-//                            Comments = []
-//                        |}
-//                    ]
-//                    Tasks = [
-//                        {|
-//                            Name = "task1"
-//                            Information = Area { Name = "area1" }
-//                            Scheduling = Recurrency (Offset (Days 1))
-//                            PendingAfter = None
-//                            MissedAfter = None
-//                            Priority = Critical10
-//                            Duration = Some 30
-//                            Sessions = [
-//                                flukeDateTime 2020 Month.May 20 02 05
-//                                flukeDateTime 2020 Month.May 31 00 09
-//                                flukeDateTime 2020 Month.May 31 23 21
-//                                flukeDateTime 2020 Month.June 04 01 16
-//                                flukeDateTime 2020 Month.June 20 15 53
-//                            ]
-//                            Lane = [
-//                                (FlukeDate.Create 2020 Month.June 13), Completed
-//                            ]
-//                            Comments = [
-//                                Comment (TempData.Users.fc1943s, "fc1943s: task1 comment")
-//                                Comment (TempData.Users.liryanne, "liryanne: task1 comment")
-//                            ]
-//                        |}
-//
-//                        {|
-//                            Name = "task2"
-//                            Information = Area { Name = "area2" }
-//                            Scheduling = Recurrency (Offset (Days 1))
-//                            PendingAfter = None
-//                            MissedAfter = FlukeTime.Create 09 00 |> Some
-//                            Priority = Critical10
-//                            Duration = Some 5
-//                            Sessions = []
-//                            Lane = []
-//                            Comments = []
-//                        |}
-//                    ]
-//                |}
-//
-//                {|
-//                    Id = DatabaseId "liryanne/shared"
-//                    Access = [ DatabaseAccess.Owner TempData.Users.liryanne
-//                               DatabaseAccess.Admin TempData.Users.fc1943s ]
-//                    InformationList = []
-//                    Tasks = []
-//                |}
-//
-//                {|
-//                    Id = DatabaseId "fluke/samples/laneSorting/frequency"
-//                    Access = [ DatabaseAccess.ReadOnly TempData.Users.liryanne
-//                               DatabaseAccess.ReadOnly TempData.Users.fc1943s ]
-//                    InformationList = []
-//                    Tasks = []
-//                |}
-//
-//                {|
-//                    Id = DatabaseId "fluke/samples/laneSorting/timeOfDay"
-//                    Access = [ DatabaseAccess.ReadOnly TempData.Users.liryanne
-//                               DatabaseAccess.ReadOnly TempData.Users.fc1943s ]
-//                    InformationList = []
-//                    Tasks = []
-//                |}
-//            ]
-//        |}
-
-    module private OldData =
-        //        type TempDataType =
-//            | TempPrivate
-//            | TempPublic
-//            | Test
-//        let tempDataType = TempPrivate
-//        let tempDataType = Test
-//        let tempDataType = TempPublic
-
-
-
-        //        let tempState =
-//            let testData = TempData.tempData.RenderLaneTests
-//            let testData = TempData.tempData.SortLanesTests
-
-        //            let getNow =
-//                match tempDataType with
-//                | TempPrivate -> TempData.getNow
-//                | TempPublic  -> TempData.getNow
-//                | Test        -> testData.GetNow
-
-        //            let dayStart =
-//                match tempDataType with
-//                | TempPrivate -> TempData.dayStart
-//                | TempPublic  -> TempData.dayStart
-//                | Test        -> TempData.testDayStart
-
-        //            let informationList =
-//                match tempDataType with
-//                | TempPrivate -> RootPrivateData.manualTasks.InformationList
-//                | TempPublic  -> TempData.tempData.ManualTasks.InformationList
-//                | Test        -> []
-
-        //            let taskOrderList =
-//                match tempDataType with
-//                | TempPrivate -> RootPrivateData.manualTasks.TaskOrderList @ RootPrivateData.taskOrderList
-//                | TempPublic  -> TempData.tempData.ManualTasks.TaskOrderList
-//                | Test        -> testData.TaskOrderList
-
-        //            let informationCommentsMap =
-//                match tempDataType with
-//                | TempPrivate ->
-//                    RootPrivateData.informationComments
-//                    |> List.append RootPrivateData.Shared.informationComments
-//                    |> List.groupBy (fun x -> x.Information)
-//                    |> Map.ofList
-//                    |> Map.mapValues (List.map (fun x -> x.Comment))
-//                | TempPublic  -> Map.empty
-//                | Test        -> Map.empty
-
-        //            let taskStateList =
-//                match tempDataType with
-//                | TempPrivate ->
-//                    let taskData = RootPrivateData.manualTasks
-//                    let sharedTaskData = RootPrivateData.Shared.manualTasks
-//
-//                    let cellComments =
-//                        RootPrivateData.cellComments
-//                        |> List.append RootPrivateData.Shared.cellComments
-//
-//                    let applyState statusEntries comments (taskState: TaskState) =
-//                        { taskState with
-//                            StatusEntries =
-//                                statusEntries
-//                                |> createTaskStatusEntries taskState.Task
-//                                |> List.prepend taskState.StatusEntries
-//                            Comments =
-//                                comments
-//                                |> List.filter (fun (TaskComment (task, _)) -> task = taskState.Task)
-//                                |> List.map (ofTaskComment >> snd)
-//                                |> List.prepend taskState.Comments
-//                            CellCommentsMap =
-//                                cellComments
-//                                |> List.filter (fun (CellComment (address, _)) -> address.Task = taskState.Task)
-//                                |> List.map (fun (CellComment (address, comment)) -> address.Date, comment)
-//                                |> List.groupBy fst
-//                                |> Map.ofList
-//                                |> Map.mapValues (List.map snd)
-//                                |> Map.union taskState.CellCommentsMap }
-//
-//                    let taskStateList =
-//                        taskData.TaskStateList
-//                        |> List.map (applyState
-//                                         RootPrivateData.cellStatusEntries
-//                                         RootPrivateData.taskComments)
-//
-//                    let sharedTaskStateList =
-//                        sharedTaskData.TaskStateList
-//                        |> List.map (applyState
-//                                         RootPrivateData.Shared.cellStatusEntries
-//                                         RootPrivateData.Shared.taskComments)
-//
-//                    taskStateList |> List.append sharedTaskStateList
-//                | TempPublic  -> TempData.tempData.ManualTasks.TaskStateList
-//                | Test        -> testData.TaskStateList
-
-        //            let taskStateList =
-//                taskStateList
-//                |> List.sortByDescending (fun x -> x.StatusEntries.Length)
-//                |> List.take 10
-
-        //            let lastSessions =
-//                taskStateList
-//                |> Seq.filter (fun taskState -> not taskState.Sessions.IsEmpty)
-//                |> Seq.map (fun taskState -> taskState.Task, taskState.Sessions)
-//                |> Seq.map (Tuple2.mapItem2 (fun sessions ->
-//                    sessions
-//                    |> Seq.sortByDescending (fun (TaskSession start) -> start.DateTime)
-//                    |> Seq.head
-//                ))
-//                |> Seq.toList
-
-        //            printfn "RETURNING TEMPSTATE."
-//            {| GetNow = getNow
-//               DayStart = dayStart
-//               InformationCommentsMap = informationCommentsMap
-//               InformationList = informationList
-//               TaskOrderList = taskOrderList
-//               TaskStateList = taskStateList
-//               LastSessions = lastSessions |}
-
-
-
-
-        //        type TestTemplate =
-//            | LaneSorting of string
-//            | LaneRendering of string
-//
-//        [<RequireQualifiedAccess>]
-//        type Database =
-//            | Test of TestTemplate
-//            | Public
-//            | Private
-
-        //        let a = [
-//            "test", [
-//                "laneSorting", [
-//
-//                ]
-//                "laneRendering", [
-//
-//                ]
-//            ]
-//            "public", [
-//                "default", []
-//            ]
-//            "private", [
-//                "default", []
-//            ]
-//        ]
-
-
-        //        let getLivePosition () = RootPrivateData.getLivePosition ()
-//
-//        let getCurrentUser () = RootPrivateData.currentUser
-//
-//        let getDayStart () = RootPrivateData.dayStart
-//
-//        let getWeekStart () = RootPrivateData.weekStart
-        ()
-

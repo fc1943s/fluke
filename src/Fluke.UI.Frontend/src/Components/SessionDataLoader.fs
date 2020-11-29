@@ -9,6 +9,7 @@ open Fluke.UI.Frontend
 open Fluke.Shared
 
 module SessionDataLoader =
+
     open Domain.Model
     open Domain.UserInteraction
     open Domain.State
@@ -61,54 +62,54 @@ module SessionDataLoader =
 
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 
-    let render =
-        React.memo (fun (input: {| Username: Username |}) ->
-            let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
+    [<ReactComponent>]
+    let sessionDataLoader (input: {| Username: Username |}) =
+        let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
 
-            let loadState =
-                Recoil.useCallbackRef (fun setter ->
-                    async {
-                        Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
+        let loadState =
+            Recoil.useCallbackRef (fun setter ->
+                async {
+                    Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
 
-                        match sessionData with
-                        | Some sessionData ->
-                            let! databaseStateMap =
-                                setter.snapshot.getAsync (Recoil.Selectors.Session.databaseStateMap input.Username)
+                    match sessionData with
+                    | Some sessionData ->
+                        let! databaseStateMap =
+                            setter.snapshot.getAsync (Recoil.Selectors.Session.databaseStateMap input.Username)
 
-                            let availableDatabaseIds =
-                                databaseStateMap
-                                |> Map.toList
-                                |> List.sortBy (fun (id, databaseState) -> databaseState.Database.Name)
-                                |> List.map fst
-
-                            setter.set (Recoil.Atoms.Session.availableDatabaseIds input.Username, availableDatabaseIds)
-
-
-                            initializeSessionData input.Username setter sessionData
-
+                        let availableDatabaseIds =
                             databaseStateMap
-                            |> Map.iter (fun id databaseState ->
-                                setter.set (Recoil.Atoms.Database.name id, databaseState.Database.Name)
-                                setter.set (Recoil.Atoms.Database.owner id, Some databaseState.Database.Owner)
-                                setter.set (Recoil.Atoms.Database.sharedWith id, databaseState.Database.SharedWith)
-                                setter.set (Recoil.Atoms.Database.position id, databaseState.Database.Position))
+                            |> Map.toList
+                            |> List.sortBy (fun (id, databaseState) -> databaseState.Database.Name)
+                            |> List.map fst
 
-                        | None -> ()
+                        setter.set (Recoil.Atoms.Session.availableDatabaseIds input.Username, availableDatabaseIds)
 
-                        Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
-                    }
-                    |> Async.StartImmediate)
 
-            Profiling.addTimestamp "dataLoader render"
+                        initializeSessionData input.Username setter sessionData
 
-            React.useEffect
-                ((fun () ->
-                    Profiling.addTimestamp "dataLoader effect"
-                    loadState ()),
+                        databaseStateMap
+                        |> Map.iter (fun id databaseState ->
+                            setter.set (Recoil.Atoms.Database.name id, databaseState.Database.Name)
+                            setter.set (Recoil.Atoms.Database.owner id, Some databaseState.Database.Owner)
+                            setter.set (Recoil.Atoms.Database.sharedWith id, databaseState.Database.SharedWith)
+                            setter.set (Recoil.Atoms.Database.position id, databaseState.Database.Position))
 
-                 // TODO: return a cleanup?
-                 [|
-                     box sessionData
-                 |])
+                    | None -> ()
 
-            nothing)
+                    Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
+                }
+                |> Async.StartImmediate)
+
+        Profiling.addTimestamp "dataLoader render"
+
+        React.useEffect
+            ((fun () ->
+                Profiling.addTimestamp "dataLoader effect"
+                loadState ()),
+
+             // TODO: return a cleanup?
+             [|
+                 box sessionData
+             |])
+
+        nothing

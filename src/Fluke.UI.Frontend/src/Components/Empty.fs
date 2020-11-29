@@ -13,11 +13,10 @@ open Feliz.Recoil
 module Empty =
     open Domain.UserInteraction
 
-    let render =
-        React.memo (fun (input: {| Username: Username |}) ->
-
-            Chakra.box
-                {|  |}
-                [
-                    str ""
-                ])
+    [<ReactComponent>]
+    let empty (input: {| Username: Username |}) =
+        Chakra.box
+            {|  |}
+            [
+                str ""
+            ]
