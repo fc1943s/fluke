@@ -9,6 +9,7 @@ module Rendering =
     open Domain.UserInteraction
     open Domain.State
 
+
     let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
 
         let rec dateLoop (date: DateTime) (maxDate: DateTime) =
@@ -180,7 +181,9 @@ module Rendering =
                                 |> List.map (function
                                     | Weekly dayOfWeek -> dayOfWeek = referenceDay.DateTime.DayOfWeek
                                     | Monthly day -> day = referenceDay.Day
-                                    | Yearly (day, month) -> day = referenceDay.Day && month = referenceDay.Month)
+                                    | Yearly (day, month) ->
+                                        day = referenceDay.Day
+                                        && month = referenceDay.Month)
                                 |> List.exists id
 
                             match renderState, group with

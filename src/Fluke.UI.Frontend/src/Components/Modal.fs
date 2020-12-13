@@ -8,7 +8,7 @@ open Fable.React
 module Modal =
 
     [<ReactComponent>]
-    let modal (input: {| IsOpen: bool
+    let Modal (input: {| IsOpen: bool
                          OnClose: unit -> unit
                          children: seq<ReactElement> |}) =
         Chakra.modal

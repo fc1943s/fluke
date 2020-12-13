@@ -9,7 +9,7 @@ module CellStatusUserIndicator =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let cellStatusUserIndicator (input: {| User: User |}) =
+    let CellStatusUserIndicator (input: {| User: User |}) =
         Chakra.box
             {|
                 height = "17px"

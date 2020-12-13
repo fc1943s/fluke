@@ -10,7 +10,7 @@ open Fluke.UI.Frontend
 module UserLoader =
 
     [<ReactComponent>]
-    let userLoader () =
+    let UserLoader () =
         let username = Recoil.useValue Recoil.Atoms.username
 
         let loadUser =

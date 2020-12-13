@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Bindings
 module DockPanel =
 
     [<ReactComponent>]
-    let dockPanel (input: {| Name: string
+    let DockPanel (input: {| Name: string
                              Icon: obj
                              Atom: RecoilValue<TempUI.DockType option, ReadWrite>
                              children: seq<ReactElement> |}) =

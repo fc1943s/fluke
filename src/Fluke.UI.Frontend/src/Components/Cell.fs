@@ -15,7 +15,7 @@ module Cell =
     open State
 
     [<ReactComponent>]
-    let cell (input: {| Username: Username
+    let Cell (input: {| Username: Username
                         TaskId: Recoil.Atoms.Task.TaskId
                         DateId: DateId
                         SemiTransparent: bool |}) =
@@ -197,9 +197,9 @@ overriding any other behavior.
                                     ]
                             | _ -> ()
                         ]
-                CellSessionIndicator.cellSessionIndicator {| Status = status; Sessions = sessions |}
+                CellSessionIndicator.CellSessionIndicator {| Status = status; Sessions = sessions |}
                 if not selected then
-                    CellBorder.cellBorder
+                    CellBorder.CellBorder
                         {|
                             Username = input.Username
                             Date = referenceDay
@@ -207,8 +207,8 @@ overriding any other behavior.
                 if showUser then
                     match status with
                     | UserStatus (user, _manualCellStatus) ->
-                        CellStatusUserIndicator.cellStatusUserIndicator {| User = user |}
+                        CellStatusUserIndicator.CellStatusUserIndicator {| User = user |}
                     | _ -> ()
 
-                TooltipPopup.tooltipPopup {| Attachments = attachments |}
+                TooltipPopup.TooltipPopup {| Attachments = attachments |}
             ]

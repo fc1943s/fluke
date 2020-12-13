@@ -60,7 +60,7 @@ module DatabaseSelection =
                  }
 
              let getDatabaseSelector () =
-                 Databases.databases
+                 Databases.Databases
                      {|
                          Username = testUser.Username
                          Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}

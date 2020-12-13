@@ -14,7 +14,7 @@ module GridHeader =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let gridHeader (input: {| Username: Username |}) =
+    let GridHeader (input: {| Username: Username |}) =
         let cellSize = Recoil.useValue Recoil.Atoms.cellSize
         let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
@@ -40,7 +40,7 @@ module GridHeader =
                                 let cellWidth = cellSize * dates.Length
 
 
-                                MonthResponsiveCell.monthResponsiveCell
+                                MonthResponsiveCell.MonthResponsiveCell
                                     {|
                                         Username = input.Username
                                         Date = firstDate
@@ -56,7 +56,7 @@ module GridHeader =
                         yield!
                             dateSequence
                             |> List.map (fun date ->
-                                Day.day
+                                Day.Day
                                     {|
                                         Date = date
                                         Label = date.DateTime.Format "EEEEEE"
@@ -72,7 +72,7 @@ module GridHeader =
                         yield!
                             dateSequence
                             |> List.map (fun ({ Day = Day day } as date) ->
-                                Day.day
+                                Day.Day
                                     {|
                                         Date = date
                                         Label = day.ToString "D2"

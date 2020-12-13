@@ -36,7 +36,7 @@ module Router =
                  Chakra.box
                      {||}
                      [
-                         RouterObserver.routerObserver ()
+                         RouterObserver.RouterObserver ()
                      ]
 
              let initialize peek = promise { do! peek initialSetter }

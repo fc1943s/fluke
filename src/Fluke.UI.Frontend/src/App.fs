@@ -8,19 +8,19 @@ open Fluke.UI.Frontend.Components
 module App =
 
     [<ReactComponent>]
-    let app () =
+    let App () =
         Profiling.addTimestamp "appMain.render"
 
         RootWrapper.rootWrapper [
-            DebugOverlay.debugOverlay ()
+            DebugOverlay.DebugOverlay ()
 
-            CtrlListener.ctrlListener ()
-            ShiftListener.shiftListener ()
-            SelectionListener.selectionListener ()
-            RouterObserver.routerObserver ()
+            CtrlListener.CtrlListener ()
+            ShiftListener.ShiftListener ()
+            SelectionListener.SelectionListener ()
+            RouterObserver.RouterObserver ()
             //                PositionUpdater.render ()
-            GunObserver.gunObserver ()
-            UserLoader.userLoader ()
+            GunObserver.GunObserver ()
+            UserLoader.UserLoader ()
 
-            Content.content ()
+            Content.Content ()
         ]

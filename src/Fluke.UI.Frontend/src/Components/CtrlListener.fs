@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Hooks
 module CtrlListener =
 
     [<ReactComponent>]
-    let ctrlListener () =
+    let CtrlListener () =
         Listener.useKeyPress (fun setter e ->
             async {
                 let! ctrlPressed = setter.snapshot.getAsync Recoil.Atoms.ctrlPressed

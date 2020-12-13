@@ -13,7 +13,7 @@ module CellBorder =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let cellBorder (input: {| Username: Username; Date: FlukeDate |}) =
+    let CellBorder (input: {| Username: Username; Date: FlukeDate |}) =
         let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
 
         match (weekStart, input.Date) with

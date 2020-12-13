@@ -13,7 +13,7 @@ open Fable.React
 module GunObserver =
 
     [<ReactComponent>]
-    let gunObserver () =
+    let GunObserver () =
         let gun = Recoil.useValue Recoil.Selectors.gun
         let setUsername = Recoil.useSetState Recoil.Atoms.username
         let setSessionRestored = Recoil.useSetState Recoil.Atoms.sessionRestored

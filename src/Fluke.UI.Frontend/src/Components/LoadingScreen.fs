@@ -8,14 +8,14 @@ open Fluke.UI.Frontend.Bindings
 module LoadingScreen =
 
     [<ReactComponent>]
-    let loadingScreen () =
+    let LoadingScreen () =
         Chakra.center
             {| flex = 1 |}
             [
                 Chakra.stack
                     ()
                     [
-                        Spinner.spinner ()
+                        Spinner.Spinner ()
                         Chakra.box
                             ()
                             [

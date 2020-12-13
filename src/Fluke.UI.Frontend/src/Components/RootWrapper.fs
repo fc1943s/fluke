@@ -13,7 +13,7 @@ open Fluke.UI.Frontend.Bindings
 module RootWrapper =
 
     [<ReactComponent>]
-    let persistenceObserver () =
+    let PersistenceObserver () =
         Profiling.addTimestamp "persistenceObserver.render"
 
         Recoil.useTransactionObserver (fun snapshot ->
@@ -41,7 +41,7 @@ module RootWrapper =
                     Chakra.provider
                         {| resetCSS = true; theme = theme |}
                         [
-                            persistenceObserver ()
+                            PersistenceObserver ()
                             React.router [
                                 router.children [ yield! children ]
                             ]

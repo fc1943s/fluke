@@ -14,7 +14,7 @@ open Fluke.UI.Frontend.Hooks
 module DebugOverlay =
 
     [<ReactComponent>]
-    let debugOverlay () =
+    let DebugOverlay () =
         let text, setText = React.useState ""
         let oldJson, setOldJson = React.useState ""
         let debug, setDebug = Recoil.useState Recoil.Atoms.debug

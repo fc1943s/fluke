@@ -13,7 +13,7 @@ open Fluke.Shared
 module SelectionListener =
 
     [<ReactComponent>]
-    let selectionListener () =
+    let SelectionListener () =
         Listener.useKeyPress (fun setter e ->
             async {
                 let! cellSelectionMap = setter.snapshot.getAsync Recoil.Selectors.cellSelectionMap

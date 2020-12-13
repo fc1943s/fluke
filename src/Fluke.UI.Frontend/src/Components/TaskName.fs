@@ -14,7 +14,7 @@ module TaskName =
     open Domain.Model
 
     [<ReactComponent>]
-    let taskName (input: {| TaskId: Recoil.Atoms.Task.TaskId |}) =
+    let TaskName (input: {| TaskId: Recoil.Atoms.Task.TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
         let hasSelection = Recoil.useValue (Recoil.Selectors.Task.hasSelection input.TaskId)
@@ -61,5 +61,5 @@ module TaskName =
                     [
                         str taskName
                     ]
-                TooltipPopup.tooltipPopup {| Attachments = attachments |}
+                TooltipPopup.TooltipPopup {| Attachments = attachments |}
             ]

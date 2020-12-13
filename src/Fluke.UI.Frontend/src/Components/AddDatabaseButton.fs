@@ -10,14 +10,14 @@ open Fluke.UI.Frontend
 module AddDatabaseButton =
 
     [<ReactComponent>]
-    let addDatabaseButton (input: {| props: {| marginLeft: string |} |}) =
+    let AddDatabaseButton (input: {| props: {| marginLeft: string |} |}) =
         let username = Recoil.useValue Recoil.Atoms.username
         let formDatabaseId, setFormDatabaseId = Recoil.useState (Recoil.Atoms.formDatabaseId)
 
 
 
         React.fragment [
-            Button.button
+            Button.Button
                 {|
                     Icon = Icons.faPlus
                     RightIcon = false
@@ -32,7 +32,7 @@ module AddDatabaseButton =
                         ]
                 |}
 
-            Modal.modal
+            Modal.Modal
                 {|
                     IsOpen = formDatabaseId.IsSome
                     OnClose = fun () -> setFormDatabaseId None
@@ -40,7 +40,7 @@ module AddDatabaseButton =
                         [
                             match formDatabaseId, username with
                             | Some databaseId, Some username ->
-                                EditDatabase.editDatabase
+                                EditDatabase.EditDatabase
                                     {|
                                         Username = username
                                         DatabaseId = databaseId

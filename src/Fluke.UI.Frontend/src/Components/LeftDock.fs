@@ -14,7 +14,7 @@ module LeftDock =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let leftDock (input: {| Username: Username |}) =
+    let LeftDock (input: {| Username: Username |}) =
         let leftDock = Recoil.useValue Recoil.Atoms.leftDock
 
         let items =
@@ -23,7 +23,7 @@ module LeftDock =
                 ("Settings",
                  Icons.md.MdSettings,
                  (fun () ->
-                     Settings.settings
+                     Settings.Settings
                          {|
                              Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
                          |}))
@@ -32,7 +32,7 @@ module LeftDock =
                 ("Databases",
                  Icons.fi.FiDatabase,
                  (fun () ->
-                     Databases.databases
+                     Databases.Databases
                          {|
                              Username = input.Username
                              Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
@@ -59,7 +59,7 @@ module LeftDock =
                                 yield!
                                     items
                                     |> List.map (fun (dockType, (name, icon, _)) ->
-                                        DockButton.dockButton
+                                        DockButton.DockButton
                                             {|
                                                 DockType = dockType
                                                 Name = name
@@ -83,7 +83,7 @@ module LeftDock =
                                 flex = 1
                             |}
                             [
-                                DockPanel.dockPanel
+                                DockPanel.DockPanel
                                     {|
                                         Name = name
                                         Icon = icon

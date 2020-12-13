@@ -11,7 +11,7 @@ open Fable.React
 module LoginScreen =
 
     [<ReactComponent>]
-    let loginScreen () =
+    let LoginScreen () =
         let usernameField, setUsernameField = React.useState "fc1943s"
         let passwordField, setPasswordField = React.useState "123456"
         let signIn = Auth.useSignIn ()

@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Bindings
 module DockButton =
 
     [<ReactComponent>]
-    let dockButton (input: {| Name: string
+    let DockButton (input: {| Name: string
                               Icon: obj
                               Atom: RecoilValue<TempUI.DockType option, ReadWrite>
                               DockType: TempUI.DockType |}) =

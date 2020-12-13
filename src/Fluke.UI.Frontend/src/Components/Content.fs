@@ -11,7 +11,7 @@ open Fluke.UI.Frontend.Bindings
 module Content =
 
     [<ReactComponent>]
-    let content () =
+    let Content () =
         Profiling.addTimestamp "mainComponent.render"
         let username = Recoil.useValue Recoil.Atoms.username
         let sessionRestored = Recoil.useValue Recoil.Atoms.sessionRestored
@@ -20,24 +20,24 @@ module Content =
             {| minHeight = "100vh" |}
             [
                 match sessionRestored with
-                | false -> LoadingScreen.loadingScreen ()
+                | false -> LoadingScreen.LoadingScreen ()
                 | true ->
                     match username with
                     | Some username ->
                         React.suspense
                             ([
-//                                SessionDataLoader.sessionDataLoader {| Username = username |}
-                                SoundPlayer.soundPlayer {| Username = username |}
+                                SessionDataLoader.SessionDataLoader {| Username = username |}
+                                SoundPlayer.SoundPlayer {| Username = username |}
 
                                 Chakra.stack
                                     {| spacing = 0; flex = 1 |}
                                     [
-                                        TopBar.topBar ()
-                                        HomeScreen.homeScreen {| Username = username; Props = {| flex = 1 |} |}
-                                        StatusBar.statusBar {| Username = username |}
+                                        TopBar.TopBar ()
+                                        HomeScreen.HomeScreen {| Username = username; Props = {| flex = 1 |} |}
+                                        StatusBar.StatusBar {| Username = username |}
                                     ]
                              ],
-                             LoadingScreen.loadingScreen ())
+                             LoadingScreen.LoadingScreen ())
 
-                    | None -> LoginScreen.loginScreen ()
+                    | None -> LoginScreen.LoginScreen ()
             ]

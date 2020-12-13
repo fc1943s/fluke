@@ -13,7 +13,7 @@ module Day =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let day (input: {| Username: Username
+    let Day (input: {| Username: Username
                        Date: FlukeDate
                        Label: string |}) =
         let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday input.Date)

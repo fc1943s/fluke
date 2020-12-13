@@ -38,7 +38,7 @@ group Fluke.UI.Frontend
     nuget Fable.Extras ~> 0.2
     nuget Fable.Jester ~> 0.29
     nuget Fable.ReactTestingLibrary ~> 0.29
-    nuget Feliz ~> 1.17
+    nuget Feliz ~> 1.25
     nuget Feliz.Bulma ~> 2.4
     nuget Feliz.Recoil ~> 0.19
     nuget Feliz.UseListener ~> 0.6

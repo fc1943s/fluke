@@ -22,7 +22,7 @@ module RouterObserver =
     type ParsedSegments = { View: View.View option }
 
     [<ReactComponent>]
-    let routerObserver () =
+    let RouterObserver () =
         let sessionRestored = Recoil.useValue Recoil.Atoms.sessionRestored
         let username = Recoil.useValue Recoil.Atoms.username
         let view, setView = Recoil.useState Recoil.Atoms.view

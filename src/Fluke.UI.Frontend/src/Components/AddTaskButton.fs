@@ -10,11 +10,11 @@ open Fluke.UI.Frontend
 module AddTaskButton =
 
     [<ReactComponent>]
-    let addTaskButton (input: {| props: {| marginLeft: string |} |}) =
+    let AddTaskButton (input: {| props: {| marginLeft: string |} |}) =
         let taskIdForm, setTaskIdForm = Recoil.useState (Recoil.Atoms.taskIdForm)
 
         React.fragment [
-            Button.button
+            Button.Button
                 {|
                     Icon = Icons.faPlus
                     RightIcon = false
@@ -29,13 +29,13 @@ module AddTaskButton =
                         ]
                 |}
 
-            Modal.modal
+            Modal.Modal
                 {|
                     IsOpen = taskIdForm.IsSome
                     OnClose = fun () -> setTaskIdForm None
                     children =
                         [
-                            TaskForm.taskForm ()
+                            TaskForm.TaskForm ()
                         ]
                 |}
         ]

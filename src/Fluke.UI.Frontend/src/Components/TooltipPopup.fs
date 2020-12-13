@@ -13,7 +13,7 @@ module TooltipPopup =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let tooltipPopup (input: {| Attachments: Attachment list |}) =
+    let TooltipPopup (input: {| Attachments: Attachment list |}) =
         let tooltipContainerRef = React.useElementRef ()
 
         let hovered = Listener.useElementHover tooltipContainerRef

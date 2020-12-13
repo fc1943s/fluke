@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Bindings
 module Settings =
 
     [<ReactComponent>]
-    let settings (input: {| Props: {| flex: int; overflowY: string; flexBasis: int |} |}) =
+    let Settings (input: {| Props: {| flex: int; overflowY: string; flexBasis: int |} |}) =
         let daysBefore, setDaysBefore = Recoil.useState (Recoil.Atoms.daysBefore)
         let daysAfter, setDaysAfter = Recoil.useState (Recoil.Atoms.daysAfter)
 

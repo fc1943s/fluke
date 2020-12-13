@@ -13,7 +13,7 @@ module PriorityView =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let priorityView (input: {| Username: Username |}) =
+    let PriorityView (input: {| Username: Username |}) =
         let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList input.Username)
 
         Chakra.flex
@@ -35,7 +35,7 @@ module PriorityView =
                                         yield!
                                             taskIdList
                                             |> List.map (fun taskId ->
-                                                TaskInformationName.taskInformationName {| TaskId = taskId |})
+                                                TaskInformationName.TaskInformationName {| TaskId = taskId |})
                                     ]
                                 // Column: Priority
                                 Chakra.box
@@ -43,7 +43,7 @@ module PriorityView =
                                     [
                                         yield!
                                             taskIdList
-                                            |> List.map (fun taskId -> TaskPriority.taskPriority {| TaskId = taskId |})
+                                            |> List.map (fun taskId -> TaskPriority.TaskPriority {| TaskId = taskId |})
                                     ]
                                 // Column: Task Name
                                 Chakra.box
@@ -51,7 +51,7 @@ module PriorityView =
                                     [
                                         yield!
                                             taskIdList
-                                            |> List.map (fun taskId -> TaskName.taskName {| TaskId = taskId |})
+                                            |> List.map (fun taskId -> TaskName.TaskName {| TaskId = taskId |})
                                     ]
                             ]
                     ]
@@ -59,8 +59,8 @@ module PriorityView =
                 Chakra.box
                     {|  |}
                     [
-                        GridHeader.gridHeader {| Username = input.Username |}
-                        Cells.cells
+                        GridHeader.GridHeader {| Username = input.Username |}
+                        Cells.Cells
                             {|
                                 Username = input.Username
                                 TaskIdList = taskIdList

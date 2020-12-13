@@ -11,7 +11,7 @@ open Fluke.UI.Frontend.Bindings
 module PositionUpdater =
 
     [<ReactComponent>]
-    let positionUpdater () =
+    let PositionUpdater () =
         let resetPosition = Recoil.useResetState Recoil.Selectors.position
         Scheduling.useScheduling Scheduling.Interval (60 * 1000) resetPosition
 

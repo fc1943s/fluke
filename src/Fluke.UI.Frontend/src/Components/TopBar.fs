@@ -9,7 +9,7 @@ open Fluke.UI.Frontend.Bindings
 module TopBar =
 
     [<ReactComponent>]
-    let topBar () =
+    let TopBar () =
         let logout = Auth.useLogout ()
 
         Chakra.flex
@@ -20,7 +20,7 @@ module TopBar =
                 padding = "7px"
             |}
             [
-                Logo.logo ()
+                Logo.Logo ()
 
                 Chakra.box
                     {| marginLeft = "4px" |}
@@ -28,8 +28,8 @@ module TopBar =
                         str "Fluke"
                     ]
 
-                AddDatabaseButton.addDatabaseButton {| props = {| marginLeft = "37px" |} |}
-                AddTaskButton.addTaskButton {| props = {| marginLeft = "10px" |} |}
+                AddDatabaseButton.AddDatabaseButton {| props = {| marginLeft = "37px" |} |}
+                AddTaskButton.AddTaskButton {| props = {| marginLeft = "10px" |} |}
 
                 Chakra.spacer {|  |} []
 

@@ -20,7 +20,7 @@ module Input =
         | Password
 
     [<ReactComponent>]
-    let input<'T> (input: {| Label: string option
+    let Input<'T> (input: {| Label: string option
                              Placeholder: string
                              InputFormat: InputFormat
                              OnFormat: 'T -> string

@@ -14,7 +14,7 @@ module SoundPlayer =
     open UserInteraction
 
     [<ReactComponent>]
-    let soundPlayer (input: {| Username: Username |}) =
+    let SoundPlayer (input: {| Username: Username |}) =
         let oldActiveSessions = React.useRef []
         let (Minute sessionLength) = Recoil.useValue (Recoil.Atoms.User.sessionLength input.Username)
 

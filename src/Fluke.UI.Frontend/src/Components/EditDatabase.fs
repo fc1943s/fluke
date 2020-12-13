@@ -16,7 +16,7 @@ module EditDatabase =
 
     module DatabaseAccessIndicator =
         [<ReactComponent>]
-        let databaseAccessIndicator () =
+        let DatabaseAccessIndicator () =
             Chakra.stack
                 {| direction = "row"; spacing = "15px" |}
                 [
@@ -58,7 +58,7 @@ module EditDatabase =
             Chakra.stack
                 {| spacing = "15px" |}
                 [
-                    Input.input
+                    Input.Input
                         {|
                             Label = Some "Name"
                             Placeholder = sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
@@ -68,7 +68,7 @@ module EditDatabase =
                             OnValidate = DatabaseName >> Some
                         |}
 
-                    Input.input
+                    Input.Input
                         {|
                             Label = Some "Day starts at"
                             Placeholder = "00:00"
@@ -87,12 +87,12 @@ module EditDatabase =
                                     str "Access:"
                                 ]
 
-                            DatabaseAccessIndicator.databaseAccessIndicator ()
+                            DatabaseAccessIndicator.DatabaseAccessIndicator ()
                         ]
                 ]
 
     [<ReactComponent>]
-    let editDatabase (input: {| Username: UserInteraction.Username
+    let EditDatabase (input: {| Username: UserInteraction.Username
                                 DatabaseId: State.DatabaseId
                                 OnSave: Async<unit> |}) =
         let onSave =

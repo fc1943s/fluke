@@ -10,7 +10,7 @@ module Logo =
     open Domain.State
 
     [<ReactComponent>]
-    let logo () =
+    let Logo () =
         Chakra.simpleGrid
             {|
                 columns = 2

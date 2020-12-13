@@ -15,7 +15,7 @@ module StatusBar =
     open UserInteraction
 
     [<ReactComponent>]
-    let statusBar (input: {| Username: Username |}) =
+    let StatusBar (input: {| Username: Username |}) =
         let (Username username) = input.Username
         let position = Recoil.useValue Recoil.Selectors.position
         let activeSessions = Recoil.useValue (Recoil.Selectors.Session.activeSessions input.Username)

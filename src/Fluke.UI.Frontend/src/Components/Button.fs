@@ -7,7 +7,7 @@ open Fluke.UI.Frontend.Bindings
 module Button =
 
     [<ReactComponent>]
-    let button (input: {| RightIcon: bool
+    let Button (input: {| RightIcon: bool
                           Icon: obj
                           props: {| marginLeft: string; onClick: unit -> unit |}
                           children: seq<ReactElement> |}) =

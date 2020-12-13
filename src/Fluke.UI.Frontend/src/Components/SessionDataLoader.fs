@@ -63,7 +63,7 @@ module SessionDataLoader =
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 
     [<ReactComponent>]
-    let sessionDataLoader (input: {| Username: Username |}) =
+    let SessionDataLoader (input: {| Username: Username |}) =
         let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
 
         let loadState =

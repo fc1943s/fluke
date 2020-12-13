@@ -11,7 +11,7 @@ open Fluke.UI.Frontend.Bindings
 module Cells =
 
     [<ReactComponent>]
-    let cells (input: {| Username: Username
+    let Cells (input: {| Username: Username
                          TaskIdList: Recoil.Atoms.Task.TaskId list |}) =
         Profiling.addTimestamp "cells.render"
 
@@ -29,7 +29,7 @@ module Cells =
                                 yield!
                                     dateSequence
                                     |> List.map (fun date ->
-                                        Cell.cell
+                                        Cell.Cell
                                             {|
                                                 Username = input.Username
                                                 TaskId = taskId

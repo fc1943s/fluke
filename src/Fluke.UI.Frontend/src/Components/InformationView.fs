@@ -13,7 +13,7 @@ module InformationView =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let informationView (input: {| Username: Username |}) =
+    let InformationView (input: {| Username: Username |}) =
         let groupIndentationLength = 20
 
         let tasksByInformationKind = Recoil.useValue (Recoil.Selectors.Session.tasksByInformationKind input.Username)
@@ -56,7 +56,7 @@ module InformationView =
                                                                 Chakra.box
                                                                     {| paddingLeft = "17px" |}
                                                                     [
-                                                                        InformationName.informationName
+                                                                        InformationName.InformationName
                                                                             {| InformationId = informationId |}
 
                                                                         // Task Name
@@ -73,11 +73,11 @@ module InformationView =
                                                                                                 paddingLeft = "17px"
                                                                                             |}
                                                                                             [
-                                                                                                TaskPriority.taskPriority
+                                                                                                TaskPriority.TaskPriority
                                                                                                     {|
                                                                                                         TaskId = taskId
                                                                                                     |}
-                                                                                                TaskName.taskName
+                                                                                                TaskName.TaskName
                                                                                                     {|
                                                                                                         TaskId = taskId
                                                                                                     |}
@@ -92,7 +92,7 @@ module InformationView =
                 Chakra.box
                     ()
                     [
-                        GridHeader.gridHeader {| Username = input.Username |}
+                        GridHeader.GridHeader {| Username = input.Username |}
 
                         Chakra.box
                             ()
@@ -123,7 +123,7 @@ module InformationView =
                                                                         lineHeight = "17px"
                                                                     |}
                                                                     []
-                                                                Cells.cells
+                                                                Cells.Cells
                                                                     {|
                                                                         Username = input.Username
                                                                         TaskIdList = taskIdList

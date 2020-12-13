@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Hooks
 module ShiftListener =
 
     [<ReactComponent>]
-    let shiftListener () =
+    let ShiftListener () =
         Listener.useKeyPress (fun setter e ->
             async {
                 let! shiftPressed = setter.snapshot.getAsync Recoil.Atoms.shiftPressed

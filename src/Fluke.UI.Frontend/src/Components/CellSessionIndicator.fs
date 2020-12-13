@@ -11,7 +11,7 @@ module CellSessionIndicator =
     open Domain.State
 
     [<ReactComponent>]
-    let cellSessionIndicator (input: {| Status: CellStatus
+    let CellSessionIndicator (input: {| Status: CellStatus
                                         Sessions: TaskSession list |}) =
         Chakra.box
             {|

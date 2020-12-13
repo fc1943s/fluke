@@ -11,7 +11,7 @@ open Fluke.Shared.Domain
 module InformationName =
 
     [<ReactComponent>]
-    let informationName (input: {| InformationId: Recoil.Atoms.Information.InformationId |}) =
+    let InformationName (input: {| InformationId: Recoil.Atoms.Information.InformationId |}) =
         let information = Recoil.useValue (Recoil.Atoms.Information.wrappedInformation input.InformationId)
         let attachments = Recoil.useValue (Recoil.Atoms.Information.attachments input.InformationId)
         let (Model.InformationName informationName) = information.Name
@@ -33,5 +33,5 @@ module InformationName =
                     ]
 
 
-                TooltipPopup.tooltipPopup {| Attachments = attachments |}
+                TooltipPopup.TooltipPopup {| Attachments = attachments |}
             ]

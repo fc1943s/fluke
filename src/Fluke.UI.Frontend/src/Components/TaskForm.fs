@@ -8,7 +8,7 @@ open Fluke.UI.Frontend.Bindings
 module TaskForm =
 
     [<ReactComponent>]
-    let taskForm () =
+    let TaskForm () =
         Chakra.box
             ()
             [

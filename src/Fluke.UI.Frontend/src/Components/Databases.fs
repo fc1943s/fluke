@@ -16,7 +16,7 @@ module Databases =
 
     module MenuItem =
         [<ReactComponent>]
-        let menuItem (input: {| Username: Username; DatabaseId: DatabaseId |}) =
+        let MenuItem (input: {| Username: Username; DatabaseId: DatabaseId |}) =
             let (DatabaseId databaseId) = input.DatabaseId
 
             let isTesting = Recoil.useValue Recoil.Atoms.isTesting
@@ -99,7 +99,7 @@ module Databases =
 
 
     [<ReactComponent>]
-    let databases (input: {| Username: Username
+    let Databases (input: {| Username: Username
                              Props: {| flex: int; overflowY: string; flexBasis: int |} |}) =
         let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
 
@@ -109,7 +109,7 @@ module Databases =
                 yield!
                     availableDatabaseIds
                     |> List.map (fun databaseId ->
-                        MenuItem.menuItem
+                        MenuItem.MenuItem
                             {|
                                 Username = input.Username
                                 DatabaseId = databaseId
