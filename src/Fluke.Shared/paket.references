@@ -1,6 +1,5 @@
-group Fluke.Shared
-
 FSharp.Core
+
 FSharpPlus
 Myriad.Core
 Myriad.Sdk

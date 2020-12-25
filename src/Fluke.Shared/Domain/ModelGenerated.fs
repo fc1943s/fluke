@@ -4,16 +4,11 @@
 //------------------------------------------------------------------------------
 namespace rec Fluke.Shared.Domain
 
-
-namespace rec Fluke.Shared.Domain
-
 module FlukeTime =
     open Fluke.Shared.Domain.Model
-
     let Hour (x: FlukeTime) = x.Hour
     let Minute (x: FlukeTime) = x.Minute
     let create (hour: Hour) (minute: Minute): FlukeTime = { Hour = hour; Minute = minute }
-
     let map (mapHour: Hour -> Hour) (mapMinute: Minute -> Minute) (record': FlukeTime) =
         { record' with
               Hour = mapHour record'.Hour
@@ -22,7 +17,6 @@ namespace rec Fluke.Shared.Domain
 
 module Information =
     open Fluke.Shared.Domain.Model
-
     let toString (x: Information) =
         match x with
         | Project _ -> "Project"
@@ -60,10 +54,10 @@ module Information =
         match x with
         | Archive _ -> true
         | _ -> false
+namespace rec Fluke.Shared.Domain
 
 module Priority =
     open Fluke.Shared.Domain.Model
-
     let toString (x: Priority) =
         match x with
         | Low1 -> "Low1"

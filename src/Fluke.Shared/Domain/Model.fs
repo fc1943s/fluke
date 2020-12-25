@@ -2,22 +2,20 @@ namespace Fluke.Shared.Domain
 
 open System
 
-#if !FABLE_COMPILER
-open Myriad.Plugins
-#endif
-
 
 module Model =
-#if FABLE_COMPILER
+#if !FABLE_COMPILER
+    open Myriad.Plugins
+#else
     module Generator =
-        type DuCases () =
-            inherit System.Attribute()
+        type DuCases(_configGroup: string) =
+            inherit Attribute()
 
-        type Fields () =
-            inherit System.Attribute()
+        type Fields(_configGroup: string) =
+            inherit Attribute()
 #endif
 
-    [<Generator.DuCases>]
+    [<Generator.DuCases "Domain">]
     type Information =
         | Project of project: Project * tasks: Task list
         | Area of area: Area * tasks: Task list
@@ -51,7 +49,7 @@ module Model =
 
     and Minute = Minute of float
 
-    and [<Generator.Fields>] FlukeTime = { Hour: Hour; Minute: Minute }
+    and [<Generator.Fields "Domain">] FlukeTime = { Hour: Hour; Minute: Minute }
 
     and Hour = Hour of float
 
@@ -93,7 +91,7 @@ module Model =
         | November = 11
         | December = 12
 
-    and [<Generator.DuCases>] Priority =
+    and [<Generator.DuCases "Domain">] Priority =
         | Low1
         | Low2
         | Low3
@@ -153,6 +151,7 @@ module Model =
                 Hour = Hour (float hour)
                 Minute = Minute (float minute)
             }
+
         member inline this.Stringify () =
             let { Hour = Hour hour; Minute = Minute minute } = this
             sprintf "%02.0f:%02.0f" hour minute

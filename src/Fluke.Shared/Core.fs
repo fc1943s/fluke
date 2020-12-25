@@ -15,4 +15,3 @@ module Map =
             key, value
         ]
         |> Map.ofList
-

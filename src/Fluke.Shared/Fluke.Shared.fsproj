@@ -5,33 +5,22 @@
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
     <ItemGroup>
-        <Compile Include="Core.fs"/>
-        <Compile Include="Domain\Model.fs"/>
+        <Compile Include="Core.fs" />
+        <Compile Include="Domain\Model.fs" />
         <Compile Include="Domain\ModelGenerated.fs">
-<!--            <MyriadFile>Domain\Model.fs</MyriadFile>-->
-<!--            <MyriadNameSpace>Fluke.Shared.Domain</MyriadNameSpace>-->
+            <MyriadFile>Domain\Model.fs</MyriadFile>
         </Compile>
-        <Compile Include="Domain\UserInteraction.fs"/>
-        <Compile Include="Domain\State.fs"/>
-        <Compile Include="Old.fs"/>
-        <Compile Include="Rendering.fs"/>
-        <Compile Include="Sorting.fs"/>
-        <Compile Include="View.fs"/>
-        <Compile Include="Templates.fs"/>
-        <Compile Include="Sync.fs"/>
-        <Compile Include="TempData.fs"/>
-        <Content Include="paket.references"/>
+        <Compile Include="Domain\UserInteraction.fs" />
+        <Compile Include="Domain\State.fs" />
+        <Compile Include="Old.fs" />
+        <Compile Include="Rendering.fs" />
+        <Compile Include="Sorting.fs" />
+        <Compile Include="View.fs" />
+        <Compile Include="Templates.fs" />
+        <Compile Include="Sync.fs" />
+        <Compile Include="TempData.fs" />
+        <Content Include="paket.references" />
+        <Content Include="myriad.toml" />
     </ItemGroup>
-<!--    <ItemGroup>-->
-<!--        <MyriadSdkGenerator Include="..\..\..\myriad\src\Myriad.Plugins\bin\Debug\netstandard2.0\Myriad.Plugins.dll"/>-->
-<!--    </ItemGroup>-->
-<!--    <ItemGroup>-->
-<!--        <Reference Include="Myriad.Core">-->
-<!--            <HintPath>..\..\..\myriad\src\Myriad.Plugins\bin\Debug\netstandard2.0\Myriad.Core.dll</HintPath>-->
-<!--        </Reference>-->
-<!--        <Reference Include="Myriad.Plugins">-->
-<!--            <HintPath>..\..\..\myriad\src\Myriad.Plugins\bin\Debug\netstandard2.0\Myriad.Plugins.dll</HintPath>-->
-<!--        </Reference>-->
-<!--    </ItemGroup>-->
-    <Import Project="..\..\.paket\Paket.Restore.targets"/>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

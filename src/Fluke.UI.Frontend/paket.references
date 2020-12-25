@@ -1,5 +1,3 @@
-group Fluke.UI.Frontend
-
 FSharp.Core
 
 Fable.Remoting.Client

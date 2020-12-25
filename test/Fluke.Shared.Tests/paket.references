@@ -1,6 +1,5 @@
-group Testing
-
 FSharp.Core
+
 altcover
 Microsoft.NET.Test.Sdk
 YoloDev.Expecto.TestSdk
