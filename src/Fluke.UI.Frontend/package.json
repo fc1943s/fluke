@@ -26,10 +26,6 @@
     "@fortawesome/fontawesome-free": "^5.15",
     "typeface-roboto-condensed": "^1.1",
 
-    "bulma": "^0.9",
-    "bulma-extensions": "^6.2",
-    "bulmaswatch": "^0.8",
-
     "react": "0.0.0-experimental-3310209d0",
     "react-dom": "0.0.0-experimental-3310209d0",
 
