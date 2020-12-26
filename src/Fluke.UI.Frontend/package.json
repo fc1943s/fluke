@@ -21,7 +21,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --env=jest-environment-jsdom-sixteen --testNamePattern=",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
-    "postinstall": "node postinstall.ts"
+    "postinstall": "node ../postinstall.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",
