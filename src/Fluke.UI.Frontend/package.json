@@ -18,6 +18,7 @@
     "watch:backend": "cd ../Fluke.UI.Backend && dotnet watch run",
     "watch": "concurrently \"yarn:watch:*\"",
     "build": "yarn build:fable && yarn build:react",
+    "build:azure": "yarn build",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --env=jest-environment-jsdom-sixteen --testNamePattern=",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
