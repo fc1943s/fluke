@@ -94,7 +94,6 @@
         <Content Include=".eslintrc.js" />
         <Content Include="paket.references" />
         <Content Include="tsconfig.json" />
-        <Content Include="postinstall.ts" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />
