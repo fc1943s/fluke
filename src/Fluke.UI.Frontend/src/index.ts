@@ -1,1 +1,1 @@
-import './Main.fs.ts';
+import './Main.fs.js';
