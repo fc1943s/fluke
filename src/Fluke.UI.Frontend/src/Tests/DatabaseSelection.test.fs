@@ -56,15 +56,12 @@ module DatabaseSelection =
                      setter.set (Atoms.Session.availableDatabaseIds testUser.Username, databaseList |> List.map fst)
 
                      databaseList
-                     |> List.iter (fun (databaseId, position) -> setter.set (Atoms.Database.position databaseId, position))
+                     |> List.iter (fun (databaseId, position) ->
+                         setter.set (Atoms.Database.position databaseId, position))
                  }
 
              let getDatabaseSelector () =
-                 Databases.Databases
-                     {|
-                         Username = testUser.Username
-                         Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
-                     |}
+                 Databases.Databases testUser.Username {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
 
              Jest.test
                  ("database list updates correctly with user clicks",

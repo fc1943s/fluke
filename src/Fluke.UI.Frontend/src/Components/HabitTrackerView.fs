@@ -12,8 +12,8 @@ module HabitTrackerView =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let HabitTrackerView (input: {| Username: Username |}) =
-        let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList input.Username)
+    let HabitTrackerView (username: Username) =
+        let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList username)
 
         Chakra.flex
             {|  |}
@@ -33,8 +33,7 @@ module HabitTrackerView =
                                     [
                                         yield!
                                             taskIdList
-                                            |> List.map (fun taskId ->
-                                                TaskInformationName.TaskInformationName {| TaskId = taskId |})
+                                            |> List.map (fun taskId -> TaskInformationName.TaskInformationName taskId)
                                     ]
                                 // Column: Priority
                                 Chakra.box
@@ -42,7 +41,7 @@ module HabitTrackerView =
                                     [
                                         yield!
                                             taskIdList
-                                            |> List.map (fun taskId -> TaskPriority.TaskPriority {| TaskId = taskId |})
+                                            |> List.map (fun taskId -> TaskPriority.TaskPriority taskId)
                                     ]
                                 // Column: Task Name
                                 Chakra.box
@@ -50,18 +49,14 @@ module HabitTrackerView =
                                     [
                                         yield!
                                             taskIdList
-                                            |> List.map (fun taskId -> TaskName.TaskName {| TaskId = taskId |})
+                                            |> List.map (fun taskId -> TaskName.TaskName taskId)
                                     ]
                             ]
                     ]
                 Chakra.box
                     {|  |}
                     [
-                        GridHeader.GridHeader {| Username = input.Username |}
-                        Cells.Cells
-                            {|
-                                Username = input.Username
-                                TaskIdList = taskIdList
-                            |}
+                        GridHeader.GridHeader username
+                        Cells.Cells {| Username = username; TaskIdList = taskIdList |}
                     ]
             ]

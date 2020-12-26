@@ -11,8 +11,8 @@ open Fluke.Shared.Domain
 module TaskPriority =
 
     [<ReactComponent>]
-    let TaskPriority (input: {| TaskId: Recoil.Atoms.Task.TaskId |}) =
-        let priority = Recoil.useValue (Recoil.Atoms.Task.priority input.TaskId)
+    let TaskPriority (taskId: Recoil.Atoms.Task.TaskId) =
+        let priority = Recoil.useValue (Recoil.Atoms.Task.priority taskId)
 
         let priorityText =
             priority

@@ -14,7 +14,7 @@ module Empty =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let Empty (input: {| Username: Username |}) =
+    let Empty (username: Username) =
         Chakra.box
             {|  |}
             [

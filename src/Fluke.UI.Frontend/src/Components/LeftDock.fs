@@ -14,7 +14,7 @@ module LeftDock =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let LeftDock (input: {| Username: Username |}) =
+    let LeftDock (username: Username) =
         let leftDock = Recoil.useValue Recoil.Atoms.leftDock
 
         let items =
@@ -31,12 +31,7 @@ module LeftDock =
                 TempUI.DockType.Databases,
                 ("Databases",
                  Icons.fi.FiDatabase,
-                 (fun () ->
-                     Databases.Databases
-                         {|
-                             Username = input.Username
-                             Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
-                         |}))
+                 (fun () -> Databases.Databases username {| flex = 1; overflowY = "auto"; flexBasis = 0 |}))
             ]
 
         let itemsMap = items |> Map.ofList

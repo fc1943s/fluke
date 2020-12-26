@@ -99,19 +99,13 @@ module Databases =
 
 
     [<ReactComponent>]
-    let Databases (input: {| Username: Username
-                             Props: {| flex: int; overflowY: string; flexBasis: int |} |}) =
-        let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
+    let Databases (username: Username) (props: {| flex: int; overflowY: string; flexBasis: int |}) =
+        let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds username)
 
         Chakra.stack
-            input.Props
+            props
             [
                 yield!
                     availableDatabaseIds
-                    |> List.map (fun databaseId ->
-                        MenuItem.MenuItem
-                            {|
-                                Username = input.Username
-                                DatabaseId = databaseId
-                            |})
+                    |> List.map (fun databaseId -> MenuItem.MenuItem {| Username = username; DatabaseId = databaseId |})
             ]

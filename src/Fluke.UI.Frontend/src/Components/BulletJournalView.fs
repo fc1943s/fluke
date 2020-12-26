@@ -14,8 +14,8 @@ module BulletJournalView =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let BulletJournalView (input: {| Username: Username |}) =
-        let weekCellsMap = Recoil.useValue (Recoil.Selectors.Session.weekCellsMap input.Username)
+    let BulletJournalView (username: Username) =
+        let weekCellsMap = Recoil.useValue (Recoil.Selectors.Session.weekCellsMap username)
 
         Chakra.box
             ()
@@ -61,7 +61,7 @@ module BulletJournalView =
                                                             [
                                                                 Cell.Cell
                                                                     {|
-                                                                        Username = input.Username
+                                                                        Username = username
                                                                         DateId = dateId
                                                                         TaskId = cell.TaskId
                                                                         SemiTransparent = false
@@ -69,7 +69,7 @@ module BulletJournalView =
                                                                 Chakra.box
                                                                     {| paddingLeft = "4px" |}
                                                                     [
-                                                                        TaskName.TaskName {| TaskId = cell.TaskId |}
+                                                                        TaskName.TaskName cell.TaskId
                                                                     ]
                                                             ])
                                             ])

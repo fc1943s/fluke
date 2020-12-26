@@ -15,7 +15,7 @@ module HomeScreen =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let HomeScreen (input: {| Username: Username; Props: {| flex: int |} |}) =
+    let HomeScreen (username: Username) (props: {| flex: int |}) =
         let view, setView = Recoil.useState Recoil.Atoms.view
 
         let tabs =
@@ -24,25 +24,25 @@ module HomeScreen =
                     View = View.View.HabitTracker
                     Name = "Habit Tracker View"
                     Icon = Icons.bs.BsGrid
-                    Content = fun () -> HabitTrackerView.HabitTrackerView {| Username = input.Username |}
+                    Content = fun () -> HabitTrackerView.HabitTrackerView username
                 |}
                 {|
                     View = View.View.Priority
                     Name = "Priority View"
                     Icon = Icons.fa.FaSortNumericDownAlt
-                    Content = fun () -> PriorityView.PriorityView {| Username = input.Username |}
+                    Content = fun () -> PriorityView.PriorityView username
                 |}
                 {|
                     View = View.View.BulletJournal
                     Name = "Bullet Journal View"
                     Icon = Icons.bs.BsListCheck
-                    Content = fun () -> BulletJournalView.BulletJournalView {| Username = input.Username |}
+                    Content = fun () -> BulletJournalView.BulletJournalView username
                 |}
                 {|
                     View = View.View.Information
                     Name = "Information View"
                     Icon = Icons.ti.TiFlowChildren
-                    Content = fun () -> InformationView.InformationView {| Username = input.Username |}
+                    Content = fun () -> InformationView.InformationView username
                 |}
             ]
 
@@ -55,9 +55,9 @@ module HomeScreen =
         let handleTabsChange index = setView (tabs.[index].View)
 
         Chakra.flex
-            input.Props
+            props
             [
-                LeftDock.LeftDock {| Username = input.Username |}
+                LeftDock.LeftDock username
 
                 Chakra.stack
                     {|

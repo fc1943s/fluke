@@ -26,15 +26,15 @@ module Content =
                     | Some username ->
                         React.suspense
                             ([
-                                SessionDataLoader.SessionDataLoader {| Username = username |}
-                                SoundPlayer.SoundPlayer {| Username = username |}
+                                SessionDataLoader.SessionDataLoader username
+                                SoundPlayer.SoundPlayer username
 
                                 Chakra.stack
                                     {| spacing = 0; flex = 1 |}
                                     [
                                         TopBar.TopBar ()
-                                        HomeScreen.HomeScreen {| Username = username; Props = {| flex = 1 |} |}
-                                        StatusBar.StatusBar {| Username = username |}
+                                        HomeScreen.HomeScreen username {| flex = 1 |}
+                                        StatusBar.StatusBar username
                                     ]
                              ],
                              LoadingScreen.LoadingScreen ())

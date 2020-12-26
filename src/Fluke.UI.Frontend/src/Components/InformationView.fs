@@ -13,10 +13,10 @@ module InformationView =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let InformationView (input: {| Username: Username |}) =
+    let InformationView (username: Username) =
         let groupIndentationLength = 20
 
-        let tasksByInformationKind = Recoil.useValue (Recoil.Selectors.Session.tasksByInformationKind input.Username)
+        let tasksByInformationKind = Recoil.useValue (Recoil.Selectors.Session.tasksByInformationKind username)
 
         Chakra.flex
             ()
@@ -56,8 +56,7 @@ module InformationView =
                                                                 Chakra.box
                                                                     {| paddingLeft = "17px" |}
                                                                     [
-                                                                        InformationName.InformationName
-                                                                            {| InformationId = informationId |}
+                                                                        InformationName.InformationName informationId
 
                                                                         // Task Name
                                                                         Chakra.box
@@ -74,13 +73,8 @@ module InformationView =
                                                                                             |}
                                                                                             [
                                                                                                 TaskPriority.TaskPriority
-                                                                                                    {|
-                                                                                                        TaskId = taskId
-                                                                                                    |}
-                                                                                                TaskName.TaskName
-                                                                                                    {|
-                                                                                                        TaskId = taskId
-                                                                                                    |}
+                                                                                                    taskId
+                                                                                                TaskName.TaskName taskId
                                                                                             ])
                                                                             ]
                                                                     ])
@@ -92,7 +86,7 @@ module InformationView =
                 Chakra.box
                     ()
                     [
-                        GridHeader.GridHeader {| Username = input.Username |}
+                        GridHeader.GridHeader username
 
                         Chakra.box
                             ()
@@ -124,10 +118,7 @@ module InformationView =
                                                                     |}
                                                                     []
                                                                 Cells.Cells
-                                                                    {|
-                                                                        Username = input.Username
-                                                                        TaskIdList = taskIdList
-                                                                    |}
+                                                                    {| Username = username; TaskIdList = taskIdList |}
                                                             ])
                                             ])
                             ]

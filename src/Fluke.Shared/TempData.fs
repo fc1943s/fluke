@@ -6,7 +6,7 @@ open FSharpPlus
 
 module LintTests =
     type ExampleInterface =
-       abstract member print : unit -> unit
+        abstract print: unit -> unit
 
 module TempData =
     open Domain.Model
@@ -213,7 +213,10 @@ module TempData =
 
 
 
-    let createDslData moment taskContainerFactory (dslDatabase: (Information * (string * (DslTask * User) list) list) list) =
+    let createDslData moment
+                      taskContainerFactory
+                      (dslDatabase: (Information * (string * (DslTask * User) list) list) list)
+                      =
 
         let taskMap, taskStateList =
             let (|FirstPass|SecondPass|) =
@@ -290,10 +293,7 @@ module TempData =
             taskStateList
             |> List.map (fun (taskState, _) -> taskState.Task.Name)
             |> List.groupBy id
-            |> List.filter
-                (snd
-                 >> List.length
-                 >> fun n -> n > 1)
+            |> List.filter (snd >> List.length >> fun n -> n > 1)
             |> List.map fst
 
         if not duplicated.IsEmpty then

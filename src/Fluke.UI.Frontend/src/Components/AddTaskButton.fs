@@ -10,7 +10,7 @@ open Fluke.UI.Frontend
 module AddTaskButton =
 
     [<ReactComponent>]
-    let AddTaskButton (input: {| props: {| marginLeft: string |} |}) =
+    let AddTaskButton (props: {| marginLeft: string |}) =
         let taskIdForm, setTaskIdForm = Recoil.useState (Recoil.Atoms.taskIdForm)
 
         React.fragment [
@@ -20,7 +20,7 @@ module AddTaskButton =
                     RightIcon = false
                     props =
                         {|
-                            marginLeft = input.props.marginLeft
+                            marginLeft = props.marginLeft
                             onClick = fun () -> setTaskIdForm (Some (Recoil.Atoms.Task.newTaskId ()))
                         |}
                     children =

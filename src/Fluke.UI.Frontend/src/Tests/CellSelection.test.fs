@@ -94,7 +94,7 @@ module CellSelection =
                      ()
                      [
                          UserLoader.UserLoader ()
-                         PriorityView.PriorityView {| Username = testUser.Username |}
+                         PriorityView.PriorityView testUser.Username
                      ]
 
              let expectSelection peek expected =

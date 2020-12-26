@@ -10,7 +10,7 @@ open Fluke.UI.Frontend
 module AddDatabaseButton =
 
     [<ReactComponent>]
-    let AddDatabaseButton (input: {| props: {| marginLeft: string |} |}) =
+    let AddDatabaseButton (props: {| marginLeft: string |}) =
         let username = Recoil.useValue Recoil.Atoms.username
         let formDatabaseId, setFormDatabaseId = Recoil.useState (Recoil.Atoms.formDatabaseId)
 
@@ -23,7 +23,7 @@ module AddDatabaseButton =
                     RightIcon = false
                     props =
                         {|
-                            marginLeft = input.props.marginLeft
+                            marginLeft = props.marginLeft
                             onClick = fun () -> setFormDatabaseId (Some (Recoil.Atoms.Database.newDatabaseId ()))
                         |}
                     children =

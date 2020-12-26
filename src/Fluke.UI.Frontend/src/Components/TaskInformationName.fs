@@ -10,8 +10,8 @@ open Fluke.UI.Frontend.Bindings
 module TaskInformationName =
 
     [<ReactComponent>]
-    let TaskInformationName (input: {| TaskId: Recoil.Atoms.Task.TaskId |}) =
-        let informationId = Recoil.useValue (Recoil.Atoms.Task.informationId input.TaskId)
+    let TaskInformationName (taskId: Recoil.Atoms.Task.TaskId) =
+        let informationId = Recoil.useValue (Recoil.Atoms.Task.informationId taskId)
 //        InformationName.informationName {| InformationId = informationId |}
 //        str "InformationName"
         nothing

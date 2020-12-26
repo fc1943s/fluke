@@ -63,8 +63,8 @@ module SessionDataLoader =
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 
     [<ReactComponent>]
-    let SessionDataLoader (input: {| Username: Username |}) =
-        let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
+    let SessionDataLoader (username: Username) =
+        let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData username)
 
         let loadState =
             Recoil.useCallbackRef (fun setter ->
@@ -74,7 +74,7 @@ module SessionDataLoader =
                     match sessionData with
                     | Some sessionData ->
                         let! databaseStateMap =
-                            setter.snapshot.getAsync (Recoil.Selectors.Session.databaseStateMap input.Username)
+                            setter.snapshot.getAsync (Recoil.Selectors.Session.databaseStateMap username)
 
                         let availableDatabaseIds =
                             databaseStateMap
@@ -82,10 +82,10 @@ module SessionDataLoader =
                             |> List.sortBy (fun (id, databaseState) -> databaseState.Database.Name)
                             |> List.map fst
 
-                        setter.set (Recoil.Atoms.Session.availableDatabaseIds input.Username, availableDatabaseIds)
+                        setter.set (Recoil.Atoms.Session.availableDatabaseIds username, availableDatabaseIds)
 
 
-                        initializeSessionData input.Username setter sessionData
+                        initializeSessionData username setter sessionData
 
                         databaseStateMap
                         |> Map.iter (fun id databaseState ->

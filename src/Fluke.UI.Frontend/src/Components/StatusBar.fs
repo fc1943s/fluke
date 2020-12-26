@@ -15,10 +15,9 @@ module StatusBar =
     open UserInteraction
 
     [<ReactComponent>]
-    let StatusBar (input: {| Username: Username |}) =
-        let (Username username) = input.Username
+    let StatusBar (username: Username) =
         let position = Recoil.useValue Recoil.Selectors.position
-        let activeSessions = Recoil.useValue (Recoil.Selectors.Session.activeSessions input.Username)
+        let activeSessions = Recoil.useValue (Recoil.Selectors.Session.activeSessions username)
 
         Chakra.flex
             {|

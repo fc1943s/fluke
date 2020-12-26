@@ -13,13 +13,13 @@ module TooltipPopup =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let TooltipPopup (input: {| Attachments: Attachment list |}) =
+    let TooltipPopup (attachments: Attachment list) =
         let tooltipContainerRef = React.useElementRef ()
 
         let hovered = Listener.useElementHover tooltipContainerRef
 
         let comments =
-            input.Attachments
+            attachments
             |> List.choose (fun x ->
                 match x with
                 | Attachment.Comment (user, comment) -> Some (user, comment)

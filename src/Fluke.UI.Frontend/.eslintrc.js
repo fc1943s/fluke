@@ -50,5 +50,5 @@ module.exports = {
       },
     },
   },
-  ignorePatterns: ['**/*.fs.js'],
+  ignorePatterns: ['**/*.fs.js', '**/*.fs.ts'],
 };

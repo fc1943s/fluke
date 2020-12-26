@@ -8,13 +8,14 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
+
 module GridHeader =
 
     open Domain.Model
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let GridHeader (input: {| Username: Username |}) =
+    let GridHeader (username: Username) =
         let cellSize = Recoil.useValue Recoil.Atoms.cellSize
         let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
@@ -42,7 +43,7 @@ module GridHeader =
 
                                 MonthResponsiveCell.MonthResponsiveCell
                                     {|
-                                        Username = input.Username
+                                        Username = username
                                         Date = firstDate
                                         Props = {| width = cellWidth |}
                                     |})
@@ -60,7 +61,7 @@ module GridHeader =
                                     {|
                                         Date = date
                                         Label = date.DateTime.Format "EEEEEE"
-                                        Username = input.Username
+                                        Username = username
                                     |})
                     ]
 
@@ -76,7 +77,7 @@ module GridHeader =
                                     {|
                                         Date = date
                                         Label = day.ToString "D2"
-                                        Username = input.Username
+                                        Username = username
                                     |})
                     ]
             ]

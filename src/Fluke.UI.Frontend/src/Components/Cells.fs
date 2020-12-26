@@ -9,7 +9,6 @@ open Fluke.UI.Frontend.Bindings
 
 
 module Cells =
-
     [<ReactComponent>]
     let Cells (input: {| Username: Username
                          TaskIdList: Recoil.Atoms.Task.TaskId list |}) =

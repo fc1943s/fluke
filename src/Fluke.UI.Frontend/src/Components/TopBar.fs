@@ -28,8 +28,8 @@ module TopBar =
                         str "Fluke"
                     ]
 
-                AddDatabaseButton.AddDatabaseButton {| props = {| marginLeft = "37px" |} |}
-                AddTaskButton.AddTaskButton {| props = {| marginLeft = "10px" |} |}
+                AddDatabaseButton.AddDatabaseButton {| marginLeft = "37px" |}
+                AddTaskButton.AddTaskButton {| marginLeft = "10px" |}
 
                 Chakra.spacer {|  |} []
 

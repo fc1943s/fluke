@@ -14,12 +14,12 @@ module TaskName =
     open Domain.Model
 
     [<ReactComponent>]
-    let TaskName (input: {| TaskId: Recoil.Atoms.Task.TaskId |}) =
+    let TaskName (taskId: Recoil.Atoms.Task.TaskId) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
-        let hasSelection = Recoil.useValue (Recoil.Selectors.Task.hasSelection input.TaskId)
-        let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name input.TaskId)
-        let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments input.TaskId)
+        let hasSelection = Recoil.useValue (Recoil.Selectors.Task.hasSelection taskId)
+        let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name taskId)
+        let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments taskId)
 
         Chakra.box
             {|
@@ -61,5 +61,5 @@ module TaskName =
                     [
                         str taskName
                     ]
-                TooltipPopup.TooltipPopup {| Attachments = attachments |}
+                TooltipPopup.TooltipPopup attachments
             ]

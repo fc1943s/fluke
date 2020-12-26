@@ -9,7 +9,7 @@ module CellStatusUserIndicator =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let CellStatusUserIndicator (input: {| User: User |}) =
+    let CellStatusUserIndicator (user: User) =
         Chakra.box
             {|
                 height = "17px"
@@ -20,7 +20,7 @@ module CellStatusUserIndicator =
                 _after =
                     {|
                         borderBottomColor =
-                            match input.User with
+                            match user with
                             | { Color = UserColor.Blue } -> Some "#005688"
                             | { Color = UserColor.Pink } -> Some "#a91c77"
                             | _ -> None
