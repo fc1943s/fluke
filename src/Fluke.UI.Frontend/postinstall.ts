@@ -1,4 +1,4 @@
-#! /usr/env node
+#!/usr/bin/env node
 
 const { spawn } = require("child_process");
 
