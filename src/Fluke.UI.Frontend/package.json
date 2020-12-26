@@ -11,7 +11,7 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build:fable": "dotnet tool restore && dotnet fable ./Fluke.UI.Frontend.fsproj",
+    "build:fable": "dotnet tool restore && dotnet build && dotnet fable ./Fluke.UI.Frontend.fsproj",
     "build:react": "cross-env EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
     "watch:frontend-build": "dotnet fable watch ./Fluke.UI.Frontend.fsproj",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
