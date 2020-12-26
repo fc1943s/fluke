@@ -21,7 +21,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --env=jest-environment-jsdom-sixteen --testNamePattern=",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
-    "postinstall": "if [ -n "$CI" ]; then echo 'CI Build'; else yarn patch-package; fi"
+    "postinstall": "if [ -n \"$CI\" ]; then echo 'CI Build'; else yarn patch-package; fi"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",
