@@ -87,13 +87,14 @@
         <Content Include="public\index.jsx" />
         <Content Include="public\index.js" />
         <Content Include="package.json" />
-        <Content Include="babel.config.js" />
+        <Content Include=".babelrc.js" />
         <Content Include="config-overrides.js" />
         <Content Include=".tsconfig" />
         <Content Include=".eslintignore" />
         <Content Include=".eslintrc.js" />
         <Content Include="paket.references" />
         <Content Include="tsconfig.json" />
+        <Content Include="postinstall.ts" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />

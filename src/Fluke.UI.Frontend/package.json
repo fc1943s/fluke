@@ -11,8 +11,8 @@
   "license": "MIT",
   "private": true,
   "scripts": {
-    "build:fable": "dotnet tool restore && dotnet paket install && dotnet build && dotnet fable ./Fluke.UI.Frontend.fsproj",
-    "build:react": "cross-env EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
+    "build:fable": "dotnet tool restore && dotnet paket install && dotnet fable",
+    "build:react": "cross-env CI= EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
     "watch:frontend-build": "dotnet fable watch ./Fluke.UI.Frontend.fsproj",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
     "watch:backend": "cd ../Fluke.UI.Backend && dotnet watch run",
@@ -21,7 +21,7 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --env=jest-environment-jsdom-sixteen --testNamePattern=",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
-    "postinstall": "if [ -n \"$CI\" ]; then echo 'CI Build'; else yarn patch-package; fi"
+    "postinstall": "./postinstall.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",
@@ -44,7 +44,7 @@
     "react-icons": "^4.1",
     "date-fns": "^2.16",
     "crypto-js": "^4.0",
-    "gun": "^0.2020"
+    "gun": "amark/gun.git#master"
   },
   "devDependencies": {
     "@types/react": "^17.0",
