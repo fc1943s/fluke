@@ -16,8 +16,9 @@ module App =
 
             CtrlListener.CtrlListener ()
             ShiftListener.ShiftListener ()
-            SelectionListener.SelectionListener ()
             RouterObserver.RouterObserver ()
+            ApiSubscriber.ApiSubscriber ()
+            SelectionListener.SelectionListener ()
             //                PositionUpdater.render ()
             GunObserver.GunObserver ()
             UserLoader.UserLoader ()

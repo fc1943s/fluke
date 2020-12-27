@@ -45,7 +45,7 @@ module LoginScreen =
                         {|
                             title = "Success"
                             status = "success"
-                            description = "User registered successfully! Please log in"
+                            description = "User registered successfully"
                             duration = 4000
                             isClosable = true
                         |}
@@ -77,6 +77,7 @@ module LoginScreen =
                         Chakra.input
                             {|
                                 value = passwordField
+                                ``type`` = "password"
                                 onChange = fun (e: KeyboardEvent) -> setPasswordField e.Value
                                 placeholder = "Password"
                             |}

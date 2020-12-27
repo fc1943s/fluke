@@ -73,6 +73,7 @@
         <Compile Include="src\Components\GunObserver.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\Components\RootWrapper.fs" />
+        <Compile Include="src\Components\ApiSubscriber.fs" />
         <Compile Include="src\App.fs" />
         <Compile Include="src\Main.fs" />
         <Content Include="src\index.ts" />

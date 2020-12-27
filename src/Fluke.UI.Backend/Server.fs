@@ -14,7 +14,6 @@ open Fable.Remoting.Giraffe
 module Server =
     open Domain.State
     open Domain.UserInteraction
-    open Templates
 
     module Json =
         let converter = FableJsonConverter ()
@@ -96,4 +95,12 @@ module Server =
             use_router webApp
             use_gzip
             force_ssl
+
+            use_cors "CORS" (fun builder ->
+                builder
+                    .WithOrigins("https://lively-flower-0d9b23410.azurestaticapps.net",
+                                 "https://fc1943s.github.io/fluke")
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                |> ignore)
         }

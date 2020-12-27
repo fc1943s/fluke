@@ -6,9 +6,12 @@ open Fluke.Shared
 module Sync =
     open Sync
 
-    let api =
+    let api (baseUrl: string option) =
         Remoting.createApi ()
         |> Remoting.withBinarySerialization
+        |> Remoting.withBaseUrl
+            (baseUrl
+             |> Option.defaultValue $"https://localhost:{serverPort}")
         |> Remoting.buildProxy<Api>
 
     let handleRequest fn =

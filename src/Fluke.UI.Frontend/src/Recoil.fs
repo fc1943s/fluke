@@ -2,7 +2,9 @@ namespace Fluke.UI.Frontend
 
 #nowarn "40"
 
+open Sync
 open System
+open Fable.Remoting.Client
 open FSharpPlus
 open Feliz.Recoil
 open Fluke.Shared
@@ -545,10 +547,16 @@ module Recoil =
                 def (None: Task.TaskId option)
             }
 
+        let rec apiBaseUrl =
+            atom {
+                key ("atom/" + nameof apiBaseUrl)
+                def (None: string option)
+            }
+
         let rec api =
             atom {
                 key ("atom/" + nameof api)
-                def Sync.api
+                def (Sync.api None)
             }
 
         let rec peers =
