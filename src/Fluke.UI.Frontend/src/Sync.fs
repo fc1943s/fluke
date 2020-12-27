@@ -11,7 +11,7 @@ module Sync =
         |> Remoting.withBinarySerialization
         |> Remoting.withBaseUrl
             (baseUrl
-             |> Option.defaultValue $"https://localhost:{serverPort}")
+             |> Option.defaultValue $"https://fc1943s.github.io:{serverPort}")
         |> Remoting.buildProxy<Api>
 
     let handleRequest fn =
