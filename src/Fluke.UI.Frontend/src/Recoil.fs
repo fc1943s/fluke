@@ -1102,9 +1102,23 @@ module Recoil =
                                                 api.databaseStateList username position
                                                 |> Sync.handleRequest
 
-                                            let databaseStateMap =
+                                            let templates =
+                                                Templates.getDatabaseMap TempData.testUser
+                                                |> Map.toList
+                                                |> List.map (fun (templateName, dslTemplate) ->
+                                                    Templates.databaseStateFromDslTemplate
+                                                        TempData.testUser
+                                                        (DatabaseId (Guid.NewGuid ()))
+                                                        templateName
+                                                        dslTemplate)
+
+                                            let newDatabaseStateList =
                                                 databaseStateList
                                                 |> Option.defaultValue []
+                                                |> List.append templates
+
+                                            let databaseStateMap =
+                                                newDatabaseStateList
                                                 |> List.map (fun ({ Database = { Name = DatabaseName name } } as databaseState) ->
                                                     let id =
                                                         name

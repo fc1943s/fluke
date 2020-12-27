@@ -58,25 +58,14 @@ module Server =
                         return Json.deserialize<User> currentUserJson
                     }
                 databaseStateList =
-                    fun username moment ->
+                    fun username _moment ->
                         async {
                             let databaseStateListJson = readFile "databaseStateList.json"
 
                             let databaseStateList = Json.deserialize<DatabaseState list> databaseStateListJson
 
-                            let templates =
-                                getDatabaseMap TempData.testUser
-                                |> Map.toList
-                                |> List.map (fun (templateName, dslTemplate) ->
-                                    databaseStateFromDslTemplate
-                                        TempData.testUser
-                                        (DatabaseId (Guid.NewGuid ()))
-                                        templateName
-                                        dslTemplate)
-
                             let databasesWithAccess =
                                 databaseStateList
-                                |> List.append templates
                                 |> List.filter (fun databaseState ->
                                     match databaseState.Database with
                                     | { Owner = owner } when owner.Username = username -> true
