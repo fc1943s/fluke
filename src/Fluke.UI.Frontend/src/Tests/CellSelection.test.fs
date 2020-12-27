@@ -51,17 +51,18 @@ module CellSelection =
                  promise {
                      setter.set
                          (Atoms.api,
-                          {
-                              currentUser = async { return testUser }
-                              databaseStateList =
-                                  fun _username _moment ->
-                                      async {
-                                          return
-                                              [
-                                                  databaseState
-                                              ]
-                                      }
-                          })
+                          Some
+                              {
+                                  currentUser = async { return testUser }
+                                  databaseStateList =
+                                      fun _username _moment ->
+                                          async {
+                                              return
+                                                  [
+                                                      databaseState
+                                                  ]
+                                          }
+                              })
 
                      setter.set (Atoms.username, Some testUser.Username)
                      setter.set (Atoms.view, View.View.Priority)

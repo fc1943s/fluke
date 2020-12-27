@@ -92,7 +92,7 @@ module LoginScreen =
                                         str "Sign In"
                                     ]
                                 Chakra.button
-                                    {| onClick = signUpClick |}
+                                    {| flex = 1; onClick = signUpClick |}
                                     [
                                         str "Sign Up"
                                     ]

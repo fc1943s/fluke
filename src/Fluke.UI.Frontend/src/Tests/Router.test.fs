@@ -24,17 +24,18 @@ module Router =
                  promise {
                      setter.set
                          (Atoms.api,
-                          {
-                              currentUser = async { return testUser }
-                              databaseStateList = fun _username _moment -> async { return [] }
-                          })
+                          Some
+                              {
+                                  currentUser = async { return testUser }
+                                  databaseStateList = fun _username _moment -> async { return [] }
+                              })
 
                      setter.set (Atoms.username, Some testUser.Username)
                  }
 
              let getComponent () =
                  Chakra.box
-                     {||}
+                     {|  |}
                      [
                          RouterObserver.RouterObserver ()
                      ]

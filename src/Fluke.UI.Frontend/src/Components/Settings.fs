@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core.JsInterop
+open Browser.Types
 open Feliz
 open Fable.React
 open Feliz.Recoil
@@ -13,6 +15,7 @@ module Settings =
     let Settings (input: {| Props: {| flex: int; overflowY: string; flexBasis: int |} |}) =
         let daysBefore, setDaysBefore = Recoil.useState (Recoil.Atoms.daysBefore)
         let daysAfter, setDaysAfter = Recoil.useState (Recoil.Atoms.daysAfter)
+        let apiBaseUrl, setApiBaseUrl = Recoil.useState (Recoil.Atoms.apiBaseUrl)
 
         Chakra.box
             input.Props
@@ -62,4 +65,18 @@ module Settings =
                                 Chakra.numberDecrementStepper () []
                             ]
                     ]
+
+
+                Chakra.box
+                    {| marginTop = "15px" |}
+                    [
+                        str "Old API URL"
+                    ]
+                Chakra.input
+                    {|
+                        value = apiBaseUrl
+                        onChange = fun (e: KeyboardEvent) -> setApiBaseUrl e.target?value
+                        marginTop = "5px"
+                    |}
+                    []
             ]

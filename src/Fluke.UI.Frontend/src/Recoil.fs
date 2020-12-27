@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend
 
 #nowarn "40"
 
-open Sync
 open System
 open Fable.Remoting.Client
 open FSharpPlus
@@ -471,7 +470,7 @@ module Recoil =
             atom {
                 key ("atom/" + nameof debug)
                 def false
-            //                local_storage
+                local_storage
             }
 
         let rec isTesting =
@@ -490,14 +489,14 @@ module Recoil =
             atom {
                 key ("atom/" + nameof selectedDatabaseIds)
                 def ([||]: DatabaseId [])
-            //                local_storage
+                local_storage
             }
 
         let rec selectedPosition =
             atom {
                 key ("atom/" + nameof selectedPosition)
                 def (None: FlukeDateTime option)
-            //                local_storage
+                local_storage
             }
 
         let rec selectedCell =
@@ -516,23 +515,21 @@ module Recoil =
             atom {
                 key ("atom/" + nameof daysBefore)
                 def 7
-                log
-
-            //                local_storage
+                local_storage
             }
 
         let rec daysAfter =
             atom {
                 key ("atom/" + nameof daysAfter)
                 def 7
-            //                local_storage
+                local_storage
             }
 
         let rec leftDock =
             atom {
                 key ("atom/" + nameof leftDock)
                 def (None: TempUI.DockType option)
-            //                local_storage
+                local_storage
             }
 
         let rec formDatabaseId =
@@ -550,13 +547,14 @@ module Recoil =
         let rec apiBaseUrl =
             atom {
                 key ("atom/" + nameof apiBaseUrl)
-                def (None: string option)
+                def $"https://localhost:{Sync.serverPort}"
+                local_storage
             }
 
         let rec api =
             atom {
                 key ("atom/" + nameof api)
-                def (Sync.api None)
+                def (None: Sync.Api option)
             }
 
         let rec peers =
@@ -629,7 +627,10 @@ module Recoil =
                         async {
                             let api = getter.get Atoms.api
 
-                            let! result = api.currentUser |> Sync.handleRequest
+                            let! result =
+                                api
+                                |> Option.bind (fun api -> Some api.currentUser)
+                                |> Sync.handleRequest
 
                             Profiling.addCount (nameof apiCurrentUser)
 
@@ -1107,7 +1108,9 @@ module Recoil =
                                             let api = getter.get Atoms.api
 
                                             let! databaseStateList =
-                                                api.databaseStateList username position
+                                                api
+                                                |> Option.bind (fun api ->
+                                                    Some (api.databaseStateList username position))
                                                 |> Sync.handleRequest
 
                                             let templates =

@@ -35,6 +35,7 @@ module StatusBar =
                             |}
                             []
 
+                        let (Username username) = username
                         str $"User: {username}"
                     ]
 

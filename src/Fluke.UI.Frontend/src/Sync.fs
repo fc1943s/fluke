@@ -6,15 +6,14 @@ open Fluke.Shared
 module Sync =
     open Sync
 
-    let api (baseUrl: string option) =
+    let createApi baseUrl =
         Remoting.createApi ()
         |> Remoting.withBinarySerialization
-        |> Remoting.withBaseUrl
-            (baseUrl
-             |> Option.defaultValue $"https://fc1943s.github.io:{serverPort}")
+        |> Remoting.withBaseUrl baseUrl
         |> Remoting.buildProxy<Api>
 
-    let handleRequest fn =
+
+    let internalHandleRequest fn =
         async {
             let! result = fn |> Async.Catch
 
@@ -32,4 +31,11 @@ module Sync =
                     | ex -> printfn $"API exception: {ex}"
 
                     None
+        }
+
+    let handleRequest (fn: Async<'T> option) =
+        async {
+            match fn with
+            | None -> return None
+            | Some request -> return! internalHandleRequest request
         }
