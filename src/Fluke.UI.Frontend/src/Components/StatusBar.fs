@@ -10,7 +10,6 @@ open Fluke.Shared.Domain
 
 
 module StatusBar =
-
     open Model
     open UserInteraction
 

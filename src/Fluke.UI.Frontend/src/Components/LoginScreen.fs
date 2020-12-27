@@ -12,8 +12,8 @@ module LoginScreen =
 
     [<ReactComponent>]
     let LoginScreen () =
-        let usernameField, setUsernameField = React.useState "fc1943s"
-        let passwordField, setPasswordField = React.useState "123456"
+        let usernameField, setUsernameField = React.useState ""
+        let passwordField, setPasswordField = React.useState ""
         let signIn = Auth.useSignIn ()
         let signUp = Auth.useSignUp ()
 

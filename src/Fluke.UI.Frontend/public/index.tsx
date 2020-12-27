@@ -21,7 +21,7 @@ if (process.env.JEST_WORKER_ID) {
 }
 const { gun } = window;
 
-window.login = async (username = 'fc1943s', password = 'pw1') => {
+window.login = async (username = 'guest', password = 'guest') => {
   const user = gun.user();
   console.log('user', user);
   // @ts-ignore
