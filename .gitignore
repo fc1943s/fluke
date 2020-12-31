@@ -23,5 +23,6 @@ node_modules/
 ### Output
 dist/
 build/
+target/
 *.fs.js
 *.fs.ts

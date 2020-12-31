@@ -2,7 +2,7 @@
   "name": "fluke-ui-frontend-fs",
   "version": "0.0.1",
   "description": "",
-  "main": "dist/index.js",
+  "main": "",
   "repository": {
     "type": "git",
     "url": "https://github.com/fc1943s/fluke.git"
@@ -43,7 +43,7 @@
     "react-icons": "^4.1",
     "date-fns": "^2.16",
     "crypto-js": "^4.0",
-    "gun": "amark/gun.git#master"
+    "gun": "amark/gun.git#manhattan"
   },
   "devDependencies": {
     "@types/react": "^17.0",
