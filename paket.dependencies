@@ -6,7 +6,7 @@ source https://api.nuget.org/v3/index.json
 nuget FSharp.Core ~> 5.0
 
 // group Fluke.Shared
-nuget FSharpPlus ~> 1.2 prerelease
+nuget FSharpPlus ~> 1.1
 nuget Myriad.Core ~> 0.5
 nuget Myriad.Sdk ~> 0.5
 nuget Myriad.Plugins ~> 0.5
@@ -14,7 +14,6 @@ nuget Myriad.Plugins ~> 0.5
 // Fluke.UI.Backend
 nuget Saturn ~> 0.14 // 0.15 prerelease
 nuget Fable.Remoting.Giraffe ~> 4.15 // ~> 5.1 prerelease
-nuget Thoth.Json.Net ~> 5.0
 
 // Fluke.UI.Frontend
 nuget Fable.Core 3.1.6 // ~> 4.0 prerelease
@@ -28,7 +27,6 @@ nuget Feliz 1.25 // ~> 1.31
 nuget Feliz.Recoil // ~> 0.19
 nuget Feliz.UseListener ~> 0.6
 nuget Feliz.Router 3.2 // ~> 3.5
-nuget Thoth.Json ~> 5.0
 
 nuget Fable.Extras 0.2.2
 

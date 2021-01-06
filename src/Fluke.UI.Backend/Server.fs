@@ -2,8 +2,6 @@ namespace Fluke.UI.Backend
 
 open System
 open System.IO
-open Fable.Remoting.Json
-open Newtonsoft.Json
 open Saturn
 open Fluke.Shared
 open FSharpPlus
@@ -14,15 +12,6 @@ open Fable.Remoting.Giraffe
 module Server =
     open Domain.State
     open Domain.UserInteraction
-
-    module Json =
-        let converter = FableJsonConverter ()
-
-        let deserialize<'a> (json: string) =
-            if typeof<'a> = typeof<string> then
-                unbox<'a> (box json)
-            else
-                JsonConvert.DeserializeObject (json, typeof<'a>, converter) :?> 'a
 
     module Sync =
         open Sync

@@ -6,6 +6,8 @@
     </PropertyGroup>
     <ItemGroup>
 
+        <Compile Include="Json.fs" />
+
         <Compile Include="Server.fs" />
         <Compile Include="Program.fs" />
         <Content Include="paket.references" />
