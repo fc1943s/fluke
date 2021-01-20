@@ -1,0 +1,13 @@
+diff --git a/node_modules/electron-webpack/out/dev/ChildProcessManager.js b/node_modules/electron-webpack/out/dev/ChildProcessManager.js
+index 90c9fc3..250f240 100644
+--- a/node_modules/electron-webpack/out/dev/ChildProcessManager.js
++++ b/node_modules/electron-webpack/out/dev/ChildProcessManager.js
+@@ -25,7 +25,7 @@ function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj;
+ const debug = require("debug")("electron-webpack");
+ 
+ function run(program, args, options) {
+-  const isWin = process.platform === "win32";
++  const isWin = process.platform === "win64";
+   return (0, _child_process().spawn)(isWin ? path.join(__dirname, "../../vendor/runnerw.exe") : program, isWin ? [program].concat(args) : args, options);
+ }
+ 

@@ -17,8 +17,6 @@ module Server =
         open Sync
 
         let api: Api =
-            let (</>) a b = Path.Combine (a, b)
-
             let readFile path =
                 let getEnvVar name =
                     match Environment.GetEnvironmentVariable name with

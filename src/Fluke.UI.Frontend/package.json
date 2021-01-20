@@ -2,7 +2,7 @@
   "name": "fluke-ui-frontend-fs",
   "version": "0.0.1",
   "description": "",
-  "main": "",
+  "main": "electron/main.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/fc1943s/fluke.git"
@@ -10,6 +10,17 @@
   "author": "fc1943s",
   "license": "MIT",
   "private": true,
+  "electronWebpack": {
+    "title": true,
+    "main": {
+      "sourceDirectory": "../Fluke.UI.Electron.Main",
+      "webpackConfig": "../Fluke.UI.Electron.Main/webpack.additions.main.js"
+    },
+    "renderer": {
+      "sourceDirectory": "../Fluke.UI.Electron.Renderer",
+      "webpackConfig": "../Fluke.UI.Electron.Renderer/webpack.additions.renderer.js"
+    }
+  },
   "scripts": {
     "build:fable": "dotnet tool restore && dotnet paket install && dotnet fable",
     "build:react": "cross-env CI= EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
@@ -20,24 +31,32 @@
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --env=jest-environment-jsdom-sixteen --testNamePattern=",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
-    "postinstall": "node -e \"if (process.env.GITHUB_JOB) { console.log('CI Build'); } else { require('child_process').spawn('patch-package', { shell: true, stdio: 'inherit' }); }\""
+    "postinstall": "node -e \"if (process.env.GITHUB_JOB) { console.log('CI Build'); } else { require('child_process').spawn('patch-package', { shell: true, stdio: 'inherit' }); }\"",
+
+    "dev": "electron-webpack dev",
+    "compile": "electron-webpack",
+    "dist": "npm run compile && electron-builder"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15",
     "typeface-roboto-condensed": "^1.1",
 
-    "react": "0.0.0-experimental-3310209d0",
-    "react-dom": "0.0.0-experimental-3310209d0",
+    "react": "0.0.0-experimental-27659559e",
+    "react-dom": "0.0.0-experimental-27659559e",
 
     "recoil": "facebookexperimental/Recoil.git#nightly",
 
-    "@chakra-ui/react": "^1.0",
+    "@chakra-ui/react": "^1.1",
     "@chakra-ui/system": "^1.1",
     "@chakra-ui/theme-tools": "^1.0",
     "@chakra-ui/media-query": "^1.0",
     "@emotion/react": "^11.1",
     "@emotion/styled": "^11.0",
-    "framer-motion": "^3.1",
+    "framer-motion": "^3.2",
+
+    "electron-window-state": "^5.0",
+    "electron-devtools-installer": "^3.1",
+    "devtron": "^1.4",
 
     "react-markdown": "^5.0",
     "react-icons": "^4.1",
@@ -53,13 +72,20 @@
     "ts-node": "^9.1",
     "@types/node" : "^14.14",
 
-    "eslint": "^7.16",
-    "@typescript-eslint/eslint-plugin": "^4.11",
-    "@typescript-eslint/parser": "^4.11",
+    "fable-loader": "^2.1",
+    "fable-compiler": "^2.13",
+
+    "electron": "^12.0.0-beta.16",
+    "electron-webpack": "^2.8",
+    "electron-builder": "^22.10",
+
+    "eslint": "^7.18",
+    "@typescript-eslint/eslint-plugin": "^4.13",
+    "@typescript-eslint/parser": "^4.13",
     "eslint-config-airbnb": "^18.2",
     "eslint-plugin-import": "^2.22",
     "eslint-plugin-jsx-a11y": "^6.4",
-    "eslint-plugin-react": "^7.21",
+    "eslint-plugin-react": "^7.22",
     "eslint-plugin-react-hooks": "^4.2",
     "eslint-plugin-jest-dom": "^3.6",
 

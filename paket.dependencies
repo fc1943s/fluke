@@ -16,22 +16,24 @@ nuget Saturn ~> 0.14 // 0.15 prerelease
 nuget Fable.Remoting.Giraffe ~> 4.15 // ~> 5.1 prerelease
 
 // Fluke.UI.Frontend
-nuget Fable.Core 3.1.6 // ~> 4.0 prerelease
+nuget Fable.Core ~> 3.2 // ~> 4.0 prerelease
 nuget Fable.Remoting.Client ~> 7.2
 nuget Fable.FontAwesome.Free ~> 2.0
-nuget Fable.DateFunctions 3.2 // ~> 3.6
+nuget Fable.DateFunctions ~> 3.6
 nuget Fable.SimpleJson ~> 3.17
 nuget Fable.Jester ~> 0.30
 nuget Fable.ReactTestingLibrary ~> 0.30
-nuget Feliz 1.25 // ~> 1.31
+nuget Feliz 1.32
 nuget Feliz.Recoil // ~> 0.19
 nuget Feliz.UseListener ~> 0.6
-nuget Feliz.Router 3.2 // ~> 3.5
+nuget Feliz.Router 3.5
 
-nuget Fable.Extras 0.2.2
+// Fluke.UI.Electron.Main
+nuget Fable.Electron ~> 6.0
+nuget Fable.Promise ~> 2.1
 
 // Testing
-nuget altcover ~> 7.1
+nuget altcover ~> 7.5
 nuget Microsoft.NET.Test.Sdk ~> 16.7 prerelease
 nuget YoloDev.Expecto.TestSdk ~> 0.9
 
