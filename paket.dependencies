@@ -6,34 +6,34 @@ source https://api.nuget.org/v3/index.json
 nuget FSharp.Core ~> 5.0
 
 // group Fluke.Shared
-nuget FSharpPlus ~> 1.1
+nuget FSharpPlus ~> 1.1 // 1.2 prerelease
 nuget Myriad.Core ~> 0.5
 nuget Myriad.Sdk ~> 0.5
 nuget Myriad.Plugins ~> 0.5
 
 // Fluke.UI.Backend
-nuget Saturn ~> 0.14 // 0.15 prerelease
-nuget Fable.Remoting.Giraffe ~> 4.15 // ~> 5.1 prerelease
+nuget Saturn ~> 0.15 prerelease
+nuget Fable.Remoting.Giraffe ~> 5.2 prerelease
 
 // Fluke.UI.Frontend
-nuget Fable.Core ~> 3.2 // ~> 4.0 prerelease
+nuget Fable.Core 3.1.6 // ~> 4.0 prerelease
 nuget Fable.Remoting.Client ~> 7.2
 nuget Fable.FontAwesome.Free ~> 2.0
 nuget Fable.DateFunctions ~> 3.6
 nuget Fable.SimpleJson ~> 3.17
-nuget Fable.Jester ~> 0.30
-nuget Fable.ReactTestingLibrary ~> 0.30
-nuget Feliz 1.32
-nuget Feliz.Recoil // ~> 0.19
+nuget Fable.Jester ~> 0.31
+nuget Fable.ReactTestingLibrary ~> 0.31
+nuget Feliz ~> 1.34
+nuget Feliz.Recoil ~> 0.19
 nuget Feliz.UseListener ~> 0.6
-nuget Feliz.Router 3.5
+nuget Feliz.Router ~> 3.5
 
 // Fluke.UI.Electron.Main
 nuget Fable.Electron ~> 6.0
-nuget Fable.Promise ~> 2.1
+nuget Fable.Promise ~> 2.2
 
 // Testing
-nuget altcover ~> 7.5
+nuget altcover ~> 8.0
 nuget Microsoft.NET.Test.Sdk ~> 16.7 prerelease
 nuget YoloDev.Expecto.TestSdk ~> 0.9
 
@@ -43,4 +43,4 @@ nuget Fake.DotNet.Cli ~> 5.20 prerelease
 nuget Fake.IO.FileSystem ~> 5.20 prerelease
 
 // Deploy
-nuget Farmer ~> 1.3 prerelease
+nuget Farmer ~> 1.4

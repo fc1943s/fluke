@@ -34,23 +34,19 @@ module PriorityView =
                                     [
                                         yield!
                                             taskIdList
-                                            |> List.map (fun taskId -> TaskInformationName.TaskInformationName taskId)
+                                            |> List.map TaskInformationName.TaskInformationName
                                     ]
                                 // Column: Priority
                                 Chakra.box
                                     {| paddingRight = "10px"; textAlign = "center" |}
                                     [
-                                        yield!
-                                            taskIdList
-                                            |> List.map (fun taskId -> TaskPriority.TaskPriority taskId)
+                                        yield! taskIdList |> List.map TaskPriority.TaskPriority
                                     ]
                                 // Column: Task Name
                                 Chakra.box
                                     {| width = "200px" |}
                                     [
-                                        yield!
-                                            taskIdList
-                                            |> List.map (fun taskId -> TaskName.TaskName taskId)
+                                        yield! taskIdList |> List.map TaskName.TaskName
                                     ]
                             ]
                     ]
