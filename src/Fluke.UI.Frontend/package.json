@@ -62,7 +62,7 @@
     "react-icons": "~4.2",
     "date-fns": "~2.19",
     "crypto-js": "~4.0",
-    "gun": "amark/gun.git#master"
+    "gun": "0.2020.520"
   },
   "devDependencies": {
     "@types/react": "~17.0",

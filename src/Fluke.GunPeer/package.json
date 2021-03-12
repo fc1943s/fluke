@@ -10,7 +10,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "gun": "amark/gun.git#master"
+    "gun": "0.2020.520"
   },
   "devDependencies": {
   }
