@@ -1,5 +1,5 @@
 {
-  "name": "gun-backend",
+  "name": "fluke-gun-peer",
   "version": "0.0.1",
   "description": "",
   "main": "server.js",
@@ -10,7 +10,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "gun": "^0.2020"
+    "gun": "amark/gun.git#master"
   },
   "devDependencies": {
   }

@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <TargetFramework>net5.0</TargetFramework>
@@ -5,9 +6,9 @@
         <OutputType>Exe</OutputType>
     </PropertyGroup>
     <ItemGroup>
-
-        <Compile Include="Program.fs"/>
-
+        <Compile Include="GunPeers.fs" />
+        <Compile Include="Program.fs" />
+        <Content Include="paket.references" />
     </ItemGroup>
-    <Import Project="..\..\.paket\Paket.Restore.targets"/>
+    <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

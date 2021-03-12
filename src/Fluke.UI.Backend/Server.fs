@@ -16,7 +16,7 @@ module Server =
     module Sync =
         open Sync
 
-        let api: Api =
+        let api : Api =
             let readFile path =
                 let getEnvVar name =
                     match Environment.GetEnvironmentVariable name with
@@ -52,17 +52,20 @@ module Server =
 
                             let databasesWithAccess =
                                 databaseStateList
-                                |> List.filter (fun databaseState ->
-                                    match databaseState.Database with
-                                    | { Owner = owner } when owner.Username = username -> true
-                                    | { SharedWith = DatabaseAccess.Public } -> true
-                                    | { SharedWith = DatabaseAccess.Private accessList } ->
-                                        accessList
-                                        |> List.exists (function
-                                            | (DatabaseAccessItem.Admin user
-                                            | DatabaseAccessItem.ReadOnly user) when user.Username = username -> true
-                                            | _ -> false)
-                                    | _ -> false)
+                                |> List.filter
+                                    (fun databaseState ->
+                                        match databaseState.Database with
+                                        | { Owner = owner } when owner.Username = username -> true
+                                        | { SharedWith = DatabaseAccess.Public } -> true
+                                        | { SharedWith = DatabaseAccess.Private accessList } ->
+                                            accessList
+                                            |> List.exists
+                                                (function
+                                                | (DatabaseAccessItem.Admin user
+                                                | DatabaseAccessItem.ReadOnly user) when user.Username = username ->
+                                                    true
+                                                | _ -> false)
+                                        | _ -> false)
 
 
                             return databasesWithAccess
@@ -83,11 +86,12 @@ module Server =
             use_gzip
             force_ssl
 
-            use_cors "CORS" (fun builder ->
-                builder
-                    .WithOrigins("https://lively-flower-0d9b23410.azurestaticapps.net",
-                                 "https://fc1943s.github.io/fluke")
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                |> ignore)
+            use_cors
+                "CORS"
+                (fun builder ->
+                    builder
+                        .AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader ()
+                    |> ignore)
         }
