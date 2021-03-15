@@ -9,6 +9,7 @@
   },
   "author": "fc1943s",
   "license": "MIT",
+  "homepage": ".",
   "private": true,
   "electronWebpack": {
     "title": true,
