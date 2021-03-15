@@ -272,8 +272,6 @@ NUGET
       FSharp.Core (>= 4.3.4)
       Microsoft.IO.RecyclableMemoryStream (>= 1.2.2)
     FSharp.Core (5.0.1)
-    FSharpPlus (1.1.7)
-      FSharp.Core (>= 4.6.2)
     Giraffe (5.0.0-rc-6)
       FSharp.Core (>= 5.0)
       Giraffe.ViewEngine (>= 1.3)

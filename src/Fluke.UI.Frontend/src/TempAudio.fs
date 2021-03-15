@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend
 
 open Fable.Core
-open FSharpPlus
 
 
 module TempAudio =

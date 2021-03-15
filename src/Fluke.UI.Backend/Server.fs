@@ -4,7 +4,6 @@ open System
 open System.IO
 open Saturn
 open Fluke.Shared
-open FSharpPlus
 open Fable.Remoting.Server
 open Fable.Remoting.Giraffe
 

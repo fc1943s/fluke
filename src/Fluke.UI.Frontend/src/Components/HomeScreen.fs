@@ -7,7 +7,6 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
-open FSharpPlus
 
 
 module HomeScreen =
@@ -82,34 +81,37 @@ module HomeScreen =
                                     [
                                         yield!
                                             tabs
-                                            |> List.map (fun tab ->
-                                                Chakra.tab
-                                                    {|
-                                                        padding = "12px"
-                                                        color = "gray.45%"
-                                                        _hover =
-                                                            {|
-                                                                borderBottomColor = "gray.45%"
-                                                                borderBottom = "2px solid"
-                                                            |}
-                                                        _selected = {| color = "gray.77%"; borderColor = "gray.77%" |}
-                                                    |}
-                                                    [
-                                                        Chakra.box {| ``as`` = tab.Icon; marginRight = "6px" |} []
-                                                        str tab.Name
-                                                    ])
+                                            |> List.map
+                                                (fun tab ->
+                                                    Chakra.tab
+                                                        {|
+                                                            padding = "12px"
+                                                            color = "gray.45%"
+                                                            _hover =
+                                                                {|
+                                                                    borderBottomColor = "gray.45%"
+                                                                    borderBottom = "2px solid"
+                                                                |}
+                                                            _selected =
+                                                                {| color = "gray.77%"; borderColor = "gray.77%" |}
+                                                        |}
+                                                        [
+                                                            Chakra.box {| ``as`` = tab.Icon; marginRight = "6px" |} []
+                                                            str tab.Name
+                                                        ])
                                     ]
                                 Chakra.tabPanels
                                     {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
                                     [
                                         yield!
                                             tabs
-                                            |> List.map (fun tab ->
-                                                Chakra.tabPanel
-                                                    {| padding = 0 |}
-                                                    [
-                                                        tab.Content ()
-                                                    ])
+                                            |> List.map
+                                                (fun tab ->
+                                                    Chakra.tabPanel
+                                                        {| padding = 0 |}
+                                                        [
+                                                            tab.Content ()
+                                                        ])
                                     ]
                             ]
                     ]

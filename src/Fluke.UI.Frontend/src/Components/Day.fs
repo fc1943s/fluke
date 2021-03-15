@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.Recoil
-open FSharpPlus
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
@@ -13,9 +12,11 @@ module Day =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let Day (input: {| Username: Username
-                       Date: FlukeDate
-                       Label: string |}) =
+    let Day
+        (input: {| Username: Username
+                   Date: FlukeDate
+                   Label: string |})
+        =
         let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday input.Date)
         let hasSelection = Recoil.useValue (Recoil.Selectors.FlukeDate.hasSelection input.Date)
         let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)

@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open System
 open Fable.React
-open FSharpPlus
 open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend

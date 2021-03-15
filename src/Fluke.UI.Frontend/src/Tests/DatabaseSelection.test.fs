@@ -11,7 +11,6 @@ open Fluke.UI.Frontend.Tests.Core
 open Fluke.UI.Frontend.Recoil
 open Fluke.Shared
 open Fluke.Shared.Domain
-open FSharpPlus
 
 module DatabaseSelection =
     open State

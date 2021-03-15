@@ -12,6 +12,11 @@
   resolved "https://registry.yarnpkg.com/7zip/-/7zip-0.0.6.tgz#9cafb171af82329490353b4816f03347aa150a30"
   integrity sha1-nK+xca+CMpSQNTtIFvAzR6oVCjA=
 
+"@altrx/gundb-react-hooks@~0.8":
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/@altrx/gundb-react-hooks/-/gundb-react-hooks-0.8.1.tgz#81f7dd4e37e9dd08aa5a553607e11a1b7f57100d"
+  integrity sha512-Di35a+5FQpyB0oJYCK/uOPngLYeeBi/TGu6ez8jc7xs9+XxoSaw5+LBiBoosOrXkAl8AFP5kModtfWuF0yxhkQ==
+
 "@babel/code-frame@7.10.4":
   version "7.10.4"
   resolved "https://registry.yarnpkg.com/@babel/code-frame/-/code-frame-7.10.4.tgz#168da1a36e90da68ae8d49c0f1b48c7c6249213a"
@@ -7844,10 +7849,9 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-gun@0.2020.520:
+gun@amark/gun.git#master:
   version "0.2020.520"
-  resolved "https://registry.yarnpkg.com/gun/-/gun-0.2020.520.tgz#3bf7c9c0c83ba04aee94c0157c4d4e0a64e865ad"
-  integrity sha512-hMDmj4QQnejweZEy4njbyNlll+GO7H8XIq/SdQ23kFV29B6HqA0+bQmhLCxWKLwQvfRXx9SgSXG/ImGrER/CqQ==
+  resolved "https://codeload.github.com/amark/gun/tar.gz/508d38cd1b35fbbb285d622364aa0f6f18702a3e"
   dependencies:
     ws "^7.2.1"
   optionalDependencies:

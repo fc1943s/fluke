@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend
 #nowarn "40"
 
 open System
-open FSharpPlus
 open Feliz.Recoil
 open Fluke.Shared
 open Fluke.Shared.Domain
@@ -30,6 +29,12 @@ module Recoil =
           | null),
           (""
           | null) -> [||]
+        | peer1,
+          (""
+          | null) ->
+            [|
+                peer1
+            |]
         | peer1, peer2 ->
             [|
                 peer1
@@ -43,18 +48,19 @@ module Recoil =
 
     let gunTmp =
         Gun.gun (
-            {|
-                peers =
+            {
+                Gun.GunProps.peers =
                     if jestWorkerId then
                         null
                     else
                         peersArray
-                radisk = false
-                localStorage = false
-            |}
+                Gun.GunProps.radisk = false
+                Gun.GunProps.localStorage = true
+            }
             |> toPlainJsObj
             |> unbox
         )
+
 
     Browser.Dom.window?gunTmp <- gunTmp
 
@@ -255,6 +261,15 @@ module Recoil =
 
 
         module rec Session =
+            let rec databaseStateMapCache =
+                atomFamily {
+                    key $"{nameof Session}/{nameof databaseStateMapCache}"
+
+                    def
+                        (fun (_username: Username) ->
+                            Profiling.addCount $"{nameof Session}/{nameof databaseStateMapCache}"
+                            Map.empty: Map<DatabaseId, DatabaseState>)
+                }
 
             let rec availableDatabaseIds =
                 atomFamily {
@@ -666,14 +681,16 @@ module Recoil =
                         //                        let gun = Gun.gun peers
                         let gun = gunTmp
 
+                        printfn "selector. returning gun..."
+
                         Profiling.addCount (nameof gun)
                         {| root = gun |})
             }
 
 
-        let rec apiCurrentUser =
+        let rec apiCurrentUserAsync =
             selector {
-                key ("selector/" + nameof apiCurrentUser)
+                key ("selector/" + nameof apiCurrentUserAsync)
 
                 get
                     (fun getter ->
@@ -685,7 +702,7 @@ module Recoil =
                                 |> Option.bind (fun api -> Some api.currentUser)
                                 |> Sync.handleRequest
 
-                            Profiling.addCount (nameof apiCurrentUser)
+                            Profiling.addCount (nameof apiCurrentUserAsync)
 
                             return result
                         })
@@ -1201,109 +1218,42 @@ module Recoil =
                             result)
                 }
 
-            let rec databaseStateMap =
-                selectorFamily {
-                    key $"{nameof Session}/{nameof databaseStateMap}"
-
-                    get
-                        (fun (username: Username) getter ->
-                            async {
-                                let position = getter.get position
-
-                                let! result =
-                                    match position with
-                                    | Some position ->
-                                        async {
-                                            let api = getter.get Atoms.api
-
-                                            let! databaseStateList =
-                                                api
-                                                |> Option.bind
-                                                    (fun api -> Some (api.databaseStateList username position))
-                                                |> Sync.handleRequest
-
-                                            let templates =
-                                                Templates.getDatabaseMap TempData.testUser
-                                                |> Map.toList
-                                                |> List.map
-                                                    (fun (templateName, dslTemplate) ->
-                                                        Templates.databaseStateFromDslTemplate
-                                                            TempData.testUser
-                                                            (DatabaseId (Guid.NewGuid ()))
-                                                            templateName
-                                                            dslTemplate)
-
-                                            let newDatabaseStateList =
-                                                databaseStateList
-                                                |> Option.defaultValue []
-                                                |> List.append templates
-
-                                            let databaseStateMap =
-                                                newDatabaseStateList
-                                                |> List.map
-                                                    (fun databaseState ->
-                                                        match databaseState with
-                                                        | { Database = { Name = DatabaseName name } } as databaseState ->
-                                                            let id =
-                                                                name
-                                                                |> Crypto.sha3
-                                                                |> string
-                                                                |> String.take 16
-                                                                |> System.Text.Encoding.UTF8.GetBytes
-                                                                |> Guid
-                                                                |> DatabaseId
-
-                                                            id, databaseState)
-                                                |> Map.ofList
-
-                                            return databaseStateMap
-                                        }
-                                    | _ -> async { return Map.empty }
-
-                                Profiling.addCount $"{nameof Session}/{nameof databaseStateMap}"
-
-                                return result
-                            })
-                }
-
             let rec sessionData =
                 selectorFamily {
                     key $"{nameof Session}/{nameof sessionData}"
 
                     get
                         (fun (username: Username) getter ->
-                            async {
-                                let databaseStateMap = getter.get (databaseStateMap username)
-                                let dateSequence = getter.get dateSequence
-                                let view = getter.get Atoms.view
-                                let position = getter.get position
-                                let selectedDatabaseIds = getter.get Atoms.selectedDatabaseIds
+                            let databaseStateMap = getter.get (Atoms.Session.databaseStateMapCache username)
+                            let dateSequence = getter.get dateSequence
+                            let view = getter.get Atoms.view
+                            let position = getter.get position
+                            let selectedDatabaseIds = getter.get Atoms.selectedDatabaseIds
 
-                                let dayStart = getter.get (Atoms.User.dayStart username)
+                            let dayStart = getter.get (Atoms.User.dayStart username)
 
-                                let result =
-                                    match position, databaseStateMap.Count with
-                                    | Some position, databaseCount when databaseCount > 0 ->
+                            let result =
+                                match position, databaseStateMap.Count with
+                                | Some position, databaseCount when databaseCount > 0 ->
 
-                                        let newSession =
-                                            getSessionData
-                                                {|
-                                                    Username = username
-                                                    DayStart = dayStart
-                                                    DateSequence = dateSequence
-                                                    View = view
-                                                    Position = position
-                                                    SelectedDatabaseIds = selectedDatabaseIds |> Set.ofArray
-                                                    DatabaseStateMap = databaseStateMap
-                                                |}
+                                    let newSession =
+                                        getSessionData
+                                            {|
+                                                Username = username
+                                                DayStart = dayStart
+                                                DateSequence = dateSequence
+                                                View = view
+                                                Position = position
+                                                SelectedDatabaseIds = selectedDatabaseIds |> Set.ofArray
+                                                DatabaseStateMap = databaseStateMap
+                                            |}
 
-                                        Some newSession
-                                    | _ -> None
+                                    Some newSession
+                                | _ -> None
 
-                                Profiling.addCount $"{nameof Session}/{nameof sessionData}"
+                            Profiling.addCount $"{nameof Session}/{nameof sessionData}"
 
-                                return result
-                            })
+                            result)
                 }
 
 

@@ -2,7 +2,6 @@ namespace Fluke.Shared
 
 open System
 open Expecto
-open FSharpPlus
 open Fluke.Shared
 open Expecto.Flip
 open Fluke.Shared.TempData

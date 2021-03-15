@@ -87,12 +87,12 @@ module LoginScreen =
                             {| align = "stretch" |}
                             [
                                 Chakra.button
-                                    {| flex = 1; onClick = signInClick |}
+                                    {| flex = 1; onClick = signInClick; color = "gray" |}
                                     [
                                         str "Sign In"
                                     ]
                                 Chakra.button
-                                    {| flex = 1; onClick = signUpClick |}
+                                    {| flex = 1; onClick = signUpClick; color = "gray" |}
                                     [
                                         str "Sign Up"
                                     ]

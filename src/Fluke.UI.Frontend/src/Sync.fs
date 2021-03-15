@@ -23,9 +23,9 @@ module Sync =
                 | Choice2Of2 ex ->
                     match ex with
                     | :? ProxyRequestException as ex ->
-                        let _response: HttpResponse = ex.Response
-                        let responseText: string = ex.ResponseText
-                        let statusCode: int = ex.StatusCode
+                        let _response : HttpResponse = ex.Response
+                        let responseText : string = ex.ResponseText
+                        let statusCode : int = ex.StatusCode
 
                         printfn $"Proxy exception: {ex.Message}. responseText={responseText}; statusCode={statusCode}"
                     | ex -> printfn $"API exception: {ex}"

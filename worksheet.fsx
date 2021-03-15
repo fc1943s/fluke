@@ -1,11 +1,8 @@
-#r "C:/Users/fc194/.nuget/packages/fsharpplus/1.1.3/lib/netstandard2.0/FSharpPlus.dll"
-//#r "nuget: FSharpPlus"
 #r "src/Fluke.Shared/bin/Debug/netcoreapp5.0/Fluke.Shared.dll"
 
 open Fluke.Shared.Model
 open Fluke.Shared
 open System.Collections.Generic
-open FSharpPlus
 
 
 //let a = PrivateData.PrivateData.getPrivateAreas ()

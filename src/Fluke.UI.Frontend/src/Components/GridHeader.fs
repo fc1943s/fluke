@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open FSharpPlus
 open Fable.DateFunctions
 open Feliz
 open Feliz.Recoil
@@ -32,21 +31,22 @@ module GridHeader =
                     [
                         yield!
                             datesByMonth
-                            |> List.map (fun dates ->
-                                let firstDate =
-                                    dates
-                                    |> List.tryHead
-                                    |> Option.defaultValue FlukeDate.MinValue
+                            |> List.map
+                                (fun dates ->
+                                    let firstDate =
+                                        dates
+                                        |> List.tryHead
+                                        |> Option.defaultValue FlukeDate.MinValue
 
-                                let cellWidth = cellSize * dates.Length
+                                    let cellWidth = cellSize * dates.Length
 
 
-                                MonthResponsiveCell.MonthResponsiveCell
-                                    {|
-                                        Username = username
-                                        Date = firstDate
-                                        Props = {| width = cellWidth |}
-                                    |})
+                                    MonthResponsiveCell.MonthResponsiveCell
+                                        {|
+                                            Username = username
+                                            Date = firstDate
+                                            Props = {| width = cellWidth |}
+                                        |})
                     ]
 
 
@@ -56,13 +56,14 @@ module GridHeader =
                     [
                         yield!
                             dateSequence
-                            |> List.map (fun date ->
-                                Day.Day
-                                    {|
-                                        Date = date
-                                        Label = date.DateTime.Format "EEEEEE"
-                                        Username = username
-                                    |})
+                            |> List.map
+                                (fun date ->
+                                    Day.Day
+                                        {|
+                                            Date = date
+                                            Label = date.DateTime.Format "EEEEEE"
+                                            Username = username
+                                        |})
                     ]
 
 
@@ -72,12 +73,15 @@ module GridHeader =
                     [
                         yield!
                             dateSequence
-                            |> List.map (fun ({ Day = Day day } as date) ->
-                                Day.Day
-                                    {|
-                                        Date = date
-                                        Label = day.ToString "D2"
-                                        Username = username
-                                    |})
+                            |> List.map
+                                (fun date ->
+                                    match date with
+                                    | { Day = Day day } as date ->
+                                        Day.Day
+                                            {|
+                                                Date = date
+                                                Label = day.ToString "D2"
+                                                Username = username
+                                            |})
                     ]
             ]

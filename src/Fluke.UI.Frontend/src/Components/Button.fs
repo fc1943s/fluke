@@ -19,6 +19,7 @@ module Button =
             Chakra.button
                 {| input.props with
                     height = "auto"
+                    color = "black"
                     paddingTop = "2px"
                     paddingBottom = "2px"
                 |}

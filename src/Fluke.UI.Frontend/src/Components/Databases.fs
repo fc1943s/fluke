@@ -4,7 +4,6 @@ open Fluke.Shared
 open Feliz
 open Fable.React
 open Feliz.Recoil
-open FSharpPlus
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 
@@ -37,13 +36,14 @@ module Databases =
             let selected = selectedDatabaseIdsSet.Contains input.DatabaseId
 
             let changeSelection =
-                Recoil.useCallbackRef (fun _setter newSelectedDatabaseIds ->
-                    setSelectedDatabaseIds newSelectedDatabaseIds
+                Recoil.useCallbackRef
+                    (fun _setter newSelectedDatabaseIds ->
+                        setSelectedDatabaseIds newSelectedDatabaseIds
 
-                    match newSelectedDatabaseIds with
-                    | [||] -> None
-                    | _ -> databasePosition
-                    |> setSelectedPosition)
+                        match newSelectedDatabaseIds with
+                        | [||] -> None
+                        | _ -> databasePosition
+                        |> setSelectedPosition)
 
             let onChange = fun (_e: {| target: obj |}) -> ()
 

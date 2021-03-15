@@ -18,7 +18,7 @@ module UserLoader =
                 promise {
                     Profiling.addTimestamp "UserLoader.render.loadUser"
 
-                    let! user = setter.snapshot.getPromise Recoil.Selectors.apiCurrentUser
+                    let! user = setter.snapshot.getPromise Recoil.Selectors.apiCurrentUserAsync
 
                     match user with
                     | Some user ->

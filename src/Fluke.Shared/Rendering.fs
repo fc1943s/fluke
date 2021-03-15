@@ -1,7 +1,6 @@
 namespace Fluke.Shared
 
 open System
-open FSharpPlus
 
 
 module Rendering =
@@ -117,7 +116,7 @@ module Rendering =
         let rec loop renderState =
             function
             | moment :: tail ->
-                let (DateId referenceDay) as dateId = dateId dayStart moment
+                let DateId referenceDay as dateId = dateId dayStart moment
 
                 let cellState = taskState.CellStateMap |> Map.tryFind dateId
 
@@ -125,7 +124,9 @@ module Rendering =
 
                 let tempStatus, renderState =
                     match cellState with
-                    | Some { Status = UserStatus (user, manualCellStatus) as userStatus } ->
+                    | Some {
+                               Status = UserStatus (_user, manualCellStatus) as userStatus
+                           } ->
                         let renderState =
                             match manualCellStatus, group with
                             | Postponed (Some _), BeforeToday -> renderState
@@ -178,7 +179,8 @@ module Rendering =
                         | Recurrency (Fixed recurrencyList) ->
                             let isDateMatched =
                                 recurrencyList
-                                |> List.map (function
+                                |> List.map
+                                    (function
                                     | Weekly dayOfWeek -> dayOfWeek = referenceDay.DateTime.DayOfWeek
                                     | Monthly day -> day = referenceDay.Day
                                     | Yearly (day, month) ->
@@ -227,11 +229,12 @@ module Rendering =
         let cells =
             loop WaitingFirstEvent dateSequenceWithEntries
             |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
-            |> List.map (fun (moment, cellStatus) ->
-                {
-                    DateId = dateId dayStart moment
-                    Task = taskState.Task
-                },
-                cellStatus)
+            |> List.map
+                (fun (moment, cellStatus) ->
+                    {
+                        DateId = dateId dayStart moment
+                        Task = taskState.Task
+                    },
+                    cellStatus)
 
         taskState, cells

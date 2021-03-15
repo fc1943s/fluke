@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open FSharpPlus
 open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend

@@ -1,12 +1,12 @@
 namespace Fluke.Shared
 
+open Fluke.Shared
 open System
-open FSharpPlus
 
 
 module LintTests =
     type ExampleInterface =
-        abstract print: unit -> unit
+        abstract print : unit -> unit
 
 module TempData =
     open Domain.Model
@@ -19,7 +19,7 @@ module TempData =
             Username = Username <| nameof testUser
             Color = UserColor.Black
             WeekStart = DayOfWeek.Sunday
-            DayStart = FlukeTime.Create 12 00
+            DayStart = FlukeTime.Create 12 0
             SessionLength = Minute 25.
             SessionBreakLength = Minute 5.
         }
@@ -113,8 +113,10 @@ module TempData =
 
     let createInformationCommentInteraction user moment information comment =
         let interaction =
-            Interaction.Information
-                (information, InformationInteraction.Attachment (Attachment.Comment (user, comment)))
+            Interaction.Information (
+                information,
+                InformationInteraction.Attachment (Attachment.Comment (user, comment))
+            )
 
         let userInteraction = UserInteraction (moment, user, interaction)
 
@@ -136,11 +138,13 @@ module TempData =
 
     let createCellStatusChangeInteractions user (entries: (FlukeDate * (Task option * ManualCellStatus) list) list) =
         entries
-        |> List.collect (fun (date, events) ->
-            events
-            |> List.choose (fun (task, manualCellStatus) ->
-                task
-                |> Option.map (fun task -> createCellStatusChangeInteraction user task date manualCellStatus)))
+        |> List.collect
+            (fun (date, events) ->
+                events
+                |> List.choose
+                    (fun (task, manualCellStatus) ->
+                        task
+                        |> Option.map (fun task -> createCellStatusChangeInteraction user task date manualCellStatus)))
 
 
 
@@ -148,15 +152,17 @@ module TempData =
 
     let dslDatabaseWithUser (user: User) (dslDatabase: (Information * (string * DslTask list) list) list) =
         dslDatabase
-        |> List.map (fun (information, tasks) ->
-            let newTasks =
-                tasks
-                |> List.map (fun (taskName, dslTasks) ->
-                    taskName,
-                    dslTasks
-                    |> List.map (fun dslTask -> dslTask, user))
+        |> List.map
+            (fun (information, tasks) ->
+                let newTasks =
+                    tasks
+                    |> List.map
+                        (fun (taskName, dslTasks) ->
+                            taskName,
+                            dslTasks
+                            |> List.map (fun dslTask -> dslTask, user))
 
-            information, newTasks)
+                information, newTasks)
 
     //        taskDatabase
 //        |> List.map (fun x -> x |> Tuple2.mapItem2 (fun x -> x |> List.map (fun x -> x |> Tuple2.mapItem2 (fun (a,b) -> x |> List.map (fun (event:DslTask) -> event, user)))))
@@ -213,10 +219,11 @@ module TempData =
 
 
 
-    let createDslData moment
-                      taskContainerFactory
-                      (dslDatabase: (Information * (string * (DslTask * User) list) list) list)
-                      =
+    let createDslData
+        moment
+        taskContainerFactory
+        (dslDatabase: (Information * (string * (DslTask * User) list) list) list)
+        =
 
         let taskMap, taskStateList =
             let (|FirstPass|SecondPass|) =
@@ -227,42 +234,44 @@ module TempData =
             let rec loop pass taskMap =
                 let newTaskMap, newTaskStateList =
                     ((taskMap, []), dslDatabase)
-                    ||> List.fold (fun (taskMap, taskStateList) (information, tasks) ->
-                            ((taskMap, taskStateList), tasks)
-                            ||> List.fold (fun (taskMap, taskStateList) (taskName, dslTasks) ->
-                                    let oldTask: Task option = taskMap |> Map.tryFind taskName
+                    ||> List.fold
+                            (fun (taskMap, taskStateList) (information, tasks) ->
+                                ((taskMap, taskStateList), tasks)
+                                ||> List.fold
+                                        (fun (taskMap, taskStateList) (taskName, dslTasks) ->
+                                            let oldTask : Task option = taskMap |> Map.tryFind taskName
 
-                                    let newTask =
-                                        match oldTask with
-                                        | Some task -> { task with Information = information }
-                                        | None ->
-                                            { Task.Default with
-                                                Information = information
-                                                Name = TaskName taskName
-                                            }
+                                            let newTask =
+                                                match oldTask with
+                                                | Some task -> { task with Information = information }
+                                                | None ->
+                                                    { Task.Default with
+                                                        Information = information
+                                                        Name = TaskName taskName
+                                                    }
 
-                                    let fakeTaskMap =
-                                        match pass with
-                                        | FirstPass -> None
-                                        | SecondPass ->
-                                            taskMap
-                                            |> Map.toSeq
-                                            |> Seq.map (fun (taskName, task) -> TaskName taskName, task)
-                                            |> Map.ofSeq
-                                            |> Some
+                                            let fakeTaskMap =
+                                                match pass with
+                                                | FirstPass -> None
+                                                | SecondPass ->
+                                                    taskMap
+                                                    |> Map.toSeq
+                                                    |> Seq.map (fun (taskName, task) -> TaskName taskName, task)
+                                                    |> Map.ofSeq
+                                                    |> Some
 
-                                    let taskState, userInteractions =
-                                        createTaskState moment newTask fakeTaskMap dslTasks
+                                            let taskState, userInteractions =
+                                                createTaskState moment newTask fakeTaskMap dslTasks
 
-                                    let newTaskMap = taskMap |> Map.add taskName taskState.Task
+                                            let newTaskMap = taskMap |> Map.add taskName taskState.Task
 
-                                    let newTaskStateList =
-                                        taskStateList
-                                        @ [
-                                            taskState, userInteractions
-                                        ]
+                                            let newTaskStateList =
+                                                taskStateList
+                                                @ [
+                                                    taskState, userInteractions
+                                                ]
 
-                                    newTaskMap, newTaskStateList))
+                                            newTaskMap, newTaskStateList))
 
                 match pass with
                 | 0 -> loop 1 newTaskMap
@@ -300,10 +309,11 @@ module TempData =
             failwithf $"Duplicated task names: {duplicated}"
 
         let tasks =
-            taskContainerFactory (fun taskName ->
-                taskMap
-                |> Map.tryFind taskName
-                |> Option.orElseWith (fun () -> failwithf $"createDslData. Task not found: {taskName}"))
+            taskContainerFactory
+                (fun taskName ->
+                    taskMap
+                    |> Map.tryFind taskName
+                    |> Option.orElseWith (fun () -> failwithf $"createDslData. Task not found: {taskName}"))
 
 
         //        let taskOrderList = getTaskOrderList [] (taskStateList |> List.map fst) []
@@ -343,10 +353,12 @@ module TempData =
 //            databaseStateWithoutInteractions
 //            |> DatabaseStateWithInteractions userInteractions
 
-        let createLaneRenderingDslData (input: {| User: User
-                                                  Position: FlukeDateTime
-                                                  Task: Task
-                                                  Events: DslTask list |}) =
+        let createLaneRenderingDslData
+            (input: {| User: User
+                       Position: FlukeDateTime
+                       Task: Task
+                       Events: DslTask list |})
+            =
             let eventsWithUser = input.Events |> List.map (fun x -> x, input.User)
 
             let dslData =
@@ -387,23 +399,26 @@ module TempData =
             dslData
 
 
-        let createLaneSortingDslData (input: {| User: User
-                                                Position: FlukeDateTime
-                                                Data: (Task * DslTask list) list
-                                                Expected: string list |}) =
+        let createLaneSortingDslData
+            (input: {| User: User
+                       Position: FlukeDateTime
+                       Data: (Task * DslTask list) list
+                       Expected: string list |})
+            =
             let dslData =
                 let taskStateList =
                     input.Data
-                    |> List.map (fun (task, events) ->
-                        events
-                        |> List.map (fun dslTask -> dslTask, input.User)
-                        |> createTaskState input.Position task None)
+                    |> List.map
+                        (fun (task, events) ->
+                            events
+                            |> List.map (fun dslTask -> dslTask, input.User)
+                            |> createTaskState input.Position task None)
 
                 //                let taskOrderList =
 //                    input.Data
 //                    |> List.map (fun (task, events) -> { Task = task; Priority = TaskOrderPriority.Last })
 
-                let getLivePosition = fun () -> input.Position
+                let _getLivePosition = fun () -> input.Position
 
                 let informationStateMap =
                     taskStateList

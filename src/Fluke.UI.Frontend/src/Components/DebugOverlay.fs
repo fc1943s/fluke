@@ -4,7 +4,6 @@ open Fable.React
 open Feliz
 open Feliz.UseListener
 open Feliz.Recoil
-open FSharpPlus
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
@@ -19,28 +18,31 @@ module DebugOverlay =
         let oldJson, setOldJson = React.useState ""
         let debug, setDebug = Recoil.useState Recoil.Atoms.debug
 
-        Scheduling.useScheduling Scheduling.Interval 1000 (fun () ->
-            if not debug then
-                ()
-            else
-                let json =
-                    {|
-                        CallCount =
-                            Profiling.profilingState.CallCount
-                            |> Seq.map (fun (KeyValue (k, v)) -> k, box <| string v)
-                            |> JsInterop.createObj
-                        Timestamps =
-                            Profiling.profilingState.Timestamps
-                            |> Seq.map (fun (k, v) -> $"{k} = {v}")
-                            |> Seq.toList
-                    |}
-                    |> fun obj -> JS.JSON.stringify (obj, unbox null, 4)
-
-                if json = oldJson then
+        Scheduling.useScheduling
+            Scheduling.Interval
+            1000
+            (fun () ->
+                if not debug then
                     ()
                 else
-                    setText json
-                    setOldJson json)
+                    let json =
+                        {|
+                            CallCount =
+                                Profiling.profilingState.CallCount
+                                |> Seq.map (fun (KeyValue (k, v)) -> k, box <| string v)
+                                |> JsInterop.createObj
+                            Timestamps =
+                                Profiling.profilingState.Timestamps
+                                |> Seq.map (fun (k, v) -> $"{k} = {v}")
+                                |> Seq.toArray
+                        |}
+                        |> fun obj -> JS.JSON.stringify (obj, unbox null, 4)
+
+                    if json = oldJson then
+                        ()
+                    else
+                        setText json
+                        setOldJson json)
 
         React.fragment [
             if debug then
@@ -89,11 +91,12 @@ module DebugOverlay =
                                     e.preventDefault ()
                         |}
                         [
-                            str
-                                (if debug then
+                            str (
+                                if debug then
                                     "Debug"
-                                 else
-                                     "")
+                                else
+                                    ""
+                            )
                         ]
 
                     if debug then

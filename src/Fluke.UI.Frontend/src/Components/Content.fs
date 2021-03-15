@@ -24,8 +24,8 @@ module Content =
                 | true ->
                     match username with
                     | Some username ->
-                        React.suspense
-                            ([
+                        React.suspense (
+                            [
                                 SessionDataLoader.SessionDataLoader username
                                 SoundPlayer.SoundPlayer username
 
@@ -36,8 +36,9 @@ module Content =
                                         HomeScreen.HomeScreen username {| flex = 1 |}
                                         StatusBar.StatusBar username
                                     ]
-                             ],
-                             LoadingScreen.LoadingScreen ())
+                            ],
+                            LoadingScreen.LoadingScreen ()
+                        )
 
                     | None -> LoginScreen.LoginScreen ()
             ]

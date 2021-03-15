@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Hooks
 open Browser.Types
 open Feliz
 open Feliz.UseListener
-open FSharpPlus
 open Feliz.Recoil
 open Fluke.UI.Frontend
 

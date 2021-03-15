@@ -5,6 +5,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "repo", "repo", "{AC1CE2EB-7
 		README.md = README.md
 		.config/dotnet-tools.json = .config/dotnet-tools.json
 		.github/workflows/azure-static-web-apps-lively-flower-0d9b23410.yml = .github/workflows/azure-static-web-apps-lively-flower-0d9b23410.yml
+		.github/workflows/build.yml = .github/workflows/build.yml
 		fsharplint.json = fsharplint.json
 		Directory.Build.targets = Directory.Build.targets
 		.gitignore = .gitignore
