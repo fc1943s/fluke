@@ -18,9 +18,7 @@ jobs:
         with:
           node-version: '15'
 
-      - run: cd ./src/Fluke.UI.Frontend
-      - run: yarn install
-      - run: yarn run build
+      - run: cd ./src/Fluke.UI.Frontend && yarn install && yarn run build
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
