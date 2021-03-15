@@ -8,6 +8,9 @@ module Gun =
     importAll "gun/sea"
     importAll "gun/lib/promise"
 
+    if JS.isTesting then
+        importAll "gun/lib/radix"
+
     type AppState = { a: {| b: string; c: int |} }
 
     type IGunUser =
@@ -35,9 +38,9 @@ module Gun =
 
     type GunProps =
         {
-            peers: string []
-            radisk: bool
-            localStorage: bool
+            peers: string [] option
+            radisk: bool option
+            localStorage: bool option
         }
 
     let gun : GunProps -> IGunChainReference<AppState> = importDefault "gun"

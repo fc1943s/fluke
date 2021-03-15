@@ -30,7 +30,7 @@ module View =
                     taskState.CellStateMap
                     |> Map.toSeq
                     |> Seq.exists
-                        (fun (DateId referenceDay, cellState) ->
+                        (fun ((DateId referenceDay), cellState) ->
                             referenceDay.DateTime >==< dateRange
                             && (cellState.Attachments
                                 |> List.exists
@@ -203,6 +203,8 @@ module View =
                             newInformationStateMap, newTaskStateMap
                         | _ -> informationStateMap, taskStateMap)
 
+        if input.DateSequence.IsEmpty then
+            raise (exn "DateSequence is empty")
 
         let dateRange =
             // TODO: handle

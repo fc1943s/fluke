@@ -43,19 +43,26 @@ module Recoil =
 
     printfn $"peersArray {peersArray}"
 
-    [<Emit "process.env.JEST_WORKER_ID">]
-    let jestWorkerId : bool = jsNative
-
     let gunTmp =
         Gun.gun (
             {
                 Gun.GunProps.peers =
-                    if jestWorkerId then
-                        null
+                    if JS.isTesting then
+                        None
                     else
-                        peersArray
-                Gun.GunProps.radisk = false
-                Gun.GunProps.localStorage = true
+                        Some peersArray
+
+                Gun.GunProps.radisk =
+                    if JS.isTesting then
+                        None
+                    else
+                        Some false
+
+                Gun.GunProps.localStorage =
+                    if JS.isTesting then
+                        None
+                    else
+                        Some true
             }
             |> toPlainJsObj
             |> unbox
@@ -533,116 +540,116 @@ module Recoil =
 
         let rec debug =
             atom {
-                key ("atom/" + nameof debug)
+                key $"atom/{nameof debug}"
                 def false
                 local_storage
             }
 
         let rec isTesting =
             atom {
-                key ("atom/" + nameof isTesting)
-                def jestWorkerId
+                key $"atom/{nameof isTesting}"
+                def JS.isTesting
             }
 
         let rec view =
             atom {
-                key ("atom/" + nameof view)
+                key $"atom/{nameof view}"
                 def View.View.HabitTracker
             }
 
         let rec selectedDatabaseIds =
             atom {
-                key ("atom/" + nameof selectedDatabaseIds)
+                key $"atom/{nameof selectedDatabaseIds}"
                 def ([||]: DatabaseId [])
                 local_storage
             }
 
         let rec selectedPosition =
             atom {
-                key ("atom/" + nameof selectedPosition)
+                key $"atom/{nameof selectedPosition}"
                 def (None: FlukeDateTime option)
                 local_storage
             }
 
         let rec selectedCell =
             atom {
-                key ("atom/" + nameof selectedCell)
+                key $"atom/{nameof selectedCell}"
                 def (None: (Task.TaskId * DateId) option)
             }
 
         let rec cellSize =
             atom {
-                key ("atom/" + nameof cellSize)
+                key $"atom/{nameof cellSize}"
                 def 17
             }
 
         let rec daysBefore =
             atom {
-                key ("atom/" + nameof daysBefore)
+                key $"atom/{nameof daysBefore}"
                 def 7
                 local_storage
             }
 
         let rec daysAfter =
             atom {
-                key ("atom/" + nameof daysAfter)
+                key $"atom/{nameof daysAfter}"
                 def 7
                 local_storage
             }
 
         let rec leftDock =
             atom {
-                key ("atom/" + nameof leftDock)
+                key $"atom/{nameof leftDock}"
                 def (None: TempUI.DockType option)
                 local_storage
             }
 
         let rec formDatabaseId =
             atom {
-                key ("atom/" + nameof formDatabaseId)
+                key $"atom/{nameof formDatabaseId}"
                 def (None: State.DatabaseId option)
             }
 
         let rec taskIdForm =
             atom {
-                key ("atom/" + nameof taskIdForm)
+                key $"atom/{nameof taskIdForm}"
                 def (None: Task.TaskId option)
             }
 
         let rec apiBaseUrl =
             atom {
-                key ("atom/" + nameof apiBaseUrl)
+                key $"atom/{nameof apiBaseUrl}"
                 def $"https://localhost:{Sync.serverPort}"
                 local_storage
             }
 
         let rec api =
             atom {
-                key ("atom/" + nameof api)
+                key $"atom/{nameof api}"
                 def (None: Sync.Api option)
             }
 
         let rec peers =
             atom {
-                key ("atom/" + nameof peers)
+                key $"atom/{nameof peers}"
                 def peersArray
             }
 
         let rec username =
             atom {
-                key ("atom/" + nameof username)
+                key $"atom/{nameof username}"
                 def None
             }
 
         let rec sessionRestored =
             atom {
-                key ("atom/" + nameof sessionRestored)
+                key $"atom/{nameof sessionRestored}"
                 def false
             }
 
         let rec getLivePosition =
             atom {
-                key ("atom/" + nameof getLivePosition)
+                key $"atom/{nameof getLivePosition}"
 
                 def
                     {|
@@ -653,19 +660,19 @@ module Recoil =
 
         let rec ctrlPressed =
             atom {
-                key ("atom/" + nameof ctrlPressed)
+                key $"atom/{nameof ctrlPressed}"
                 def false
             }
 
         let rec shiftPressed =
             atom {
-                key ("atom/" + nameof shiftPressed)
+                key $"atom/{nameof shiftPressed}"
                 def false
             }
 
         let rec positionTrigger =
             atom {
-                key ("atom/" + nameof positionTrigger)
+                key $"atom/{nameof positionTrigger}"
                 def 0
             }
 
@@ -673,7 +680,7 @@ module Recoil =
     module Selectors =
         let rec gun =
             selector {
-                key ("selector/" + nameof gun)
+                key $"selector/{nameof gun}"
 
                 get
                     (fun getter ->
@@ -690,7 +697,7 @@ module Recoil =
 
         let rec apiCurrentUserAsync =
             selector {
-                key ("selector/" + nameof apiCurrentUserAsync)
+                key $"selector/{nameof apiCurrentUserAsync}"
 
                 get
                     (fun getter ->
@@ -710,7 +717,7 @@ module Recoil =
 
         let rec position =
             selector {
-                key ("selector/" + nameof position)
+                key $"selector/{nameof position}"
 
                 get
                     (fun getter ->
@@ -734,7 +741,7 @@ module Recoil =
 
         let rec dateSequence =
             selector {
-                key ("selector/" + nameof dateSequence)
+                key $"selector/{nameof dateSequence}"
 
                 get
                     (fun getter ->
@@ -761,7 +768,7 @@ module Recoil =
 
         let rec cellSelectionMap =
             selector {
-                key ("selector/" + nameof cellSelectionMap)
+                key $"selector/{nameof cellSelectionMap}"
 
                 get
                     (fun getter ->

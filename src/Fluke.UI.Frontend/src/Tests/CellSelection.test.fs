@@ -125,8 +125,8 @@ module CellSelection =
             let initialize peek =
                 promise {
                     do! peek initialSetter
-                    do! peek selectDatabase
                     do! Setup.initializeSessionData testUser peek
+                    do! peek selectDatabase
                 }
 
             Jest.test (

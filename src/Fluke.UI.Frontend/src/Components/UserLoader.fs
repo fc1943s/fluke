@@ -37,6 +37,7 @@ module UserLoader =
                 | Some username -> loadUser username |> Promise.start
                 | None -> ()),
              [|
+                 box loadUser
                  box username
              |])
 

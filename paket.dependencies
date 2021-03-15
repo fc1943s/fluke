@@ -12,11 +12,11 @@ nuget Myriad.Plugins ~> 0.5
 
 // Fluke.UI.Backend
 nuget Saturn ~> 0.15 prerelease
-nuget Fable.Remoting.Giraffe ~> 5.2 prerelease
+nuget Fable.Remoting.Giraffe ~> 5.3 prerelease
 
 // Fluke.UI.Frontend
 nuget Fable.Core 3.1.6 // ~> 4.0 prerelease
-nuget Fable.Remoting.Client ~> 7.2
+nuget Fable.Remoting.Client ~> 7.6
 nuget Fable.FontAwesome.Free ~> 2.0
 nuget Fable.DateFunctions ~> 3.6
 nuget Fable.SimpleJson ~> 3.18
@@ -42,4 +42,4 @@ nuget Fake.DotNet.Cli ~> 5.20 prerelease
 nuget Fake.IO.FileSystem ~> 5.20 prerelease
 
 // Deploy
-nuget Farmer ~> 1.4
+nuget Farmer ~> 1.5.0 prerelease
