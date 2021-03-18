@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: '15'
 
-      - run: cd ./test/Fluke.Shared.Tests && dotnet run
+      - run: cd ./test/Fluke.Shared.Tests && dotnet paket restore && dotnet run
       - run: cd ./src/Fluke.UI.Frontend && yarn install
       - run: cd ./src/Fluke.UI.Frontend && yarn test
       - run: cd ./src/Fluke.UI.Frontend && yarn build
