@@ -66,7 +66,7 @@ module Templates =
                         Position =
                             {
                                 Date = FlukeDate.Create 2020 Month.March 10
-                                Time = FlukeTime.Create 14 00
+                                Time = FlukeTime.Create 14 0
                             }
                         Tasks =
                             [
@@ -88,7 +88,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Postponed None)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 9, Postponed None)
                                             DslStatusEntry (FlukeDate.Create 2020 Month.March 10, Postponed None)
                                         ]
                                     Expected = []
@@ -102,7 +102,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Scheduled)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 9, Scheduled)
                                         ]
                                     Expected = []
                                 }
@@ -112,7 +112,7 @@ module Templates =
                                         { Task.Default with
                                             Name = TaskName "04"
                                             Scheduling = Recurrency (Offset (Days 1))
-                                            PendingAfter = Some <| FlukeTime.Create 20 00
+                                            PendingAfter = Some <| FlukeTime.Create 20 0
                                         }
                                     Events = []
                                     Expected = []
@@ -139,8 +139,8 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 04, Scheduled)
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 06, Dismissed)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 4, Scheduled)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 6, Dismissed)
                                         ]
                                     Expected = []
                                 }
@@ -153,7 +153,7 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Completed)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 8, Completed)
                                         ]
                                     Expected = []
                                 }
@@ -205,9 +205,10 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry
-                                                (FlukeDate.Create 2020 Month.March 10,
-                                                 Postponed (FlukeTime.Create 15 00 |> Some))
+                                            DslStatusEntry (
+                                                FlukeDate.Create 2020 Month.March 10,
+                                                Postponed (FlukeTime.Create 15 0 |> Some)
+                                            )
                                         ]
                                     Expected = []
                                 }
@@ -250,8 +251,8 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 07, Postponed None)
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 09, Dismissed)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 7, Postponed None)
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 9, Dismissed)
                                         ]
                                     Expected = []
                                 }
@@ -261,7 +262,7 @@ module Templates =
                                         { Task.Default with
                                             Name = TaskName "16"
                                             Scheduling = Recurrency (Offset (Days 1))
-                                            MissedAfter = (FlukeTime.Create 13 00 |> Some)
+                                            MissedAfter = (FlukeTime.Create 13 0 |> Some)
                                         }
                                     Events = []
                                     Expected = []
@@ -275,9 +276,10 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry
-                                                (FlukeDate.Create 2020 Month.March 10,
-                                                 Postponed (FlukeTime.Create 13 00 |> Some))
+                                            DslStatusEntry (
+                                                FlukeDate.Create 2020 Month.March 10,
+                                                Postponed (FlukeTime.Create 13 0 |> Some)
+                                            )
                                         ]
                                     Expected = []
                                 }
@@ -405,12 +407,12 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Scheduling = Manual WithSuggestion
-                                            PendingAfter = FlukeTime.Create 20 00 |> Some
+                                            PendingAfter = FlukeTime.Create 20 0 |> Some
                                         }
                                     Events = []
                                     Expected =
                                         [
-                                            FlukeDate.Create 2020 Month.March 09,
+                                            FlukeDate.Create 2020 Month.March 9,
                                             [
                                                 TemplateExpect.Status Suggested
                                             ]
@@ -432,8 +434,8 @@ module Templates =
                     {
                         Position =
                             {
-                                Date = FlukeDate.Create 2020 Month.January 01
-                                Time = FlukeTime.Create 21 00
+                                Date = FlukeDate.Create 2020 Month.January 1
+                                Time = FlukeTime.Create 21 0
                             }
                         Tasks =
                             [
@@ -441,7 +443,7 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Scheduling = Manual WithSuggestion
-                                            PendingAfter = FlukeTime.Create 20 00 |> Some
+                                            PendingAfter = FlukeTime.Create 20 0 |> Some
                                         }
                                     Events = []
                                     Expected =
@@ -450,11 +452,11 @@ module Templates =
                                             [
                                                 TemplateExpect.Status Suggested
                                             ]
-                                            FlukeDate.Create 2020 Month.January 01,
+                                            FlukeDate.Create 2020 Month.January 1,
                                             [
                                                 TemplateExpect.Status Pending
                                             ]
-                                            FlukeDate.Create 2020 Month.January 02,
+                                            FlukeDate.Create 2020 Month.January 2,
                                             [
                                                 TemplateExpect.Status Suggested
                                             ]
@@ -785,7 +787,7 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Scheduling = Recurrency (Offset (Days 2))
-                                            PendingAfter = FlukeTime.Create 03 00 |> Some
+                                            PendingAfter = FlukeTime.Create 3 0 |> Some
                                         }
                                     Events =
                                         [
@@ -936,7 +938,7 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Scheduling = Recurrency (Offset (Days 1))
-                                            PendingAfter = FlukeTime.Create 20 00 |> Some
+                                            PendingAfter = FlukeTime.Create 20 0 |> Some
                                         }
                                     Events = []
                                     Expected =
@@ -964,7 +966,7 @@ module Templates =
                         Position =
                             {
                                 Date = FlukeDate.Create 2020 Month.March 10
-                                Time = FlukeTime.Create 21 00
+                                Time = FlukeTime.Create 21 0
                             }
                         Tasks =
                             [
@@ -972,7 +974,7 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Scheduling = Recurrency (Offset (Days 1))
-                                            PendingAfter = FlukeTime.Create 20 00 |> Some
+                                            PendingAfter = FlukeTime.Create 20 0 |> Some
                                         }
                                     Events = []
                                     Expected =
@@ -1000,7 +1002,7 @@ module Templates =
                         Position =
                             {
                                 Date = FlukeDate.Create 2020 Month.March 27
-                                Time = FlukeTime.Create 17 00
+                                Time = FlukeTime.Create 17 0
                             }
                         Tasks =
                             [
@@ -1008,7 +1010,7 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Scheduling = Recurrency (Offset (Days 2))
-                                            PendingAfter = FlukeTime.Create 18 00 |> Some
+                                            PendingAfter = FlukeTime.Create 18 0 |> Some
                                         }
                                     Events = []
                                     Expected =
@@ -1084,15 +1086,15 @@ module Templates =
                                             [
                                                 TemplateExpect.Status (UserStatus (user, Scheduled))
                                             ]
-                                            FlukeDate.Create 2020 Month.April 01,
+                                            FlukeDate.Create 2020 Month.April 1,
                                             [
                                                 TemplateExpect.Status Disabled
                                             ]
-                                            FlukeDate.Create 2020 Month.April 02,
+                                            FlukeDate.Create 2020 Month.April 2,
                                             [
                                                 TemplateExpect.Status Disabled
                                             ]
-                                            FlukeDate.Create 2020 Month.April 03,
+                                            FlukeDate.Create 2020 Month.April 3,
                                             [
                                                 TemplateExpect.Status Pending
                                             ]
@@ -1126,12 +1128,13 @@ module Templates =
                                             for d in 13 .. 29 do
                                                 FlukeDate.Create 2020 Month.March d,
                                                 [
-                                                    TemplateExpect.Status
-                                                        (match d with
-                                                         | 14 -> UserStatus (user, Completed)
-                                                         | 21
-                                                         | 28 -> Pending
-                                                         | _ -> Disabled)
+                                                    TemplateExpect.Status (
+                                                        match d with
+                                                        | 14 -> UserStatus (user, Completed)
+                                                        | 21
+                                                        | 28 -> Pending
+                                                        | _ -> Disabled
+                                                    )
                                                 ]
                                         ]
                                 }
@@ -1162,14 +1165,15 @@ module Templates =
                                             for d in 10 .. 26 do
                                                 FlukeDate.Create 2020 Month.March d,
                                                 [
-                                                    TemplateExpect.Status
-                                                        (match d with
-                                                         | 13 -> UserStatus (user, Completed)
-                                                         | 18
-                                                         | 19 -> Missed
-                                                         | 20
-                                                         | 25 -> Pending
-                                                         | _ -> Disabled)
+                                                    TemplateExpect.Status (
+                                                        match d with
+                                                        | 13 -> UserStatus (user, Completed)
+                                                        | 18
+                                                        | 19 -> Missed
+                                                        | 20
+                                                        | 25 -> Pending
+                                                        | _ -> Disabled
+                                                    )
                                                 ]
                                         ]
                                 }
@@ -1200,14 +1204,15 @@ module Templates =
                                             for d in 13 .. 29 do
                                                 FlukeDate.Create 2020 Month.March d,
                                                 [
-                                                    TemplateExpect.Status
-                                                        (match d with
-                                                         | 18 -> UserStatus (user, Postponed None)
-                                                         | 19 -> Missed
-                                                         | 20
-                                                         | 21
-                                                         | 28 -> Pending
-                                                         | _ -> Disabled)
+                                                    TemplateExpect.Status (
+                                                        match d with
+                                                        | 18 -> UserStatus (user, Postponed None)
+                                                        | 19 -> Missed
+                                                        | 20
+                                                        | 21
+                                                        | 28 -> Pending
+                                                        | _ -> Disabled
+                                                    )
                                                 ]
                                         ]
                                 }
@@ -1235,10 +1240,11 @@ module Templates =
                                             for d in 17 .. 26 do
                                                 FlukeDate.Create 2020 Month.March d,
                                                 [
-                                                    TemplateExpect.Status
-                                                        (match d with
-                                                         | 25 -> Pending
-                                                         | _ -> Disabled)
+                                                    TemplateExpect.Status (
+                                                        match d with
+                                                        | 25 -> Pending
+                                                        | _ -> Disabled
+                                                    )
                                                 ]
                                         ]
                                 }
@@ -1266,11 +1272,12 @@ module Templates =
                                             for d in 13 .. 29 do
                                                 FlukeDate.Create 2020 Month.March d,
                                                 [
-                                                    TemplateExpect.Status
-                                                        (match d with
-                                                         | 21
-                                                         | 28 -> Pending
-                                                         | _ -> Disabled)
+                                                    TemplateExpect.Status (
+                                                        match d with
+                                                        | 21
+                                                        | 28 -> Pending
+                                                        | _ -> Disabled
+                                                    )
                                                 ]
                                         ]
                                 }
@@ -1291,15 +1298,16 @@ module Templates =
                                     Task =
                                         { Task.Default with
                                             Scheduling =
-                                                Recurrency
-                                                    (Fixed [
+                                                Recurrency (
+                                                    Fixed [
                                                         Weekly DayOfWeek.Monday
                                                         Weekly DayOfWeek.Tuesday
                                                         Weekly DayOfWeek.Wednesday
                                                         Weekly DayOfWeek.Thursday
                                                         Weekly DayOfWeek.Friday
-                                                     ])
-                                            PendingAfter = Some (FlukeTime.Create 19 00)
+                                                    ]
+                                                )
+                                            PendingAfter = Some (FlukeTime.Create 19 0)
                                         }
                                     Events = []
                                     Expected =
@@ -1339,20 +1347,22 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry
-                                                (FlukeDate.Create 2020 Month.March 10,
-                                                 Postponed (Some (FlukeTime.Create 23 00)))
+                                            DslStatusEntry (
+                                                FlukeDate.Create 2020 Month.March 10,
+                                                Postponed (Some (FlukeTime.Create 23 0))
+                                            )
                                         ]
                                     Expected =
                                         [
-                                            FlukeDate.Create 2020 Month.March 09,
+                                            FlukeDate.Create 2020 Month.March 9,
                                             [
                                                 TemplateExpect.Status Disabled
                                             ]
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
-                                                TemplateExpect.Status
-                                                    (UserStatus (user, Postponed (Some (FlukeTime.Create 23 00))))
+                                                TemplateExpect.Status (
+                                                    UserStatus (user, Postponed (Some (FlukeTime.Create 23 0)))
+                                                )
                                             ]
                                             FlukeDate.Create 2020 Month.March 11,
                                             [
@@ -1382,20 +1392,22 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry
-                                                (FlukeDate.Create 2020 Month.March 10,
-                                                 Postponed (Some (FlukeTime.Create 01 00)))
+                                            DslStatusEntry (
+                                                FlukeDate.Create 2020 Month.March 10,
+                                                Postponed (Some (FlukeTime.Create 1 0))
+                                            )
                                         ]
                                     Expected =
                                         [
-                                            FlukeDate.Create 2020 Month.March 09,
+                                            FlukeDate.Create 2020 Month.March 9,
                                             [
                                                 TemplateExpect.Status Disabled
                                             ]
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
-                                                TemplateExpect.Status
-                                                    (UserStatus (user, Postponed (Some (FlukeTime.Create 01 00))))
+                                                TemplateExpect.Status (
+                                                    UserStatus (user, Postponed (Some (FlukeTime.Create 1 0)))
+                                                )
                                             ]
                                             FlukeDate.Create 2020 Month.March 11,
                                             [
@@ -1414,7 +1426,7 @@ module Templates =
                         Position =
                             {
                                 Date = FlukeDate.Create 2020 Month.March 11
-                                Time = FlukeTime.Create 02 00
+                                Time = FlukeTime.Create 2 0
                             }
                         Tasks =
                             [
@@ -1425,13 +1437,14 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry
-                                                (FlukeDate.Create 2020 Month.March 10,
-                                                 Postponed (Some (FlukeTime.Create 23 00)))
+                                            DslStatusEntry (
+                                                FlukeDate.Create 2020 Month.March 10,
+                                                Postponed (Some (FlukeTime.Create 23 0))
+                                            )
                                         ]
                                     Expected =
                                         [
-                                            FlukeDate.Create 2020 Month.March 09,
+                                            FlukeDate.Create 2020 Month.March 9,
                                             [
                                                 TemplateExpect.Status Disabled
                                             ]
@@ -1458,7 +1471,7 @@ module Templates =
                         Position =
                             {
                                 Date = FlukeDate.Create 2020 Month.March 11
-                                Time = FlukeTime.Create 02 00
+                                Time = FlukeTime.Create 2 0
                             }
                         Tasks =
                             [
@@ -1469,13 +1482,14 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry
-                                                (FlukeDate.Create 2020 Month.March 10,
-                                                 Postponed (Some (FlukeTime.Create 01 00)))
+                                            DslStatusEntry (
+                                                FlukeDate.Create 2020 Month.March 10,
+                                                Postponed (Some (FlukeTime.Create 1 0))
+                                            )
                                         ]
                                     Expected =
                                         [
-                                            FlukeDate.Create 2020 Month.March 09,
+                                            FlukeDate.Create 2020 Month.March 9,
                                             [
                                                 TemplateExpect.Status Disabled
                                             ]
@@ -1502,7 +1516,7 @@ module Templates =
                         Position =
                             {
                                 Date = FlukeDate.Create 2020 Month.March 13
-                                Time = FlukeTime.Create 02 00
+                                Time = FlukeTime.Create 2 0
                             }
                         Tasks =
                             [
@@ -1513,29 +1527,31 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 08, Completed)
-                                            DslStatusEntry
-                                                (FlukeDate.Create 2020 Month.March 10,
-                                                 Postponed (Some (FlukeTime.Create 01 00)))
+                                            DslStatusEntry (FlukeDate.Create 2020 Month.March 8, Completed)
+                                            DslStatusEntry (
+                                                FlukeDate.Create 2020 Month.March 10,
+                                                Postponed (Some (FlukeTime.Create 1 0))
+                                            )
                                         ]
                                     Expected =
                                         [
-                                            FlukeDate.Create 2020 Month.March 07,
+                                            FlukeDate.Create 2020 Month.March 7,
                                             [
                                                 TemplateExpect.Status Disabled
                                             ]
-                                            FlukeDate.Create 2020 Month.March 08,
+                                            FlukeDate.Create 2020 Month.March 8,
                                             [
                                                 TemplateExpect.Status (UserStatus (user, Completed))
                                             ]
-                                            FlukeDate.Create 2020 Month.March 09,
+                                            FlukeDate.Create 2020 Month.March 9,
                                             [
                                                 TemplateExpect.Status Missed
                                             ]
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
-                                                TemplateExpect.Status
-                                                    (UserStatus (user, Postponed (Some (FlukeTime.Create 01 00))))
+                                                TemplateExpect.Status (
+                                                    UserStatus (user, Postponed (Some (FlukeTime.Create 1 0)))
+                                                )
                                             ]
                                             FlukeDate.Create 2020 Month.March 11,
                                             [
@@ -1571,13 +1587,14 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslStatusEntry
-                                                (FlukeDate.Create 2020 Month.March 12,
-                                                 Postponed (Some (FlukeTime.Create 13 00)))
+                                            DslStatusEntry (
+                                                FlukeDate.Create 2020 Month.March 12,
+                                                Postponed (Some (FlukeTime.Create 13 0))
+                                            )
                                         ]
                                     Expected =
                                         [
-                                            FlukeDate.Create 2020 Month.March 09,
+                                            FlukeDate.Create 2020 Month.March 9,
                                             [
                                                 TemplateExpect.Status Disabled
                                             ]
@@ -1591,8 +1608,9 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 12,
                                             [
-                                                TemplateExpect.Status
-                                                    (UserStatus (user, Postponed (Some (FlukeTime.Create 13 00))))
+                                                TemplateExpect.Status (
+                                                    UserStatus (user, Postponed (Some (FlukeTime.Create 13 0)))
+                                                )
                                             ]
                                             FlukeDate.Create 2020 Month.March 13,
                                             [
@@ -1612,7 +1630,7 @@ module Templates =
                     {
                         Position =
                             {
-                                Date = FlukeDate.Create 2020 Month.March 04
+                                Date = FlukeDate.Create 2020 Month.March 4
                                 Time = user.DayStart
                             }
                         Tasks =
@@ -1624,10 +1642,10 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslSession (FlukeDateTime.Create 2020 Month.March 01 11 00)
-                                            DslSession (FlukeDateTime.Create 2020 Month.March 01 13 00)
-                                            DslSession (FlukeDateTime.Create 2020 Month.March 08 11 00)
-                                            DslSession (FlukeDateTime.Create 2020 Month.March 08 13 00)
+                                            DslSession (FlukeDateTime.Create 2020 Month.March 1 11 0)
+                                            DslSession (FlukeDateTime.Create 2020 Month.March 1 13 0)
+                                            DslSession (FlukeDateTime.Create 2020 Month.March 8 11 0)
+                                            DslSession (FlukeDateTime.Create 2020 Month.March 8 13 0)
                                         ]
                                     Expected =
                                         [
@@ -1683,31 +1701,35 @@ module Templates =
         let database = getDatabase user
 
         database
-        |> List.collect (fun (name1, list) ->
-            list
-            |> List.collect (fun (name2, list) ->
+        |> List.collect
+            (fun (name1, list) ->
                 list
-                |> List.map (fun (name3, dslTemplate) ->
-                    let name = $"{name1}/{name2}/{name3}"
+                |> List.collect
+                    (fun (name2, list) ->
+                        list
+                        |> List.map
+                            (fun (name3, dslTemplate) ->
+                                let name = $"{name1}/{name2}/{name3}"
 
-                    let newDslTemplate =
-                        { dslTemplate with
-                            Tasks =
-                                dslTemplate.Tasks
-                                |> List.map (fun templateTask ->
-                                    { templateTask with
-                                        Task =
-                                            { templateTask.Task with
-                                                Name =
-                                                    if templateTask.Task.Name = Task.Default.Name then
-                                                        TaskName name
-                                                    else
-                                                        templateTask.Task.Name
-                                            }
-                                    })
-                        }
+                                let newDslTemplate =
+                                    { dslTemplate with
+                                        Tasks =
+                                            dslTemplate.Tasks
+                                            |> List.map
+                                                (fun templateTask ->
+                                                    { templateTask with
+                                                        Task =
+                                                            { templateTask.Task with
+                                                                Name =
+                                                                    if templateTask.Task.Name = Task.Default.Name then
+                                                                        TaskName name
+                                                                    else
+                                                                        templateTask.Task.Name
+                                                            }
+                                                    })
+                                    }
 
-                    name, newDslTemplate)))
+                                name, newDslTemplate)))
         |> Map.ofList
 
     let createCellStatusChangeInteraction (user: User) task date manualCellStatus =
@@ -1734,7 +1756,7 @@ module Templates =
 
     let createTaskState moment task (sortTaskMap: Map<TaskName, Task> option) (dslTasks: (DslTask * User) list) =
 
-        let defaultTaskState: TaskState =
+        let defaultTaskState : TaskState =
             {
                 Task = task
                 Sessions = []
@@ -1746,148 +1768,155 @@ module Templates =
 
         let taskState, userInteractions =
             ((defaultTaskState, []), dslTasks)
-            ||> List.fold (fun (taskState, userInteractions) (dslTask, user) ->
-                    match dslTask with
-                    | DslTaskComment comment ->
-                        let interaction =
-                            Interaction.Task
-                                (task, TaskInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment)))
+            ||> List.fold
+                    (fun (taskState, userInteractions) (dslTask, user) ->
+                        match dslTask with
+                        | DslTaskComment comment ->
+                            let interaction =
+                                Interaction.Task (
+                                    task,
+                                    TaskInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment))
+                                )
 
-                        let userInteraction = UserInteraction (moment, user, interaction)
+                            let userInteraction = UserInteraction (moment, user, interaction)
 
-                        let newUserInteractions =
-                            userInteractions
-                            @ [
-                                userInteraction
-                            ]
-
-                        taskState, newUserInteractions
-                    | DslCellComment (date, comment) ->
-                        let interaction =
-                            Interaction.Cell
-                                ({ Task = task; DateId = DateId date },
-                                 CellInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment)))
-
-                        let userInteraction = UserInteraction (moment, user, interaction)
-
-                        let newUserInteractions =
-                            userInteractions
-                            @ [
-                                userInteraction
-                            ]
-
-                        taskState, newUserInteractions
-                    | DslSession start ->
-                        let taskSession = TaskSession (start, user.SessionLength, user.SessionBreakLength)
-
-                        let taskInteraction = TaskInteraction.Session taskSession
-                        let interaction = Interaction.Task (task, taskInteraction)
-
-                        let userInteraction = UserInteraction (moment, user, interaction)
-
-                        let newUserInteractions =
-                            userInteractions
-                            @ [
-                                userInteraction
-                            ]
-
-                        taskState, newUserInteractions
-                    | DslTaskSort (top, bottom) ->
-                        let newUserInteractions =
-                            match sortTaskMap with
-                            | Some sortTaskMap ->
-                                let getTask taskName =
-                                    taskName
-                                    |> Option.map (fun taskName ->
-                                        sortTaskMap
-                                        |> Map.tryFind taskName
-                                        |> function
-                                        | Some task -> task
-                                        | None ->
-                                            failwithf
-                                                $"DslTaskSort. Task not found: {taskName}. Map length: {
-                                                                                                            sortTaskMap.Count
-                                                }")
-
-                                let interaction =
-                                    Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
-
-                                let userInteraction = UserInteraction (moment, user, interaction)
-
+                            let newUserInteractions =
                                 userInteractions
                                 @ [
                                     userInteraction
                                 ]
-                            | None -> userInteractions
 
-                        taskState, newUserInteractions
-                    | DslStatusEntry (date, manualCellStatus) ->
-                        let userInteraction = createCellStatusChangeInteraction user task date manualCellStatus
+                            taskState, newUserInteractions
+                        | DslCellComment (date, comment) ->
+                            let interaction =
+                                Interaction.Cell (
+                                    { Task = task; DateId = DateId date },
+                                    CellInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment))
+                                )
 
-                        let newUserInteractions =
-                            userInteractions
-                            @ [
-                                userInteraction
-                            ]
+                            let userInteraction = UserInteraction (moment, user, interaction)
 
-                        taskState, newUserInteractions
-                    | DslPriority priority ->
-                        let newTaskState =
-                            { taskState with
-                                Task = { taskState.Task with Priority = Some priority }
-                            }
+                            let newUserInteractions =
+                                userInteractions
+                                @ [
+                                    userInteraction
+                                ]
 
-                        newTaskState, userInteractions
-                    | DslInformationReferenceToggle information ->
-                        let newTaskState =
-                            { taskState with
-                                InformationMap = taskState.InformationMap |> Map.add information ()
-                            }
+                            taskState, newUserInteractions
+                        | DslSession start ->
+                            let taskSession = TaskSession (start, user.SessionLength, user.SessionBreakLength)
 
-                        newTaskState, userInteractions
-                    | DslTaskSet set ->
-                        match set with
-                        | DslSetScheduling (scheduling, start) ->
+                            let taskInteraction = TaskInteraction.Session taskSession
+                            let interaction = Interaction.Task (task, taskInteraction)
+
+                            let userInteraction = UserInteraction (moment, user, interaction)
+
+                            let newUserInteractions =
+                                userInteractions
+                                @ [
+                                    userInteraction
+                                ]
+
+                            taskState, newUserInteractions
+                        | DslTaskSort (top, bottom) ->
+                            let newUserInteractions =
+                                match sortTaskMap with
+                                | Some sortTaskMap ->
+                                    let getTask taskName =
+                                        taskName
+                                        |> Option.map
+                                            (fun taskName ->
+                                                sortTaskMap
+                                                |> Map.tryFind taskName
+                                                |> function
+                                                | Some task -> task
+                                                | None ->
+                                                    failwithf
+                                                        $"DslTaskSort. Task not found: {taskName}. Map length: {
+                                                                                                                    sortTaskMap.Count
+                                                        }")
+
+                                    let interaction =
+                                        Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
+
+                                    let userInteraction = UserInteraction (moment, user, interaction)
+
+                                    userInteractions
+                                    @ [
+                                        userInteraction
+                                    ]
+                                | None -> userInteractions
+
+                            taskState, newUserInteractions
+                        | DslStatusEntry (date, manualCellStatus) ->
+                            let userInteraction = createCellStatusChangeInteraction user task date manualCellStatus
+
+                            let newUserInteractions =
+                                userInteractions
+                                @ [
+                                    userInteraction
+                                ]
+
+                            taskState, newUserInteractions
+                        | DslPriority priority ->
                             let newTaskState =
                                 { taskState with
-                                    Task = { taskState.Task with Scheduling = scheduling }
+                                    Task = { taskState.Task with Priority = Some priority }
                                 }
 
                             newTaskState, userInteractions
-                        | DslSetPendingAfter start ->
+                        | DslInformationReferenceToggle information ->
                             let newTaskState =
                                 { taskState with
-                                    Task = { taskState.Task with PendingAfter = Some start }
+                                    InformationMap = taskState.InformationMap |> Map.add information ()
                                 }
 
                             newTaskState, userInteractions
-                        | DslSetMissedAfter start ->
-                            let newTaskState =
-                                { taskState with
-                                    Task = { taskState.Task with MissedAfter = Some start }
-                                }
+                        | DslTaskSet set ->
+                            match set with
+                            | DslSetScheduling (scheduling, _start) ->
+                                let newTaskState =
+                                    { taskState with
+                                        Task = { taskState.Task with Scheduling = scheduling }
+                                    }
 
-                            newTaskState, userInteractions
+                                newTaskState, userInteractions
+                            | DslSetPendingAfter start ->
+                                let newTaskState =
+                                    { taskState with
+                                        Task = { taskState.Task with PendingAfter = Some start }
+                                    }
 
-                        | DslSetDuration minutes ->
-                            let newTaskState =
-                                { taskState with
-                                    Task =
-                                        { taskState.Task with
-                                            Duration = Some (Minute (float minutes))
-                                        }
-                                }
+                                newTaskState, userInteractions
+                            | DslSetMissedAfter start ->
+                                let newTaskState =
+                                    { taskState with
+                                        Task = { taskState.Task with MissedAfter = Some start }
+                                    }
 
-                            newTaskState, userInteractions
+                                newTaskState, userInteractions
 
-                    )
+                            | DslSetDuration minutes ->
+                                let newTaskState =
+                                    { taskState with
+                                        Task =
+                                            { taskState.Task with
+                                                Duration = Some (Minute (float minutes))
+                                            }
+                                    }
+
+                                newTaskState, userInteractions
+
+                        )
 
         taskState, userInteractions
 
-    let createLaneRenderingDslData (input: {| User: User
-                                              Position: FlukeDateTime
-                                              Task: Task
-                                              Events: DslTask list |}) =
+    let createLaneRenderingDslData
+        (input: {| User: User
+                   Position: FlukeDateTime
+                   Task: Task
+                   Events: DslTask list |})
+        =
         let eventsWithUser = input.Events |> List.map (fun x -> x, input.User)
 
         let dslData =
@@ -1919,18 +1948,19 @@ module Templates =
 
         let newTaskStateMap =
             (newDatabaseState.TaskStateMap, taskStateList)
-            ||> List.fold (fun taskStateMap taskState ->
-                    let oldTaskState =
-                        newDatabaseState.TaskStateMap
-                        |> Map.tryFind taskState.Task
+            ||> List.fold
+                    (fun taskStateMap taskState ->
+                        let oldTaskState =
+                            newDatabaseState.TaskStateMap
+                            |> Map.tryFind taskState.Task
 
-                    let newTaskState =
-                        match oldTaskState with
-                        | Some oldTaskState -> mergeTaskState oldTaskState taskState
-                        | None -> taskState
+                        let newTaskState =
+                            match oldTaskState with
+                            | Some oldTaskState -> mergeTaskState oldTaskState taskState
+                            | None -> taskState
 
-                    taskStateMap
-                    |> Map.add taskState.Task newTaskState)
+                        taskStateMap
+                        |> Map.add taskState.Task newTaskState)
 
         let result =
             { newDatabaseState with
@@ -1943,28 +1973,31 @@ module Templates =
     let databaseStateFromDslTemplate user databaseId templateName dslTemplate =
         let dslDataList =
             dslTemplate.Tasks
-            |> List.map (fun templateTask ->
-                createLaneRenderingDslData
-                    {|
-                        User = user
-                        Position = dslTemplate.Position
-                        Task = templateTask.Task
-                        Events = templateTask.Events
-                    |})
+            |> List.map
+                (fun templateTask ->
+                    createLaneRenderingDslData
+                        {|
+                            User = user
+                            Position = dslTemplate.Position
+                            Task = templateTask.Task
+                            Events = templateTask.Events
+                        |})
 
         let databaseState =
-            DatabaseState.Create
-                (id = databaseId,
-                 name = DatabaseName templateName,
-                 dayStart = user.DayStart,
-                 owner = user,
-                 position = dslTemplate.Position,
-                 sharedWith = DatabaseAccess.Public)
+            DatabaseState.Create (
+                id = databaseId,
+                name = DatabaseName templateName,
+                dayStart = user.DayStart,
+                owner = user,
+                position = dslTemplate.Position,
+                sharedWith = DatabaseAccess.Public
+            )
 
         let newDatabaseState =
             (databaseState, dslDataList)
-            ||> List.fold (fun databaseState dslData ->
-                    databaseState
-                    |> mergeDslDataIntoDatabaseState dslData)
+            ||> List.fold
+                    (fun databaseState dslData ->
+                        databaseState
+                        |> mergeDslDataIntoDatabaseState dslData)
 
         newDatabaseState

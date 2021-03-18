@@ -1240,8 +1240,9 @@ module Recoil =
                             let dayStart = getter.get (Atoms.User.dayStart username)
 
                             let result =
-                                match position, databaseStateMap.Count with
-                                | Some position, databaseCount when databaseCount > 0 ->
+                                match position, databaseStateMap.Count, dateSequence.Length with
+                                | Some position, databaseCount, dateSequenceLength when
+                                    databaseCount > 0 && dateSequenceLength > 0 ->
 
                                     let newSession =
                                         getSessionData

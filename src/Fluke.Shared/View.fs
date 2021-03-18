@@ -204,7 +204,7 @@ module View =
                         | _ -> informationStateMap, taskStateMap)
 
         if input.DateSequence.IsEmpty then
-            raise (exn "DateSequence is empty")
+            failwith "DateSequence is empty"
 
         let dateRange =
             // TODO: handle

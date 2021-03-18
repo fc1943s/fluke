@@ -3,16 +3,20 @@ namespace Fluke.UI.Frontend.Tests
 open System
 open Fable.ReactTestingLibrary
 open Fable.Jester
+open Feliz
 open Feliz.Recoil
+open Feliz.UseListener
+open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Tests.Core
 open Fluke.UI.Frontend.Recoil
 open Fluke.Shared
+open Fable.React
+open Fluke.UI.Frontend.Hooks
 
 
 module CellSelection =
@@ -44,8 +48,9 @@ module CellSelection =
                                 })
                 }
 
-            let databaseState =
-                databaseStateFromDslTemplate testUser (State.DatabaseId (Guid.NewGuid ())) "Test" dslTemplate
+            let databaseId = State.DatabaseId (Guid.NewGuid ())
+            let databaseName = "Test"
+            let databaseState = databaseStateFromDslTemplate testUser databaseId databaseName dslTemplate
 
             let initialSetter (setter: CallbackMethods) =
                 promise {
@@ -70,35 +75,36 @@ module CellSelection =
                     setter.set (Atoms.daysBefore, 2)
                     setter.set (Atoms.daysAfter, 2)
                     setter.set (Atoms.selectedPosition, Some dslTemplate.Position)
+
+                    setter.set (
+                        Atoms.selectedDatabaseIds,
+                        [|
+                            SessionDataLoader.getDatabaseIdFromName databaseName
+                        |]
+                    )
                 }
 
-            let selectDatabase (setter: CallbackMethods) =
-                promise {
-                    let! username = setter.snapshot.getPromise Atoms.username
+            let getApp () =
+                React.fragment [
+                    (React.memo
+                        (fun () ->
+                            printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ BEFORE RENDER"
 
-                    match username with
-                    | Some username ->
-                        let! databaseStateMap =
-                            setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache username)
+                            let initialSetterCallback =
+                                Recoil.useCallbackRef (fun setter -> promise { do! initialSetter setter })
 
-                        let databaseId = databaseStateMap |> Map.keys |> Seq.head
+                            React.useEffect ((fun () -> initialSetterCallback () |> Promise.start), [||])
 
-                        setter.set (
-                            Atoms.selectedDatabaseIds,
-                            [|
-                                databaseId
-                            |]
-                        )
-                    | None -> ()
-                }
+                            nothing)
+                        ())
+                    App.App false
+                    (React.memo
+                        (fun () ->
+                            printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ AFTER RENDER"
 
-            let getPriorityView () =
-                Chakra.box
-                    ()
-                    [
-                        UserLoader.UserLoader ()
-                        PriorityView.PriorityView testUser.Username
-                    ]
+                            nothing)
+                        ())
+                ]
 
             let expectSelection peek expected =
                 let toString map =
@@ -122,18 +128,10 @@ module CellSelection =
                                 .toEqual (toString expected)
                         })
 
-            let initialize peek =
-                promise {
-                    do! peek initialSetter
-                    do! Setup.initializeSessionData testUser peek
-                    do! peek selectDatabase
-                }
-
             Jest.test (
                 "single cell toggle",
                 promise {
-                    let! subject, peek = getPriorityView () |> Setup.render
-                    do! initialize peek
+                    let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
 
                     RTL.fireEvent.click
@@ -180,8 +178,7 @@ module CellSelection =
             Jest.test (
                 "ctrl pressed",
                 promise {
-                    let! subject, peek = getPriorityView () |> Setup.render
-                    do! initialize peek
+                    let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
 
                     RTL.fireEvent.click
@@ -210,8 +207,7 @@ module CellSelection =
             Jest.test (
                 "horizontal shift pressed",
                 promise {
-                    let! subject, peek = getPriorityView () |> Setup.render
-                    do! initialize peek
+                    let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
 
                     RTL.fireEvent.click
@@ -241,8 +237,7 @@ module CellSelection =
             Jest.test (
                 "vertical shift pressed",
                 promise {
-                    let! subject, peek = getPriorityView () |> Setup.render
-                    do! initialize peek
+                    let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
 
                     RTL.fireEvent.click
@@ -275,8 +270,7 @@ module CellSelection =
             Jest.test (
                 "box selection",
                 promise {
-                    let! subject, peek = getPriorityView () |> Setup.render
-                    do! initialize peek
+                    let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
 
                     RTL.fireEvent.click
@@ -377,7 +371,5 @@ module CellSelection =
                         |> Map.ofList
                         |> expectSelection peek
                 }
-            )
-
-            ())
+            ))
     )

@@ -42,8 +42,8 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-bd245c1ba",
-    "react-dom": "0.0.0-experimental-bd245c1ba",
+    "react": "0.0.0-experimental-3fb11eed9",
+    "react-dom": "0.0.0-experimental-3fb11eed9",
 
     "recoil": "~0.1",
 
@@ -82,9 +82,9 @@
     "electron-webpack": "~2.8",
     "electron-builder": "~22.10",
 
-    "eslint": "~7.21",
-    "@typescript-eslint/eslint-plugin": "~4.17",
-    "@typescript-eslint/parser": "~4.17",
+    "eslint": "~7.22",
+    "@typescript-eslint/eslint-plugin": "~4.18",
+    "@typescript-eslint/parser": "~4.18",
     "eslint-config-airbnb": "~18.2",
     "eslint-plugin-import": "~2.22",
     "eslint-plugin-jsx-a11y": "~6.4",
@@ -103,7 +103,7 @@
     "jest": "~26.6",
     "ts-jest": "~26.5",
     "@testing-library/react": "~11.2",
-    "@testing-library/user-event": "~12.8",
+    "@testing-library/user-event": "~13.0",
     "@testing-library/jest-dom": "~5.11",
     "jest-environment-jsdom-sixteen": "~1.0",
 

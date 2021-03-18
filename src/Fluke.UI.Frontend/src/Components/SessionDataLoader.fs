@@ -68,68 +68,69 @@ module SessionDataLoader =
 
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 
+    let getDatabaseIdFromName name =
+        name
+        |> Crypto.sha3
+        |> string
+        |> String.take 16
+        |> System.Text.Encoding.UTF8.GetBytes
+        |> Guid
+        |> DatabaseId
+
+    let updateDatabaseStateMap (setter: CallbackMethods) username =
+        promise {
+            let! position = setter.snapshot.getPromise Recoil.Selectors.position
+
+            let! result =
+                match position with
+                | Some position ->
+                    promise {
+                        let! api = setter.snapshot.getPromise Recoil.Atoms.api
+
+                        let! databaseStateList =
+                            api
+                            |> Option.bind (fun api -> Some (api.databaseStateList username position))
+                            |> Sync.handleRequest
+                            |> Async.StartAsPromise
+
+                        let templates =
+                            Templates.getDatabaseMap TempData.testUser
+                            |> Map.toList
+                            |> List.map
+                                (fun (templateName, dslTemplate) ->
+                                    Templates.databaseStateFromDslTemplate
+                                        TempData.testUser
+                                        (DatabaseId (Guid.NewGuid ()))
+                                        templateName
+                                        dslTemplate)
+
+                        let newDatabaseStateList =
+                            databaseStateList
+                            |> Option.defaultValue []
+                            |> List.append templates
+
+                        let databaseStateMap =
+                            newDatabaseStateList
+                            |> List.map
+                                (fun databaseState ->
+                                    match databaseState with
+                                    | { Database = { Name = DatabaseName name } } as databaseState ->
+                                        let id = getDatabaseIdFromName name
+
+                                        id, databaseState)
+                            |> Map.ofList
+
+                        return databaseStateMap
+                    }
+                | _ -> promise { return Map.empty }
+
+            setter.set (Recoil.Atoms.Session.databaseStateMapCache username, result)
+        }
+
+
     [<ReactComponent>]
     let SessionDataLoader (username: Username) =
-        let update =
-            Recoil.useCallbackRef
-                (fun getter ->
-                    promise {
-                        let! position = getter.snapshot.getPromise Recoil.Selectors.position
-
-                        let! result =
-                            match position with
-                            | Some position ->
-                                promise {
-                                    let! api = getter.snapshot.getPromise Recoil.Atoms.api
-
-                                    let! databaseStateList =
-                                        api
-                                        |> Option.bind (fun api -> Some (api.databaseStateList username position))
-                                        |> Sync.handleRequest
-                                        |> Async.StartAsPromise
-
-                                    let templates =
-                                        Templates.getDatabaseMap TempData.testUser
-                                        |> Map.toList
-                                        |> List.map
-                                            (fun (templateName, dslTemplate) ->
-                                                Templates.databaseStateFromDslTemplate
-                                                    TempData.testUser
-                                                    (DatabaseId (Guid.NewGuid ()))
-                                                    templateName
-                                                    dslTemplate)
-
-                                    let newDatabaseStateList =
-                                        databaseStateList
-                                        |> Option.defaultValue []
-                                        |> List.append templates
-
-                                    let databaseStateMap =
-                                        newDatabaseStateList
-                                        |> List.map
-                                            (fun databaseState ->
-                                                match databaseState with
-                                                | { Database = { Name = DatabaseName name } } as databaseState ->
-                                                    let id =
-                                                        name
-                                                        |> Crypto.sha3
-                                                        |> string
-                                                        |> String.take 16
-                                                        |> System.Text.Encoding.UTF8.GetBytes
-                                                        |> Guid
-                                                        |> DatabaseId
-
-                                                    id, databaseState)
-                                        |> Map.ofList
-
-                                    return databaseStateMap
-                                }
-                            | _ -> promise { return Map.empty }
-
-                        getter.set (Recoil.Atoms.Session.databaseStateMapCache username, result)
-                        ()
-                    })
-
+        let update = Recoil.useCallbackRef (fun getter -> updateDatabaseStateMap getter username)
 
         React.useEffect ((fun () -> update () |> Promise.start), [||])
 

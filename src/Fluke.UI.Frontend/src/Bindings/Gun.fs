@@ -8,9 +8,9 @@ module Gun =
     importAll "gun/sea"
     importAll "gun/lib/promise"
 
-    if JS.isTesting then
-        importAll "gun/lib/radix"
-
+//    if JS.isTesting then
+//        importAll "gun/lib/radix"
+//
     type AppState = { a: {| b: string; c: int |} }
 
     type IGunUser =
@@ -43,7 +43,7 @@ module Gun =
             localStorage: bool option
         }
 
-    let gun : GunProps -> IGunChainReference<AppState> = importDefault "gun"
+    let gun : GunProps -> IGunChainReference<AppState> = importDefault "gun/gun"
 
     let createUser (user: IGunUser) username password =
         Promise.create
