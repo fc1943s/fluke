@@ -166,12 +166,7 @@ module CellSelection =
                         cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
                             .Value
 
-                    do!
-                        [
-                            databaseState |> Setup.taskIdByName "2", Set.empty
-                        ]
-                        |> Map.ofList
-                        |> expectSelection peek
+                    do! [] |> Map.ofList |> expectSelection peek
                 }
             )
 

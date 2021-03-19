@@ -26,9 +26,8 @@ module Setup =
                     (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
                     (str "error"))
 
-    let handlePromise promise =
-        promise
-        |> Promise.catch (fun ex -> Fable.Core.JS.console.error (box ex))
+    let handlePromise promise = promise
+    //        |> Promise.catch (fun ex -> Fable.Core.JS.console.error (box ex))
 
     let render (cmp: ReactElement) =
         promise {

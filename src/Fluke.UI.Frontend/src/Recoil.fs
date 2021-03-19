@@ -368,12 +368,17 @@ module Recoil =
                                          trigger = trigger
                                      } ->
 
+                                    match false with
+                                    | false -> id
+                                    | true ->
+
                                     let taskIdHash =
                                         Crypto
                                             .sha3(string taskId)
                                             .toString Crypto.crypto.enc.Hex
 
-                                    printfn "AAA {{| sha3Hex=taskIdHash; guid=(string taskId)|>Crypto.getGuidHash |}}"
+                                        printfn
+                                            "AAA {{| sha3Hex=taskIdHash; guid=(string taskId)|>Crypto.getGuidHash |}}"
 
                                     let dateIdHash =
                                         Crypto
@@ -793,6 +798,7 @@ module Recoil =
                                             |> Set.ofList
 
                                         taskId, dates)
+                                |> List.filter (fun (_, dates) -> Set.isEmpty dates |> not)
                                 |> Map.ofList
 
                             Profiling.addCount (nameof cellSelectionMap)
@@ -801,13 +807,22 @@ module Recoil =
 
                 set
                     (fun setter (newSelection: Map<Atoms.Task.TaskId, Set<FlukeDate>>) ->
+                        let username = setter.get Atoms.username
+
+                        match username with
+                        | Some username ->
+                            let taskIdList = setter.get (Atoms.Session.taskIdList username)
                         let cellSelectionMap = setter.get cellSelectionMap
 
                         let operations =
-                            cellSelectionMap
-                            |> Map.toList
+                                taskIdList
                             |> List.collect
-                                (fun (taskId, dates) ->
+                                    (fun taskId ->
+                                        let dates =
+                                            cellSelectionMap
+                                            |> Map.tryFind taskId
+                                            |> Option.defaultValue Set.empty
+
                                     let newDates =
                                         newSelection
                                         |> Map.tryFind taskId
@@ -841,7 +856,8 @@ module Recoil =
                         if selectionCount = 0 then
                             setter.set (Atoms.selectedCell, None)
 
-                        Profiling.addCount (nameof cellSelectionMap + " (SET)"))
+                            Profiling.addCount (nameof cellSelectionMap + " (SET)")
+                        | None -> ())
             }
 
         module rec FlukeDate =
@@ -1325,7 +1341,9 @@ module Recoil =
 
                                         let initialTaskIdSet =
                                             oldCellSelectionMap
-                                            |> Map.keys
+                                            |> Map.toSeq
+                                            |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
+                                            |> Seq.map fst
                                             |> Set.ofSeq
                                             |> Set.add taskId
 
@@ -1344,7 +1362,7 @@ module Recoil =
                                             |> Set.toList
                                             |> List.sort
 
-                                        let dateSeq =
+                                        let dateSet =
                                             match initialDateList with
                                             | [] -> []
                                             | dateList ->
@@ -1357,7 +1375,7 @@ module Recoil =
 
                                         let newMap =
                                             newTaskIdList
-                                            |> List.map (fun taskId -> taskId, dateSeq)
+                                            |> List.map (fun taskId -> taskId, dateSet)
                                             |> Map.ofList
 
                                         newMap
