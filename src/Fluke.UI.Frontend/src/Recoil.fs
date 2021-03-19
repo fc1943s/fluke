@@ -372,103 +372,103 @@ module Recoil =
                                     | false -> id
                                     | true ->
 
-                                    let taskIdHash =
-                                        Crypto
-                                            .sha3(string taskId)
-                                            .toString Crypto.crypto.enc.Hex
+                                        let taskIdHash =
+                                            Crypto
+                                                .sha3(string taskId)
+                                                .toString Crypto.crypto.enc.Hex
 
                                         printfn
                                             "AAA {{| sha3Hex=taskIdHash; guid=(string taskId)|>Crypto.getGuidHash |}}"
 
-                                    let dateIdHash =
-                                        Crypto
-                                            .sha3(string dateId)
-                                            .toString Crypto.crypto.enc.Hex
+                                        let dateIdHash =
+                                            Crypto
+                                                .sha3(string dateId)
+                                                .toString Crypto.crypto.enc.Hex
 
-                                    let tasks = gunTmp.get "tasks"
-                                    let task = tasks.get taskIdHash
-                                    let cells = task.get "cells"
-                                    let cell = cells.get dateIdHash
-                                    let selected = cell.get "selected"
+                                        let tasks = gunTmp.get "tasks"
+                                        let task = tasks.get taskIdHash
+                                        let cells = task.get "cells"
+                                        let cell = cells.get dateIdHash
+                                        let selected = cell.get "selected"
 
-                                    match trigger with
-                                    | "get" ->
-                                        selected.on
-                                            (fun value ->
-                                                //                                        printfn
-//                                            "GET@@ CELL SELECTED RENDER . taskid: %A dateId: %A. node: %A"
-//                                            taskId
-//                                            dateId
-//                                            node
+                                        match trigger with
+                                        | "get" ->
+                                            selected.on
+                                                (fun value ->
+                                                    //                                        printfn
+                                                    //                                            "GET@@ CELL SELECTED RENDER . taskid: %A dateId: %A. node: %A"
+                                                    //                                            taskId
+                                                    //                                            dateId
+                                                    //                                            node
 
-                                                setSelf value)
-                                    | _ -> ()
+                                                    setSelf value)
+                                        | _ -> ()
 
-                                    //                                        // Subscribe to storage updates
-                                    //                                        storage.subscribe(value => setSelf(value));
-
-
+                                        //                                        // Subscribe to storage updates
+                                        //                                        storage.subscribe(value => setSelf(value));
 
 
-                                    //                                printfn
-//                                    "CELL SELECTED RENDER . taskid: %A dateId: %A. trigger: %A"
-//                                    taskId
-//                                    dateId
-//                                    trigger
-                                    //                            let storage = Browser.Dom.window.localStorage.getItem node.key
-                                    //                            let value: {| value: obj |} option = unbox JS.JSON.parse storage
-                                    //
-                                    //                            match value with
-                                    //                            | Some value -> setSelf (unbox value.value)
-                                    //                            | _ -> ()
-                                    //
-                                    onSet
-                                        (fun value oldValue ->
-
-                                            let tasks = gunTmp.get "tasks"
-
-                                            let task =
-                                                gunTmp
-                                                    .get(taskIdHash)
-                                                    .put {| id = taskIdHash; name = "taskName1" |}
-
-                                            tasks.set task |> ignore
-
-                                            let cells = task.get "cells"
-
-                                            let cell =
-                                                gunTmp
-                                                    .get(dateIdHash)
-                                                    .put {| dateId = dateIdHash; selected = value |}
-
-                                            cells.set cell |> ignore
-                                            //                                    let cell = cells.set ({| dateId = string _dateId |})
-//                                    cell.put {| selected = value |} |> ignore
 
 
-                                            //    const tasks = gun.get("tasks");
-//    const task1 = gun.get("taskId1").put({id: 'taskId1', name: 'taskName1'});
-//    tasks.set(task1);
-//
-//    const cells = task1.get("cells");
-//    const cell1 = gun.get("dateId1").put({dateId: 'dateId1'});
-//    const cell = cells.set(cell1);
-//
-//    cell.put({selected: true});
+                                        //                                printfn
+                                        //                                    "CELL SELECTED RENDER . taskid: %A dateId: %A. trigger: %A"
+                                        //                                    taskId
+                                        //                                    dateId
+                                        //                                    trigger
+                                        //                            let storage = Browser.Dom.window.localStorage.getItem node.key
+                                        //                            let value: {| value: obj |} option = unbox JS.JSON.parse storage
+                                        //
+                                        //                            match value with
+                                        //                            | Some value -> setSelf (unbox value.value)
+                                        //                            | _ -> ()
+                                        //
+                                        onSet
+                                            (fun value oldValue ->
 
-                                            printfn $"oldValue: {oldValue}; newValue: {value}"
-                                            //                                    Browser.Dom.window.localStorage.setItem
-                                            //                                        (node.key, JS.JSON.stringify {| value = string value |}))
-                                            //
-                                            //                                        // Subscribe to storage updates
-                                            //                                        storage.subscribe(value => setSelf(value));
+                                                let tasks = gunTmp.get "tasks"
 
-                                            )
+                                                let task =
+                                                    gunTmp
+                                                        .get(taskIdHash)
+                                                        .put {| id = taskIdHash; name = "taskName1" |}
+
+                                                tasks.set task |> ignore
+
+                                                let cells = task.get "cells"
+
+                                                let cell =
+                                                    gunTmp
+                                                        .get(dateIdHash)
+                                                        .put {| dateId = dateIdHash; selected = value |}
+
+                                                cells.set cell |> ignore
+                                                //                                    let cell = cells.set ({| dateId = string _dateId |})
+                                                //                                    cell.put {| selected = value |} |> ignore
 
 
-                                    fun () ->
-                                        printfn "> unsubscribe cell"
-                                        selected.off ())
+                                                //    const tasks = gun.get("tasks");
+                                                //    const task1 = gun.get("taskId1").put({id: 'taskId1', name: 'taskName1'});
+                                                //    tasks.set(task1);
+                                                //
+                                                //    const cells = task1.get("cells");
+                                                //    const cell1 = gun.get("dateId1").put({dateId: 'dateId1'});
+                                                //    const cell = cells.set(cell1);
+                                                //
+                                                //    cell.put({selected: true});
+
+                                                printfn $"oldValue: {oldValue}; newValue: {value}"
+                                                //                                    Browser.Dom.window.localStorage.setItem
+                                                //                                        (node.key, JS.JSON.stringify {| value = string value |}))
+                                                //
+                                                //                                        // Subscribe to storage updates
+                                                //                                        storage.subscribe(value => setSelf(value));
+
+                                                )
+
+
+                                        fun () ->
+                                            printfn "> unsubscribe cell"
+                                            selected.off ())
                             ])
                 }
 
@@ -812,49 +812,49 @@ module Recoil =
                         match username with
                         | Some username ->
                             let taskIdList = setter.get (Atoms.Session.taskIdList username)
-                        let cellSelectionMap = setter.get cellSelectionMap
+                            let cellSelectionMap = setter.get cellSelectionMap
 
-                        let operations =
+                            let operations =
                                 taskIdList
-                            |> List.collect
+                                |> List.collect
                                     (fun taskId ->
                                         let dates =
                                             cellSelectionMap
                                             |> Map.tryFind taskId
                                             |> Option.defaultValue Set.empty
 
-                                    let newDates =
-                                        newSelection
-                                        |> Map.tryFind taskId
-                                        |> Option.defaultValue Set.empty
+                                        let newDates =
+                                            newSelection
+                                            |> Map.tryFind taskId
+                                            |> Option.defaultValue Set.empty
 
-                                    let deselect =
-                                        newDates
-                                        |> Set.difference dates
-                                        |> Set.toList
-                                        |> List.map (fun date -> taskId, date, false)
+                                        let deselect =
+                                            newDates
+                                            |> Set.difference dates
+                                            |> Set.toList
+                                            |> List.map (fun date -> taskId, date, false)
 
-                                    let select =
-                                        dates
-                                        |> Set.difference newDates
-                                        |> Set.toList
-                                        |> List.map (fun date -> taskId, date, true)
+                                        let select =
+                                            dates
+                                            |> Set.difference newDates
+                                            |> Set.toList
+                                            |> List.map (fun date -> taskId, date, true)
 
-                                    deselect @ select)
+                                        deselect @ select)
 
-                        operations
-                        |> List.iter
-                            (fun (taskId, date, selected) ->
-                                setter.set (Atoms.Cell.selected (taskId, DateId date), selected))
+                            operations
+                            |> List.iter
+                                (fun (taskId, date, selected) ->
+                                    setter.set (Atoms.Cell.selected (taskId, DateId date), selected))
 
-                        let selectionCount =
-                            newSelection
-                            |> Map.values
-                            |> Seq.map Set.count
-                            |> Seq.sum
+                            let selectionCount =
+                                newSelection
+                                |> Map.values
+                                |> Seq.map Set.count
+                                |> Seq.sum
 
-                        if selectionCount = 0 then
-                            setter.set (Atoms.selectedCell, None)
+                            if selectionCount = 0 then
+                                setter.set (Atoms.selectedCell, None)
 
                             Profiling.addCount (nameof cellSelectionMap + " (SET)")
                         | None -> ())
