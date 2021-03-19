@@ -107,32 +107,39 @@ module CellSelection =
                 ]
 
             let expectSelection peek expected =
-                let toString map =
-                    map
-                    |> Map.toList
-                    |> List.map
-                        (fun ((Atoms.Task.TaskId (_, TaskName taskName)), dates) ->
-                            taskName,
-                            dates
-                            |> Set.toList
-                            |> List.map (fun (date: FlukeDate) -> date.Stringify ()))
-                    |> string
+                promise {
+                    let toString map =
+                        map
+                        |> Map.toList
+                        |> List.map
+                            (fun ((Atoms.Task.TaskId (_, TaskName taskName)), dates) ->
+                                taskName,
+                                dates
+                                |> Set.toList
+                                |> List.map (fun (date: FlukeDate) -> date.Stringify ()))
+                        |> string
 
-                peek
-                    (fun (setter: CallbackMethods) ->
-                        promise {
-                            let! cellSelectionMap = setter.snapshot.getPromise Selectors.cellSelectionMap
+                    do! peek (fun _ -> promise { () })
 
-                            Jest
-                                .expect(toString cellSelectionMap)
-                                .toEqual (toString expected)
-                        })
+                    do!
+                        peek
+                            (fun (setter: CallbackMethods) ->
+                                promise {
+                                    let! cellSelectionMap = setter.snapshot.getPromise Selectors.cellSelectionMap
+
+                                    Jest
+                                        .expect(toString cellSelectionMap)
+                                        .toEqual (toString expected)
+                                })
+                }
 
             Jest.test (
                 "single cell toggle",
                 promise {
                     let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
+
+                    do! peek (fun setter -> promise { setter.set (Atoms.ctrlPressed, true) })
 
                     RTL.fireEvent.click
                         cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
@@ -149,6 +156,12 @@ module CellSelection =
                         |> expectSelection peek
 
                     RTL.fireEvent.click
+                        cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
+                            .Value
+
+                    do! [] |> Map.ofList |> expectSelection peek
+
+                    RTL.fireEvent.click
                         cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
                             .Value
 
@@ -161,12 +174,6 @@ module CellSelection =
                         ]
                         |> Map.ofList
                         |> expectSelection peek
-
-                    RTL.fireEvent.click
-                        cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
-                            .Value
-
-                    do! [] |> Map.ofList |> expectSelection peek
                 }
             )
 
@@ -176,11 +183,11 @@ module CellSelection =
                     let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
 
+                    do! peek (fun setter -> promise { setter.set (Atoms.ctrlPressed, true) })
+
                     RTL.fireEvent.click
                         cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
                             .Value
-
-                    do! peek (fun setter -> promise { setter.set (Atoms.ctrlPressed, true) })
 
                     RTL.fireEvent.click
                         cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
@@ -205,11 +212,11 @@ module CellSelection =
                     let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
 
+                    do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
+
                     RTL.fireEvent.click
                         cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
                             .Value
-
-                    do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
                     RTL.fireEvent.click
                         cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
@@ -235,11 +242,11 @@ module CellSelection =
                     let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
 
+                    do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
+
                     RTL.fireEvent.click
                         cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
                             .Value
-
-                    do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
                     RTL.fireEvent.click
                         cellMap.[TaskName "3", FlukeDate.Create 2020 Month.January 9]
@@ -268,11 +275,11 @@ module CellSelection =
                     let! subject, peek = getApp () |> Setup.render
                     let! cellMap = Setup.getCellMap subject peek
 
+                    do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
+
                     RTL.fireEvent.click
                         cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
                             .Value
-
-                    do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
                     RTL.fireEvent.click
                         cellMap.[TaskName "3", FlukeDate.Create 2020 Month.January 10]

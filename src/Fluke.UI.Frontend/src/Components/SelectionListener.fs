@@ -13,36 +13,40 @@ module SelectionListener =
 
     [<ReactComponent>]
     let SelectionListener () =
-        Listener.useKeyPress (fun setter e ->
-            async {
-                let! cellSelectionMap = setter.snapshot.getAsync Recoil.Selectors.cellSelectionMap
+        Listener.useKeyPress
+            (fun setter e ->
+                async {
+                    let! cellSelectionMap = setter.snapshot.getAsync Recoil.Selectors.cellSelectionMap
 
-                if not cellSelectionMap.IsEmpty then
                     if e.key = "Escape" && e.``type`` = "keydown" then
-                        setter.set (Recoil.Selectors.cellSelectionMap, Map.empty)
-                        setter.set (Recoil.Atoms.selectedCell, None)
+                        if not cellSelectionMap.IsEmpty then
+                            setter.set (Recoil.Selectors.cellSelectionMap, Map.empty)
+
+                        setter.set (Recoil.Atoms.cellMenuOpened, None)
 
                     if e.key = "R" && e.``type`` = "keydown" then
-                        let newMap =
-                            if cellSelectionMap.Count = 1 then
-                                cellSelectionMap
-                                |> Map.toList
-                                |> List.map (fun (taskId, dates) ->
-                                    let date =
-                                        dates
-                                        |> Seq.item (Random().Next(0, dates.Count - 1))
-
-                                    taskId, Set.singleton date)
-                                |> Map.ofList
-                            else
-                                let key =
+                        if not cellSelectionMap.IsEmpty then
+                            let newMap =
+                                if cellSelectionMap.Count = 1 then
                                     cellSelectionMap
-                                    |> Map.keys
-                                    |> Seq.item (Random().Next(0, cellSelectionMap.Count - 1))
+                                    |> Map.toList
+                                    |> List.map
+                                        (fun (taskId, dates) ->
+                                            let date =
+                                                dates
+                                                |> Seq.item (Random().Next (0, dates.Count - 1))
 
-                                Map.singleton key cellSelectionMap.[key]
+                                            taskId, Set.singleton date)
+                                    |> Map.ofList
+                                else
+                                    let key =
+                                        cellSelectionMap
+                                        |> Map.keys
+                                        |> Seq.item (Random().Next (0, cellSelectionMap.Count - 1))
 
-                        setter.set (Recoil.Selectors.cellSelectionMap, newMap)
-            })
+                                    Map.singleton key cellSelectionMap.[key]
+
+                            setter.set (Recoil.Selectors.cellSelectionMap, newMap)
+                })
 
         nothing

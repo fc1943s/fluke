@@ -15,10 +15,12 @@ module Cell =
     open State
 
     [<ReactComponent>]
-    let Cell (input: {| Username: Username
-                        TaskId: Recoil.Atoms.Task.TaskId
-                        DateId: DateId
-                        SemiTransparent: bool |}) =
+    let Cell
+        (input: {| Username: Username
+                   TaskId: Recoil.Atoms.Task.TaskId
+                   DateId: DateId
+                   SemiTransparent: bool |})
+        =
         Profiling.addCount "CellComponent.render"
 
         let (DateId referenceDay) = input.DateId
@@ -29,17 +31,30 @@ module Cell =
         let showUser = Recoil.useValue (Recoil.Selectors.Task.showUser input.TaskId)
         let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday referenceDay)
         let selected, setSelected = Recoil.useState (Recoil.Selectors.Cell.selected (input.TaskId, input.DateId))
-        let selectedCell, setSelectedCell = Recoil.useState Recoil.Atoms.selectedCell
-        let isMainSelection = selectedCell = Some (input.TaskId, input.DateId)
+        let cellMenuOpened, setCellMenuOpened = Recoil.useState Recoil.Atoms.cellMenuOpened
+        let isCurrentCellMenuOpened = cellMenuOpened = Some (input.TaskId, input.DateId)
         //            let gun = Recoil.useValue Recoil.Atoms.gun
-        let onCellClick =
-            React.useCallbackRef (fun () ->
-                setSelected (not selected)
 
-                if not isMainSelection then
-                    setSelectedCell (Some (input.TaskId, input.DateId))
-                //                gun.get("test").get("test2").put(1)
-                )
+        let onCellClick =
+            Recoil.useCallbackRef
+                (fun setter ->
+                    promise {
+                        let! ctrlPressed = setter.snapshot.getPromise Recoil.Atoms.ctrlPressed
+                        let! shiftPressed = setter.snapshot.getPromise Recoil.Atoms.shiftPressed
+
+                        if ctrlPressed || shiftPressed then
+                            setSelected (not selected)
+                            setCellMenuOpened None
+                        else
+                            setSelected false
+
+                            if isCurrentCellMenuOpened then
+                                setCellMenuOpened None
+                            else
+                                setCellMenuOpened (Some (input.TaskId, input.DateId))
+
+                    //                gun.get("test").get("test2").put(1)
+                    })
 
         let selectableStatusList =
             [
@@ -63,7 +78,7 @@ module Cell =
                 backgroundColor =
                     (TempUI.cellStatusColor status)
                     + (if isToday then
-                        "aa"
+                           "aa"
                        elif input.SemiTransparent then
                            "d9"
                        else
@@ -77,7 +92,7 @@ module Cell =
                         "none"
             |}
             [
-                if isMainSelection then
+                if isCurrentCellMenuOpened then
                     Chakra.stack
                         {|
                             spacing = 0
@@ -95,81 +110,83 @@ module Cell =
                                 [
                                     yield!
                                         selectableStatusList
-                                        |> List.map (fun status ->
-                                            let color = TempUI.manualCellStatusColor status
+                                        |> List.map
+                                            (fun status ->
+                                                let color = TempUI.manualCellStatusColor status
 
-                                            Chakra.tooltip
-                                                {|
-                                                    bg = "gray.10%"
-                                                    label =
-                                                        match status with
-                                                        | Postponed until ->
-                                                            Chakra.box
-                                                                ()
-                                                                [
-                                                                    match until with
-                                                                    | None -> "Postpone until tomorrow"
-                                                                    | Some until ->
-                                                                        $"Postpone until X (30s remaining) {until}"
-                                                                    |> str
-                                                                ]
-                                                        | Completed ->
-                                                            Chakra.box
-                                                                ()
-                                                                [
-                                                                    str "Complete"
-                                                                ]
-                                                        | Dismissed ->
-                                                            Chakra.box
-                                                                ()
-                                                                [
-                                                                    Chakra.box
-                                                                        ()
-                                                                        [
-                                                                            str "Dismiss"
-                                                                        ]
-                                                                    Chakra.box
-                                                                        ()
-                                                                        [
-                                                                            str """???"""
-                                                                        ]
-                                                                ]
-                                                        | Scheduled ->
-                                                            Chakra.box
-                                                                {| padding = "4px" |}
-                                                                [
-                                                                    Chakra.box
-                                                                        ()
-                                                                        [
-                                                                            str "Schedule"
-                                                                        ]
-                                                                    Chakra.box
-                                                                        {| marginTop = "8px" |}
-                                                                        [
-                                                                            str """Manually schedule a task,
+                                                Chakra.tooltip
+                                                    {|
+                                                        bg = "gray.10%"
+                                                        label =
+                                                            match status with
+                                                            | Postponed until ->
+                                                                Chakra.box
+                                                                    ()
+                                                                    [
+                                                                        match until with
+                                                                        | None -> "Postpone until tomorrow"
+                                                                        | Some until ->
+                                                                            $"Postpone until X (30s remaining) {until}"
+                                                                        |> str
+                                                                    ]
+                                                            | Completed ->
+                                                                Chakra.box
+                                                                    ()
+                                                                    [
+                                                                        str "Complete"
+                                                                    ]
+                                                            | Dismissed ->
+                                                                Chakra.box
+                                                                    ()
+                                                                    [
+                                                                        Chakra.box
+                                                                            ()
+                                                                            [
+                                                                                str "Dismiss"
+                                                                            ]
+                                                                        Chakra.box
+                                                                            ()
+                                                                            [
+                                                                                str """???"""
+                                                                            ]
+                                                                    ]
+                                                            | Scheduled ->
+                                                                Chakra.box
+                                                                    {| padding = "4px" |}
+                                                                    [
+                                                                        Chakra.box
+                                                                            ()
+                                                                            [
+                                                                                str "Schedule"
+                                                                            ]
+                                                                        Chakra.box
+                                                                            {| marginTop = "8px" |}
+                                                                            [
+                                                                                str
+                                                                                    """Manually schedule a task,
 overriding any other behavior.
 """
-                                                                        ]
-                                                                ]
-                                                    hasArrow = true
-                                                    placement =
-                                                        match status with
-                                                        | Postponed _ -> "right"
-                                                        | Completed -> "left"
-                                                        | Dismissed -> "left"
-                                                        | Scheduled -> "right"
-                                                    zIndex = 20000
-                                                |}
-                                                [
-                                                    Chakra.box
-                                                        {|
-                                                            height = "15px"
-                                                            width = "15px"
-                                                            backgroundColor = color
-                                                            cursor = "pointer"
-                                                        |}
-                                                        []
-                                                ])
+                                                                            ]
+                                                                    ]
+                                                        hasArrow = true
+                                                        placement =
+                                                            match status with
+                                                            | Postponed _ -> "right"
+                                                            | Completed -> "left"
+                                                            | Dismissed -> "left"
+                                                            | Scheduled -> "right"
+                                                        zIndex = 20000
+                                                    |}
+                                                    [
+                                                        Chakra.box
+                                                            {|
+                                                                height = "15px"
+                                                                width = "15px"
+                                                                backgroundColor = color
+                                                                cursor = "pointer"
+                                                            |}
+                                                            []
+                                                    ])
                                 ]
                             match status with
                             | UserStatus (_, status) when selectableStatusList |> List.contains status ->

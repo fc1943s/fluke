@@ -15,6 +15,7 @@ module Recoil =
             setSelf: 'T -> unit
         }
 
+
 [<AutoOpen>]
 module RecoilMagic =
 
@@ -27,14 +28,17 @@ module RecoilMagic =
     type AtomCE.AtomBuilder with
         [<CustomOperation("effects")>]
         member inline _.Effects
-            (state: AtomState.ReadWrite<'T, 'U, 'V>, effects: (Recoil.EffectProps<'T> -> (unit -> unit)) list)
+            (
+                state: AtomState.ReadWrite<'T, 'U, 'V>,
+                effects: (Recoil.EffectProps<'T> -> (unit -> unit)) list
+            )
             : AtomStateWithEffects<'T, 'U, 'V>
             =
             { State = state; Effects = effects }
 
         member inline _.Run<'T, 'V> ({ Effects = effects; State = state }: AtomStateWithEffects<'T, 'T, 'V>) =
-            Bindings.Recoil.atom<'T>
-                ([
+            Bindings.Recoil.atom<'T> (
+                [
                     "key" ==> state.Key
                     "default" ==> state.Def
                     "effects_UNSTABLE" ==> effects
@@ -48,8 +52,9 @@ module RecoilMagic =
                         "dangerouslyAllowMutability"
                         ==> dangerouslyAllowMutability
                     | None -> ()
-                 ]
-                 |> createObj)
+                ]
+                |> createObj
+            )
 
     type AtomFamilyStateWithEffects<'T, 'U, 'V, 'P> =
         {
@@ -73,8 +78,8 @@ module RecoilMagic =
             ({ Effects = effects; State = state }: AtomFamilyStateWithEffects<'U, 'U, 'V, 'P>)
             : 'P -> RecoilValue<'U, ReadWrite>
             =
-            Bindings.Recoil.atomFamily<'U, 'P>
-                ([
+            Bindings.Recoil.atomFamily<'U, 'P> (
+                [
                     "key" ==> state.Key
                     "default" ==> state.Def
                     "effects_UNSTABLE" ==> effects
@@ -88,8 +93,9 @@ module RecoilMagic =
                         "dangerouslyAllowMutability"
                         ==> dangerouslyAllowMutability
                     | None -> ()
-                 ]
-                 |> createObj)
+                ]
+                |> createObj
+            )
 
 //    module Effects =
 //        type Wrapper = { Value: string }

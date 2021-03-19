@@ -14,6 +14,7 @@ open Fable.Core
 
 
 module Recoil =
+
     open Model
     open Domain.UserInteraction
     open Domain.State
@@ -378,7 +379,13 @@ module Recoil =
                                                 .toString Crypto.crypto.enc.Hex
 
                                         printfn
-                                            "AAA {{| sha3Hex=taskIdHash; guid=(string taskId)|>Crypto.getGuidHash |}}"
+                                            $"selected.effect. {
+                                                                    JS.JSON.stringify
+                                                                        {|
+                                                                            sha3Hex = taskIdHash
+                                                                            guid = (string taskId) |> Crypto.getGuidHash
+                                                                        |}
+                                            }"
 
                                         let dateIdHash =
                                             Crypto
@@ -576,9 +583,9 @@ module Recoil =
                 local_storage
             }
 
-        let rec selectedCell =
+        let rec cellMenuOpened =
             atom {
-                key $"atom/{nameof selectedCell}"
+                key $"atom/{nameof cellMenuOpened}"
                 def (None: (Task.TaskId * DateId) option)
             }
 
@@ -853,9 +860,6 @@ module Recoil =
                                 |> Seq.map Set.count
                                 |> Seq.sum
 
-                            if selectionCount = 0 then
-                                setter.set (Atoms.selectedCell, None)
-
                             Profiling.addCount (nameof cellSelectionMap + " (SET)")
                         | None -> ())
             }
@@ -914,27 +918,21 @@ module Recoil =
 
                     get
                         (fun (taskId: Atoms.Task.TaskId) getter ->
-                            let username = getter.get Atoms.username
+                            let dateSequence = getter.get dateSequence
 
-                            match username with
-                            | Some username ->
-                                let dateSequence = getter.get dateSequence
-                                let _taskIdList = getter.get (Atoms.Session.taskIdList username)
+                            let result =
+                                dateSequence
+                                |> List.rev
+                                |> List.tryPick
+                                    (fun date ->
+                                        let sessions = getter.get (Atoms.Cell.sessions (taskId, DateId date))
 
-                                let result =
-                                    dateSequence
-                                    |> List.rev
-                                    |> List.tryPick
-                                        (fun date ->
-                                            let sessions = getter.get (Atoms.Cell.sessions (taskId, DateId date))
+                                        sessions
+                                        |> List.sortByDescending (fun (TaskSession (start, _, _)) -> start.DateTime)
+                                        |> List.tryHead)
 
-                                            sessions
-                                            |> List.sortByDescending (fun (TaskSession (start, _, _)) -> start.DateTime)
-                                            |> List.tryHead)
-
-                                Profiling.addCount $"{nameof Task}/{nameof lastSession}"
-                                result
-                            | None -> None)
+                            Profiling.addCount $"{nameof Task}/{nameof lastSession}"
+                            result)
                 }
 
             let rec activeSession =
