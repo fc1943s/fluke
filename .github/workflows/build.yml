@@ -14,9 +14,7 @@ jobs:
         with:
           dotnet-version: '5.0.x'
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '15'
+      - uses: cypress-io/github-action@v2
 
       - run: cd ./src/Fluke.UI.Frontend && yarn build:fable
       - run: cd ./test/Fluke.Shared.Tests && dotnet run
@@ -24,8 +22,7 @@ jobs:
       - run: cd ./src/Fluke.UI.Frontend && yarn test
       - run: cd ./src/Fluke.UI.Frontend && yarn build:react
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./src/Fluke.UI.Frontend/build

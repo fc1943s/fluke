@@ -13,7 +13,7 @@ module Settings =
     open Fluke.UI.Frontend.Recoil
 
     [<ReactComponent>]
-    let Settings (input: {| Props: {| flex: int; overflowY: string; flexBasis: int |} |}) =
+    let rec Settings (input: {| Props: {| flex: int; overflowY: string; flexBasis: int |} |}) =
         let daysBefore, setDaysBefore = Recoil.useState Atoms.daysBefore
         let daysAfter, setDaysAfter = Recoil.useState Atoms.daysAfter
         let apiBaseUrl, setApiBaseUrl = Recoil.useState Atoms.apiBaseUrl
@@ -29,31 +29,39 @@ module Settings =
         React.useEffect (
             (fun () ->
                 promise {
-                    let daysBeforeNode =
+                    let getDaysBeforeNode () =
                         gunNamespace
                             .ref
-                            .get("fluke")
-                            .get("settings")
-                            .get ("daysBefore")
+                            .get(nameof Fluke)
+                            .get(nameof Settings)
+                            .get (nameof daysBefore)
 
-                    let id = System.Guid.NewGuid ()
-                    printfn $"before the ON! {id} daysBeforeNode={daysBeforeNode}"
+                    if not rendered then
+                        let daysBeforeNode = getDaysBeforeNode ()
 
-                    daysBeforeNode.on
-                        (fun (data: int option) ->
-                            match data with
-                            | Some data ->
-                                printfn $"Settings effect. daysbeforenode. ON DATA: {data}"
-                                setDaysBefore data
-                            | None -> ())
+                        let id = System.Guid.NewGuid ()
+                        printfn $"before the ON! {id} daysBeforeNode={daysBeforeNode}"
 
-                    setRendered true
+                        daysBeforeNode.on
+                            (fun (data: int option) ->
+                                match data with
+                                | Some data ->
+                                    printfn $"Settings effect. daysbeforenode. ON DATA: {data}"
+                                    setDaysBefore data
+                                | None -> ())
 
-                    return fun () -> printfn $"rendering off {id}"
-                //                            daysBeforeNode.off ()
+                        setRendered true
+
+                    return
+                        fun () ->
+                            if not rendered then
+                                let daysBeforeNode = getDaysBeforeNode ()
+                                printfn $"rendering off {id}"
+                                daysBeforeNode.off ()
                 }
                 |> Promise.start),
             [|
+                box rendered
                 box gunNamespace.ref
             |]
         )
@@ -72,9 +80,9 @@ module Settings =
                         value = daysBefore
                         onChange =
                             fun valueString ->
-                                if rendered then
+                                let value = int valueString
+                                if rendered && daysBefore <> value then
                                     printfn $"onChange input. setting atom and put on gun {valueString}"
-                                    let value = int valueString
                                     setDaysBefore value
 
                                     gunNamespace
