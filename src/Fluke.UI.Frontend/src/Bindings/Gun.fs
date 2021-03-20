@@ -1,17 +1,26 @@
 namespace Fluke.UI.Frontend.Bindings
 
 open Fable.Core.JsInterop
+open Fable.Core
 open Feliz.Recoil
 
 
-module Gun =
+module rec Gun =
     importAll "gun/sea"
     importAll "gun/lib/promise"
 
-//    if JS.isTesting then
+    //    if JS.isTesting then
 //        importAll "gun/lib/radix"
 //
     type AppState = { a: {| b: string; c: int |} }
+
+    type GunKeys =
+        {
+            pub: string
+            epub: string
+            priv: string
+            epriv: string
+        }
 
     type IGunUser =
         abstract create :
@@ -22,8 +31,15 @@ module Gun =
             alias: string * pass: string * cb: ({| err: string option; pub: string option |} -> unit) ->
             unit
 
-        abstract recall : {| sessionStorage: bool |} * System.Func<{| put: {| alias: string |} option |}, unit> -> unit
+        abstract recall :
+            {| sessionStorage: bool |}
+            * System.Func<{| put: {| alias: string |} option
+                             sea: GunKeys |}, unit> ->
+            unit
+
         abstract is : {| alias: string option; pub: string option |}
+        abstract ``_`` : {| sea: GunKeys |}
+        abstract get : string -> IGunChainReference<_>
         abstract leave : unit -> unit
 
     type IGunChainReference<'T> =
@@ -44,6 +60,13 @@ module Gun =
         }
 
     let gun : GunProps -> IGunChainReference<AppState> = importDefault "gun/gun"
+
+    [<ImportAll "@altrx/gundb-react-hooks">]
+    let gunHooks : {| useGunKeys: obj -> (unit -> obj) -> bool -> obj
+                      useGunState: IGunChainReference<obj> -> {| appKeys: GunKeys; sea: obj |} -> {| fields: obj
+                                                                                                     put: obj -> JS.Promise<obj>
+                                                                                                     remove: string -> JS.Promise<obj> |} |} =
+        jsNative
 
     let createUser (user: IGunUser) username password =
         Promise.create

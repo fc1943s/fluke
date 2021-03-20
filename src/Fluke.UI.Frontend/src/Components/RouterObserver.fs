@@ -23,17 +23,18 @@ module RouterObserver =
 
     [<ReactComponent>]
     let RouterObserver () =
-        let sessionRestored = Recoil.useValue Recoil.Atoms.sessionRestored
+        let sessionRestored, setSessionRestored = Recoil.useState Recoil.Atoms.sessionRestored
         let username = Recoil.useValue Recoil.Atoms.username
         let view, setView = Recoil.useState Recoil.Atoms.view
 
-        React.useListener.onKeyDown (fun (e: KeyboardEvent) ->
-            match e.ctrlKey, e.shiftKey, e.key with
-            | _, true, "H" -> setView View.View.HabitTracker
-            | _, true, "P" -> setView View.View.Priority
-            | _, true, "B" -> setView View.View.BulletJournal
-            | _, true, "I" -> setView View.View.Information
-            | _ -> ())
+        React.useListener.onKeyDown
+            (fun (e: KeyboardEvent) ->
+                match e.ctrlKey, e.shiftKey, e.key with
+                | _, true, "H" -> setView View.View.HabitTracker
+                | _, true, "P" -> setView View.View.Priority
+                | _, true, "B" -> setView View.View.BulletJournal
+                | _, true, "I" -> setView View.View.Information
+                | _ -> ())
 
         let step, setStep = React.useState Steps.Start
 
@@ -59,8 +60,8 @@ module RouterObserver =
                 | _ -> { View = None }
             | None -> { View = None }
 
-        React.useEffect
-            ((fun () ->
+        React.useEffect (
+            (fun () ->
                 if sessionRestored then
                     let stateUrl =
                         match username with
@@ -91,22 +92,27 @@ module RouterObserver =
                         setStep Steps.Processing
                         setView urlView
 
-                    | _ -> ()),
-             [|
-                 box sessionRestored
-                 box segments
-                 box username
-                 box view
-                 box setView
-                 box step
-                 box setStep
-                 box parsedSegments
-             |])
+                    | _ -> ()
+                else
+                    Fable.Core.JS.setTimeout (fun () -> setSessionRestored true) 0
+                    |> ignore),
+            [|
+                box sessionRestored
+                box segments
+                box username
+                box view
+                box setView
+                box step
+                box setStep
+                box parsedSegments
+            |]
+        )
 
 
         React.router [
-            router.onUrlChanged (fun newSegments ->
-                //                    printfn
+            router.onUrlChanged
+                (fun newSegments ->
+                    //                    printfn
 //                        "onUrlChanged. %A"
 //                        {|
 //                            username = username
@@ -116,10 +122,10 @@ module RouterObserver =
 //                            newSegments = newSegments
 //                        |}
 
-                match step with
-                | Steps.AwaitingChange when segments <> newSegments -> setStep Steps.UrlChanged
-                | _ -> ()
+                    match step with
+                    | Steps.AwaitingChange when segments <> newSegments -> setStep Steps.UrlChanged
+                    | _ -> ()
 
-                setSegments newSegments
-                ())
+                    setSegments newSegments
+                    ())
         ]

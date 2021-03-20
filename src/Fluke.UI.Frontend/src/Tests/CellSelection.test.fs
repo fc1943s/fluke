@@ -85,6 +85,7 @@ module CellSelection =
                 }
 
             let getApp () =
+
                 React.fragment [
                     (React.memo
                         (fun () ->
@@ -119,7 +120,8 @@ module CellSelection =
                                 |> List.map (fun (date: FlukeDate) -> date.Stringify ()))
                         |> string
 
-                    do! peek (fun _ -> promise { () })
+//                    do! peek (fun _ -> promise { () })
+                    do! RTL.waitFor id
 
                     do!
                         peek

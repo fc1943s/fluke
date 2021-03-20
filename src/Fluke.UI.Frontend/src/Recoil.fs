@@ -20,38 +20,38 @@ module Recoil =
     open Domain.State
     open View
 
-    let peersArray =
-        let peer1 = Browser.Dom.window.localStorage.getItem "peer1"
-        let peer2 = Browser.Dom.window.localStorage.getItem "peer2"
-        // "http://localhost:8765/gun"
-        // "https://???.brazilsouth.azurecontainer.io:8765/gun"
-        match peer1, peer2 with
-        | (""
-          | null),
-          (""
-          | null) -> [||]
-        | peer1,
-          (""
-          | null) ->
-            [|
-                peer1
-            |]
-        | peer1, peer2 ->
-            [|
-                peer1
-                peer2
-            |]
+    //    let peersArray =
+//        let peer1 = Browser.Dom.window.localStorage.getItem "peer1"
+//        let peer2 = Browser.Dom.window.localStorage.getItem "peer2"
+//        // "http://localhost:8765/gun"
+//        // "https://???.brazilsouth.azurecontainer.io:8765/gun"
+//        match peer1, peer2 with
+//        | (""
+//          | null),
+//          (""
+//          | null) -> [||]
+//        | peer1,
+//          (""
+//          | null) ->
+//            [|
+//                peer1
+//            |]
+//        | peer1, peer2 ->
+//            [|
+//                peer1
+//                peer2
+//            |]
+//
+//    printfn $"peersArray {peersArray}"
 
-    printfn $"peersArray {peersArray}"
-
-    let gunTmp =
+    let gunTmp (peers: string []) =
         Gun.gun (
             {
                 Gun.GunProps.peers =
                     if JS.isTesting then
                         None
                     else
-                        Some peersArray
+                        Some peers
 
                 Gun.GunProps.radisk =
                     if JS.isTesting then
@@ -373,18 +373,22 @@ module Recoil =
                                     | false -> id
                                     | true ->
 
+                                        let gunTmp = gunTmp [||]
+
                                         let taskIdHash =
                                             Crypto
                                                 .sha3(string taskId)
                                                 .toString Crypto.crypto.enc.Hex
 
                                         printfn
-                                            $"selected.effect. {
-                                                                    JS.JSON.stringify
-                                                                        {|
-                                                                            sha3Hex = taskIdHash
-                                                                            guid = (string taskId) |> Crypto.getGuidHash
-                                                                        |}
+                                            $"cell.selected .effects. {
+                                                                           JS.JSON.stringify
+                                                                               {|
+                                                                                   taskIdHash = taskIdHash
+                                                                                   taskIdGuidHash =
+                                                                                       (string taskId)
+                                                                                       |> Crypto.getGuidHash
+                                                                               |}
                                             }"
 
                                         let dateIdHash =
@@ -463,7 +467,10 @@ module Recoil =
                                                 //
                                                 //    cell.put({selected: true});
 
-                                                printfn $"oldValue: {oldValue}; newValue: {value}"
+                                                printfn
+                                                    $"cell.selected. effects. onSet. oldValue: {oldValue}; newValue: {
+                                                                                                                          value
+                                                    }"
                                                 //                                    Browser.Dom.window.localStorage.setItem
                                                 //                                        (node.key, JS.JSON.stringify {| value = string value |}))
                                                 //
@@ -474,7 +481,7 @@ module Recoil =
 
 
                                         fun () ->
-                                            printfn "> unsubscribe cell"
+                                            printfn "> unsubscribe cell. calling selected.off ()"
                                             selected.off ())
                             ])
                 }
@@ -599,7 +606,6 @@ module Recoil =
             atom {
                 key $"atom/{nameof daysBefore}"
                 def 7
-                local_storage
             }
 
         let rec daysAfter =
@@ -635,16 +641,46 @@ module Recoil =
                 local_storage
             }
 
+        let rec gunPeer1 =
+            atom {
+                key $"atom/{nameof gunPeer1}"
+                def ""
+                local_storage
+            }
+
+        let rec gunPeer2 =
+            atom {
+                key $"atom/{nameof gunPeer2}"
+                def ""
+                local_storage
+            }
+
+        let rec gunPeer3 =
+            atom {
+                key $"atom/{nameof gunPeer3}"
+                def ""
+                local_storage
+            }
+
+        let rec gunKeys =
+            atom {
+                key $"atom/{nameof gunKeys}"
+
+                def
+                    {
+                        Gun.pub = ""
+                        Gun.epub = ""
+                        Gun.priv = ""
+                        Gun.epriv = ""
+                    }
+
+//                local_storage
+            }
+
         let rec api =
             atom {
                 key $"atom/{nameof api}"
                 def (None: Sync.Api option)
-            }
-
-        let rec peers =
-            atom {
-                key $"atom/{nameof peers}"
-                def peersArray
             }
 
         let rec username =
@@ -696,14 +732,42 @@ module Recoil =
 
                 get
                     (fun getter ->
-                        let _peers = getter.get Atoms.peers
+                        let gunPeer1 = getter.get Atoms.gunPeer1
+                        let gunPeer2 = getter.get Atoms.gunPeer2
+                        let gunPeer3 = getter.get Atoms.gunPeer3
                         //                        let gun = Gun.gun peers
-                        let gun = gunTmp
+                        let peers =
+                            [|
+                                gunPeer1
+                                gunPeer2
+                                gunPeer3
+                            |]
+                            |> Array.filter (String.IsNullOrWhiteSpace >> not)
 
-                        printfn "selector. returning gun..."
+                        let gun = gunTmp peers
+
+                        printfn $"gun selector. peers={peers}. returning gun..."
 
                         Profiling.addCount (nameof gun)
-                        {| root = gun |})
+                        {| ref = gun |})
+            }
+
+        let rec gunNamespace =
+            selector {
+                key $"selector/{nameof gunNamespace}"
+
+                get
+                    (fun getter ->
+                        let gun = getter.get gun
+                        let username = getter.get Atoms.username
+                        let gunKeys = getter.get Atoms.gunKeys
+                        let user = gun.ref.user ()
+                        Browser.Dom.window?gunNamespace <- user
+
+                        printfn $"gun selector. username={username} gunKeys={JS.JSON.stringify gunKeys}. returning gun namespace..."
+
+                        Profiling.addCount (nameof gunNamespace)
+                        {| ref = user |})
             }
 
 
@@ -853,12 +917,6 @@ module Recoil =
                             |> List.iter
                                 (fun (taskId, date, selected) ->
                                     setter.set (Atoms.Cell.selected (taskId, DateId date), selected))
-
-                            let selectionCount =
-                                newSelection
-                                |> Map.values
-                                |> Seq.map Set.count
-                                |> Seq.sum
 
                             Profiling.addCount (nameof cellSelectionMap + " (SET)")
                         | None -> ())

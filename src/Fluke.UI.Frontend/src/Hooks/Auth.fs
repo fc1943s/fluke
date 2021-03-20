@@ -7,65 +7,120 @@ open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
 open Fluke.Shared.Domain
+open Fable.Core.JsInterop
+
 
 module Auth =
     let useLogout () =
-        let gun = Recoil.useValue Recoil.Selectors.gun
+        let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
         let setUsername = Recoil.useSetState Recoil.Atoms.username
+        let resetGunKeys = Recoil.useResetState Recoil.Atoms.gunKeys
 
         React.useCallback (
             (fun () ->
-                let user = gun.root.user ()
                 printfn "before leave"
-                user.leave ()
-                setUsername None),
+                gunNamespace.ref.leave ()
+                setUsername None
+                resetGunKeys ()
+
+                ),
             [|
-                box gun
+                box gunNamespace.ref
+            |]
+        )
+
+    let usePostSignIn () =
+        let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
+        let setUsername = Recoil.useSetState Recoil.Atoms.username
+        let setGunKeys = Recoil.useSetState Recoil.Atoms.gunKeys
+
+        React.useCallback (
+            (fun username ->
+                promise {
+                    setUsername (Some username)
+                    setGunKeys gunNamespace.ref.``_``.sea
+                }),
+            [|
+                box gunNamespace.ref
             |]
         )
 
     let useSignIn () =
-        let gun = Recoil.useValue Recoil.Selectors.gun
-        let setUsername = Recoil.useSetState Recoil.Atoms.username
+        let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
+        let postSignIn = usePostSignIn ()
 
         React.useCallback (
             (fun username password ->
                 promise {
-                    let user = gun.root.user ()
-                    let! ack = Gun.authUser user username password
+                    let! ack = Gun.authUser gunNamespace.ref username password
 
-                    return
-                        match ack.err with
-                        | None ->
-                            setUsername (Some (UserInteraction.Username username))
-                            Ok ()
-                        | Some error -> Error error
+                    return!
+                        promise {
+                            match ack.err with
+                            | None ->
+                                do! postSignIn (UserInteraction.Username username)
+                                return Ok ()
+                            | Some error -> return Error error
+                        }
                 }),
             [|
-                box gun
+                box gunNamespace.ref
+                box postSignIn
             |]
         )
 
     let useSignUp () =
-        let gun = Recoil.useValue Recoil.Selectors.gun
-        let setUsername = Recoil.useSetState Recoil.Atoms.username
+        let postSignIn = usePostSignIn ()
+        let signIn = useSignIn ()
 
-        React.useCallbackRef
-            (fun username password ->
+        Recoil.useCallback (
+            (fun (setter: CallbackMethods) username password ->
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
                     else
-                        printfn $"Auth.useSignUp. gun before gun.user(): {JS.JSON.stringify gun.root}"
-                        let user = gun.root.user ()
-                        printfn $"Auth.useSignUp. gun.user() result: {JS.JSON.stringify user}"
-                        let! ack = Gun.createUser user username password
-                        printfn $"Auth.useSignUp. Gun.createUser ack: {JS.JSON.stringify ack}"
 
-                        return
-                            match ack.err with
-                            | None ->
-                                setUsername (Some (UserInteraction.Username username))
-                                Ok ()
-                            | Some error -> Error error
-                })
+                        let! gunNamespace = setter.snapshot.getPromise Recoil.Selectors.gunNamespace
+
+                        printfn $"Auth.useSignUp. gun.user() result: {JS.JSON.stringify gunNamespace.ref}"
+
+                        let! ack = Gun.createUser gunNamespace.ref username password
+                        printfn $"Auth.useSignUp. Gun.createUser signUpAck:"
+                        Browser.Dom.console.log ack
+                        Browser.Dom.window?signUpAck <- ack
+
+                        return!
+                            promise {
+                                match ack.err with
+                                | None ->
+                                    match! signIn username password with
+                                    | Ok () ->
+                                        gunNamespace
+                                            .ref
+                                            .get("fluke")
+                                            .put {| username = username |}
+                                        |> ignore
+
+                                        return Ok ()
+                                    | Error error -> return Error error
+                                //                                    do! postSignIn (UserInteraction.Username username)
+
+                                //                                    gunNamespace
+//                                        .get("fluke")
+//                                        .put {| username = username |}
+//                                    |> ignore
+                                //                                let usernamePut =
+//                                    gunNamespace
+//                                        .ref
+//                                        .get("fluke")
+//                                        .put {| username = username |}
+//
+//                                printfn $"sign up username put = {JS.JSON.stringify usernamePut}"
+
+                                | Some error -> return Error error
+                            }
+                }),
+            [|
+                box postSignIn
+            |]
+        )

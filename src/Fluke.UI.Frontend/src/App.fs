@@ -24,7 +24,7 @@ module App =
                 ApiSubscriber.ApiSubscriber ()
                 SelectionListener.SelectionListener ()
                 //                PositionUpdater.render ()
-                GunObserver.GunObserver ()
+//                GunObserver.GunObserver ()
                 UserLoader.UserLoader ()
 
                 Content.Content ()
