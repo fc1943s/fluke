@@ -15,6 +15,7 @@ module Content =
         Profiling.addTimestamp "mainComponent.render"
         let username = Recoil.useValue Recoil.Atoms.username
         let sessionRestored = Recoil.useValue Recoil.Atoms.sessionRestored
+        let gunPeers = Recoil.useValue Recoil.Selectors.gunPeers
 
         Chakra.flex
             {| minHeight = "100vh" |}
@@ -40,5 +41,8 @@ module Content =
                             LoadingScreen.LoadingScreen ()
                         )
 
-                    | None -> LoginScreen.LoginScreen ()
+                    | None ->
+                        match gunPeers with
+                        | [||] -> InitialPeers.InitialPeers ()
+                        | _ -> LoginScreen.LoginScreen ()
             ]

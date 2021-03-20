@@ -674,7 +674,7 @@ module Recoil =
                         Gun.epriv = ""
                     }
 
-//                local_storage
+            //                local_storage
             }
 
         let rec api =
@@ -726,9 +726,9 @@ module Recoil =
 
 
     module Selectors =
-        let rec gun =
+        let rec gunPeers =
             selector {
-                key $"selector/{nameof gun}"
+                key $"selector/{nameof gunPeers}"
 
                 get
                     (fun getter ->
@@ -744,9 +744,20 @@ module Recoil =
                             |]
                             |> Array.filter (String.IsNullOrWhiteSpace >> not)
 
-                        let gun = gunTmp peers
+                        Profiling.addCount (nameof gunPeers)
+                        peers)
+            }
 
-                        printfn $"gun selector. peers={peers}. returning gun..."
+        let rec gun =
+            selector {
+                key $"selector/{nameof gun}"
+
+                get
+                    (fun getter ->
+                        let gunPeers = getter.get gunPeers
+                        let gun = gunTmp gunPeers
+
+                        printfn $"gun selector. peers={gunPeers}. returning gun..."
 
                         Profiling.addCount (nameof gun)
                         {| ref = gun |})
@@ -764,7 +775,8 @@ module Recoil =
                         let user = gun.ref.user ()
                         Browser.Dom.window?gunNamespace <- user
 
-                        printfn $"gun selector. username={username} gunKeys={JS.JSON.stringify gunKeys}. returning gun namespace..."
+                        printfn
+                            $"gun selector. username={username} gunKeys={JS.JSON.stringify gunKeys}. returning gun namespace..."
 
                         Profiling.addCount (nameof gunNamespace)
                         {| ref = user |})

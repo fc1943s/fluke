@@ -61,6 +61,7 @@
         <Compile Include="src\Components\StatusBar.fs" />
         <Compile Include="src\Components\HomeScreen.fs" />
         <Compile Include="src\Components\LoginScreen.fs" />
+        <Compile Include="src\Components\InitialPeers.fs" />
         <Compile Include="src\Components\LoadingScreen.fs" />
         <Compile Include="src\Components\UserLoader.fs" />
         <Compile Include="src\Components\SoundPlayer.fs" />
