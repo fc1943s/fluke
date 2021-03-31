@@ -30,6 +30,10 @@
     "watch": "concurrently \"yarn:watch:*\"",
     "build": "yarn build:fable && yarn build:react",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --env=jest-environment-jsdom-sixteen --testNamePattern=",
+    "cypress-install": "cypress install --force",
+    "cypress": "cypress open",
+    "cypress-watch": "concurrently \"yarn:watch\" \"yarn:cypress\"",
+    "cypress-run": "cypress run",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
     "postinstall": "node -e \"if (true || process.env.GITHUB_JOB) { console.log('CI Build'); } else { require('child_process').spawn('patch-package', { shell: true, stdio: 'inherit' }); }\"",
@@ -42,16 +46,16 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-3fb11eed9",
-    "react-dom": "0.0.0-experimental-3fb11eed9",
+    "react": "0.0.0-experimental-b48b38af6",
+    "react-dom": "0.0.0-experimental-b48b38af6",
 
-    "recoil": "~0.1",
+    "recoil": "~0.2",
 
     "gun": "amark/gun.git#master",
     "@altrx/gundb-react-hooks": "~0.8",
 
-    "@chakra-ui/react": "~1.3",
-    "@chakra-ui/system": "~1.4",
+    "@chakra-ui/react": "~1.4",
+    "@chakra-ui/system": "~1.6",
     "@chakra-ui/theme-tools": "~1.1",
     "@chakra-ui/media-query": "~1.0",
     "@emotion/react": "~11.1",
@@ -82,20 +86,20 @@
     "electron-webpack": "~2.8",
     "electron-builder": "~22.10",
 
-    "eslint": "~7.22",
-    "@typescript-eslint/eslint-plugin": "~4.18",
-    "@typescript-eslint/parser": "~4.18",
+    "@typescript-eslint/eslint-plugin": "~4.20",
+    "@typescript-eslint/parser": "~4.20",
+    "eslint": "~7.23",
+    "eslint-plugin-react": "~7.23",
     "eslint-config-airbnb": "~18.2",
     "eslint-plugin-import": "~2.22",
     "eslint-plugin-jsx-a11y": "~6.4",
-    "eslint-plugin-react": "~7.22",
     "eslint-plugin-react-hooks": "~4.2",
-    "eslint-plugin-jest-dom": "~3.6",
+    "eslint-plugin-jest-dom": "~3.7",
 
     "@babel/core": "~7.13",
     "@babel/preset-env": "~7.13",
     "@babel/preset-typescript": "~7.13",
-    "@babel/preset-react": "~7.12",
+    "@babel/preset-react": "~7.13",
     "babel-loader": "~8.2",
     "file-loader": "~6.2",
     "babel-jest": "~26.6",
@@ -103,9 +107,12 @@
     "jest": "~26.6",
     "ts-jest": "~26.5",
     "@testing-library/react": "~11.2",
-    "@testing-library/user-event": "~13.0",
+    "@testing-library/user-event": "~13.1",
     "@testing-library/jest-dom": "~5.11",
     "jest-environment-jsdom-sixteen": "~1.0",
+
+    "cypress": "~6.8",
+    "@types/cypress": "~1.1",
 
     "patch-package": "~6.4",
     "postinstall-postinstall": "~2.1",
@@ -116,9 +123,13 @@
     "customize-cra": "~1.0",
     "customize-cra-react-refresh": "~1.1",
 
-    "react-refresh": "~0.9",
+    "react-refresh": "~0.10",
 
     "concurrently": "~6.0"
+  },
+  "resolutions": {
+    "react": "0.0.0-experimental-b48b38af6",
+    "react-dom": "0.0.0-experimental-b48b38af6"
   },
   "browserslist": {
     "production": [

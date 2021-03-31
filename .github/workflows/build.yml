@@ -22,6 +22,12 @@ jobs:
       - run: cd ./test/Fluke.Shared.Tests && dotnet run
       - run: cd ./src/Fluke.UI.Frontend && yarn install
       - run: cd ./src/Fluke.UI.Frontend && yarn test
+
+      - uses: cypress-io/github-action@v2
+        with:
+          working-directory: ./src/Fluke.UI.Frontend
+          build: npx cypress info
+
       - run: cd ./src/Fluke.UI.Frontend && yarn build:react
 
       - uses: peaceiris/actions-gh-pages@v3
