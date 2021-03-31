@@ -26,8 +26,9 @@ jobs:
       - uses: cypress-io/github-action@v2
         with:
           working-directory: ./src/Fluke.UI.Frontend
-          start: yarn watch:frontend
           build: npx cypress info
+          start: yarn watch:frontend
+          wait-on: 'http://localhost:33922'
 
       - run: cd ./src/Fluke.UI.Frontend && yarn build:react
 
