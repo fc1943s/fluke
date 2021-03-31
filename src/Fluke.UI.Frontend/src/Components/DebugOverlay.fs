@@ -82,13 +82,10 @@ module DebugOverlay =
                             "initial"
                 |}
                 [
-                    Chakra.checkbox
+                    Checkbox.checkbox
                         {|
                             isChecked = debug
-                            onClick =
-                                fun (e: {| preventDefault: unit -> unit |}) ->
-                                    setDebug (not debug)
-                                    e.preventDefault ()
+                            onChange = fun (e: {| target: Browser.Types.HTMLInputElement |}) -> setDebug e.target.``checked``
                         |}
                         [
                             str (

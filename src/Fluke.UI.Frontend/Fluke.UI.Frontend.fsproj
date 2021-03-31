@@ -46,6 +46,7 @@
         <Compile Include="src\Components\PriorityView.fs" />
         <Compile Include="src\Components\BulletJournalView.fs" />
         <Compile Include="src\Components\InformationView.fs" />
+        <Compile Include="src\Components\Checkbox.fs" />
         <Compile Include="src\Components\DebugOverlay.fs" />
         <Compile Include="src\Components\Logo.fs" />
         <Compile Include="src\Components\TaskForm.fs" />

@@ -45,9 +45,7 @@ module Databases =
                         | _ -> databasePosition
                         |> setSelectedPosition)
 
-            let onChange = fun (_e: {| target: obj |}) -> ()
-
-            let onClick =
+            let onChange =
                 fun (e: {| target: Browser.Types.HTMLElement |}) ->
                     if JS.instanceof (e.target, nameof Browser.Types.HTMLInputElement) then
                         let swap value set =
@@ -75,7 +73,7 @@ module Databases =
                 | RenderCheckbox -> true
                 | _ -> false
 
-            Chakra.checkbox
+            Checkbox.checkbox
                 {|
                     ``data-testid`` =
                         if isTesting then
@@ -89,7 +87,6 @@ module Databases =
                             None
                         else
                             Some true
-                    onClick = onClick
                     onChange = onChange
                 |}
                 [

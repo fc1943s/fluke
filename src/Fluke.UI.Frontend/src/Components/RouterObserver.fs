@@ -50,20 +50,17 @@ module RouterObserver =
 //                |}
 
         let parsedSegments =
-            match username with
-            | Some _ ->
-                match segments with
-                | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
-                | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
-                | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
-                | [ "view"; "Information" ] -> { View = Some View.View.Information }
-                | _ -> { View = None }
-            | None -> { View = None }
+            match segments with
+            | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
+            | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
+            | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
+            | [ "view"; "Information" ] -> { View = Some View.View.Information }
+            | _ -> { View = None }
 
         React.useEffect (
             (fun () ->
                 if sessionRestored then
-                    let stateUrl =
+                    let urlFromState =
                         match username with
                         | Some _ ->
                             [|
@@ -75,24 +72,26 @@ module RouterObserver =
                                 "login"
                             |]
 
-                    match step, parsedSegments.View with
-                    | _, None when stateUrl <> (segments |> List.toArray) ->
+                    match step, parsedSegments with
+                    | _, { View = None } when urlFromState <> (segments |> List.toArray) ->
                         setStep Steps.AwaitingChange
-                        Router.navigate stateUrl
+                        Router.navigate urlFromState
 
-                    | Steps.Start, Some urlView ->
+                    | Steps.Start, { View = Some urlView } ->
                         setStep Steps.Processing
                         setView urlView
 
-                    | Steps.AwaitingChange, Some urlView when view <> urlView -> Router.navigate stateUrl
+                    | Steps.AwaitingChange, { View = Some urlView } when view <> urlView -> Router.navigate urlFromState
 
-                    | Steps.Processing, Some urlView when view = urlView -> setStep Steps.AwaitingChange
+                    | Steps.Processing, { View = Some urlView } when view = urlView -> setStep Steps.AwaitingChange
 
-                    | Steps.UrlChanged, Some urlView ->
+                    | Steps.UrlChanged, { View = Some urlView } ->
                         setStep Steps.Processing
                         setView urlView
 
-                    | _ -> ()
+                    | _ ->
+                        if urlFromState <> (segments |> List.toArray) then
+                            Router.navigate urlFromState
                 else
                     Fable.Core.JS.setTimeout (fun () -> setSessionRestored true) 0
                     |> ignore),
