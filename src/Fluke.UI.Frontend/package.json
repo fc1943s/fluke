@@ -27,7 +27,7 @@
     "build:react": "cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
     "watch:frontend-build": "dotnet fable watch",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
-    "watch:frontend-serve": "serve -l 0.0.0.0:33922 build",
+    "watch:frontend-serve": "serve -l 33922 build",
     "watch": "concurrently \"yarn:watch:*\"",
     "build": "yarn build:fable && yarn build:react",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --env=jest-environment-jsdom-sixteen --testNamePattern=",
