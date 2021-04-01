@@ -26,22 +26,23 @@ jobs:
 
       - uses: cypress-io/github-action@v2
         with:
+          record: true
           working-directory: ./src/Fluke.UI.Frontend
           build: npx cypress info
           start: yarn frontend-serve
-          command: yarn cypress-run
+          command: cypress run --browser firefox
 
       - uses: actions/upload-artifact@v1
         if: failure()
         with:
           name: cypress-screenshots
-          path: cypress/screenshots
+          path: ./src/Fluke.UI.Frontend/cypress/screenshots
 
       - uses: actions/upload-artifact@v1
         if: failure()
         with:
           name: cypress-videos
-          path: cypress/videos
+          path: ./src/Fluke.UI.Frontend/cypress/videos
 
       - uses: peaceiris/actions-gh-pages@v3
         with:
