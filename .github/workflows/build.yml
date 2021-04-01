@@ -27,7 +27,7 @@ jobs:
 
       - uses: cypress-io/github-action@v2
         env:
-          CYPRESS_CACHE_FOLDER: %localappdata%/Cypress/Cache
+          CYPRESS_CACHE_FOLDER: C:\Users\runneradmin\AppData\Local\Cypress\Cache
         with:
           record: true
           working-directory: ./src/Fluke.UI.Frontend
