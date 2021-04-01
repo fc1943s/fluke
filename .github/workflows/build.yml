@@ -30,7 +30,7 @@ jobs:
           working-directory: ./src/Fluke.UI.Frontend
           build: npx cypress info
           start: yarn frontend-serve
-          command: cypress run --browser firefox
+          command: yarn cypress run --browser firefox
 
       - uses: actions/upload-artifact@v1
         if: failure()
