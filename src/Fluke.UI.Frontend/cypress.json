@@ -1,7 +1,6 @@
 {
   "baseUrl": "http://localhost:33922",
   "chromeWebSecurity": false,
-  "experimentalSourceRewriting": true,
   "integrationFolder": "src/Tests",
   "testFiles": "**/*.spec.fs.js",
   "video": false,
