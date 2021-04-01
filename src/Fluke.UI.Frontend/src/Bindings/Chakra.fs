@@ -7,88 +7,89 @@ module Chakra =
     open React
 
     [<ImportAll "@chakra-ui/react">]
-    let core: {| Box: obj
-                 Button: obj
-                 Center: obj
-                 ChakraProvider: obj
-                 Checkbox: obj
-                 CheckboxGroup: obj
-                 Circle: obj
-                 DarkMode: obj
-                 extendTheme: obj -> obj
-                 Flex: obj
-                 Grid: obj
-                 HStack: obj
-                 IconButton: obj
-                 Input: obj
-                 Menu: obj
-                 MenuButton: obj
-                 MenuList: obj
-                 MenuItem: obj
-                 Modal: obj
-                 ModalBody: obj
-                 ModalCloseButton: obj
-                 ModalContent: obj
-                 ModalOverlay: obj
-                 NumberInput: obj
-                 NumberInputField: obj
-                 NumberInputStepper: obj
-                 NumberDecrementStepper: obj
-                 NumberIncrementStepper: obj
-                 SimpleGrid: obj
-                 Spacer: obj
-                 Spinner: obj
-                 Stack: obj
-                 TabList: obj
-                 TabPanel: obj
-                 TabPanels: obj
-                 Tab: obj
-                 Tabs: obj
-                 Tooltip: obj
-                 useToast: unit -> System.Func<obj, unit> |} = jsNative
+    let react : {| Box: obj
+                   Button: obj
+                   Center: obj
+                   ChakraProvider: obj
+                   Checkbox: obj
+                   CheckboxGroup: obj
+                   Circle: obj
+                   DarkMode: obj
+                   extendTheme: obj -> obj
+                   Flex: obj
+                   Grid: obj
+                   HStack: obj
+                   IconButton: obj
+                   Input: obj
+                   Menu: obj
+                   MenuButton: obj
+                   MenuList: obj
+                   MenuItem: obj
+                   Modal: obj
+                   ModalBody: obj
+                   ModalCloseButton: obj
+                   ModalContent: obj
+                   ModalOverlay: obj
+                   NumberInput: obj
+                   NumberInputField: obj
+                   NumberInputStepper: obj
+                   NumberDecrementStepper: obj
+                   NumberIncrementStepper: obj
+                   SimpleGrid: obj
+                   Spacer: obj
+                   Spinner: obj
+                   Stack: obj
+                   TabList: obj
+                   TabPanel: obj
+                   TabPanels: obj
+                   Tab: obj
+                   Tabs: obj
+                   Tooltip: obj
+                   useToast: unit -> System.Func<obj, unit> |} =
+        jsNative
 
     [<ImportAll "@chakra-ui/theme-tools">]
-    let theme: {| mode: string * string -> obj -> obj |} = jsNative
+    let themeTools : {| mode: string * string -> obj -> obj |} = jsNative
 
 
 
-    let box<'T> = composeComponent core.Box
-    let button<'T> = composeComponent core.Button
-    let center<'T> = composeComponent core.Center
-    let checkbox<'T> = composeComponent core.Checkbox
-    let checkboxGroup<'T> = composeComponent core.CheckboxGroup
-    let circle<'T> = composeComponent core.Circle
-    let darkMode<'T> = composeComponent core.DarkMode
-    let flex<'T> = composeComponent core.Flex
-    let grid<'T> = composeComponent core.Grid
-    let hStack<'T> = composeComponent core.HStack
-    let iconButton<'T> = composeComponent core.IconButton
-    let input<'T> = composeComponent core.Input
-    let menu<'T> = composeComponent core.Menu
-    let menuButton<'T> = composeComponent core.MenuButton
-    let menuList<'T> = composeComponent core.MenuList
-    let menuItem<'T> = composeComponent core.MenuItem
-    let modal<'T> = composeComponent core.Modal
-    let modalBody<'T> = composeComponent core.ModalBody
-    let modalContent<'T> = composeComponent core.ModalContent
-    let modalCloseButton<'T> = composeComponent core.ModalCloseButton
-    let modalOverlay<'T> = composeComponent core.ModalOverlay
-    let numberInput<'T> = composeComponent core.NumberInput
-    let numberInputField<'T> = composeComponent core.NumberInputField
-    let numberInputStepper<'T> = composeComponent core.NumberInputStepper
-    let numberDecrementStepper<'T> = composeComponent core.NumberDecrementStepper
-    let numberIncrementStepper<'T> = composeComponent core.NumberIncrementStepper
-    let provider<'T> = composeComponent core.ChakraProvider
-    let simpleGrid<'T> = composeComponent core.SimpleGrid
-    let spacer<'T> = composeComponent core.Spacer
-    let spinner<'T> = composeComponent core.Spinner
-    let stack<'T> = composeComponent core.Stack
-    let tabList<'T> = composeComponent core.TabList
-    let tabPanel<'T> = composeComponent core.TabPanel
-    let tabPanels<'T> = composeComponent core.TabPanels
-    let tab<'T> = composeComponent core.Tab
-    let tabs<'T> = composeComponent core.Tabs
-    let tooltip<'T> = composeComponent core.Tooltip
+    let box<'T> = composeComponent react.Box
+    let button<'T> = composeComponent react.Button
+    let center<'T> = composeComponent react.Center
+    let checkbox<'T> = composeComponent react.Checkbox
+    let checkboxGroup<'T> = composeComponent react.CheckboxGroup
+    let circle<'T> = composeComponent react.Circle
+    let darkMode<'T> = composeComponent react.DarkMode
+    let flex<'T> = composeComponent react.Flex
+    let grid<'T> = composeComponent react.Grid
+    let hStack<'T> = composeComponent react.HStack
+    let iconButton<'T> = composeComponent react.IconButton
+    let input<'T> = composeComponent react.Input
+    let menu<'T> = composeComponent react.Menu
+    let menuButton<'T> = composeComponent react.MenuButton
+    let menuList<'T> = composeComponent react.MenuList
+    let menuItem<'T> = composeComponent react.MenuItem
+    let modal<'T> = composeComponent react.Modal
+    let modalBody<'T> = composeComponent react.ModalBody
+    let modalContent<'T> = composeComponent react.ModalContent
+    let modalCloseButton<'T> = composeComponent react.ModalCloseButton
+    let modalOverlay<'T> = composeComponent react.ModalOverlay
+    let numberInput<'T> = composeComponent react.NumberInput
+    let numberInputField<'T> = composeComponent react.NumberInputField
+    let numberInputStepper<'T> = composeComponent react.NumberInputStepper
+    let numberDecrementStepper<'T> = composeComponent react.NumberDecrementStepper
+    let numberIncrementStepper<'T> = composeComponent react.NumberIncrementStepper
+    let provider<'T> = composeComponent react.ChakraProvider
+    let simpleGrid<'T> = composeComponent react.SimpleGrid
+    let spacer<'T> = composeComponent react.Spacer
+    let spinner<'T> = composeComponent react.Spinner
+    let stack<'T> = composeComponent react.Stack
+    let tabList<'T> = composeComponent react.TabList
+    let tabPanel<'T> = composeComponent react.TabPanel
+    let tabPanels<'T> = composeComponent react.TabPanels
+    let tab<'T> = composeComponent react.Tab
+    let tabs<'T> = composeComponent react.Tabs
+    let tooltip<'T> = composeComponent react.Tooltip
 
 
     type ToastState =
@@ -121,7 +122,7 @@ module Chakra =
 
         member inline _.Run (state: ToastState) =
             fun () ->
-                let toast = core.useToast ()
+                let toast = react.useToast ()
                 toast.Invoke state
 
     let useToast = ToastBuilder ()

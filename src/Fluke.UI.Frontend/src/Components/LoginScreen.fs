@@ -17,7 +17,7 @@ module LoginScreen =
         let signIn = Auth.useSignIn ()
         let signUp = Auth.useSignUp ()
 
-        let toast = Chakra.core.useToast ()
+        let toast = Chakra.react.useToast ()
 
         let signInClick () =
             promise {

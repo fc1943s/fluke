@@ -28,7 +28,7 @@ jobs:
         with:
           working-directory: ./src/Fluke.UI.Frontend
           build: npx cypress info
-          start: yarn watch:frontend-serve
+          start: yarn frontend-serve
 
       - uses: peaceiris/actions-gh-pages@v3
         with:

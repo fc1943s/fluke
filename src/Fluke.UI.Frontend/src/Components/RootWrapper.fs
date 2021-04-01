@@ -39,7 +39,7 @@ module RootWrapper =
                 root.init (fun _ -> ())
                 root.children [
                     Chakra.provider
-                        {| resetCSS = true; theme = theme |}
+                        {| theme = theme |}
                         [
                             PersistenceObserver ()
                             React.router [

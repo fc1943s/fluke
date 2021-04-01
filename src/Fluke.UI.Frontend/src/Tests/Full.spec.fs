@@ -25,11 +25,11 @@ module Full =
     let it (_name: string) (_fn: unit -> unit) = jsNative
 
     module Cy =
-        [<Emit("cy.visit($0)")>]
-        let visit (_url: string) = jsNative
-
         type Chainable<'T> =
             abstract should : ('T -> unit) -> unit
+
+        type Chainable2<'T> =
+            abstract should : string -> string -> 'T -> unit
 
         type Location =
             abstract pathname : string
@@ -38,6 +38,13 @@ module Full =
 
         [<Emit("cy.location()")>]
         let location () : Chainable<Location> = jsNative
+
+        [<Emit("cy.visit($0)")>]
+        let visit (_url: string) : unit = jsNative
+
+        [<Emit("cy.get($0)")>]
+        let get (_selector: string) : Chainable2<string> = jsNative
+
 
     describe
         "tests"
@@ -51,5 +58,7 @@ module Full =
                     Cy
                         .location()
                         .should (fun location ->
-                            JS.console.log location
-                            expect(location.href).``to``.contain $"{homeUrl}/#/login")))
+                            expect(location.href)
+                                .``to``.contain $"{homeUrl}/#/login")
+
+                    Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"))
