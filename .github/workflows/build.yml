@@ -33,7 +33,7 @@ jobs:
           start: yarn frontend-serve
           wait-on: https://localhost:33922
           wait-on-timeout: 120
-          command: yarn cypress-run
+          command: yarn cypress run --headed --browser chrome
 
       - uses: actions/upload-artifact@v1
         if: failure()
