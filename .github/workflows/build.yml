@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -28,7 +28,7 @@ jobs:
         with:
           record: true
           working-directory: ./src/Fluke.UI.Frontend
-          build: npx cypress info
+          build: yarn cypress-install
           start: yarn frontend-serve
           command: yarn cypress-run
 
