@@ -58,8 +58,6 @@ module Theme =
                         {|
                             ``global`` =
                                 fun (props: {| colorMode: string |}) ->
-                                    printfn $"props on global {JS.JSON.stringify props}"
-
                                     JsInterop.toPlainJsObj
                                         {|
                                             html = JsInterop.toPlainJsObj {| fontSize = "main" |}
