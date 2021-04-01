@@ -33,7 +33,7 @@
     "cypress-install": "cypress install --force",
     "cypress": "cypress open",
     "cypress-watch": "concurrently \"yarn:watch\" \"yarn:cypress\"",
-    "cypress-run": "cypress run --headed",
+    "cypress-run": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 cypress run --headed",
     "frontend-serve": "cross-env PORT=33922 serve build",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
