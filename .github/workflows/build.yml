@@ -29,8 +29,19 @@ jobs:
           working-directory: ./src/Fluke.UI.Frontend
           build: npx cypress info
           start: yarn frontend-serve
-          browser: chrome
-          headless: false
+          command: yarn cypress-run
+
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      - uses: actions/upload-artifact@v1
+        if: failure()
+        with:
+          name: cypress-videos
+          path: cypress/videos
 
       - uses: peaceiris/actions-gh-pages@v3
         with:
