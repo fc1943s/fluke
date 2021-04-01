@@ -31,8 +31,6 @@ jobs:
           working-directory: ./src/Fluke.UI.Frontend
           build: npx cypress info
           start: yarn frontend-serve
-#          wait-on: https://localhost:33922
-#          wait-on-timeout: 120
           command: yarn cypress-run
 
       - uses: actions/upload-artifact@v1
