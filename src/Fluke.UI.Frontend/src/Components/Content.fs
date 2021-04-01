@@ -15,6 +15,7 @@ module Content =
         Profiling.addTimestamp "mainComponent.render"
         let username = Recoil.useValue Recoil.Atoms.username
         let sessionRestored = Recoil.useValue Recoil.Atoms.sessionRestored
+        let initialPeerSkipped = Recoil.useValue Recoil.Atoms.initialPeerSkipped
         let gunPeers = Recoil.useValue Recoil.Selectors.gunPeers
 
         Chakra.flex
@@ -42,7 +43,7 @@ module Content =
                         )
 
                     | None ->
-                        match gunPeers with
-                        | [||] -> InitialPeers.InitialPeers ()
+                        match gunPeers, initialPeerSkipped with
+                        | [||], false -> InitialPeers.InitialPeers ()
                         | _ -> LoginScreen.LoginScreen ()
             ]

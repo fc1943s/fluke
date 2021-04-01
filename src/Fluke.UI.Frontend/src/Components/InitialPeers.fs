@@ -17,14 +17,16 @@ module InitialPeers =
     let InitialPeers () =
         let gunPeer, setGunPeer = React.useState ""
         let setGunPeer1 = Recoil.useSetState Atoms.gunPeer1
+        let setInitialPeerSkipped = Recoil.useSetState Atoms.initialPeerSkipped
 
         let nextClick () = promise { setGunPeer1 gunPeer }
+        let skipClick () = promise { setInitialPeerSkipped true }
 
         Chakra.center
             {| flex = 1 |}
             [
                 Chakra.stack
-                    {|  |}
+                    {| spacing = "5px" |}
                     [
                         Chakra.box
                             {| marginTop = "15px" |}
@@ -35,18 +37,39 @@ module InitialPeers =
                             {|
                                 value = gunPeer
                                 onChange = fun (e: KeyboardEvent) -> setGunPeer e.target?value
-                                marginTop = "5px"
                             |}
                             []
 
-                        Chakra.button
-                            {|
-                                onClick = nextClick
-                                color = "gray"
-                                disabled = gunPeer.Length = 0
-                            |}
+                        Chakra.hStack
+                            {| align = "stretch" |}
                             [
-                                str "Next"
+                                Button.Button
+                                    {|
+                                        Icon = None
+                                        RightIcon = None
+                                        props =
+                                            {|
+                                                marginLeft = None
+                                                flex = Some 1
+                                                autoFocus = Some true
+                                                onClick = Some skipClick
+                                                color = Some "gray"
+                                            |}
+                                        children =
+                                            [
+                                                str "Skip"
+                                            ]
+                                    |}
+                                Chakra.button
+                                    {|
+                                        flex = 1
+                                        onClick = nextClick
+                                        color = "gray"
+                                        disabled = gunPeer.Length = 0
+                                    |}
+                                    [
+                                        str "Next"
+                                    ]
                             ]
                     ]
             ]

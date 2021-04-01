@@ -12,19 +12,25 @@ module AddDatabaseButton =
     [<ReactComponent>]
     let AddDatabaseButton (props: {| marginLeft: string |}) =
         let username = Recoil.useValue Recoil.Atoms.username
-        let formDatabaseId, setFormDatabaseId = Recoil.useState (Recoil.Atoms.formDatabaseId)
+        let formDatabaseId, setFormDatabaseId = Recoil.useState Recoil.Atoms.formDatabaseId
 
 
 
         React.fragment [
             Button.Button
                 {|
-                    Icon = Icons.faPlus
-                    RightIcon = false
+                    Icon = Some (box Icons.faPlus)
+                    RightIcon = Some false
                     props =
                         {|
-                            marginLeft = props.marginLeft
-                            onClick = fun () -> setFormDatabaseId (Some (Recoil.Atoms.Database.newDatabaseId ()))
+                            autoFocus = None
+                            color = None
+                            flex = None
+                            marginLeft = Some props.marginLeft
+                            onClick =
+                                Some
+                                    (fun () ->
+                                        promise { setFormDatabaseId (Some (Recoil.Atoms.Database.newDatabaseId ())) })
                         |}
                     children =
                         [

@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core
 open Feliz
 open Fluke.UI.Frontend.Bindings
 
@@ -7,10 +8,16 @@ open Fluke.UI.Frontend.Bindings
 module Button =
 
     [<ReactComponent>]
-    let Button (input: {| RightIcon: bool
-                          Icon: obj
-                          props: {| marginLeft: string; onClick: unit -> unit |}
-                          children: seq<ReactElement> |}) =
+    let Button
+        (input: {| RightIcon: bool option
+                   Icon: obj option
+                   props: {| color: string option
+                             flex: int option
+                             autoFocus: bool option
+                             marginLeft: string option
+                             onClick: (unit -> JS.Promise<unit>) option |}
+                   children: seq<ReactElement> |})
+        =
         match input.children |> Seq.toList with
         | [] -> Chakra.iconButton {| input.props with icon = input.Icon |} []
         | children ->
@@ -19,7 +26,7 @@ module Button =
             Chakra.button
                 {| input.props with
                     height = "auto"
-                    color = "black"
+//                    _focus = {| backgroundColor = "white" |}
                     paddingTop = "2px"
                     paddingBottom = "2px"
                 |}
@@ -27,7 +34,7 @@ module Button =
                     Chakra.stack
                         {| direction = "row"; spacing = "7px" |}
                         [
-                            if not input.RightIcon then
+                            if input.RightIcon = (Some false) then
                                 icon
 
                             Chakra.box
@@ -36,7 +43,7 @@ module Button =
                                     yield! children
                                 ]
 
-                            if input.RightIcon then
+                            if input.RightIcon = (Some true) then
                                 icon
 
                         ]

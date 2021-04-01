@@ -30,6 +30,9 @@ module Full =
 
         type Chainable2<'T> =
             abstract should : string -> string -> 'T -> unit
+            abstract click : unit -> unit
+            abstract ``type`` : string -> unit
+            abstract get : string -> Chainable2<'T>
 
         type Location =
             abstract pathname : string
@@ -39,8 +42,14 @@ module Full =
         [<Emit("cy.location()")>]
         let location () : Chainable<Location> = jsNative
 
+        [<Emit("cy.focused()")>]
+        let focused () : Chainable2<unit> = jsNative
+
         [<Emit("cy.visit($0)")>]
         let visit (_url: string) : unit = jsNative
+
+        [<Emit("cy.contains($0, $1)")>]
+        let contains (_text: string) (_options: {| timeout: int |} option) : Chainable2<'T> = jsNative
 
         [<Emit("cy.get($0)")>]
         let get (_selector: string) : Chainable2<string> = jsNative
@@ -50,6 +59,7 @@ module Full =
         "tests"
         (fun () ->
             let homeUrl = "https://localhost:33922"
+            let timeout = 40000
             before (fun () -> Cy.visit homeUrl)
 
             it
@@ -61,4 +71,16 @@ module Full =
                             expect(location.href)
                                 .``to``.contain $"{homeUrl}/#/login")
 
-                    Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"))
+                    Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"
+                    Cy.focused().click ()
+                    Cy.focused().``type`` "x"
+                    Cy.get("input[type=password]").``type`` "x"
+                    (Cy.contains "Sign In" None).click ()
+                    Cy.contains "Wrong user or password" |> ignore
+                    (Cy.contains "Sign Up" None).click ()
+
+                    Cy.contains "User registered successfully"
+                    |> ignore
+
+                    Cy.contains "Databases" (Some {| timeout = timeout |})
+                    |> ignore))

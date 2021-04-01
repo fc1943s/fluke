@@ -68,6 +68,7 @@ module LoginScreen =
                     [
                         Chakra.input
                             {|
+                                autoFocus = true
                                 value = usernameField
                                 onChange = fun (e: KeyboardEvent) -> setUsernameField e.Value
                                 placeholder = "Username"

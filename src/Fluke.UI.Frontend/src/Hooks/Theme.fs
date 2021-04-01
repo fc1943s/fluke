@@ -92,7 +92,8 @@ module Theme =
                                                 JsInterop.toPlainJsObj {| background = "gray.45" |}
                                             ``*::-webkit-scrollbar-thumb:hover`` =
                                                 JsInterop.toPlainJsObj {| background = "gray.77" |}
-                                            ``*:focus`` = JsInterop.toPlainJsObj {| boxShadow = "none !important" |}
+                                            ``*:focus`` =
+                                                JsInterop.toPlainJsObj {| boxShadow = "0 0 0 1px #5ca0c1 !important" |}
                                             ``*, *::before, *::after`` =
                                                 JsInterop.toPlainJsObj {| wordWrap = "break-word" |}
                                             ``.markdown-container h1`` =

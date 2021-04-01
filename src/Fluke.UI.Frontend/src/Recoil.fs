@@ -718,6 +718,12 @@ module Recoil =
                 def false
             }
 
+        let rec initialPeerSkipped =
+            atom {
+                key $"atom/{nameof initialPeerSkipped}"
+                def false
+            }
+
         let rec positionTrigger =
             atom {
                 key $"atom/{nameof positionTrigger}"

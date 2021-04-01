@@ -4,4 +4,4 @@ open Fluke.UI.Frontend.Bindings
 
 
 module Checkbox =
-    let checkbox props children = Chakra.checkbox props children
+    let Checkbox props children = Chakra.checkbox props children

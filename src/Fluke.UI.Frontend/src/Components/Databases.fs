@@ -73,7 +73,7 @@ module Databases =
                 | RenderCheckbox -> true
                 | _ -> false
 
-            Checkbox.checkbox
+            Checkbox.Checkbox
                 {|
                     ``data-testid`` =
                         if isTesting then

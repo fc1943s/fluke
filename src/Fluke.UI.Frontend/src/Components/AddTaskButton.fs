@@ -7,21 +7,24 @@ open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
 
-module AddTaskButton =
 
+module AddTaskButton =
     [<ReactComponent>]
     let AddTaskButton (props: {| marginLeft: string |}) =
-        let taskIdForm, setTaskIdForm = Recoil.useState (Recoil.Atoms.taskIdForm)
+        let taskIdForm, setTaskIdForm = Recoil.useState Recoil.Atoms.taskIdForm
 
         React.fragment [
             Button.Button
                 {|
-                    Icon = Icons.faPlus
-                    RightIcon = false
+                    Icon = Some (box Icons.faPlus)
+                    RightIcon = Some false
                     props =
                         {|
-                            marginLeft = props.marginLeft
-                            onClick = fun () -> setTaskIdForm (Some (Recoil.Atoms.Task.newTaskId ()))
+                            autoFocus = None
+                            color = None
+                            flex = None
+                            marginLeft = Some props.marginLeft
+                            onClick = Some (fun () -> promise { setTaskIdForm (Some (Recoil.Atoms.Task.newTaskId ())) })
                         |}
                     children =
                         [
