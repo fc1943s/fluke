@@ -6,7 +6,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -26,8 +26,6 @@ jobs:
       - run: cd ./src/Fluke.UI.Frontend && yarn cypress-install
 
       - uses: cypress-io/github-action@v2
-        env:
-          CYPRESS_CACHE_FOLDER: C:\Users\runneradmin\AppData\Local\Cypress\Cache
         with:
           working-directory: ./src/Fluke.UI.Frontend
           build: npx cypress info
