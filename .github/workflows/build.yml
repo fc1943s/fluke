@@ -32,6 +32,7 @@ jobs:
           record: true
           working-directory: ./src/Fluke.UI.Frontend
           build: npx cypress info
+          wait-on: https://localhost:33922
           start: yarn frontend-serve
           command: yarn cypress-run
 
