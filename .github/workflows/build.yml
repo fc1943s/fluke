@@ -26,6 +26,8 @@ jobs:
       - run: cd ./src/Fluke.UI.Frontend && yarn cypress-install
 
       - uses: cypress-io/github-action@v2
+        env:
+          CYPRESS_CACHE_FOLDER: %localappdata%/Cypress/Cache
         with:
           record: true
           working-directory: ./src/Fluke.UI.Frontend
