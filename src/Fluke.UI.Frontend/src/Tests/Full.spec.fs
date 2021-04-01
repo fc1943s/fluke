@@ -28,6 +28,7 @@ module Full =
                     Cy.get("input[type=password]").``type`` "x"
                     (Cy.contains "Sign In" None).click ()
                     Cy.contains "Wrong user or password" |> ignore
+                    Cy.wait 300
                     (Cy.contains "Sign Up" None).click ()
 
                     Cy.contains "User registered successfully"

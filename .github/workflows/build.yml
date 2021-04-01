@@ -29,11 +29,10 @@ jobs:
         env:
           CYPRESS_CACHE_FOLDER: C:\Users\runneradmin\AppData\Local\Cypress\Cache
         with:
-          record: true
           working-directory: ./src/Fluke.UI.Frontend
           build: npx cypress info
-          wait-on: https://localhost:33922
           start: yarn frontend-serve
+          wait-on: https://localhost:33922
           command: yarn cypress-run
 
       - uses: actions/upload-artifact@v1

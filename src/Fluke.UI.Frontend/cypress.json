@@ -1,8 +1,8 @@
 {
-  "baseUrl": "http://localhost:33922",
+  "baseUrl": "https://localhost:33922",
   "chromeWebSecurity": false,
   "integrationFolder": "src/Tests",
   "testFiles": "**/*.spec.fs.js",
-  "video": false,
+  "video": true,
   "experimentalComponentTesting": true
 }

@@ -46,6 +46,9 @@ module Cypress =
         [<Emit("cy.visit($0)")>]
         let visit (_url: string) : unit = jsNative
 
+        [<Emit("cy.wait($0)")>]
+        let wait (_time: int) : unit = jsNative
+
         [<Emit("cy.contains($0, $1)")>]
         let contains (_text: string) (_options: {| timeout: int |} option) : Chainable2<'T> = jsNative
 
