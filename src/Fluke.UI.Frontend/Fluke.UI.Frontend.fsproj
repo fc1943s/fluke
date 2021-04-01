@@ -14,6 +14,7 @@
         <Compile Include="src\Bindings\Icons.fs" />
         <Compile Include="src\Bindings\Markdown.fs" />
         <Compile Include="src\Bindings\Gun.fs" />
+        <Compile Include="src\Bindings\Cypress.fs" />
         <Compile Include="src\Profiling.fs" />
         <Compile Include="src\Sync.fs" />
         <Compile Include="src\TempAudio.fs" />
