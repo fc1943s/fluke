@@ -10,10 +10,12 @@ open Fluke.UI.Frontend.Bindings
 module DockPanel =
 
     [<ReactComponent>]
-    let DockPanel (input: {| Name: string
-                             Icon: obj
-                             Atom: RecoilValue<TempUI.DockType option, ReadWrite>
-                             children: seq<ReactElement> |}) =
+    let DockPanel
+        (input: {| Name: string
+                   Icon: obj
+                   Atom: RecoilValue<TempUI.DockType option, ReadWrite>
+                   children: seq<ReactElement> |})
+        =
         let setAtom = Recoil.useSetState input.Atom
 
         Chakra.stack
@@ -22,7 +24,7 @@ module DockPanel =
                 Chakra.flex
                     {|
                         paddingLeft = "10px"
-                        borderBottomColor = "gray.16%"
+                        borderBottomColor = "gray.16"
                         borderBottom = "1px solid"
                         align = "center"
                     |}

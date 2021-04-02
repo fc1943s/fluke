@@ -86,14 +86,13 @@ module HomeScreen =
                                                     Chakra.tab
                                                         {|
                                                             padding = "12px"
-                                                            color = "gray.45%"
+                                                            color = "gray.45"
                                                             _hover =
                                                                 {|
-                                                                    borderBottomColor = "gray.45%"
+                                                                    borderBottomColor = "gray.45"
                                                                     borderBottom = "2px solid"
                                                                 |}
-                                                            _selected =
-                                                                {| color = "gray.77%"; borderColor = "gray.77%" |}
+                                                            _selected = {| color = "gray.77"; borderColor = "gray.77" |}
                                                         |}
                                                         [
                                                             Chakra.box {| ``as`` = tab.Icon; marginRight = "6px" |} []

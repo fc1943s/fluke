@@ -20,12 +20,14 @@ module Input =
         | Password
 
     [<ReactComponent>]
-    let Input<'T> (input: {| Label: string option
-                             Placeholder: string
-                             InputFormat: InputFormat
-                             OnFormat: 'T -> string
-                             OnValidate: string -> 'T option
-                             Atom: RecoilValue<'T, ReadWrite> |}) =
+    let Input<'T>
+        (input: {| Label: string option
+                   Placeholder: string
+                   InputFormat: InputFormat
+                   OnFormat: 'T -> string
+                   OnValidate: string -> 'T option
+                   Atom: RecoilValue<'T, ReadWrite> |})
+        =
         let atom, setAtom = Recoil.useState input.Atom
         let resetAtom = Recoil.useResetState input.Atom
 

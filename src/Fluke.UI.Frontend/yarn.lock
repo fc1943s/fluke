@@ -12321,6 +12321,11 @@ recoil@~0.2:
   dependencies:
     hamt_plus "1.0.2"
 
+recoilize@~1.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/recoilize/-/recoilize-1.0.0.tgz#b4c1f1fffa2cd5b93a810b1d0f2af64f203e99b6"
+  integrity sha512-CJMPAvW9qodfkOjAiklwbGGh/1u2OlT5PwpDxmClmlaUHez0eY7iViz+drT/5jF5qXkuzunoFf3v3yezKtqbXQ==
+
 recursive-readdir@2.2.2:
   version "2.2.2"
   resolved "https://registry.yarnpkg.com/recursive-readdir/-/recursive-readdir-2.2.2.tgz#9946fb3274e1628de6e36b2f6714953b4845094f"

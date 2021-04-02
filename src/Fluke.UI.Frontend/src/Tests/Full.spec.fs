@@ -34,5 +34,5 @@ module Full =
                     Cy.contains "User registered successfully"
                     |> ignore
 
-                    Cy.contains "Add Database" (Some {| timeout = timeout |})
-                    |> ignore))
+                    (Cy.contains "Add Database" (Some {| timeout = timeout |}))
+                        .click ()))

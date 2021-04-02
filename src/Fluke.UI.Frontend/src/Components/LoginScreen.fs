@@ -81,6 +81,12 @@ module LoginScreen =
                                 ``type`` = "password"
                                 onChange = fun (e: KeyboardEvent) -> setPasswordField e.Value
                                 placeholder = "Password"
+                                onKeyDown =
+                                    fun (e: KeyboardEvent) ->
+                                        promise {
+                                            if e.key = "Enter" then
+                                                do! signInClick ()
+                                        }
                             |}
                             []
 

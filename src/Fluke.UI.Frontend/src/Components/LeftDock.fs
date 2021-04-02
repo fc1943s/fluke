@@ -52,14 +52,15 @@ module LeftDock =
                             [
                                 yield!
                                     items
-                                    |> List.map (fun (dockType, (name, icon, _)) ->
-                                        DockButton.DockButton
-                                            {|
-                                                DockType = dockType
-                                                Name = name
-                                                Icon = icon
-                                                Atom = Recoil.Atoms.leftDock
-                                            |})
+                                    |> List.map
+                                        (fun (dockType, (name, icon, _)) ->
+                                            DockButton.DockButton
+                                                {|
+                                                    DockType = dockType
+                                                    Name = name
+                                                    Icon = icon
+                                                    Atom = Recoil.Atoms.leftDock
+                                                |})
                             ]
                     ]
 
@@ -72,7 +73,7 @@ module LeftDock =
                         Chakra.flex
                             {|
                                 width = "300px"
-                                borderRightColor = "gray.16%"
+                                borderRightColor = "gray.16"
                                 borderRight = "1px solid"
                                 flex = 1
                             |}

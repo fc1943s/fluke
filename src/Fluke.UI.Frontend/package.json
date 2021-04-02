@@ -51,6 +51,7 @@
     "react-dom": "0.0.0-experimental-b48b38af6",
 
     "recoil": "~0.2",
+    "recoilize": "~1.0",
 
     "gun": "amark/gun.git#master",
     "@altrx/gundb-react-hooks": "~0.8",

@@ -1,9 +1,11 @@
 namespace Fluke.UI.Frontend.Bindings
 
+open Fable.Core
 open Feliz.Recoil
 open Fluke.UI.Frontend
 open Fable.Core.JsInterop
 open Feliz
+open React
 
 
 module Recoil =
@@ -15,6 +17,8 @@ module Recoil =
             setSelf: 'T -> unit
         }
 
+module Recoilize =
+    let recoilizeDebugger<'T> = importDefault "recoilize" |> composeComponent
 
 [<AutoOpen>]
 module RecoilMagic =
@@ -22,7 +26,7 @@ module RecoilMagic =
     type AtomStateWithEffects<'T, 'U, 'V> =
         {
             State: AtomState.ReadWrite<'T, 'U, 'V>
-            Effects: ((Recoil.EffectProps<'T> -> (unit -> unit)) list)
+            Effects: (Recoil.EffectProps<'T> -> (unit -> unit)) list
         }
 
     type AtomCE.AtomBuilder with

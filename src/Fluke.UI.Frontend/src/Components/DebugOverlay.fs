@@ -85,7 +85,8 @@ module DebugOverlay =
                     Checkbox.Checkbox
                         {|
                             isChecked = debug
-                            onChange = fun (e: {| target: Browser.Types.HTMLInputElement |}) -> setDebug e.target.``checked``
+                            onChange =
+                                fun (e: {| target: Browser.Types.HTMLInputElement |}) -> setDebug e.target.``checked``
                         |}
                         [
                             str (

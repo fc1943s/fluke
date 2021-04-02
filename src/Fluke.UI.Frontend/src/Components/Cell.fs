@@ -116,7 +116,7 @@ module Cell =
 
                                                 Chakra.tooltip
                                                     {|
-                                                        bg = "gray.10%"
+                                                        bg = "gray.10"
                                                         label =
                                                             match status with
                                                             | Postponed until ->
@@ -192,7 +192,7 @@ overriding any other behavior.
                             | UserStatus (_, status) when selectableStatusList |> List.contains status ->
                                 Chakra.tooltip
                                     {|
-                                        bg = "gray.10%"
+                                        bg = "gray.10"
                                         label = "Clear"
                                         placement = "bottom"
                                         hasArrow = true

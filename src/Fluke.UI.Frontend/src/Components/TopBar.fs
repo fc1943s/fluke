@@ -15,7 +15,7 @@ module TopBar =
         Chakra.flex
             {|
                 height = "31px"
-                backgroundColor = "gray.10%"
+                backgroundColor = "gray.10"
                 align = "center"
                 padding = "7px"
             |}
