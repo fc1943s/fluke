@@ -107,7 +107,7 @@ module HomeScreen =
                                             |> List.map
                                                 (fun tab ->
                                                     Chakra.tabPanel
-                                                        {| padding = 0 |}
+                                                        {| padding = 0; boxShadow = "none !important" |}
                                                         [
                                                             tab.Content ()
                                                         ])

@@ -4,7 +4,6 @@ open Browser.Types
 open Fable.React
 open Feliz
 open Feliz.Recoil
-open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
@@ -75,6 +74,7 @@ module Cell =
                 width = "17px"
                 height = "17px"
                 lineHeight = "17px"
+                cursor = "pointer"
                 backgroundColor =
                     (TempUI.cellStatusColor status)
                     + (if isToday then
@@ -106,7 +106,7 @@ module Cell =
                         |}
                         [
                             Chakra.simpleGrid
-                                {| columns = 2 |}
+                                {| columns = 2; width = "30px" |}
                                 [
                                     yield!
                                         selectableStatusList
@@ -117,6 +117,7 @@ module Cell =
                                                 Chakra.tooltip
                                                     {|
                                                         bg = "gray.10"
+                                                        color = "white"
                                                         label =
                                                             match status with
                                                             | Postponed until ->
@@ -193,6 +194,7 @@ overriding any other behavior.
                                 Chakra.tooltip
                                     {|
                                         bg = "gray.10"
+                                        color = "white"
                                         label = "Clear"
                                         placement = "bottom"
                                         hasArrow = true

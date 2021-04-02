@@ -1,6 +1,6 @@
 namespace Fluke.UI.Frontend.Bindings
 
-open Fable.Core
+open Fable.React
 open Feliz.Recoil
 open Fluke.UI.Frontend
 open Fable.Core.JsInterop
@@ -18,7 +18,9 @@ module Recoil =
         }
 
 module Recoilize =
-    let recoilizeDebugger<'T> = importDefault "recoilize" |> composeComponent
+    let recoilizeDebugger<'T> =
+        //         importDefault "recoilize"
+        nothing |> composeComponent
 
 [<AutoOpen>]
 module RecoilMagic =
@@ -26,7 +28,7 @@ module RecoilMagic =
     type AtomStateWithEffects<'T, 'U, 'V> =
         {
             State: AtomState.ReadWrite<'T, 'U, 'V>
-            Effects: (Recoil.EffectProps<'T> -> (unit -> unit)) list
+            Effects: (Recoil.EffectProps<'T> -> unit -> unit) list
         }
 
     type AtomCE.AtomBuilder with
@@ -34,7 +36,7 @@ module RecoilMagic =
         member inline _.Effects
             (
                 state: AtomState.ReadWrite<'T, 'U, 'V>,
-                effects: (Recoil.EffectProps<'T> -> (unit -> unit)) list
+                effects: (Recoil.EffectProps<'T> -> unit -> unit) list
             )
             : AtomStateWithEffects<'T, 'U, 'V>
             =
@@ -63,7 +65,7 @@ module RecoilMagic =
     type AtomFamilyStateWithEffects<'T, 'U, 'V, 'P> =
         {
             State: AtomFamilyState.ReadWrite<'P -> 'U, 'U, 'V, 'P>
-            Effects: 'P -> ((Recoil.EffectProps<'T> -> (unit -> unit)) list)
+            Effects: 'P -> (Recoil.EffectProps<'T> -> unit -> unit) list
         }
 
     type AtomFamilyCE.AtomFamilyBuilder with
@@ -71,7 +73,7 @@ module RecoilMagic =
         member inline _.Effects
             (
                 state: AtomFamilyState.ReadWrite<'P -> 'U, 'U, 'V, 'P>,
-                effects: 'P -> ((Recoil.EffectProps<'T> -> (unit -> unit)) list)
+                effects: 'P -> (Recoil.EffectProps<'T> -> unit -> unit) list
             )
             : AtomFamilyStateWithEffects<'T, 'U, 'V, 'P>
             =
