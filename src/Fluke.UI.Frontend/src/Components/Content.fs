@@ -31,6 +31,8 @@ module Content =
                                 SessionDataLoader.SessionDataLoader username
                                 SoundPlayer.SoundPlayer username
 
+                                GunBind.GunBind ()
+
                                 Chakra.stack
                                     {| spacing = 0; flex = 1 |}
                                     [

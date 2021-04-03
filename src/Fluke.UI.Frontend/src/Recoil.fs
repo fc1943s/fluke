@@ -83,7 +83,7 @@ module Recoil =
 
             let rec events =
                 atomFamily {
-                    key $"{nameof Events}/{nameof events}"
+                    key $"{nameof atomFamily}/{nameof Events}/{nameof events}"
 
                     def
                         (fun (_eventId: EventId) ->
@@ -96,7 +96,7 @@ module Recoil =
 
             let rec wrappedInformation =
                 atomFamily {
-                    key $"{nameof Information}/{nameof wrappedInformation}"
+                    key $"{nameof atomFamily}/{nameof Information}/{nameof wrappedInformation}"
 
                     def
                         (fun (_informationId: InformationId) ->
@@ -106,7 +106,7 @@ module Recoil =
 
             let rec attachments =
                 atomFamily {
-                    key $"{nameof Information}/{nameof attachments}"
+                    key $"{nameof atomFamily}/{nameof Information}/{nameof attachments}"
 
                     def
                         (fun (_informationId: InformationId) ->
@@ -133,7 +133,7 @@ module Recoil =
 
             let rec informationId =
                 atomFamily {
-                    key $"{nameof Task}/{nameof informationId}"
+                    key $"{nameof atomFamily}/{nameof Task}/{nameof informationId}"
 
                     def
                         (fun (_taskId: TaskId) ->
@@ -143,7 +143,7 @@ module Recoil =
 
             let rec name =
                 atomFamily {
-                    key $"{nameof Task}/{nameof name}"
+                    key $"{nameof atomFamily}/{nameof Task}/{nameof name}"
 
                     def
                         (fun (_taskId: TaskId) ->
@@ -153,7 +153,7 @@ module Recoil =
 
             let rec scheduling =
                 atomFamily {
-                    key $"{nameof Task}/{nameof scheduling}"
+                    key $"{nameof atomFamily}/{nameof Task}/{nameof scheduling}"
 
                     def
                         (fun (_taskId: TaskId) ->
@@ -163,7 +163,7 @@ module Recoil =
 
             let rec pendingAfter =
                 atomFamily {
-                    key $"{nameof Task}/{nameof pendingAfter}"
+                    key $"{nameof atomFamily}/{nameof Task}/{nameof pendingAfter}"
 
                     def
                         (fun (_taskId: TaskId) ->
@@ -173,7 +173,7 @@ module Recoil =
 
             let rec missedAfter =
                 atomFamily {
-                    key $"{nameof Task}/{nameof missedAfter}"
+                    key $"{nameof atomFamily}/{nameof Task}/{nameof missedAfter}"
 
                     def
                         (fun (_taskId: TaskId) ->
@@ -183,7 +183,7 @@ module Recoil =
 
             let rec priority =
                 atomFamily {
-                    key $"{nameof Task}/{nameof priority}"
+                    key $"{nameof atomFamily}/{nameof Task}/{nameof priority}"
 
                     def
                         (fun (_taskId: TaskId) ->
@@ -193,7 +193,7 @@ module Recoil =
 
             let rec attachments =
                 atomFamily {
-                    key $"{nameof Task}/{nameof attachments}"
+                    key $"{nameof atomFamily}/{nameof Task}/{nameof attachments}"
 
                     def
                         (fun (_taskId: TaskId) ->
@@ -203,7 +203,7 @@ module Recoil =
 
             let rec duration =
                 atomFamily {
-                    key $"{nameof Task}/{nameof duration}"
+                    key $"{nameof atomFamily}/{nameof Task}/{nameof duration}"
 
                     def
                         (fun (_taskId: TaskId) ->
@@ -217,7 +217,7 @@ module Recoil =
         module rec User =
             let rec color =
                 atomFamily {
-                    key $"{nameof User}/{nameof color}"
+                    key $"{nameof atomFamily}/{nameof User}/{nameof color}"
 
                     def
                         (fun (_username: Username) ->
@@ -227,7 +227,7 @@ module Recoil =
 
             let rec weekStart =
                 atomFamily {
-                    key $"{nameof User}/{nameof weekStart}"
+                    key $"{nameof atomFamily}/{nameof User}/{nameof weekStart}"
 
                     def
                         (fun (_username: Username) ->
@@ -237,7 +237,7 @@ module Recoil =
 
             let rec dayStart =
                 atomFamily {
-                    key $"{nameof User}/{nameof dayStart}"
+                    key $"{nameof atomFamily}/{nameof User}/{nameof dayStart}"
 
                     def
                         (fun (_username: Username) ->
@@ -247,7 +247,7 @@ module Recoil =
 
             let rec sessionLength =
                 atomFamily {
-                    key $"{nameof User}/{nameof sessionLength}"
+                    key $"{nameof atomFamily}/{nameof User}/{nameof sessionLength}"
 
                     def
                         (fun (_username: Username) ->
@@ -257,7 +257,7 @@ module Recoil =
 
             let rec sessionBreakLength =
                 atomFamily {
-                    key $"{nameof User}/{nameof sessionBreakLength}"
+                    key $"{nameof atomFamily}/{nameof User}/{nameof sessionBreakLength}"
 
                     def
                         (fun (_username: Username) ->
@@ -271,7 +271,7 @@ module Recoil =
         module rec Session =
             let rec databaseStateMapCache =
                 atomFamily {
-                    key $"{nameof Session}/{nameof databaseStateMapCache}"
+                    key $"{nameof atomFamily}/{nameof Session}/{nameof databaseStateMapCache}"
 
                     def
                         (fun (_username: Username) ->
@@ -281,7 +281,7 @@ module Recoil =
 
             let rec availableDatabaseIds =
                 atomFamily {
-                    key $"{nameof Session}/{nameof availableDatabaseIds}"
+                    key $"{nameof atomFamily}/{nameof Session}/{nameof availableDatabaseIds}"
 
                     def
                         (fun (_username: Username) ->
@@ -291,7 +291,7 @@ module Recoil =
 
             let rec taskIdList =
                 atomFamily {
-                    key $"{nameof Session}/{nameof taskIdList}"
+                    key $"{nameof atomFamily}/{nameof Session}/{nameof taskIdList}"
 
                     def
                         (fun (_username: Username) ->
@@ -303,7 +303,7 @@ module Recoil =
         module rec Cell =
             let rec taskId =
                 atomFamily {
-                    key $"{nameof Cell}/{nameof taskId}"
+                    key $"{nameof atomFamily}/{nameof Cell}/{nameof taskId}"
 
                     def
                         (fun (taskId: Task.TaskId, _dateId: DateId) ->
@@ -313,7 +313,7 @@ module Recoil =
 
             let rec dateId =
                 atomFamily {
-                    key $"{nameof Cell}/{nameof dateId}"
+                    key $"{nameof atomFamily}/{nameof Cell}/{nameof dateId}"
 
                     def
                         (fun (_taskId: Task.TaskId, dateId: DateId) ->
@@ -323,7 +323,7 @@ module Recoil =
 
             let rec status =
                 atomFamily {
-                    key $"{nameof Cell}/{nameof status}"
+                    key $"{nameof atomFamily}/{nameof Cell}/{nameof status}"
 
                     def
                         (fun (_taskId: Task.TaskId, _dateId: DateId) ->
@@ -333,7 +333,7 @@ module Recoil =
 
             let rec attachments =
                 atomFamily {
-                    key $"{nameof Cell}/{nameof attachments}"
+                    key $"{nameof atomFamily}/{nameof Cell}/{nameof attachments}"
 
                     def
                         (fun (_taskId: Task.TaskId, _dateId: DateId) ->
@@ -343,7 +343,7 @@ module Recoil =
 
             let rec sessions =
                 atomFamily {
-                    key $"{nameof Cell}/{nameof sessions}"
+                    key $"{nameof atomFamily}/{nameof Cell}/{nameof sessions}"
 
                     def
                         (fun (_taskId: Task.TaskId, _dateId: DateId) ->
@@ -353,7 +353,7 @@ module Recoil =
 
             let rec selected =
                 atomFamily {
-                    key $"{nameof Cell}/{nameof selected}"
+                    key $"{nameof atomFamily}/{nameof Cell}/{nameof selected}"
 
                     def
                         (fun (_taskId: Task.TaskId, _dateId: DateId) ->
@@ -505,7 +505,7 @@ module Recoil =
 
             let rec name =
                 atomFamily {
-                    key $"{nameof Database}/{nameof name}"
+                    key $"{nameof atomFamily}/{nameof Database}/{nameof name}"
 
                     def
                         (fun (_databaseId: DatabaseId) ->
@@ -516,7 +516,7 @@ module Recoil =
 
             let rec owner =
                 atomFamily {
-                    key $"{nameof Database}/{nameof owner}"
+                    key $"{nameof atomFamily}/{nameof Database}/{nameof owner}"
 
                     def
                         (fun (_databaseId: DatabaseId) ->
@@ -527,7 +527,7 @@ module Recoil =
 
             let rec sharedWith =
                 atomFamily {
-                    key $"{nameof Database}/{nameof sharedWith}"
+                    key $"{nameof atomFamily}/{nameof Database}/{nameof sharedWith}"
 
                     def
                         (fun (_databaseId: DatabaseId) ->
@@ -537,7 +537,7 @@ module Recoil =
 
             let rec dayStart =
                 atomFamily {
-                    key $"{nameof Database}/{nameof dayStart}"
+                    key $"{nameof atomFamily}/{nameof Database}/{nameof dayStart}"
 
                     def
                         (fun (_databaseId: DatabaseId) ->
@@ -548,7 +548,7 @@ module Recoil =
 
             let rec position =
                 atomFamily {
-                    key $"{nameof Database}/{nameof position}"
+                    key $"{nameof atomFamily}/{nameof Database}/{nameof position}"
 
                     def
                         (fun (_databaseId: DatabaseId) ->
@@ -559,112 +559,111 @@ module Recoil =
 
         let rec debug =
             atom {
-                key $"atom/{nameof debug}"
+                key $"{nameof atom}/{nameof debug}"
                 def false
                 local_storage
             }
 
         let rec isTesting =
             atom {
-                key $"atom/{nameof isTesting}"
+                key $"{nameof atom}/{nameof isTesting}"
                 def JS.isTesting
             }
 
         let rec view =
             atom {
-                key $"atom/{nameof view}"
+                key $"{nameof atom}/{nameof view}"
                 def View.View.HabitTracker
             }
 
         let rec selectedDatabaseIds =
             atom {
-                key $"atom/{nameof selectedDatabaseIds}"
+                key $"{nameof atom}/{nameof selectedDatabaseIds}"
                 def ([||]: DatabaseId [])
                 local_storage
             }
 
         let rec selectedPosition =
             atom {
-                key $"atom/{nameof selectedPosition}"
+                key $"{nameof atom}/{nameof selectedPosition}"
                 def (None: FlukeDateTime option)
                 local_storage
             }
 
         let rec cellMenuOpened =
             atom {
-                key $"atom/{nameof cellMenuOpened}"
+                key $"{nameof atom}/{nameof cellMenuOpened}"
                 def (None: (Task.TaskId * DateId) option)
             }
 
         let rec cellSize =
             atom {
-                key $"atom/{nameof cellSize}"
+                key $"{nameof atom}/{nameof cellSize}"
                 def 17
             }
 
         let rec daysBefore =
             atom {
-                key $"atom/{nameof daysBefore}"
+                key $"{nameof atom}/{nameof daysBefore}"
                 def 7
             }
 
         let rec daysAfter =
             atom {
-                key $"atom/{nameof daysAfter}"
+                key $"{nameof atom}/{nameof daysAfter}"
                 def 7
-                local_storage
             }
 
         let rec leftDock =
             atom {
-                key $"atom/{nameof leftDock}"
+                key $"{nameof atom}/{nameof leftDock}"
                 def (None: TempUI.DockType option)
                 local_storage
             }
 
         let rec formDatabaseId =
             atom {
-                key $"atom/{nameof formDatabaseId}"
+                key $"{nameof atom}/{nameof formDatabaseId}"
                 def (None: State.DatabaseId option)
             }
 
         let rec taskIdForm =
             atom {
-                key $"atom/{nameof taskIdForm}"
+                key $"{nameof atom}/{nameof taskIdForm}"
                 def (None: Task.TaskId option)
             }
 
         let rec apiBaseUrl =
             atom {
-                key $"atom/{nameof apiBaseUrl}"
+                key $"{nameof atom}/{nameof apiBaseUrl}"
                 def $"https://localhost:{Sync.serverPort}"
                 local_storage
             }
 
         let rec gunPeer1 =
             atom {
-                key $"atom/{nameof gunPeer1}"
+                key $"{nameof atom}/{nameof gunPeer1}"
                 def ""
                 local_storage
             }
 
         let rec gunPeer2 =
             atom {
-                key $"atom/{nameof gunPeer2}"
+                key $"{nameof atom}/{nameof gunPeer2}"
                 def ""
                 local_storage
             }
 
         let rec gunPeer3 =
             atom {
-                key $"atom/{nameof gunPeer3}"
+                key $"{nameof atom}/{nameof gunPeer3}"
                 def ""
                 local_storage
             }
 
         let rec gunKeys =
             atom {
-                key $"atom/{nameof gunKeys}"
+                key $"{nameof atom}/{nameof gunKeys}"
 
                 def
                     {
@@ -679,25 +678,25 @@ module Recoil =
 
         let rec api =
             atom {
-                key $"atom/{nameof api}"
+                key $"{nameof atom}/{nameof api}"
                 def (None: Sync.Api option)
             }
 
         let rec username =
             atom {
-                key $"atom/{nameof username}"
+                key $"{nameof atom}/{nameof username}"
                 def None
             }
 
         let rec sessionRestored =
             atom {
-                key $"atom/{nameof sessionRestored}"
+                key $"{nameof atom}/{nameof sessionRestored}"
                 def false
             }
 
         let rec getLivePosition =
             atom {
-                key $"atom/{nameof getLivePosition}"
+                key $"{nameof atom}/{nameof getLivePosition}"
 
                 def
                     {|
@@ -708,25 +707,25 @@ module Recoil =
 
         let rec ctrlPressed =
             atom {
-                key $"atom/{nameof ctrlPressed}"
+                key $"{nameof atom}/{nameof ctrlPressed}"
                 def false
             }
 
         let rec shiftPressed =
             atom {
-                key $"atom/{nameof shiftPressed}"
+                key $"{nameof atom}/{nameof shiftPressed}"
                 def false
             }
 
         let rec initialPeerSkipped =
             atom {
-                key $"atom/{nameof initialPeerSkipped}"
+                key $"{nameof atom}/{nameof initialPeerSkipped}"
                 def false
             }
 
         let rec positionTrigger =
             atom {
-                key $"atom/{nameof positionTrigger}"
+                key $"{nameof atom}/{nameof positionTrigger}"
                 def 0
             }
 
@@ -734,7 +733,7 @@ module Recoil =
     module Selectors =
         let rec gunPeers =
             selector {
-                key $"selector/{nameof gunPeers}"
+                key $"{nameof selector}/{nameof gunPeers}"
 
                 get
                     (fun getter ->
@@ -756,7 +755,7 @@ module Recoil =
 
         let rec gun =
             selector {
-                key $"selector/{nameof gun}"
+                key $"{nameof selector}/{nameof gun}"
 
                 get
                     (fun getter ->
@@ -771,7 +770,7 @@ module Recoil =
 
         let rec gunNamespace =
             selector {
-                key $"selector/{nameof gunNamespace}"
+                key $"{nameof selector}/{nameof gunNamespace}"
 
                 get
                     (fun getter ->
@@ -791,7 +790,7 @@ module Recoil =
 
         let rec apiCurrentUserAsync =
             selector {
-                key $"selector/{nameof apiCurrentUserAsync}"
+                key $"{nameof selector}/{nameof apiCurrentUserAsync}"
 
                 get
                     (fun getter ->
@@ -811,7 +810,7 @@ module Recoil =
 
         let rec position =
             selector {
-                key $"selector/{nameof position}"
+                key $"{nameof selector}/{nameof position}"
 
                 get
                     (fun getter ->
@@ -835,7 +834,7 @@ module Recoil =
 
         let rec dateSequence =
             selector {
-                key $"selector/{nameof dateSequence}"
+                key $"{nameof selector}/{nameof dateSequence}"
 
                 get
                     (fun getter ->
@@ -862,7 +861,7 @@ module Recoil =
 
         let rec cellSelectionMap =
             selector {
-                key $"selector/{nameof cellSelectionMap}"
+                key $"{nameof selector}/{nameof cellSelectionMap}"
 
                 get
                     (fun getter ->
@@ -943,7 +942,7 @@ module Recoil =
         module rec FlukeDate =
             let isToday =
                 selectorFamily {
-                    key $"{nameof FlukeDate}/{nameof isToday}"
+                    key $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof isToday}"
 
                     get
                         (fun (date: FlukeDate) getter ->
@@ -964,7 +963,7 @@ module Recoil =
 
             let rec hasSelection =
                 selectorFamily {
-                    key $"{nameof FlukeDate}/{nameof hasSelection}"
+                    key $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof hasSelection}"
 
                     get
                         (fun (date: FlukeDate) getter ->
@@ -990,7 +989,7 @@ module Recoil =
         module rec Task =
             let rec lastSession =
                 selectorFamily {
-                    key $"{nameof Task}/{nameof lastSession}"
+                    key $"{nameof selectorFamily}/{nameof Task}/{nameof lastSession}"
 
                     get
                         (fun (taskId: Atoms.Task.TaskId) getter ->
@@ -1013,7 +1012,7 @@ module Recoil =
 
             let rec activeSession =
                 selectorFamily {
-                    key $"{nameof Task}/{nameof activeSession}"
+                    key $"{nameof selectorFamily}/{nameof Task}/{nameof activeSession}"
 
                     get
                         (fun (taskId: Atoms.Task.TaskId) getter ->
@@ -1042,7 +1041,7 @@ module Recoil =
 
             let rec showUser =
                 selectorFamily {
-                    key $"{nameof Task}/{nameof showUser}"
+                    key $"{nameof selectorFamily}/{nameof Task}/{nameof showUser}"
 
                     get
                         (fun (taskId: Atoms.Task.TaskId) getter ->
@@ -1076,7 +1075,7 @@ module Recoil =
 
             let rec hasSelection =
                 selectorFamily {
-                    key $"{nameof Task}/{nameof hasSelection}"
+                    key $"{nameof selectorFamily}/{nameof Task}/{nameof hasSelection}"
 
                     get
                         (fun (taskId: Atoms.Task.TaskId) getter ->
@@ -1093,7 +1092,7 @@ module Recoil =
         module rec Session =
             let rec activeSessions =
                 selectorFamily {
-                    key $"{nameof Session}/{nameof activeSessions}"
+                    key $"{nameof selectorFamily}/{nameof Session}/{nameof activeSessions}"
 
                     get
                         (fun (username: Username) getter ->
@@ -1127,7 +1126,7 @@ module Recoil =
 
             let rec tasksByInformationKind =
                 selectorFamily {
-                    key $"{nameof Session}/{nameof tasksByInformationKind}"
+                    key $"{nameof selectorFamily}/{nameof Session}/{nameof tasksByInformationKind}"
 
                     get
                         (fun (username: Username) getter ->
@@ -1165,7 +1164,7 @@ module Recoil =
 
             let rec weekCellsMap =
                 selectorFamily {
-                    key $"{nameof Session}/{nameof weekCellsMap}"
+                    key $"{nameof selectorFamily}/{nameof Session}/{nameof weekCellsMap}"
 
                     get
                         (fun (username: Username) getter ->
@@ -1317,7 +1316,7 @@ module Recoil =
 
             let rec sessionData =
                 selectorFamily {
-                    key $"{nameof Session}/{nameof sessionData}"
+                    key $"{nameof selectorFamily}/{nameof Session}/{nameof sessionData}"
 
                     get
                         (fun (username: Username) getter ->
@@ -1358,7 +1357,7 @@ module Recoil =
         module rec Cell =
             let rec selected =
                 selectorFamily {
-                    key $"{nameof Cell}/{nameof selected}"
+                    key $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}"
 
                     get
                         (fun (taskId: Atoms.Task.TaskId, dateId: DateId) getter ->

@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.Core.JsInterop
-open Fable.Core
 open Browser.Types
 open Feliz
 open Fable.React
@@ -13,82 +12,6 @@ open Fluke.UI.Frontend.Bindings
 module Settings =
     open Fluke.UI.Frontend.Recoil
 
-    let useNode<'T when 'T: equality> atom (path: string list) =
-        let atomValue, setAtomValue = Recoil.useState<'T> atom
-        let lastAtomValue, setLastAtomValue = React.useState<'T> atomValue
-        let gunNamespace = Recoil.useValue Selectors.gunNamespace
-
-        let rendered, setRendered = React.useState false
-
-        React.useEffect (
-            (fun () ->
-                promise {
-                    let getNode () =
-                        (gunNamespace.ref.get (nameof Fluke), path)
-                        ||> List.fold (fun result -> result.get)
-
-                    if rendered && atomValue <> lastAtomValue then
-                        printfn $"atom change. putting on gun. lastAtomValue={lastAtomValue} atomValue={atomValue}"
-
-                        let node = getNode ()
-                        node.put atomValue |> ignore
-
-                        setLastAtomValue atomValue
-                }
-                |> Promise.start),
-            [|
-                box path
-                box lastAtomValue
-                box setLastAtomValue
-                box atomValue
-                box rendered
-                box gunNamespace.ref
-            |]
-        )
-
-        React.useEffect (
-            (fun () ->
-                promise {
-                    let getNode () =
-                        (gunNamespace.ref.get (nameof Fluke), path)
-                        ||> List.fold (fun result -> result.get)
-
-                    let guid = System.Guid.NewGuid ()
-
-                    if not rendered then
-                        let node = getNode ()
-
-                        printfn $"Settings.useEffect. if not rendered then. guid={guid} path={path}"
-
-                        node.on
-                            (fun (data: 'T option) ->
-                                match data with
-                                | Some data ->
-                                    printfn $"Settings.useEffect. node.on(). DATA: {data}"
-                                    setAtomValue data
-                                | None -> ())
-
-                        setRendered true
-
-                    return
-                        fun () ->
-                            if rendered then
-                                let node = getNode ()
-                                printfn $"rendering off {guid}"
-                                node.off ()
-                }
-                |> Promise.start),
-            [|
-                box path
-                box setAtomValue
-                box setRendered
-                box rendered
-                box gunNamespace.ref
-            |]
-        )
-
-        ()
-
     [<ReactComponent>]
     let rec Settings (input: {| Props: {| flex: int; overflowY: string; flexBasis: int |} |}) =
         let daysBefore, setDaysBefore = Recoil.useState Atoms.daysBefore
@@ -97,14 +20,6 @@ module Settings =
         let gunPeer1, setGunPeer1 = Recoil.useState Atoms.gunPeer1
         let gunPeer2, setGunPeer2 = Recoil.useState Atoms.gunPeer2
         let gunPeer3, setGunPeer3 = Recoil.useState Atoms.gunPeer3
-
-        let _ =
-            useNode
-                Atoms.daysBefore
-                [
-                    nameof Settings
-                    nameof daysBefore
-                ]
 
         Chakra.box
             input.Props

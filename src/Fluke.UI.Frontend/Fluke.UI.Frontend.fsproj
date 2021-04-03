@@ -74,6 +74,7 @@
         <Compile Include="src\Components\CtrlListener.fs" />
         <Compile Include="src\Components\ShiftListener.fs" />
         <Compile Include="src\Components\GunObserver.fs" />
+        <Compile Include="src\Components\GunBind.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\Components\RootWrapper.fs" />
         <Compile Include="src\Components\ApiSubscriber.fs" />
