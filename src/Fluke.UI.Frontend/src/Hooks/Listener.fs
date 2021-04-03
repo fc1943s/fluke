@@ -21,7 +21,10 @@ module Listener =
     let useElementHover (elemRef: IRefValue<#HTMLElement option>) =
         let isHovered, setIsHovered = React.useState false
 
-        React.useElementListener.onMouseEnter (elemRef, (fun _ -> setIsHovered true))
-        React.useElementListener.onMouseLeave (elemRef, (fun _ -> setIsHovered false))
+        let setIsHoveredTrue = Recoil.useCallbackRef (fun _ _ -> setIsHovered true)
+        let setIsHoveredFalse = Recoil.useCallbackRef (fun _ _ -> setIsHovered false)
+
+        React.useElementListener.onMouseEnter (elemRef, setIsHoveredTrue)
+        React.useElementListener.onMouseLeave (elemRef, setIsHoveredFalse)
 
         isHovered

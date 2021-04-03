@@ -6,9 +6,8 @@ module.exports = {
     jest: true,
   },
   extends: [
-    'airbnb',
     'plugin:react/recommended',
-    // 'plugin:react-hooks/recommended',
+    'plugin:react-hooks/recommended',
     'plugin:jest-dom/recommended',
     'plugin:@typescript-eslint/eslint-recommended',
   ],
@@ -31,17 +30,19 @@ module.exports = {
     'jest-dom',
   ],
   rules: {
-    'import/no-extraneous-dependencies': 'off',
-    'import/extensions': ['error', 'ignorePackages', {
-      js: 'never',
-      jsx: 'never',
-      ts: 'never',
-      tsx: 'never',
-      json: 'never',
-    }],
+    // 'import/no-extraneous-dependencies': 'off',
+    // 'import/extensions': ['error', 'ignorePackages', {
+    //   js: 'never',
+    //   jsx: 'never',
+    //   ts: 'never',
+    //   tsx: 'never',
+    //   json: 'never',
+    // }],
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
-    'max-len': ['error', { code: 120 }],
-    'react-hooks/exhaustive-deps': ['warn', { additionalHooks: 'useRecoilCallback' }],
+    'react-hooks/exhaustive-deps': ['warn', { additionalHooks: '(.*?_useRecoilCallback_.*?|.*?_useCallback_.*?|.*?_useEffect_.*?|.*?_useMemo.*?)' }],
+    'react-hooks/rules-of-hooks': 'error',
+
+    'react/display-name': 'off',
   },
   settings: {
     'import/resolver': {
@@ -50,5 +51,5 @@ module.exports = {
       },
     },
   },
-  ignorePatterns: ['**/*.fs.js', '**/*.fs.ts'],
+  // ignorePatterns: ['**/*.fs.js', '**/*.fs.ts'],
 };

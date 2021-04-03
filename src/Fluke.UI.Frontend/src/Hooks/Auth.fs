@@ -25,6 +25,8 @@ module Auth =
 
                 ),
             [|
+                box setUsername
+                box resetGunKeys
                 box gunNamespace.ref
             |]
         )
@@ -41,6 +43,8 @@ module Auth =
                     setGunKeys gunNamespace.ref.``_``.sea
                 }),
             [|
+                box setUsername
+                box setGunKeys
                 box gunNamespace.ref
             |]
         )
@@ -73,7 +77,7 @@ module Auth =
         let postSignIn = usePostSignIn ()
         let signIn = useSignIn ()
 
-        Recoil.useCallback (
+        Recoil.useCallbackRef
             (fun (setter: CallbackMethods) username password ->
                 promise {
                     if username = "" || username = "" then
@@ -119,8 +123,4 @@ module Auth =
 
                                 | Some error -> return Error error
                             }
-                }),
-            [|
-                box postSignIn
-            |]
-        )
+                })

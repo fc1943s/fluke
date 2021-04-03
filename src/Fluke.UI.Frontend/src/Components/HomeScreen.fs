@@ -14,7 +14,7 @@ module HomeScreen =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let HomeScreen (username: Username) (props: {| flex: int |}) =
+    let HomeScreen (input: {| Username: Username; Props: {| flex: int |} |}) =
         let view, setView = Recoil.useState Recoil.Atoms.view
 
         let tabs =
@@ -23,25 +23,25 @@ module HomeScreen =
                     View = View.View.HabitTracker
                     Name = "Habit Tracker View"
                     Icon = Icons.bs.BsGrid
-                    Content = fun () -> HabitTrackerView.HabitTrackerView username
+                    Content = fun () -> HabitTrackerView.HabitTrackerView input.Username
                 |}
                 {|
                     View = View.View.Priority
                     Name = "Priority View"
                     Icon = Icons.fa.FaSortNumericDownAlt
-                    Content = fun () -> PriorityView.PriorityView username
+                    Content = fun () -> PriorityView.PriorityView input.Username
                 |}
                 {|
                     View = View.View.BulletJournal
                     Name = "Bullet Journal View"
                     Icon = Icons.bs.BsListCheck
-                    Content = fun () -> BulletJournalView.BulletJournalView username
+                    Content = fun () -> BulletJournalView.BulletJournalView input.Username
                 |}
                 {|
                     View = View.View.Information
                     Name = "Information View"
                     Icon = Icons.ti.TiFlowChildren
-                    Content = fun () -> InformationView.InformationView username
+                    Content = fun () -> InformationView.InformationView input.Username
                 |}
             ]
 
@@ -51,12 +51,12 @@ module HomeScreen =
 
         printfn $"HomeScreen.render. current view: {view}. tabIndex: {tabIndex}"
 
-        let handleTabsChange index = setView (tabs.[index].View)
+        let handleTabsChange index = setView tabs.[index].View
 
         Chakra.flex
-            props
+            input.Props
             [
-                LeftDock.LeftDock username
+                LeftDock.LeftDock input.Username
 
                 Chakra.stack
                     {|

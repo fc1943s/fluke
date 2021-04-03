@@ -35,7 +35,7 @@ module Content =
                                     {| spacing = 0; flex = 1 |}
                                     [
                                         TopBar.TopBar ()
-                                        HomeScreen.HomeScreen username {| flex = 1 |}
+                                        HomeScreen.HomeScreen {| Username = username; Props = {| flex = 1 |} |}
                                         StatusBar.StatusBar username
                                     ]
                             ],

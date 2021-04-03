@@ -108,10 +108,4 @@ module Theme =
                         |}
             |}
 
-    let useTheme () =
-        React.useMemo (
-            (fun () -> Chakra.react.extendTheme theme),
-            [|
-                theme
-            |]
-        )
+    let useTheme () = React.useMemo (fun () -> Chakra.react.extendTheme theme)

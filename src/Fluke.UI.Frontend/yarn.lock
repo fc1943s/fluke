@@ -6367,24 +6367,6 @@ escodegen@^2.0.0:
   optionalDependencies:
     source-map "~0.6.1"
 
-eslint-config-airbnb-base@^14.2.1:
-  version "14.2.1"
-  resolved "https://registry.yarnpkg.com/eslint-config-airbnb-base/-/eslint-config-airbnb-base-14.2.1.tgz#8a2eb38455dc5a312550193b319cdaeef042cd1e"
-  integrity sha512-GOrQyDtVEc1Xy20U7vsB2yAoB4nBlfH5HZJeatRXHleO+OS5Ot+MWij4Dpltw4/DyIkqUfqz1epfhVR5XWWQPA==
-  dependencies:
-    confusing-browser-globals "^1.0.10"
-    object.assign "^4.1.2"
-    object.entries "^1.1.2"
-
-eslint-config-airbnb@~18.2:
-  version "18.2.1"
-  resolved "https://registry.yarnpkg.com/eslint-config-airbnb/-/eslint-config-airbnb-18.2.1.tgz#b7fe2b42f9f8173e825b73c8014b592e449c98d9"
-  integrity sha512-glZNDEZ36VdlZWoxn/bUR1r/sdFKPd1mHPbqUtkctgNG4yT2DLLtJ3D+yCV+jzZCc2V1nBVkmdknOJBZ5Hc0fg==
-  dependencies:
-    eslint-config-airbnb-base "^14.2.1"
-    object.assign "^4.1.2"
-    object.entries "^1.1.2"
-
 eslint-config-react-app@^6.0.0:
   version "6.0.0"
   resolved "https://registry.yarnpkg.com/eslint-config-react-app/-/eslint-config-react-app-6.0.0.tgz#ccff9fc8e36b322902844cbd79197982be355a0e"
@@ -10448,7 +10430,7 @@ object.assign@^4.1.0, object.assign@^4.1.2:
     has-symbols "^1.0.1"
     object-keys "^1.1.1"
 
-object.entries@^1.1.0, object.entries@^1.1.2, object.entries@^1.1.3:
+object.entries@^1.1.0, object.entries@^1.1.3:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/object.entries/-/object.entries-1.1.3.tgz#c601c7f168b62374541a07ddbd3e2d5e4f7711a6"
   integrity sha512-ym7h7OZebNS96hn5IJeyUmaWhaSM4SVtAPPfNLQEI2MYWCO2egsITb9nab2+i/Pwibx+R0mtn+ltKJXRSeTMGg==
@@ -12041,14 +12023,14 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@0.0.0-experimental-b48b38af6:
-  version "0.0.0-experimental-b48b38af6"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-b48b38af6.tgz#8d88181874c6bf5a231bf34e41ca2b3591b5811d"
-  integrity sha512-XUxvaL7ZdUz2mRaJOOcT9sZjhGCSyB33df99JIpWxfpxD79imvLm4dEt18EOW/VBRUgplSJbAM5ogigTflU+Pg==
+react-dom@0.0.0-experimental-b4f119cdf:
+  version "0.0.0-experimental-b4f119cdf"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-b4f119cdf.tgz#50f5e6fbdd254ea7107a5abd0736172d96cbecca"
+  integrity sha512-uQrmmBBzxU8+OZxKRlg4FfytZON41S1TZigj2ieM4Pf1sqhMqi8ZsyPeGMcdG14Lmh+KscPVKemiNu39s4TDfA==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    scheduler "0.0.0-experimental-b48b38af6"
+    scheduler "0.0.0-experimental-b4f119cdf"
 
 react-error-overlay@^6.0.9:
   version "6.0.9"
@@ -12207,10 +12189,10 @@ react-style-singleton@^2.1.0:
     invariant "^2.2.4"
     tslib "^1.0.0"
 
-react@0.0.0-experimental-b48b38af6:
-  version "0.0.0-experimental-b48b38af6"
-  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-b48b38af6.tgz#f1f897a2b242731b8f756056445b80a430d09890"
-  integrity sha512-b535fsFW7f46E/iJPcu1TjgN6g7Z77tsfMeKbmo6GNMU1HVilGHxlPWkeipgcajpHLAbO9E96GNAx2v+8S0b6Q==
+react@0.0.0-experimental-b4f119cdf:
+  version "0.0.0-experimental-b4f119cdf"
+  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-b4f119cdf.tgz#3d79d13abde69451d10f483bff33b210ea88007c"
+  integrity sha512-uvxYBAQZ59gqgTj7lRqFUCi+ZzQdWMIwP0YvRQLkSRL1jMcFMxSxSTVOpclxtcbWTU/TSiyydwo9TVZV5Io6NA==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -12856,10 +12838,10 @@ saxes@^5.0.1:
   dependencies:
     xmlchars "^2.2.0"
 
-scheduler@0.0.0-experimental-b48b38af6:
-  version "0.0.0-experimental-b48b38af6"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-b48b38af6.tgz#621e917b655b9696e7eac119a6e1dc58504561b7"
-  integrity sha512-wRMdqHzV2fcLd/hK3ahP7PAGtBrdGcir6J292Zo2WjxyGYHtKMS8fEP8tvRcov29oYINxbBioGQcCNDZ/fCwGA==
+scheduler@0.0.0-experimental-b4f119cdf:
+  version "0.0.0-experimental-b4f119cdf"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-b4f119cdf.tgz#1a4d0cc2cb79df7d4a4a3ace9cabb1c793d72edd"
+  integrity sha512-e4rUVDwz1RFTvS4Nv3f7ZH9OMy+qgcDs5stJxdMLnoTKRgPd03z82gB5UsNwwwPGAXEyIqFXyf9aXTvAQqG+Kw==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"

@@ -132,7 +132,12 @@ module SessionDataLoader =
     let SessionDataLoader (username: Username) =
         let update = Recoil.useCallbackRef (fun getter -> updateDatabaseStateMap getter username)
 
-        React.useEffect ((fun () -> update () |> Promise.start), [||])
+        React.useEffect (
+            (fun () -> update () |> Promise.start),
+            [|
+                box update
+            |]
+        )
 
         let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData username)
 
@@ -181,6 +186,7 @@ module SessionDataLoader =
 
             // TODO: return a cleanup?
             [|
+                box loadState
                 box sessionData
             |]
         )

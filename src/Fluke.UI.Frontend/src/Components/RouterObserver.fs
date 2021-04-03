@@ -27,14 +27,17 @@ module RouterObserver =
         let username = Recoil.useValue Recoil.Atoms.username
         let view, setView = Recoil.useState Recoil.Atoms.view
 
-        React.useListener.onKeyDown
-            (fun (e: KeyboardEvent) ->
-                match e.ctrlKey, e.shiftKey, e.key with
-                | _, true, "H" -> setView View.View.HabitTracker
-                | _, true, "P" -> setView View.View.Priority
-                | _, true, "B" -> setView View.View.BulletJournal
-                | _, true, "I" -> setView View.View.Information
-                | _ -> ())
+        let onKeyDown =
+            Recoil.useCallbackRef
+                (fun _ (e: KeyboardEvent) ->
+                    match e.ctrlKey, e.shiftKey, e.key with
+                    | _, true, "H" -> setView View.View.HabitTracker
+                    | _, true, "P" -> setView View.View.Priority
+                    | _, true, "B" -> setView View.View.BulletJournal
+                    | _, true, "I" -> setView View.View.Information
+                    | _ -> ())
+
+        React.useListener.onKeyDown onKeyDown
 
         let step, setStep = React.useState Steps.Start
 
@@ -50,12 +53,18 @@ module RouterObserver =
 //                |}
 
         let parsedSegments =
-            match segments with
-            | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
-            | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
-            | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
-            | [ "view"; "Information" ] -> { View = Some View.View.Information }
-            | _ -> { View = None }
+            React.useMemo (
+                (fun () ->
+                    match segments with
+                    | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
+                    | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
+                    | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
+                    | [ "view"; "Information" ] -> { View = Some View.View.Information }
+                    | _ -> { View = None }),
+                [|
+                    segments
+                |]
+            )
 
         React.useEffect (
             (fun () ->
@@ -97,6 +106,7 @@ module RouterObserver =
                     |> ignore),
             [|
                 box sessionRestored
+                box setSessionRestored
                 box segments
                 box username
                 box view

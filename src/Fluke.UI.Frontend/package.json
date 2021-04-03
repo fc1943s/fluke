@@ -47,8 +47,8 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-b48b38af6",
-    "react-dom": "0.0.0-experimental-b48b38af6",
+    "react": "0.0.0-experimental-b4f119cdf",
+    "react-dom": "0.0.0-experimental-b4f119cdf",
 
     "recoil": "~0.2",
     "recoilize": "~1.0",
@@ -92,7 +92,6 @@
     "@typescript-eslint/parser": "~4.20",
     "eslint": "~7.23",
     "eslint-plugin-react": "~7.23",
-    "eslint-config-airbnb": "~18.2",
     "eslint-plugin-import": "~2.22",
     "eslint-plugin-jsx-a11y": "~6.4",
     "eslint-plugin-react-hooks": "~4.2",
@@ -133,8 +132,8 @@
     "concurrently": "~6.0"
   },
   "resolutions": {
-    "react": "0.0.0-experimental-b48b38af6",
-    "react-dom": "0.0.0-experimental-b48b38af6"
+    "react": "0.0.0-experimental-b4f119cdf",
+    "react-dom": "0.0.0-experimental-b4f119cdf"
   },
   "browserslist": {
     "production": [

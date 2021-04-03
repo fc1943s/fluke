@@ -13,10 +13,12 @@ module ApiSubscriber =
         let apiBaseUrl = Recoil.useValue Recoil.Atoms.apiBaseUrl
         let setApi = Recoil.useSetState Recoil.Atoms.api
 
-        React.useEffect
-            ((fun () -> setApi (Some (Sync.createApi apiBaseUrl))),
-             [|
-                 box apiBaseUrl
-             |])
+        React.useEffect (
+            (fun () -> setApi (Some (Sync.createApi apiBaseUrl))),
+            [|
+                box setApi
+                box apiBaseUrl
+            |]
+        )
 
         nothing
