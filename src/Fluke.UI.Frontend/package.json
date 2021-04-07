@@ -47,8 +47,8 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-b4f119cdf",
-    "react-dom": "0.0.0-experimental-b4f119cdf",
+    "react": "0.0.0-experimental-172e89b4b",
+    "react-dom": "0.0.0-experimental-172e89b4b",
 
     "recoil": "~0.2",
     "recoilize": "~1.0",
@@ -56,7 +56,7 @@
     "gun": "amark/gun.git#master",
     "@altrx/gundb-react-hooks": "~0.8",
 
-    "@chakra-ui/react": "~1.4",
+    "@chakra-ui/react": "~1.5",
     "@chakra-ui/system": "~1.6",
     "@chakra-ui/theme-tools": "~1.1",
     "@chakra-ui/media-query": "~1.0",
@@ -88,8 +88,8 @@
     "electron-webpack": "~2.8",
     "electron-builder": "~22.10",
 
-    "@typescript-eslint/eslint-plugin": "~4.20",
-    "@typescript-eslint/parser": "~4.20",
+    "@typescript-eslint/eslint-plugin": "~4.21",
+    "@typescript-eslint/parser": "~4.21",
     "eslint": "~7.23",
     "eslint-plugin-react": "~7.23",
     "eslint-plugin-import": "~2.22",
@@ -112,7 +112,7 @@
     "@testing-library/jest-dom": "~5.11",
     "jest-environment-jsdom-sixteen": "~1.0",
 
-    "cypress": "~6.8",
+    "cypress": "~7.0",
     "cypress-terminal-report": "~3.0",
     "@types/cypress": "~1.1",
 
@@ -132,8 +132,8 @@
     "concurrently": "~6.0"
   },
   "resolutions": {
-    "react": "0.0.0-experimental-b4f119cdf",
-    "react-dom": "0.0.0-experimental-b4f119cdf"
+    "react": "0.0.0-experimental-172e89b4b",
+    "react-dom": "0.0.0-experimental-172e89b4b"
   },
   "browserslist": {
     "production": [

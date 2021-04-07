@@ -12,11 +12,11 @@ nuget Myriad.Plugins ~> 0.5
 
 // Fluke.UI.Backend
 nuget Saturn ~> 0.15 prerelease
-nuget Fable.Remoting.Giraffe ~> 5.3 prerelease
+nuget Fable.Remoting.Giraffe ~> 5.5 prerelease
 
 // Fluke.UI.Frontend
 nuget Fable.Core ~> 3.2
-nuget Fable.Remoting.Client ~> 7.6
+nuget Fable.Remoting.Client ~> 7.8
 nuget Fable.FontAwesome.Free ~> 2.0
 nuget Fable.DateFunctions ~> 3.6
 nuget Fable.SimpleJson ~> 3.18
@@ -25,7 +25,7 @@ nuget Fable.ReactTestingLibrary ~> 0.31
 nuget Feliz ~> 1.40
 nuget Feliz.Recoil ~> 0.19
 nuget Feliz.UseListener ~> 0.6
-nuget Feliz.Router ~> 3.7
+nuget Feliz.Router ~> 3.8
 
 // Fluke.UI.Electron.Main
 nuget Fable.Electron ~> 6.0
