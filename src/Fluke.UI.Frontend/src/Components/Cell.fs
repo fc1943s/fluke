@@ -77,12 +77,9 @@ module Cell =
                 cursor = "pointer"
                 backgroundColor =
                     (TempUI.cellStatusColor status)
-                    + (if isToday then
-                           "aa"
-                       elif input.SemiTransparent then
-                           "d9"
-                       else
-                           "")
+                    + (if isToday then "aa"
+                       elif input.SemiTransparent then "d9"
+                       else "")
                 position = "relative"
                 textAlign = "center"
                 border =
@@ -216,7 +213,11 @@ overriding any other behavior.
                                     ]
                             | _ -> ()
                         ]
-                CellSessionIndicator.CellSessionIndicator {| Status = status; Sessions = sessions |}
+                CellSessionIndicator.CellSessionIndicator
+                    {|
+                        Status = status
+                        Sessions = sessions
+                    |}
                 if not selected then
                     CellBorder.CellBorder
                         {|

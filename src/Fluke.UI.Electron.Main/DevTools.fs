@@ -4,12 +4,12 @@ open Fable.Core
 open Fable.Core.JsInterop
 open Electron
 
-let private installDevTools (_extensionRef: obj) (_forceDownload: bool): JS.Promise<string> =
+let private installDevTools (_extensionRef: obj) (_forceDownload: bool) : JS.Promise<string> =
     importDefault "electron-devtools-installer"
 
-let private REACT_DEVELOPER_TOOLS: obj = import "REACT_DEVELOPER_TOOLS" "electron-devtools-installer"
+let private REACT_DEVELOPER_TOOLS : obj = import "REACT_DEVELOPER_TOOLS" "electron-devtools-installer"
 
-let private REDUX_DEVTOOLS: obj = import "REDUX_DEVTOOLS" "electron-devtools-installer"
+let private REDUX_DEVTOOLS : obj = import "REDUX_DEVTOOLS" "electron-devtools-installer"
 
 let private installDevTool extensionRef =
     promise {
@@ -23,11 +23,11 @@ let private installDevTool extensionRef =
 let installAllDevTools (win: BrowserWindow) =
     installDevTool REACT_DEVELOPER_TOOLS
     installDevTool REDUX_DEVTOOLS
-    win.webContents.executeJavaScript ("require('devtron').install()")
+    win.webContents.executeJavaScript "require('devtron').install()"
 
 let uninstallAllDevTools (win: BrowserWindow) =
     main.Session.defaultSession.removeExtension "React Developer Tools"
     main.Session.defaultSession.removeExtension "Redux DevTools"
     //    main.BrowserWindow.removeDevToolsExtension ("React Developer Tools")
 //    main.BrowserWindow.removeDevToolsExtension ("Redux DevTools")
-    win.webContents.executeJavaScript ("require('devtron').uninstall()")
+    win.webContents.executeJavaScript "require('devtron').uninstall()"

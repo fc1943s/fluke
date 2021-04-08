@@ -24,11 +24,17 @@ module rec Gun =
 
     type IGunUser =
         abstract create :
-            alias: string * pass: string * cb: ({| err: string option; pub: string option |} -> unit) ->
+            alias: string
+            * pass: string
+            * cb: ({| err: string option
+                      pub: string option |} -> unit) ->
             unit
 
         abstract auth :
-            alias: string * pass: string * cb: ({| err: string option; pub: string option |} -> unit) ->
+            alias: string
+            * pass: string
+            * cb: ({| err: string option
+                      pub: string option |} -> unit) ->
             unit
 
         abstract recall :
@@ -37,7 +43,10 @@ module rec Gun =
                              sea: GunKeys |}, unit> ->
             unit
 
-        abstract is : {| alias: string option; pub: string option |}
+        abstract is :
+            {| alias: string option
+               pub: string option |}
+
         abstract ``_`` : {| sea: GunKeys |}
         abstract get : string -> IGunChainReference<_>
         abstract leave : unit -> unit

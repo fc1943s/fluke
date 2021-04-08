@@ -14,31 +14,33 @@ module UserLoader =
         let username = Recoil.useValue Recoil.Atoms.username
 
         let loadUser =
-            Recoil.useCallbackRef (fun setter username ->
-                promise {
-                    Profiling.addTimestamp "UserLoader.render.loadUser"
+            Recoil.useCallbackRef
+                (fun setter username ->
+                    promise {
+                        Profiling.addTimestamp "UserLoader.render.loadUser"
 
-                    let! user = setter.snapshot.getPromise Recoil.Selectors.apiCurrentUserAsync
+                        let! user = setter.snapshot.getPromise Recoil.Selectors.apiCurrentUserAsync
 
-                    match user with
-                    | Some user ->
-                        if user.Username = username then
-                            setter.set (Recoil.Atoms.User.color user.Username, user.Color)
-                            setter.set (Recoil.Atoms.User.dayStart user.Username, user.DayStart)
-                            setter.set (Recoil.Atoms.User.sessionLength user.Username, user.SessionLength)
-                            setter.set (Recoil.Atoms.User.weekStart user.Username, user.WeekStart)
-                            setter.set (Recoil.Atoms.User.sessionBreakLength user.Username, user.SessionBreakLength)
-                    | None -> ()
-                })
+                        match user with
+                        | Some user ->
+                            if user.Username = username then
+                                setter.set (Recoil.Atoms.User.color user.Username, user.Color)
+                                setter.set (Recoil.Atoms.User.dayStart user.Username, user.DayStart)
+                                setter.set (Recoil.Atoms.User.sessionLength user.Username, user.SessionLength)
+                                setter.set (Recoil.Atoms.User.weekStart user.Username, user.WeekStart)
+                                setter.set (Recoil.Atoms.User.sessionBreakLength user.Username, user.SessionBreakLength)
+                        | None -> ()
+                    })
 
-        React.useEffect
-            ((fun () ->
+        React.useEffect (
+            (fun () ->
                 match username with
                 | Some username -> loadUser username |> Promise.start
                 | None -> ()),
-             [|
-                 box loadUser
-                 box username
-             |])
+            [|
+                box loadUser
+                box username
+            |]
+        )
 
         nothing

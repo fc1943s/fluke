@@ -20,10 +20,11 @@ module TooltipPopup =
 
         let comments =
             attachments
-            |> List.choose (fun x ->
-                match x with
-                | Attachment.Comment (user, comment) -> Some (user, comment)
-                | _ -> None)
+            |> List.choose
+                (fun x ->
+                    match x with
+                    | Attachment.Comment (user, comment) -> Some (user, comment)
+                    | _ -> None)
 
         match comments with
         | [] -> nothing
@@ -78,20 +79,21 @@ module TooltipPopup =
                             [
                                 yield!
                                     comments
-                                    |> List.map (fun ({ Username = Username username }, (Comment.Comment comment)) ->
-                                        Chakra.box
-                                            {|  |}
-                                            [
-                                                Chakra.box
-                                                    {| fontWeight = "normal" |}
-                                                    [
-                                                        str $"{username}:"
-                                                    ]
-                                                Chakra.box
-                                                    {|  |}
-                                                    [
-                                                        comment.Trim () |> Markdown.render
-                                                    ]
-                                            ])
+                                    |> List.map
+                                        (fun ({ Username = Username username }, (Comment.Comment comment)) ->
+                                            Chakra.box
+                                                {|  |}
+                                                [
+                                                    Chakra.box
+                                                        {| fontWeight = "normal" |}
+                                                        [
+                                                            str $"{username}:"
+                                                        ]
+                                                    Chakra.box
+                                                        {|  |}
+                                                        [
+                                                            comment.Trim () |> Markdown.render
+                                                        ]
+                                                ])
                             ]
                 ]

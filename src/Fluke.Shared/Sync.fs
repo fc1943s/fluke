@@ -3,7 +3,6 @@ namespace Fluke.Shared
 open Fluke.Shared.Domain
 
 module Sync =
-    open Model
     open UserInteraction
     open State
 

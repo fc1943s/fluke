@@ -56,7 +56,9 @@ module Server =
                                         match databaseState.Database with
                                         | { Owner = owner } when owner.Username = username -> true
                                         | { SharedWith = DatabaseAccess.Public } -> true
-                                        | { SharedWith = DatabaseAccess.Private accessList } ->
+                                        | {
+                                              SharedWith = DatabaseAccess.Private accessList
+                                          } ->
                                             accessList
                                             |> List.exists
                                                 (function

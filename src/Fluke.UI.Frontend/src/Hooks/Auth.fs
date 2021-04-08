@@ -76,16 +76,14 @@ module Auth =
     let useSignUp () =
         let postSignIn = usePostSignIn ()
         let signIn = useSignIn ()
+        let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
 
         Recoil.useCallbackRef
-            (fun (setter: CallbackMethods) username password ->
+            (fun _ username password ->
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
                     else
-
-                        let! gunNamespace = setter.snapshot.getPromise Recoil.Selectors.gunNamespace
-
                         printfn $"Auth.useSignUp. gun.user() result: {JS.JSON.stringify gunNamespace.ref}"
 
                         let! ack = Gun.createUser gunNamespace.ref username password
@@ -99,11 +97,13 @@ module Auth =
                                 | None ->
                                     match! signIn username password with
                                     | Ok () ->
-                                        gunNamespace
-                                            .ref
-                                            .get("fluke")
-                                            .put {| username = username |}
-                                        |> ignore
+                                        do! postSignIn (UserInteraction.Username username)
+
+                                        //                                        gunNamespace
+//                                            .ref
+//                                            .get("fluke")
+//                                            .put {| username = username |}
+//                                        |> ignore
 
                                         return Ok ()
                                     | Error error -> return Error error

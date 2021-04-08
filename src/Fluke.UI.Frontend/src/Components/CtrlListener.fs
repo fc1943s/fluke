@@ -11,12 +11,13 @@ module CtrlListener =
 
     [<ReactComponent>]
     let CtrlListener () =
-        Listener.useKeyPress (fun setter e ->
-            async {
-                let! ctrlPressed = setter.snapshot.getAsync Recoil.Atoms.ctrlPressed
+        Listener.useKeyPress
+            (fun setter e ->
+                async {
+                    let! ctrlPressed = setter.snapshot.getAsync Recoil.Atoms.ctrlPressed
 
-                if e.ctrlKey <> ctrlPressed then
-                    setter.set (Recoil.Atoms.ctrlPressed, e.ctrlKey)
-            })
+                    if e.ctrlKey <> ctrlPressed then
+                        setter.set (Recoil.Atoms.ctrlPressed, e.ctrlKey)
+                })
 
         nothing

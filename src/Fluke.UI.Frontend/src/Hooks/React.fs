@@ -10,11 +10,12 @@ module React =
     let useDisposableEffect (effect, dependencies) =
         let disposed = React.useRef false
 
-        React.useEffect
-            ((fun () ->
+        React.useEffect (
+            (fun () ->
                 effect disposed
 
                 { new IDisposable with
                     member _.Dispose () = disposed.current <- true
                 }),
-             dependencies)
+            dependencies
+        )

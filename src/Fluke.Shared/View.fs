@@ -25,12 +25,14 @@ module View =
             |> List.filter
                 (function
                 | {
-                      Task = { Scheduling = Manual WithoutSuggestion }
+                      Task = {
+                                 Scheduling = Manual WithoutSuggestion
+                             }
                   } as taskState ->
                     taskState.CellStateMap
                     |> Map.toSeq
                     |> Seq.exists
-                        (fun ((DateId referenceDay), cellState) ->
+                        (fun (DateId referenceDay, cellState) ->
                             referenceDay.DateTime >==< dateRange
                             && (cellState.Attachments
                                 |> List.exists
@@ -57,7 +59,9 @@ module View =
             |> List.filter
                 (function
                 | {
-                      Task = { Scheduling = Manual WithoutSuggestion }
+                      Task = {
+                                 Scheduling = Manual WithoutSuggestion
+                             }
                   } -> true
                 | _ -> false)
     //                |> List.filter (fun task ->
@@ -182,7 +186,10 @@ module View =
                                             |> Option.defaultValue []
                                             |> List.append cellState.Sessions
 
-                                        dateId, { cellState with Sessions = newSessions })
+                                        dateId,
+                                        { cellState with
+                                            Sessions = newSessions
+                                        })
                                 |> Map.ofSeq
 
                             { taskState with
@@ -286,7 +293,10 @@ module View =
                                 dateId, { cellState with Status = newStatus })
                         |> Map.ofSeq
 
-                    let newTaskState = { taskState with CellStateMap = newCellStateMap }
+                    let newTaskState =
+                        { taskState with
+                            CellStateMap = newCellStateMap
+                        }
 
                     newTaskState)
 

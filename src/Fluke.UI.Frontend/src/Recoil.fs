@@ -59,11 +59,7 @@ module Recoil =
                     else
                         Some false
 
-                Gun.GunProps.localStorage =
-                    if JS.isTesting then
-                        None
-                    else
-                        Some true
+                Gun.GunProps.localStorage = if JS.isTesting then None else Some true
             }
             |> toPlainJsObj
             |> unbox
@@ -211,7 +207,8 @@ module Recoil =
                             Task.Default.Duration)
                 }
 
-            let taskId (task: Task) = TaskId (task.Information.Name, task.Name)
+            let taskId (task: Task) =
+                TaskId (task.Information.Name, task.Name)
 
 
         module rec User =
@@ -441,7 +438,10 @@ module Recoil =
                                                 let task =
                                                     gunTmp
                                                         .get(taskIdHash)
-                                                        .put {| id = taskIdHash; name = "taskName1" |}
+                                                        .put {|
+                                                                 id = taskIdHash
+                                                                 name = "taskName1"
+                                                             |}
 
                                                 tasks.set task |> ignore
 
@@ -450,7 +450,10 @@ module Recoil =
                                                 let cell =
                                                     gunTmp
                                                         .get(dateIdHash)
-                                                        .put {| dateId = dateIdHash; selected = value |}
+                                                        .put {|
+                                                                 dateId = dateIdHash
+                                                                 selected = value
+                                                             |}
 
                                                 cells.set cell |> ignore
                                                 //                                    let cell = cells.set ({| dateId = string _dateId |})
@@ -1396,11 +1399,7 @@ module Recoil =
                                                 |> Option.defaultValue Set.empty
 
                                             let newSet =
-                                                let fn =
-                                                    if newValue then
-                                                        Set.add
-                                                    else
-                                                        Set.remove
+                                                let fn = if newValue then Set.add else Set.remove
 
                                                 fn date oldSet
 

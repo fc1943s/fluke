@@ -8,9 +8,11 @@ open Fable.React
 module Modal =
 
     [<ReactComponent>]
-    let Modal (input: {| IsOpen: bool
-                         OnClose: unit -> unit
-                         children: seq<ReactElement> |}) =
+    let Modal
+        (input: {| IsOpen: bool
+                   OnClose: unit -> unit
+                   children: seq<ReactElement> |})
+        =
         Chakra.modal
             {|
                 isCentered = true
@@ -20,7 +22,7 @@ module Modal =
             [
                 Chakra.modalOverlay () []
                 Chakra.modalContent
-                    ()
+                    {| backgroundColor = "gray.13" |}
                     [
                         Chakra.modalBody
                             {| padding = "40px" |}

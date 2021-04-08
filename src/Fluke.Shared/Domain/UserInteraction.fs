@@ -87,12 +87,23 @@ module UserInteraction =
             DateTime (year, int this.Month, day, 12, 0, 0)
 
         member inline this.Stringify () =
-            let { Year = Year year; Month = month; Day = Day day } = this
+            let {
+                    Year = Year year
+                    Month = month
+                    Day = Day day
+                } =
+                this
+
             $"%d{year}-%02d{int month}-%02d{day}"
 
-        static member inline Create year month day: FlukeDate = { Year = Year year; Month = month; Day = Day day }
+        static member inline Create year month day : FlukeDate =
+            {
+                Year = Year year
+                Month = month
+                Day = Day day
+            }
 
-        static member inline FromDateTime (date: DateTime): FlukeDate =
+        static member inline FromDateTime (date: DateTime) : FlukeDate =
             {
                 Year = Year date.Year
                 Month = Enum.Parse (typeof<Month>, string date.Month) :?> Month
@@ -102,7 +113,8 @@ module UserInteraction =
         static member inline MinValue = FlukeDate.FromDateTime DateTime.MinValue
 
     and FlukeDateTime with
-        member inline this.Stringify () = $"{this.Date.Stringify ()} {this.Time.Stringify ()}"
+        member inline this.Stringify () =
+            $"{this.Date.Stringify ()} {this.Time.Stringify ()}"
 
         member inline this.DateTime =
             let Year year, Day day, Hour hour, Minute minute =
@@ -121,17 +133,17 @@ module UserInteraction =
                 else
                     referenceDay
 
-            let dateToCompare: FlukeDateTime = { Date = newDate; Time = time }
+            let dateToCompare : FlukeDateTime = { Date = newDate; Time = time }
 
             this.DateTime >= dateToCompare.DateTime
 
-        static member inline FromDateTime (date: DateTime): FlukeDateTime =
+        static member inline FromDateTime (date: DateTime) : FlukeDateTime =
             {
                 Date = FlukeDate.FromDateTime date
                 Time = FlukeTime.FromDateTime date
             }
 
-        static member inline Create year month day hour minute: FlukeDateTime =
+        static member inline Create year month day hour minute : FlukeDateTime =
             {
                 Date = FlukeDate.Create year month day
                 Time = FlukeTime.Create hour minute

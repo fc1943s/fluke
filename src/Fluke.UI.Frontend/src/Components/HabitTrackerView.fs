@@ -36,7 +36,10 @@ module HabitTrackerView =
                                     ]
                                 // Column: Priority
                                 Chakra.box
-                                    {| paddingRight = "10px"; textAlign = "center" |}
+                                    {|
+                                        paddingRight = "10px"
+                                        textAlign = "center"
+                                    |}
                                     [
                                         yield!
                                             taskIdList
@@ -56,6 +59,10 @@ module HabitTrackerView =
                     {|  |}
                     [
                         GridHeader.GridHeader username
-                        Cells.Cells {| Username = username; TaskIdList = taskIdList |}
+                        Cells.Cells
+                            {|
+                                Username = username
+                                TaskIdList = taskIdList
+                            |}
                     ]
             ]

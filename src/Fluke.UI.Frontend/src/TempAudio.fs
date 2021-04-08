@@ -12,4 +12,5 @@ module TempAudio =
         |> List.map (JS.setTimeout (fun () -> Bindings.JS.playAudio "../sounds/ding.wav"))
         |> ignore
 
-    let playTick () = Bindings.JS.playAudio "../sounds/tick.wav"
+    let playTick () =
+        Bindings.JS.playAudio "../sounds/tick.wav"

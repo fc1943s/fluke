@@ -25,12 +25,13 @@ module Logo =
                         TempUI.manualCellStatusColor (Postponed None)
                         TempUI.manualCellStatusColor Completed
                     ]
-                    |> List.map (fun color ->
-                        Chakra.box
-                            {|
-                                height = "7px"
-                                width = "7px"
-                                backgroundColor = color
-                            |}
-                            [])
+                    |> List.map
+                        (fun color ->
+                            Chakra.box
+                                {|
+                                    height = "7px"
+                                    width = "7px"
+                                    backgroundColor = color
+                                |}
+                                [])
             ]

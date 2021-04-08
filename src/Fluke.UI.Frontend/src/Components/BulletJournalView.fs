@@ -24,7 +24,10 @@ module BulletJournalView =
                     |> List.map
                         (fun week ->
                             Chakra.flex
-                                {| marginTop = "15px"; marginBottom = "15px" |}
+                                {|
+                                    marginTop = "15px"
+                                    marginBottom = "15px"
+                                |}
                                 [
                                     yield!
                                         week
@@ -36,7 +39,10 @@ module BulletJournalView =
                                                     let cells = week.[dateId]
 
                                                     Chakra.box
-                                                        {| paddingLeft = "10px"; paddingRight = "10px" |}
+                                                        {|
+                                                            paddingLeft = "10px"
+                                                            paddingRight = "10px"
+                                                        |}
                                                         [
                                                             Chakra.box
                                                                 {|

@@ -14,9 +14,11 @@ module MonthResponsiveCell =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let MonthResponsiveCell (input: {| Username: Username
-                                       Date: FlukeDate
-                                       Props: {| width: int |} |}) =
+    let MonthResponsiveCell
+        (input: {| Username: Username
+                   Date: FlukeDate
+                   Props: {| width: int |} |})
+        =
         let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
         let month = input.Date.DateTime.Format "MMM"
 

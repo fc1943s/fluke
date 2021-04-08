@@ -127,7 +127,9 @@ module State =
         match database with
         | { Owner = owner } when owner.Username = username -> true
         | { SharedWith = DatabaseAccess.Public } -> true
-        | { SharedWith = DatabaseAccess.Private accessList } ->
+        | {
+              SharedWith = DatabaseAccess.Private accessList
+          } ->
             accessList
             |> List.exists
                 (function
@@ -162,7 +164,10 @@ module State =
                                     }
                                 | InformationInteraction.Sort (top, bottom) ->
                                     let sortList = (top, bottom) :: informationState.SortList
-                                    { informationState with SortList = sortList }
+
+                                    { informationState with
+                                        SortList = sortList
+                                    }
 
                             let newInformationStateMap =
                                 databaseState.InformationStateMap
@@ -191,16 +196,22 @@ module State =
                                 | TaskInteraction.Attachment attachment ->
                                     let newAttachments = attachment :: taskState.Attachments
 
-                                    { taskState with Attachments = newAttachments }
+                                    { taskState with
+                                        Attachments = newAttachments
+                                    }
 
                                 | TaskInteraction.Sort (top, bottom) ->
                                     let newSortList = (top, bottom) :: taskState.SortList
 
-                                    { taskState with SortList = newSortList }
+                                    { taskState with
+                                        SortList = newSortList
+                                    }
                                 | TaskInteraction.Session (TaskSession (_start, _duration, _breakDuration) as session) ->
                                     let newSessions = session :: taskState.Sessions
 
-                                    { taskState with Sessions = newSessions }
+                                    { taskState with
+                                        Sessions = newSessions
+                                    }
                                 //                                    let cellState =
 //                                        taskState.CellStateMap
 //                                        |> Map.tryFind dateId
@@ -261,7 +272,10 @@ module State =
                                 | CellInteraction.Attachment attachment ->
                                     let attachments = attachment :: cellState.Attachments
 
-                                    let newCellState = { cellState with Attachments = attachments }
+                                    let newCellState =
+                                        { cellState with
+                                            Attachments = attachments
+                                        }
 
                                     newCellState
                                 | CellInteraction.StatusChange cellStatusChange ->

@@ -37,9 +37,7 @@ module RecoilMagic =
             (
                 state: AtomState.ReadWrite<'T, 'U, 'V>,
                 effects: (Recoil.EffectProps<'T> -> unit -> unit) list
-            )
-            : AtomStateWithEffects<'T, 'U, 'V>
-            =
+            ) : AtomStateWithEffects<'T, 'U, 'V> =
             { State = state; Effects = effects }
 
         member inline _.Run<'T, 'V> ({ Effects = effects; State = state }: AtomStateWithEffects<'T, 'T, 'V>) =
@@ -74,16 +72,13 @@ module RecoilMagic =
             (
                 state: AtomFamilyState.ReadWrite<'P -> 'U, 'U, 'V, 'P>,
                 effects: 'P -> (Recoil.EffectProps<'T> -> unit -> unit) list
-            )
-            : AtomFamilyStateWithEffects<'T, 'U, 'V, 'P>
-            =
+            ) : AtomFamilyStateWithEffects<'T, 'U, 'V, 'P> =
             { State = state; Effects = effects }
 
 
         member inline _.Run<'U, 'V, 'P>
             ({ Effects = effects; State = state }: AtomFamilyStateWithEffects<'U, 'U, 'V, 'P>)
-            : 'P -> RecoilValue<'U, ReadWrite>
-            =
+            : 'P -> RecoilValue<'U, ReadWrite> =
             Bindings.Recoil.atomFamily<'U, 'P> (
                 [
                     "key" ==> state.Key

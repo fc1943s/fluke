@@ -62,7 +62,8 @@ module Router =
                     .expect(string segments)
                     .toEqual (string expected)
 
-            let navigate (segments: string []) = RTL.act (fun () -> Router.navigate segments)
+            let navigate (segments: string []) =
+                RTL.act (fun () -> Router.navigate segments)
 
             Jest.test (
                 "starting with blank url",

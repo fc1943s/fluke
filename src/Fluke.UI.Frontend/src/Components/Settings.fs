@@ -13,7 +13,11 @@ module Settings =
     open Fluke.UI.Frontend.Recoil
 
     [<ReactComponent>]
-    let rec Settings (input: {| Props: {| flex: int; overflowY: string; flexBasis: int |} |}) =
+    let rec Settings
+        (input: {| Props: {| flex: int
+                             overflowY: string
+                             flexBasis: int |} |})
+        =
         let daysBefore, setDaysBefore = Recoil.useState Atoms.daysBefore
         let daysAfter, setDaysAfter = Recoil.useState Atoms.daysAfter
         let apiBaseUrl, setApiBaseUrl = Recoil.useState Atoms.apiBaseUrl

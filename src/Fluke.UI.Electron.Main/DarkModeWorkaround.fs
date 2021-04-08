@@ -9,18 +9,13 @@ open Electron
 // Based on https://gist.github.com/LuminescentMoon/f7a180a6960d4d1b9b7e72acb1c77275
 
 let private setWindowsAppTheme (light: bool) =
-    let flag =
-        if light then
-            1
-        else
-            0
+    let flag = if light then 1 else 0
 
     try
-        childProcess.execSync
-            (sprintf
-                "REG ADD HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize /v AppsUseLightTheme /t REG_DWORD /d %i /f"
-                 flag,
-             {| windowsHide = true |})
+        childProcess.execSync (
+            $"REG ADD HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize /v AppsUseLightTheme /t REG_DWORD /d %i{flag} /f",
+            {| windowsHide = true |}
+        )
         |> ignore
     with _ ->
         failwith
@@ -34,9 +29,9 @@ let init () =
         main
             .app
             .onWillFinishLaunching(fun _ ->
-            JS.console.log ("Setting Windows app theme to Light to avoid DevTools startup issue")
-            setWindowsAppTheme true)
+                JS.console.log "Setting Windows app theme to Light to avoid DevTools startup issue"
+                setWindowsAppTheme true)
             .onReady(fun _ _ ->
-                JS.console.log("Reverting Windows app theme to Dark")
+                JS.console.log "Reverting Windows app theme to Dark"
                 setWindowsAppTheme false)
         |> ignore

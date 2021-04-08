@@ -136,5 +136,6 @@ module RouterObserver =
                     | _ -> ()
 
                     setSegments newSegments
-                    ())
+
+                    )
         ]

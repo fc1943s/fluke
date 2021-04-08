@@ -87,9 +87,13 @@ module Sorting =
                 match taskState with
                 | { Task = { Scheduling = Recurrency _ } } -> SchedulingRecurrency
                 | { CellStateMap = cellStateMap } when getSessionsTodayCount cellStateMap > 0 -> HasSessionToday
-                | { Task = { Scheduling = Manual WithSuggestion } } -> ManualWithSuggestion
                 | {
-                      Task = { Scheduling = Manual WithoutSuggestion }
+                      Task = { Scheduling = Manual WithSuggestion }
+                  } -> ManualWithSuggestion
+                | {
+                      Task = {
+                                 Scheduling = Manual WithoutSuggestion
+                             }
                   } -> ManualWithoutSuggestion
 
 

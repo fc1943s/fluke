@@ -114,7 +114,9 @@ module SessionDataLoader =
                             |> List.map
                                 (fun databaseState ->
                                     match databaseState with
-                                    | { Database = { Name = DatabaseName name } } as databaseState ->
+                                    | {
+                                          Database = { Name = DatabaseName name }
+                                      } as databaseState ->
                                         let id = getDatabaseIdFromName name
 
                                         id, databaseState)

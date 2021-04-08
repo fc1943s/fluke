@@ -11,12 +11,13 @@ module ShiftListener =
 
     [<ReactComponent>]
     let ShiftListener () =
-        Listener.useKeyPress (fun setter e ->
-            async {
-                let! shiftPressed = setter.snapshot.getAsync Recoil.Atoms.shiftPressed
+        Listener.useKeyPress
+            (fun setter e ->
+                async {
+                    let! shiftPressed = setter.snapshot.getAsync Recoil.Atoms.shiftPressed
 
-                if e.shiftKey <> shiftPressed then
-                    setter.set (Recoil.Atoms.shiftPressed, e.shiftKey)
-            })
+                    if e.shiftKey <> shiftPressed then
+                        setter.set (Recoil.Atoms.shiftPressed, e.shiftKey)
+                })
 
         nothing

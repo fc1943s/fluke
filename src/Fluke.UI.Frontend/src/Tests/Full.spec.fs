@@ -35,4 +35,16 @@ module Full =
                     |> ignore
 
                     (Cy.contains "Add Database" (Some {| timeout = timeout |}))
-                        .click ()))
+                        .click ()
+
+                    Cy
+                        .get("input[placeholder^='new-database-']")
+                        .``type`` "db1"
+
+                    (Cy.contains "Save" None).click ()
+
+                    (Cy.contains "Databases" None).click ()
+
+                    (Cy.contains "db1" None).click ()
+
+                    ))

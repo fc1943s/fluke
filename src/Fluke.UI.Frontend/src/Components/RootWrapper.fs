@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.Router
-open Browser.Dom
 open Feliz.Recoil
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
@@ -42,7 +41,7 @@ module RootWrapper =
                 Recoil.root [
                     root.init (fun _ -> ())
                     root.children [
-//                        Recoilize.recoilizeDebugger {| root = document.getElementById "root" |} []
+                        //                        Recoilize.recoilizeDebugger {| root = document.getElementById "root" |} []
                         Chakra.provider
                             {| theme = theme |}
                             [

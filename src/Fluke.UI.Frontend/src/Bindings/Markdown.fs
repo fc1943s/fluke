@@ -4,6 +4,7 @@ open Fable.React
 open Fable.Core.JsInterop
 
 module Markdown =
-    let private reactMarkdown: obj -> obj = importDefault "react-markdown"
+    let private reactMarkdown : obj -> obj = importDefault "react-markdown"
 
-    let render text = ReactBindings.React.createElement (reactMarkdown, {| source = text |}, [])
+    let render text =
+        ReactBindings.React.createElement (reactMarkdown, {| source = text |}, [])

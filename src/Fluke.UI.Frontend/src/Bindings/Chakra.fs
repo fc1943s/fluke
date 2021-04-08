@@ -112,7 +112,8 @@ module Chakra =
             }
 
         [<CustomOperation("description")>]
-        member inline this.Description (state, description) = { state with Description = description }
+        member inline this.Description (state, description) =
+            { state with Description = description }
 
         [<CustomOperation("title")>]
         member inline _.Title (state, title) = { state with Title = title }

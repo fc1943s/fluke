@@ -127,7 +127,11 @@ module TempData =
             Attachment.Comment (user, comment)
             |> CellInteraction.Attachment
 
-        let cellAddress = { Task = task; DateId = dateId dayStart moment }
+        let cellAddress =
+            {
+                Task = task
+                DateId = dateId dayStart moment
+            }
 
         let interaction = Interaction.Cell (cellAddress, cellInteraction)
 

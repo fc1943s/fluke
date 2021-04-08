@@ -29,7 +29,12 @@ module DockPanel =
                         align = "center"
                     |}
                     [
-                        Chakra.box {| ``as`` = input.Icon; marginRight = "6px" |} []
+                        Chakra.box
+                            {|
+                                ``as`` = input.Icon
+                                marginRight = "6px"
+                            |}
+                            []
                         str input.Name
 
                         Chakra.spacer {|  |} []

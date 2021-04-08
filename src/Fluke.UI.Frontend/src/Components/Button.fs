@@ -21,12 +21,18 @@ module Button =
         match input.children |> Seq.toList with
         | [] -> Chakra.iconButton {| input.props with icon = input.Icon |} []
         | children ->
-            let icon = Chakra.box {| ``as`` = input.Icon; fontSize = "21px" |} []
+            let icon =
+                Chakra.box
+                    {|
+                        ``as`` = input.Icon
+                        fontSize = "21px"
+                    |}
+                    []
 
             Chakra.button
+                //                    _focus = {| backgroundColor = "white" |}
                 {| input.props with
                     height = "auto"
-//                    _focus = {| backgroundColor = "white" |}
                     paddingTop = "2px"
                     paddingBottom = "2px"
                 |}

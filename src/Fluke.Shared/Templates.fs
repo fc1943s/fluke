@@ -1861,7 +1861,10 @@ module Templates =
                         | DslPriority priority ->
                             let newTaskState =
                                 { taskState with
-                                    Task = { taskState.Task with Priority = Some priority }
+                                    Task =
+                                        { taskState.Task with
+                                            Priority = Some priority
+                                        }
                                 }
 
                             newTaskState, userInteractions
@@ -1877,21 +1880,30 @@ module Templates =
                             | DslSetScheduling (scheduling, _start) ->
                                 let newTaskState =
                                     { taskState with
-                                        Task = { taskState.Task with Scheduling = scheduling }
+                                        Task =
+                                            { taskState.Task with
+                                                Scheduling = scheduling
+                                            }
                                     }
 
                                 newTaskState, userInteractions
                             | DslSetPendingAfter start ->
                                 let newTaskState =
                                     { taskState with
-                                        Task = { taskState.Task with PendingAfter = Some start }
+                                        Task =
+                                            { taskState.Task with
+                                                PendingAfter = Some start
+                                            }
                                     }
 
                                 newTaskState, userInteractions
                             | DslSetMissedAfter start ->
                                 let newTaskState =
                                     { taskState with
-                                        Task = { taskState.Task with MissedAfter = Some start }
+                                        Task =
+                                            { taskState.Task with
+                                                MissedAfter = Some start
+                                            }
                                     }
 
                                 newTaskState, userInteractions

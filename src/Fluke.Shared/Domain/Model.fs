@@ -8,11 +8,11 @@ module Model =
     open Myriad.Plugins
 #else
     module Generator =
-        type DuCases(_configGroup: string) =
-            inherit Attribute()
+        type DuCases (_configGroup: string) =
+            inherit Attribute ()
 
-        type Fields(_configGroup: string) =
-            inherit Attribute()
+        type Fields (_configGroup: string) =
+            inherit Attribute ()
 #endif
 
     [<Generator.DuCases "Domain">]
@@ -120,7 +120,7 @@ module Model =
         static member inline Default = { Name = AreaName "<null>" }
 
     and Project with
-        static member inline Default: Project =
+        static member inline Default : Project =
             {
                 Name = ProjectName "<null>"
                 Area = Area.Default
@@ -153,7 +153,12 @@ module Model =
             }
 
         member inline this.Stringify () =
-            let { Hour = Hour hour; Minute = Minute minute } = this
+            let {
+                    Hour = Hour hour
+                    Minute = Minute minute
+                } =
+                this
+
             sprintf "%02.0f:%02.0f" hour minute
 
         static member inline FromDateTime (date: DateTime) =

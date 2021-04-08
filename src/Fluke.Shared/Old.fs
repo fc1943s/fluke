@@ -23,7 +23,8 @@ module Old2 =
 
     //    type TaskComment = TaskComment of task: Task * comment: UserComment
 
-    type CellStatusEntry = CellStatusEntry of user: User * task: Task * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
+    type CellStatusEntry =
+        CellStatusEntry of user: User * task: Task * moment: FlukeDateTime * manualCellStatus: ManualCellStatus
 
     //    type CellComment = CellComment of task: Task * moment: FlukeDateTime * comment: UserComment
     type CellSession = CellSession of task: Task * start: FlukeDateTime * duration: Minute
@@ -50,7 +51,11 @@ module Old2 =
 //            TaskStateList: (TaskState * UserInteraction list) list
 //        }
 //
-    and TaskOrderEntry = { Task: Task; Priority: TaskOrderPriority }
+    and TaskOrderEntry =
+        {
+            Task: Task
+            Priority: TaskOrderPriority
+        }
 
     and [<RequireQualifiedAccess>] TaskOrderPriority =
         | First
@@ -97,10 +102,7 @@ module Old2 =
         let applyManualOrder (taskOrderList: TaskOrderEntry list) lanes =
             let tasks =
                 lanes
-                |> List.map
-                    (ofLane
-                     >> fst
-                     >> fun taskState -> taskState.Task)
+                |> List.map (ofLane >> fst >> fun taskState -> taskState.Task)
 
             let tasksSet = set tasks
 
@@ -119,7 +121,12 @@ module Old2 =
 
             let orderEntriesMissing =
                 tasksWithoutOrderEntry
-                |> List.map (fun task -> { Task = task; Priority = TaskOrderPriority.Last })
+                |> List.map
+                    (fun task ->
+                        {
+                            Task = task
+                            Priority = TaskOrderPriority.Last
+                        })
 
             let newTaskOrderList = orderEntriesMissing @ orderEntriesOfTasks
 
@@ -140,16 +147,17 @@ module Old2 =
 
             let newTaskOrderList =
                 manualTaskOrder
-                |> List.map (fun (information, taskName) ->
-                    taskMap
-                    |> Map.tryFind (information, TaskName taskName)
-                    |> function
-                    | None -> failwithf $"Invalid task: '{information}/{taskName}'"
-                    | Some taskState ->
-                        {
-                            Task = taskState.Task
-                            Priority = TaskOrderPriority.First
-                        })
+                |> List.map
+                    (fun (information, taskName) ->
+                        taskMap
+                        |> Map.tryFind (information, TaskName taskName)
+                        |> function
+                        | None -> failwithf $"Invalid task: '{information}/{taskName}'"
+                        | Some taskState ->
+                            {
+                                Task = taskState.Task
+                                Priority = TaskOrderPriority.First
+                            })
 
             oldTaskOrderList @ newTaskOrderList
 

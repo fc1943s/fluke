@@ -14,8 +14,6 @@ module AddDatabaseButton =
         let username = Recoil.useValue Recoil.Atoms.username
         let formDatabaseId, setFormDatabaseId = Recoil.useState Recoil.Atoms.formDatabaseId
 
-
-
         React.fragment [
             Button.Button
                 {|

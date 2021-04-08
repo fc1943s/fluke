@@ -64,22 +64,14 @@ module DebugOverlay =
             Chakra.box
                 {|
                     width = "min-content"
-                    height =
-                        if debug then
-                            "80%"
-                        else
-                            "initial"
+                    height = if debug then "80%" else "initial"
                     position = "fixed"
                     right = 0
                     bottom = 0
                     fontSize = "9px"
                     backgroundColor = "#44444488"
                     zIndex = 1
-                    overflow =
-                        if debug then
-                            "scroll"
-                        else
-                            "initial"
+                    overflow = if debug then "scroll" else "initial"
                 |}
                 [
                     Checkbox.Checkbox
@@ -89,12 +81,7 @@ module DebugOverlay =
                                 fun (e: {| target: Browser.Types.HTMLInputElement |}) -> setDebug e.target.``checked``
                         |}
                         [
-                            str (
-                                if debug then
-                                    "Debug"
-                                else
-                                    ""
-                            )
+                            str (if debug then "Debug" else "")
                         ]
 
                     if debug then

@@ -16,12 +16,10 @@ module GunObserver =
     let GunObserver () =
         let gun = Recoil.useValue Recoil.Selectors.gun
         let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
-
         //        let appKeys = Gun.gunHooks.useGunKeys Browser.Dom.window?SEA (fun () -> null) false
-
         let gunKeys, setGunKeys = Recoil.useState Recoil.Atoms.gunKeys
 
-//        let gunState =
+        //        let gunState =
 //            Gun.gunHooks.useGunState
 //                (gunNamespace.ref.get ("fluke"))
 //                {|
@@ -40,9 +38,10 @@ module GunObserver =
 //        );
 //        const [user, isLoggedIn] = useGunKeyAuth(gun, appKeys);
 
-        let setUsername = Recoil.useSetState Recoil.Atoms.username
+        //        let setUsername = Recoil.useSetState Recoil.Atoms.username
 
         let setSessionRestored = Recoil.useSetState Recoil.Atoms.sessionRestored
+
         printfn "GunObserver.render: Constructor"
 
 
@@ -105,7 +104,7 @@ module GunObserver =
                                 printfn $"GunObserver.render: .on(auth) effect. setUsername. username={username}"
                                 setGunKeys gunNamespace.ref.``_``.sea
 
-//                                gunState.put ({| username = username |} |> toPlainJsObj)
+                            //                                gunState.put ({| username = username |} |> toPlainJsObj)
 //                                |> Promise.start
                             //                                setUsername (Some (UserInteraction.Username username))
                             | None ->

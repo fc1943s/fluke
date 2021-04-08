@@ -42,7 +42,10 @@ module CellSelection =
                         |> List.map
                             (fun n ->
                                 {
-                                    Task = { Task.Default with Name = TaskName (string n) }
+                                    Task =
+                                        { Task.Default with
+                                            Name = TaskName (string n)
+                                        }
                                     Events = []
                                     Expected = []
                                 })
@@ -120,7 +123,7 @@ module CellSelection =
                                 |> List.map (fun (date: FlukeDate) -> date.Stringify ()))
                         |> string
 
-//                    do! peek (fun _ -> promise { () })
+                    //                    do! peek (fun _ -> promise { () })
                     do! RTL.waitFor id
 
                     do!

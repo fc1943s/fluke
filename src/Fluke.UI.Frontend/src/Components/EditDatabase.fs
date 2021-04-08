@@ -18,7 +18,10 @@ module EditDatabase =
         [<ReactComponent>]
         let DatabaseAccessIndicator () =
             Chakra.stack
-                {| direction = "row"; spacing = "15px" |}
+                {|
+                    direction = "row"
+                    spacing = "15px"
+                |}
                 [
                     Chakra.stack
                         {|
@@ -45,6 +48,7 @@ module EditDatabase =
                     Chakra.iconButton
                         {|
                             icon = Icons.bsThreeDots ()
+                            disabled = true
                             width = "22px"
                             height = "15px"
                             onClick = fun () -> ()
@@ -79,7 +83,10 @@ module EditDatabase =
                         |}
 
                     Chakra.stack
-                        {| direction = "row"; align = "center" |}
+                        {|
+                            direction = "row"
+                            align = "center"
+                        |}
                         [
                             Chakra.box
                                 {|  |}
@@ -92,30 +99,37 @@ module EditDatabase =
                 ]
 
     [<ReactComponent>]
-    let EditDatabase (input: {| Username: UserInteraction.Username
-                                DatabaseId: State.DatabaseId
-                                OnSave: Async<unit> |}) =
+    let EditDatabase
+        (input: {| Username: UserInteraction.Username
+                   DatabaseId: State.DatabaseId
+                   OnSave: Async<unit> |})
+        =
         let onSave =
-            Recoil.useCallbackRef (fun (setter: CallbackMethods) ->
-                async {
-                    let eventId = Recoil.Atoms.Events.EventId (Fable.Core.JS.Constructors.Date.now (), Guid.NewGuid ())
-                    let! name = setter.snapshot.getAsync (Recoil.Atoms.Database.name input.DatabaseId)
-                    let! dayStart = setter.snapshot.getAsync (Recoil.Atoms.Database.dayStart input.DatabaseId)
+            Recoil.useCallbackRef
+                (fun (setter: CallbackMethods) ->
+                    async {
+                        let eventId =
+                            Recoil.Atoms.Events.EventId (Fable.Core.JS.Constructors.Date.now (), Guid.NewGuid ())
 
-                    let! availableDatabaseIds =
-                        setter.snapshot.getAsync (Recoil.Atoms.Session.availableDatabaseIds input.Username)
+                        let! name = setter.snapshot.getAsync (Recoil.Atoms.Database.name input.DatabaseId)
+                        let! dayStart = setter.snapshot.getAsync (Recoil.Atoms.Database.dayStart input.DatabaseId)
 
-                    let event = Recoil.Atoms.Events.Event.AddDatabase (eventId, name, dayStart)
-                    setter.set (Recoil.Atoms.Events.events eventId, event)
+                        let! availableDatabaseIds =
+                            setter.snapshot.getAsync (Recoil.Atoms.Session.availableDatabaseIds input.Username)
 
-                    setter.set
-                        (Recoil.Atoms.Session.availableDatabaseIds input.Username,
-                         (input.DatabaseId :: availableDatabaseIds))
+                        let event = Recoil.Atoms.Events.Event.AddDatabase (eventId, name, dayStart)
 
-                    printfn $"event {event}"
-                    do! input.OnSave
-                }
-                |> Async.StartImmediate)
+                        setter.set (Recoil.Atoms.Events.events eventId, event)
+
+                        setter.set (
+                            Recoil.Atoms.Session.availableDatabaseIds input.Username,
+                            (input.DatabaseId :: availableDatabaseIds)
+                        )
+
+                        printfn $"event {event}"
+                        do! input.OnSave
+                    }
+                    |> Async.StartImmediate)
 
         Chakra.stack
             {| spacing = "25px" |}

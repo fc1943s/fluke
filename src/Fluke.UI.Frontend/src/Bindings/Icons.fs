@@ -5,26 +5,30 @@ open Fable.Core
 
 module Icons =
     [<ImportAll "react-icons/bs">]
-    let bs: {| BsGrid: obj; BsListCheck: obj; BsThreeDots: obj |} = jsNative
+    let bs : {| BsGrid: obj
+                BsListCheck: obj
+                BsThreeDots: obj |} =
+        jsNative
 
     [<ImportAll "react-icons/fa">]
-    let fa: {| FaMinus: obj
-               FaPlus: obj
-               FaRegClock: obj
-               FaRegUser: obj
-               FaSortNumericDownAlt: obj |} = jsNative
+    let fa : {| FaMinus: obj
+                FaPlus: obj
+                FaRegClock: obj
+                FaRegUser: obj
+                FaSortNumericDownAlt: obj |} =
+        jsNative
 
     [<ImportAll "react-icons/fi">]
-    let fi: {| FiDatabase: obj; FiLogOut: obj |} = jsNative
+    let fi : {| FiDatabase: obj; FiLogOut: obj |} = jsNative
 
     [<ImportAll "react-icons/gi">]
-    let gi: {| GiHourglass: obj |} = jsNative
+    let gi : {| GiHourglass: obj |} = jsNative
 
     [<ImportAll "react-icons/md">]
-    let md: {| MdClear: obj; MdSettings: obj |} = jsNative
+    let md : {| MdClear: obj; MdSettings: obj |} = jsNative
 
     [<ImportAll "react-icons/ti">]
-    let ti: {| TiFlowChildren: obj |} = jsNative
+    let ti : {| TiFlowChildren: obj |} = jsNative
 
     let wrap cmp = React.bindComponent () [] cmp
     //    let wrap cmp (props: {| fontSize: string |}) = Chakra.box {| props with ``as`` = cmp |} []

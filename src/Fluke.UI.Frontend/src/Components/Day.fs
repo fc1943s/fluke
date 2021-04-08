@@ -24,12 +24,9 @@ module Day =
         Chakra.box
             {|
                 color =
-                    if hasSelection then
-                        "#ff5656"
-                    elif isToday then
-                        "#777"
-                    else
-                        ""
+                    if hasSelection then "#ff5656"
+                    elif isToday then "#777"
+                    else ""
                 borderLeft =
                     match (weekStart, input.Date) with
                     | StartOfMonth -> "1px solid #ffffff3d"

@@ -27,11 +27,7 @@ module TaskName =
                 position = "relative"
                 height = "17px"
                 lineHeight = "17px"
-                zIndex =
-                    if hovered then
-                        Some 1
-                    else
-                        None
+                zIndex = if hovered then Some 1 else None
             |}
             [
                 Chakra.box
@@ -42,11 +38,7 @@ module TaskName =
                             else
                                 None
                         overflow = "hidden"
-                        backgroundColor =
-                            if hovered then
-                                Some "#333"
-                            else
-                                None
+                        backgroundColor = if hovered then Some "#333" else None
                         whiteSpace =
                             if not hovered then
                                 Some "nowrap"

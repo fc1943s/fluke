@@ -24,13 +24,25 @@ module LeftDock =
                  (fun () ->
                      Settings.Settings
                          {|
-                             Props = {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
+                             Props =
+                                 {|
+                                     flex = 1
+                                     overflowY = "auto"
+                                     flexBasis = 0
+                                 |}
                          |}))
 
                 TempUI.DockType.Databases,
                 ("Databases",
                  Icons.fi.FiDatabase,
-                 (fun () -> Databases.Databases username {| flex = 1; overflowY = "auto"; flexBasis = 0 |}))
+                 (fun () ->
+                     Databases.Databases
+                         username
+                         {|
+                             flex = 1
+                             overflowY = "auto"
+                             flexBasis = 0
+                         |}))
             ]
 
         let itemsMap = items |> Map.ofList
@@ -39,7 +51,10 @@ module LeftDock =
             ()
             [
                 Chakra.box
-                    {| width = "24px"; position = "relative" |}
+                    {|
+                        width = "24px"
+                        position = "relative"
+                    |}
                     [
                         Chakra.flex
                             {|

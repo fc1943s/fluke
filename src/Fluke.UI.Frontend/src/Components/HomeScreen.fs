@@ -14,7 +14,10 @@ module HomeScreen =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let HomeScreen (input: {| Username: Username; Props: {| flex: int |} |}) =
+    let HomeScreen
+        (input: {| Username: Username
+                   Props: {| flex: int |} |})
+        =
         let view, setView = Recoil.useState Recoil.Atoms.view
 
         let tabs =
@@ -92,22 +95,38 @@ module HomeScreen =
                                                                     borderBottomColor = "gray.45"
                                                                     borderBottom = "2px solid"
                                                                 |}
-                                                            _selected = {| color = "gray.77"; borderColor = "gray.77" |}
+                                                            _selected =
+                                                                {|
+                                                                    color = "gray.77"
+                                                                    borderColor = "gray.77"
+                                                                |}
                                                         |}
                                                         [
-                                                            Chakra.box {| ``as`` = tab.Icon; marginRight = "6px" |} []
+                                                            Chakra.box
+                                                                {|
+                                                                    ``as`` = tab.Icon
+                                                                    marginRight = "6px"
+                                                                |}
+                                                                []
                                                             str tab.Name
                                                         ])
                                     ]
                                 Chakra.tabPanels
-                                    {| flex = 1; overflowY = "auto"; flexBasis = 0 |}
+                                    {|
+                                        flex = 1
+                                        overflowY = "auto"
+                                        flexBasis = 0
+                                    |}
                                     [
                                         yield!
                                             tabs
                                             |> List.map
                                                 (fun tab ->
                                                     Chakra.tabPanel
-                                                        {| padding = 0; boxShadow = "none !important" |}
+                                                        {|
+                                                            padding = 0
+                                                            boxShadow = "none !important"
+                                                        |}
                                                         [
                                                             tab.Content ()
                                                         ])

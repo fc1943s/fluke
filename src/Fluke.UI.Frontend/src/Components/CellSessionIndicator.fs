@@ -11,8 +11,10 @@ module CellSessionIndicator =
     open Domain.State
 
     [<ReactComponent>]
-    let CellSessionIndicator (input: {| Status: CellStatus
-                                        Sessions: TaskSession list |}) =
+    let CellSessionIndicator
+        (input: {| Status: CellStatus
+                   Sessions: TaskSession list |})
+        =
         Chakra.box
             {|
                 fontSize = "11px"

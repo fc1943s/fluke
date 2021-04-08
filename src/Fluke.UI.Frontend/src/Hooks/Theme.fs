@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Hooks
 
-open Fable.React.Props
 open Feliz
 open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
@@ -38,7 +37,11 @@ module Theme =
                                 |}
                                 |> JsInterop.toPlainJsObj
                         |}
-                fonts = JsInterop.toPlainJsObj {| main = "'Roboto Condensed', sans-serif" |}
+                fonts =
+                    JsInterop.toPlainJsObj
+                        {|
+                            main = "'Roboto Condensed', sans-serif"
+                        |}
                 fontWeights =
                     JsInterop.toPlainJsObj
                         {|
@@ -83,6 +86,15 @@ module Theme =
                                                         color = "#ddd"
                                                         userSelect = "none"
                                                     |}
+                                            ``::-webkit-calendar-picker-indicator`` =
+                                                JsInterop.toPlainJsObj
+                                                    {|
+                                                        filter =
+                                                            if props.colorMode = "dark" then
+                                                                "invert(1)"
+                                                            else
+                                                                ""
+                                                    |}
                                             ``*::-webkit-scrollbar`` = JsInterop.toPlainJsObj {| width = "6px" |}
                                             ``*::-webkit-scrollbar-track`` =
                                                 JsInterop.toPlainJsObj {| display = "none" |}
@@ -91,7 +103,10 @@ module Theme =
                                             ``*::-webkit-scrollbar-thumb:hover`` =
                                                 JsInterop.toPlainJsObj {| background = "gray.77" |}
                                             ``*:focus`` =
-                                                JsInterop.toPlainJsObj {| boxShadow = "0 0 0 1px #5ca0c1 !important" |}
+                                                JsInterop.toPlainJsObj
+                                                    {|
+                                                        boxShadow = "0 0 0 1px #5ca0c1 !important"
+                                                    |}
                                             ``*, *::before, *::after`` =
                                                 JsInterop.toPlainJsObj {| wordWrap = "break-word" |}
                                             ``.markdown-container h1`` =
@@ -108,4 +123,5 @@ module Theme =
                         |}
             |}
 
-    let useTheme () = React.useMemo (fun () -> Chakra.react.extendTheme theme)
+    let useTheme () =
+        React.useMemo (fun () -> Chakra.react.extendTheme theme)

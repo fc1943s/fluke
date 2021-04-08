@@ -37,7 +37,10 @@ module PriorityView =
                                     ]
                                 // Column: Priority
                                 Chakra.box
-                                    {| paddingRight = "10px"; textAlign = "center" |}
+                                    {|
+                                        paddingRight = "10px"
+                                        textAlign = "center"
+                                    |}
                                     [
                                         yield! taskIdList |> List.map TaskPriority.TaskPriority
                                     ]
@@ -54,6 +57,10 @@ module PriorityView =
                     {|  |}
                     [
                         GridHeader.GridHeader username
-                        Cells.Cells {| Username = username; TaskIdList = taskIdList |}
+                        Cells.Cells
+                            {|
+                                Username = username
+                                TaskIdList = taskIdList
+                            |}
                     ]
             ]

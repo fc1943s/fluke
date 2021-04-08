@@ -15,11 +15,14 @@ module Databases =
 
     module MenuItem =
         [<ReactComponent>]
-        let MenuItem (input: {| Username: Username; DatabaseId: DatabaseId |}) =
+        let MenuItem
+            (input: {| Username: Username
+                       DatabaseId: DatabaseId |})
+            =
             let (DatabaseId databaseId) = input.DatabaseId
 
             let isTesting = Recoil.useValue Recoil.Atoms.isTesting
-            let selectedPosition, setSelectedPosition = Recoil.useState (Recoil.Atoms.selectedPosition)
+            let selectedPosition, setSelectedPosition = Recoil.useState Recoil.Atoms.selectedPosition
             let (DatabaseName databaseName) = Recoil.useValue (Recoil.Atoms.Database.name input.DatabaseId)
             let databasePosition = Recoil.useValue (Recoil.Atoms.Database.position input.DatabaseId)
             let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
@@ -82,11 +85,7 @@ module Databases =
                             None
                     value = input.DatabaseId
                     isChecked = selected
-                    isDisabled =
-                        if enabled then
-                            None
-                        else
-                            Some true
+                    isDisabled = if enabled then None else Some true
                     onChange = onChange
                 |}
                 [
@@ -96,7 +95,12 @@ module Databases =
 
 
     [<ReactComponent>]
-    let Databases (username: Username) (props: {| flex: int; overflowY: string; flexBasis: int |}) =
+    let Databases
+        (username: Username)
+        (props: {| flex: int
+                   overflowY: string
+                   flexBasis: int |})
+        =
         let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds username)
 
         Chakra.stack
@@ -104,5 +108,11 @@ module Databases =
             [
                 yield!
                     availableDatabaseIds
-                    |> List.map (fun databaseId -> MenuItem.MenuItem {| Username = username; DatabaseId = databaseId |})
+                    |> List.map
+                        (fun databaseId ->
+                            MenuItem.MenuItem
+                                {|
+                                    Username = username
+                                    DatabaseId = databaseId
+                                |})
             ]
