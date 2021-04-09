@@ -101,11 +101,16 @@ module Databases =
                    overflowY: string
                    flexBasis: int |})
         =
+        let isTesting = Recoil.useValue Recoil.Atoms.isTesting
         let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds username)
 
         Chakra.stack
             {| props with
-                ``data-testid`` = nameof Databases
+                ``data-testid`` =
+                    if isTesting then
+                        Some (nameof Databases)
+                    else
+                        None
             |}
             [
                 yield!

@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Bindings
 
 open Fable.Core
+open Fable.Core.JsInterop
 
 
 module JS =
@@ -12,5 +13,4 @@ module JS =
 
     [<Emit "process.env.JEST_WORKER_ID">]
     let jestWorkerId : bool = jsNative
-
-    let isTesting = jestWorkerId
+    let isTesting = jestWorkerId || Browser.Dom.window?Cypress <> null
