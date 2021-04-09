@@ -45,6 +45,7 @@ module Full =
 
                     (Cy.contains "Databases" None).click ()
 
-                    (Cy.contains "db1" None).click ()
+                    (Cy.contains "db1" (Some {| timeout = timeout |}))
+                        .click ()
 
                     ))
