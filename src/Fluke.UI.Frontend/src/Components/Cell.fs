@@ -226,7 +226,8 @@ overriding any other behavior.
                         |}
                 if showUser then
                     match status with
-                    | UserStatus (user, _manualCellStatus) -> CellStatusUserIndicator.CellStatusUserIndicator user
+                    | UserStatus (username, _manualCellStatus) ->
+                        CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
                     | _ -> ()
 
                 TooltipPopup.TooltipPopup attachments

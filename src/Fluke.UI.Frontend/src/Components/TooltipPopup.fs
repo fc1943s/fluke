@@ -29,9 +29,6 @@ module TooltipPopup =
         match comments with
         | [] -> nothing
         | _ ->
-            let user = // TODO: 2+ different users in the same day. what to show? smooth transition between them?
-                fst comments.Head
-
             Chakra.box
                 {|
                     ref = tooltipContainerRef
@@ -42,11 +39,7 @@ module TooltipPopup =
                     width = "100%"
                     _after =
                         {|
-                            borderTopColor =
-                                match user with
-                                | { Color = UserColor.Blue } -> Some "#005688"
-                                | { Color = UserColor.Pink } -> Some "#a91c77"
-                                | _ -> None
+                            borderTopColor = "#000000"
                             borderTopWidth = "8px"
                             borderLeftColor = "transparent"
                             borderLeftWidth = "8px"
@@ -80,7 +73,7 @@ module TooltipPopup =
                                 yield!
                                     comments
                                     |> List.map
-                                        (fun ({ Username = Username username }, (Comment.Comment comment)) ->
+                                        (fun ((Username username), (Comment.Comment comment)) ->
                                             Chakra.box
                                                 {|  |}
                                                 [

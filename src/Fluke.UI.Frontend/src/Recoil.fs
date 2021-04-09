@@ -524,7 +524,7 @@ module Recoil =
                     def
                         (fun (_databaseId: DatabaseId) ->
                             Profiling.addCount $"{nameof Database}/{nameof owner}"
-                            None: User option)
+                            None: Username option)
                 }
 
 

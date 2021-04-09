@@ -16,22 +16,25 @@ module Tests =
     let databaseStateFromDslTemplate user dslTemplate =
         let dslDataList =
             dslTemplate.Tasks
-            |> List.map (fun templateTask ->
-                Testing.createLaneRenderingDslData
-                    {|
-                        User = user
-                        Position = dslTemplate.Position
-                        Task = templateTask.Task
-                        Events = templateTask.Events
-                    |})
+            |> List.map
+                (fun templateTask ->
+                    Testing.createLaneRenderingDslData
+                        {|
+                            User = user
+                            Position = dslTemplate.Position
+                            Task = templateTask.Task
+                            Events = templateTask.Events
+                        |})
 
-        let databaseState = DatabaseState.Create (name = DatabaseName "Test", owner = user, dayStart = user.DayStart)
+        let databaseState =
+            DatabaseState.Create (name = DatabaseName "Test", owner = user.Username, dayStart = user.DayStart)
 
         let newDatabaseState =
             (databaseState, dslDataList)
-            ||> List.fold (fun databaseState dslData ->
-                    databaseState
-                    |> mergeDslDataIntoDatabaseState dslData)
+            ||> List.fold
+                    (fun databaseState dslData ->
+                        databaseState
+                        |> mergeDslDataIntoDatabaseState dslData)
 
         newDatabaseState
 
@@ -40,132 +43,148 @@ module Tests =
         let databaseState = databaseStateFromDslTemplate testUser dslTemplate
 
         dslTemplate.Tasks
-        |> List.iter (fun taskTemplate ->
-            let dateSequence = taskTemplate.Expected |> List.map fst
+        |> List.iter
+            (fun taskTemplate ->
+                let dateSequence = taskTemplate.Expected |> List.map fst
 
-            let taskState = databaseState.TaskStateMap.[taskTemplate.Task]
+                let taskState = databaseState.TaskStateMap.[taskTemplate.Task]
 
-            let expectedCellMetadataList =
-                taskTemplate.Expected
-                |> List.map (fun (date, templateExpectList) ->
-                    let defaultCellMetadata = {| CellStatus = None; Sessions = None |}
+                let expectedCellMetadataList =
+                    taskTemplate.Expected
+                    |> List.map
+                        (fun (date, templateExpectList) ->
+                            let defaultCellMetadata = {| CellStatus = None; Sessions = None |}
 
-                    let cellMetadata =
-                        (defaultCellMetadata, templateExpectList)
-                        ||> List.fold (fun cellMetadata templateExpect ->
-                                match templateExpect with
-                                | TemplateExpect.Status cellStatus ->
-                                    {| cellMetadata with
-                                        CellStatus = Some cellStatus
-                                    |}
-                                | TemplateExpect.Session count -> {| cellMetadata with Sessions = Some count |})
+                            let cellMetadata =
+                                (defaultCellMetadata, templateExpectList)
+                                ||> List.fold
+                                        (fun cellMetadata templateExpect ->
+                                            match templateExpect with
+                                            | TemplateExpect.Status cellStatus ->
+                                                {| cellMetadata with
+                                                    CellStatus = Some cellStatus
+                                                |}
+                                            | TemplateExpect.Session count ->
+                                                {| cellMetadata with
+                                                    Sessions = Some count
+                                                |})
 
-                    date, cellMetadata)
+                            date, cellMetadata)
 
-            let expectedStatus =
-                expectedCellMetadataList
-                |> List.choose (fun (date, expectedCellMetadata) ->
-                    match expectedCellMetadata.CellStatus with
-                    | Some cellStatus -> Some (date, cellStatus)
-                    | _ -> None)
+                let expectedStatus =
+                    expectedCellMetadataList
+                    |> List.choose
+                        (fun (date, expectedCellMetadata) ->
+                            match expectedCellMetadata.CellStatus with
+                            | Some cellStatus -> Some (date, cellStatus)
+                            | _ -> None)
 
-            let expectedSessions =
-                expectedCellMetadataList
-                |> List.choose (fun (date, expectedCellMetadata) ->
-                    match expectedCellMetadata.Sessions with
-                    | Some count -> Some (date, count)
-                    | _ -> None)
+                let expectedSessions =
+                    expectedCellMetadataList
+                    |> List.choose
+                        (fun (date, expectedCellMetadata) ->
+                            match expectedCellMetadata.Sessions with
+                            | Some count -> Some (date, count)
+                            | _ -> None)
 
-            let statusAssertList =
-                match expectedStatus with
-                | [] -> []
-                | expectedStatus ->
-                    let laneStatusMap =
-                        Rendering.renderLane testUser.DayStart dslTemplate.Position dateSequence taskState
-                        |> fun (_taskState, cells) ->
-                            cells
-                            |> List.map (fun ({ DateId = DateId referenceDay }, status) -> referenceDay, status)
+                let statusAssertList =
+                    match expectedStatus with
+                    | [] -> []
+                    | expectedStatus ->
+                        let laneStatusMap =
+                            Rendering.renderLane testUser.DayStart dslTemplate.Position dateSequence taskState
+                            |> fun (_taskState, cells) ->
+                                cells
+                                |> List.map (fun ({ DateId = DateId referenceDay }, status) -> referenceDay, status)
+                                |> Map.ofList
+
+                        expectedStatus
+                        |> List.map
+                            (fun expected ->
+                                match expected with
+                                | date, _ as expected ->
+                                    let actual =
+                                        laneStatusMap
+                                        |> Map.tryFind date
+                                        |> Option.defaultValue Disabled
+                                        |> fun cellStatus -> date, cellStatus
+
+                                    expected, actual)
+
+                let sessionsAssertList =
+                    match expectedSessions with
+                    | [] -> []
+                    | expectedSessions ->
+                        let databaseId = DatabaseId Guid.Empty
+
+                        let databaseStateMap =
+                            [
+                                databaseId, databaseState
+                            ]
                             |> Map.ofList
 
-                    expectedStatus
-                    |> List.map (fun ((date, _) as expected) ->
-                        let actual =
-                            laneStatusMap
-                            |> Map.tryFind date
-                            |> Option.defaultValue Disabled
-                            |> fun cellStatus -> date, cellStatus
 
-                        expected, actual)
+                        let sessionData =
+                            View.getSessionData
+                                {|
+                                    Username = testUser.Username
+                                    DayStart = testUser.DayStart
+                                    DateSequence = dateSequence
+                                    View = View.View.HabitTracker
+                                    Position = dslTemplate.Position
+                                    DatabaseStateMap = databaseStateMap
+                                    SelectedDatabaseIds =
+                                        [
+                                            databaseId
+                                        ]
+                                        |> set
+                                |}
 
-            let sessionsAssertList =
-                match expectedSessions with
-                | [] -> []
-                | expectedSessions ->
-                    let databaseId = DatabaseId Guid.Empty
+                        let taskState = sessionData.TaskStateMap.[taskTemplate.Task]
 
-                    let databaseStateMap =
-                        [
-                            databaseId, databaseState
-                        ]
-                        |> Map.ofList
+                        expectedSessions
+                        |> List.map
+                            (fun (date, count) ->
+                                let sessionCount =
+                                    taskState.Sessions
+                                    |> List.filter
+                                        (fun (TaskSession (start, _, _)) ->
+                                            isToday testUser.DayStart start (DateId date))
+                                    |> List.length
 
-
-                    let sessionData =
-                        View.getSessionData
-                            {|
-                                Username = testUser.Username
-                                DayStart = testUser.DayStart
-                                DateSequence = dateSequence
-                                View = View.View.HabitTracker
-                                Position = dslTemplate.Position
-                                DatabaseStateMap = databaseStateMap
-                                SelectedDatabaseIds =
-                                    [
-                                        databaseId
-                                    ]
-                                    |> set
-                            |}
-
-                    let taskState = sessionData.TaskStateMap.[taskTemplate.Task]
-
-                    expectedSessions
-                    |> List.map (fun (date, count) ->
-                        let sessionCount =
-                            taskState.Sessions
-                            |> List.filter (fun (TaskSession (start, _, _)) ->
-                                isToday testUser.DayStart start (DateId date))
-                            |> List.length
-
-                        count, sessionCount)
+                                count, sessionCount)
 
 
-            statusAssertList
-            |> List.iter (fun (expected, actual) -> Expect.equal "" expected actual)
+                statusAssertList
+                |> List.iter (fun (expected, actual) -> Expect.equal "" expected actual)
 
-            sessionsAssertList
-            |> List.iter (fun (expected, actual) -> Expect.equal "" expected actual))
+                sessionsAssertList
+                |> List.iter (fun (expected, actual) -> Expect.equal "" expected actual))
 
 
 
 
     let createTests testDatabase =
         testDatabase
-        |> List.map (fun (name1, list) ->
-            testList
-                name1
-                [
-                    yield!
-                        list
-                        |> List.map (fun (name2, list) ->
-                            testList
-                                name2
-                                [
-                                    yield!
-                                        list
-                                        |> List.map (fun (name3, dslTemplate: DslTemplate) ->
-                                            test name3 { testWithTemplateData dslTemplate })
-                                ])
-                ])
+        |> List.map
+            (fun (name1, list) ->
+                testList
+                    name1
+                    [
+                        yield!
+                            list
+                            |> List.map
+                                (fun (name2, list) ->
+                                    testList
+                                        name2
+                                        [
+                                            yield!
+                                                list
+                                                |> List.map
+                                                    (fun (name3, dslTemplate: DslTemplate) ->
+                                                        test name3 { testWithTemplateData dslTemplate })
+                                        ])
+                    ])
 
     let getDatabaseTests () =
         let database = getDatabase testUser
@@ -199,10 +218,12 @@ module Tests =
                         let sortByTimeOfDay = Choice4Of5 ()
                         let sortByAll = Choice5Of5 ()
 
-                        let testWithLaneSortingData (props: {| Sort: Choice<_, _, _, _, _>
-                                                               Data: (Task * DslTask list) list
-                                                               Expected: string list
-                                                               Position: FlukeDateTime |}) =
+                        let testWithLaneSortingData
+                            (props: {| Sort: Choice<_, _, _, _, _>
+                                       Data: (Task * DslTask list) list
+                                       Expected: string list
+                                       Position: FlukeDateTime |})
+                            =
                             let databaseState =
                                 let dslData =
                                     Testing.createLaneSortingDslData
@@ -213,8 +234,11 @@ module Tests =
                                             Data = props.Data
                                         |}
 
-                                DatabaseState.Create
-                                    (name = DatabaseName "Test", owner = testUser, dayStart = testUser.DayStart)
+                                DatabaseState.Create (
+                                    name = DatabaseName "Test",
+                                    owner = testUser.Username,
+                                    dayStart = testUser.DayStart
+                                )
                                 |> mergeDslDataIntoDatabaseState dslData
 
                             let dateSequence =
@@ -256,7 +280,7 @@ module Tests =
                                     Position =
                                         {
                                             Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 00
+                                            Time = FlukeTime.Create 14 0
                                         }
                                     Data =
                                         dslTemplate.Tasks
@@ -292,7 +316,7 @@ module Tests =
                                     Position =
                                         {
                                             Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 00
+                                            Time = FlukeTime.Create 14 0
                                         }
                                     Data =
                                         dslTemplate.Tasks
@@ -328,7 +352,7 @@ module Tests =
                                     Position =
                                         {
                                             Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 00
+                                            Time = FlukeTime.Create 14 0
                                         }
                                     Data =
                                         dslTemplate.Tasks
@@ -364,7 +388,7 @@ module Tests =
                                     Position =
                                         {
                                             Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 00
+                                            Time = FlukeTime.Create 14 0
                                         }
                                     Data =
                                         dslTemplate.Tasks
@@ -400,7 +424,7 @@ module Tests =
                                     Position =
                                         {
                                             Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 00
+                                            Time = FlukeTime.Create 14 0
                                         }
                                     Data =
                                         dslTemplate.Tasks

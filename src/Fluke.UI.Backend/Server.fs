@@ -54,7 +54,7 @@ module Server =
                                 |> List.filter
                                     (fun databaseState ->
                                         match databaseState.Database with
-                                        | { Owner = owner } when owner.Username = username -> true
+                                        | { Owner = owner } when owner = username -> true
                                         | { SharedWith = DatabaseAccess.Public } -> true
                                         | {
                                               SharedWith = DatabaseAccess.Private accessList
@@ -63,8 +63,7 @@ module Server =
                                             |> List.exists
                                                 (function
                                                 | (DatabaseAccessItem.Admin user
-                                                | DatabaseAccessItem.ReadOnly user) when user.Username = username ->
-                                                    true
+                                                | DatabaseAccessItem.ReadOnly user) when user = username -> true
                                                 | _ -> false)
                                         | _ -> false)
 

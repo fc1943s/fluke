@@ -57,46 +57,6 @@ module EditDatabase =
 
                 ]
 
-    module Fields =
-        let fields databaseId =
-            Chakra.stack
-                {| spacing = "15px" |}
-                [
-                    Input.Input
-                        {|
-                            Label = Some "Name"
-                            Placeholder = sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
-                            Atom = Recoil.Atoms.Database.name databaseId
-                            InputFormat = Input.InputFormat.Text
-                            OnFormat = fun (DatabaseName name) -> name
-                            OnValidate = DatabaseName >> Some
-                        |}
-
-                    Input.Input
-                        {|
-                            Label = Some "Day starts at"
-                            Placeholder = "00:00"
-                            Atom = Recoil.Atoms.Database.dayStart databaseId
-                            InputFormat = Input.InputFormat.Time
-                            OnFormat = fun time -> time.Stringify ()
-                            OnValidate = DateTime.Parse >> FlukeTime.FromDateTime >> Some
-                        |}
-
-                    Chakra.stack
-                        {|
-                            direction = "row"
-                            align = "center"
-                        |}
-                        [
-                            Chakra.box
-                                {|  |}
-                                [
-                                    str "Access:"
-                                ]
-
-                            DatabaseAccessIndicator.DatabaseAccessIndicator ()
-                        ]
-                ]
 
     [<ReactComponent>]
     let EditDatabase
@@ -121,10 +81,37 @@ module EditDatabase =
 
                         setter.set (Recoil.Atoms.Events.events eventId, event)
 
+                        let! databaseStateMapCache =
+                            setter.snapshot.getAsync (Recoil.Atoms.Session.databaseStateMapCache input.Username)
+
+                        let newDatabaseStateMapCache =
+                            databaseStateMapCache
+                            |> Map.add
+                                input.DatabaseId
+                                {
+                                    Database =
+                                        {
+                                            Id = input.DatabaseId
+                                            Name = name
+                                            Owner = input.Username
+                                            SharedWith =
+                                                DatabaseAccess.Private [
+                                                    DatabaseAccessItem.Admin input.Username
+                                                ]
+                                            Position = None
+                                            DayStart = dayStart
+                                        }
+                                    InformationStateMap = Map.empty
+                                    TaskStateMap = Map.empty
+                                }
+
+                        setter.set (Recoil.Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
+
                         setter.set (
                             Recoil.Atoms.Session.availableDatabaseIds input.Username,
                             (input.DatabaseId :: availableDatabaseIds)
                         )
+
 
                         printfn $"event {event}"
                         do! input.OnSave
@@ -140,7 +127,44 @@ module EditDatabase =
                         str "Add Database"
                     ]
 
-                Fields.fields input.DatabaseId
+                Chakra.stack
+                    {| spacing = "15px" |}
+                    [
+                        Input.Input
+                            {|
+                                Label = Some "Name"
+                                Placeholder = sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
+                                Atom = Recoil.Atoms.Database.name input.DatabaseId
+                                InputFormat = Input.InputFormat.Text
+                                OnFormat = fun (DatabaseName name) -> name
+                                OnValidate = DatabaseName >> Some
+                            |}
+
+                        Input.Input
+                            {|
+                                Label = Some "Day starts at"
+                                Placeholder = "00:00"
+                                Atom = Recoil.Atoms.Database.dayStart input.DatabaseId
+                                InputFormat = Input.InputFormat.Time
+                                OnFormat = fun time -> time.Stringify ()
+                                OnValidate = DateTime.Parse >> FlukeTime.FromDateTime >> Some
+                            |}
+
+                        Chakra.stack
+                            {|
+                                direction = "row"
+                                align = "center"
+                            |}
+                            [
+                                Chakra.box
+                                    {|  |}
+                                    [
+                                        str "Access:"
+                                    ]
+
+                                DatabaseAccessIndicator.DatabaseAccessIndicator ()
+                            ]
+                    ]
 
                 Chakra.button
                     {| onClick = onSave |}

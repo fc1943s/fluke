@@ -26,7 +26,7 @@ module State =
         {
             Id: DatabaseId
             Name: DatabaseName
-            Owner: User
+            Owner: Username
             SharedWith: DatabaseAccess
             Position: FlukeDateTime option
             DayStart: FlukeTime
@@ -48,8 +48,8 @@ module State =
         | Private of DatabaseAccessItem list
 
     and [<RequireQualifiedAccess>] DatabaseAccessItem =
-        | Admin of user: User
-        | ReadOnly of user: User
+        | Admin of user: Username
+        | ReadOnly of user: Username
 
     and InformationState =
         {
@@ -82,7 +82,7 @@ module State =
         | Pending
         | Missed
         | MissedToday
-        | UserStatus of user: User * status: ManualCellStatus
+        | UserStatus of user: Username * status: ManualCellStatus
 
     and ManualCellStatus =
         | Completed
@@ -125,7 +125,7 @@ module State =
 
     let hasAccess database username =
         match database with
-        | { Owner = owner } when owner.Username = username -> true
+        | { Owner = owner } when owner = username -> true
         | { SharedWith = DatabaseAccess.Public } -> true
         | {
               SharedWith = DatabaseAccess.Private accessList
@@ -134,7 +134,7 @@ module State =
             |> List.exists
                 (function
                 | DatabaseAccessItem.Admin dbUser
-                | DatabaseAccessItem.ReadOnly dbUser -> dbUser.Username = username)
+                | DatabaseAccessItem.ReadOnly dbUser -> dbUser = username)
 
     let databaseStateWithInteractions (userInteractionList: UserInteraction list) (databaseState: DatabaseState) =
 

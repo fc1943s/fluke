@@ -370,7 +370,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 9,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Scheduled))
+                                                TemplateExpect.Status (UserStatus (user.Username, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
@@ -493,7 +493,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 26,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Scheduled))
+                                                TemplateExpect.Status (UserStatus (user.Username, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 27,
                                             [
@@ -509,7 +509,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 30,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Scheduled))
+                                                TemplateExpect.Status (UserStatus (user.Username, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 31,
                                             [
@@ -548,11 +548,11 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 25,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Scheduled))
+                                                TemplateExpect.Status (UserStatus (user.Username, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 26,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Completed))
+                                                TemplateExpect.Status (UserStatus (user.Username, Completed))
                                             ]
                                             FlukeDate.Create 2020 Month.March 27,
                                             [
@@ -598,7 +598,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 25,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Scheduled))
+                                                TemplateExpect.Status (UserStatus (user.Username, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 26,
                                             [
@@ -692,7 +692,7 @@ module Templates =
                                         [
                                             FlukeDate.Create 2020 Month.March 8,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Completed))
+                                                TemplateExpect.Status (UserStatus (user.Username, Completed))
                                             ]
                                             FlukeDate.Create 2020 Month.March 9,
                                             [
@@ -754,7 +754,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Postponed None))
+                                                TemplateExpect.Status (UserStatus (user.Username, Postponed None))
                                             ]
                                             FlukeDate.Create 2020 Month.March 11,
                                             [
@@ -801,7 +801,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Postponed None))
+                                                TemplateExpect.Status (UserStatus (user.Username, Postponed None))
                                             ]
                                             FlukeDate.Create 2020 Month.March 11,
                                             [
@@ -847,7 +847,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Postponed None))
+                                                TemplateExpect.Status (UserStatus (user.Username, Postponed None))
                                             ]
                                             FlukeDate.Create 2020 Month.March 11,
                                             [
@@ -893,7 +893,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 8,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Completed))
+                                                TemplateExpect.Status (UserStatus (user.Username, Completed))
                                             ]
                                             FlukeDate.Create 2020 Month.March 9,
                                             [
@@ -909,7 +909,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 12,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Completed))
+                                                TemplateExpect.Status (UserStatus (user.Username, Completed))
                                             ]
                                             FlukeDate.Create 2020 Month.March 13,
                                             [
@@ -1080,11 +1080,11 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 30,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Scheduled))
+                                                TemplateExpect.Status (UserStatus (user.Username, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.March 31,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Scheduled))
+                                                TemplateExpect.Status (UserStatus (user.Username, Scheduled))
                                             ]
                                             FlukeDate.Create 2020 Month.April 1,
                                             [
@@ -1130,7 +1130,7 @@ module Templates =
                                                 [
                                                     TemplateExpect.Status (
                                                         match d with
-                                                        | 14 -> UserStatus (user, Completed)
+                                                        | 14 -> UserStatus (user.Username, Completed)
                                                         | 21
                                                         | 28 -> Pending
                                                         | _ -> Disabled
@@ -1167,7 +1167,7 @@ module Templates =
                                                 [
                                                     TemplateExpect.Status (
                                                         match d with
-                                                        | 13 -> UserStatus (user, Completed)
+                                                        | 13 -> UserStatus (user.Username, Completed)
                                                         | 18
                                                         | 19 -> Missed
                                                         | 20
@@ -1206,7 +1206,7 @@ module Templates =
                                                 [
                                                     TemplateExpect.Status (
                                                         match d with
-                                                        | 18 -> UserStatus (user, Postponed None)
+                                                        | 18 -> UserStatus (user.Username, Postponed None)
                                                         | 19 -> Missed
                                                         | 20
                                                         | 21
@@ -1361,7 +1361,7 @@ module Templates =
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
                                                 TemplateExpect.Status (
-                                                    UserStatus (user, Postponed (Some (FlukeTime.Create 23 0)))
+                                                    UserStatus (user.Username, Postponed (Some (FlukeTime.Create 23 0)))
                                                 )
                                             ]
                                             FlukeDate.Create 2020 Month.March 11,
@@ -1406,7 +1406,7 @@ module Templates =
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
                                                 TemplateExpect.Status (
-                                                    UserStatus (user, Postponed (Some (FlukeTime.Create 1 0)))
+                                                    UserStatus (user.Username, Postponed (Some (FlukeTime.Create 1 0)))
                                                 )
                                             ]
                                             FlukeDate.Create 2020 Month.March 11,
@@ -1541,7 +1541,7 @@ module Templates =
                                             ]
                                             FlukeDate.Create 2020 Month.March 8,
                                             [
-                                                TemplateExpect.Status (UserStatus (user, Completed))
+                                                TemplateExpect.Status (UserStatus (user.Username, Completed))
                                             ]
                                             FlukeDate.Create 2020 Month.March 9,
                                             [
@@ -1550,7 +1550,7 @@ module Templates =
                                             FlukeDate.Create 2020 Month.March 10,
                                             [
                                                 TemplateExpect.Status (
-                                                    UserStatus (user, Postponed (Some (FlukeTime.Create 1 0)))
+                                                    UserStatus (user.Username, Postponed (Some (FlukeTime.Create 1 0)))
                                                 )
                                             ]
                                             FlukeDate.Create 2020 Month.March 11,
@@ -1609,7 +1609,7 @@ module Templates =
                                             FlukeDate.Create 2020 Month.March 12,
                                             [
                                                 TemplateExpect.Status (
-                                                    UserStatus (user, Postponed (Some (FlukeTime.Create 13 0)))
+                                                    UserStatus (user.Username, Postponed (Some (FlukeTime.Create 13 0)))
                                                 )
                                             ]
                                             FlukeDate.Create 2020 Month.March 13,
@@ -1750,7 +1750,7 @@ module Templates =
 
         let moment = { Date = date; Time = user.DayStart }
 
-        let userInteraction = UserInteraction (moment, user, interaction)
+        let userInteraction = UserInteraction (moment, user.Username, interaction)
 
         userInteraction
 
@@ -1775,10 +1775,12 @@ module Templates =
                             let interaction =
                                 Interaction.Task (
                                     task,
-                                    TaskInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment))
+                                    TaskInteraction.Attachment (
+                                        Attachment.Comment (user.Username, Comment.Comment comment)
+                                    )
                                 )
 
-                            let userInteraction = UserInteraction (moment, user, interaction)
+                            let userInteraction = UserInteraction (moment, user.Username, interaction)
 
                             let newUserInteractions =
                                 userInteractions
@@ -1791,10 +1793,12 @@ module Templates =
                             let interaction =
                                 Interaction.Cell (
                                     { Task = task; DateId = DateId date },
-                                    CellInteraction.Attachment (Attachment.Comment (user, Comment.Comment comment))
+                                    CellInteraction.Attachment (
+                                        Attachment.Comment (user.Username, Comment.Comment comment)
+                                    )
                                 )
 
-                            let userInteraction = UserInteraction (moment, user, interaction)
+                            let userInteraction = UserInteraction (moment, user.Username, interaction)
 
                             let newUserInteractions =
                                 userInteractions
@@ -1809,7 +1813,7 @@ module Templates =
                             let taskInteraction = TaskInteraction.Session taskSession
                             let interaction = Interaction.Task (task, taskInteraction)
 
-                            let userInteraction = UserInteraction (moment, user, interaction)
+                            let userInteraction = UserInteraction (moment, user.Username, interaction)
 
                             let newUserInteractions =
                                 userInteractions
@@ -1839,7 +1843,7 @@ module Templates =
                                     let interaction =
                                         Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
 
-                                    let userInteraction = UserInteraction (moment, user, interaction)
+                                    let userInteraction = UserInteraction (moment, user.Username, interaction)
 
                                     userInteractions
                                     @ [
@@ -2000,7 +2004,7 @@ module Templates =
                 id = databaseId,
                 name = DatabaseName templateName,
                 dayStart = user.DayStart,
-                owner = user,
+                owner = user.Username,
                 position = dslTemplate.Position,
                 sharedWith = DatabaseAccess.Public
             )
