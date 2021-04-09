@@ -72,11 +72,20 @@ module TaskForm =
                                             |> Map.ofList
                                     }
 
+                                let informationState =
+                                    {
+                                        Information = information
+                                        Attachments = []
+                                        SortList = []
+                                    }
+
                                 databaseStateMapCache
                                 |> Map.add
                                     databaseId
                                     { databaseState with
-                                        InformationStateMap = databaseState.InformationStateMap
+                                        InformationStateMap =
+                                            databaseState.InformationStateMap
+                                            |> Map.add information informationState
                                         TaskStateMap =
                                             databaseState.TaskStateMap
                                             |> Map.add task taskState

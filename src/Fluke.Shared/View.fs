@@ -228,11 +228,13 @@ module View =
             head, last
 
 
+
         let filteredTaskStateList = filterTaskStateList input.View dateRange taskStateList
 
         let filteredLanes =
             filteredTaskStateList
             |> List.map (Rendering.renderLane input.DayStart input.Position input.DateSequence)
+
 
         //            let taskOrderList = RootPrivateData.databaseData.TaskOrderList // @ RootPrivateData.taskOrderList
 //            let taskOrderList = [] // @ RootPrivateData.taskOrderList
@@ -321,6 +323,11 @@ module View =
                 TaskStateMap = newTaskStateMap
                 TaskList = newTaskList
             }
+
+        printfn $"taskStateList {taskStateList}"
+        printfn $"filteredTaskStateList {filteredTaskStateList}"
+        printfn $"newSession {newSession}"
+
 
         //            let newState = { Session = newSession }
 //

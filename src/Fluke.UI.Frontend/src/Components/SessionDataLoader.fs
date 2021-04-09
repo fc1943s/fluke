@@ -66,6 +66,9 @@ module SessionDataLoader =
             sessionData.TaskList
             |> List.map Recoil.Atoms.Task.taskId
 
+
+        printfn $"setting taskIdList {taskIdList}"
+
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 
     let getDatabaseIdFromName name =
@@ -149,16 +152,16 @@ module SessionDataLoader =
 
         let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData username)
 
+        let databaseStateMap = Recoil.useValue (Recoil.Atoms.Session.databaseStateMapCache username)
+
         let loadState =
             Recoil.useCallbackRef
                 (fun setter ->
-                    async {
+                    promise {
                         Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
 
                         match sessionData with
                         | Some sessionData ->
-                            let! databaseStateMap =
-                                setter.snapshot.getAsync (Recoil.Atoms.Session.databaseStateMapCache username)
 
                             let availableDatabaseIds =
                                 databaseStateMap
@@ -167,7 +170,6 @@ module SessionDataLoader =
                                 |> List.map fst
 
                             setter.set (Recoil.Atoms.Session.availableDatabaseIds username, availableDatabaseIds)
-
 
                             initializeSessionData username setter sessionData
 
@@ -182,20 +184,21 @@ module SessionDataLoader =
                         | _ -> ()
 
                         Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
-                    }
-                    |> Async.StartImmediate)
+                    })
+
 
         Profiling.addTimestamp "dataLoader render"
 
         React.useEffect (
             (fun () ->
                 Profiling.addTimestamp "dataLoader effect"
-                loadState ()),
+                loadState () |> Promise.start),
 
             // TODO: return a cleanup?
             [|
                 box loadState
                 box sessionData
+                box databaseStateMap
             |]
         )
 

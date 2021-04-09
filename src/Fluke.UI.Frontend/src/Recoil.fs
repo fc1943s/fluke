@@ -1352,6 +1352,8 @@ module Recoil =
                                     Some newSession
                                 | _ -> None
 
+                            printfn $"sessiondata reuslt {result}"
+
                             Profiling.addCount $"{nameof Session}/{nameof sessionData}"
 
                             result)
