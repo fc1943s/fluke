@@ -47,8 +47,12 @@ module Full =
                     (Cy.contains (nameof Databases) None).click ()
 
                     Cy
-                        .get($"[data-testid={nameof Databases}]")
-                        .scrollTo "bottom"
+                        .get(
+                            $"[data-testid={nameof Databases}]"
+                        )
+                        .scrollTo
+                        "bottom"
+                        {| ensureScrollable = false |}
 
                     (Cy.contains "db1" None).click ()
 

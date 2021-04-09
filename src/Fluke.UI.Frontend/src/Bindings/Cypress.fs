@@ -30,7 +30,7 @@ module Cypress =
             abstract should : string -> string -> 'T -> unit
             abstract click : unit -> unit
             abstract ``type`` : string -> unit
-            abstract scrollTo : string -> unit
+            abstract scrollTo : string -> {| ensureScrollable: bool |} -> unit
             abstract get : string -> Chainable2<'T>
 
         type Location =
