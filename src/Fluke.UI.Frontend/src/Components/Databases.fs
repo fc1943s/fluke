@@ -95,7 +95,7 @@ module Databases =
 
 
     [<ReactComponent>]
-    let Databases
+    let rec Databases
         (username: Username)
         (props: {| flex: int
                    overflowY: string
@@ -104,7 +104,9 @@ module Databases =
         let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds username)
 
         Chakra.stack
-            props
+            {| props with
+                ``data-testid`` = nameof Databases
+            |}
             [
                 yield!
                     availableDatabaseIds

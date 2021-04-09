@@ -5,6 +5,7 @@ open Fluke.UI.Frontend.Bindings
 
 module Full =
     open Cypress
+    open Fluke.UI.Frontend.Components
 
     describe
         "tests"
@@ -43,7 +44,11 @@ module Full =
 
                     (Cy.contains "Save" None).click ()
 
-                    (Cy.contains "Databases" None).click ()
+                    (Cy.contains (nameof Databases) None).click ()
+
+                    Cy
+                        .get($"[data-testid={nameof Databases}]")
+                        .scrollTo "bottom"
 
                     (Cy.contains "db1" None).click ()
 
