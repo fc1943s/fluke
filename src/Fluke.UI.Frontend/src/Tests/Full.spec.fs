@@ -52,4 +52,12 @@ module Full =
 
                     (Cy.contains "db1" None).click ()
 
+                    (Cy.contains "Add Task" None).click ()
+
+                    Cy
+                        .get("input[placeholder^='new-task-']")
+                        .``type`` "task1"
+
+                    (Cy.contains "Save" None).click ()
+
                     ))

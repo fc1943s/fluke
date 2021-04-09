@@ -10,7 +10,7 @@ open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 
 
-module EditDatabase =
+module DatabaseForm =
     open State
     open Model
 
@@ -59,7 +59,7 @@ module EditDatabase =
 
 
     [<ReactComponent>]
-    let EditDatabase
+    let DatabaseForm
         (input: {| Username: UserInteraction.Username
                    DatabaseId: State.DatabaseId
                    OnSave: Async<unit> |})

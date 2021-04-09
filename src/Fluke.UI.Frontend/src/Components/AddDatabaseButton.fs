@@ -44,7 +44,7 @@ module AddDatabaseButton =
                         [
                             match formDatabaseId, username with
                             | Some databaseId, Some username ->
-                                EditDatabase.EditDatabase
+                                DatabaseForm.DatabaseForm
                                     {|
                                         Username = username
                                         DatabaseId = databaseId

@@ -117,26 +117,26 @@ module Model =
     and InformationName = InformationName of name: string
 
     and Area with
-        static member inline Default = { Name = AreaName "<null>" }
+        static member inline Default = { Name = AreaName "" }
 
     and Project with
         static member inline Default : Project =
             {
-                Name = ProjectName "<null>"
+                Name = ProjectName ""
                 Area = Area.Default
             }
 
     and Resource with
         static member inline Default =
             {
-                Name = ResourceName "<null>"
+                Name = ResourceName ""
                 Area = Area.Default
             }
 
     type Task with
         static member inline Default =
             {
-                Name = TaskName "<null>"
+                Name = TaskName ""
                 Information = Area (Area.Default, [])
                 PendingAfter = None
                 MissedAfter = None

@@ -75,6 +75,7 @@ module Recoil =
             [<RequireQualifiedAccess>]
             type Event =
                 | AddDatabase of id: EventId * name: DatabaseName * dayStart: FlukeTime
+                | AddTask of id: EventId * name: TaskName
                 | NoOp
 
             let rec events =
@@ -630,9 +631,9 @@ module Recoil =
                 def (None: State.DatabaseId option)
             }
 
-        let rec taskIdForm =
+        let rec formTaskId =
             atom {
-                key $"{nameof atom}/{nameof taskIdForm}"
+                key $"{nameof atom}/{nameof formTaskId}"
                 def (None: Task.TaskId option)
             }
 

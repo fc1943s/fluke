@@ -11,7 +11,8 @@ open Fluke.UI.Frontend
 module AddTaskButton =
     [<ReactComponent>]
     let AddTaskButton (props: {| marginLeft: string |}) =
-        let taskIdForm, setTaskIdForm = Recoil.useState Recoil.Atoms.taskIdForm
+        let username = Recoil.useValue Recoil.Atoms.username
+        let formTaskId, setFormTaskId = Recoil.useState Recoil.Atoms.formTaskId
 
         React.fragment [
             Button.Button
@@ -24,7 +25,7 @@ module AddTaskButton =
                             color = None
                             flex = None
                             marginLeft = Some props.marginLeft
-                            onClick = Some (fun () -> promise { setTaskIdForm (Some (Recoil.Atoms.Task.newTaskId ())) })
+                            onClick = Some (fun () -> promise { setFormTaskId (Some (Recoil.Atoms.Task.newTaskId ())) })
                         |}
                     children =
                         [
@@ -34,11 +35,19 @@ module AddTaskButton =
 
             Modal.Modal
                 {|
-                    IsOpen = taskIdForm.IsSome
-                    OnClose = fun () -> setTaskIdForm None
+                    IsOpen = formTaskId.IsSome
+                    OnClose = fun () -> setFormTaskId None
                     children =
                         [
-                            TaskForm.TaskForm ()
+                            match formTaskId, username with
+                            | Some taskId, Some username ->
+                                TaskForm.TaskForm
+                                    {|
+                                        Username = username
+                                        TaskId = taskId
+                                        OnSave = async { setFormTaskId None }
+                                    |}
+                            | _ -> ()
                         ]
                 |}
         ]
