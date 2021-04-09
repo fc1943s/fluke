@@ -45,6 +45,8 @@ module Full =
 
                     (Cy.contains "Databases" None).click ()
 
+                    Cy.wait 300
+
                     (Cy.contains "db1" (Some {| timeout = timeout |}))
                         .click ()
 

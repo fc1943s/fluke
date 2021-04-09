@@ -81,6 +81,9 @@ module SessionDataLoader =
         promise {
             let! position = setter.snapshot.getPromise Recoil.Selectors.position
 
+            let! databaseStateMapCache =
+                setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache username)
+
             let! result =
                 match position with
                 | Some position ->
@@ -126,7 +129,10 @@ module SessionDataLoader =
                     }
                 | _ -> promise { return Map.empty }
 
-            setter.set (Recoil.Atoms.Session.databaseStateMapCache username, result)
+            setter.set (
+                Recoil.Atoms.Session.databaseStateMapCache username,
+                TempData.mergeDatabaseStateMap databaseStateMapCache result
+            )
         }
 
 
