@@ -113,6 +113,7 @@ module TaskForm =
                     [
                         Input.Input
                             {|
+                                AutoFocus = true
                                 Label = Some "Name"
                                 Placeholder = sprintf "new-task-%s" (DateTime.Now.Format "yyyy-MM-dd")
                                 Atom = Recoil.Atoms.Task.name input.TaskId

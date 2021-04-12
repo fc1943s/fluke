@@ -27,9 +27,12 @@ module Cypress =
             abstract should : ('T -> unit) -> unit
 
         type Chainable2<'T> =
-            abstract should : string -> string -> 'T -> unit
+            abstract should : string -> string -> string -> unit
+            abstract invoke : string -> string -> string -> Chainable2<'T>
             abstract click : unit -> unit
-            abstract ``type`` : string -> unit
+            abstract focus : unit -> unit
+            abstract ``then`` : (Chainable2<'T> -> unit) -> unit
+            abstract ``type`` : string -> Chainable2<'T>
             abstract scrollTo : string -> {| ensureScrollable: bool |} -> unit
             abstract get : string -> Chainable2<'T>
 
@@ -40,6 +43,9 @@ module Cypress =
 
         [<Emit("cy.location()")>]
         let location () : Chainable<Location> = jsNative
+
+        [<Emit("cy.wrap($0)")>]
+        let wrap<'T> (_el: Chainable2<'T>) : Chainable2<'T> = jsNative
 
         [<Emit("cy.focused()")>]
         let focused () : Chainable2<unit> = jsNative

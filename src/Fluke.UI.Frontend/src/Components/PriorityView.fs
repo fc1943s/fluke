@@ -15,8 +15,6 @@ module PriorityView =
     let PriorityView (username: Username) =
         let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList username)
 
-        printfn $"taskIdList {taskIdList}"
-
         Chakra.flex
             {|  |}
             [

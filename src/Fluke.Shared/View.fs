@@ -32,7 +32,7 @@ module View =
                     taskState.CellStateMap
                     |> Map.toSeq
                     |> Seq.exists
-                        (fun (DateId referenceDay, cellState) ->
+                        (fun ((DateId referenceDay), cellState) ->
                             referenceDay.DateTime >==< dateRange
                             && (cellState.Attachments
                                 |> List.exists
@@ -324,12 +324,4 @@ module View =
                 TaskList = newTaskList
             }
 
-        printfn $"taskStateList {taskStateList}"
-        printfn $"filteredTaskStateList {filteredTaskStateList}"
-        printfn $"newSession {newSession}"
-
-
-        //            let newState = { Session = newSession }
-//
-//            newState
         newSession

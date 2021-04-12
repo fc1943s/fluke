@@ -105,6 +105,11 @@ module DatabaseForm =
                                     TaskStateMap = Map.empty
                                 }
 
+                        printfn
+                            $"DatabaseForm():
+                        databaseStateMapCache.Count={databaseStateMapCache.Count}
+                        newDatabaseStateMapCache.Count={newDatabaseStateMapCache.Count}"
+
                         setter.set (Recoil.Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
 
                         setter.set (
@@ -132,6 +137,7 @@ module DatabaseForm =
                     [
                         Input.Input
                             {|
+                                AutoFocus = true
                                 Label = Some "Name"
                                 Placeholder = sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
                                 Atom = Recoil.Atoms.Database.name input.DatabaseId
@@ -142,6 +148,7 @@ module DatabaseForm =
 
                         Input.Input
                             {|
+                                AutoFocus = false
                                 Label = Some "Day starts at"
                                 Placeholder = "00:00"
                                 Atom = Recoil.Atoms.Database.dayStart input.DatabaseId

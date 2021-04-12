@@ -22,6 +22,7 @@ module Input =
     [<ReactComponent>]
     let Input<'T>
         (input: {| Label: string option
+                   AutoFocus: bool
                    Placeholder: string
                    InputFormat: InputFormat
                    OnFormat: 'T -> string
@@ -45,6 +46,7 @@ module Input =
 
                 Chakra.input
                     {|
+                        autoFocus = input.AutoFocus
                         placeholder = input.Placeholder
                         onChange =
                             fun (e: KeyboardEvent) ->

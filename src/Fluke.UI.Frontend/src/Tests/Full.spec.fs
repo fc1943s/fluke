@@ -17,6 +17,11 @@ module Full =
             it
                 "login"
                 (fun () ->
+                    let username = "x"
+                    let password = "x"
+                    let dbName = "db1"
+                    let taskName = "task1"
+
                     Cy
                         .location()
                         .should (fun location ->
@@ -24,27 +29,38 @@ module Full =
                                 .``to``.contain $"{homeUrl}/#/login")
 
                     Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"
+
                     Cy.focused().click ()
-                    Cy.focused().``type`` "x"
-                    Cy.get("input[type=password]").``type`` "x"
+                    Cy.wait 250
+
+                    (Cy.focused().``type`` username).should "have.value" username null
+
+                    (Cy.get("input[type=password]").``type`` password)
+                        .should
+                        "have.value"
+                        password
+                        null
+
                     (Cy.contains "Sign In" None).click ()
                     Cy.contains "Wrong user or password" |> ignore
-                    Cy.wait 300
+                    Cy.wait 250
                     (Cy.contains "Sign Up" None).click ()
 
                     Cy.contains "User registered successfully"
                     |> ignore
 
+                    (Cy.contains (nameof Databases) None).click ()
+
                     (Cy.contains "Add Database" (Some {| timeout = timeout |}))
                         .click ()
 
-                    Cy
-                        .get("input[placeholder^='new-database-']")
-                        .``type`` "db1"
+                    Cy.wait 1250
+
+                    ((Cy.focused().``type`` dbName).should "have.value" dbName null)
 
                     (Cy.contains "Save" None).click ()
 
-                    (Cy.contains (nameof Databases) None).click ()
+                    Cy.wait 1250
 
                     Cy
                         .get(
@@ -54,13 +70,12 @@ module Full =
                         "bottom"
                         {| ensureScrollable = false |}
 
-                    (Cy.contains "db1" None).click ()
-
+                    (Cy.contains dbName None).click ()
+                    Cy.wait 250
                     (Cy.contains "Add Task" None).click ()
+                    Cy.wait 250
 
-                    Cy
-                        .get("input[placeholder^='new-task-']")
-                        .``type`` "task1"
+                    (Cy.focused().``type`` taskName).should "have.value" taskName null
 
                     (Cy.contains "Save" None).click ()
 

@@ -6414,10 +6414,10 @@ eslint-plugin-import@^2.22.1, eslint-plugin-import@~2.22:
     resolve "^1.17.0"
     tsconfig-paths "^3.9.0"
 
-eslint-plugin-jest-dom@~3.7:
-  version "3.7.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-jest-dom/-/eslint-plugin-jest-dom-3.7.0.tgz#90b1da71aba7a0f5ac80e57ec04efbe97161fa55"
-  integrity sha512-pLbKIV/upcORNROKgO6Yca13HGTkXvgcI7qaqJSZ8mvGMqaDvQSEh+RoabjeLByMzJBmAzNx1AAT2dUYOAVidw==
+eslint-plugin-jest-dom@~3.8:
+  version "3.8.0"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-jest-dom/-/eslint-plugin-jest-dom-3.8.0.tgz#3f31591829dd5024ede4629b9268bc976b75fa43"
+  integrity sha512-TsBK1RSG8mXCJaOce+gcNLU8ORl5yx111/HnsTTL70qwfb1AtbcqGtpz2OvfI/Q23baMtWDVy4L1KHgJk0B1XQ==
   dependencies:
     "@babel/runtime" "^7.9.6"
     "@testing-library/dom" "^7.28.1"
@@ -6521,10 +6521,53 @@ eslint-webpack-plugin@^2.5.2:
     micromatch "^4.0.2"
     schema-utils "^3.0.0"
 
-eslint@^7.11.0, eslint@~7.23:
+eslint@^7.11.0:
   version "7.23.0"
   resolved "https://registry.yarnpkg.com/eslint/-/eslint-7.23.0.tgz#8d029d252f6e8cf45894b4bee08f5493f8e94325"
   integrity sha512-kqvNVbdkjzpFy0XOszNwjkKzZ+6TcwCQ/h+ozlcIWwaimBBuhlQ4nN6kbiM2L+OjDcznkTJxzYfRFH92sx4a0Q==
+  dependencies:
+    "@babel/code-frame" "7.12.11"
+    "@eslint/eslintrc" "^0.4.0"
+    ajv "^6.10.0"
+    chalk "^4.0.0"
+    cross-spawn "^7.0.2"
+    debug "^4.0.1"
+    doctrine "^3.0.0"
+    enquirer "^2.3.5"
+    eslint-scope "^5.1.1"
+    eslint-utils "^2.1.0"
+    eslint-visitor-keys "^2.0.0"
+    espree "^7.3.1"
+    esquery "^1.4.0"
+    esutils "^2.0.2"
+    file-entry-cache "^6.0.1"
+    functional-red-black-tree "^1.0.1"
+    glob-parent "^5.0.0"
+    globals "^13.6.0"
+    ignore "^4.0.6"
+    import-fresh "^3.0.0"
+    imurmurhash "^0.1.4"
+    is-glob "^4.0.0"
+    js-yaml "^3.13.1"
+    json-stable-stringify-without-jsonify "^1.0.1"
+    levn "^0.4.1"
+    lodash "^4.17.21"
+    minimatch "^3.0.4"
+    natural-compare "^1.4.0"
+    optionator "^0.9.1"
+    progress "^2.0.0"
+    regexpp "^3.1.0"
+    semver "^7.2.1"
+    strip-ansi "^6.0.0"
+    strip-json-comments "^3.1.0"
+    table "^6.0.4"
+    text-table "^0.2.0"
+    v8-compile-cache "^2.0.3"
+
+eslint@~7.24:
+  version "7.24.0"
+  resolved "https://registry.yarnpkg.com/eslint/-/eslint-7.24.0.tgz#2e44fa62d93892bfdb100521f17345ba54b8513a"
+  integrity sha512-k9gaHeHiFmGCDQ2rEfvULlSLruz6tgfA8DEn+rY9/oYPFFTlz55mM/Q/Rij1b2Y42jwZiK3lXvNTw6w6TXzcKQ==
   dependencies:
     "@babel/code-frame" "7.12.11"
     "@eslint/eslintrc" "^0.4.0"
@@ -11997,14 +12040,14 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@0.0.0-experimental-172e89b4b:
-  version "0.0.0-experimental-172e89b4b"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-172e89b4b.tgz#43b1f87d21a9d3e21f5a4fdc9d1eef0ec7c05880"
-  integrity sha512-u/oNA3joe0oakj/YinZ6E2j0flzPhws2uWklSCa3wW0KAiJj/uiFyKvR3FnIapFLTdSYPWUyHgYCbRPIhBu9FQ==
+react-dom@0.0.0-experimental-bdc23c3db:
+  version "0.0.0-experimental-bdc23c3db"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-bdc23c3db.tgz#855caca993182168a9fab9449b28f30347faa5d9"
+  integrity sha512-iK2IbYAVg4L/foUk9XYsuakH9P3zwfMVkIOtwIV8FK0gTatpUF7zr4jhIhhdtjVRlw/N3o4824YNPzuXN15siQ==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    scheduler "0.0.0-experimental-172e89b4b"
+    scheduler "0.0.0-experimental-bdc23c3db"
 
 react-error-overlay@^6.0.9:
   version "6.0.9"
@@ -12163,10 +12206,10 @@ react-style-singleton@^2.1.0:
     invariant "^2.2.4"
     tslib "^1.0.0"
 
-react@0.0.0-experimental-172e89b4b:
-  version "0.0.0-experimental-172e89b4b"
-  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-172e89b4b.tgz#39c8007990cff05260c2d83aebd4f8e2617ef08d"
-  integrity sha512-808mw+itIVML3FwO2L/QUxRaRTDmO/MT7B1Cmpnu6zXETlP59jKInfB7rGQykMoJdComDH3LCKlhm63JUKkRWA==
+react@0.0.0-experimental-bdc23c3db:
+  version "0.0.0-experimental-bdc23c3db"
+  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-bdc23c3db.tgz#7b74b6e6b2bfc4121f2048aa6219efe180df50d4"
+  integrity sha512-X2b1WgVwPmVDabGdbdfHlzcISLG/IwYEIm9esh+H6AkB4W9o6q0KzffixVAZC3bp9PMwzITNYe4kiuJncPYzfA==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -12812,10 +12855,10 @@ saxes@^5.0.1:
   dependencies:
     xmlchars "^2.2.0"
 
-scheduler@0.0.0-experimental-172e89b4b:
-  version "0.0.0-experimental-172e89b4b"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-172e89b4b.tgz#3e0b96a1f447578795ee93549d96e21eedf08735"
-  integrity sha512-7imzAbi0VyaSTAwClZ1A1yOdS3Ci+k8Dqur8oY+kE04prqSkfUplDC3bboB9aJR3YkyxnRU6tYuqP3tZ26q6Nw==
+scheduler@0.0.0-experimental-bdc23c3db:
+  version "0.0.0-experimental-bdc23c3db"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-bdc23c3db.tgz#564c50d8bc6acdfb1091a17012232e5268e2f982"
+  integrity sha512-EoMnLOYie3zQJN8CCBf29GCKjl6lihSwhvfo40AtkyReW9iudmPd9Yd6WC7/VXiBfH22Xyjhy2dsbRFfV9vPtg==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"

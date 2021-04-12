@@ -104,6 +104,8 @@ module Databases =
         let isTesting = Recoil.useValue Recoil.Atoms.isTesting
         let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds username)
 
+        printfn $"Databases(): availableDatabaseIds.Length={availableDatabaseIds.Length}"
+
         Chakra.stack
             {| props with
                 ``data-testid`` =

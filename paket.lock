@@ -237,7 +237,7 @@ NUGET
       FSharp.Core (>= 5.0)
     Farmer (1.5.0-beta3)
       FSharp.Core (>= 5.0)
-    Feliz (1.40.1)
+    Feliz (1.42)
       Fable.Core (>= 3.1.5)
       Fable.React (>= 7.0.1)
       Feliz.CompilerPlugins (>= 1.5)

@@ -66,9 +66,6 @@ module SessionDataLoader =
             sessionData.TaskList
             |> List.map Recoil.Atoms.Task.taskId
 
-
-        printfn $"setting taskIdList {taskIdList}"
-
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 
     let getDatabaseIdFromName name =
@@ -107,22 +104,20 @@ module SessionDataLoader =
                                         templateName
                                         dslTemplate)
 
+
                         let newDatabaseStateList =
                             databaseStateList
                             |> Option.defaultValue []
                             |> List.append templates
 
+
                         let databaseStateMap =
                             newDatabaseStateList
                             |> List.map
                                 (fun databaseState ->
-                                    match databaseState with
-                                    | {
-                                          Database = { Name = DatabaseName name }
-                                      } as databaseState ->
-                                        let id = getDatabaseIdFromName name
-
-                                        id, databaseState)
+                                    let (DatabaseName databaseName) = databaseState.Database.Name
+                                    let id = getDatabaseIdFromName databaseName
+                                    id, databaseState)
                             |> Map.ofList
 
                         return databaseStateMap
@@ -131,6 +126,11 @@ module SessionDataLoader =
 
             let! databaseStateMapCache =
                 setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache username)
+
+            printfn
+                $"SessionDataLoader.updateDatabaseStateMap():
+            databaseStateMapCache.Count={databaseStateMapCache.Count}
+            newDatabaseStateMapCache.Count={result.Count}"
 
             setter.set (
                 Recoil.Atoms.Session.databaseStateMapCache username,
@@ -152,8 +152,6 @@ module SessionDataLoader =
 
         let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData username)
 
-        let databaseStateMap = Recoil.useValue (Recoil.Atoms.Session.databaseStateMapCache username)
-
         let loadState =
             Recoil.useCallbackRef
                 (fun setter ->
@@ -162,9 +160,11 @@ module SessionDataLoader =
 
                         match sessionData with
                         | Some sessionData ->
+                            let! databaseStateMapCache =
+                                setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache username)
 
                             let availableDatabaseIds =
-                                databaseStateMap
+                                databaseStateMapCache
                                 |> Map.toList
                                 |> List.sortBy (fun (_id, databaseState) -> databaseState.Database.Name)
                                 |> List.map fst
@@ -173,7 +173,7 @@ module SessionDataLoader =
 
                             initializeSessionData username setter sessionData
 
-                            databaseStateMap
+                            databaseStateMapCache
                             |> Map.iter
                                 (fun id databaseState ->
                                     setter.set (Recoil.Atoms.Database.name id, databaseState.Database.Name)
@@ -198,7 +198,6 @@ module SessionDataLoader =
             [|
                 box loadState
                 box sessionData
-                box databaseStateMap
             |]
         )
 
