@@ -56,9 +56,9 @@ module Full =
                         .click ()
                     |> ignore
 
-                    Cy.wait 1250
+                    Cy.wait 3000
 
-                    ((Cy.focused().click().``type`` dbName).should "have.value" dbName null)
+                    ((Cy.focused().clear().``type`` dbName).should "have.value" dbName null)
 
                     (Cy.contains "Save" None).click () |> ignore
 
@@ -77,7 +77,7 @@ module Full =
                     (Cy.contains "Add Task" None).click () |> ignore
                     Cy.wait 250
 
-                    (Cy.focused().click().``type`` taskName).should "have.value" taskName null
+                    (Cy.focused().clear().``type`` taskName).should "have.value" taskName null
 
                     (Cy.contains "Save" None).click () |> ignore
 

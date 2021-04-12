@@ -30,6 +30,7 @@ module Cypress =
             abstract should : string -> string -> string -> unit
             abstract invoke : string -> string -> string -> Chainable2<'T>
             abstract click : unit -> Chainable2<'T>
+            abstract clear : unit -> Chainable2<'T>
             abstract focus : unit -> unit
             abstract ``then`` : (Chainable2<'T> -> unit) -> unit
             abstract ``type`` : string -> Chainable2<'T>
