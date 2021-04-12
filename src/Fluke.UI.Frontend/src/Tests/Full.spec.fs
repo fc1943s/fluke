@@ -30,7 +30,7 @@ module Full =
 
                     Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"
 
-                    Cy.focused().click ()
+                    Cy.focused().click () |> ignore
                     Cy.wait 250
 
                     (Cy.focused().``type`` username).should "have.value" username null
@@ -41,24 +41,26 @@ module Full =
                         password
                         null
 
-                    (Cy.contains "Sign In" None).click ()
+                    (Cy.contains "Sign In" None).click () |> ignore
                     Cy.contains "Wrong user or password" |> ignore
                     Cy.wait 250
-                    (Cy.contains "Sign Up" None).click ()
+                    (Cy.contains "Sign Up" None).click () |> ignore
 
                     Cy.contains "User registered successfully"
                     |> ignore
 
                     (Cy.contains (nameof Databases) None).click ()
+                    |> ignore
 
                     (Cy.contains "Add Database" (Some {| timeout = timeout |}))
                         .click ()
+                    |> ignore
 
                     Cy.wait 1250
 
-                    ((Cy.focused().``type`` dbName).should "have.value" dbName null)
+                    ((Cy.focused().click().``type`` dbName).should "have.value" dbName null)
 
-                    (Cy.contains "Save" None).click ()
+                    (Cy.contains "Save" None).click () |> ignore
 
                     Cy.wait 1250
 
@@ -70,13 +72,13 @@ module Full =
                         "bottom"
                         {| ensureScrollable = false |}
 
-                    (Cy.contains dbName None).click ()
+                    (Cy.contains dbName None).click () |> ignore
                     Cy.wait 250
-                    (Cy.contains "Add Task" None).click ()
+                    (Cy.contains "Add Task" None).click () |> ignore
                     Cy.wait 250
 
-                    (Cy.focused().``type`` taskName).should "have.value" taskName null
+                    (Cy.focused().click().``type`` taskName).should "have.value" taskName null
 
-                    (Cy.contains "Save" None).click ()
+                    (Cy.contains "Save" None).click () |> ignore
 
                     ))
