@@ -100,7 +100,7 @@ module Full =
 
                     (Cy.contains dbName None).click () |> ignore
 
-                    Cy.wait 1000
+                    Cy.wait 250
 
                     (**)
 
@@ -144,6 +144,5 @@ module Full =
                     (Cy.contains "1 of 1 tasks visible" None)
                         .should "be.visible"
                     |> ignore
-
 
                     ))

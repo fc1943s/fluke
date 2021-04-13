@@ -6,6 +6,7 @@ open Feliz
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Feliz.Recoil
+open Fable.Core
 
 
 module Input =
@@ -19,23 +20,25 @@ module Input =
         | Email
         | Password
 
+    type IProps<'T> =
+        abstract atom : RecoilValue<'T, ReadWrite> with get, set
+        abstract label : string option with get, set
+        abstract autoFocus : bool with get, set
+        abstract placeholder : string with get, set
+        abstract onFormat : ('T -> string) option with get, set
+        abstract onValidate : (string -> 'T option) option with get, set
+        abstract onKeyDown : (KeyboardEvent -> JS.Promise<unit>) with get, set
+        abstract inputFormat : InputFormat with get, set
+
     [<ReactComponent>]
-    let Input<'T>
-        (input: {| Label: string option
-                   AutoFocus: bool
-                   Placeholder: string
-                   InputFormat: InputFormat
-                   OnFormat: 'T -> string
-                   OnValidate: string -> 'T option
-                   Atom: RecoilValue<'T, ReadWrite> |})
-        =
-        let atom, setAtom = Recoil.useState input.Atom
-        let resetAtom = Recoil.useResetState input.Atom
+    let Input<'T> (input: IProps<'T>) =
+        let resetAtom = Recoil.useResetState input.atom
+        let atom, setAtom = Recoil.useState input.atom
 
         Chakra.stack
             {| spacing = "5px" |}
             [
-                match input.Label with
+                match input.label with
                 | Some label ->
                     Chakra.box
                         {|  |}
@@ -46,16 +49,24 @@ module Input =
 
                 Chakra.input
                     {|
-                        autoFocus = input.AutoFocus
-                        placeholder = input.Placeholder
+                        autoFocus = input.autoFocus
+                        placeholder = input.placeholder
+                        onKeyDown = input.onKeyDown
                         onChange =
-                            fun (e: KeyboardEvent) ->
-                                match input.OnValidate e.Value with
-                                | Some value -> setAtom value
-                                | None -> resetAtom ()
-                        value = input.OnFormat atom
+                            match input.onValidate with
+                            | Some onValidate ->
+                                Some
+                                    (fun (e: KeyboardEvent) ->
+                                        match onValidate e.Value with
+                                        | Some value -> setAtom value
+                                        | None -> resetAtom ())
+                            | None -> None
+                        value =
+                            match input.onFormat with
+                            | Some onFormat -> onFormat atom
+                            | None -> string atom
                         ``type`` =
-                            match input.InputFormat with
+                            match input.inputFormat with
                             | InputFormat.Text -> "text"
                             | InputFormat.Date -> "date"
                             | InputFormat.Time -> "time"

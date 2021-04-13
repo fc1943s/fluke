@@ -45,7 +45,7 @@ module AddTaskButton =
                                     {|
                                         Username = username
                                         TaskId = taskId
-                                        OnSave = async { setFormTaskId None }
+                                        OnSave = fun () -> promise { setFormTaskId None }
                                     |}
                             | _ -> ()
                         ]

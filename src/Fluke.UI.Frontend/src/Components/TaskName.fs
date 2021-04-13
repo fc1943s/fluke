@@ -23,6 +23,7 @@ module TaskName =
 
         Chakra.box
             {|
+                flex = 1
                 ref = ref
                 position = "relative"
                 height = "17px"
@@ -53,5 +54,6 @@ module TaskName =
                     [
                         str taskName
                     ]
+
                 TooltipPopup.TooltipPopup attachments
             ]

@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Browser.Types
 open Fable.React
 open Feliz
 open System
@@ -8,6 +9,8 @@ open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
+open Fable.Core.JsInterop
+open Fable.Core
 
 
 module DatabaseForm =
@@ -62,27 +65,26 @@ module DatabaseForm =
     let DatabaseForm
         (input: {| Username: UserInteraction.Username
                    DatabaseId: State.DatabaseId
-                   OnSave: Async<unit> |})
+                   OnSave: unit -> JS.Promise<unit> |})
         =
         let onSave =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) ->
-                    async {
-                        let eventId =
-                            Recoil.Atoms.Events.EventId (Fable.Core.JS.Constructors.Date.now (), Guid.NewGuid ())
+                    promise {
+                        let eventId = Recoil.Atoms.Events.EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
 
-                        let! name = setter.snapshot.getAsync (Recoil.Atoms.Database.name input.DatabaseId)
-                        let! dayStart = setter.snapshot.getAsync (Recoil.Atoms.Database.dayStart input.DatabaseId)
+                        let! name = setter.snapshot.getPromise (Recoil.Atoms.Database.name input.DatabaseId)
+                        let! dayStart = setter.snapshot.getPromise (Recoil.Atoms.Database.dayStart input.DatabaseId)
 
                         let! availableDatabaseIds =
-                            setter.snapshot.getAsync (Recoil.Atoms.Session.availableDatabaseIds input.Username)
+                            setter.snapshot.getPromise (Recoil.Atoms.Session.availableDatabaseIds input.Username)
 
                         let event = Recoil.Atoms.Events.Event.AddDatabase (eventId, name, dayStart)
 
                         setter.set (Recoil.Atoms.Events.events eventId, event)
 
                         let! databaseStateMapCache =
-                            setter.snapshot.getAsync (Recoil.Atoms.Session.databaseStateMapCache input.Username)
+                            setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache input.Username)
 
                         let newDatabaseStateMapCache =
                             databaseStateMapCache
@@ -119,9 +121,8 @@ module DatabaseForm =
 
 
                         printfn $"event {event}"
-                        do! input.OnSave
-                    }
-                    |> Async.StartImmediate)
+                        do! input.OnSave ()
+                    })
 
         Chakra.stack
             {| spacing = "25px" |}
@@ -135,27 +136,31 @@ module DatabaseForm =
                 Chakra.stack
                     {| spacing = "15px" |}
                     [
-                        Input.Input
-                            {|
-                                AutoFocus = true
-                                Label = Some "Name"
-                                Placeholder = sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
-                                Atom = Recoil.Atoms.Database.name input.DatabaseId
-                                InputFormat = Input.InputFormat.Text
-                                OnFormat = fun (DatabaseName name) -> name
-                                OnValidate = DatabaseName >> Some
-                            |}
+                        Input.Input (
+                            jsOptions<Input.IProps<_>>
+                                (fun x ->
+                                    x.autoFocus <- true
+                                    x.label <- Some "Name"
+                                    x.placeholder <- sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
+                                    x.atom <- Recoil.Atoms.Database.name input.DatabaseId
+                                    x.inputFormat <- Input.InputFormat.Text
+                                    x.onFormat <- Some (fun (DatabaseName name) -> name)
+                                    x.onValidate <- Some (DatabaseName >> Some)
 
-                        Input.Input
-                            {|
-                                AutoFocus = false
-                                Label = Some "Day starts at"
-                                Placeholder = "00:00"
-                                Atom = Recoil.Atoms.Database.dayStart input.DatabaseId
-                                InputFormat = Input.InputFormat.Time
-                                OnFormat = fun time -> time.Stringify ()
-                                OnValidate = DateTime.Parse >> FlukeTime.FromDateTime >> Some
-                            |}
+                                    x.onKeyDown <-
+                                        fun (e: KeyboardEvent) -> promise { if e.key = "Enter" then do! onSave () })
+                        )
+
+                        Input.Input (
+                            jsOptions<Input.IProps<_>>
+                                (fun x ->
+                                    x.label <- Some "Day starts at"
+                                    x.placeholder <- "00:00"
+                                    x.atom <- Recoil.Atoms.Database.dayStart input.DatabaseId
+                                    x.inputFormat <- Input.InputFormat.Time
+                                    x.onFormat <- Some (fun time -> time.Stringify ())
+                                    x.onValidate <- Some (DateTime.Parse >> FlukeTime.FromDateTime >> Some))
+                        )
 
                         Chakra.stack
                             {|

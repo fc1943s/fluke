@@ -48,7 +48,7 @@ module AddDatabaseButton =
                                     {|
                                         Username = username
                                         DatabaseId = databaseId
-                                        OnSave = async { setFormDatabaseId None }
+                                        OnSave = fun () -> promise { setFormDatabaseId None }
                                     |}
                             | _ -> ()
                         ]

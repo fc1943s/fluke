@@ -62,7 +62,7 @@ module InformationView =
 
                                                                                 // Task Name
                                                                                 Chakra.box
-                                                                                    {| width = "400px" |}
+                                                                                    {| width = "350px" |}
                                                                                     [
                                                                                         yield!
                                                                                             taskIdList

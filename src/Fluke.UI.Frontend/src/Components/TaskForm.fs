@@ -10,6 +10,9 @@ open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
+open Fable.Core
+open Fable.Core.JsInterop
+open Browser.Types
 
 
 module TaskForm =
@@ -18,18 +21,17 @@ module TaskForm =
     let TaskForm
         (input: {| Username: UserInteraction.Username
                    TaskId: Recoil.Atoms.Task.TaskId
-                   OnSave: Async<unit> |})
+                   OnSave: unit -> JS.Promise<unit> |})
         =
         let onSave =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) ->
-                    async {
-                        let eventId =
-                            Recoil.Atoms.Events.EventId (Fable.Core.JS.Constructors.Date.now (), Guid.NewGuid ())
+                    promise {
+                        let eventId = Recoil.Atoms.Events.EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
 
-                        let! name = setter.snapshot.getAsync (Recoil.Atoms.Task.name input.TaskId)
+                        let! name = setter.snapshot.getPromise (Recoil.Atoms.Task.name input.TaskId)
 
-                        let! selectedDatabaseIds = setter.snapshot.getAsync Recoil.Atoms.selectedDatabaseIds
+                        let! selectedDatabaseIds = setter.snapshot.getPromise Recoil.Atoms.selectedDatabaseIds
 
                         let databaseId = selectedDatabaseIds |> Array.last
 
@@ -38,7 +40,7 @@ module TaskForm =
                         setter.set (Recoil.Atoms.Events.events eventId, event)
 
                         let! databaseStateMapCache =
-                            setter.snapshot.getAsync (Recoil.Atoms.Session.databaseStateMapCache input.Username)
+                            setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache input.Username)
 
                         let databaseState = databaseStateMapCache |> Map.tryFind databaseId
 
@@ -95,9 +97,9 @@ module TaskForm =
                         setter.set (Recoil.Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
 
                         printfn $"event {event}"
-                        do! input.OnSave
-                    }
-                    |> Async.StartImmediate)
+                        do! input.OnSave ()
+                    })
+
 
         Chakra.stack
             {| spacing = "25px" |}
@@ -111,16 +113,21 @@ module TaskForm =
                 Chakra.stack
                     {| spacing = "15px" |}
                     [
-                        Input.Input
-                            {|
-                                AutoFocus = true
-                                Label = Some "Name"
-                                Placeholder = sprintf "new-task-%s" (DateTime.Now.Format "yyyy-MM-dd")
-                                Atom = Recoil.Atoms.Task.name input.TaskId
-                                InputFormat = Input.InputFormat.Text
-                                OnFormat = fun (TaskName name) -> name
-                                OnValidate = TaskName >> Some
-                            |}
+                        Input.Input (
+                            jsOptions<Input.IProps<_>>
+                                (fun x ->
+                                    x.autoFocus <- true
+                                    x.label <- Some "Name"
+                                    x.placeholder <- sprintf "new-task-%s" (DateTime.Now.Format "yyyy-MM-dd")
+                                    x.atom <- Recoil.Atoms.Task.name input.TaskId
+                                    x.inputFormat <- Input.InputFormat.Text
+                                    x.onFormat <- Some (fun (TaskName name) -> name)
+
+                                    x.onKeyDown <-
+                                        fun (e: KeyboardEvent) -> promise { if e.key = "Enter" then do! onSave () }
+
+                                    x.onValidate <- Some (TaskName >> Some))
+                        )
                     ]
 
                 Chakra.button
