@@ -20,6 +20,7 @@ module State =
             TaskList: Task list
             InformationStateMap: Map<Information, InformationState>
             TaskStateMap: Map<Task, TaskState>
+            UnfilteredTaskCount: int
         }
 
     and Database =

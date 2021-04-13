@@ -322,6 +322,7 @@ module View =
                 InformationStateMap = newInformationStateMap
                 TaskStateMap = newTaskStateMap
                 TaskList = newTaskList
+                UnfilteredTaskCount = taskStateList.Length
             }
 
         newSession

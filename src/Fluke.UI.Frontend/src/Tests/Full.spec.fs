@@ -55,12 +55,17 @@ module Full =
                     (Cy.focused ()).should "have.value" password null
 
                     (Cy.contains "Sign In" None).click () |> ignore
-                    Cy.contains "Wrong user or password" |> ignore
+
+                    (Cy.contains "Wrong user or password" None)
+                        .should "be.visible"
+                    |> ignore
+
                     Cy.wait 250
 
                     (Cy.contains "Sign Up" None).click () |> ignore
 
-                    Cy.contains "User registered successfully"
+                    (Cy.contains "User registered successfully" None)
+                        .should "be.visible"
                     |> ignore
                     (**)
 
@@ -95,12 +100,12 @@ module Full =
 
                     (Cy.contains dbName None).click () |> ignore
 
-                    Cy.wait 250
+                    Cy.wait 1000
+
                     (**)
 
                     (**)
                     (Cy.contains "Add Task" None).click () |> ignore
-
 
                     Cy
                         .get("input[placeholder^=new-task-]")
@@ -111,6 +116,34 @@ module Full =
 
                     Cy.focused().should "have.value" taskName null
 
-                    (Cy.contains "Save" None).click () |> ignore (**)
+                    (Cy.contains "Save" None).click () |> ignore
+
+                    (**)
+
+                    (Cy.contains "0 of 1 tasks visible" None)
+                        .should "be.visible"
+                    |> ignore
+
+                    (Cy.contains "Priority View" None).click ()
+                    |> ignore
+
+                    (Cy.contains "1 of 1 tasks visible" None)
+                        .should "be.visible"
+                    |> ignore
+
+                    (Cy.contains "Bullet Journal View" None).click ()
+                    |> ignore
+
+                    (Cy.contains "0 of 1 tasks visible" None)
+                        .should "be.visible"
+                    |> ignore
+
+                    (Cy.contains "Information View" None).click ()
+                    |> ignore
+
+                    (Cy.contains "1 of 1 tasks visible" None)
+                        .should "be.visible"
+                    |> ignore
+
 
                     ))
