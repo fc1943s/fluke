@@ -7,6 +7,13 @@ module Full =
     open Cypress
     open Fluke.UI.Frontend.Components
 
+    let typeText<'T> (el: Cy.Chainable2<'T>) (text: string) =
+        text
+        |> Seq.iter
+            (fun letter ->
+                let letter = string letter
+                el.``type`` letter |> ignore)
+
     describe
         "tests"
         (fun () ->
@@ -22,6 +29,7 @@ module Full =
                     let dbName = "db1"
                     let taskName = "task1"
 
+                    (**)
                     Cy
                         .location()
                         .should (fun location ->
@@ -29,40 +37,53 @@ module Full =
                                 .``to``.contain $"{homeUrl}/#/login")
 
                     Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"
+                    (**)
 
+                    (**)
                     Cy.focused().click () |> ignore
-                    Cy.wait 250
 
-                    (Cy.focused().``type`` username).should "have.value" username null
+                    Cy
+                        .get("input[placeholder=Username]")
+                        .should "have.focus"
+                    |> ignore
 
-                    (Cy.get("input[type=password]").``type`` password)
-                        .should
-                        "have.value"
-                        password
-                        null
+                    typeText (Cy.focused ()) username
+                    Cy.focused().should "have.value" username null
+
+                    Cy.get("input[placeholder=Password]").focus ()
+                    typeText (Cy.focused ()) password
+                    (Cy.focused ()).should "have.value" password null
 
                     (Cy.contains "Sign In" None).click () |> ignore
                     Cy.contains "Wrong user or password" |> ignore
                     Cy.wait 250
+
                     (Cy.contains "Sign Up" None).click () |> ignore
 
                     Cy.contains "User registered successfully"
                     |> ignore
+                    (**)
 
-                    (Cy.contains (nameof Databases) None).click ()
-                    |> ignore
+                    (**)
 
                     (Cy.contains "Add Database" (Some {| timeout = timeout |}))
                         .click ()
                     |> ignore
 
-                    Cy.wait 3000
 
-                    ((Cy.focused().clear().``type`` dbName).should "have.value" dbName null)
+                    Cy
+                        .get("input[placeholder^=new-database-]")
+                        .should "have.focus"
+                    |> ignore
 
+                    typeText (Cy.focused ()) dbName
+                    Cy.focused().should "have.value" dbName null
                     (Cy.contains "Save" None).click () |> ignore
+                    (**)
 
-                    Cy.wait 1250
+                    (**)
+                    (Cy.contains (nameof Databases) None).click ()
+                    |> ignore
 
                     Cy
                         .get(
@@ -73,12 +94,23 @@ module Full =
                         {| ensureScrollable = false |}
 
                     (Cy.contains dbName None).click () |> ignore
+
                     Cy.wait 250
+                    (**)
+
+                    (**)
                     (Cy.contains "Add Task" None).click () |> ignore
-                    Cy.wait 250
 
-                    (Cy.focused().clear().``type`` taskName).should "have.value" taskName null
 
-                    (Cy.contains "Save" None).click () |> ignore
+                    Cy
+                        .get("input[placeholder^=new-task-]")
+                        .should "have.focus"
+                    |> ignore
+
+                    typeText (Cy.focused ()) taskName
+
+                    Cy.focused().should "have.value" taskName null
+
+                    (Cy.contains "Save" None).click () |> ignore (**)
 
                     ))

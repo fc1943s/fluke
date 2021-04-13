@@ -77,11 +77,11 @@ module SessionDataLoader =
         |> Guid
         |> DatabaseId
 
-    let updateDatabaseStateMap (setter: CallbackMethods) username =
+    let fetchDatabaseStateMap (setter: CallbackMethods) username =
         promise {
             let! position = setter.snapshot.getPromise Recoil.Selectors.position
 
-            let! result =
+            return!
                 match position with
                 | Some position ->
                     promise {
@@ -123,29 +123,45 @@ module SessionDataLoader =
                         return databaseStateMap
                     }
                 | _ -> promise { return Map.empty }
-
-            let! databaseStateMapCache =
-                setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache username)
-
-            printfn
-                $"SessionDataLoader.updateDatabaseStateMap():
-            databaseStateMapCache.Count={databaseStateMapCache.Count}
-            newDatabaseStateMapCache.Count={result.Count}"
-
-            setter.set (
-                Recoil.Atoms.Session.databaseStateMapCache username,
-                TempData.mergeDatabaseStateMap databaseStateMapCache result
-            )
         }
 
 
     [<ReactComponent>]
     let SessionDataLoader (username: Username) =
-        let update = Recoil.useCallbackRef (fun getter -> updateDatabaseStateMap getter username)
+
+        let databaseStateMapCache = Recoil.useValue (Recoil.Atoms.Session.databaseStateMapCache username)
+
+        let loaded, setLoaded = React.useState false
+
+        let update =
+            Recoil.useCallbackRef
+                (fun getter ->
+                    promise {
+                        if not loaded then
+                            let! databaseStateMap = fetchDatabaseStateMap getter username
+
+                            printfn
+                                $"SessionDataLoader.updateDatabaseStateMap():
+                databaseStateMapCache.Count={databaseStateMapCache.Count}
+                newDatabaseStateMapCache.Count={databaseStateMap.Count}"
+
+                            if databaseStateMapCache.Count
+                               <> databaseStateMap.Count then
+                                getter.set (
+                                    Recoil.Atoms.Session.databaseStateMapCache username,
+                                    TempData.mergeDatabaseStateMap databaseStateMapCache databaseStateMap
+                                )
+
+                                setLoaded true
+
+                    })
 
         React.useEffect (
             (fun () -> update () |> Promise.start),
             [|
+                box loaded
+                box setLoaded
+                box databaseStateMapCache
                 box update
             |]
         )
@@ -160,9 +176,6 @@ module SessionDataLoader =
 
                         match sessionData with
                         | Some sessionData ->
-                            let! databaseStateMapCache =
-                                setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache username)
-
                             let availableDatabaseIds =
                                 databaseStateMapCache
                                 |> Map.toList
@@ -196,6 +209,7 @@ module SessionDataLoader =
 
             // TODO: return a cleanup?
             [|
+                box databaseStateMapCache
                 box loadState
                 box sessionData
             |]
