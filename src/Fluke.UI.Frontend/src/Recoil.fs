@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend
 
+
 #nowarn "40"
 
 open System
@@ -11,6 +12,7 @@ open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core.JsInterop
 open Fable.Core
+open Fable.Extras
 
 
 module Recoil =
@@ -61,7 +63,6 @@ module Recoil =
 
                 Gun.GunProps.localStorage = if JS.isTesting then None else Some true
             }
-            |> toPlainJsObj
             |> unbox
         )
 
@@ -84,7 +85,7 @@ module Recoil =
 
                     def
                         (fun (_eventId: EventId) ->
-                            Profiling.addCount $"{nameof Events}/{nameof events}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Events}/{nameof events}"
                             Event.NoOp)
                 }
 
@@ -97,7 +98,7 @@ module Recoil =
 
                     def
                         (fun (_informationId: InformationId) ->
-                            Profiling.addCount $"{nameof Information}/{nameof wrappedInformation}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Information}/{nameof wrappedInformation}"
                             Area (Area.Default, []))
                 }
 
@@ -107,7 +108,7 @@ module Recoil =
 
                     def
                         (fun (_informationId: InformationId) ->
-                            Profiling.addCount $"{nameof Information}/{nameof attachments}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Information}/{nameof attachments}"
                             []: Attachment list)
                 }
 
@@ -134,7 +135,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: TaskId) ->
-                            Profiling.addCount $"{nameof Task}/{nameof informationId}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Task}/{nameof informationId}"
                             Information.informationId Task.Default.Information)
                 }
 
@@ -144,7 +145,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: TaskId) ->
-                            Profiling.addCount $"{nameof Task}/{nameof name}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Task}/{nameof name}"
                             Task.Default.Name)
                 }
 
@@ -154,7 +155,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: TaskId) ->
-                            Profiling.addCount $"{nameof Task}/{nameof scheduling}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Task}/{nameof scheduling}"
                             Task.Default.Scheduling)
                 }
 
@@ -164,7 +165,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: TaskId) ->
-                            Profiling.addCount $"{nameof Task}/{nameof pendingAfter}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Task}/{nameof pendingAfter}"
                             Task.Default.PendingAfter)
                 }
 
@@ -174,7 +175,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: TaskId) ->
-                            Profiling.addCount $"{nameof Task}/{nameof missedAfter}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Task}/{nameof missedAfter}"
                             Task.Default.MissedAfter)
                 }
 
@@ -184,7 +185,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: TaskId) ->
-                            Profiling.addCount $"{nameof Task}/{nameof priority}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Task}/{nameof priority}"
                             Task.Default.Priority)
                 }
 
@@ -194,7 +195,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: TaskId) ->
-                            Profiling.addCount $"{nameof Task}/{nameof attachments}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Task}/{nameof attachments}"
                             []: Attachment list) // TODO: move from here?
                 }
 
@@ -204,7 +205,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: TaskId) ->
-                            Profiling.addCount $"{nameof Task}/{nameof duration}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Task}/{nameof duration}"
                             Task.Default.Duration)
                 }
 
@@ -219,7 +220,7 @@ module Recoil =
 
                     def
                         (fun (_username: Username) ->
-                            Profiling.addCount $"{nameof User}/{nameof color}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof User}/{nameof color}"
                             UserColor.Black)
                 }
 
@@ -229,7 +230,7 @@ module Recoil =
 
                     def
                         (fun (_username: Username) ->
-                            Profiling.addCount $"{nameof User}/{nameof weekStart}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof User}/{nameof weekStart}"
                             DayOfWeek.Sunday)
                 }
 
@@ -239,7 +240,7 @@ module Recoil =
 
                     def
                         (fun (_username: Username) ->
-                            Profiling.addCount $"{nameof User}/{nameof dayStart}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof User}/{nameof dayStart}"
                             FlukeTime.Create 0 0)
                 }
 
@@ -249,7 +250,7 @@ module Recoil =
 
                     def
                         (fun (_username: Username) ->
-                            Profiling.addCount $"{nameof User}/{nameof sessionLength}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof User}/{nameof sessionLength}"
                             Minute 25.)
                 }
 
@@ -259,7 +260,7 @@ module Recoil =
 
                     def
                         (fun (_username: Username) ->
-                            Profiling.addCount $"{nameof User}/{nameof sessionBreakLength}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof User}/{nameof sessionBreakLength}"
                             Minute 5.)
                 }
 
@@ -273,7 +274,7 @@ module Recoil =
 
                     def
                         (fun (_username: Username) ->
-                            Profiling.addCount $"{nameof Session}/{nameof databaseStateMapCache}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Session}/{nameof databaseStateMapCache}"
                             Map.empty: Map<DatabaseId, DatabaseState>)
                 }
 
@@ -283,7 +284,7 @@ module Recoil =
 
                     def
                         (fun (_username: Username) ->
-                            Profiling.addCount $"{nameof Session}/{nameof availableDatabaseIds}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Session}/{nameof availableDatabaseIds}"
                             []: DatabaseId list)
                 }
 
@@ -293,7 +294,7 @@ module Recoil =
 
                     def
                         (fun (_username: Username) ->
-                            Profiling.addCount $"{nameof Session}/{nameof taskIdList}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Session}/{nameof taskIdList}"
                             []: Task.TaskId list)
                 }
 
@@ -305,7 +306,7 @@ module Recoil =
 
                     def
                         (fun (taskId: Task.TaskId, _dateId: DateId) ->
-                            Profiling.addCount $"{nameof Cell}/{nameof taskId}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Cell}/{nameof taskId}"
                             taskId)
                 }
 
@@ -315,7 +316,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: Task.TaskId, dateId: DateId) ->
-                            Profiling.addCount $"{nameof Cell}/{nameof dateId}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Cell}/{nameof dateId}"
                             dateId)
                 }
 
@@ -325,7 +326,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: Task.TaskId, _dateId: DateId) ->
-                            Profiling.addCount $"{nameof Cell}/{nameof status}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Cell}/{nameof status}"
                             Disabled)
                 }
 
@@ -335,7 +336,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: Task.TaskId, _dateId: DateId) ->
-                            Profiling.addCount $"{nameof Cell}/{nameof attachments}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Cell}/{nameof attachments}"
                             []: Attachment list)
                 }
 
@@ -345,7 +346,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: Task.TaskId, _dateId: DateId) ->
-                            Profiling.addCount $"{nameof Cell}/{nameof sessions}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Cell}/{nameof sessions}"
                             []: TaskSession list)
                 }
 
@@ -355,7 +356,7 @@ module Recoil =
 
                     def
                         (fun (_taskId: Task.TaskId, _dateId: DateId) ->
-                            Profiling.addCount $"{nameof Cell}/{nameof selected}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Cell}/{nameof selected}"
                             false)
 
                     effects
@@ -513,7 +514,7 @@ module Recoil =
 
                     def
                         (fun (_databaseId: DatabaseId) ->
-                            Profiling.addCount $"{nameof Database}/{nameof name}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Database}/{nameof name}"
                             DatabaseName "")
                 }
 
@@ -524,7 +525,7 @@ module Recoil =
 
                     def
                         (fun (_databaseId: DatabaseId) ->
-                            Profiling.addCount $"{nameof Database}/{nameof owner}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Database}/{nameof owner}"
                             None: Username option)
                 }
 
@@ -535,7 +536,7 @@ module Recoil =
 
                     def
                         (fun (_databaseId: DatabaseId) ->
-                            Profiling.addCount $"{nameof Database}/{nameof sharedWith}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Database}/{nameof sharedWith}"
                             DatabaseAccess.Public)
                 }
 
@@ -545,7 +546,7 @@ module Recoil =
 
                     def
                         (fun (_databaseId: DatabaseId) ->
-                            Profiling.addCount $"{nameof Database}/{nameof dayStart}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Database}/{nameof dayStart}"
                             FlukeTime.Create 7 0)
                 }
 
@@ -556,7 +557,7 @@ module Recoil =
 
                     def
                         (fun (_databaseId: DatabaseId) ->
-                            Profiling.addCount $"{nameof Database}/{nameof position}"
+                            Profiling.addCount $"{nameof atomFamily}/{nameof Database}/{nameof position}"
                             None: FlukeDateTime option)
                 }
 
@@ -753,7 +754,7 @@ module Recoil =
                             |]
                             |> Array.filter (String.IsNullOrWhiteSpace >> not)
 
-                        Profiling.addCount (nameof gunPeers)
+                        Profiling.addCount $"{nameof selector}/{nameof gunPeers}"
                         peers)
             }
 
@@ -767,8 +768,9 @@ module Recoil =
                         let gun = gunTmp gunPeers
 
                         printfn $"gun selector. peers={gunPeers}. returning gun..."
+                        gun.put null |> ignore
 
-                        Profiling.addCount (nameof gun)
+                        Profiling.addCount $"{nameof selector}/{nameof gun}"
                         {| ref = gun |})
             }
 
@@ -787,7 +789,7 @@ module Recoil =
                         printfn
                             $"gun selector. username={username} gunKeys={JS.JSON.stringify gunKeys}. returning gun namespace..."
 
-                        Profiling.addCount (nameof gunNamespace)
+                        Profiling.addCount $"{nameof selector}/{nameof gunNamespace}"
                         {| ref = user |})
             }
 
@@ -806,7 +808,7 @@ module Recoil =
                                 |> Option.bind (fun api -> Some api.currentUser)
                                 |> Sync.handleRequest
 
-                            Profiling.addCount (nameof apiCurrentUserAsync)
+                            Profiling.addCount $"{nameof selector}/{nameof apiCurrentUserAsync}"
 
                             return result
                         })
@@ -827,13 +829,13 @@ module Recoil =
                             |> Option.defaultValue (getLivePosition.Get ())
                             |> Some
 
-                        Profiling.addCount (nameof position)
+                        Profiling.addCount $"{nameof selector}/{nameof position}"
                         result)
 
                 set
                     (fun setter _newValue ->
                         setter.set (Atoms.positionTrigger, (fun x -> x + 1))
-                        Profiling.addCount (nameof position + " (SET)"))
+                        Profiling.addCount $"{nameof selector}/{nameof position} (SET)")
             }
 
         let rec dateSequence =
@@ -859,7 +861,7 @@ module Recoil =
                                 |> Rendering.getDateSequence (daysBefore, daysAfter)
                             | _ -> []
 
-                        Profiling.addCount (nameof dateSequence)
+                        Profiling.addCount $"{nameof selector}/{nameof dateSequence}"
                         result)
             }
 
@@ -893,7 +895,7 @@ module Recoil =
                                 |> List.filter (fun (_, dates) -> Set.isEmpty dates |> not)
                                 |> Map.ofList
 
-                            Profiling.addCount (nameof cellSelectionMap)
+                            Profiling.addCount $"{nameof selector}/{nameof cellSelectionMap}"
                             result
                         | None -> Map.empty)
 
@@ -939,8 +941,38 @@ module Recoil =
                                 (fun (taskId, date, selected) ->
                                     setter.set (Atoms.Cell.selected (taskId, DateId date), selected))
 
-                            Profiling.addCount (nameof cellSelectionMap + " (SET)")
+                            Profiling.addCount $"{nameof selector}/{nameof cellSelectionMap}"
                         | None -> ())
+            }
+
+        type DeviceInfo = { IsEdge: bool; IsMobile: bool }
+
+        let rec deviceInfo =
+            selector {
+                key $"{nameof selector}/{nameof deviceInfo}"
+
+                get
+                    (fun _getter ->
+                        let userAgent =
+                            if Browser.Dom.window?navigator = null then
+                                ""
+                            else
+                                Browser.Dom.window?navigator?userAgent
+
+                        let result =
+                            {
+                                IsEdge = (JSe.RegExp @"Edg\/").Test userAgent
+                                IsMobile =
+                                    JSe
+                                        .RegExp("Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop",
+                                                JSe.RegExpFlag().i)
+                                        .Test userAgent
+                            }
+
+                        Profiling.addCount $"{nameof selector}/{nameof deviceInfo}"
+                        result
+
+                        )
             }
 
         module rec FlukeDate =
@@ -961,7 +993,7 @@ module Recoil =
                                     Domain.UserInteraction.isToday dayStart position (DateId date)
                                 | _ -> false
 
-                            Profiling.addCount $"{nameof FlukeDate}/{nameof isToday}"
+                            Profiling.addCount $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof isToday}"
                             result)
                 }
 
@@ -982,7 +1014,7 @@ module Recoil =
                                     |> List.exists
                                         (fun taskId -> getter.get (Atoms.Cell.selected (taskId, DateId date)))
 
-                                Profiling.addCount $"{nameof FlukeDate}/{nameof hasSelection}"
+                                Profiling.addCount $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof hasSelection}"
                                 result
                             | None -> false)
                 }
@@ -1010,7 +1042,7 @@ module Recoil =
                                         |> List.sortByDescending (fun (TaskSession (start, _, _)) -> start.DateTime)
                                         |> List.tryHead)
 
-                            Profiling.addCount $"{nameof Task}/{nameof lastSession}"
+                            Profiling.addCount $"{nameof selectorFamily}/{nameof Task}/{nameof lastSession}"
                             result)
                 }
 
@@ -1038,7 +1070,7 @@ module Recoil =
 
                                 | _ -> None
 
-                            Profiling.addCount $"{nameof Task}/{nameof activeSession}"
+                            Profiling.addCount $"{nameof selectorFamily}/{nameof Task}/{nameof activeSession}"
 
                             result)
                 }
@@ -1071,7 +1103,7 @@ module Recoil =
 
                             let result = usersCount > 1
 
-                            Profiling.addCount $"{nameof Task}/{nameof showUser}"
+                            Profiling.addCount $"{nameof selectorFamily}/{nameof Task}/{nameof showUser}"
                             result
                             //                            | None -> false
                             )
@@ -1089,7 +1121,7 @@ module Recoil =
                                 dateSequence
                                 |> List.exists (fun date -> getter.get (Atoms.Cell.selected (taskId, DateId date)))
 
-                            Profiling.addCount $"{nameof Task}/{nameof hasSelection}"
+                            Profiling.addCount $"{nameof selectorFamily}/{nameof Task}/{nameof hasSelection}"
                             result)
                 }
 
@@ -1124,7 +1156,7 @@ module Recoil =
                                                 )))
                                 |> List.choose id
 
-                            Profiling.addCount $"{nameof Session}/{nameof activeSessions}"
+                            Profiling.addCount $"{nameof selectorFamily}/{nameof Session}/{nameof activeSessions}"
                             result)
                 }
 
@@ -1162,7 +1194,9 @@ module Recoil =
 
                                         informationKindName, newGroups)
 
-                            Profiling.addCount $"{nameof Session}/{nameof tasksByInformationKind}"
+                            Profiling.addCount
+                                $"{nameof selectorFamily}/{nameof Session}/{nameof tasksByInformationKind}"
+
                             informationKindGroups)
                 }
 
@@ -1314,7 +1348,7 @@ module Recoil =
                                     weeks
                                 | _ -> []
 
-                            Profiling.addCount $"{nameof Session}/{nameof weekCellsMap}"
+                            Profiling.addCount $"{nameof selectorFamily}/{nameof Session}/{nameof weekCellsMap}"
                             result)
                 }
 
@@ -1352,7 +1386,7 @@ module Recoil =
                                     Some newSession
                                 | _ -> None
 
-                            Profiling.addCount $"{nameof Session}/{nameof sessionData}"
+                            Profiling.addCount $"{nameof selectorFamily}/{nameof Session}/{nameof sessionData}"
 
                             result)
                 }
@@ -1367,7 +1401,7 @@ module Recoil =
                         (fun (taskId: Atoms.Task.TaskId, dateId: DateId) getter ->
                             let selected = getter.get (Atoms.Cell.selected (taskId, dateId))
 
-                            Profiling.addCount $"{nameof Cell}/{nameof selected}"
+                            Profiling.addCount $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}"
                             selected)
 
                     set

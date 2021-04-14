@@ -12,7 +12,6 @@ open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core
 open Fable.Core.JsInterop
-open Browser.Types
 
 
 module TaskForm =
@@ -29,7 +28,7 @@ module TaskForm =
                     promise {
                         let eventId = Recoil.Atoms.Events.EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
 
-                        let! name = setter.snapshot.getPromise (Recoil.Atoms.Task.name input.TaskId)
+                        let! name = setter.snapshot.getReadWritePromise Recoil.Atoms.Task.name input.TaskId
 
                         let! selectedDatabaseIds = setter.snapshot.getPromise Recoil.Atoms.selectedDatabaseIds
 
@@ -114,18 +113,14 @@ module TaskForm =
                     {| spacing = "15px" |}
                     [
                         Input.Input (
-                            jsOptions<Input.IProps<_>>
+                            jsOptions<_>
                                 (fun x ->
                                     x.autoFocus <- true
-                                    x.label <- Some "Name"
-                                    x.placeholder <- sprintf "new-task-%s" (DateTime.Now.Format "yyyy-MM-dd")
-                                    x.atom <- Recoil.Atoms.Task.name input.TaskId
-                                    x.inputFormat <- Input.InputFormat.Text
+                                    x.label <- "Name"
+                                    x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
+                                    x.atom <- Some (Recoil.AtomFamily (Recoil.Atoms.Task.name, input.TaskId))
                                     x.onFormat <- Some (fun (TaskName name) -> name)
-
-                                    x.onKeyDown <-
-                                        fun (e: KeyboardEvent) -> promise { if e.key = "Enter" then do! onSave () }
-
+                                    x.onEnterPress <- Some onSave
                                     x.onValidate <- Some (TaskName >> Some))
                         )
                     ]

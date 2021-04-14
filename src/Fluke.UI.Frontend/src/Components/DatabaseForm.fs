@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Browser.Types
 open Fable.React
 open Feliz
 open System
@@ -60,7 +59,6 @@ module DatabaseForm =
 
                 ]
 
-
     [<ReactComponent>]
     let DatabaseForm
         (input: {| Username: UserInteraction.Username
@@ -73,8 +71,10 @@ module DatabaseForm =
                     promise {
                         let eventId = Recoil.Atoms.Events.EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
 
-                        let! name = setter.snapshot.getPromise (Recoil.Atoms.Database.name input.DatabaseId)
-                        let! dayStart = setter.snapshot.getPromise (Recoil.Atoms.Database.dayStart input.DatabaseId)
+                        let! name = setter.snapshot.getReadWritePromise Recoil.Atoms.Database.name input.DatabaseId
+
+                        let! dayStart =
+                            setter.snapshot.getReadWritePromise Recoil.Atoms.Database.dayStart input.DatabaseId
 
                         let! availableDatabaseIds =
                             setter.snapshot.getPromise (Recoil.Atoms.Session.availableDatabaseIds input.Username)
@@ -137,27 +137,27 @@ module DatabaseForm =
                     {| spacing = "15px" |}
                     [
                         Input.Input (
-                            jsOptions<Input.IProps<_>>
+                            jsOptions<_>
                                 (fun x ->
                                     x.autoFocus <- true
-                                    x.label <- Some "Name"
+                                    x.label <- "Name"
                                     x.placeholder <- sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
-                                    x.atom <- Recoil.Atoms.Database.name input.DatabaseId
-                                    x.inputFormat <- Input.InputFormat.Text
+                                    x.atom <- Some (Recoil.AtomFamily (Recoil.Atoms.Database.name, input.DatabaseId))
                                     x.onFormat <- Some (fun (DatabaseName name) -> name)
                                     x.onValidate <- Some (DatabaseName >> Some)
-
-                                    x.onKeyDown <-
-                                        fun (e: KeyboardEvent) -> promise { if e.key = "Enter" then do! onSave () })
+                                    x.onEnterPress <- Some onSave)
                         )
 
                         Input.Input (
-                            jsOptions<Input.IProps<_>>
+                            jsOptions<_>
                                 (fun x ->
-                                    x.label <- Some "Day starts at"
+                                    x.label <- "Day starts at"
                                     x.placeholder <- "00:00"
-                                    x.atom <- Recoil.Atoms.Database.dayStart input.DatabaseId
-                                    x.inputFormat <- Input.InputFormat.Time
+
+                                    x.atom <-
+                                        Some (Recoil.AtomFamily (Recoil.Atoms.Database.dayStart, input.DatabaseId))
+
+                                    x.inputFormat <- Some Input.InputFormat.Time
                                     x.onFormat <- Some (fun time -> time.Stringify ())
                                     x.onValidate <- Some (DateTime.Parse >> FlukeTime.FromDateTime >> Some))
                         )

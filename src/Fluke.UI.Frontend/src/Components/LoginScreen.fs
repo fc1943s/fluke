@@ -6,6 +6,7 @@ open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fable.React
+open Fable.Core.JsInterop
 
 
 module LoginScreen =
@@ -38,9 +39,6 @@ module LoginScreen =
             promise {
                 match! signUp usernameField passwordField with
                 | Ok () ->
-                    setUsernameField ""
-                    setPasswordField ""
-
                     toast.Invoke
                         {|
                             title = "Success"
@@ -66,29 +64,24 @@ module LoginScreen =
                 Chakra.stack
                     {|  |}
                     [
-                        Chakra.input
-                            {|
-                                autoFocus = true
-                                value = usernameField
-                                onChange = fun (e: KeyboardEvent) -> setUsernameField e.Value
-                                placeholder = "Username"
-                            |}
-                            []
+                        Input.Input (
+                            jsOptions<_>
+                                (fun x ->
+                                    x.autoFocus <- true
+                                    x.value <- Some usernameField
+                                    x.placeholder <- "Username"
+                                    x.onChange <- Some (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value }))
+                        )
 
-                        Chakra.input
-                            {|
-                                value = passwordField
-                                ``type`` = "password"
-                                onChange = fun (e: KeyboardEvent) -> setPasswordField e.Value
-                                placeholder = "Password"
-                                onKeyDown =
-                                    fun (e: KeyboardEvent) ->
-                                        promise {
-                                            if e.key = "Enter" then
-                                                do! signInClick ()
-                                        }
-                            |}
-                            []
+                        Input.Input (
+                            jsOptions<_>
+                                (fun x ->
+                                    x.value <- Some passwordField
+                                    x.placeholder <- "Password"
+                                    x.inputFormat <- Some Input.InputFormat.Password
+                                    x.onChange <- Some (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
+                                    x.onEnterPress <- Some signInClick)
+                        )
 
                         Chakra.hStack
                             {| align = "stretch" |}

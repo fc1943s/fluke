@@ -19,26 +19,29 @@ module InitialPeers =
         let setGunPeer1 = Recoil.useSetState Atoms.gunPeer1
         let setInitialPeerSkipped = Recoil.useSetState Atoms.initialPeerSkipped
 
-        let nextClick () = promise { setGunPeer1 gunPeer }
+        let nextClick () =
+            promise {
+                if gunPeer.Length > 0 then
+                    setGunPeer1 gunPeer
+            }
+
         let skipClick () = promise { setInitialPeerSkipped true }
 
         Chakra.center
             {| flex = 1 |}
             [
                 Chakra.stack
-                    {| spacing = "5px" |}
+                    {| minWidth = "200px" |}
                     [
-                        Chakra.box
-                            {| marginTop = "15px" |}
-                            [
-                                str "Gun peer"
-                            ]
-                        Chakra.input
-                            {|
-                                value = gunPeer
-                                onChange = fun (e: KeyboardEvent) -> setGunPeer e.target?value
-                            |}
-                            []
+                        Input.Input (
+                            jsOptions<_>
+                                (fun x ->
+                                    x.autoFocus <- true
+                                    x.label <- "Gun peer"
+                                    x.placeholder <- "https://??????.herokuapp.com/gun"
+                                    x.onEnterPress <- Some nextClick
+                                    x.onChange <- Some (fun (e: KeyboardEvent) -> promise { setGunPeer e.target?value }))
+                        )
 
                         Chakra.hStack
                             {| align = "stretch" |}

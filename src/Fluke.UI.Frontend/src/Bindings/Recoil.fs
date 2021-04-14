@@ -17,6 +17,105 @@ module Recoil =
             setSelf: 'T -> unit
         }
 
+    module Atoms =
+        module rec Form =
+            let rec fieldValue =
+                atomFamily {
+                    key $"{nameof atomFamily}/{nameof Form}/{nameof fieldValue}"
+                    def (fun (_key: obj) -> null: obj)
+                }
+
+            let rec fieldValueMounted =
+                atomFamily {
+                    key $"{nameof atomFamily}/{nameof Form}/{nameof fieldValueMounted}"
+                    def (fun (_key: obj) -> false)
+                }
+
+    let wrapAtomField<'TValue, 'TKey> (atom: RecoilValue<'TValue, ReadWrite>) =
+        {|
+            ReadOnly = atom
+            ReadWrite = Atoms.Form.fieldValue {| key = atom.key |} :> obj :?> RecoilValue<'TValue, ReadWrite>
+        |}
+
+    [<RequireQualifiedAccess>]
+    type AtomScope =
+        | ReadOnly
+        | ReadWrite
+
+    type InputAtom<'TValue, 'TKey> =
+        | Atom of RecoilValue<'TValue, ReadWrite>
+        | AtomFamily of ('TKey -> RecoilValue<'TValue, ReadWrite>) * 'TKey
+
+    let getAtomField<'TValue, 'TKey> atom =
+        let flatAtom =
+            match atom with
+            | Some (Atom atom) -> atom
+            | Some (AtomFamily (atom, key: 'TKey)) -> atom key
+            | _ -> (box (RecoilValue.lift null)) :?> RecoilValue<'TValue, ReadWrite>
+
+        wrapAtomField<'TValue, 'TKey> flatAtom
+
+    let useAtomField<'TValue, 'TKey when 'TValue: equality> atom =
+        let atomField = getAtomField<'TValue, 'TKey> atom
+
+        let readOnlyValue, setReadOnlyValue = Recoil.useState atomField.ReadOnly
+        let readWriteValue, setReadWriteValue = Recoil.useState atomField.ReadWrite
+
+        let fieldValueMounted, setFieldValueMounted =
+            Recoil.useState (Atoms.Form.fieldValueMounted {| key = atomField.ReadOnly.key |})
+
+        React.useEffect (
+            (fun () ->
+                if not fieldValueMounted
+                   && readOnlyValue <> readWriteValue then
+                    setReadWriteValue readOnlyValue
+                    setFieldValueMounted true
+
+                ),
+            [|
+                box fieldValueMounted
+                box setFieldValueMounted
+                box setReadWriteValue
+                box readOnlyValue
+                box readWriteValue
+            |]
+        )
+
+        let atomFieldOptions =
+            React.useMemo (
+                (fun () ->
+                    {|
+                        ReadWriteValue =
+                            if not fieldValueMounted then
+                                readOnlyValue
+                            else
+                                readWriteValue
+                        SetReadWriteValue =
+                            if atom.IsSome then
+                                setReadWriteValue
+                            else
+                                (fun _ -> ())
+                        ReadOnlyValue = readOnlyValue
+                        SetReadOnlyValue =
+                            if atom.IsSome then
+                                setReadOnlyValue
+                            else
+                                (fun _ -> ())
+                        AtomField = atomField
+                    |}),
+                [|
+                    box fieldValueMounted
+                    box atom
+                    box atomField
+                    box readOnlyValue
+                    box readWriteValue
+                    box setReadOnlyValue
+                    box setReadWriteValue
+                |]
+            )
+
+        atomFieldOptions
+
 module Recoilize =
     let recoilizeDebugger<'T> =
         //         importDefault "recoilize"
@@ -24,6 +123,13 @@ module Recoilize =
 
 [<AutoOpen>]
 module RecoilMagic =
+
+    type Snapshot with
+        member this.getReadWritePromise atom key =
+            this.getPromise
+                (Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key))))
+                    .ReadWrite
+
 
     type AtomStateWithEffects<'T, 'U, 'V> =
         {

@@ -53,31 +53,35 @@ module StatusBar =
                             |}
                             []
 
-                        activeSessions
-                        |> List.map
-                            (fun (TempUI.ActiveSession (taskName,
-                                                        Minute duration,
-                                                        Minute totalDuration,
-                                                        Minute totalBreakDuration)) ->
-                                let sessionType, color, duration, left =
-                                    let left = totalDuration - duration
+                        yield!
+                            activeSessions
+                            |> List.map
+                                (fun (TempUI.ActiveSession (taskName,
+                                                            Minute duration,
+                                                            Minute totalDuration,
+                                                            Minute totalBreakDuration)) ->
+                                    let sessionType, color, duration, left =
+                                        let left = totalDuration - duration
 
-                                    match duration < totalDuration with
-                                    | true -> "Session", "#7cca7c", duration, left
-                                    | false -> "Break", "#ca7c7c", -left, totalBreakDuration + left
+                                        match duration < totalDuration with
+                                        | true -> "Session", "#7cca7c", duration, left
+                                        | false -> "Break", "#ca7c7c", -left, totalBreakDuration + left
 
-                                Chakra.box
-                                    {| color = color |}
-                                    [
-                                        str
-                                            $"{sessionType}: Task[ {taskName} ]; Duration[ %.1f{duration} ]; Left[ %.1f{
-                                                                                                                            left
-                                            } ]"
-                                    ])
-                        |> List.intersperse (br [])
-                        |> function
-                        | [] -> str "No active session"
-                        | list -> ofList list
+                                    Chakra.box
+                                        {| color = color |}
+                                        [
+                                            str
+                                                $"{sessionType}: Task[ {taskName} ]; Duration[ %.1f{duration} ]; Left[ %.1f{
+                                                                                                                                left
+                                                } ]"
+                                        ])
+                            |> List.intersperse (br [])
+                            |> function
+                            | [] ->
+                                [
+                                    str "No active session"
+                                ]
+                            | list -> list
 
                     ]
 

@@ -7,12 +7,15 @@ module Full =
     open Cypress
     open Fluke.UI.Frontend.Components
 
-    let typeText<'T> (el: Cy.Chainable2<'T>) (text: string) =
+    let typeText<'T> (text: string) =
         text
         |> Seq.iter
             (fun letter ->
                 let letter = string letter
-                el.``type`` letter |> ignore)
+                Cy.wait 10
+                Cy.focused().``type`` letter |> ignore)
+
+        Cy.focused().should "have.value" text null
 
     describe
         "tests"
@@ -47,12 +50,10 @@ module Full =
                         .should "have.focus"
                     |> ignore
 
-                    typeText (Cy.focused ()) username
-                    Cy.focused().should "have.value" username null
+                    typeText username
 
                     Cy.get("input[placeholder=Password]").focus ()
-                    typeText (Cy.focused ()) password
-                    (Cy.focused ()).should "have.value" password null
+                    typeText password
 
                     (Cy.contains "Sign In" None).click () |> ignore
 
@@ -75,14 +76,12 @@ module Full =
                         .click ()
                     |> ignore
 
-
                     Cy
                         .get("input[placeholder^=new-database-]")
                         .should "have.focus"
                     |> ignore
 
-                    typeText (Cy.focused ()) dbName
-                    Cy.focused().should "have.value" dbName null
+                    typeText dbName
                     (Cy.contains "Save" None).click () |> ignore
                     (**)
 
@@ -100,7 +99,7 @@ module Full =
 
                     (Cy.contains dbName None).click () |> ignore
 
-                    Cy.wait 250
+                    Cy.wait 500
 
                     (**)
 
@@ -112,9 +111,7 @@ module Full =
                         .should "have.focus"
                     |> ignore
 
-                    typeText (Cy.focused ()) taskName
-
-                    Cy.focused().should "have.value" taskName null
+                    typeText taskName
 
                     (Cy.contains "Save" None).click () |> ignore
 
@@ -143,6 +140,9 @@ module Full =
 
                     (Cy.contains "1 of 1 tasks visible" None)
                         .should "be.visible"
+                    |> ignore
+
+                    (Cy.contains taskName None).should "be.visible"
                     |> ignore
 
                     ))

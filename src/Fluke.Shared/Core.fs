@@ -1,6 +1,7 @@
 namespace Fluke.Shared
 
 open System.IO
+open System
 
 module Seq =
     let intersperse sep list =
@@ -72,3 +73,9 @@ module String =
             source
         else
             source.ToLowerInvariant ()
+
+    let (|ValidString|WhitespaceStr|NullString|) (str: string) =
+        match str with
+        | null -> NullString
+        | str when String.IsNullOrWhiteSpace str -> WhitespaceStr
+        | _ -> ValidString

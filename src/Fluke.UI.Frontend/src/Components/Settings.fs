@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.Core.JsInterop
-open Browser.Types
 open Feliz
 open Fable.React
 open Feliz.Recoil
@@ -20,113 +19,96 @@ module Settings =
         =
         let daysBefore, setDaysBefore = Recoil.useState Atoms.daysBefore
         let daysAfter, setDaysAfter = Recoil.useState Atoms.daysAfter
-        let apiBaseUrl, setApiBaseUrl = Recoil.useState Atoms.apiBaseUrl
-        let gunPeer1, setGunPeer1 = Recoil.useState Atoms.gunPeer1
-        let gunPeer2, setGunPeer2 = Recoil.useState Atoms.gunPeer2
-        let gunPeer3, setGunPeer3 = Recoil.useState Atoms.gunPeer3
 
-        Chakra.box
-            input.Props
+        Chakra.stack
+            {| input.Props with spacing = "10px" |}
             [
                 Chakra.box
                     ()
                     [
-                        str "Days Before"
-                    ]
-                Chakra.numberInput
-                    {|
-                        value = daysBefore
-                        onChange =
-                            fun valueString ->
-                                let value = int valueString
-                                setDaysBefore value
-                        min = 0
-                        max = 360
-                        marginTop = "5px"
-                    |}
-                    [
-                        Chakra.numberInputField () []
-                        Chakra.numberInputStepper
+                        Chakra.box
                             ()
                             [
-                                Chakra.numberIncrementStepper () []
-                                Chakra.numberDecrementStepper () []
+                                str "Days Before"
+                            ]
+                        Chakra.numberInput
+                            {|
+                                value = daysBefore
+                                onChange =
+                                    fun valueString ->
+                                        let value = int valueString
+                                        setDaysBefore value
+                                min = 0
+                                max = 360
+                                marginTop = "5px"
+                            |}
+                            [
+                                Chakra.numberInputField () []
+                                Chakra.numberInputStepper
+                                    ()
+                                    [
+                                        Chakra.numberIncrementStepper () []
+                                        Chakra.numberDecrementStepper () []
+                                    ]
                             ]
                     ]
 
                 Chakra.box
-                    {| marginTop = "15px" |}
+                    ()
                     [
-                        str "Days After"
-                    ]
-                Chakra.numberInput
-                    {|
-                        value = daysAfter
-                        onChange = fun valueString -> setDaysAfter (int valueString)
-                        min = 0
-                        max = 360
-                        marginTop = "5px"
-                    |}
-                    [
-                        Chakra.numberInputField () []
-                        Chakra.numberInputStepper
-                            ()
+                        Chakra.box
+                            {|  |}
                             [
-                                Chakra.numberIncrementStepper () []
-                                Chakra.numberDecrementStepper () []
+                                str "Days After"
+                            ]
+                        Chakra.numberInput
+                            {|
+                                value = daysAfter
+                                onChange = fun valueString -> setDaysAfter (int valueString)
+                                min = 0
+                                max = 360
+                                marginTop = "5px"
+                            |}
+                            [
+                                Chakra.numberInputField () []
+                                Chakra.numberInputStepper
+                                    ()
+                                    [
+                                        Chakra.numberIncrementStepper () []
+                                        Chakra.numberDecrementStepper () []
+                                    ]
                             ]
                     ]
 
+                Input.Input (
+                    jsOptions<_>
+                        (fun x ->
+                            x.label <- "Old API URL"
+                            x.atom <- Some (Recoil.Atom Atoms.apiBaseUrl)
+                            x.atomScope <- Some Recoil.AtomScope.ReadOnly)
+                )
 
-                Chakra.box
-                    {| marginTop = "15px" |}
-                    [
-                        str "Old API URL"
-                    ]
-                Chakra.input
-                    {|
-                        value = apiBaseUrl
-                        onChange = fun (e: KeyboardEvent) -> setApiBaseUrl e.target?value
-                        marginTop = "5px"
-                    |}
-                    []
+                Input.Input (
+                    jsOptions<_>
+                        (fun x ->
+                            x.label <- "Gun peer 1"
+                            x.atom <- Some (Recoil.Atom Atoms.gunPeer1)
+                            x.atomScope <- Some Recoil.AtomScope.ReadOnly)
+                )
 
-                Chakra.box
-                    {| marginTop = "15px" |}
-                    [
-                        str "Gun peer 1"
-                    ]
-                Chakra.input
-                    {|
-                        value = gunPeer1
-                        onChange = fun (e: KeyboardEvent) -> setGunPeer1 e.target?value
-                        marginTop = "5px"
-                    |}
-                    []
+                Input.Input (
+                    jsOptions<_>
+                        (fun x ->
+                            x.label <- "Gun peer 2"
+                            x.atom <- Some (Recoil.Atom Atoms.gunPeer2)
+                            x.atomScope <- Some Recoil.AtomScope.ReadOnly)
+                )
 
-                Chakra.box
-                    {| marginTop = "15px" |}
-                    [
-                        str "Gun peer 2"
-                    ]
-                Chakra.input
-                    {|
-                        value = gunPeer2
-                        onChange = fun (e: KeyboardEvent) -> setGunPeer2 e.target?value
-                        marginTop = "5px"
-                    |}
-                    []
-
-                Chakra.box
-                    {| marginTop = "15px" |}
-                    [
-                        str "Gun peer 3"
-                    ]
-                Chakra.input
-                    {|
-                        value = gunPeer3
-                        onChange = fun (e: KeyboardEvent) -> setGunPeer3 e.target?value
-                        marginTop = "5px"
-                    |}
-                    []
+                Input.Input (
+                    jsOptions<_>
+                        (fun x ->
+                            x.label <- "Gun peer 3"
+                            x.atom <- Some (Recoil.Atom Atoms.gunPeer3)
+                            x.atomScope <- Some Recoil.AtomScope.ReadOnly)
+                )
             ]
