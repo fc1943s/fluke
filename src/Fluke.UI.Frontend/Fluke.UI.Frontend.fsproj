@@ -6,6 +6,7 @@
     </PropertyGroup>
     <ItemGroup>
         <Compile Include="src\Bindings\Dom.fs" />
+        <Compile Include="src\Bindings\Profiling.fs" />
         <Compile Include="src\Bindings\JS.fs" />
         <Compile Include="src\Bindings\Crypto.fs" />
         <Compile Include="src\Bindings\React.fs" />
@@ -15,7 +16,6 @@
         <Compile Include="src\Bindings\Markdown.fs" />
         <Compile Include="src\Bindings\Gun.fs" />
         <Compile Include="src\Bindings\Cypress.fs" />
-        <Compile Include="src\Profiling.fs" />
         <Compile Include="src\Sync.fs" />
         <Compile Include="src\TempAudio.fs" />
         <Compile Include="src\TempUI.fs" />
@@ -40,6 +40,7 @@
         <Compile Include="src\Components\CellStatusUserIndicator.fs" />
         <Compile Include="src\Components\CellBorder.fs" />
         <Compile Include="src\Components\CellSessionIndicator.fs" />
+        <Compile Include="src\Components\Tooltip.fs" />
         <Compile Include="src\Components\Cell.fs" />
         <Compile Include="src\Components\Cells.fs" />
         <Compile Include="src\Components\HabitTrackerView.fs" />

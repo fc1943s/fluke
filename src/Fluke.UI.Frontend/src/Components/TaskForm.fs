@@ -11,7 +11,6 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core
-open Fable.Core.JsInterop
 
 
 module TaskForm =
@@ -113,7 +112,7 @@ module TaskForm =
                     {| spacing = "15px" |}
                     [
                         Input.Input (
-                            jsOptions<_>
+                            Dom.newObj
                                 (fun x ->
                                     x.autoFocus <- true
                                     x.label <- "Name"

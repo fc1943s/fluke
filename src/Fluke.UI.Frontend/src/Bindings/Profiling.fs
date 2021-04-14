@@ -1,9 +1,7 @@
-namespace Fluke.UI.Frontend
+namespace Fluke.UI.Frontend.Bindings
 
 open System
 open System.Collections.Generic
-open Feliz.Recoil
-open Fluke.UI.Frontend
 
 
 module Profiling =
@@ -18,7 +16,7 @@ module Profiling =
             Timestamps = List<string * int64> ()
         |}
 
-    Bindings.Dom.set (nameof profilingState) profilingState
+    Dom.set (nameof profilingState) profilingState
 
     let internal addCount id =
         match profilingState.CallCount.ContainsKey id with

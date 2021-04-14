@@ -5,6 +5,7 @@ open Feliz
 open Feliz.UseListener
 open Feliz.Recoil
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 
 
 module Listener =

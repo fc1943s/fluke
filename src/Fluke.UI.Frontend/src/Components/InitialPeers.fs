@@ -9,7 +9,6 @@ open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Recoil
 open Fable.React
-open Fable.Core.JsInterop
 
 
 module InitialPeers =
@@ -34,13 +33,13 @@ module InitialPeers =
                     {| minWidth = "200px" |}
                     [
                         Input.Input (
-                            jsOptions<_>
+                            Dom.newObj
                                 (fun x ->
                                     x.autoFocus <- true
                                     x.label <- "Gun peer"
                                     x.placeholder <- "https://??????.herokuapp.com/gun"
                                     x.onEnterPress <- Some nextClick
-                                    x.onChange <- Some (fun (e: KeyboardEvent) -> promise { setGunPeer e.target?value }))
+                                    x.onChange <- Some (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value }))
                         )
 
                         Chakra.hStack

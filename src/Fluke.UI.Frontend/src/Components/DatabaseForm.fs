@@ -8,7 +8,6 @@ open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
-open Fable.Core.JsInterop
 open Fable.Core
 
 
@@ -137,7 +136,7 @@ module DatabaseForm =
                     {| spacing = "15px" |}
                     [
                         Input.Input (
-                            jsOptions<_>
+                            Dom.newObj
                                 (fun x ->
                                     x.autoFocus <- true
                                     x.label <- "Name"
@@ -149,7 +148,7 @@ module DatabaseForm =
                         )
 
                         Input.Input (
-                            jsOptions<_>
+                            Dom.newObj
                                 (fun x ->
                                     x.label <- "Day starts at"
                                     x.placeholder <- "00:00"

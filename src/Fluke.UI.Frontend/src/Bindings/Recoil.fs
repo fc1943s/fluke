@@ -204,7 +204,7 @@ module RecoilMagic =
                 |> createObj
             )
 
-//    module Effects =
+    //    module Effects =
 //        type Wrapper = { Value: string }
 //
 //        let localStorage<'T> =
@@ -264,3 +264,110 @@ module RecoilMagic =
 //                //    storage.subscribe(value => setSelf(value));
 //
 //                fun () -> printfn "> unsubscribe")
+    type Recoil with
+        static member inline atomFamilyWithProfiling
+            (
+                atomKey: string,
+                defaultValue,
+                ?atomEffects,
+                ?_persistence,
+                ?_dangerouslyAllowMutability
+            ) =
+            atomFamily {
+                key atomKey
+
+                def
+                    (fun x ->
+                        Profiling.addCount atomKey
+                        defaultValue x)
+
+                effects
+                    (fun x ->
+                        match atomEffects with
+                        | Some y -> y x
+                        | None -> [])
+
+            }
+
+        static member inline selectorWithProfiling
+            (
+                atomKey: string,
+                getFn,
+                ?setFn,
+                ?_cacheImplementation,
+                ?_paramCacheImplementation,
+                ?_dangerouslyAllowMutability
+            ) =
+            selector {
+                key atomKey
+
+                get
+                    (fun (getter: SelectorGetter) ->
+                        let result : 'T = getFn getter
+                        Profiling.addCount atomKey
+                        result)
+
+                set
+                    (fun x y ->
+                        match setFn with
+                        | Some setFn ->
+                            setFn x y
+                            Profiling.addCount $"{atomKey} (SET)"
+                        | None -> ())
+            }
+
+        static member inline asyncSelectorWithProfiling
+            (
+                atomKey: string,
+                getFn,
+                ?setFn,
+                ?_cacheImplementation,
+                ?_paramCacheImplementation,
+                ?_dangerouslyAllowMutability
+            ) =
+            selector {
+                key atomKey
+
+                get
+                    (fun (getter: SelectorGetter) ->
+                        promise {
+                            let! result = getFn getter
+                            Profiling.addCount atomKey
+                            return result
+                        })
+
+                set
+                    (fun x y ->
+                        match setFn with
+                        | Some setFn ->
+                            setFn x y
+                            Profiling.addCount $"{atomKey} (SET)"
+                        | None -> ())
+            }
+
+        static member inline selectorFamilyWithProfiling
+            (
+                atomKey: string,
+                getFn,
+                ?setFn,
+                ?_cacheImplementation,
+                ?_paramCacheImplementation,
+                ?_dangerouslyAllowMutability
+            ) =
+            selectorFamily {
+                key atomKey
+
+                get
+                    (fun x (getter: SelectorGetter) ->
+                        let result : 'T = getFn x getter
+                        Profiling.addCount atomKey
+                        result)
+
+                set
+                    (fun x y z ->
+                        match setFn with
+                        | Some setFn ->
+                            setFn x y z
+                            Profiling.addCount $"{atomKey} (SET)"
+                        | None -> ())
+            }

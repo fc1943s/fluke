@@ -6,7 +6,6 @@ open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fable.React
-open Fable.Core.JsInterop
 
 
 module LoginScreen =
@@ -65,7 +64,7 @@ module LoginScreen =
                     {|  |}
                     [
                         Input.Input (
-                            jsOptions<_>
+                            Dom.newObj
                                 (fun x ->
                                     x.autoFocus <- true
                                     x.value <- Some usernameField
@@ -74,7 +73,7 @@ module LoginScreen =
                         )
 
                         Input.Input (
-                            jsOptions<_>
+                            Dom.newObj
                                 (fun x ->
                                     x.value <- Some passwordField
                                     x.placeholder <- "Password"

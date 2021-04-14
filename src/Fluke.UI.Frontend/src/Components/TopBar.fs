@@ -33,16 +33,52 @@ module TopBar =
 
                 Chakra.spacer {|  |} []
 
-                Chakra.iconButton
+                Chakra.stack
                     {|
-                        icon = Icons.fiLogOut ()
-                        backgroundColor = "transparent"
-                        variant = "outline"
-                        border = 0
-                        width = "30px"
-                        height = "30px"
-                        borderRadius = 0
-                        onClick = logout
+                        spacing = "10px"
+                        direction = "row"
                     |}
-                    []
+                    [
+                        Html.a [
+                            prop.href "https://github.com/fc1943s/fluke"
+                            prop.target "_blank"
+                            prop.children [
+                                Tooltip.Tooltip
+                                    (Dom.newObj (fun x -> x.label <- str "GitHub repository"))
+                                    [
+                                        Chakra.iconButton
+                                            {|
+                                                icon = Icons.aiOutlineGithub ()
+                                                backgroundColor = "transparent"
+                                                variant = "outline"
+                                                border = 0
+                                                fontSize = "18px"
+                                                width = "30px"
+                                                height = "30px"
+                                                borderRadius = 0
+                                                onClick = logout
+                                            |}
+                                            []
+                                    ]
+                            ]
+                        ]
+
+                        Tooltip.Tooltip
+                            (Dom.newObj (fun x -> x.label <- str "Logout"))
+                            [
+                                Chakra.iconButton
+                                    {|
+                                        icon = Icons.fiLogOut ()
+                                        backgroundColor = "transparent"
+                                        variant = "outline"
+                                        border = 0
+                                        fontSize = "18px"
+                                        width = "30px"
+                                        height = "30px"
+                                        borderRadius = 0
+                                        onClick = logout
+                                    |}
+                                    []
+                            ]
+                    ]
             ]

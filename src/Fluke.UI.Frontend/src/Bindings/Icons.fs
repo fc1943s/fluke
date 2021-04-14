@@ -4,6 +4,9 @@ open Fable.Core
 
 
 module Icons =
+    [<ImportAll "react-icons/ai">]
+    let ai : {| AiOutlineGithub: obj |} = jsNative
+
     [<ImportAll "react-icons/bs">]
     let bs : {| BsGrid: obj
                 BsListCheck: obj
@@ -33,6 +36,7 @@ module Icons =
     let wrap cmp = React.bindComponent () [] cmp
     //    let wrap cmp (props: {| fontSize: string |}) = Chakra.box {| props with ``as`` = cmp |} []
 
+    let aiOutlineGithub () = wrap ai.AiOutlineGithub
     let bsGrid () = wrap bs.BsGrid
     let bsListCheck () = wrap bs.BsListCheck
     let bsThreeDots () = wrap bs.BsThreeDots

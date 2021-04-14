@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fable.Core.JsInterop
 open Feliz
 open Fable.React
 open Feliz.Recoil
@@ -81,7 +80,7 @@ module Settings =
                     ]
 
                 Input.Input (
-                    jsOptions<_>
+                    Dom.newObj
                         (fun x ->
                             x.label <- "Old API URL"
                             x.atom <- Some (Recoil.Atom Atoms.apiBaseUrl)
@@ -89,7 +88,7 @@ module Settings =
                 )
 
                 Input.Input (
-                    jsOptions<_>
+                    Dom.newObj
                         (fun x ->
                             x.label <- "Gun peer 1"
                             x.atom <- Some (Recoil.Atom Atoms.gunPeer1)
@@ -97,7 +96,7 @@ module Settings =
                 )
 
                 Input.Input (
-                    jsOptions<_>
+                    Dom.newObj
                         (fun x ->
                             x.label <- "Gun peer 2"
                             x.atom <- Some (Recoil.Atom Atoms.gunPeer2)
@@ -105,7 +104,7 @@ module Settings =
                 )
 
                 Input.Input (
-                    jsOptions<_>
+                    Dom.newObj
                         (fun x ->
                             x.label <- "Gun peer 3"
                             x.atom <- Some (Recoil.Atom Atoms.gunPeer3)
