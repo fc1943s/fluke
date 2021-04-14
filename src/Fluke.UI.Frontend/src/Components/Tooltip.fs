@@ -14,7 +14,7 @@ module Tooltip =
     let Tooltip (input: IProps) children =
         Chakra.tooltip
             {|
-                bg = "gray.10"
+                backgroundColor = "gray.10"
                 color = "white"
                 label = input.label
                 hasArrow = input.hasArrow
