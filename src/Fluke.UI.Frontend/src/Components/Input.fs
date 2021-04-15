@@ -9,6 +9,7 @@ open Fluke.UI.Frontend.Bindings
 open Feliz.Recoil
 open Fable.Core
 
+
 module Input =
 
     [<RequireQualifiedAccess>]
@@ -22,6 +23,8 @@ module Input =
 
     type IProps<'TValue, 'TKey> =
         abstract label : string with get, set
+        abstract hint : ReactElement option with get, set
+        abstract hintTitle : ReactElement option with get, set
         abstract autoFocus : bool with get, set
         abstract placeholder : string with get, set
         abstract atom : Recoil.InputAtom<'TValue, 'TKey> option with get, set
@@ -173,10 +176,22 @@ module Input =
             [
                 match input.label with
                 | String.ValidString ->
-                    Chakra.box
+                    Chakra.flex
                         {|  |}
                         [
                             str $"{input.label}:"
+                            Hint.Hint (
+                                Dom.newObj
+                                    (fun x ->
+                                        x.hint <- input.hint
+
+                                        x.hintTitle <-
+                                            Some (
+                                                match input.hintTitle with
+                                                | Some hintTitle -> hintTitle
+                                                | None -> str input.label
+                                            ))
+                            )
                         ]
                 | _ -> ()
 

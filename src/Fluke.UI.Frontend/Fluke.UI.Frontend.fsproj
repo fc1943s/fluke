@@ -26,6 +26,8 @@
         <Compile Include="src\Hooks\React.fs" />
         <Compile Include="src\Hooks\Auth.fs" />
         <Compile Include="src\Components\Empty.fs" />
+        <Compile Include="src\Components\Tooltip.fs" />
+        <Compile Include="src\Components\Hint.fs" />
         <Compile Include="src\Components\Input.fs" />
         <Compile Include="src\Components\MonthResponsiveCell.fs" />
         <Compile Include="src\Components\Day.fs" />
@@ -40,7 +42,6 @@
         <Compile Include="src\Components\CellStatusUserIndicator.fs" />
         <Compile Include="src\Components\CellBorder.fs" />
         <Compile Include="src\Components\CellSessionIndicator.fs" />
-        <Compile Include="src\Components\Tooltip.fs" />
         <Compile Include="src\Components\Cell.fs" />
         <Compile Include="src\Components\Cells.fs" />
         <Compile Include="src\Components\HabitTrackerView.fs" />
@@ -64,6 +65,7 @@
         <Compile Include="src\Components\StatusBar.fs" />
         <Compile Include="src\Components\HomeScreen.fs" />
         <Compile Include="src\Components\LoginScreen.fs" />
+        <Compile Include="src\Components\ExternalLink.fs" />
         <Compile Include="src\Components\InitialPeers.fs" />
         <Compile Include="src\Components\LoadingScreen.fs" />
         <Compile Include="src\Components\UserLoader.fs" />

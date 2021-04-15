@@ -58,6 +58,7 @@
 
     "@chakra-ui/react": "~1.5",
     "@chakra-ui/system": "~1.6",
+    "@chakra-ui/icons": "~1.0",
     "@chakra-ui/theme-tools": "~1.1",
     "@chakra-ui/media-query": "~1.0",
     "@emotion/react": "~11.1",

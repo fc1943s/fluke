@@ -5,6 +5,11 @@ open Browser
 open Fable.Core.JsInterop
 open Fable.Core
 
+[<AutoOpen>]
+module Operators =
+    [<Emit("Object.assign({}, $0, $1)")>]
+    let (++) _o1 _o2 : obj = jsNative
+
 
 module Dom =
     let private domRefs = Dictionary<string, obj> ()

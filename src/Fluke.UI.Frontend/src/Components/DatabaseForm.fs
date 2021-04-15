@@ -140,6 +140,16 @@ module DatabaseForm =
                                 (fun x ->
                                     x.autoFocus <- true
                                     x.label <- "Name"
+
+                                    x.hint <-
+                                        Some (
+                                            Chakra.box
+                                                {|  |}
+                                                [
+                                                    str "Documentation"
+                                                ]
+                                        )
+
                                     x.placeholder <- sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
                                     x.atom <- Some (Recoil.AtomFamily (Recoil.Atoms.Database.name, input.DatabaseId))
                                     x.onFormat <- Some (fun (DatabaseName name) -> name)
@@ -151,6 +161,16 @@ module DatabaseForm =
                             Dom.newObj
                                 (fun x ->
                                     x.label <- "Day starts at"
+
+                                    x.hint <-
+                                        Some (
+                                            Chakra.box
+                                                {|  |}
+                                                [
+                                                    str "Documentation"
+                                                ]
+                                        )
+
                                     x.placeholder <- "00:00"
 
                                     x.atom <-

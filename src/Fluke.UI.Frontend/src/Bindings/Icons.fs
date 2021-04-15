@@ -10,6 +10,7 @@ module Icons =
     [<ImportAll "react-icons/bs">]
     let bs : {| BsGrid: obj
                 BsListCheck: obj
+                BsQuestionCircle: obj
                 BsThreeDots: obj |} =
         jsNative
 
@@ -28,7 +29,9 @@ module Icons =
     let gi : {| GiHourglass: obj |} = jsNative
 
     [<ImportAll "react-icons/md">]
-    let md : {| MdClear: obj; MdSettings: obj |} = jsNative
+    let md : {| MdClear: obj
+                MdSettings: obj |} =
+        jsNative
 
     [<ImportAll "react-icons/ti">]
     let ti : {| TiFlowChildren: obj |} = jsNative
@@ -39,6 +42,7 @@ module Icons =
     let aiOutlineGithub () = wrap ai.AiOutlineGithub
     let bsGrid () = wrap bs.BsGrid
     let bsListCheck () = wrap bs.BsListCheck
+    let bsQuestionCircle () = wrap bs.BsQuestionCircle
     let bsThreeDots () = wrap bs.BsThreeDots
     let faMinus () = wrap fa.FaMinus
     let faPlus () = wrap fa.FaPlus

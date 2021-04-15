@@ -5,6 +5,7 @@ open Fluke.UI.Frontend.Bindings
 
 
 module Tooltip =
+
     type IProps =
         abstract label : ReactElement with get, set
         abstract hasArrow : bool with get, set
@@ -14,11 +15,12 @@ module Tooltip =
     let Tooltip (input: IProps) children =
         Chakra.tooltip
             {|
-                backgroundColor = "gray.10"
-                color = "white"
                 label = input.label
                 hasArrow = input.hasArrow
                 placement = input.placement
+                backgroundColor = "gray.45"
+                color = "black"
+                closeDelay = 200
                 zIndex = 20000
             |}
             children

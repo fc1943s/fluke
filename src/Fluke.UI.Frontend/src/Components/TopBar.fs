@@ -39,10 +39,12 @@ module TopBar =
                         direction = "row"
                     |}
                     [
-                        Html.a [
-                            prop.href "https://github.com/fc1943s/fluke"
-                            prop.target "_blank"
-                            prop.children [
+                        Chakra.link
+                            {|
+                                href = "https://github.com/fc1943s/fluke"
+                                isExternal = true
+                            |}
+                            [
                                 Tooltip.Tooltip
                                     (Dom.newObj (fun x -> x.label <- str "GitHub repository"))
                                     [
@@ -61,7 +63,6 @@ module TopBar =
                                             []
                                     ]
                             ]
-                        ]
 
                         Tooltip.Tooltip
                             (Dom.newObj (fun x -> x.label <- str "Logout"))

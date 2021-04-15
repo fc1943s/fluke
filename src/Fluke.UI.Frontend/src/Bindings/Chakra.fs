@@ -19,8 +19,10 @@ module Chakra =
                    Flex: obj
                    Grid: obj
                    HStack: obj
+                   Icon: obj
                    IconButton: obj
                    Input: obj
+                   Link: obj
                    Menu: obj
                    MenuButton: obj
                    MenuList: obj
@@ -35,6 +37,12 @@ module Chakra =
                    NumberInputStepper: obj
                    NumberDecrementStepper: obj
                    NumberIncrementStepper: obj
+                   Popover: obj
+                   PopoverArrow: obj
+                   PopoverBody: obj
+                   PopoverCloseButton: obj
+                   PopoverContent: obj
+                   PopoverTrigger: obj
                    SimpleGrid: obj
                    Spacer: obj
                    Spinner: obj
@@ -51,6 +59,11 @@ module Chakra =
     [<ImportAll "@chakra-ui/theme-tools">]
     let themeTools : {| mode: string * string -> obj -> obj |} = jsNative
 
+    [<ImportAll "@chakra-ui/icons">]
+    let icons : {| ExternalLinkIcon: obj |} = jsNative
+
+    module Icons =
+        let externalLinkIcon<'T> = composeComponent icons.ExternalLinkIcon
 
 
     let box<'T> = composeComponent react.Box
@@ -63,8 +76,10 @@ module Chakra =
     let flex<'T> = composeComponent react.Flex
     let grid<'T> = composeComponent react.Grid
     let hStack<'T> = composeComponent react.HStack
+    let icon<'T> = composeComponent react.Icon
     let iconButton<'T> = composeComponent react.IconButton
     let input<'T> = composeComponent react.Input
+    let link<'T> = composeComponent react.Link
     let menu<'T> = composeComponent react.Menu
     let menuButton<'T> = composeComponent react.MenuButton
     let menuList<'T> = composeComponent react.MenuList
@@ -79,6 +94,12 @@ module Chakra =
     let numberInputStepper<'T> = composeComponent react.NumberInputStepper
     let numberDecrementStepper<'T> = composeComponent react.NumberDecrementStepper
     let numberIncrementStepper<'T> = composeComponent react.NumberIncrementStepper
+    let popover<'T> = composeComponent react.Popover
+    let popoverArrow<'T> = composeComponent react.PopoverArrow
+    let popoverBody<'T> = composeComponent react.PopoverBody
+    let popoverCloseButton<'T> = composeComponent react.PopoverCloseButton
+    let popoverContent<'T> = composeComponent react.PopoverContent
+    let popoverTrigger<'T> = composeComponent react.PopoverTrigger
     let provider<'T> = composeComponent react.ChakraProvider
     let simpleGrid<'T> = composeComponent react.SimpleGrid
     let spacer<'T> = composeComponent react.Spacer
@@ -127,3 +148,6 @@ module Chakra =
                 toast.Invoke state
 
     let useToast = ToastBuilder ()
+
+    type IChakraProps =
+        abstract marginLeft : string with get, set

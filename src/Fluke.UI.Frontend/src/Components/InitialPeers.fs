@@ -37,6 +37,19 @@ module InitialPeers =
                                 (fun x ->
                                     x.autoFocus <- true
                                     x.label <- "Gun peer"
+
+                                    x.hint <-
+                                        Some (
+                                            ExternalLink.ExternalLink
+                                                {|
+                                                    isExternal = true
+                                                    href =
+                                                        "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers"
+                                                    text = "Read documentation"
+                                                |}
+                                        )
+
+
                                     x.placeholder <- "https://??????.herokuapp.com/gun"
                                     x.onEnterPress <- Some nextClick
                                     x.onChange <- Some (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value }))
