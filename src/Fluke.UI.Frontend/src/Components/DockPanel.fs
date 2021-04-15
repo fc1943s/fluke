@@ -56,9 +56,10 @@ module DockPanel =
                 Chakra.flex
                     {|
                         direction = "column"
-                        paddingTop = "10px"
-                        paddingLeft = "10px"
-                        paddingRight = "10px"
+                        paddingTop = "8px"
+                        paddingLeft = "8px"
+                        paddingRight = "8px"
+                        paddingBottom = "8px"
                         flex = 1
                     |}
                     [

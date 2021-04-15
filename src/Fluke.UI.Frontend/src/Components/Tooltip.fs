@@ -20,7 +20,6 @@ module Tooltip =
                 placement = input.placement
                 backgroundColor = "gray.45"
                 color = "black"
-                closeDelay = 200
                 zIndex = 20000
             |}
             children

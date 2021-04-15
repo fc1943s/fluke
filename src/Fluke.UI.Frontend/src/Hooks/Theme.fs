@@ -100,10 +100,22 @@ module Theme =
                                             else
                                                 ""
                                     |}
-                                ``*::-webkit-scrollbar`` = {| width = "6px" |}
+                                ``*::-webkit-scrollbar`` = {| width = "9px" |}
+                                ``*::-webkit-scrollbar:horizontal`` = {| height = "6px" |}
                                 ``*::-webkit-scrollbar-track`` = {| display = "none" |}
-                                ``*::-webkit-scrollbar-thumb`` = {| background = "gray.45" |}
-                                ``*::-webkit-scrollbar-thumb:hover`` = {| background = "gray.77" |}
+                                ``*::-webkit-scrollbar-thumb`` =
+                                    {|
+                                        background = "gray.45"
+                                        opacity = 0.8
+                                        backgroundClip = "content-box"
+                                        borderLeft = "3px solid transparent"
+                                    |}
+                                ``*::-webkit-scrollbar-thumb:hover`` =
+                                    {|
+                                        background = "gray.77"
+                                        backgroundClip = "content-box"
+                                        borderLeft = "3px solid transparent"
+                                    |}
                                 ``*:focus`` =
                                     {|
                                         boxShadow = "0 0 0 1px #5ca0c1 !important"

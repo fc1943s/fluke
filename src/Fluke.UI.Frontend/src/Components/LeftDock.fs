@@ -87,7 +87,8 @@ module LeftDock =
                     | Some (name, icon, content) ->
                         Chakra.flex
                             {|
-                                width = "300px"
+                                minWidth = "200px"
+                                maxWidth = "300px"
                                 borderRightColor = "gray.16"
                                 borderRight = "1px solid"
                                 flex = 1

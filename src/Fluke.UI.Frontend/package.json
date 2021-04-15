@@ -28,6 +28,8 @@
     "watch:frontend-build": "dotnet fable watch",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
     "watch": "concurrently \"yarn:watch:*\"",
+    "enable-build-watch":"yarn cra-build-watch",
+    "disable-build-watch":"yarn --check-files",
     "build": "yarn build:fable && yarn build:react",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --env=jest-environment-jsdom-sixteen --testNamePattern=",
     "cypress-install": "cypress install --force",
@@ -47,8 +49,8 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-84c06fef8",
-    "react-dom": "0.0.0-experimental-84c06fef8",
+    "react": "0.0.0-experimental-ea155e226",
+    "react-dom": "0.0.0-experimental-ea155e226",
 
     "recoil": "~0.2",
     "recoilize": "~1.0",
@@ -71,7 +73,7 @@
     "devtron": "~1.4",
 
     "react-markdown": "~5.0",
-    "date-fns": "~2.20",
+    "date-fns": "~2.21",
     "crypto-js": "~4.0"
   },
   "devDependencies": {
@@ -127,14 +129,17 @@
     "react-app-rewired": "~2.1",
     "customize-cra": "~1.0",
     "customize-cra-react-refresh": "~1.1",
+    "@craco/craco": "~6.1",
+    "@dealmore/craco-plugin-babel-include": "~1.0",
+    "cra-build-watch": "~4.0.0-beta.1",
 
     "react-refresh": "~0.10",
 
     "concurrently": "~6.0"
   },
   "resolutions": {
-    "react": "0.0.0-experimental-84c06fef8",
-    "react-dom": "0.0.0-experimental-84c06fef8"
+    "react": "0.0.0-experimental-ea155e226",
+    "react-dom": "0.0.0-experimental-ea155e226"
   },
   "browserslist": {
     "production": [

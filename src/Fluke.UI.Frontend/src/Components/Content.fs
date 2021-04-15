@@ -17,9 +17,22 @@ module Content =
         let sessionRestored = Recoil.useValue Recoil.Atoms.sessionRestored
         let initialPeerSkipped = Recoil.useValue Recoil.Atoms.initialPeerSkipped
         let gunPeers = Recoil.useValue Recoil.Selectors.gunPeers
+        let deviceInfo = Recoil.useValue Recoil.Selectors.deviceInfo
 
         Chakra.flex
-            {| minHeight = "100vh" |}
+            {|
+                minHeight = "100vh"
+                height =
+                    if deviceInfo.IsExtension then
+                        Some "590px"
+                    else
+                        None
+                width =
+                    if deviceInfo.IsExtension then
+                        Some "790px"
+                    else
+                        None
+            |}
             [
                 match sessionRestored with
                 | false -> LoadingScreen.LoadingScreen ()

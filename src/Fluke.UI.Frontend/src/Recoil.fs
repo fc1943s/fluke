@@ -720,7 +720,12 @@ module Recoil =
                     | None -> ())
             )
 
-        type DeviceInfo = { IsEdge: bool; IsMobile: bool }
+        type DeviceInfo =
+            {
+                IsEdge: bool
+                IsMobile: bool
+                IsExtension: bool
+            }
 
         let rec deviceInfo =
             Recoil.selectorWithProfiling (
@@ -739,6 +744,7 @@ module Recoil =
                                 .RegExp("Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop",
                                         JSe.RegExpFlag().i)
                                 .Test userAgent
+                        IsExtension = Browser.Dom.window.location.protocol = "chrome-extension:"
                     })
             )
 
