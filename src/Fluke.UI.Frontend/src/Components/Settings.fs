@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Fable.React
 open Feliz.Recoil
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
@@ -16,68 +15,26 @@ module Settings =
                              overflowY: string
                              flexBasis: int |} |})
         =
-        let daysBefore, setDaysBefore = Recoil.useState Atoms.daysBefore
-        let daysAfter, setDaysAfter = Recoil.useState Atoms.daysAfter
-
         Chakra.stack
             {| input.Props with spacing = "10px" |}
             [
-                Chakra.box
-                    ()
-                    [
-                        Chakra.box
-                            ()
-                            [
-                                str "Days Before"
-                            ]
-                        Chakra.numberInput
-                            {|
-                                value = daysBefore
-                                onChange =
-                                    fun valueString ->
-                                        let value = int valueString
-                                        setDaysBefore value
-                                min = 0
-                                max = 360
-                                marginTop = "5px"
-                            |}
-                            [
-                                Chakra.numberInputField () []
-                                Chakra.numberInputStepper
-                                    ()
-                                    [
-                                        Chakra.numberIncrementStepper () []
-                                        Chakra.numberDecrementStepper () []
-                                    ]
-                            ]
-                    ]
+                Input.Input (
+                    Dom.newObj
+                        (fun x ->
+                            x.label <- "Days Before"
+                            x.atom <- Some (Recoil.Atom Atoms.daysBefore)
+                            x.atomScope <- Some Recoil.AtomScope.ReadOnly
+                            x.inputFormat <- Some Input.InputFormat.Number)
+                )
 
-                Chakra.box
-                    ()
-                    [
-                        Chakra.box
-                            {|  |}
-                            [
-                                str "Days After"
-                            ]
-                        Chakra.numberInput
-                            {|
-                                value = daysAfter
-                                onChange = fun valueString -> setDaysAfter (int valueString)
-                                min = 0
-                                max = 360
-                                marginTop = "5px"
-                            |}
-                            [
-                                Chakra.numberInputField () []
-                                Chakra.numberInputStepper
-                                    ()
-                                    [
-                                        Chakra.numberIncrementStepper () []
-                                        Chakra.numberDecrementStepper () []
-                                    ]
-                            ]
-                    ]
+                Input.Input (
+                    Dom.newObj
+                        (fun x ->
+                            x.label <- "Days After"
+                            x.atom <- Some (Recoil.Atom Atoms.daysAfter)
+                            x.atomScope <- Some Recoil.AtomScope.ReadOnly
+                            x.inputFormat <- Some Input.InputFormat.Number)
+                )
 
                 Input.Input (
                     Dom.newObj

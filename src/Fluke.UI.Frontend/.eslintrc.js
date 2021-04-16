@@ -40,7 +40,7 @@ module.exports = {
     // }],
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
     'react-hooks/exhaustive-deps': ['warn', { additionalHooks: '(.*?_useRecoilCallback_.*?|.*?_useCallback_.*?|.*?_useEffect_.*?|.*?_useMemo.*?)' }],
-    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/rules-of-hooks': 'off',
 
     'react/display-name': 'off',
   },

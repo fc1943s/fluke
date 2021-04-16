@@ -70,13 +70,6 @@ module rec Gun =
 
     let gun : GunProps -> IGunChainReference<AppState> = importDefault "gun/gun"
 
-    [<ImportAll "@altrx/gundb-react-hooks">]
-    let gunHooks : {| useGunKeys: obj -> (unit -> obj) -> bool -> obj
-                      useGunState: IGunChainReference<obj> -> {| appKeys: GunKeys; sea: obj |} -> {| fields: obj
-                                                                                                     put: obj -> JS.Promise<obj>
-                                                                                                     remove: string -> JS.Promise<obj> |} |} =
-        jsNative
-
     let createUser (user: IGunUser) username password =
         Promise.create
             (fun res err ->

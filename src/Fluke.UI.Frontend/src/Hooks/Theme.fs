@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Hooks
 
+#nowarn "40"
+
 open Feliz
 open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
@@ -7,7 +9,7 @@ open Fable.Core
 
 
 module Theme =
-    let private theme =
+    let rec private theme =
         {|
             config =
                 {|
@@ -23,6 +25,7 @@ module Theme =
                 |}
             colors =
                 {|
+                    heliotrope = "#b586ff"
                     gray =
                         {|
                             ``10`` = "#1a1a1a" // grayDark
@@ -118,7 +121,7 @@ module Theme =
                                     |}
                                 ``*:focus`` =
                                     {|
-                                        boxShadow = "0 0 0 1px #5ca0c1 !important"
+                                        boxShadow = $"0 0 0 1px {theme.colors.heliotrope} !important"
                                     |}
                                 ``*, *::before, *::after`` = {| wordWrap = "break-word" |}
                                 ``.markdown-container h1`` =

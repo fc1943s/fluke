@@ -23,9 +23,10 @@ module Hint =
                             Chakra.iconButton
                                 {|
                                     icon = Icons.bsQuestionCircle ()
-                                    backgroundColor = "transparent"
-                                    variant = "outline"
+//                                    backgroundColor = "transparent"
+//                                    variant = "outline"
                                     border = 0
+                                    color = "heliotrope"
                                     marginLeft = "1px"
                                     marginTop = "-2px"
                                     padding = "2px"
@@ -58,6 +59,7 @@ module Hint =
                                                     {|
                                                         marginTop = "-3px"
                                                         marginRight = "5px"
+                                                        color = "heliotrope"
                                                         icon = Icons.bsQuestionCircle ()
                                                     |}
                                                     []

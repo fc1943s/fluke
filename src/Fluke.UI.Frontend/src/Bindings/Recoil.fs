@@ -34,7 +34,7 @@ module Recoil =
     let wrapAtomField<'TValue, 'TKey> (atom: RecoilValue<'TValue, ReadWrite>) =
         {|
             ReadOnly = atom
-            ReadWrite = Atoms.Form.fieldValue {| key = atom.key |} :> obj :?> RecoilValue<'TValue, ReadWrite>
+            ReadWrite = box (Atoms.Form.fieldValue atom.key) :?> RecoilValue<'TValue, ReadWrite>
         |}
 
     [<RequireQualifiedAccess>]
@@ -62,7 +62,7 @@ module Recoil =
         let readWriteValue, setReadWriteValue = Recoil.useState atomField.ReadWrite
 
         let fieldValueMounted, setFieldValueMounted =
-            Recoil.useState (Atoms.Form.fieldValueMounted {| key = atomField.ReadOnly.key |})
+            Recoil.useState (Atoms.Form.fieldValueMounted atomField.ReadOnly.key)
 
         React.useEffect (
             (fun () ->

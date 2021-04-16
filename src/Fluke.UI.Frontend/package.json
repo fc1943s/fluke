@@ -56,7 +56,6 @@
     "recoilize": "~1.0",
 
     "gun": "amark/gun.git#master",
-    "@altrx/gundb-react-hooks": "~0.8",
 
     "@chakra-ui/react": "~1.5",
     "@chakra-ui/system": "~1.6",

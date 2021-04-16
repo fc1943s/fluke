@@ -112,7 +112,7 @@ module Model =
             | Resource ({ Name = ResourceName name }, _) -> InformationName name
             | Archive information ->
                 let (InformationName name) = information.Name
-                sprintf "[%s]" name |> InformationName
+                $"[%s{name}]" |> InformationName
 
     and InformationName = InformationName of name: string
 
@@ -159,7 +159,7 @@ module Model =
                 } =
                 this
 
-            sprintf "%02.0f:%02.0f" hour minute
+            $"%02.0f{hour}:%02.0f{minute}"
 
         static member inline FromDateTime (date: DateTime) =
             {

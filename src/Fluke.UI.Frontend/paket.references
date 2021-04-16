@@ -3,9 +3,10 @@ FSharp.Core
 Fable.Remoting.Client
 Fable.FontAwesome.Free
 Fable.DateFunctions
-Feliz.Recoil
-Feliz.UseListener
-Feliz.Router
 Fable.SimpleJson
 Fable.Jester
 Fable.ReactTestingLibrary
+Feliz.Recoil
+Feliz.UseListener
+Feliz.Router
+Thoth.Json

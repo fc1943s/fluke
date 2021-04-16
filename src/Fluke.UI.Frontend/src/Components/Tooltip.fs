@@ -18,7 +18,7 @@ module Tooltip =
                 label = input.label
                 hasArrow = input.hasArrow
                 placement = input.placement
-                backgroundColor = "gray.45"
+                backgroundColor = "gray.77"
                 color = "black"
                 zIndex = 20000
             |}

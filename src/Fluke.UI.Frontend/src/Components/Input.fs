@@ -19,6 +19,7 @@ module Input =
         | DateTime
         | Email
         | Password
+        | Number
 
 
     type IProps<'TValue, 'TKey> =
@@ -38,7 +39,7 @@ module Input =
         abstract inputFormat : InputFormat option with get, set
 
     [<ReactComponent>]
-    let Input (input: IProps<'TValue, 'TKey>) =
+    let inline Input (input: IProps<'TValue, 'TKey>) =
         let atomFieldOptions = Recoil.useAtomField<'TValue, 'TKey> input.atom
 
         let atomValue =
@@ -98,11 +99,13 @@ module Input =
 
                     let valueString =
                         match value with
-                        | Some value ->
+                        | Some value when box value <> null ->
                             match input.onFormat with
-                            | Some onFormat -> onFormat value
+                            | Some onFormat ->
+                                printfn $"before onformat {JS.JSON.stringify value}"
+                                onFormat value
                             | None -> string value
-                        | None -> ""
+                        | _ -> ""
 
                     value, valueString),
                 [|
@@ -142,7 +145,7 @@ module Input =
             Recoil.useCallbackRef
                 (fun _setter (e: KeyboardEvent) ->
                     promise {
-                        if inputRef.current <> null then
+                        if inputRef.current <> null && e.target <> null then
                             match input.onChange with
                             | Some onChange -> do! onChange e
                             | None -> ()
@@ -174,6 +177,15 @@ module Input =
         Chakra.stack
             {| spacing = "5px" |}
             [
+
+                GunBind.GunBind<'TValue>
+                    {|
+                        Atom =
+                            match input.atomScope with
+                            | Some Recoil.AtomScope.ReadOnly -> atomFieldOptions.AtomField.ReadOnly
+                            | _ -> atomFieldOptions.AtomField.ReadWrite
+                    |}
+
                 match input.label with
                 | String.ValidString ->
                     Chakra.flex
@@ -195,12 +207,13 @@ module Input =
                         ]
                 | _ -> ()
 
-                Chakra.input
+                let baseProps =
                     {|
+                        onChange = onChange
+                        ref = inputRef
+                        _focus = {| borderColor = "heliotrope" |}
                         autoFocus = input.autoFocus
                         placeholder = input.placeholder
-                        ref = inputRef
-                        onChange = onChange
                         onKeyDown =
                             fun (e: KeyboardEvent) ->
                                 promise {
@@ -214,12 +227,17 @@ module Input =
                                             do! onEnterPress ()
                                     | None -> ()
                                 }
+                    |}
+
+                Chakra.input
+                    {| baseProps with
                         ``type`` =
                             match input.inputFormat with
                             | Some inputFormat ->
                                 match inputFormat with
                                 | InputFormat.Date -> "date"
                                 | InputFormat.Time -> "time"
+                                | InputFormat.Number -> "number"
                                 | InputFormat.DateTime -> "datetime-local"
                                 | InputFormat.Email -> "email"
                                 | InputFormat.Password -> "password"

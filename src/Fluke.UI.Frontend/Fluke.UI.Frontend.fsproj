@@ -28,6 +28,7 @@
         <Compile Include="src\Components\Empty.fs" />
         <Compile Include="src\Components\Tooltip.fs" />
         <Compile Include="src\Components\Hint.fs" />
+        <Compile Include="src\Components\GunBind.fs" />
         <Compile Include="src\Components\Input.fs" />
         <Compile Include="src\Components\MonthResponsiveCell.fs" />
         <Compile Include="src\Components\Day.fs" />
@@ -77,7 +78,6 @@
         <Compile Include="src\Components\CtrlListener.fs" />
         <Compile Include="src\Components\ShiftListener.fs" />
         <Compile Include="src\Components\GunObserver.fs" />
-        <Compile Include="src\Components\GunBind.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\Components\RootWrapper.fs" />
         <Compile Include="src\Components\ApiSubscriber.fs" />
