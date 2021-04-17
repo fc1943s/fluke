@@ -43,7 +43,10 @@ module AddDatabaseButton =
             Modal.Modal
                 {|
                     IsOpen = formDatabaseVisibleFlag
-                    OnClose = fun () -> setFormDatabaseId None
+                    OnClose =
+                        fun () ->
+                            setFormDatabaseId None
+                            setFormDatabaseVisibleFlag false
                     children =
                         [
                             match username with

@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Bindings
 
 open Fable.Core.JsInterop
 open Feliz.Recoil
+open Thoth.Json
 
 
 module rec Gun =
@@ -84,3 +85,27 @@ module rec Gun =
                 with ex ->
                     printfn "authUser error: {ex}"
                     err ex)
+
+    let getGunAtomNode<'T> (gun: IGunChainReference<obj>) (gunAtomKey: string) =
+        (gun, gunAtomKey.Split "/" |> Array.toList)
+        ||> List.fold (fun result -> result.get)
+        :?> IGunChainReference<'T>
+
+    let inline putGunAtomNode<'T> (gun: IGunChainReference<obj>) (value: 'T) =
+        gun.put (Encode.Auto.toString (0, value))
+        |> ignore
+
+    let inline deserializeGunAtomNode (data: obj) =
+        match data :?> string option with
+        | Some data ->
+
+            let newValue = Decode.Auto.fromString<'T> data
+
+            match newValue with
+            | Ok newValue -> Some newValue
+            | Error error ->
+                Browser.Dom.console.error error
+                failwithf "Deserialize error"
+                None
+
+        | None -> None

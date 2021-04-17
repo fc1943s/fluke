@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fluke.Shared.Domain.UserInteraction
+open Fluke.Shared.Domain.State
 open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend
@@ -11,7 +12,7 @@ module Cells =
     [<ReactComponent>]
     let Cells
         (input: {| Username: Username
-                   TaskIdList: Recoil.Atoms.Task.TaskId list |})
+                   TaskIdList: TaskId list |})
         =
         Profiling.addTimestamp "cells.render"
 

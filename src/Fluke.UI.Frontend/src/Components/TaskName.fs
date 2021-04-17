@@ -7,6 +7,7 @@ open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
+open Fluke.Shared.Domain.State
 open Fluke.Shared
 
 
@@ -14,12 +15,12 @@ module TaskName =
     open Domain.Model
 
     [<ReactComponent>]
-    let TaskName (taskId: Recoil.Atoms.Task.TaskId) =
+    let TaskName (taskId: TaskId) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
         let hasSelection = Recoil.useValue (Recoil.Selectors.Task.hasSelection taskId)
-        let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name taskId)
-        let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments taskId)
+        let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name (Some taskId))
+        let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments (Some taskId))
 
         Chakra.box
             {|
@@ -33,23 +34,11 @@ module TaskName =
             [
                 Chakra.box
                     {|
-                        color =
-                            if hasSelection then
-                                Some "#ff5656"
-                            else
-                                None
+                        color = if hasSelection then Some "#ff5656" else None
                         overflow = "hidden"
                         backgroundColor = if hovered then Some "#333" else None
-                        whiteSpace =
-                            if not hovered then
-                                Some "nowrap"
-                            else
-                                None
-                        textOverflow =
-                            if not hovered then
-                                Some "ellipsis"
-                            else
-                                None
+                        whiteSpace = if not hovered then Some "nowrap" else None
+                        textOverflow = if not hovered then Some "ellipsis" else None
                     |}
                     [
                         str taskName

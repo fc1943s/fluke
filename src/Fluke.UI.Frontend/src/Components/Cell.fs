@@ -16,7 +16,7 @@ module Cell =
     [<ReactComponent>]
     let Cell
         (input: {| Username: Username
-                   TaskId: Recoil.Atoms.Task.TaskId
+                   TaskId: TaskId
                    DateId: DateId
                    SemiTransparent: bool |})
         =
@@ -29,9 +29,11 @@ module Cell =
         let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments (input.TaskId, input.DateId))
         let showUser = Recoil.useValue (Recoil.Selectors.Task.showUser input.TaskId)
         let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday referenceDay)
-        let selected, setSelected = Recoil.useState (Recoil.Selectors.Cell.selected (input.TaskId, input.DateId))
         let cellMenuOpened, setCellMenuOpened = Recoil.useState Recoil.Atoms.cellMenuOpened
-        let isCurrentCellMenuOpened = cellMenuOpened = Some (input.TaskId, input.DateId)
+        let isCurrentCellMenuOpened = cellMenuOpened = Some (input.Username, input.TaskId, input.DateId)
+
+        let selected, setSelected =
+            Recoil.useState (Recoil.Selectors.Cell.selected (input.Username, input.TaskId, input.DateId))
         //            let gun = Recoil.useValue Recoil.Atoms.gun
 
         let onCellClick =
@@ -50,7 +52,7 @@ module Cell =
                             if isCurrentCellMenuOpened then
                                 setCellMenuOpened None
                             else
-                                setCellMenuOpened (Some (input.TaskId, input.DateId))
+                                setCellMenuOpened (Some (input.Username, input.TaskId, input.DateId))
 
                     //                gun.get("test").get("test2").put(1)
                     })
@@ -82,11 +84,7 @@ module Cell =
                        else "")
                 position = "relative"
                 textAlign = "center"
-                border =
-                    if selected then
-                        "1px solid #ffffff55 !important"
-                    else
-                        "none"
+                border = if selected then "1px solid #ffffff55 !important" else "none"
             |}
             [
                 if isCurrentCellMenuOpened then

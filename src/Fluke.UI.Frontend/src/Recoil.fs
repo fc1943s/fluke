@@ -45,6 +45,32 @@ module Recoil =
 //            |]
 //
 //    printfn $"peersArray {peersArray}"
+    let getGunAtomKey username (atom: RecoilValue<'T, ReadWrite>) =
+
+        let result =
+            $"""{nameof Fluke}/{
+                                    match username with
+                                    | Some (Username username) -> $"user/{username}/"
+                                    | _ -> ""
+            }{
+                atom
+                    .key
+                    .Replace("__withFallback", "")
+                    .Replace("\"", "")
+                    .Replace("\\", "")
+                    .Replace("__", "/")
+                    .Replace(".", "/")
+                    .Replace("[", "/")
+                    .Replace("]", "/")
+                    .Replace(",", "/")
+                    .Replace("//", "/")
+                    .Trim ()
+            }"""
+
+        match result with
+        | String.ValidString when result |> Seq.last = '/' -> result |> String.take (result.Length - 1)
+        | _ -> result
+
 
 
     module Atoms =
@@ -91,61 +117,59 @@ module Recoil =
 
 
         module rec Task =
-            type TaskId = TaskId of informationName: InformationName * taskName: TaskName
-
-            let newTaskId () =
-                TaskId (InformationName (Guid.NewGuid().ToString ()), TaskName (Guid.NewGuid().ToString ()))
+            let rec task =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof task}",
+                    (fun (_taskId: TaskId option) -> Task.Default)
+                )
 
             let rec informationId =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof informationId}",
-                    (fun (_taskId: TaskId) -> Information.informationId Task.Default.Information)
+                    (fun (_taskId: TaskId option) -> Information.informationId Task.Default.Information)
                 )
 
             let rec name =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof name}",
-                    (fun (_taskId: TaskId) -> Task.Default.Name)
+                    (fun (_taskId: TaskId option) -> Task.Default.Name)
                 )
 
             let rec scheduling =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof scheduling}",
-                    (fun (_taskId: TaskId) -> Task.Default.Scheduling)
+                    (fun (_taskId: TaskId option) -> Task.Default.Scheduling)
                 )
 
             let rec pendingAfter =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof pendingAfter}",
-                    (fun (_taskId: TaskId) -> Task.Default.PendingAfter)
+                    (fun (_taskId: TaskId option) -> Task.Default.PendingAfter)
                 )
 
             let rec missedAfter =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof missedAfter}",
-                    (fun (_taskId: TaskId) -> Task.Default.MissedAfter)
+                    (fun (_taskId: TaskId option) -> Task.Default.MissedAfter)
                 )
 
             let rec priority =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof priority}",
-                    (fun (_taskId: TaskId) -> Task.Default.Priority)
+                    (fun (_taskId: TaskId option) -> Task.Default.Priority)
                 )
 
             let rec attachments =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof attachments}",
-                    (fun (_taskId: TaskId) -> []: Attachment list) // TODO: move from here?
+                    (fun (_taskId: TaskId option) -> []: Attachment list) // TODO: move from here?
                 )
 
             let rec duration =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof duration}",
-                    (fun (_taskId: TaskId) -> Task.Default.Duration)
+                    (fun (_taskId: TaskId option) -> Task.Default.Duration)
                 )
-
-            let taskId (task: Task) =
-                TaskId (task.Information.Name, task.Name)
 
 
         module rec User =
@@ -196,7 +220,7 @@ module Recoil =
             let rec taskIdList =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Session}/{nameof taskIdList}",
-                    (fun (_username: Username) -> []: Task.TaskId list)
+                    (fun (_username: Username) -> []: TaskId list)
                 )
 
 
@@ -204,159 +228,82 @@ module Recoil =
             let rec taskId =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof taskId}",
-                    (fun (taskId: Task.TaskId, _dateId: DateId) -> taskId)
+                    (fun (taskId: TaskId, _dateId: DateId) -> taskId)
                 )
 
             let rec dateId =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof dateId}",
-                    (fun (_taskId: Task.TaskId, dateId: DateId) -> dateId)
+                    (fun (_taskId: TaskId, dateId: DateId) -> dateId)
                 )
 
             let rec status =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof status}",
-                    (fun (_taskId: Task.TaskId, _dateId: DateId) -> Disabled)
+                    (fun (_taskId: TaskId, _dateId: DateId) -> Disabled)
                 )
 
             let rec attachments =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof attachments}",
-                    (fun (_taskId: Task.TaskId, _dateId: DateId) -> []: Attachment list)
+                    (fun (_taskId: TaskId, _dateId: DateId) -> []: Attachment list)
                 )
 
             let rec sessions =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof sessions}",
-                    (fun (_taskId: Task.TaskId, _dateId: DateId) -> []: TaskSession list)
+                    (fun (_taskId: TaskId, _dateId: DateId) -> []: TaskSession list)
                 )
 
             let rec selected =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof selected}",
-                    (fun (_taskId: Task.TaskId, _dateId: DateId) -> false)
-                //                    (fun (taskId: Task.TaskId, dateId: DateId) ->
-//                        [
-//                            (fun e ->
-//                                match false with
-//                                | false -> id
-//                                | true ->
-//
-//                                    let gunTmp = gunTmp [||]
-//
-//                                    let taskIdHash =
-//                                        Crypto
-//                                            .sha3(string taskId)
-//                                            .toString Crypto.crypto.enc.Hex
-//
-//                                    printfn
-//                                        $"cell.selected .effects. {
-//                                                                       JS.JSON.stringify
-//                                                                           {|
-//                                                                               taskIdHash = taskIdHash
-//                                                                               taskIdGuidHash =
-//                                                                                   (string taskId) |> Crypto.getGuidHash
-//                                                                           |}
-//                                        }"
-//
-//                                    let dateIdHash =
-//                                        Crypto
-//                                            .sha3(string dateId)
-//                                            .toString Crypto.crypto.enc.Hex
-//
-//                                    let tasks = gunTmp.get "tasks"
-//                                    let task = tasks.get taskIdHash
-//                                    let cells = task.get "cells"
-//                                    let cell = cells.get dateIdHash
-//                                    let selected = cell.get<bool> "selected"
-//
-//                                    match e.trigger with
-//                                    | "get" ->
-//                                        selected.on
-//                                            (fun value ->
-//                                                //                                        printfn
-//                                                //                                            "GET@@ CELL SELECTED RENDER . taskid: %A dateId: %A. node: %A"
-//                                                //                                            taskId
-//                                                //                                            dateId
-//                                                //                                            node
-//
-//                                                e.setSelf value)
-//                                    | _ -> ()
-//
-//                                    //                                        // Subscribe to storage updates
-//                                    //                                        storage.subscribe(value => setSelf(value));
-//
-//
-//
-//
-//                                    //                                printfn
-//                                    //                                    "CELL SELECTED RENDER . taskid: %A dateId: %A. trigger: %A"
-//                                    //                                    taskId
-//                                    //                                    dateId
-//                                    //                                    trigger
-//                                    //                            let storage = Browser.Dom.window.localStorage.getItem node.key
-//                                    //                            let value: {| value: obj |} option = unbox JS.JSON.parse storage
-//                                    //
-//                                    //                            match value with
-//                                    //                            | Some value -> setSelf (unbox value.value)
-//                                    //                            | _ -> ()
-//                                    //
-//                                    e.onSet
-//                                        (fun value oldValue ->
-//
-//                                            let tasks = gunTmp.get "tasks"
-//
-//                                            let task =
-//                                                gunTmp
-//                                                    .get(taskIdHash)
-//                                                    .put {|
-//                                                             id = taskIdHash
-//                                                             name = "taskName1"
-//                                                         |}
-//
-//                                            tasks.set task |> ignore
-//
-//                                            let cells = task.get "cells"
-//
-//                                            let cell =
-//                                                gunTmp
-//                                                    .get(dateIdHash)
-//                                                    .put {|
-//                                                             dateId = dateIdHash
-//                                                             selected = value
-//                                                         |}
-//
-//                                            cells.set cell |> ignore
-//                                            //                                    let cell = cells.set ({| dateId = string _dateId |})
-//                                            //                                    cell.put {| selected = value |} |> ignore
-//
-//
-//                                            //    const tasks = gun.get("tasks");
-//                                            //    const task1 = gun.get("taskId1").put({id: 'taskId1', name: 'taskName1'});
-//                                            //    tasks.set(task1);
-//                                            //
-//                                            //    const cells = task1.get("cells");
-//                                            //    const cell1 = gun.get("dateId1").put({dateId: 'dateId1'});
-//                                            //    const cell = cells.set(cell1);
-//                                            //
-//                                            //    cell.put({selected: true});
-//
-//                                            printfn
-//                                                $"cell.selected. effects. onSet. oldValue: {oldValue}; newValue: {value}"
-//                                            //                                    Browser.Dom.window.localStorage.setItem
-//                                            //                                        (node.key, JS.JSON.stringify {| value = string value |}))
-//                                            //
-//                                            //                                        // Subscribe to storage updates
-//                                            //                                        storage.subscribe(value => setSelf(value));
-//
-//                                            )
-//
-//
-//                                    fun () ->
-//                                        printfn "> unsubscribe cell. calling selected.off ()"
-//                                        selected.off ())
-//                        ]
+                    (fun (_username: Username, _taskId: TaskId, _dateId: DateId) -> false),
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) ->
+                        [
+                            (fun e ->
+                                let gun = box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj> option
 
+                                match gun with
+                                | Some _gun ->
+                                    let gunAtomKey = getGunAtomKey (Some username) (selected (username, taskId, dateId))
+                                    printfn "skipping effect. gunAtomKey={gunAtomKey}"
+                                    fun () -> ()
+                                | Some gun when false ->
+                                    let gunAtomKey = getGunAtomKey (Some username) (selected (username, taskId, dateId))
+
+                                    printfn $"cell.selected .effects. {JS.JSON.stringify {| gunAtomKey = gunAtomKey |}}"
+
+                                    let gunAtomNode = Gun.getGunAtomNode gun gunAtomKey
+
+                                    match e.trigger with
+                                    | "get" ->
+                                        gunAtomNode.on
+                                            (fun data ->
+                                                printfn
+                                                    $"gunAtomNode.on() effect. gunAtomKey={gunAtomKey}
+                                                    data={JS.JSON.stringify data}"
+
+                                                match Gun.deserializeGunAtomNode data with
+                                                | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
+                                                | None -> ())
+                                    | _ -> ()
+
+                                    e.onSet
+                                        (fun value oldValue ->
+                                            Gun.putGunAtomNode gunAtomNode value
+
+                                            printfn
+                                                $"cell.selected. effects. onSet. oldValue: {oldValue}; newValue: {value}")
+
+                                    fun () ->
+                                        printfn "> unsubscribe cell. calling selected.off ()"
+                                        gunAtomNode.off ()
+
+                                | None ->
+                                    failwith "Gun not found"
+                                    fun () -> ())
+                        ])
                 )
 
 
@@ -430,7 +377,10 @@ module Recoil =
             )
 
         let rec cellMenuOpened =
-            Recoil.atomWithProfiling ($"{nameof atom}/{nameof cellMenuOpened}", (None: (Task.TaskId * DateId) option))
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof cellMenuOpened}",
+                (None: (Username * TaskId * DateId) option)
+            )
 
         let rec cellSize = Recoil.atomWithProfiling ($"{nameof atom}/{nameof cellSize}", 17)
 
@@ -454,7 +404,8 @@ module Recoil =
         let rec formDatabaseVisibleFlag =
             Recoil.atomWithProfiling ($"{nameof atom}/{nameof formDatabaseVisibleFlag}", false)
 
-        let rec formTaskId = Recoil.atomWithProfiling ($"{nameof atom}/{nameof formTaskId}", (None: Task.TaskId option))
+        let rec formTaskId = Recoil.atomWithProfiling ($"{nameof atom}/{nameof formTaskId}", (None: TaskId option))
+        let rec formTaskVisibleFlag = Recoil.atomWithProfiling ($"{nameof atom}/{nameof formTaskVisibleFlag}", false)
 
         let rec apiBaseUrl =
             Recoil.atomWithProfiling (
@@ -567,7 +518,7 @@ module Recoil =
                             |> unbox
                         )
 
-                    Browser.Dom.window?gunTmp <- gun
+                    Browser.Dom.window?lastGun <- gun
 
                     printfn $"gun selector. peers={gunPeers}. returning gun..."
                     gun.put null |> ignore
@@ -660,7 +611,8 @@ module Recoil =
                                 let dates =
                                     dateSequence
                                     |> List.map
-                                        (fun date -> date, getter.get (Atoms.Cell.selected (taskId, DateId date)))
+                                        (fun date ->
+                                            date, getter.get (Atoms.Cell.selected (username, taskId, DateId date)))
                                     |> List.filter snd
                                     |> List.map fst
                                     |> Set.ofList
@@ -670,7 +622,7 @@ module Recoil =
                         |> Map.ofList
                     | None -> Map.empty),
 
-                (fun setter (newSelection: Map<Atoms.Task.TaskId, Set<FlukeDate>>) ->
+                (fun setter (newSelection: Map<TaskId, Set<FlukeDate>>) ->
                     let username = setter.get Atoms.username
 
                     match username with
@@ -709,7 +661,7 @@ module Recoil =
                         operations
                         |> List.iter
                             (fun (taskId, date, selected) ->
-                                setter.set (Atoms.Cell.selected (taskId, DateId date), selected))
+                                setter.set (Atoms.Cell.selected (username, taskId, DateId date), selected))
                     | None -> ())
             )
 
@@ -768,7 +720,8 @@ module Recoil =
                             let taskIdList = getter.get (Atoms.Session.taskIdList username)
 
                             taskIdList
-                            |> List.exists (fun taskId -> getter.get (Atoms.Cell.selected (taskId, DateId date)))
+                            |> List.exists
+                                (fun taskId -> getter.get (Atoms.Cell.selected (username, taskId, DateId date)))
                         | None -> false)
                 )
 
@@ -779,7 +732,7 @@ module Recoil =
             let rec lastSession =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof lastSession}",
-                    (fun (taskId: Atoms.Task.TaskId) getter ->
+                    (fun (taskId: TaskId) getter ->
                         let dateSequence = getter.get dateSequence
 
                         dateSequence
@@ -796,7 +749,7 @@ module Recoil =
             let rec activeSession =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof activeSession}",
-                    (fun (taskId: Atoms.Task.TaskId) getter ->
+                    (fun (taskId: TaskId) getter ->
                         let position = getter.get position
                         let lastSession = getter.get (lastSession taskId)
 
@@ -818,7 +771,7 @@ module Recoil =
             let rec showUser =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof showUser}",
-                    (fun (taskId: Atoms.Task.TaskId) getter ->
+                    (fun (taskId: TaskId) getter ->
                         //                            let username = getter.get Atoms.username
 //                            match username with
 //                            | Some username ->
@@ -847,11 +800,16 @@ module Recoil =
             let rec hasSelection =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof hasSelection}",
-                    (fun (taskId: Atoms.Task.TaskId) getter ->
+                    (fun (taskId: TaskId) getter ->
                         let dateSequence = getter.get dateSequence
+                        let username = getter.get Atoms.username
 
-                        dateSequence
-                        |> List.exists (fun date -> getter.get (Atoms.Cell.selected (taskId, DateId date))))
+                        match username with
+                        | Some username ->
+                            dateSequence
+                            |> List.exists
+                                (fun date -> getter.get (Atoms.Cell.selected (username, taskId, DateId date)))
+                        | None -> false)
                 )
 
         module rec Session =
@@ -867,7 +825,7 @@ module Recoil =
                         taskIdList
                         |> List.map
                             (fun taskId ->
-                                let (TaskName taskName) = getter.get (Atoms.Task.name taskId)
+                                let (TaskName taskName) = getter.get (Atoms.Task.name (Some taskId))
 
                                 let duration = getter.get (Task.activeSession taskId)
 
@@ -891,7 +849,7 @@ module Recoil =
 
                         let informationMap =
                             taskIdList
-                            |> List.map (fun taskId -> taskId, getter.get (Atoms.Task.informationId taskId))
+                            |> List.map (fun taskId -> taskId, getter.get (Atoms.Task.informationId (Some taskId)))
                             |> List.map
                                 (fun (taskId, informationId) ->
                                     taskId, getter.get (Atoms.Information.wrappedInformation informationId))
@@ -921,17 +879,11 @@ module Recoil =
                     (fun (username: Username) getter ->
                         let position = getter.get position
                         let taskIdList = getter.get (Atoms.Session.taskIdList username)
-                        let sessionData : SessionData option = getter.get (sessionData username)
 
-                        match position, sessionData with
-                        | Some position, Some sessionData ->
+                        match position with
+                        | Some position ->
                             let dayStart = getter.get (Atoms.User.dayStart username)
                             let weekStart = getter.get (Atoms.User.weekStart username)
-
-                            let taskMap =
-                                sessionData.TaskList
-                                |> List.map (fun task -> Atoms.Task.taskId task, task)
-                                |> Map.ofList
 
                             let weeks =
                                 [
@@ -958,6 +910,12 @@ module Recoil =
                                             |> List.map startDate.AddDays
                                             |> List.map FlukeDateTime.FromDateTime
                                             |> List.map (dateId dayStart)
+
+                                        let taskMap =
+                                            taskIdList
+                                            |> List.map
+                                                (fun taskId -> taskId, getter.get (Atoms.Task.task (Some taskId)))
+                                            |> Map.ofList
 
                                         let result =
                                             taskIdList
@@ -999,22 +957,24 @@ module Recoil =
                                                     |> List.choose id)
                                             |> List.groupBy (fun x -> x.DateId)
                                             |> List.map
-                                                (fun (dateId, cells) ->
+                                                (fun (dateId, cellsMetadata) ->
                                                     match dateId with
                                                     | DateId referenceDay as dateId ->
-
                                                         //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
-                                                        let taskSessions = cells |> List.collect (fun x -> x.Sessions)
+                                                        let taskSessions =
+                                                            cellsMetadata
+                                                            |> List.collect (fun x -> x.Sessions)
 
                                                         let sortedTasksMap =
-                                                            cells
+                                                            cellsMetadata
                                                             |> List.map
-                                                                (fun cell ->
+                                                                (fun cellMetadata ->
                                                                     let taskState =
 
-                                                                        let task = taskMap.[cell.TaskId]
+                                                                        let task = taskMap.[cellMetadata.TaskId]
 
                                                                         {
+                                                                            TaskId = cellMetadata.TaskId
                                                                             Task = task
                                                                             Sessions = taskSessions
                                                                             Attachments = []
@@ -1029,19 +989,17 @@ module Recoil =
                                                                             Task = taskState.Task
                                                                             DateId = dateId
                                                                         },
-                                                                        cell.Status
+                                                                        cellMetadata.Status
                                                                     ])
                                                             |> Sorting.sortLanesByTimeOfDay
                                                                 dayStart
                                                                 { Date = referenceDay; Time = dayStart }
                                                             |> List.indexed
-                                                            |> List.map
-                                                                (fun (i, (taskState, _)) ->
-                                                                    Atoms.Task.taskId taskState.Task, i)
+                                                            |> List.map (fun (i, (taskState, _)) -> taskState.TaskId, i)
                                                             |> Map.ofList
 
                                                         let newCells =
-                                                            cells
+                                                            cellsMetadata
                                                             |> List.sortBy (fun cell -> sortedTasksMap.[cell.TaskId])
 
                                                         dateId, newCells)
@@ -1090,9 +1048,9 @@ module Recoil =
             let rec selected =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}",
-                    (fun (taskId: Atoms.Task.TaskId, dateId: DateId) getter ->
-                        getter.get (Atoms.Cell.selected (taskId, dateId))),
-                    (fun (taskId: Atoms.Task.TaskId, (DateId referenceDay)) setter (newValue: bool) ->
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
+                        getter.get (Atoms.Cell.selected (username, taskId, dateId))),
+                    (fun (_username: Username, taskId: TaskId, (DateId referenceDay)) setter (newValue: bool) ->
                         let username = setter.get Atoms.username
 
                         match username with

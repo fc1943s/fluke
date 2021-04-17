@@ -18,7 +18,7 @@ module TaskForm =
     [<ReactComponent>]
     let TaskForm
         (input: {| Username: UserInteraction.Username
-                   TaskId: Recoil.Atoms.Task.TaskId
+                   TaskId: TaskId option
                    OnSave: unit -> JS.Promise<unit> |})
         =
         let onSave =
@@ -60,6 +60,7 @@ module TaskForm =
 
                                 let taskState =
                                     {
+                                        TaskId = TaskId.NewId ()
                                         Task = task
                                         Sessions = []
                                         Attachments = []

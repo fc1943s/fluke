@@ -61,6 +61,7 @@ module State =
 
     and TaskState =
         {
+            TaskId: TaskId
             Task: Task
             Sessions: TaskSession list
             Attachments: Attachment list
@@ -68,6 +69,8 @@ module State =
             CellStateMap: Map<DateId, CellState>
             InformationMap: Map<Information, unit>
         }
+
+    and TaskId = TaskId of guid: Guid
     //        type Cell = Cell of address: CellAddress * status: CellStatus
     and CellState =
         {
@@ -92,9 +95,11 @@ module State =
         | Scheduled
 
 
-
     and DatabaseId with
         static member inline NewId () = DatabaseId (Guid.NewGuid ())
+
+    and TaskId with
+        static member inline NewId () = TaskId (Guid.NewGuid ())
 
     and DatabaseState with
         static member inline Create (name, owner, dayStart, ?id, ?sharedWith, ?position) =
@@ -138,6 +143,7 @@ module State =
                 (function
                 | DatabaseAccessItem.Admin dbUser
                 | DatabaseAccessItem.ReadOnly dbUser -> dbUser = username)
+
 
     let databaseStateWithInteractions (userInteractionList: UserInteraction list) (databaseState: DatabaseState) =
 
@@ -186,6 +192,7 @@ module State =
                                 |> Map.tryFind task
                                 |> Option.defaultValue
                                     {
+                                        TaskId = TaskId.NewId ()
                                         Task = task
                                         Sessions = []
                                         Attachments = []
@@ -250,6 +257,7 @@ module State =
                                 |> Map.tryFind task
                                 |> Option.defaultValue
                                     {
+                                        TaskId = TaskId.NewId ()
                                         Task = task
                                         Sessions = []
                                         Attachments = []

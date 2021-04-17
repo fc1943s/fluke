@@ -127,8 +127,8 @@ module DatabaseForm =
                              ])
                         )
 
-                        setter.readWriteReset Recoil.Atoms.Database.name input.DatabaseId
-                        setter.readWriteReset Recoil.Atoms.Database.dayStart input.DatabaseId
+                        do! setter.readWriteReset Recoil.Atoms.Database.name input.DatabaseId
+                        do! setter.readWriteReset Recoil.Atoms.Database.dayStart input.DatabaseId
 
                         printfn $"event {event}"
                         do! input.OnSave ()

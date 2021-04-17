@@ -19,22 +19,28 @@ module Recoil =
 
     module Atoms =
         module rec Form =
-            let rec fieldValue =
+            let rec initialValue =
                 atomFamily {
-                    key $"{nameof atomFamily}/{nameof Form}/{nameof fieldValue}"
+                    key $"{nameof atomFamily}/{nameof Form}/{nameof initialValue}"
                     def (fun (_key: obj) -> null: obj)
                 }
 
-            let rec fieldValueMounted =
+            let rec readWriteValue =
                 atomFamily {
-                    key $"{nameof atomFamily}/{nameof Form}/{nameof fieldValueMounted}"
+                    key $"{nameof atomFamily}/{nameof Form}/{nameof readWriteValue}"
+                    def (fun (_key: obj) -> null: obj)
+                }
+
+            let rec readWriteValueMounted =
+                atomFamily {
+                    key $"{nameof atomFamily}/{nameof Form}/{nameof readWriteValueMounted}"
                     def (fun (_key: obj) -> false)
                 }
 
     let wrapAtomField<'TValue, 'TKey> (atom: RecoilValue<'TValue, ReadWrite>) =
         {|
             ReadOnly = atom
-            ReadWrite = box (Atoms.Form.fieldValue atom.key) :?> RecoilValue<'TValue, ReadWrite>
+            ReadWrite = box (Atoms.Form.readWriteValue atom.key) :?> RecoilValue<'TValue, ReadWrite>
         |}
 
     [<RequireQualifiedAccess>]
@@ -61,20 +67,26 @@ module Recoil =
         let readOnlyValue, setReadOnlyValue = Recoil.useState atomField.ReadOnly
         let readWriteValue, setReadWriteValue = Recoil.useState atomField.ReadWrite
 
-        let fieldValueMounted, setFieldValueMounted =
-            Recoil.useState (Atoms.Form.fieldValueMounted atomField.ReadOnly.key)
+        let setInitialValue = Recoil.useSetState (Atoms.Form.initialValue atomField.ReadOnly.key)
+
+        let readWriteValueMounted, setReadWriteValueMounted =
+            Recoil.useState (Atoms.Form.readWriteValueMounted atomField.ReadOnly.key)
 
         React.useEffect (
             (fun () ->
-                if not fieldValueMounted
-                   && readOnlyValue <> readWriteValue then
-                    setReadWriteValue readOnlyValue
-                    setFieldValueMounted true
+                if not readWriteValueMounted then
+                    setInitialValue readOnlyValue
+
+                    if readOnlyValue <> readWriteValue then
+                        setReadWriteValue readOnlyValue
+
+                    setReadWriteValueMounted true
 
                 ),
             [|
-                box fieldValueMounted
-                box setFieldValueMounted
+                box setInitialValue
+                box readWriteValueMounted
+                box setReadWriteValueMounted
                 box setReadWriteValue
                 box readOnlyValue
                 box readWriteValue
@@ -85,26 +97,14 @@ module Recoil =
             React.useMemo (
                 (fun () ->
                     {|
-                        ReadWriteValue =
-                            if not fieldValueMounted then
-                                readOnlyValue
-                            else
-                                readWriteValue
-                        SetReadWriteValue =
-                            if atom.IsSome then
-                                setReadWriteValue
-                            else
-                                (fun _ -> ())
+                        ReadWriteValue = if not readWriteValueMounted then readOnlyValue else readWriteValue
+                        SetReadWriteValue = if atom.IsSome then setReadWriteValue else (fun _ -> ())
                         ReadOnlyValue = readOnlyValue
-                        SetReadOnlyValue =
-                            if atom.IsSome then
-                                setReadOnlyValue
-                            else
-                                (fun _ -> ())
+                        SetReadOnlyValue = if atom.IsSome then setReadOnlyValue else (fun _ -> ())
                         AtomField = atomField
                     |}),
                 [|
-                    box fieldValueMounted
+                    box readWriteValueMounted
                     box atom
                     box atomField
                     box readOnlyValue
@@ -125,10 +125,13 @@ module Recoilize =
 module RecoilMagic =
 
     type CallbackMethods with
-        member this.readWriteReset atom key =
-            this.reset
-                (Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key))))
-                    .ReadWrite
+        member this.readWriteReset<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>) key =
+            promise {
+                let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
+                let! initialValue = this.snapshot.getPromise (Recoil.Atoms.Form.initialValue atomField.ReadOnly.key)
+                this.set (atomField.ReadWrite, initialValue :?> 'U)
+            }
+
     type Snapshot with
         member this.getReadWritePromise atom key =
             this.getPromise

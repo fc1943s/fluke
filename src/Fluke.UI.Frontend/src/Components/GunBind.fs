@@ -3,11 +3,9 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Fable.Core
 open Feliz
-open Thoth.Json
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
-open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
 
 module GunBind =
@@ -16,6 +14,16 @@ module GunBind =
         | Local
         | Remote
 
+    let useGunAtomKey (atom: RecoilValue<'T, ReadWrite>) =
+        let username = Recoil.useValue Recoil.Atoms.username
+
+        React.useMemo (
+            (fun () -> Recoil.getGunAtomKey username atom),
+            [|
+                box atom
+                box username
+            |]
+        )
 
     [<ReactComponent>]
     let inline GunBind<'T when 'T: equality> (input: {| Atom: RecoilValue<'T, ReadWrite> |}) =
@@ -27,56 +35,30 @@ module GunBind =
 
         let rendered, setRendered = React.useState false
 
-        let atomKey =
-            $"""{nameof Fluke}/{
-                                    input
-                                        .Atom
-                                        .key
-                                        .Replace("__withFallback", "")
-                                        .Replace("\"", "")
-                                        .Replace("\\", "")
-                                        .Replace("__", "/")
-                                        .Replace(".", "/")
-                                        .Replace("[", "/")
-                                        .Replace("]", "/")
-                                        .Replace(",", "/")
-                                        .Replace("//", "/")
-                                        .Trim ()
-            }"""
+        let gunAtomKey = useGunAtomKey input.Atom
 
-        let atomKey =
-            match atomKey with
-            | String.ValidString when atomKey |> Seq.last = '/' -> atomKey |> String.take (atomKey.Length - 1)
-            | _ -> atomKey
+        let getGunAtomNode = Recoil.useCallbackRef (fun _ -> Gun.getGunAtomNode gun.ref gunAtomKey)
 
-        let getNode =
-            Recoil.useCallbackRef
-                (fun _ ->
-                    (gun.ref, atomKey.Split "/" |> Array.toList)
-                    ||> List.fold (fun result -> result.get))
 
         React.useEffect (
             (fun () ->
                 promise {
                     if not rendered then
-                        let node = getNode ()
+                        let gunAtomNode = getGunAtomNode ()
 
-                        node.on
-                            (fun (data: obj) ->
-                                match data :?> string option with
-                                | Some data ->
+                        gunAtomNode.on
+                            (fun data ->
+                                match Gun.deserializeGunAtomNode data with
+                                | Some gunAtomNodeValue ->
+
                                     printfn
-                                        $"GunBind.useEffect. node.on(). DATA={JS.JSON.stringify data} atomKey={atomKey}"
+                                        $"GunBind.useEffect. node.on().
+                                        data={JS.JSON.stringify data} gunAtomKey={gunAtomKey}
+                                        gunAtomNodeValue={gunAtomNodeValue}"
 
-                                    let newValue = Decode.Auto.fromString<'T> data
-
-                                    match newValue with
-                                    | Ok newValue ->
-                                        setAtomValue newValue
-                                        setChangeType (Some ChangeType.Remote)
-                                        setLastAtomValue newValue
-                                    | Error error -> Browser.Dom.console.error error
-
+                                    setAtomValue gunAtomNodeValue
+                                    setChangeType (Some ChangeType.Remote)
+                                    setLastAtomValue gunAtomNodeValue
                                 | None -> ())
 
                         setRendered true
@@ -84,14 +66,14 @@ module GunBind =
                     return
                         fun () ->
                             if rendered then
-                                let node = getNode ()
-                                printfn $"rendering off"
+                                let node = getGunAtomNode ()
+                                printfn "rendering off"
                                 node.off ()
                 }
                 |> Promise.start),
             [|
-                box atomKey
-                box getNode
+                box gunAtomKey
+                box getGunAtomNode
                 box setLastAtomValue
                 box setAtomValue
                 box setRendered
@@ -113,20 +95,18 @@ module GunBind =
                                 $"GunNode.useEffect. node.put(atomValue); setLastAtomValue (Some atomValue);
                                 lastAtomValue={lastAtomValue}
                                 atomValue={atomValue}
-                                atomKey={atomKey}
+                                gunAtomKey={gunAtomKey}
                                 "
 
                             setLastAtomValue atomValue
 
-                            let node = getNode ()
-
-                            node.put (Encode.Auto.toString (0, atomValue))
-                            |> ignore
+                            let node = getGunAtomNode ()
+                            Gun.putGunAtomNode node atomValue
                 }
                 |> Promise.start),
             [|
-                box atomKey
-                box getNode
+                box gunAtomKey
+                box getGunAtomNode
                 box changeType
                 box setChangeType
                 box lastAtomValue

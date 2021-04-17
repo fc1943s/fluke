@@ -38,7 +38,8 @@ module SessionDataLoader =
         |> List.map (fun task -> sessionData.TaskStateMap.[task])
         |> List.iter
             (fun taskState ->
-                let taskId = Recoil.Atoms.Task.taskId taskState.Task
+                let taskId = Some taskState.TaskId
+                setter.set (Recoil.Atoms.Task.task taskId, taskState.Task)
                 setter.set (Recoil.Atoms.Task.name taskId, taskState.Task.Name)
                 setter.set (Recoil.Atoms.Task.informationId taskId, recoilInformationMap.[taskState.Task.Information])
                 setter.set (Recoil.Atoms.Task.pendingAfter taskId, taskState.Task.PendingAfter)
@@ -56,15 +57,19 @@ module SessionDataLoader =
                         || not cellState.Sessions.IsEmpty)
                 |> Map.iter
                     (fun dateId cellState ->
-                        setter.set (Recoil.Atoms.Cell.status (taskId, dateId), cellState.Status)
-                        setter.set (Recoil.Atoms.Cell.attachments (taskId, dateId), cellState.Attachments)
-                        setter.set (Recoil.Atoms.Cell.sessions (taskId, dateId), cellState.Sessions)
+                        setter.set (Recoil.Atoms.Cell.status (taskState.TaskId, dateId), cellState.Status)
+                        setter.set (Recoil.Atoms.Cell.attachments (taskState.TaskId, dateId), cellState.Attachments)
+                        setter.set (Recoil.Atoms.Cell.sessions (taskState.TaskId, dateId), cellState.Sessions)
                         //                setter.set (Recoil.Atoms.Cell.selected (taskId, dateId), false)
                         ))
 
         let taskIdList =
             sessionData.TaskList
-            |> List.map Recoil.Atoms.Task.taskId
+            |> List.choose
+                (fun task ->
+                    sessionData.TaskStateMap
+                    |> Map.tryFind task
+                    |> Option.map (fun x -> x.TaskId))
 
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 

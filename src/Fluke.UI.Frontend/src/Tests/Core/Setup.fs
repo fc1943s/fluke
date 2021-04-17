@@ -63,9 +63,9 @@ module Setup =
     let taskIdByName name databaseState =
         databaseState.TaskStateMap
         |> Map.pick
-            (fun task _ ->
+            (fun task taskState ->
                 match task with
-                | { Name = TaskName taskName } when taskName = name -> Some (Recoil.Atoms.Task.taskId task)
+                | { Name = TaskName taskName } when taskName = name -> Some taskState.TaskId
                 | _ -> None)
 
     let getCellMap (subject: Bindings.render<_, _>) peek =
@@ -88,7 +88,8 @@ module Setup =
                                 |> Array.map
                                     (fun taskId ->
                                         promise {
-                                            let! name = setter.snapshot.getPromise (Recoil.Atoms.Task.name taskId)
+                                            let! name =
+                                                setter.snapshot.getPromise (Recoil.Atoms.Task.name (Some taskId))
 
                                             return
                                                 dateSequence

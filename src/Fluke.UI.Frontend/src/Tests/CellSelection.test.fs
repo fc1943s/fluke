@@ -116,8 +116,8 @@ module CellSelection =
                         map
                         |> Map.toList
                         |> List.map
-                            (fun ((Atoms.Task.TaskId (_, TaskName taskName)), dates) ->
-                                taskName,
+                            (fun ((TaskId taskId), dates) ->
+                                taskId,
                                 dates
                                 |> Set.toList
                                 |> List.map (fun (date: FlukeDate) -> date.Stringify ()))

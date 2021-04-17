@@ -13,6 +13,7 @@ module AddTaskButton =
     let AddTaskButton (props: {| marginLeft: string |}) =
         let username = Recoil.useValue Recoil.Atoms.username
         let formTaskId, setFormTaskId = Recoil.useState Recoil.Atoms.formTaskId
+        let formTaskVisibleFlag, setFormTaskVisibleFlag = Recoil.useState Recoil.Atoms.formTaskVisibleFlag
 
         React.fragment [
             Button.Button
@@ -25,7 +26,13 @@ module AddTaskButton =
                             color = None
                             flex = None
                             marginLeft = Some props.marginLeft
-                            onClick = Some (fun () -> promise { setFormTaskId (Some (Recoil.Atoms.Task.newTaskId ())) })
+                            onClick =
+                                Some
+                                    (fun () ->
+                                        promise {
+                                            setFormTaskId None
+                                            setFormTaskVisibleFlag true
+                                        })
                         |}
                     children =
                         [
@@ -35,17 +42,20 @@ module AddTaskButton =
 
             Modal.Modal
                 {|
-                    IsOpen = formTaskId.IsSome
-                    OnClose = fun () -> setFormTaskId None
+                    IsOpen = formTaskVisibleFlag
+                    OnClose =
+                        fun () ->
+                            setFormTaskId None
+                            setFormTaskVisibleFlag false
                     children =
                         [
-                            match formTaskId, username with
-                            | Some taskId, Some username ->
+                            match username with
+                            | Some username ->
                                 TaskForm.TaskForm
                                     {|
                                         Username = username
-                                        TaskId = taskId
-                                        OnSave = fun () -> promise { setFormTaskId None }
+                                        TaskId = formTaskId
+                                        OnSave = fun () -> promise { setFormTaskVisibleFlag false }
                                     |}
                             | _ -> ()
                         ]
