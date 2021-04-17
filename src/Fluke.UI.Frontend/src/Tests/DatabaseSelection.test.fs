@@ -57,7 +57,7 @@ module DatabaseSelection =
 
                     databaseList
                     |> List.iter
-                        (fun (databaseId, position) -> setter.set (Atoms.Database.position databaseId, position))
+                        (fun (databaseId, position) -> setter.set (Atoms.Database.position (Some databaseId), position))
                 }
 
             let getDatabaseSelector () =

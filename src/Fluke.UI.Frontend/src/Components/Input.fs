@@ -101,9 +101,7 @@ module Input =
                         match value with
                         | Some value when box value <> null ->
                             match input.onFormat with
-                            | Some onFormat ->
-                                printfn $"before onformat {JS.JSON.stringify value}"
-                                onFormat value
+                            | Some onFormat -> onFormat value
                             | None -> string value
                         | _ -> ""
 
@@ -178,7 +176,7 @@ module Input =
             {| spacing = "5px" |}
             [
 
-                GunBind.GunBind<'TValue>
+                GunBind.GunBind
                     {|
                         Atom =
                             match input.atomScope with
@@ -222,9 +220,7 @@ module Input =
                                     | None -> ()
 
                                     match input.onEnterPress with
-                                    | Some onEnterPress ->
-                                        if e.key = "Enter" then
-                                            do! onEnterPress ()
+                                    | Some onEnterPress -> if e.key = "Enter" then do! onEnterPress ()
                                     | None -> ()
                                 }
                     |}

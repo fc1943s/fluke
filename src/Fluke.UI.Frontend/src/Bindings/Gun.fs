@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Bindings
 
 open Fable.Core.JsInterop
-open Fable.Core
 open Feliz.Recoil
 
 
@@ -12,8 +11,6 @@ module rec Gun =
     //    if JS.isTesting then
 //        importAll "gun/lib/radix"
 //
-    type AppState = { a: {| b: string; c: int |} }
-
     type GunKeys =
         {
             pub: string
@@ -68,7 +65,7 @@ module rec Gun =
             localStorage: bool option
         }
 
-    let gun : GunProps -> IGunChainReference<AppState> = importDefault "gun/gun"
+    let gun : GunProps -> IGunChainReference<obj> = importDefault "gun/gun"
 
     let createUser (user: IGunUser) username password =
         Promise.create

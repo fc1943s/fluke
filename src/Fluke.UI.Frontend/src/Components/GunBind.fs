@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.React
+open Fable.Core
 open Feliz
 open Thoth.Json
 open Feliz.Recoil
@@ -21,6 +22,7 @@ module GunBind =
         let atomValue, setAtomValue = Recoil.useState<'T> input.Atom
         let lastAtomValue, setLastAtomValue = React.useState<'T> atomValue
         let changeType, setChangeType = React.useState<ChangeType option> None
+        let gun = Recoil.useValue Recoil.Selectors.gun
         let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
 
         let rendered, setRendered = React.useState false
@@ -47,9 +49,56 @@ module GunBind =
             | String.ValidString when atomKey |> Seq.last = '/' -> atomKey |> String.take (atomKey.Length - 1)
             | _ -> atomKey
 
-        printfn $"YYY atomKey={atomKey}"
+        let getNode =
+            Recoil.useCallbackRef
+                (fun _ ->
+                    (gun.ref, atomKey.Split "/" |> Array.toList)
+                    ||> List.fold (fun result -> result.get))
 
-        let getNode = Recoil.useCallbackRef (fun _ -> gunNamespace.ref.get atomKey)
+        React.useEffect (
+            (fun () ->
+                promise {
+                    if not rendered then
+                        let node = getNode ()
+
+                        node.on
+                            (fun (data: obj) ->
+                                match data :?> string option with
+                                | Some data ->
+                                    printfn
+                                        $"GunBind.useEffect. node.on(). DATA={JS.JSON.stringify data} atomKey={atomKey}"
+
+                                    let newValue = Decode.Auto.fromString<'T> data
+
+                                    match newValue with
+                                    | Ok newValue ->
+                                        setAtomValue newValue
+                                        setChangeType (Some ChangeType.Remote)
+                                        setLastAtomValue newValue
+                                    | Error error -> Browser.Dom.console.error error
+
+                                | None -> ())
+
+                        setRendered true
+
+                    return
+                        fun () ->
+                            if rendered then
+                                let node = getNode ()
+                                printfn $"rendering off"
+                                node.off ()
+                }
+                |> Promise.start),
+            [|
+                box atomKey
+                box getNode
+                box setLastAtomValue
+                box setAtomValue
+                box setRendered
+                box rendered
+                box setChangeType
+            |]
+        )
 
         React.useEffect (
             (fun () ->
@@ -57,6 +106,8 @@ module GunBind =
                     if rendered then
                         if changeType = Some ChangeType.Remote then
                             setChangeType None
+                        else if box lastAtomValue = null then
+                            setLastAtomValue atomValue
                         else if atomValue <> lastAtomValue then
                             printfn
                                 $"GunNode.useEffect. node.put(atomValue); setLastAtomValue (Some atomValue);
@@ -82,56 +133,6 @@ module GunBind =
                 box setLastAtomValue
                 box atomValue
                 box rendered
-            |]
-        )
-
-        React.useEffect (
-            (fun () ->
-                promise {
-                    let guid = System.Guid.NewGuid ()
-
-                    if not rendered then
-                        let node = getNode ()
-
-                        printfn $"Settings.useEffect. if not rendered then. guid={guid}"
-
-                        node.on
-                            (fun (data: string option) ->
-                                match data with
-                                | Some data ->
-                                    printfn
-                                        $"Settings.useEffect. node.on(). DATA: {data} path={path}
-                                atomKey={atomKey}"
-
-                                    let newValue = Decode.Auto.fromString<'T> data
-
-                                    match newValue with
-                                    | Ok newValue ->
-                                        setAtomValue newValue
-                                        setChangeType (Some ChangeType.Remote)
-                                        setLastAtomValue newValue
-                                    | Error error -> Browser.Dom.console.error error
-
-                                | None -> ())
-
-                        setRendered true
-
-                    return
-                        fun () ->
-                            if rendered then
-                                let node = getNode ()
-                                printfn $"rendering off {guid}"
-                                node.off ()
-                }
-                |> Promise.start),
-            [|
-                box atomKey
-                box getNode
-                box setLastAtomValue
-                box setAtomValue
-                box setRendered
-                box rendered
-                box setChangeType
             |]
         )
 

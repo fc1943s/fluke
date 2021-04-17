@@ -46,29 +46,6 @@ module Recoil =
 //
 //    printfn $"peersArray {peersArray}"
 
-    let gunTmp (peers: string []) =
-        Gun.gun (
-            {
-                Gun.GunProps.peers =
-                    if JS.isTesting then
-                        None
-                    else
-                        Some peers
-
-                Gun.GunProps.radisk =
-                    if JS.isTesting then
-                        None
-                    else
-                        Some false
-
-                Gun.GunProps.localStorage = if JS.isTesting then None else Some true
-            }
-            |> unbox
-        )
-
-
-    Browser.Dom.window?gunTmp <- gunTmp
-
 
     module Atoms =
         module rec Events =
@@ -257,170 +234,169 @@ module Recoil =
             let rec selected =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof selected}",
-                    (fun (_taskId: Task.TaskId, _dateId: DateId) -> false),
-                    (fun (taskId: Task.TaskId, dateId: DateId) ->
-                        [
-                            (fun e ->
-                                match false with
-                                | false -> id
-                                | true ->
+                    (fun (_taskId: Task.TaskId, _dateId: DateId) -> false)
+                //                    (fun (taskId: Task.TaskId, dateId: DateId) ->
+//                        [
+//                            (fun e ->
+//                                match false with
+//                                | false -> id
+//                                | true ->
+//
+//                                    let gunTmp = gunTmp [||]
+//
+//                                    let taskIdHash =
+//                                        Crypto
+//                                            .sha3(string taskId)
+//                                            .toString Crypto.crypto.enc.Hex
+//
+//                                    printfn
+//                                        $"cell.selected .effects. {
+//                                                                       JS.JSON.stringify
+//                                                                           {|
+//                                                                               taskIdHash = taskIdHash
+//                                                                               taskIdGuidHash =
+//                                                                                   (string taskId) |> Crypto.getGuidHash
+//                                                                           |}
+//                                        }"
+//
+//                                    let dateIdHash =
+//                                        Crypto
+//                                            .sha3(string dateId)
+//                                            .toString Crypto.crypto.enc.Hex
+//
+//                                    let tasks = gunTmp.get "tasks"
+//                                    let task = tasks.get taskIdHash
+//                                    let cells = task.get "cells"
+//                                    let cell = cells.get dateIdHash
+//                                    let selected = cell.get<bool> "selected"
+//
+//                                    match e.trigger with
+//                                    | "get" ->
+//                                        selected.on
+//                                            (fun value ->
+//                                                //                                        printfn
+//                                                //                                            "GET@@ CELL SELECTED RENDER . taskid: %A dateId: %A. node: %A"
+//                                                //                                            taskId
+//                                                //                                            dateId
+//                                                //                                            node
+//
+//                                                e.setSelf value)
+//                                    | _ -> ()
+//
+//                                    //                                        // Subscribe to storage updates
+//                                    //                                        storage.subscribe(value => setSelf(value));
+//
+//
+//
+//
+//                                    //                                printfn
+//                                    //                                    "CELL SELECTED RENDER . taskid: %A dateId: %A. trigger: %A"
+//                                    //                                    taskId
+//                                    //                                    dateId
+//                                    //                                    trigger
+//                                    //                            let storage = Browser.Dom.window.localStorage.getItem node.key
+//                                    //                            let value: {| value: obj |} option = unbox JS.JSON.parse storage
+//                                    //
+//                                    //                            match value with
+//                                    //                            | Some value -> setSelf (unbox value.value)
+//                                    //                            | _ -> ()
+//                                    //
+//                                    e.onSet
+//                                        (fun value oldValue ->
+//
+//                                            let tasks = gunTmp.get "tasks"
+//
+//                                            let task =
+//                                                gunTmp
+//                                                    .get(taskIdHash)
+//                                                    .put {|
+//                                                             id = taskIdHash
+//                                                             name = "taskName1"
+//                                                         |}
+//
+//                                            tasks.set task |> ignore
+//
+//                                            let cells = task.get "cells"
+//
+//                                            let cell =
+//                                                gunTmp
+//                                                    .get(dateIdHash)
+//                                                    .put {|
+//                                                             dateId = dateIdHash
+//                                                             selected = value
+//                                                         |}
+//
+//                                            cells.set cell |> ignore
+//                                            //                                    let cell = cells.set ({| dateId = string _dateId |})
+//                                            //                                    cell.put {| selected = value |} |> ignore
+//
+//
+//                                            //    const tasks = gun.get("tasks");
+//                                            //    const task1 = gun.get("taskId1").put({id: 'taskId1', name: 'taskName1'});
+//                                            //    tasks.set(task1);
+//                                            //
+//                                            //    const cells = task1.get("cells");
+//                                            //    const cell1 = gun.get("dateId1").put({dateId: 'dateId1'});
+//                                            //    const cell = cells.set(cell1);
+//                                            //
+//                                            //    cell.put({selected: true});
+//
+//                                            printfn
+//                                                $"cell.selected. effects. onSet. oldValue: {oldValue}; newValue: {value}"
+//                                            //                                    Browser.Dom.window.localStorage.setItem
+//                                            //                                        (node.key, JS.JSON.stringify {| value = string value |}))
+//                                            //
+//                                            //                                        // Subscribe to storage updates
+//                                            //                                        storage.subscribe(value => setSelf(value));
+//
+//                                            )
+//
+//
+//                                    fun () ->
+//                                        printfn "> unsubscribe cell. calling selected.off ()"
+//                                        selected.off ())
+//                        ]
 
-                                    let gunTmp = gunTmp [||]
-
-                                    let taskIdHash =
-                                        Crypto
-                                            .sha3(string taskId)
-                                            .toString Crypto.crypto.enc.Hex
-
-                                    printfn
-                                        $"cell.selected .effects. {
-                                                                       JS.JSON.stringify
-                                                                           {|
-                                                                               taskIdHash = taskIdHash
-                                                                               taskIdGuidHash =
-                                                                                   (string taskId) |> Crypto.getGuidHash
-                                                                           |}
-                                        }"
-
-                                    let dateIdHash =
-                                        Crypto
-                                            .sha3(string dateId)
-                                            .toString Crypto.crypto.enc.Hex
-
-                                    let tasks = gunTmp.get "tasks"
-                                    let task = tasks.get taskIdHash
-                                    let cells = task.get "cells"
-                                    let cell = cells.get dateIdHash
-                                    let selected = cell.get<bool> "selected"
-
-                                    match e.trigger with
-                                    | "get" ->
-                                        selected.on
-                                            (fun value ->
-                                                //                                        printfn
-                                                //                                            "GET@@ CELL SELECTED RENDER . taskid: %A dateId: %A. node: %A"
-                                                //                                            taskId
-                                                //                                            dateId
-                                                //                                            node
-
-                                                e.setSelf value)
-                                    | _ -> ()
-
-                                    //                                        // Subscribe to storage updates
-                                    //                                        storage.subscribe(value => setSelf(value));
-
-
-
-
-                                    //                                printfn
-                                    //                                    "CELL SELECTED RENDER . taskid: %A dateId: %A. trigger: %A"
-                                    //                                    taskId
-                                    //                                    dateId
-                                    //                                    trigger
-                                    //                            let storage = Browser.Dom.window.localStorage.getItem node.key
-                                    //                            let value: {| value: obj |} option = unbox JS.JSON.parse storage
-                                    //
-                                    //                            match value with
-                                    //                            | Some value -> setSelf (unbox value.value)
-                                    //                            | _ -> ()
-                                    //
-                                    e.onSet
-                                        (fun value oldValue ->
-
-                                            let tasks = gunTmp.get "tasks"
-
-                                            let task =
-                                                gunTmp
-                                                    .get(taskIdHash)
-                                                    .put {|
-                                                             id = taskIdHash
-                                                             name = "taskName1"
-                                                         |}
-
-                                            tasks.set task |> ignore
-
-                                            let cells = task.get "cells"
-
-                                            let cell =
-                                                gunTmp
-                                                    .get(dateIdHash)
-                                                    .put {|
-                                                             dateId = dateIdHash
-                                                             selected = value
-                                                         |}
-
-                                            cells.set cell |> ignore
-                                            //                                    let cell = cells.set ({| dateId = string _dateId |})
-                                            //                                    cell.put {| selected = value |} |> ignore
-
-
-                                            //    const tasks = gun.get("tasks");
-                                            //    const task1 = gun.get("taskId1").put({id: 'taskId1', name: 'taskName1'});
-                                            //    tasks.set(task1);
-                                            //
-                                            //    const cells = task1.get("cells");
-                                            //    const cell1 = gun.get("dateId1").put({dateId: 'dateId1'});
-                                            //    const cell = cells.set(cell1);
-                                            //
-                                            //    cell.put({selected: true});
-
-                                            printfn
-                                                $"cell.selected. effects. onSet. oldValue: {oldValue}; newValue: {value}"
-                                            //                                    Browser.Dom.window.localStorage.setItem
-                                            //                                        (node.key, JS.JSON.stringify {| value = string value |}))
-                                            //
-                                            //                                        // Subscribe to storage updates
-                                            //                                        storage.subscribe(value => setSelf(value));
-
-                                            )
-
-
-                                    fun () ->
-                                        printfn "> unsubscribe cell. calling selected.off ()"
-                                        selected.off ())
-                        ])
                 )
 
 
         module rec Database =
-            let newDatabaseId () = DatabaseId (Guid.NewGuid ())
-
             let rec name =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof name}",
-                    (fun (_databaseId: DatabaseId) -> DatabaseName "")
+                    (fun (_databaseId: DatabaseId option) -> DatabaseName "")
                 )
 
 
             let rec owner =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof owner}",
-                    (fun (_databaseId: DatabaseId) -> None: Username option)
+                    (fun (_databaseId: DatabaseId option) -> None: Username option)
                 )
 
 
             let rec sharedWith =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof sharedWith}",
-                    (fun (_databaseId: DatabaseId) -> DatabaseAccess.Public)
+                    (fun (_databaseId: DatabaseId option) -> DatabaseAccess.Public)
                 )
 
             let rec dayStart =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof dayStart}",
-                    (fun (_databaseId: DatabaseId) -> FlukeTime.Create 7 0)
+                    (fun (_databaseId: DatabaseId option) -> FlukeTime.Create 7 0)
                 )
 
 
             let rec position =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof position}",
-                    (fun (_databaseId: DatabaseId) -> None: FlukeDateTime option)
+                    (fun (_databaseId: DatabaseId option) -> None: FlukeDateTime option)
                 )
 
 
         let rec debug =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof debug}",
                 false,
                 effects =
@@ -429,12 +405,12 @@ module Recoil =
                     ]
             )
 
-        let rec isTesting = Recoil.atom ($"{nameof atom}/{nameof isTesting}", JS.isTesting)
+        let rec isTesting = Recoil.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.isTesting)
 
-        let rec view = Recoil.atom ($"{nameof atom}/{nameof view}", View.View.HabitTracker)
+        let rec view = Recoil.atomWithProfiling ($"{nameof atom}/{nameof view}", View.View.HabitTracker)
 
         let rec selectedDatabaseIds =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof selectedDatabaseIds}",
                 ([||]: DatabaseId []),
                 effects =
@@ -444,7 +420,7 @@ module Recoil =
             )
 
         let rec selectedPosition =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof selectedPosition}",
                 (None: FlukeDateTime option),
                 effects =
@@ -454,16 +430,16 @@ module Recoil =
             )
 
         let rec cellMenuOpened =
-            Recoil.atom ($"{nameof atom}/{nameof cellMenuOpened}", (None: (Task.TaskId * DateId) option))
+            Recoil.atomWithProfiling ($"{nameof atom}/{nameof cellMenuOpened}", (None: (Task.TaskId * DateId) option))
 
-        let rec cellSize = Recoil.atom ($"{nameof atom}/{nameof cellSize}", 17)
+        let rec cellSize = Recoil.atomWithProfiling ($"{nameof atom}/{nameof cellSize}", 17)
 
-        let rec daysBefore = Recoil.atom ($"{nameof atom}/{nameof daysBefore}", 7)
+        let rec daysBefore = Recoil.atomWithProfiling ($"{nameof atom}/{nameof daysBefore}", 7)
 
-        let rec daysAfter = Recoil.atom ($"{nameof atom}/{nameof daysAfter}", 7)
+        let rec daysAfter = Recoil.atomWithProfiling ($"{nameof atom}/{nameof daysAfter}", 7)
 
         let rec leftDock =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof leftDock}",
                 (None: TempUI.DockType option),
                 effects =
@@ -472,12 +448,16 @@ module Recoil =
                     ]
             )
 
-        let rec formDatabaseId = Recoil.atom ($"{nameof atom}/{nameof formDatabaseId}", (None: State.DatabaseId option))
+        let rec formDatabaseId =
+            Recoil.atomWithProfiling ($"{nameof atom}/{nameof formDatabaseId}", (None: State.DatabaseId option))
 
-        let rec formTaskId = Recoil.atom ($"{nameof atom}/{nameof formTaskId}", (None: Task.TaskId option))
+        let rec formDatabaseVisibleFlag =
+            Recoil.atomWithProfiling ($"{nameof atom}/{nameof formDatabaseVisibleFlag}", false)
+
+        let rec formTaskId = Recoil.atomWithProfiling ($"{nameof atom}/{nameof formTaskId}", (None: Task.TaskId option))
 
         let rec apiBaseUrl =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof apiBaseUrl}",
                 $"https://localhost:{Sync.serverPort}",
                 effects =
@@ -487,7 +467,7 @@ module Recoil =
             )
 
         let rec gunPeer1 =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof gunPeer1}",
                 "",
                 effects =
@@ -497,7 +477,7 @@ module Recoil =
             )
 
         let rec gunPeer2 =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof gunPeer2}",
                 "",
                 effects =
@@ -507,7 +487,7 @@ module Recoil =
             )
 
         let rec gunPeer3 =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof gunPeer3}",
                 "",
                 effects =
@@ -517,7 +497,7 @@ module Recoil =
             )
 
         let rec gunKeys =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof gunKeys}",
                 {
                     Gun.pub = ""
@@ -529,27 +509,27 @@ module Recoil =
             //                local_storage
             )
 
-        let rec api = Recoil.atom ($"{nameof atom}/{nameof api}", (None: Sync.Api option))
+        let rec api = Recoil.atomWithProfiling ($"{nameof atom}/{nameof api}", (None: Sync.Api option))
 
-        let rec username = Recoil.atom ($"{nameof atom}/{nameof username}", None)
+        let rec username = Recoil.atomWithProfiling ($"{nameof atom}/{nameof username}", None)
 
-        let rec sessionRestored = Recoil.atom ($"{nameof atom}/{nameof sessionRestored}", false)
+        let rec sessionRestored = Recoil.atomWithProfiling ($"{nameof atom}/{nameof sessionRestored}", false)
 
         let rec getLivePosition =
-            Recoil.atom (
+            Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof getLivePosition}",
                 {|
                     Get = fun () -> FlukeDateTime.FromDateTime DateTime.Now
                 |}
             )
 
-        let rec ctrlPressed = Recoil.atom ($"{nameof atom}/{nameof ctrlPressed}", false)
+        let rec ctrlPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof ctrlPressed}", false)
 
-        let rec shiftPressed = Recoil.atom ($"{nameof atom}/{nameof shiftPressed}", false)
+        let rec shiftPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof shiftPressed}", false)
 
-        let rec initialPeerSkipped = Recoil.atom ($"{nameof atom}/{nameof initialPeerSkipped}", false)
+        let rec initialPeerSkipped = Recoil.atomWithProfiling ($"{nameof atom}/{nameof initialPeerSkipped}", false)
 
-        let rec positionTrigger = Recoil.atom ($"{nameof atom}/{nameof positionTrigger}", 0)
+        let rec positionTrigger = Recoil.atomWithProfiling ($"{nameof atom}/{nameof positionTrigger}", 0)
 
 
     module Selectors =
@@ -574,7 +554,20 @@ module Recoil =
                 $"{nameof selector}/{nameof gun}",
                 (fun getter ->
                     let gunPeers = getter.get gunPeers
-                    let gun = gunTmp gunPeers
+
+                    let gun =
+                        Gun.gun (
+                            {
+                                Gun.GunProps.peers = if JS.isTesting then None else Some gunPeers
+
+                                Gun.GunProps.radisk = if JS.isTesting then None else Some false
+
+                                Gun.GunProps.localStorage = if JS.isTesting then None else Some true
+                            }
+                            |> unbox
+                        )
+
+                    Browser.Dom.window?gunTmp <- gun
 
                     printfn $"gun selector. peers={gunPeers}. returning gun..."
                     gun.put null |> ignore
@@ -1110,11 +1103,7 @@ module Recoil =
                             let newCellSelectionMap =
                                 match shiftPressed, ctrlPressed with
                                 | false, false ->
-                                    let newTaskSelection =
-                                        if newValue then
-                                            Set.singleton referenceDay
-                                        else
-                                            Set.empty
+                                    let newTaskSelection = if newValue then Set.singleton referenceDay else Set.empty
 
                                     [
                                         taskId, newTaskSelection

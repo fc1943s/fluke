@@ -23,8 +23,8 @@ module Databases =
 
             let isTesting = Recoil.useValue Recoil.Atoms.isTesting
             let selectedPosition, setSelectedPosition = Recoil.useState Recoil.Atoms.selectedPosition
-            let (DatabaseName databaseName) = Recoil.useValue (Recoil.Atoms.Database.name input.DatabaseId)
-            let databasePosition = Recoil.useValue (Recoil.Atoms.Database.position input.DatabaseId)
+            let (DatabaseName databaseName) = Recoil.useValue (Recoil.Atoms.Database.name (Some input.DatabaseId))
+            let databasePosition = Recoil.useValue (Recoil.Atoms.Database.position (Some input.DatabaseId))
             let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
 
             let selectedDatabaseIds, setSelectedDatabaseIds = Recoil.useState Recoil.Atoms.selectedDatabaseIds
@@ -78,11 +78,7 @@ module Databases =
 
             Checkbox.Checkbox
                 {|
-                    ``data-testid`` =
-                        if isTesting then
-                            Some $"menu-item-{databaseId.ToString ()}"
-                        else
-                            None
+                    ``data-testid`` = if isTesting then Some $"menu-item-{databaseId.ToString ()}" else None
                     value = input.DatabaseId
                     isChecked = selected
                     isDisabled = if enabled then None else Some true
@@ -108,11 +104,7 @@ module Databases =
 
         Chakra.stack
             {| props with
-                ``data-testid`` =
-                    if isTesting then
-                        Some (nameof Databases)
-                    else
-                        None
+                ``data-testid`` = if isTesting then Some (nameof Databases) else None
             |}
             [
                 yield!

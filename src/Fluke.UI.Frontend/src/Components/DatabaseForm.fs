@@ -61,7 +61,7 @@ module DatabaseForm =
     [<ReactComponent>]
     let DatabaseForm
         (input: {| Username: UserInteraction.Username
-                   DatabaseId: State.DatabaseId
+                   DatabaseId: State.DatabaseId option
                    OnSave: unit -> JS.Promise<unit> |})
         =
         let onSave =
@@ -69,7 +69,6 @@ module DatabaseForm =
                 (fun (setter: CallbackMethods) ->
                     promise {
                         let eventId = Recoil.Atoms.Events.EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
-
                         let! name = setter.snapshot.getReadWritePromise Recoil.Atoms.Database.name input.DatabaseId
 
                         let! dayStart =
@@ -85,25 +84,32 @@ module DatabaseForm =
                         let! databaseStateMapCache =
                             setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache input.Username)
 
+                        let databaseId =
+                            input.DatabaseId
+                            |> Option.defaultValue (DatabaseId.NewId ())
+
+                        let database =
+                            databaseStateMapCache
+                            |> Map.tryFind databaseId
+                            |> Option.defaultValue (
+                                DatabaseState.Create (
+                                    name = name,
+                                    owner = input.Username,
+                                    dayStart = dayStart,
+                                    id = databaseId
+                                )
+                            )
+
                         let newDatabaseStateMapCache =
                             databaseStateMapCache
                             |> Map.add
-                                input.DatabaseId
-                                {
+                                databaseId
+                                { database with
                                     Database =
-                                        {
-                                            Id = input.DatabaseId
+                                        { database.Database with
                                             Name = name
-                                            Owner = input.Username
-                                            SharedWith =
-                                                DatabaseAccess.Private [
-                                                    DatabaseAccessItem.Admin input.Username
-                                                ]
-                                            Position = None
                                             DayStart = dayStart
                                         }
-                                    InformationStateMap = Map.empty
-                                    TaskStateMap = Map.empty
                                 }
 
                         printfn
@@ -115,12 +121,18 @@ module DatabaseForm =
 
                         setter.set (
                             Recoil.Atoms.Session.availableDatabaseIds input.Username,
-                            (input.DatabaseId :: availableDatabaseIds)
+                            (availableDatabaseIds
+                             @ [
+                                 databaseId
+                             ])
                         )
 
+                        setter.readWriteReset Recoil.Atoms.Database.name input.DatabaseId
+                        setter.readWriteReset Recoil.Atoms.Database.dayStart input.DatabaseId
 
                         printfn $"event {event}"
                         do! input.OnSave ()
+
                     })
 
         Chakra.stack
@@ -129,7 +141,7 @@ module DatabaseForm =
                 Chakra.box
                     {| fontSize = "15px" |}
                     [
-                        str "Add Database"
+                        str $"""{if input.DatabaseId.IsNone then "Add" else "Edit"} Database"""
                     ]
 
                 Chakra.stack
@@ -150,7 +162,7 @@ module DatabaseForm =
                                                 ]
                                         )
 
-                                    x.placeholder <- sprintf "new-database-%s" (DateTime.Now.Format "yyyy-MM-dd")
+                                    x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
                                     x.atom <- Some (Recoil.AtomFamily (Recoil.Atoms.Database.name, input.DatabaseId))
                                     x.onFormat <- Some (fun (DatabaseName name) -> name)
                                     x.onValidate <- Some (DatabaseName >> Some)

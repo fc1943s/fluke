@@ -100,7 +100,7 @@ module SessionDataLoader =
                                 (fun (templateName, dslTemplate) ->
                                     Templates.databaseStateFromDslTemplate
                                         TempData.testUser
-                                        (DatabaseId (Guid.NewGuid ()))
+                                        (DatabaseId.NewId ())
                                         templateName
                                         dslTemplate)
 
@@ -189,10 +189,22 @@ module SessionDataLoader =
                             databaseStateMapCache
                             |> Map.iter
                                 (fun id databaseState ->
-                                    setter.set (Recoil.Atoms.Database.name id, databaseState.Database.Name)
-                                    setter.set (Recoil.Atoms.Database.owner id, Some databaseState.Database.Owner)
-                                    setter.set (Recoil.Atoms.Database.sharedWith id, databaseState.Database.SharedWith)
-                                    setter.set (Recoil.Atoms.Database.position id, databaseState.Database.Position))
+                                    setter.set (Recoil.Atoms.Database.name (Some id), databaseState.Database.Name)
+
+                                    setter.set (
+                                        Recoil.Atoms.Database.owner (Some id),
+                                        Some databaseState.Database.Owner
+                                    )
+
+                                    setter.set (
+                                        Recoil.Atoms.Database.sharedWith (Some id),
+                                        databaseState.Database.SharedWith
+                                    )
+
+                                    setter.set (
+                                        Recoil.Atoms.Database.position (Some id),
+                                        databaseState.Database.Position
+                                    ))
 
                         | _ -> ()
 

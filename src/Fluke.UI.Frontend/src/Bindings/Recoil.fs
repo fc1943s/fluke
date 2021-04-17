@@ -124,6 +124,11 @@ module Recoilize =
 [<AutoOpen>]
 module RecoilMagic =
 
+    type CallbackMethods with
+        member this.readWriteReset atom key =
+            this.reset
+                (Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key))))
+                    .ReadWrite
     type Snapshot with
         member this.getReadWritePromise atom key =
             this.getPromise
@@ -265,6 +270,23 @@ module RecoilMagic =
 //
 //                fun () -> printfn "> unsubscribe")
     type Recoil with
+        static member inline atomWithProfiling
+            (
+                atomKey: string,
+                defaultValue,
+                ?effects,
+                ?_persistence,
+                ?_dangerouslyAllowMutability
+            ) =
+            Recoil.atom (
+                atomKey,
+                promise {
+                    Profiling.addCount atomKey
+                    return defaultValue
+                },
+                effects |> Option.defaultValue []
+            )
+
         static member inline atomFamilyWithProfiling
             (
                 atomKey: string,

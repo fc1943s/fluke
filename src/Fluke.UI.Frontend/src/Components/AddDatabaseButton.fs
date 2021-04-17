@@ -13,6 +13,7 @@ module AddDatabaseButton =
     let AddDatabaseButton (props: {| marginLeft: string |}) =
         let username = Recoil.useValue Recoil.Atoms.username
         let formDatabaseId, setFormDatabaseId = Recoil.useState Recoil.Atoms.formDatabaseId
+        let formDatabaseVisibleFlag, setFormDatabaseVisibleFlag = Recoil.useState Recoil.Atoms.formDatabaseVisibleFlag
 
         React.fragment [
             Button.Button
@@ -28,7 +29,10 @@ module AddDatabaseButton =
                             onClick =
                                 Some
                                     (fun () ->
-                                        promise { setFormDatabaseId (Some (Recoil.Atoms.Database.newDatabaseId ())) })
+                                        promise {
+                                            setFormDatabaseId None
+                                            setFormDatabaseVisibleFlag true
+                                        })
                         |}
                     children =
                         [
@@ -38,17 +42,17 @@ module AddDatabaseButton =
 
             Modal.Modal
                 {|
-                    IsOpen = formDatabaseId.IsSome
+                    IsOpen = formDatabaseVisibleFlag
                     OnClose = fun () -> setFormDatabaseId None
                     children =
                         [
-                            match formDatabaseId, username with
-                            | Some databaseId, Some username ->
+                            match username with
+                            | Some username ->
                                 DatabaseForm.DatabaseForm
                                     {|
                                         Username = username
-                                        DatabaseId = databaseId
-                                        OnSave = fun () -> promise { setFormDatabaseId None }
+                                        DatabaseId = formDatabaseId
+                                        OnSave = fun () -> promise { setFormDatabaseVisibleFlag false }
                                     |}
                             | _ -> ()
                         ]

@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Tests
 
-open System
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz
@@ -23,6 +22,7 @@ module CellSelection =
     open Sync
     open Templates
     open TempData
+    open State
 
 
     Jest.describe (
@@ -51,7 +51,7 @@ module CellSelection =
                                 })
                 }
 
-            let databaseId = State.DatabaseId (Guid.NewGuid ())
+            let databaseId = DatabaseId.NewId ()
             let databaseName = "Test"
             let databaseState = databaseStateFromDslTemplate testUser databaseId databaseName dslTemplate
 

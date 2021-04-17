@@ -93,13 +93,15 @@ module State =
 
 
 
+    and DatabaseId with
+        static member inline NewId () = DatabaseId (Guid.NewGuid ())
 
     and DatabaseState with
         static member inline Create (name, owner, dayStart, ?id, ?sharedWith, ?position) =
             {
                 Database =
                     {
-                        Id = Option.defaultValue (DatabaseId (Guid.NewGuid ())) id
+                        Id = id |> Option.defaultValue (DatabaseId.NewId ())
                         Name = name
                         Owner = owner
                         SharedWith = defaultArg sharedWith (DatabaseAccess.Private [])

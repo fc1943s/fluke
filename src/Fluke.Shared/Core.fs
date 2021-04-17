@@ -9,8 +9,7 @@ module Seq =
             let mutable notFirst = false
 
             for element in list do
-                if notFirst then
-                    yield sep
+                if notFirst then yield sep
 
                 yield element
                 notFirst <- true
@@ -30,8 +29,11 @@ module Map =
         ]
         |> Map.ofList
 
-    let keys (source: Map<'Key, 'T>) : seq<'Key> = source |> Seq.map (fun (KeyValue (k, _)) -> k)
-    let values (source: Map<'Key, 'T>) : seq<'T> = source |> Seq.map (fun (KeyValue (_, v)) -> v)
+    let keys (source: Map<'Key, 'T>) : seq<'Key> =
+        source |> Seq.map (fun (KeyValue (k, _)) -> k)
+
+    let values (source: Map<'Key, 'T>) : seq<'T> =
+        source |> Seq.map (fun (KeyValue (_, v)) -> v)
 
     let unionWith combiner (source1: Map<'Key, 'Value>) (source2: Map<'Key, 'Value>) =
         Map.fold
@@ -45,7 +47,8 @@ module Map =
             source1
             source2
 
-    let union (source: Map<'Key, 'T>) (altSource: Map<'Key, 'T>) = unionWith (fun x _ -> x) source altSource
+    let union (source: Map<'Key, 'T>) (altSource: Map<'Key, 'T>) =
+        unionWith (fun x _ -> x) source altSource
 
     let mapValues f (x: Map<'Key, 'T>) = Map.map (fun _ -> f) x
 
@@ -69,10 +72,7 @@ module String =
     let take count (source: string) = source.[..count - 1]
 
     let toLower (source: string) =
-        if isNull source then
-            source
-        else
-            source.ToLowerInvariant ()
+        if isNull source then source else source.ToLowerInvariant ()
 
     let (|ValidString|WhitespaceStr|NullString|) (str: string) =
         match str with
