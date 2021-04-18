@@ -62,11 +62,7 @@ module Theme =
                                     {|
                                         fontFamily = "main"
                                         color = "gray.77"
-                                        backgroundColor =
-                                            if props.colorMode = "dark" then
-                                                "gray.13"
-                                            else
-                                                "gray.77"
+                                        backgroundColor = if props.colorMode = "dark" then "gray.13" else "gray.77"
                                         fontWeight = "light"
                                         letterSpacing = 0
                                         lineHeight = "12px"
@@ -78,30 +74,19 @@ module Theme =
                                         fontSize = "12px"
                                         color = "#ddd"
                                         userSelect = "none"
+                                        touchAction = "pan-x pan-y"
                                     |}
                                 ``*::-webkit-calendar-picker-indicator`` =
                                     {|
-                                        filter =
-                                            if props.colorMode = "dark" then
-                                                "invert(1)"
-                                            else
-                                                ""
+                                        filter = if props.colorMode = "dark" then "invert(1)" else ""
                                     |}
                                 ``input::-ms-reveal`` =
                                     {|
-                                        filter =
-                                            if props.colorMode = "dark" then
-                                                "invert(1)"
-                                            else
-                                                ""
+                                        filter = if props.colorMode = "dark" then "invert(1)" else ""
                                     |}
                                 ``input::-ms-clear`` =
                                     {|
-                                        filter =
-                                            if props.colorMode = "dark" then
-                                                "invert(1)"
-                                            else
-                                                ""
+                                        filter = if props.colorMode = "dark" then "invert(1)" else ""
                                     |}
                                 ``*::-webkit-scrollbar`` = {| width = "9px" |}
                                 ``*::-webkit-scrollbar:horizontal`` = {| height = "6px" |}

@@ -21,19 +21,20 @@ module Dom =
     let newObj fn = jsOptions<_> fn
 
     let resetZoom () =
-        let viewport = Browser.Dom.window.document.querySelector "meta[name=viewport]"
-        let initialContent : string = viewport?content
+        if false then
+            let viewport = Browser.Dom.window.document.querySelector "meta[name=viewport]"
+            let initialContent : string = viewport?content
 
-        printfn
-            $"initial={initialContent}
-        devicePixelRatio={Browser.Dom.window.devicePixelRatio}
-        availWidth/clientWidth={
-                                    Browser.Dom.window.screen.availWidth
-                                    / Browser.Dom.document.documentElement.clientWidth
-            }
-        "
+            printfn
+                $"initial={initialContent}
+            devicePixelRatio={Browser.Dom.window.devicePixelRatio}
+            availWidth/clientWidth={
+                                        Browser.Dom.window.screen.availWidth
+                                        / Browser.Dom.document.documentElement.clientWidth
+                }
+            "
 
-        viewport?content <- initialContent.Replace ("initial-scale=1, maximum-scale=10", "user-scalable=no")
+            viewport?content <- initialContent.Replace ("initial-scale=1, maximum-scale=10", "user-scalable=no")
 
-        JS.setTimeout (fun () -> viewport?content <- initialContent) 1000
-        |> ignore
+            JS.setTimeout (fun () -> viewport?content <- initialContent) 1000
+            |> ignore
