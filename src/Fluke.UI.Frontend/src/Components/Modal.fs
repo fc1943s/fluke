@@ -24,7 +24,9 @@ module Modal =
                     let viewport = Browser.Dom.window.document.querySelector "meta[name=viewport]"
                     let initialContent = viewport.textContent
                     viewport.textContent <- initialContent.Replace ("maximum-scale=10", "maximum-scale=1")
-                    viewport.textContent <- initialContent
+
+                    Fable.Core.JS.setTimeout (fun () -> viewport.textContent <- initialContent) 100
+                    |> ignore
 
                 ),
             [|
