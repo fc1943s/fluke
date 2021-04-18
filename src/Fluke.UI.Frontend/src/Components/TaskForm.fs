@@ -95,6 +95,8 @@ module TaskForm =
 
                         setter.set (Recoil.Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
 
+                        do! setter.readWriteReset Recoil.Atoms.Task.name input.TaskId
+
                         printfn $"event {event}"
                         do! input.OnSave ()
                     })

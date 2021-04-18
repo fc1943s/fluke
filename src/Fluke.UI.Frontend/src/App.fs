@@ -16,8 +16,6 @@ module App =
          else
              React.fragment)
             [
-                DebugOverlay.DebugOverlay ()
-
                 CtrlListener.CtrlListener ()
                 ShiftListener.ShiftListener ()
                 RouterObserver.RouterObserver ()
@@ -28,4 +26,6 @@ module App =
                 UserLoader.UserLoader ()
 
                 Content.Content ()
+
+                DebugOverlay.DebugOverlay ()
             ]

@@ -49,11 +49,11 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-ea155e226",
-    "react-dom": "0.0.0-experimental-ea155e226",
+    "react": "0.0.0-experimental-5027eb465",
+    "react-dom": "0.0.0-experimental-5027eb465",
 
     "recoil": "~0.2",
-    "recoilize": "~1.0",
+    "recoilize": "~2.0",
 
     "gun": "amark/gun.git#master",
 
@@ -71,7 +71,7 @@
     "electron-devtools-installer": "~3.1",
     "devtron": "~1.4",
 
-    "react-markdown": "~5.0",
+    "react-markdown": "~6.0",
     "date-fns": "~2.21",
     "crypto-js": "~4.0"
   },
@@ -137,8 +137,8 @@
     "concurrently": "~6.0"
   },
   "resolutions": {
-    "react": "0.0.0-experimental-ea155e226",
-    "react-dom": "0.0.0-experimental-ea155e226"
+    "react": "0.0.0-experimental-5027eb465",
+    "react-dom": "0.0.0-experimental-5027eb465"
   },
   "browserslist": {
     "production": [

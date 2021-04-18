@@ -8,6 +8,7 @@ open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 
+
 module GunBind =
     [<RequireQualifiedAccess>]
     type ChangeType =
@@ -33,51 +34,60 @@ module GunBind =
         let gun = Recoil.useValue Recoil.Selectors.gun
         let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
 
-        let rendered, setRendered = React.useState false
-
         let gunAtomKey = useGunAtomKey input.Atom
 
         let getGunAtomNode = Recoil.useCallbackRef (fun _ -> Gun.getGunAtomNode gun.ref gunAtomKey)
 
+        //        printfn
+//            $"GunBind()
+//        gunAtomKey={gunAtomKey}
+//        lastAtomValue={lastAtomValue}
+//        atomValue={atomValue}
+//        changeType={changeType}
+//        "
 
         React.useEffect (
             (fun () ->
                 promise {
-                    if not rendered then
-                        let gunAtomNode = getGunAtomNode ()
+                    let gunAtomNode = getGunAtomNode ()
 
-                        gunAtomNode.on
-                            (fun data ->
-                                match Gun.deserializeGunAtomNode data with
-                                | Some gunAtomNodeValue ->
+                    printfn $"GunBind.useEffect. gunAtomKey={gunAtomKey} lastAtomValue={lastAtomValue}"
 
-                                    printfn
-                                        $"GunBind.useEffect. node.on().
-                                        data={JS.JSON.stringify data} gunAtomKey={gunAtomKey}
-                                        gunAtomNodeValue={gunAtomNodeValue}"
+                    gunAtomNode.on
+                        (fun data ->
+                            match Gun.deserializeGunAtomNode data with
+                            | Some gunAtomNodeValue ->
 
+                                printfn
+                                    $"GunBind.useEffect. node.on().
+                                        lastAtomValue={lastAtomValue}
+                                        data={JS.JSON.stringify data}
+                                        gunAtomNodeValue={gunAtomNodeValue}
+                                        "
+
+                                setChangeType (Some ChangeType.Remote)
+
+                                if lastAtomValue <> gunAtomNodeValue then
+                                    printfn "different values, setting"
                                     setAtomValue gunAtomNodeValue
-                                    setChangeType (Some ChangeType.Remote)
                                     setLastAtomValue gunAtomNodeValue
-                                | None -> ())
-
-                        setRendered true
+                                    gunAtomNode.off () |> ignore
+                            | None -> ())
 
                     return
                         fun () ->
-                            if rendered then
-                                let node = getGunAtomNode ()
-                                printfn "rendering off"
-                                node.off ()
+                            printfn "@@@@@@ GunBind.useEffect. rendering off "
+
+                            let gunAtomNode = getGunAtomNode ()
+                            gunAtomNode.off () |> ignore
                 }
                 |> Promise.start),
             [|
                 box gunAtomKey
+                box lastAtomValue
                 box getGunAtomNode
                 box setLastAtomValue
                 box setAtomValue
-                box setRendered
-                box rendered
                 box setChangeType
             |]
         )
@@ -85,34 +95,32 @@ module GunBind =
         React.useEffect (
             (fun () ->
                 promise {
-                    if rendered then
-                        if changeType = Some ChangeType.Remote then
-                            setChangeType None
-                        else if box lastAtomValue = null then
-                            setLastAtomValue atomValue
-                        else if atomValue <> lastAtomValue then
-                            printfn
-                                $"GunNode.useEffect. node.put(atomValue); setLastAtomValue (Some atomValue);
+                    if changeType = Some ChangeType.Remote then
+                        setChangeType None
+                    else if box lastAtomValue = null then
+                        setLastAtomValue atomValue
+                    else if atomValue <> lastAtomValue then
+                        printfn
+                            $"GunNode.useEffect. node.put(atomValue); setLastAtomValue (Some atomValue);
                                 lastAtomValue={lastAtomValue}
                                 atomValue={atomValue}
-                                gunAtomKey={gunAtomKey}
                                 "
 
-                            setLastAtomValue atomValue
+                        let gunAtomNode = getGunAtomNode ()
+                        gunAtomNode.off () |> ignore
+                        Gun.putGunAtomNode gunAtomNode atomValue
 
-                            let node = getGunAtomNode ()
-                            Gun.putGunAtomNode node atomValue
+                        setLastAtomValue atomValue
+                        setChangeType (Some ChangeType.Local)
                 }
                 |> Promise.start),
             [|
-                box gunAtomKey
                 box getGunAtomNode
                 box changeType
                 box setChangeType
                 box lastAtomValue
                 box setLastAtomValue
                 box atomValue
-                box rendered
             |]
         )
 

@@ -116,9 +116,10 @@ module Recoil =
 
         atomFieldOptions
 
+// TODO: move to recoilize file?
 module Recoilize =
     let recoilizeDebugger<'T> =
-        //         importDefault "recoilize"
+        //        importDefault "recoilize"
         nothing |> composeComponent
 
 [<AutoOpen>]
@@ -284,7 +285,7 @@ module RecoilMagic =
             Recoil.atom (
                 atomKey,
                 promise {
-                    Profiling.addCount atomKey
+                    //                    Profiling.addCount atomKey
                     return defaultValue
                 },
                 effects |> Option.defaultValue []

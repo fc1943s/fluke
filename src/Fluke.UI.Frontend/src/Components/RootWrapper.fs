@@ -27,8 +27,7 @@ module RootWrapper =
 
                         match atomLoadable.state () with
                         | LoadableState.HasValue value ->
-                            if false then
-                                printfn $"persisting1 <{modifiedAtom.key}> <{value}>"
+                            if false then printfn $"persisting1 <{modifiedAtom.key}> <{value}>"
                         | _ -> ()))
 
         nothing
@@ -41,7 +40,11 @@ module RootWrapper =
                 Recoil.root [
                     root.init (fun _ -> ())
                     root.children [
-                        //                        Recoilize.recoilizeDebugger {| root = document.getElementById "root" |} []
+                        //                        Recoilize.recoilizeDebugger
+//                            {|
+//                                root = Browser.Dom.document.getElementById "root"
+//                            |}
+//                            []
                         Chakra.provider
                             {| theme = theme |}
                             [

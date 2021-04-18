@@ -55,7 +55,7 @@ module rec Gun =
         abstract put : 'V -> IGunChainReference<'U>
         abstract user : unit -> IGunUser
         abstract on : ('T -> unit) -> unit
-        abstract off : unit -> unit
+        abstract off : unit -> IGunChainReference<'T>
         abstract once : ('T -> unit) -> unit
         abstract on : event: string * (unit -> unit) -> unit
 

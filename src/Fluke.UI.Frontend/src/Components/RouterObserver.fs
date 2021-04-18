@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Browser.Types
+open Fable.Core
 open Feliz.Router
 open Feliz
 open Feliz.Recoil
@@ -34,7 +35,9 @@ module RouterObserver =
                     | _, true, "H" -> setView View.View.HabitTracker
                     | _, true, "P" -> setView View.View.Priority
                     | _, true, "B" -> setView View.View.BulletJournal
-                    | _, true, "I" -> setView View.View.Information
+                    | _, true, "I" ->
+                        printfn "RouterObserver.onKeyDown() View.Information"
+                        setView View.View.Information
                     | _ -> ())
 
         React.useListener.onKeyDown onKeyDown

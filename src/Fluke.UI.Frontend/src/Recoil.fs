@@ -298,7 +298,7 @@ module Recoil =
 
                                     fun () ->
                                         printfn "> unsubscribe cell. calling selected.off ()"
-                                        gunAtomNode.off ()
+                                        gunAtomNode.off () |> ignore
 
                                 | None ->
                                     failwith "Gun not found"
