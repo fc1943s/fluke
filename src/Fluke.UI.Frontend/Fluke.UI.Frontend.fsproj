@@ -95,7 +95,6 @@
         <Content Include="public\index.ts" />
         <Content Include="public\index.jsx" />
         <Content Include="public\index.js" />
-        <Content Include="public\popup.html" />
         <Content Include="public\manifest.json" />
         <Content Include="package.json" />
         <Content Include="babel.config.js" />

@@ -20,7 +20,11 @@ module Modal =
             (fun () ->
                 if input.IsOpen <> isOpenRef.current then
                     isOpenRef.current <- input.IsOpen
-                    Browser.Dom.window.document?body?style?zoom <- 1
+
+                    let viewport = Browser.Dom.window.document.querySelector "meta[name=viewport]"
+                    let initialContent = viewport.textContent
+                    viewport.textContent <- initialContent.Replace ("maximum-scale=10", "maximum-scale=1")
+                    viewport.textContent <- initialContent
 
                 ),
             [|
