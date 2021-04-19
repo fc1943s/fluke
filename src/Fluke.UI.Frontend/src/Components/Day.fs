@@ -22,21 +22,28 @@ module Day =
         let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
 
         Chakra.box
-            {|
-                color =
+            (fun x ->
+                x.color <-
                     if hasSelection then "#ff5656"
                     elif isToday then "#777"
-                    else ""
-                borderLeft =
+                    else null
+
+                x.borderLeftWidth <-
                     match (weekStart, input.Date) with
-                    | StartOfMonth -> "1px solid #ffffff3d"
-                    | StartOfWeek -> "1px solid #222"
-                    | _ -> ""
-                height = "17px"
-                width = "17px"
-                lineHeight = "17px"
-                textAlign = "center"
-            |}
+                    | StartOfMonth
+                    | StartOfWeek -> "1px"
+                    | _ -> null
+
+                x.borderLeftColor <-
+                    match (weekStart, input.Date) with
+                    | StartOfMonth -> "#ffffff3d"
+                    | StartOfWeek -> "#222"
+                    | _ -> null
+
+                x.height <- "17px"
+                x.width <- "17px"
+                x.lineHeight <- "17px"
+                x.textAlign <- "center")
             [
                 str <| String.toLower input.Label
             ]

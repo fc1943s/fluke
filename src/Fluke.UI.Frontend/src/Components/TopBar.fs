@@ -7,78 +7,83 @@ open Fluke.UI.Frontend.Bindings
 
 
 module TopBar =
-
     [<ReactComponent>]
     let TopBar () =
         let logout = Auth.useLogout ()
 
         Chakra.flex
-            {|
-                height = "31px"
-                backgroundColor = "gray.10"
-                align = "center"
-                padding = "7px"
-            |}
+            (fun x ->
+                x.height <- "31px"
+                x.backgroundColor <- "gray.10"
+                x.align <- "center"
+                x.padding <- "7px")
             [
                 Logo.Logo ()
 
                 Chakra.box
-                    {| marginLeft = "4px" |}
+                    (fun x -> x.marginLeft <- "4px")
                     [
                         str "Fluke"
                     ]
 
-                AddDatabaseButton.AddDatabaseButton {| marginLeft = "37px" |}
-                AddTaskButton.AddTaskButton {| marginLeft = "10px" |}
+                AddDatabaseButton.AddDatabaseButton
+                    {|
+                        Props = JS.newObj (fun x -> x.marginLeft <- "37px")
+                    |}
+                AddTaskButton.AddTaskButton
+                    {|
+                        Props = JS.newObj (fun x -> x.marginLeft <- "10px")
+                    |}
 
-                Chakra.spacer {|  |} []
+                Chakra.spacer (fun _ -> ()) []
 
                 Chakra.stack
-                    {|
-                        spacing = "10px"
-                        direction = "row"
-                    |}
+                    (fun x ->
+                        x.spacing <- "10px"
+                        x.direction <- "row")
                     [
                         Chakra.link
-                            {|
-                                href = "https://github.com/fc1943s/fluke"
-                                isExternal = true
-                            |}
+                            (fun x ->
+                                x.href <- "https://github.com/fc1943s/fluke"
+                                x.isExternal <- true)
                             [
-                                Tooltip.Tooltip
-                                    (Dom.newObj (fun x -> x.label <- str "GitHub repository"))
+
+                                Tooltip.wrap
+                                    (ExternalLink.ExternalLink
+                                        {|
+                                            Text = "GitHub repository"
+                                            Props = JS.newObj (fun _ -> ())
+                                        |})
                                     [
                                         Chakra.iconButton
-                                            {|
-                                                icon = Icons.aiOutlineGithub ()
-                                                backgroundColor = "transparent"
-                                                variant = "outline"
-                                                border = 0
-                                                fontSize = "18px"
-                                                width = "30px"
-                                                height = "30px"
-                                                borderRadius = 0
-                                                onClick = logout
-                                            |}
+                                            (fun x ->
+                                                x.icon <- Icons.aiOutlineGithub ()
+                                                x.backgroundColor <- "transparent"
+                                                x.variant <- "outline"
+                                                x.border <- "0"
+                                                x.fontSize <- "18px"
+                                                x.width <- "30px"
+                                                x.height <- "30px"
+                                                x.borderRadius <- 0
+                                                x.onClick <- logout)
                                             []
                                     ]
                             ]
 
-                        Tooltip.Tooltip
-                            (Dom.newObj (fun x -> x.label <- str "Logout"))
+                        Tooltip.wrap
+                            (str "Logout")
                             [
                                 Chakra.iconButton
-                                    {|
-                                        icon = Icons.fiLogOut ()
-                                        backgroundColor = "transparent"
-                                        variant = "outline"
-                                        border = 0
-                                        fontSize = "18px"
-                                        width = "30px"
-                                        height = "30px"
-                                        borderRadius = 0
-                                        onClick = logout
-                                    |}
+                                    (fun x ->
+                                        x.icon <- Icons.fiLogOut ()
+                                        x.backgroundColor <- "transparent"
+                                        x.variant <- "outline"
+                                        x.border <- "0"
+                                        x.fontSize <- "18px"
+                                        x.width <- "30px"
+                                        x.height <- "30px"
+                                        x.borderRadius <- 0
+                                        x.onClick <- logout)
                                     []
                             ]
                     ]

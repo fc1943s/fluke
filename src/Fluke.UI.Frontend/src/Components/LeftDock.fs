@@ -13,7 +13,7 @@ module LeftDock =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let LeftDock (username: Username) =
+    let LeftDock (input: {| Username: Username |}) =
         let leftDock = Recoil.useValue Recoil.Atoms.leftDock
 
         let items =
@@ -25,11 +25,11 @@ module LeftDock =
                      Settings.Settings
                          {|
                              Props =
-                                 {|
-                                     flex = 1
-                                     overflowY = "auto"
-                                     flexBasis = 0
-                                 |}
+                                 JS.newObj
+                                     (fun x ->
+                                         x.flex <- 1
+                                         x.overflowY <- "auto"
+                                         x.flexBasis <- 0)
                          |}))
 
                 TempUI.DockType.Databases,
@@ -37,33 +37,34 @@ module LeftDock =
                  Icons.fi.FiDatabase,
                  (fun () ->
                      Databases.Databases
-                         username
                          {|
-                             flex = 1
-                             overflowY = "auto"
-                             flexBasis = 0
+                             Username = input.Username
+                             Props =
+                                 JS.newObj
+                                     (fun x ->
+                                         x.flex <- 1
+                                         x.overflowY <- "auto"
+                                         x.flexBasis <- 0)
                          |}))
             ]
 
         let itemsMap = items |> Map.ofList
 
         Chakra.flex
-            ()
+            (fun _ -> ())
             [
                 Chakra.box
-                    {|
-                        width = "24px"
-                        position = "relative"
-                    |}
+                    (fun x ->
+                        x.width <- "24px"
+                        x.position <- "relative")
                     [
                         Chakra.flex
-                            {|
-                                right = 0
-                                position = "absolute"
-                                transform = "rotate(-90deg) translate(0, -100%)"
-                                transformOrigin = "100% 0"
-                                height = "24px"
-                            |}
+                            (fun x ->
+                                x.right <- "0"
+                                x.position <- "absolute"
+                                x.transform <- "rotate(-90deg) translate(0, -100%)"
+                                x.transformOrigin <- "100% 0"
+                                x.height <- "24px")
                             [
                                 yield!
                                     items
@@ -86,13 +87,12 @@ module LeftDock =
                     | None -> nothing
                     | Some (name, icon, content) ->
                         Chakra.flex
-                            {|
-                                minWidth = "200px"
-                                maxWidth = "300px"
-                                borderRightColor = "gray.16"
-                                borderRight = "1px solid"
-                                flex = 1
-                            |}
+                            (fun x ->
+                                x.minWidth <- "200px"
+                                x.maxWidth <- "300px"
+                                x.borderRightWidth <- "1px"
+                                x.borderRightColor <- "gray.16"
+                                x.flex <- 1)
                             [
                                 DockPanel.DockPanel
                                     {|

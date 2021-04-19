@@ -36,7 +36,7 @@ module Router =
 
             let getComponent () =
                 Chakra.box
-                    {|  |}
+                    (fun _ -> ())
                     [
                         RouterObserver.RouterObserver ()
                     ]

@@ -19,14 +19,14 @@ module Cells =
         let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
         Chakra.box
-            {|  |}
+            (fun _ -> ())
             [
                 yield!
                     input.TaskIdList
                     |> List.mapi
                         (fun i taskId ->
                             Chakra.flex
-                                {|  |}
+                                (fun _ -> ())
                                 [
                                     yield!
                                         dateSequence

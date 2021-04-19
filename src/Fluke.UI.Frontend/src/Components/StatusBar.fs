@@ -14,43 +14,40 @@ module StatusBar =
     open UserInteraction
 
     [<ReactComponent>]
-    let StatusBar (username: Username) =
+    let StatusBar (input: {| Username: Username |}) =
         let position = Recoil.useValue Recoil.Selectors.position
-        let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList username)
-        let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData username)
-        let activeSessions = Recoil.useValue (Recoil.Selectors.Session.activeSessions username)
+        let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList input.Username)
+        let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
+        let activeSessions = Recoil.useValue (Recoil.Selectors.Session.activeSessions input.Username)
 
         Chakra.flex
-            {|
-                height = "30px"
-                padding = "7px"
-                align = "center"
-            |}
+            (fun x ->
+                x.height <- "30px"
+                x.padding <- "7px"
+                x.align <- "center")
             [
                 Chakra.flex
-                    ()
+                    (fun _ -> ())
                     [
                         Chakra.box
-                            {|
-                                ``as`` = Icons.fa.FaRegUser
-                                marginRight = "4px"
-                            |}
+                            (fun x ->
+                                x.``as`` <- Icons.fa.FaRegUser
+                                x.marginRight <- "4px")
                             []
 
-                        let (Username username) = username
+                        let (Username username) = input.Username
                         str $"User: {username}"
                     ]
 
-                Chakra.spacer () []
+                Chakra.spacer (fun _ -> ()) []
 
                 Chakra.flex
-                    ()
+                    (fun _ -> ())
                     [
                         Chakra.box
-                            {|
-                                ``as`` = Icons.gi.GiHourglass
-                                marginRight = "4px"
-                            |}
+                            (fun x ->
+                                x.``as`` <- Icons.gi.GiHourglass
+                                x.marginRight <- "4px")
                             []
 
                         yield!
@@ -68,7 +65,7 @@ module StatusBar =
                                         | false -> "Break", "#ca7c7c", -left, totalBreakDuration + left
 
                                     Chakra.box
-                                        {| color = color |}
+                                        (fun x -> x.color <- color)
                                         [
                                             str
                                                 $"{sessionType}: Task[ {taskName} ]; Duration[ %.1f{duration} ]; Left[ %.1f{
@@ -85,24 +82,29 @@ module StatusBar =
 
                     ]
 
-                Chakra.spacer () []
+                Chakra.spacer (fun _ -> ()) []
+
+                Chakra.box
+                    (fun x ->
+                        x.``as`` <- Icons.bi.BiTask
+                        x.marginRight <- "4px")
+                    []
 
                 match sessionData with
                 | Some sessionData -> str $"{taskIdList.Length} of {sessionData.UnfilteredTaskCount} tasks visible"
                 | None -> ()
 
-                Chakra.spacer () []
+                Chakra.spacer (fun _ -> ()) []
 
                 match position with
                 | Some position ->
                     Chakra.flex
-                        ()
+                        (fun _ -> ())
                         [
                             Chakra.box
-                                {|
-                                    ``as`` = Icons.fa.FaRegClock
-                                    marginRight = "4px"
-                                |}
+                                (fun x ->
+                                    x.``as`` <- Icons.fa.FaRegClock
+                                    x.marginRight <- "4px")
                                 []
 
                             str $"Position: {position.Stringify ()}"

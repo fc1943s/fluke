@@ -6,6 +6,7 @@ open Fable.Jester
 open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Tests.Core
 open Fluke.UI.Frontend.Recoil
@@ -62,11 +63,14 @@ module DatabaseSelection =
 
             let getDatabaseSelector () =
                 Databases.Databases
-                    testUser.Username
                     {|
-                        flex = 1
-                        overflowY = "auto"
-                        flexBasis = 0
+                        Username = testUser.Username
+                        Props =
+                            JS.newObj
+                                (fun x ->
+                                    x.flex <- 1
+                                    x.overflowY <- "auto"
+                                    x.flexBasis <- 0)
                     |}
 
             Jest.test (

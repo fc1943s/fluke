@@ -20,19 +20,10 @@ module Content =
         let deviceInfo = Recoil.useValue Recoil.Selectors.deviceInfo
 
         Chakra.flex
-            {|
-                minHeight = "100vh"
-                height =
-                    if deviceInfo.IsExtension then
-                        Some "590px"
-                    else
-                        None
-                width =
-                    if deviceInfo.IsExtension then
-                        Some "790px"
-                    else
-                        None
-            |}
+            (fun x ->
+                x.minHeight <- "100vh"
+                x.height <- if deviceInfo.IsExtension then "590px" else null
+                x.width <- if deviceInfo.IsExtension then "790px" else null)
             [
                 match sessionRestored with
                 | false -> LoadingScreen.LoadingScreen ()
@@ -41,19 +32,21 @@ module Content =
                     | Some username ->
                         React.suspense (
                             [
-                                SessionDataLoader.SessionDataLoader username
-                                SoundPlayer.SoundPlayer username
+                                SessionDataLoader.SessionDataLoader {| Username = username |}
+                                SoundPlayer.SoundPlayer {| Username = username |}
 
                                 Chakra.stack
-                                    {| spacing = 0; flex = 1 |}
+                                    (fun x ->
+                                        x.spacing <- "0"
+                                        x.flex <- 1)
                                     [
                                         TopBar.TopBar ()
                                         HomeScreen.HomeScreen
                                             {|
                                                 Username = username
-                                                Props = {| flex = 1 |}
+                                                Props = JS.newObj (fun x -> x.flex <- 1)
                                             |}
-                                        StatusBar.StatusBar username
+                                        StatusBar.StatusBar {| Username = username |}
                                     ]
                             ],
                             LoadingScreen.LoadingScreen ()

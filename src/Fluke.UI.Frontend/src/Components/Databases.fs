@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Browser.Types
 open Fluke.Shared
 open Feliz
 open Fable.React
@@ -49,20 +50,22 @@ module Databases =
                         |> setSelectedPosition)
 
             let onChange =
-                fun (e: {| target: Browser.Types.HTMLElement |}) ->
-                    if JS.instanceof (e.target, nameof Browser.Types.HTMLInputElement) then
-                        let swap value set =
-                            if set |> Set.contains value then
-                                set |> Set.remove value
-                            else
-                                set |> Set.add value
+                fun (e: KeyboardEvent) ->
+                    promise {
+                        if JS.instanceof (e.target, nameof HTMLInputElement) then
+                            let swap value set =
+                                if set |> Set.contains value then
+                                    set |> Set.remove value
+                                else
+                                    set |> Set.add value
 
-                        let newSelectedDatabaseIds =
-                            selectedDatabaseIdsSet
-                            |> swap input.DatabaseId
-                            |> Set.toArray
+                            let newSelectedDatabaseIds =
+                                selectedDatabaseIdsSet
+                                |> swap input.DatabaseId
+                                |> Set.toArray
 
-                        changeSelection newSelectedDatabaseIds
+                            changeSelection newSelectedDatabaseIds
+                    }
 
             let (|RenderCheckbox|HideCheckbox|) (selectedPosition, databasePosition) =
                 match selectedPosition, databasePosition with
@@ -77,13 +80,12 @@ module Databases =
                 | _ -> false
 
             Checkbox.Checkbox
-                {|
-                    ``data-testid`` = if isTesting then Some $"menu-item-{databaseId.ToString ()}" else None
-                    value = input.DatabaseId
-                    isChecked = selected
-                    isDisabled = if enabled then None else Some true
-                    onChange = onChange
-                |}
+                (fun x ->
+                    x.``data-testid`` <- if isTesting then $"menu-item-{databaseId.ToString ()}" else null
+                    x.value <- input.DatabaseId
+                    x.isChecked <- selected
+                    x.isDisabled <- if enabled then false else true
+                    x.onChange <- onChange)
                 [
                     str databaseName
                 ]
@@ -92,20 +94,18 @@ module Databases =
 
     [<ReactComponent>]
     let rec Databases
-        (username: Username)
-        (props: {| flex: int
-                   overflowY: string
-                   flexBasis: int |})
+        (input: {| Username: Username
+                   Props: Chakra.IChakraProps |})
         =
         let isTesting = Recoil.useValue Recoil.Atoms.isTesting
-        let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds username)
+        let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
 
         printfn $"Databases(): availableDatabaseIds.Length={availableDatabaseIds.Length}"
 
         Chakra.stack
-            {| props with
-                ``data-testid`` = if isTesting then Some (nameof Databases) else None
-            |}
+            (fun x ->
+                x <+ input.Props
+                x.``data-testid`` <- if isTesting then nameof Databases else null)
             [
                 yield!
                     availableDatabaseIds
@@ -113,7 +113,7 @@ module Databases =
                         (fun databaseId ->
                             MenuItem.MenuItem
                                 {|
-                                    Username = username
+                                    Username = input.Username
                                     DatabaseId = databaseId
                                 |})
             ]

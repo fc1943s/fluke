@@ -11,12 +11,10 @@ open Feliz.Recoil
 
 
 module Empty =
-    open Domain.UserInteraction
-
     [<ReactComponent>]
-    let Empty (username: Username) =
+    let Empty (input: {| Props: Chakra.IChakraProps |}) =
         Chakra.box
-            {|  |}
+            (fun _ -> ())
             [
                 str ""
             ]

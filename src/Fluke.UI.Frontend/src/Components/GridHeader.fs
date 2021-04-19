@@ -14,7 +14,7 @@ module GridHeader =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let GridHeader (username: Username) =
+    let GridHeader (input: {| Username: Username |}) =
         let cellSize = Recoil.useValue Recoil.Atoms.cellSize
         let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
@@ -24,10 +24,10 @@ module GridHeader =
             |> List.map snd
 
         Chakra.box
-            {|  |}
+            (fun _ -> ())
             [
                 Chakra.flex
-                    {|  |}
+                    (fun _ -> ())
                     [
                         yield!
                             datesByMonth
@@ -43,16 +43,16 @@ module GridHeader =
 
                                     MonthResponsiveCell.MonthResponsiveCell
                                         {|
-                                            Username = username
+                                            Username = input.Username
                                             Date = firstDate
-                                            Props = {| width = cellWidth |}
+                                            Props = JS.newObj (fun x -> x.width <- $"{cellWidth}px")
                                         |})
                     ]
 
 
                 // Day of Week row
                 Chakra.flex
-                    {|  |}
+                    (fun _ -> ())
                     [
                         yield!
                             dateSequence
@@ -62,14 +62,14 @@ module GridHeader =
                                         {|
                                             Date = date
                                             Label = date.DateTime.Format "EEEEEE"
-                                            Username = username
+                                            Username = input.Username
                                         |})
                     ]
 
 
                 // Day row
                 Chakra.flex
-                    {|  |}
+                    (fun _ -> ())
                     [
                         yield!
                             dateSequence
@@ -81,7 +81,7 @@ module GridHeader =
                                             {|
                                                 Date = date
                                                 Label = day.ToString "D2"
-                                                Username = username
+                                                Username = input.Username
                                             |})
                     ]
             ]

@@ -15,31 +15,29 @@ module TaskName =
     open Domain.Model
 
     [<ReactComponent>]
-    let TaskName (taskId: TaskId) =
+    let TaskName (input: {| TaskId: TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
-        let hasSelection = Recoil.useValue (Recoil.Selectors.Task.hasSelection taskId)
-        let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name (Some taskId))
-        let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments (Some taskId))
+        let hasSelection = Recoil.useValue (Recoil.Selectors.Task.hasSelection input.TaskId)
+        let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name (Some input.TaskId))
+        let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments (Some input.TaskId))
 
         Chakra.box
-            {|
-                flex = 1
-                ref = ref
-                position = "relative"
-                height = "17px"
-                lineHeight = "17px"
-                zIndex = if hovered then Some 1 else None
-            |}
+            (fun x ->
+                x.flex <- 1
+                x.ref <- ref
+                x.position <- "relative"
+                x.height <- "17px"
+                x.lineHeight <- "17px"
+                x.zIndex <- if hovered then 1 else 0)
             [
                 Chakra.box
-                    {|
-                        color = if hasSelection then Some "#ff5656" else None
-                        overflow = "hidden"
-                        backgroundColor = if hovered then Some "#333" else None
-                        whiteSpace = if not hovered then Some "nowrap" else None
-                        textOverflow = if not hovered then Some "ellipsis" else None
-                    |}
+                    (fun x ->
+                        x.color <- if hasSelection then "#ff5656" else null
+                        x.overflow <- "hidden"
+                        x.backgroundColor <- if hovered then "#333" else null
+                        x.whiteSpace <- if not hovered then "nowrap" else null
+                        x.textOverflow <- if not hovered then "ellipsis" else null)
                     [
                         str taskName
                     ]

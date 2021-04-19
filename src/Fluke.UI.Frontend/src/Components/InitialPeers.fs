@@ -18,73 +18,84 @@ module InitialPeers =
         let setGunPeer1 = Recoil.useSetState Atoms.gunPeer1
         let setInitialPeerSkipped = Recoil.useSetState Atoms.initialPeerSkipped
 
-        let nextClick () =
-            promise {
-                if gunPeer.Length > 0 then
-                    setGunPeer1 gunPeer
-            }
+        let nextClick _ =
+            promise { if gunPeer.Length > 0 then setGunPeer1 gunPeer }
 
-        let skipClick () = promise { setInitialPeerSkipped true }
+        let skipClick _ = promise { setInitialPeerSkipped true }
 
         Chakra.center
-            {| flex = 1 |}
+            (fun x -> x.flex <- 1)
             [
                 Chakra.stack
-                    {| minWidth = "200px" |}
+                    (fun x -> x.minWidth <- "200px")
                     [
                         Input.Input (
-                            Dom.newObj
+                            JS.newObj
                                 (fun x ->
                                     x.autoFocus <- true
-                                    x.label <- "Gun peer"
+                                    x.label <- str "Gun peer"
 
                                     x.hint <-
                                         Some (
                                             ExternalLink.ExternalLink
                                                 {|
-                                                    isExternal = true
-                                                    href =
-                                                        "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers"
-                                                    text = "Read documentation"
+                                                    Text = "Read documentation"
+                                                    Props =
+                                                        JS.newObj
+                                                            (fun x ->
+                                                                x.isExternal <- true
+
+                                                                x.href <-
+                                                                    "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers")
                                                 |}
                                         )
 
 
+                                    x.value <- Some "https://flukegunpeer-test.herokuapp.com/gun"
                                     x.placeholder <- "https://??????.herokuapp.com/gun"
                                     x.onEnterPress <- Some nextClick
-                                    x.onChange <- Some (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value }))
+                                    x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value }))
                         )
 
                         Chakra.hStack
-                            {| align = "stretch" |}
+                            (fun x -> x.align <- "stretch")
                             [
                                 Button.Button
                                     {|
                                         Icon = None
-                                        RightIcon = None
-                                        props =
-                                            {|
-                                                marginLeft = None
-                                                flex = Some 1
-                                                autoFocus = Some true
-                                                onClick = Some skipClick
-                                                color = Some "gray"
-                                            |}
-                                        children =
-                                            [
-                                                str "Skip"
-                                            ]
+                                        Hint = None
+                                        Props =
+                                            JS.newObj
+                                                (fun x ->
+                                                    x.flex <- 1
+                                                    x.autoFocus <- true
+                                                    x.onClick <- skipClick
+                                                    x.color <- "gray"
+
+                                                    x.children <-
+                                                        [
+                                                            str "Skip"
+                                                        ])
                                     |}
-                                Chakra.button
+
+                                Button.Button
                                     {|
-                                        flex = 1
-                                        onClick = nextClick
-                                        color = "gray"
-                                        disabled = gunPeer.Length = 0
+                                        Icon = None
+                                        Hint = None
+                                        Props =
+                                            JS.newObj
+                                                (fun x ->
+                                                    x.flex <- 1
+                                                    x.onClick <- nextClick
+                                                    x.color <- "gray"
+                                                    x.disabled <- gunPeer.Length = 0
+
+                                                    x.children <-
+                                                        [
+                                                            str "Next"
+                                                        ])
                                     |}
-                                    [
-                                        str "Next"
-                                    ]
+
                             ]
                     ]
             ]

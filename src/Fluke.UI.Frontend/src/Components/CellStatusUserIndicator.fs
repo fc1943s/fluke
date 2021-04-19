@@ -15,26 +15,27 @@ module CellStatusUserIndicator =
         let color = Recoil.useValue (Recoil.Atoms.User.color input.Username)
 
         Chakra.box
-            {|
-                height = "17px"
-                lineHeight = "17px"
-                position = "absolute"
-                top = 0
-                width = "100%"
-                _after =
-                    {|
-                        borderBottomColor =
-                            match color with
-                            | UserColor.Blue -> Some "#000000"
-                            | UserColor.Pink -> Some "#a91c77"
-                            | _ -> None
-                        borderBottomWidth = "8px"
-                        borderLeftColor = "transparent"
-                        borderLeftWidth = "8px"
-                        position = "absolute"
-                        content = "\"\""
-                        bottom = 0
-                        right = 0
-                    |}
-            |}
+            (fun x ->
+                x.height <- "17px"
+                x.lineHeight <- "17px"
+                x.position <- "absolute"
+                x.top <- "0"
+                x.width <- "100%"
+
+                x._after <-
+                    (JS.newObj
+                        (fun x ->
+                            x.borderBottomWidth <- "8px"
+                            x.borderBottomColor <-
+                                match color with
+                                | UserColor.Blue -> "#000000"
+                                | UserColor.Pink -> "#a91c77"
+                                | _ -> null
+
+                            x.borderLeftWidth <- "8px"
+                            x.borderLeftColor <- "transparent"
+                            x.position <- "absolute"
+                            x.content <- "\"\""
+                            x.bottom <- "0"
+                            x.right <- "0")))
             []

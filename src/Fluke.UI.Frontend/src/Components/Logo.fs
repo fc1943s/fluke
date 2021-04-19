@@ -12,11 +12,10 @@ module Logo =
     [<ReactComponent>]
     let Logo () =
         Chakra.simpleGrid
-            {|
-                columns = 2
-                borderWidth = "1px"
-                borderColor = TempUI.cellStatusColor Disabled
-            |}
+            (fun x ->
+                x.columns <- 2
+                x.borderWidth <- "1px"
+                x.borderColor <- TempUI.cellStatusColor Disabled)
             [
                 yield!
                     [
@@ -28,10 +27,9 @@ module Logo =
                     |> List.map
                         (fun color ->
                             Chakra.box
-                                {|
-                                    height = "7px"
-                                    width = "7px"
-                                    backgroundColor = color
-                                |}
+                                (fun x ->
+                                    x.height <- "7px"
+                                    x.width <- "7px"
+                                    x.backgroundColor <- color)
                                 [])
             ]

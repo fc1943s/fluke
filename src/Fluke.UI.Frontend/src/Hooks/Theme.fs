@@ -91,6 +91,7 @@ module Theme =
                                 ``*::-webkit-scrollbar`` = {| width = "9px" |}
                                 ``*::-webkit-scrollbar:horizontal`` = {| height = "6px" |}
                                 ``*::-webkit-scrollbar-track`` = {| display = "none" |}
+                                ``*::-webkit-scrollbar-corner`` = {| display = "none" |}
                                 ``*::-webkit-scrollbar-thumb`` =
                                     {|
                                         background = "gray.45"

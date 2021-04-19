@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Browser.Types
 open Fable.React
-open Fluke.Shared
 open Feliz
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
@@ -23,19 +22,16 @@ module Input =
 
 
     type IProps<'TValue, 'TKey> =
-        abstract label : string with get, set
+        inherit Chakra.IChakraProps
+
         abstract hint : ReactElement option with get, set
         abstract hintTitle : ReactElement option with get, set
-        abstract autoFocus : bool with get, set
-        abstract placeholder : string with get, set
         abstract atom : Recoil.InputAtom<'TValue, 'TKey> option with get, set
         abstract atomScope : Recoil.AtomScope option with get, set
         abstract value : 'TValue option with get, set
         abstract onFormat : ('TValue -> string) option with get, set
         abstract onValidate : (string -> 'TValue option) option with get, set
-        abstract onEnterPress : (unit -> JS.Promise<unit>) option with get, set
-        abstract onChange : (KeyboardEvent -> JS.Promise<unit>) option with get, set
-        abstract onKeyDown : (KeyboardEvent -> JS.Promise<unit>) option with get, set
+        abstract onEnterPress : (_ -> JS.Promise<unit>) option with get, set
         abstract inputFormat : InputFormat option with get, set
 
     [<ReactComponent>]
@@ -144,9 +140,9 @@ module Input =
                 (fun _setter (e: KeyboardEvent) ->
                     promise {
                         if inputRef.current <> null && e.target <> null then
-                            match input.onChange with
-                            | Some onChange -> do! onChange e
-                            | None -> ()
+                            match box input.onChange with
+                            | null -> ()
+                            | _ -> do! input.onChange e
 
                             let validValue =
                                 match input.onValidate with
@@ -173,7 +169,7 @@ module Input =
                     })
 
         Chakra.stack
-            {| spacing = "5px" |}
+            (fun x -> x.spacing <- "5px")
             [
 
                 GunBind.GunBind
@@ -184,14 +180,13 @@ module Input =
                             | _ -> atomFieldOptions.AtomField.ReadWrite
                     |}
 
-                match input.label with
-                | String.ValidString ->
+                if input.label <> null then
                     Chakra.flex
-                        {|  |}
+                        (fun _ -> ())
                         [
                             str $"{input.label}:"
                             Hint.Hint (
-                                Dom.newObj
+                                JS.newObj
                                     (fun x ->
                                         x.hint <- input.hint
 
@@ -199,35 +194,39 @@ module Input =
                                             Some (
                                                 match input.hintTitle with
                                                 | Some hintTitle -> hintTitle
-                                                | None -> str input.label
+                                                | None -> input.label
                                             ))
                             )
                         ]
-                | _ -> ()
+                else
+                    nothing
 
-                let baseProps =
-                    {|
-                        onChange = onChange
-                        ref = inputRef
-                        _focus = {| borderColor = "heliotrope" |}
-                        autoFocus = input.autoFocus
-                        placeholder = input.placeholder
-                        onKeyDown =
+                Chakra.input
+                    (fun x ->
+                        x.onChange <- onChange
+                        x.ref <- inputRef
+                        x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
+                        x.autoFocus <- input.autoFocus
+                        x.placeholder <- input.placeholder
+
+                        x.onKeyDown <-
                             fun (e: KeyboardEvent) ->
                                 promise {
-                                    match input.onKeyDown with
-                                    | Some onKeyDown -> do! onKeyDown e
-                                    | None -> ()
+                                    match box input.onKeyDown with
+                                    | null -> ()
+                                    | _ -> do! input.onKeyDown e
+
+
+                                    match box input.onChange with
+                                    | null -> ()
+                                    | _ -> do! input.onChange e
 
                                     match input.onEnterPress with
                                     | Some onEnterPress -> if e.key = "Enter" then do! onEnterPress ()
                                     | None -> ()
                                 }
-                    |}
 
-                Chakra.input
-                    {| baseProps with
-                        ``type`` =
+                        x.``type`` <-
                             match input.inputFormat with
                             | Some inputFormat ->
                                 match inputFormat with
@@ -237,12 +236,11 @@ module Input =
                                 | InputFormat.DateTime -> "datetime-local"
                                 | InputFormat.Email -> "email"
                                 | InputFormat.Password -> "password"
-                                |> Some
-                            | None -> None
-                        paddingTop =
+                            | None -> null
+
+                        x.paddingTop <-
                             match input.inputFormat, deviceInfo with
-                            | Some InputFormat.Password, { IsEdge = true } -> Some "7px"
-                            | _ -> None
-                    |}
+                            | Some InputFormat.Password, { IsEdge = true } -> "7px"
+                            | _ -> null)
                     []
             ]

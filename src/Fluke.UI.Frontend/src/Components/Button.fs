@@ -1,56 +1,67 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fable.Core
 open Feliz
+open Fable.React
 open Fluke.UI.Frontend.Bindings
 
 
 module Button =
+    [<RequireQualifiedAccess>]
+    type IconPosition =
+        | Left
+        | Right
 
     [<ReactComponent>]
     let Button
-        (input: {| RightIcon: bool option
-                   Icon: obj option
-                   props: {| color: string option
-                             flex: int option
-                             autoFocus: bool option
-                             marginLeft: string option
-                             onClick: (unit -> JS.Promise<unit>) option |}
-                   children: seq<ReactElement> |})
+        (input: {| Icon: ((unit -> ReactElement) * IconPosition) option
+                   Hint: ReactElement option
+                   Props: Chakra.IChakraProps |})
         =
-        match input.children |> Seq.toList with
-        | [] -> Chakra.iconButton {| input.props with icon = input.Icon |} []
-        | children ->
-            let icon =
-                Chakra.box
-                    {|
-                        ``as`` = input.Icon
-                        fontSize = "21px"
-                    |}
-                    []
 
-            Chakra.button
-                //                    _focus = {| backgroundColor = "white" |}
-                {| input.props with
-                    height = "auto"
-                    paddingTop = "2px"
-                    paddingBottom = "2px"
-                |}
-                [
-                    Chakra.stack
-                        {| direction = "row"; spacing = "7px" |}
+        let icon, iconPosition =
+            match input.Icon with
+            | Some (icon, iconPosition) -> Some icon, Some iconPosition
+            | _ -> None, None
+
+        Tooltip.wrap
+            (input.Hint |> Option.defaultValue null)
+            [
+                match input.Props.children |> Seq.toList with
+                | [] ->
+                    Chakra.iconButton
+                        (fun x ->
+                            x <+ input.Props
+                            x.icon <- icon)
+                        []
+                | children ->
+                    let icon =
+                        Chakra.box
+                            (fun x ->
+                                x.``as`` <- icon
+                                x.fontSize <- "21px")
+                            []
+
+                    Chakra.button
+                        (fun x ->
+                            x <+ input.Props
+                            x.height <- "auto"
+                            x.paddingTop <- "2px"
+                            x.paddingBottom <- "2px")
                         [
-                            if input.RightIcon = (Some false) then
-                                icon
-
-                            Chakra.box
-                                ()
+                            Chakra.stack
+                                (fun x ->
+                                    x.direction <- "row"
+                                    x.spacing <- "7px")
                                 [
-                                    yield! children
+                                    if iconPosition = Some IconPosition.Left then icon
+
+                                    Chakra.box
+                                        (fun _ -> ())
+                                        [
+                                            yield! children
+                                        ]
+
+                                    if iconPosition = Some IconPosition.Right then icon
                                 ]
-
-                            if input.RightIcon = (Some true) then
-                                icon
-
                         ]
-                ]
+            ]

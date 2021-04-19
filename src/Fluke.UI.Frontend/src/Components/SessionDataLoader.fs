@@ -132,9 +132,9 @@ module SessionDataLoader =
 
 
     [<ReactComponent>]
-    let SessionDataLoader (username: Username) =
+    let SessionDataLoader (input: {| Username: Username |}) =
 
-        let databaseStateMapCache = Recoil.useValue (Recoil.Atoms.Session.databaseStateMapCache username)
+        let databaseStateMapCache = Recoil.useValue (Recoil.Atoms.Session.databaseStateMapCache input.Username)
 
         let loaded, setLoaded = React.useState false
 
@@ -143,7 +143,7 @@ module SessionDataLoader =
                 (fun getter ->
                     promise {
                         if not loaded then
-                            let! databaseStateMap = fetchDatabaseStateMap getter username
+                            let! databaseStateMap = fetchDatabaseStateMap getter input.Username
 
                             printfn
                                 $"SessionDataLoader.updateDatabaseStateMap():
@@ -153,7 +153,7 @@ module SessionDataLoader =
                             if databaseStateMapCache.Count
                                <> databaseStateMap.Count then
                                 getter.set (
-                                    Recoil.Atoms.Session.databaseStateMapCache username,
+                                    Recoil.Atoms.Session.databaseStateMapCache input.Username,
                                     TempData.mergeDatabaseStateMap databaseStateMapCache databaseStateMap
                                 )
 
@@ -171,7 +171,7 @@ module SessionDataLoader =
             |]
         )
 
-        let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData username)
+        let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
 
         let loadState =
             Recoil.useCallbackRef
@@ -187,9 +187,9 @@ module SessionDataLoader =
                                 |> List.sortBy (fun (_id, databaseState) -> databaseState.Database.Name)
                                 |> List.map fst
 
-                            setter.set (Recoil.Atoms.Session.availableDatabaseIds username, availableDatabaseIds)
+                            setter.set (Recoil.Atoms.Session.availableDatabaseIds input.Username, availableDatabaseIds)
 
-                            initializeSessionData username setter sessionData
+                            initializeSessionData input.Username setter sessionData
 
                             databaseStateMapCache
                             |> Map.iter

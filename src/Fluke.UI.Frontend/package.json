@@ -49,8 +49,8 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-5027eb465",
-    "react-dom": "0.0.0-experimental-5027eb465",
+    "react": "0.0.0-experimental-af1a4cbf7",
+    "react-dom": "0.0.0-experimental-af1a4cbf7",
 
     "recoil": "~0.2",
     "recoilize": "~2.0",
@@ -68,7 +68,7 @@
     "react-icons": "~4.2",
 
     "electron-window-state": "~5.0",
-    "electron-devtools-installer": "~3.1",
+    "electron-devtools-installer": "~3.2",
     "devtron": "~1.4",
 
     "react-markdown": "~6.0",
@@ -137,8 +137,8 @@
     "concurrently": "~6.0"
   },
   "resolutions": {
-    "react": "0.0.0-experimental-5027eb465",
-    "react-dom": "0.0.0-experimental-5027eb465"
+    "react": "0.0.0-experimental-af1a4cbf7",
+    "react-dom": "0.0.0-experimental-af1a4cbf7"
   },
   "browserslist": {
     "production": [

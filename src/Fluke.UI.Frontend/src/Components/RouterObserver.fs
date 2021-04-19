@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Browser.Types
-open Fable.Core
 open Feliz.Router
 open Feliz
 open Feliz.Recoil

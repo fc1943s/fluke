@@ -61,6 +61,18 @@ module Recoil =
 
         wrapAtomField<'TValue, 'TKey> flatAtom
 
+    let useValueDefault<'TKey, 'TValue, 'TPerm when 'TPerm :> ReadOnly>
+        (atom: 'TKey -> RecoilValue<'TValue, 'TPerm>)
+        (key: 'TKey option)
+        =
+        let atom =
+            match key with
+            | Some key -> atom key
+            | None -> box (RecoilValue.lift null) :?> RecoilValue<'TValue, 'TPerm>
+
+        Recoil.useValue atom
+
+
     let useAtomField<'TValue, 'TKey when 'TValue: equality> atom =
         let atomField = getAtomField<'TValue, 'TKey> atom
 

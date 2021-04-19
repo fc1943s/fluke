@@ -2,50 +2,42 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fluke.UI.Frontend.Bindings
-open Fable.React
-open Fable.Core.JsInterop
 
 
 module Modal =
+    type IProps =
+        inherit Chakra.IChakraProps
 
     [<ReactComponent>]
-    let Modal
-        (input: {| IsOpen: bool
-                   OnClose: unit -> unit
-                   children: seq<ReactElement> |})
-        =
-        let isOpenRef = React.useRef input.IsOpen
+    let Modal (input: {| Props: IProps |}) =
+        let isOpenRef = React.useRef input.Props.isOpen
 
         React.useEffect (
             (fun () ->
-                if input.IsOpen <> isOpenRef.current then
-                    isOpenRef.current <- input.IsOpen
-
-                    Dom.resetZoom ()
-
-                ),
+                if input.Props.isOpen <> isOpenRef.current then
+                    isOpenRef.current <- input.Props.isOpen
+                    Dom.resetZoom ()),
             [|
-                box input.IsOpen
+                box input.Props.isOpen
                 box isOpenRef
             |]
         )
 
         Chakra.modal
-            {|
-                isCentered = true
-                isOpen = input.IsOpen
-                onClose = input.OnClose
-            |}
+            (fun x ->
+                x.isCentered <- true
+                x.isOpen <- input.Props.isOpen
+                x.onClose <- input.Props.onClose)
             [
-                Chakra.modalOverlay () []
+                Chakra.modalOverlay (fun _ -> ()) []
                 Chakra.modalContent
-                    {| backgroundColor = "gray.13" |}
+                    (fun x -> x.backgroundColor <- "gray.13")
                     [
                         Chakra.modalBody
-                            {| padding = "40px" |}
+                            (fun x -> x.padding <- "40px")
                             [
-                                yield! input.children
+                                yield! input.Props.children
                             ]
-                        Chakra.modalCloseButton () []
+                        Chakra.modalCloseButton (fun _ -> ()) []
                     ]
             ]

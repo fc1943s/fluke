@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Hooks
 
 open Feliz
 open Fable.Core
-open Feliz.UseListener
 open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
@@ -16,47 +15,35 @@ module Auth =
         let setUsername = Recoil.useSetState Recoil.Atoms.username
         let resetGunKeys = Recoil.useResetState Recoil.Atoms.gunKeys
 
-        React.useCallback (
-            (fun () ->
-                printfn "before leave"
-                gunNamespace.ref.leave ()
-                setUsername None
-                resetGunKeys ()
-
-                ),
-            [|
-                box setUsername
-                box resetGunKeys
-                box gunNamespace.ref
-            |]
-        )
+        Recoil.useCallbackRef
+            (fun _setter _ ->
+                promise {
+                    printfn "before leave"
+                    gunNamespace.ref.leave ()
+                    setUsername None
+                    resetGunKeys ()
+                })
 
     let usePostSignIn () =
         let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
         let setUsername = Recoil.useSetState Recoil.Atoms.username
         let setGunKeys = Recoil.useSetState Recoil.Atoms.gunKeys
 
-        React.useCallback (
-            (fun username ->
+        Recoil.useCallbackRef
+            (fun _setter username ->
                 promise {
                     setUsername (Some username)
                     setGunKeys gunNamespace.ref.``_``.sea
 
                     Dom.resetZoom ()
-                }),
-            [|
-                box setUsername
-                box setGunKeys
-                box gunNamespace.ref
-            |]
-        )
+                })
 
     let useSignIn () =
         let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
         let postSignIn = usePostSignIn ()
 
-        React.useCallback (
-            (fun username password ->
+        Recoil.useCallbackRef
+            (fun _setter username password ->
                 promise {
                     let! ack = Gun.authUser gunNamespace.ref username password
 
@@ -68,12 +55,7 @@ module Auth =
                                 return Ok ()
                             | Some error -> return Error error
                         }
-                }),
-            [|
-                box gunNamespace.ref
-                box postSignIn
-            |]
-        )
+                })
 
     let useSignUp () =
         let postSignIn = usePostSignIn ()

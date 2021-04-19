@@ -15,53 +15,47 @@ module Hint =
         match input.hint with
         | Some hint ->
             Chakra.popover
-                {|  |}
+                (fun _ -> ())
                 [
                     Chakra.popoverTrigger
-                        {|  |}
+                        (fun _ -> ())
                         [
                             Chakra.iconButton
-                                {|
-                                    icon = Icons.bsQuestionCircle ()
-//                                    backgroundColor = "transparent"
-//                                    variant = "outline"
-                                    border = 0
-                                    color = "heliotrope"
-                                    marginLeft = "1px"
-                                    marginTop = "-2px"
-                                    padding = "2px"
-                                    minWidth = 0
-                                    width = "auto"
-                                    height = "auto"
-                                |}
+                                (fun x ->
+                                    x.icon <- Icons.bsQuestionCircle ()
+                                    x.border <- "0"
+                                    x.color <- "heliotrope"
+                                    x.marginLeft <- "3px"
+                                    x.marginTop <- "-2px"
+                                    x.padding <- "2px"
+                                    x.minWidth <- "0"
+                                    x.width <- "auto"
+                                    x.height <- "auto")
                                 []
                         ]
                     Chakra.popoverContent
-                        {|  |}
+                        (fun _ -> ())
                         [
-                            Chakra.popoverArrow {|  |} []
-                            Chakra.popoverCloseButton {|  |} []
+                            Chakra.popoverArrow (fun _ -> ()) []
+                            Chakra.popoverCloseButton (fun _ -> ()) []
                             Chakra.popoverBody
-                                {|
-                                    padding = "10px"
-                                    backgroundColor = "gray.13"
-                                |}
+                                (fun x ->
+                                    x.padding <- "10px"
+                                    x.backgroundColor <- "gray.13")
                                 [
                                     match input.hintTitle with
                                     | Some hintTitle ->
                                         Chakra.box
-                                            {|
-                                                paddingBottom = "12px"
-                                                fontSize = "15px"
-                                            |}
+                                            (fun x ->
+                                                x.paddingBottom <- "12px"
+                                                x.fontSize <- "15px")
                                             [
                                                 Chakra.icon
-                                                    {|
-                                                        marginTop = "-3px"
-                                                        marginRight = "5px"
-                                                        color = "heliotrope"
-                                                        icon = Icons.bsQuestionCircle ()
-                                                    |}
+                                                    (fun x ->
+                                                        x.marginTop <- "-3px"
+                                                        x.marginRight <- "5px"
+                                                        x.color <- "heliotrope"
+                                                        x.icon <- Icons.bsQuestionCircle ())
                                                     []
 
                                                 hintTitle

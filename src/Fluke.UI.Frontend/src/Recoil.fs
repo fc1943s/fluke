@@ -255,6 +255,9 @@ module Recoil =
                     (fun (_taskId: TaskId, _dateId: DateId) -> []: TaskSession list)
                 )
 
+            let formatTaskId (TaskId taskId) = $"TaskId/{taskId}"
+            let formatDateId (DateId referenceDay) = $"DateId/{referenceDay.Stringify ()}"
+
             let rec selected =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof selected}",
@@ -265,23 +268,49 @@ module Recoil =
                                 let gun = box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj> option
 
                                 match gun with
-                                | Some _gun ->
-                                    let gunAtomKey = getGunAtomKey (Some username) (selected (username, taskId, dateId))
-                                    printfn "skipping effect. gunAtomKey={gunAtomKey}"
-                                    fun () -> ()
-                                | Some gun when false ->
-                                    let gunAtomKey = getGunAtomKey (Some username) (selected (username, taskId, dateId))
+                                //                                | Some _gun ->
+//                                    let atom = selected (username, taskId, dateId)
+//                                    let gunAtomKey = getGunAtomKey (Some username) atom
+//
+//                                    let newId =
+//                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
+//                                                                                                           formatDateId
+//                                                                                                               dateId
+//                                        }"""
+//
+//                                    printfn
+//                                        $"""skipping effect.
+//                                    gunAtomKey={gunAtomKey}
+//                                    atom.key={atom.key}
+//                                    newKey={newId}
+//                                    """
+//
+//                                    fun () -> ()
+                                | Some gun ->
+                                    let atom = selected (username, taskId, dateId)
+                                    let gunAtomKey = getGunAtomKey (Some username) atom
 
-                                    printfn $"cell.selected .effects. {JS.JSON.stringify {| gunAtomKey = gunAtomKey |}}"
+                                    let newId =
+                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
+                                                                                                           formatDateId
+                                                                                                               dateId
+                                        }"""
 
-                                    let gunAtomNode = Gun.getGunAtomNode gun gunAtomKey
+                                    printfn
+                                        $"""cell.selected .effects.
+                                    gunAtomKey={gunAtomKey}
+                                    atom.key={atom.key}
+                                    newKey={newId}
+                                    """
+
+                                    let gunAtomNode = Gun.getGunAtomNode gun newId
 
                                     match e.trigger with
                                     | "get" ->
                                         gunAtomNode.on
                                             (fun data ->
                                                 printfn
-                                                    $"gunAtomNode.on() effect. gunAtomKey={gunAtomKey}
+                                                    $"gunAtomNode.on() effect. newId={newId}
                                                     data={JS.JSON.stringify data}"
 
                                                 match Gun.deserializeGunAtomNode data with
@@ -294,7 +323,8 @@ module Recoil =
                                             Gun.putGunAtomNode gunAtomNode value
 
                                             printfn
-                                                $"cell.selected. effects. onSet. oldValue: {oldValue}; newValue: {value}")
+                                                $"cell.selected. effects. onSet.
+                                                oldValue: {JS.JSON.stringify oldValue}; newValue: {value}")
 
                                     fun () ->
                                         printfn "> unsubscribe cell. calling selected.off ()"

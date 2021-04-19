@@ -12,8 +12,8 @@ open Fluke.Shared.Domain.State
 module TaskPriority =
 
     [<ReactComponent>]
-    let TaskPriority (taskId: TaskId) =
-        let priority = Recoil.useValue (Recoil.Atoms.Task.priority (Some taskId))
+    let TaskPriority (input: {| TaskId: TaskId |}) =
+        let priority = Recoil.useValue (Recoil.Atoms.Task.priority (Some input.TaskId))
 
         let priorityText =
             priority
@@ -21,11 +21,10 @@ module TaskPriority =
             |> Option.defaultValue ""
 
         Chakra.box
-            {|
-                position = "relative"
-                height = "17px"
-                lineHeight = "17px"
-            |}
+            (fun x ->
+                x.position <- "relative"
+                x.height <- "17px"
+                x.lineHeight <- "17px")
             [
                 str priorityText
             ]

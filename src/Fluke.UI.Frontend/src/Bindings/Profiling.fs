@@ -18,12 +18,12 @@ module Profiling =
 
     Dom.set (nameof profilingState) profilingState
 
-    let internal addCount id =
+    let addCount id =
         match profilingState.CallCount.ContainsKey id with
         | false -> profilingState.CallCount.[id] <- 1
         | true -> profilingState.CallCount.[id] <- profilingState.CallCount.[id] + 1
 
-    let internal addTimestamp id =
+    let addTimestamp id =
         profilingState.Timestamps.Add (id, ticksDiff DateTime.Now.Ticks)
 
     addTimestamp "Init"

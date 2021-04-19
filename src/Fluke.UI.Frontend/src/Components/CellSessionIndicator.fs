@@ -16,14 +16,15 @@ module CellSessionIndicator =
                    Sessions: TaskSession list |})
         =
         Chakra.box
-            {|
-                fontSize = "11px"
-                color =
+            (fun x ->
+                x.fontSize <- "11px"
+
+                x.color <-
                     match input.Status with
                     | UserStatus (_, Completed) -> "#ccc"
                     | _ -> "#999"
-                textShadow = "0 0 2px #000"
-            |}
+
+                x.textShadow <- "0 0 2px #000")
             [
                 match input.Sessions.Length with
                 | x when x > 0 -> str (string x)

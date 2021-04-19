@@ -10,14 +10,14 @@ module LoadingScreen =
     [<ReactComponent>]
     let LoadingScreen () =
         Chakra.center
-            {| flex = 1 |}
+            (fun x -> x.flex <- 1)
             [
                 Chakra.stack
-                    ()
+                    (fun _ -> ())
                     [
                         Spinner.Spinner ()
                         Chakra.box
-                            ()
+                            (fun _ -> ())
                             [
                                 str "Loading..."
                             ]

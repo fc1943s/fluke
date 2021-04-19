@@ -38,7 +38,7 @@ module Cell =
 
         let onCellClick =
             Recoil.useCallbackRef
-                (fun setter ->
+                (fun setter _ ->
                     promise {
                         let! ctrlPressed = setter.snapshot.getPromise Recoil.Atoms.ctrlPressed
                         let! shiftPressed = setter.snapshot.getPromise Recoil.Atoms.shiftPressed
@@ -66,42 +66,45 @@ module Cell =
             ]
 
         Chakra.center
-            {|
-                ``data-testid`` =
+            (fun x ->
+                x.``data-testid`` <-
                     if isTesting then
-                        Some $"cell-{input.TaskId}-{referenceDay.DateTime.ToShortDateString ()}"
+                        $"cell-{input.TaskId}-{referenceDay.DateTime.ToShortDateString ()}"
                     else
-                        None
-                onClick = (fun (_event: MouseEvent) -> onCellClick ())
-                width = "17px"
-                height = "17px"
-                lineHeight = "17px"
-                cursor = "pointer"
-                backgroundColor =
+                        null
+
+                x.onClick <- onCellClick
+                x.width <- "17px"
+                x.height <- "17px"
+                x.lineHeight <- "17px"
+                x.cursor <- "pointer"
+
+                x.backgroundColor <-
                     (TempUI.cellStatusColor status)
                     + (if isToday then "aa"
                        elif input.SemiTransparent then "d9"
                        else "")
-                position = "relative"
-                textAlign = "center"
-                border = if selected then "1px solid #ffffff55 !important" else "none"
-            |}
+
+                x.position <- "relative"
+                x.textAlign <- "center"
+                x.border <- if selected then "1px solid #ffffff55 !important" else "none")
             [
                 if isCurrentCellMenuOpened then
                     Chakra.stack
-                        {|
-                            spacing = 0
-                            borderWidth = "1px"
-                            borderColor = TempUI.cellStatusColor Disabled
-                            position = "absolute"
-                            top = "10px"
-                            left = "10px"
-                            zIndex = 1
-                            boxShadow = "0px 0px 2px 1px #262626"
-                        |}
+                        (fun x ->
+                            x.spacing <- "0"
+                            x.borderWidth <- "1px"
+                            x.borderColor <- TempUI.cellStatusColor Disabled
+                            x.position <- "absolute"
+                            x.top <- "10px"
+                            x.left <- "10px"
+                            x.zIndex <- 1
+                            x.boxShadow <- "0px 0px 2px 1px #262626")
                         [
                             Chakra.simpleGrid
-                                {| columns = 2; width = "30px" |}
+                                (fun x ->
+                                    x.columns <- 2
+                                    x.width <- "30px")
                                 [
                                     yield!
                                         selectableStatusList
@@ -109,105 +112,92 @@ module Cell =
                                             (fun status ->
                                                 let color = TempUI.manualCellStatusColor status
 
-                                                Tooltip.Tooltip
-                                                    (Dom.newObj
-                                                        (fun x ->
-                                                            x.label <-
-                                                                match status with
-                                                                | Postponed until ->
-                                                                    Chakra.box
-                                                                        ()
-                                                                        [
-                                                                            match until with
-                                                                            | None -> "Postpone until tomorrow"
-                                                                            | Some until ->
-                                                                                $"Postpone until X (30s remaining) {
-                                                                                                                        until
-                                                                                }"
-                                                                            |> str
-                                                                        ]
-                                                                | Completed ->
-                                                                    Chakra.box
-                                                                        ()
-                                                                        [
-                                                                            str "Complete"
-                                                                        ]
-                                                                | Dismissed ->
-                                                                    Chakra.box
-                                                                        ()
-                                                                        [
-                                                                            Chakra.box
-                                                                                ()
-                                                                                [
-                                                                                    str "Dismiss"
-                                                                                ]
-                                                                            Chakra.box
-                                                                                ()
-                                                                                [
-                                                                                    str """???"""
-                                                                                ]
-                                                                        ]
-                                                                | Scheduled ->
-                                                                    Chakra.box
-                                                                        {| padding = "4px" |}
-                                                                        [
-                                                                            Chakra.box
-                                                                                ()
-                                                                                [
-                                                                                    str "Schedule"
-                                                                                ]
-                                                                            Chakra.box
-                                                                                {| marginTop = "8px" |}
-                                                                                [
-                                                                                    str
-                                                                                        """Manually schedule a task,
+                                                let tooltipLabel =
+                                                    match status with
+                                                    | Postponed until ->
+                                                        Chakra.box
+                                                            (fun _ -> ())
+                                                            [
+                                                                match until with
+                                                                | None -> "Postpone until tomorrow"
+                                                                | Some until ->
+                                                                    $"Postpone until X (30s remaining) {until}"
+                                                                |> str
+                                                            ]
+                                                    | Completed ->
+                                                        Chakra.box
+                                                            (fun _ -> ())
+                                                            [
+                                                                str "Complete"
+                                                            ]
+                                                    | Dismissed ->
+                                                        Chakra.box
+                                                            (fun _ -> ())
+                                                            [
+                                                                Chakra.box
+                                                                    (fun _ -> ())
+                                                                    [
+                                                                        str "Dismiss"
+                                                                    ]
+                                                                Chakra.box
+                                                                    (fun _ -> ())
+                                                                    [
+                                                                        str """???"""
+                                                                    ]
+                                                            ]
+                                                    | Scheduled ->
+                                                        Chakra.box
+                                                            (fun x -> x.padding <- "4px")
+                                                            [
+                                                                Chakra.box
+                                                                    (fun _ -> ())
+                                                                    [
+                                                                        str "Schedule"
+                                                                    ]
+                                                                Chakra.box
+                                                                    (fun x -> x.marginTop <- "8px")
+                                                                    [
+                                                                        str
+                                                                            """Manually schedule a task,
 overriding any other behavior.
 """
-                                                                                ]
-                                                                        ]
+                                                                    ]
+                                                            ]
 
-                                                            x.placement <-
-                                                                match status with
-                                                                | Postponed _ -> "right"
-                                                                | Completed -> "left"
-                                                                | Dismissed -> "left"
-                                                                | Scheduled -> "right"
 
-                                                            ))
+                                                Tooltip.wrap
+                                                    tooltipLabel
                                                     [
                                                         Chakra.box
-                                                            {|
-                                                                height = "15px"
-                                                                width = "15px"
-                                                                backgroundColor = color
-                                                                cursor = "pointer"
-                                                            |}
+                                                            (fun x ->
+                                                                x.height <- "15px"
+                                                                x.width <- "15px"
+                                                                x.backgroundColor <- color
+                                                                x.cursor <- "pointer")
                                                             []
                                                     ])
                                 ]
                             match status with
                             | UserStatus (_, status) when selectableStatusList |> List.contains status ->
                                 Chakra.tooltip
-                                    {|
-                                        bg = "gray.10"
-                                        color = "white"
-                                        label = "Clear"
-                                        placement = "bottom"
-                                        hasArrow = true
-                                    |}
+                                    (fun x ->
+                                        x.backgroundColor <- "gray.10"
+                                        x.color <- "white"
+                                        x.label <- str "Clear"
+                                        x.placement <- "bottom"
+                                        x.hasArrow <- true)
                                     [
                                         Chakra.iconButton
-                                            {|
-                                                icon = Icons.mdClear ()
-                                                backgroundColor = TempUI.cellStatusColor Disabled
-                                                _hover = {| opacity = 0.8 |}
-                                                variant = "outline"
-                                                border = 0
-                                                width = "30px"
-                                                height = "15px"
-                                                borderRadius = 0
-                                                onClick = fun () -> ()
-                                            |}
+                                            (fun x ->
+                                                x.icon <- Icons.mdClear ()
+                                                x.backgroundColor <- TempUI.cellStatusColor Disabled
+                                                x._hover <- JS.newObj (fun x -> x.opacity <- 0.8)
+                                                x.variant <- "outline"
+                                                x.border <- "0"
+                                                x.width <- "30px"
+                                                x.height <- "15px"
+                                                x.borderRadius <- 0
+                                                x.onClick <- fun _ -> promise { () })
                                             []
                                     ]
                             | _ -> ()

@@ -57,6 +57,7 @@
         <Compile Include="src\Components\DatabaseForm.fs" />
         <Compile Include="src\Components\AddTaskButton.fs" />
         <Compile Include="src\Components\AddDatabaseButton.fs" />
+        <Compile Include="src\Components\ExternalLink.fs" />
         <Compile Include="src\Components\TopBar.fs" />
         <Compile Include="src\Components\Databases.fs" />
         <Compile Include="src\Components\Settings.fs" />
@@ -66,7 +67,6 @@
         <Compile Include="src\Components\StatusBar.fs" />
         <Compile Include="src\Components\HomeScreen.fs" />
         <Compile Include="src\Components\LoginScreen.fs" />
-        <Compile Include="src\Components\ExternalLink.fs" />
         <Compile Include="src\Components\InitialPeers.fs" />
         <Compile Include="src\Components\LoadingScreen.fs" />
         <Compile Include="src\Components\UserLoader.fs" />

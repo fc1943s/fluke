@@ -19,7 +19,7 @@ module LoginScreen =
 
         let toast = Chakra.react.useToast ()
 
-        let signInClick () =
+        let signInClick _ =
             promise {
                 match! signIn usernameField passwordField with
                 | Ok () -> printfn "logged"
@@ -34,7 +34,7 @@ module LoginScreen =
                         |}
             }
 
-        let signUpClick () =
+        let signUpClick _ =
             promise {
                 match! signUp usernameField passwordField with
                 | Ok () ->
@@ -58,48 +58,49 @@ module LoginScreen =
             }
 
         Chakra.center
-            {| flex = 1 |}
+            (fun x -> x.flex <- 1)
             [
                 Chakra.stack
-                    {|  |}
+                    (fun _ -> ())
                     [
                         Input.Input (
-                            Dom.newObj
+                            JS.newObj
                                 (fun x ->
                                     x.autoFocus <- true
                                     x.value <- Some usernameField
                                     x.placeholder <- "Username"
-                                    x.onChange <- Some (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value }))
+
+                                    x.onChange <- (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value }))
                         )
 
                         Input.Input (
-                            Dom.newObj
+                            JS.newObj
                                 (fun x ->
                                     x.value <- Some passwordField
                                     x.placeholder <- "Password"
                                     x.inputFormat <- Some Input.InputFormat.Password
-                                    x.onChange <- Some (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
+
+                                    x.onChange <- (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
+
                                     x.onEnterPress <- Some signInClick)
                         )
 
                         Chakra.hStack
-                            {| align = "stretch" |}
+                            (fun x -> x.align <- "stretch")
                             [
                                 Chakra.button
-                                    {|
-                                        flex = 1
-                                        onClick = signInClick
-                                        color = "gray"
-                                    |}
+                                    (fun x ->
+                                        x.flex <- 1
+                                        x.onClick <- signInClick
+                                        x.color <- "gray")
                                     [
                                         str "Sign In"
                                     ]
                                 Chakra.button
-                                    {|
-                                        flex = 1
-                                        onClick = signUpClick
-                                        color = "gray"
-                                    |}
+                                    (fun x ->
+                                        x.flex <- 1
+                                        x.onClick <- signUpClick
+                                        x.color <- "gray")
                                     [
                                         str "Sign Up"
                                     ]

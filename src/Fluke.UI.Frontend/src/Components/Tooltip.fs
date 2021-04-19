@@ -6,20 +6,22 @@ open Fluke.UI.Frontend.Bindings
 
 module Tooltip =
 
-    type IProps =
-        abstract label : ReactElement with get, set
-        abstract hasArrow : bool with get, set
-        abstract placement : string with get, set
-
     [<ReactComponent>]
-    let Tooltip (input: IProps) children =
+    let Tooltip (input: {| Props: Chakra.IChakraProps |}) =
         Chakra.tooltip
+            (fun x ->
+                x <+ input.Props
+                x.backgroundColor <- "gray.77"
+                x.color <- "black"
+                x.zIndex <- 20000)
+            input.Props.children
+
+    let wrap label children =
+        Tooltip
             {|
-                label = input.label
-                hasArrow = input.hasArrow
-                placement = input.placement
-                backgroundColor = "gray.77"
-                color = "black"
-                zIndex = 20000
+                Props =
+                    JS.newObj
+                        (fun x ->
+                            x.label <- label
+                            x.children <- children)
             |}
-            children

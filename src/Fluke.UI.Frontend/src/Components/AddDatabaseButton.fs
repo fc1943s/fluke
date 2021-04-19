@@ -7,10 +7,10 @@ open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
 
-module AddDatabaseButton =
 
+module AddDatabaseButton =
     [<ReactComponent>]
-    let AddDatabaseButton (props: {| marginLeft: string |}) =
+    let AddDatabaseButton (input: {| Props: Chakra.IChakraProps |}) =
         let username = Recoil.useValue Recoil.Atoms.username
         let formDatabaseId, setFormDatabaseId = Recoil.useState Recoil.Atoms.formDatabaseId
         let formDatabaseVisibleFlag, setFormDatabaseVisibleFlag = Recoil.useState Recoil.Atoms.formDatabaseVisibleFlag
@@ -18,46 +18,52 @@ module AddDatabaseButton =
         React.fragment [
             Button.Button
                 {|
-                    Icon = Some (box Icons.faPlus)
-                    RightIcon = Some false
-                    props =
-                        {|
-                            autoFocus = None
-                            color = None
-                            flex = None
-                            marginLeft = Some props.marginLeft
-                            onClick =
-                                Some
-                                    (fun () ->
+                    Hint = None
+                    Icon = Some (Icons.fiDatabase, Button.IconPosition.Left)
+                    Props =
+                        JS.newObj
+                            (fun x ->
+                                x <+ input.Props
+
+                                x.onClick <-
+                                    (fun _ ->
                                         promise {
                                             setFormDatabaseId None
                                             setFormDatabaseVisibleFlag true
                                         })
-                        |}
-                    children =
-                        [
-                            str "Add Database"
-                        ]
+
+                                x.children <-
+                                    [
+                                        str "Add Database"
+                                    ])
                 |}
+
 
             Modal.Modal
                 {|
-                    IsOpen = formDatabaseVisibleFlag
-                    OnClose =
-                        fun () ->
-                            setFormDatabaseId None
-                            setFormDatabaseVisibleFlag false
-                    children =
-                        [
-                            match username with
-                            | Some username ->
-                                DatabaseForm.DatabaseForm
-                                    {|
-                                        Username = username
-                                        DatabaseId = formDatabaseId
-                                        OnSave = fun () -> promise { setFormDatabaseVisibleFlag false }
-                                    |}
-                            | _ -> ()
-                        ]
+                    Props =
+                        JS.newObj
+                            (fun x ->
+                                x.isOpen <- formDatabaseVisibleFlag
+
+                                x.onClose <-
+                                    fun () ->
+                                        promise {
+                                            setFormDatabaseId None
+                                            setFormDatabaseVisibleFlag false
+                                        }
+
+                                x.children <-
+                                    [
+                                        match username with
+                                        | Some username ->
+                                            DatabaseForm.DatabaseForm
+                                                {|
+                                                    Username = username
+                                                    DatabaseId = formDatabaseId
+                                                    OnSave = fun () -> promise { setFormDatabaseVisibleFlag false }
+                                                |}
+                                        | _ -> ()
+                                    ])
                 |}
         ]

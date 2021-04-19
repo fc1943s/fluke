@@ -30,44 +30,43 @@ module TooltipPopup =
         | [] -> nothing
         | _ ->
             Chakra.box
-                {|
-                    ref = tooltipContainerRef
-                    height = "17px"
-                    lineHeight = "17px"
-                    position = "absolute"
-                    top = 0
-                    width = "100%"
-                    _after =
-                        {|
-                            borderTopColor = "#000000"
-                            borderTopWidth = "8px"
-                            borderLeftColor = "transparent"
-                            borderLeftWidth = "8px"
-                            position = "absolute"
-                            content = "\"\""
-                            top = 0
-                            right = 0
-                        |}
-                |}
+                (fun x ->
+                    x.ref <- tooltipContainerRef
+                    x.height <- "17px"
+                    x.lineHeight <- "17px"
+                    x.position <- "absolute"
+                    x.top <- "0"
+                    x.width <- "100%"
+
+                    x._after <-
+                        JS.newObj
+                            (fun x ->
+                                x.content <- "\"\""
+                                x.borderTopWidth <- "8px"
+                                x.borderTopColor <- "#000000"
+                                x.borderLeftWidth <- "8px"
+                                x.borderLeftColor <- "transparent"
+                                x.position <- "absolute"
+                                x.top <- "0"
+                                x.right <- "0"))
 
                 [
                     if hovered then
                         Chakra.stack
-                            {|
-                                className = "markdown-container"
-                                spacing = "20px"
-                                padding = "20px 40px"
-                                minWidth = "200px"
-                                maxWidth = "600px"
-                                width = "600px"
-                                left = "100%"
-                                top = 0
-                                whiteSpace = "pre-wrap"
-                                position = "absolute"
-                                zIndex = 1
-                                backgroundColor = "#000c"
-                                textAlign = "left"
-                            |}
+                            (fun x ->
+                                x.className <- "markdown-container"
+                                x.spacing <- "20px"
+                                x.padding <- "20px 40px"
+                                x.minWidth <- "200px"
+                                x.maxWidth <- "600px"
+                                x.width <- "600px"
+                                x.left <- "100%"
+                                x.top <- "0"
+                                x.whiteSpace <- "pre-wrap"
+                                x.position <- "absolute"
+                                x.zIndex <- 1
+                                x.backgroundColor <- "#000c"
+                                x.textAlign <- "left")
 
                             [
                                 yield!
@@ -75,15 +74,15 @@ module TooltipPopup =
                                     |> List.map
                                         (fun ((Username username), (Comment.Comment comment)) ->
                                             Chakra.box
-                                                {|  |}
+                                                (fun _ -> ())
                                                 [
                                                     Chakra.box
-                                                        {| fontWeight = "normal" |}
+                                                        (fun x -> x.fontWeight <- "normal")
                                                         [
                                                             str $"{username}:"
                                                         ]
                                                     Chakra.box
-                                                        {|  |}
+                                                        (fun _ -> ())
                                                         [
                                                             comment.Trim () |> Markdown.render
                                                         ]

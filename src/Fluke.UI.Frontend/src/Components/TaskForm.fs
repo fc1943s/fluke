@@ -23,7 +23,7 @@ module TaskForm =
         =
         let onSave =
             Recoil.useCallbackRef
-                (fun (setter: CallbackMethods) ->
+                (fun (setter: CallbackMethods) _ ->
                     promise {
                         let eventId = Recoil.Atoms.Events.EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
 
@@ -101,24 +101,34 @@ module TaskForm =
                         do! input.OnSave ()
                     })
 
+        let selectedDatabaseIds = Recoil.useValue Recoil.Atoms.selectedDatabaseIds
+
+        let (DatabaseName databaseName) =
+            Recoil.useValue (Recoil.Atoms.Database.name (selectedDatabaseIds |> Array.tryHead))
 
         Chakra.stack
-            {| spacing = "25px" |}
+            (fun x -> x.spacing <- "25px")
             [
                 Chakra.box
-                    {| fontSize = "15px" |}
+                    (fun x -> x.fontSize <- "15px")
                     [
                         str "Add Task"
                     ]
 
+                Chakra.box
+                    (fun _ -> ())
+                    [
+                        str $"Selected Database: {databaseName}"
+                    ]
+
                 Chakra.stack
-                    {| spacing = "15px" |}
+                    (fun x -> x.spacing <- "15px")
                     [
                         Input.Input (
-                            Dom.newObj
+                            JS.newObj
                                 (fun x ->
                                     x.autoFocus <- true
-                                    x.label <- "Name"
+                                    x.label <- str "Name"
                                     x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
                                     x.atom <- Some (Recoil.AtomFamily (Recoil.Atoms.Task.name, input.TaskId))
                                     x.onFormat <- Some (fun (TaskName name) -> name)
@@ -128,7 +138,7 @@ module TaskForm =
                     ]
 
                 Chakra.button
-                    {| onClick = onSave |}
+                    (fun x -> x.onClick <- onSave)
                     [
                         str "Save"
                     ]

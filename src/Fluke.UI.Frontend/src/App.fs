@@ -11,10 +11,7 @@ module App =
     let App wrap =
         Profiling.addTimestamp "appMain.render"
 
-        (if wrap then
-             RootWrapper.rootWrapper
-         else
-             React.fragment)
+        (if wrap then RootWrapper.rootWrapper else React.fragment)
             [
                 CtrlListener.CtrlListener ()
                 ShiftListener.ShiftListener ()

@@ -7,6 +7,9 @@ module Icons =
     [<ImportAll "react-icons/ai">]
     let ai : {| AiOutlineGithub: obj |} = jsNative
 
+    [<ImportAll "react-icons/bi">]
+    let bi : {| BiTask: obj |} = jsNative
+
     [<ImportAll "react-icons/bs">]
     let bs : {| BsGrid: obj
                 BsListCheck: obj
@@ -29,9 +32,7 @@ module Icons =
     let gi : {| GiHourglass: obj |} = jsNative
 
     [<ImportAll "react-icons/md">]
-    let md : {| MdClear: obj
-                MdSettings: obj |} =
-        jsNative
+    let md : {| MdClear: obj; MdSettings: obj |} = jsNative
 
     [<ImportAll "react-icons/ti">]
     let ti : {| TiFlowChildren: obj |} = jsNative
@@ -40,6 +41,7 @@ module Icons =
     //    let wrap cmp (props: {| fontSize: string |}) = Chakra.box {| props with ``as`` = cmp |} []
 
     let aiOutlineGithub () = wrap ai.AiOutlineGithub
+    let biTask () = wrap bi.BiTask
     let bsGrid () = wrap bs.BsGrid
     let bsListCheck () = wrap bs.BsListCheck
     let bsQuestionCircle () = wrap bs.BsQuestionCircle

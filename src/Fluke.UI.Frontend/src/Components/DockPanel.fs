@@ -19,49 +19,47 @@ module DockPanel =
         let setAtom = Recoil.useSetState input.Atom
 
         Chakra.stack
-            {| spacing = 0; flex = 1 |}
+            (fun x ->
+                x.spacing <- "0"
+                x.flex <- 1)
             [
                 Chakra.flex
-                    {|
-                        paddingLeft = "10px"
-                        borderBottomColor = "gray.16"
-                        borderBottom = "1px solid"
-                        align = "center"
-                    |}
+                    (fun x ->
+                        x.paddingLeft <- "10px"
+                        x.borderBottomWidth <- "1px"
+                        x.borderBottomColor <- "gray.16"
+                        x.align <- "center")
                     [
                         Chakra.box
-                            {|
-                                ``as`` = input.Icon
-                                marginRight = "6px"
-                            |}
+                            (fun x ->
+                                x.``as`` <- input.Icon
+                                x.marginRight <- "6px")
                             []
                         str input.Name
 
-                        Chakra.spacer {|  |} []
+                        Chakra.spacer (fun _ -> ()) []
 
                         Chakra.iconButton
-                            {|
-                                icon = Icons.faMinus ()
-                                backgroundColor = "transparent"
-                                variant = "outline"
-                                border = 0
-                                width = "30px"
-                                height = "30px"
-                                borderRadius = 0
-                                onClick = fun () -> setAtom None
-                            |}
+                            (fun x ->
+                                x.icon <- Icons.faMinus ()
+                                x.backgroundColor <- "transparent"
+                                x.variant <- "outline"
+                                x.border <- "0"
+                                x.width <- "30px"
+                                x.height <- "30px"
+                                x.borderRadius <- 0
+                                x.onClick <- fun _ -> promise { setAtom None })
                             []
                     ]
 
                 Chakra.flex
-                    {|
-                        direction = "column"
-                        paddingTop = "8px"
-                        paddingLeft = "8px"
-                        paddingRight = "8px"
-                        paddingBottom = "8px"
-                        flex = 1
-                    |}
+                    (fun x ->
+                        x.direction <- "column"
+                        x.paddingTop <- "8px"
+                        x.paddingLeft <- "8px"
+                        x.paddingRight <- "8px"
+                        x.paddingBottom <- "8px"
+                        x.flex <- 1)
                     [
                         yield! input.children
                     ]

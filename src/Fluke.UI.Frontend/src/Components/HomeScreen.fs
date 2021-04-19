@@ -16,7 +16,7 @@ module HomeScreen =
     [<ReactComponent>]
     let HomeScreen
         (input: {| Username: Username
-                   Props: {| flex: int |} |})
+                   Props: Chakra.IChakraProps |})
         =
         let view, setView = Recoil.useState Recoil.Atoms.view
 
@@ -26,25 +26,25 @@ module HomeScreen =
                     View = View.View.HabitTracker
                     Name = "Habit Tracker View"
                     Icon = Icons.bs.BsGrid
-                    Content = fun () -> HabitTrackerView.HabitTrackerView input.Username
+                    Content = fun () -> HabitTrackerView.HabitTrackerView {| Username = input.Username |}
                 |}
                 {|
                     View = View.View.Priority
                     Name = "Priority View"
                     Icon = Icons.fa.FaSortNumericDownAlt
-                    Content = fun () -> PriorityView.PriorityView input.Username
+                    Content = fun () -> PriorityView.PriorityView {| Username = input.Username |}
                 |}
                 {|
                     View = View.View.BulletJournal
                     Name = "Bullet Journal View"
                     Icon = Icons.bs.BsListCheck
-                    Content = fun () -> BulletJournalView.BulletJournalView input.Username
+                    Content = fun () -> BulletJournalView.BulletJournalView {| Username = input.Username |}
                 |}
                 {|
                     View = View.View.Information
                     Name = "Information View"
                     Icon = Icons.ti.TiFlowChildren
-                    Content = fun () -> InformationView.InformationView input.Username
+                    Content = fun () -> InformationView.InformationView {| Username = input.Username |}
                 |}
             ]
 
@@ -54,79 +54,80 @@ module HomeScreen =
 
         printfn $"HomeScreen.render. current view: {view}. tabIndex: {tabIndex}"
 
-        let handleTabsChange index = setView tabs.[index].View
+        let handleTabsChange (e: Browser.Types.KeyboardEvent) =
+            promise {
+                let index = e |> box |> unbox
+                setView tabs.[index].View
+            }
 
         Chakra.flex
-            input.Props
+            (fun x -> x <+ input.Props)
             [
-                LeftDock.LeftDock input.Username
+                LeftDock.LeftDock {| Username = input.Username |}
 
                 Chakra.stack
-                    {|
-                        spacing = 0
-                        flex = 1
-                        marginLeft = "10px"
-                        marginRight = "10px"
-                    |}
+                    (fun x ->
+                        x.spacing <- "0"
+                        x.flex <- 1
+                        x.marginLeft <- "10px"
+                        x.marginRight <- "10px")
                     [
                         Chakra.tabs
-                            {|
-                                isLazy = true
-                                index = tabIndex
-                                onChange = handleTabsChange
-                                flexDirection = "column"
-                                display = "flex"
-                                flex = 1
-                            |}
+                            (fun x ->
+                                x.isLazy <- true
+                                x.index <- tabIndex
+                                x.onChange <- handleTabsChange
+                                x.flexDirection <- "column"
+                                x.display <- "flex"
+                                x.flex <- 1)
                             [
                                 Chakra.tabList
-                                    {| borderColor = "transparent" |}
+                                    (fun x -> x.borderColor <- "transparent")
                                     [
                                         yield!
                                             tabs
                                             |> List.map
                                                 (fun tab ->
                                                     Chakra.tab
-                                                        {|
-                                                            padding = "12px"
-                                                            color = "gray.45"
-                                                            _hover =
-                                                                {|
-                                                                    borderBottomColor = "gray.45"
-                                                                    borderBottom = "2px solid"
-                                                                |}
-                                                            _selected =
-                                                                {|
-                                                                    color = "gray.77"
-                                                                    borderColor = "gray.77"
-                                                                |}
-                                                        |}
+                                                        (fun x ->
+                                                            x.padding <- "12px"
+                                                            x.color <- "gray.45"
+
+                                                            x._hover <-
+                                                                (JS.newObj
+                                                                    (fun x ->
+                                                                        x.borderBottomWidth <- "2px"
+                                                                        x.borderBottomColor <- "gray.45"
+                                                                        ))
+
+                                                            x._selected <-
+                                                                (JS.newObj
+                                                                    (fun x ->
+                                                                        x.color <- "gray.77"
+                                                                        x.borderColor <- "gray.77")))
                                                         [
                                                             Chakra.box
-                                                                {|
-                                                                    ``as`` = tab.Icon
-                                                                    marginRight = "6px"
-                                                                |}
+                                                                (fun x ->
+                                                                    x.``as`` <- tab.Icon
+                                                                    x.marginRight <- "6px")
                                                                 []
                                                             str tab.Name
                                                         ])
                                     ]
                                 Chakra.tabPanels
-                                    {|
-                                        flex = 1
-                                        overflowY = "auto"
-                                        flexBasis = 0
-                                    |}
+                                    (fun x ->
+                                        x.flex <- 1
+                                        x.overflowY <- "auto"
+                                        x.flexBasis <- 0)
                                     [
                                         yield!
                                             tabs
                                             |> List.map
                                                 (fun tab ->
                                                     Chakra.tabPanel
-                                                        {|
-                                                            padding = 0
-                                                            boxShadow = "none !important"
-                                                        |}
+                                                        (fun x ->
+                                                            x.padding <- "0"
+                                                            x.boxShadow <- "none !important")
                                                         [
                                                             tab.Content ()
                                                         ])

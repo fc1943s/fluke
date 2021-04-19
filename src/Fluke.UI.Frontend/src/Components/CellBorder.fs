@@ -19,18 +19,18 @@ module CellBorder =
         let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
 
         match (weekStart, input.Date) with
-        | StartOfMonth -> Some "1px solid #ffffff3d"
-        | StartOfWeek -> Some "1px solid #222"
+        | StartOfMonth -> Some ("1px", "#ffffff3d")
+        | StartOfWeek -> Some ("1px", "#222")
         | _ -> None
         |> Option.map
-            (fun borderLeft ->
+            (fun (borderLeftWidth, borderLeftColor) ->
                 Chakra.box
-                    {|
-                        position = "absolute"
-                        top = 0
-                        left = 0
-                        bottom = 0
-                        borderLeft = borderLeft
-                    |}
+                    (fun x ->
+                        x.position <- "absolute"
+                        x.top <- "0"
+                        x.left <- "0"
+                        x.bottom <- "0"
+                        x.borderLeftWidth <- borderLeftWidth
+                        x.borderLeftColor <- borderLeftColor)
                     [])
         |> Option.defaultValue nothing

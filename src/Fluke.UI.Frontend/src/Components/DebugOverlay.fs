@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.React
+open Fable.Core.JsInterop
 open Feliz
 open Feliz.UseListener
 open Feliz.Recoil
@@ -47,39 +48,35 @@ module DebugOverlay =
         React.fragment [
             if debug then
                 Chakra.box
-                    {|
-                        id = "test1"
-                        position = "absolute"
-                        width = "100px"
-                        height = "80px"
-                        top = "40px"
-                        right = 0
-                        backgroundColor = "#ccc3"
-                        zIndex = 1
-                    |}
+                    (fun x ->
+                        x.id <- "test1"
+                        x.position <- "absolute"
+                        x.width <- "100px"
+                        x.height <- "80px"
+                        x.top <- "40px"
+                        x.right <- "0"
+                        x.backgroundColor <- "#ccc3"
+                        x.zIndex <- 1)
                     [
                         str "test1"
                     ]
 
             Chakra.box
-                {|
-                    width = "min-content"
-                    height = if debug then "80%" else "initial"
-                    position = "fixed"
-                    right = 0
-                    bottom = 0
-                    fontSize = "9px"
-                    backgroundColor = "#44444488"
-                    zIndex = 1
-                    overflow = if debug then "scroll" else "initial"
-                |}
+                (fun x ->
+                    x.width <- "min-content"
+                    x.height <- if debug then "80%" else "initial"
+                    x.position <- "fixed"
+                    x.right <- "0"
+                    x.bottom <- "0"
+                    x.fontSize <- "9px"
+                    x.backgroundColor <- "#44444488"
+                    x.zIndex <- 1
+                    x.overflow <- if debug then "scroll" else "initial")
                 [
                     Checkbox.Checkbox
-                        {|
-                            isChecked = debug
-                            onChange =
-                                fun (e: {| target: Browser.Types.HTMLInputElement |}) -> setDebug e.target.``checked``
-                        |}
+                        (fun x ->
+                            x.isChecked <- debug
+                            x.onChange <- fun _ -> promise { setDebug (not debug) })
                         [
                             str (if debug then "Debug" else "")
                         ]

@@ -6,58 +6,74 @@ open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Components
 
 
 module AddTaskButton =
     [<ReactComponent>]
-    let AddTaskButton (props: {| marginLeft: string |}) =
+    let AddTaskButton (input: {| Props: Chakra.IChakraProps |}) =
         let username = Recoil.useValue Recoil.Atoms.username
+        let selectedPosition = Recoil.useValue Recoil.Atoms.selectedPosition
+        let selectedDatabaseIds = Recoil.useValue Recoil.Atoms.selectedDatabaseIds
         let formTaskId, setFormTaskId = Recoil.useState Recoil.Atoms.formTaskId
         let formTaskVisibleFlag, setFormTaskVisibleFlag = Recoil.useState Recoil.Atoms.formTaskVisibleFlag
+
+        let hintText =
+            match selectedDatabaseIds, selectedPosition with
+            | [| _ |], None -> None
+            | _ -> Some (str "Select at least one live database")
 
         React.fragment [
             Button.Button
                 {|
-                    Icon = Some (box Icons.faPlus)
-                    RightIcon = Some false
-                    props =
-                        {|
-                            autoFocus = None
-                            color = None
-                            flex = None
-                            marginLeft = Some props.marginLeft
-                            onClick =
-                                Some
-                                    (fun () ->
+                    Hint = hintText
+                    Icon = Some (Icons.biTask, Button.IconPosition.Left)
+                    Props =
+                        JS.newObj
+                            (fun x ->
+                                x <+ input.Props
+                                x.cursor <- if hintText.IsNone then "pointer" else "default"
+                                x.opacity <- if hintText.IsNone then 1. else 0.5
+
+                                x.onClick <-
+                                    (fun _ ->
                                         promise {
-                                            setFormTaskId None
-                                            setFormTaskVisibleFlag true
+                                            if hintText.IsNone then
+                                                setFormTaskId None
+                                                setFormTaskVisibleFlag true
                                         })
-                        |}
-                    children =
-                        [
-                            str "Add Task"
-                        ]
+
+                                x.children <-
+                                    [
+                                        str "Add Task"
+                                    ])
                 |}
 
             Modal.Modal
                 {|
-                    IsOpen = formTaskVisibleFlag
-                    OnClose =
-                        fun () ->
-                            setFormTaskId None
-                            setFormTaskVisibleFlag false
-                    children =
-                        [
-                            match username with
-                            | Some username ->
-                                TaskForm.TaskForm
-                                    {|
-                                        Username = username
-                                        TaskId = formTaskId
-                                        OnSave = fun () -> promise { setFormTaskVisibleFlag false }
-                                    |}
-                            | _ -> ()
-                        ]
+                    Props =
+                        JS.newObj
+                            (fun x ->
+                                x.isOpen <- formTaskVisibleFlag
+
+                                x.onClose <-
+                                    (fun () ->
+                                        promise {
+                                            setFormTaskId None
+                                            setFormTaskVisibleFlag false
+                                        })
+
+                                x.children <-
+                                    [
+                                        match username with
+                                        | Some username ->
+                                            TaskForm.TaskForm
+                                                {|
+                                                    Username = username
+                                                    TaskId = formTaskId
+                                                    OnSave = fun () -> promise { setFormTaskVisibleFlag false }
+                                                |}
+                                        | _ -> ()
+                                    ])
                 |}
         ]

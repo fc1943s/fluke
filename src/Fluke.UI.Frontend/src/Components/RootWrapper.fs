@@ -46,7 +46,7 @@ module RootWrapper =
 //                            |}
 //                            []
                         Chakra.provider
-                            {| theme = theme |}
+                            (fun x -> x.theme <- theme)
                             [
                                 PersistenceObserver ()
                                 React.router [

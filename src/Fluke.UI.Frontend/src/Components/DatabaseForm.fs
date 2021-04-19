@@ -19,41 +19,37 @@ module DatabaseForm =
         [<ReactComponent>]
         let DatabaseAccessIndicator () =
             Chakra.stack
-                {|
-                    direction = "row"
-                    spacing = "15px"
-                |}
+                (fun x ->
+                    x.direction <- "row"
+                    x.spacing <- "15px")
                 [
                     Chakra.stack
-                        {|
-                            direction = "row"
-                            spacing = "4px"
-                            align = "center"
-                        |}
+                        (fun x ->
+                            x.direction <- "row"
+                            x.spacing <- "4px"
+                            x.align <- "center")
                         [
                             Chakra.circle
-                                {|
-                                    width = "10px"
-                                    height = "10px"
-                                    backgroundColor = "#0f0"
-                                |}
+                                (fun x ->
+                                    x.width <- "10px"
+                                    x.height <- "10px"
+                                    x.backgroundColor <- "#0f0")
                                 []
 
                             Chakra.box
-                                {|  |}
+                                (fun _ -> ())
                                 [
                                     str "Private"
                                 ]
 
                         ]
                     Chakra.iconButton
-                        {|
-                            icon = Icons.bsThreeDots ()
-                            disabled = true
-                            width = "22px"
-                            height = "15px"
-                            onClick = fun () -> ()
-                        |}
+                        (fun x ->
+                            x.icon <- Icons.bsThreeDots ()
+                            x.disabled <- true
+                            x.width <- "22px"
+                            x.height <- "15px"
+                            x.onClick <- fun _ -> promise { () })
                         []
 
                 ]
@@ -66,7 +62,7 @@ module DatabaseForm =
         =
         let onSave =
             Recoil.useCallbackRef
-                (fun (setter: CallbackMethods) ->
+                (fun (setter: CallbackMethods) _ ->
                     promise {
                         let eventId = Recoil.Atoms.Events.EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
                         let! name = setter.snapshot.getReadWritePromise Recoil.Atoms.Database.name input.DatabaseId
@@ -136,27 +132,27 @@ module DatabaseForm =
                     })
 
         Chakra.stack
-            {| spacing = "25px" |}
+            (fun x -> x.spacing <- "25px")
             [
                 Chakra.box
-                    {| fontSize = "15px" |}
+                    (fun x -> x.fontSize <- "15px")
                     [
                         str $"""{if input.DatabaseId.IsNone then "Add" else "Edit"} Database"""
                     ]
 
                 Chakra.stack
-                    {| spacing = "15px" |}
+                    (fun x -> x.spacing <- "15px")
                     [
                         Input.Input (
-                            Dom.newObj
+                            JS.newObj
                                 (fun x ->
                                     x.autoFocus <- true
-                                    x.label <- "Name"
+                                    x.label <- str "Name"
 
                                     x.hint <-
                                         Some (
                                             Chakra.box
-                                                {|  |}
+                                                (fun _ -> ())
                                                 [
                                                     str "Documentation"
                                                 ]
@@ -170,14 +166,14 @@ module DatabaseForm =
                         )
 
                         Input.Input (
-                            Dom.newObj
+                            JS.newObj
                                 (fun x ->
-                                    x.label <- "Day starts at"
+                                    x.label <- str "Day starts at"
 
                                     x.hint <-
                                         Some (
                                             Chakra.box
-                                                {|  |}
+                                                (fun _ -> ())
                                                 [
                                                     str "Documentation"
                                                 ]
@@ -194,13 +190,12 @@ module DatabaseForm =
                         )
 
                         Chakra.stack
-                            {|
-                                direction = "row"
-                                align = "center"
-                            |}
+                            (fun x ->
+                                x.direction <- "row"
+                                x.align <- "center")
                             [
                                 Chakra.box
-                                    {|  |}
+                                    (fun _ -> ())
                                     [
                                         str "Access:"
                                     ]
@@ -210,7 +205,7 @@ module DatabaseForm =
                     ]
 
                 Chakra.button
-                    {| onClick = onSave |}
+                    (fun x -> x.onClick <- onSave)
                     [
                         str "Save"
                     ]
