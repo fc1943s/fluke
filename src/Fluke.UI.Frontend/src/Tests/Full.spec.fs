@@ -55,7 +55,7 @@ module Full =
                     Cy.get("input[placeholder=Password]").focus ()
                     typeText password
 
-                    (Cy.contains "Sign In" None).click () |> ignore
+                    (Cy.contains "Login" None).click () |> ignore
 
                     (Cy.contains "Wrong user or password" None)
                         .should "be.visible"
@@ -63,7 +63,7 @@ module Full =
 
                     Cy.wait 250
 
-                    (Cy.contains "Sign Up" None).click () |> ignore
+                    (Cy.contains "Register" None).click () |> ignore
 
                     (Cy.contains "User registered successfully" None)
                         .should "be.visible"
