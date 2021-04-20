@@ -15,7 +15,7 @@ module GridHeader =
 
     [<ReactComponent>]
     let GridHeader (input: {| Username: Username |}) =
-        let cellSize = Recoil.useValue Recoil.Atoms.cellSize
+        let cellSize = Recoil.useValue (Recoil.Atoms.User.cellSize input.Username)
         let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
 
         let datesByMonth =

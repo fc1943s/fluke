@@ -56,11 +56,15 @@ module Router =
                         })
 
             let expectUrl (expected: string []) =
-                let segments = Router.currentUrl () |> List.toArray
+                promise {
+                    do! Promise.sleep 100
+                    do! RTL.waitFor id
+                    let segments = Router.currentUrl () |> List.toArray
 
-                Jest
-                    .expect(string segments)
-                    .toEqual (string expected)
+                    Jest
+                        .expect(string segments)
+                        .toEqual (string expected)
+                }
 
             let navigate (segments: string []) =
                 RTL.act (fun () -> Router.navigate segments)
@@ -68,17 +72,18 @@ module Router =
             Jest.test (
                 "starting with blank url",
                 promise {
-                    [||] |> expectUrl
+                    do! [||] |> expectUrl
 
                     let! _subject, peek = getComponent () |> Setup.render
                     do! initialize peek
                     do! peek (fun setter -> promise { setter.set (Atoms.sessionRestored, true) })
 
-                    [|
-                        "view"
-                        "HabitTracker"
-                    |]
-                    |> expectUrl
+                    do!
+                        [|
+                            "view"
+                            "HabitTracker"
+                        |]
+                        |> expectUrl
 
                     do! expectView peek View.View.HabitTracker
                 }
@@ -93,11 +98,12 @@ module Router =
 
                     do! setView peek View.View.BulletJournal
 
-                    [|
-                        "view"
-                        "BulletJournal"
-                    |]
-                    |> expectUrl
+                    do!
+                        [|
+                            "view"
+                            "BulletJournal"
+                        |]
+                        |> expectUrl
 
                     do! expectView peek View.View.BulletJournal
                 }
@@ -134,10 +140,11 @@ module Router =
                     |]
                     |> navigate
 
-                    [|
-                        "login"
-                    |]
-                    |> expectUrl
+                    do!
+                        [|
+                            "login"
+                        |]
+                        |> expectUrl
                 }
             )
 
@@ -154,11 +161,12 @@ module Router =
                     do! initialize peek
                     do! peek (fun setter -> promise { setter.set (Atoms.sessionRestored, true) })
 
-                    [|
-                        "view"
-                        "Information"
-                    |]
-                    |> expectUrl
+                    do!
+                        [|
+                            "view"
+                            "Information"
+                        |]
+                        |> expectUrl
 
                     do! expectView peek View.View.Information
 
@@ -179,10 +187,11 @@ module Router =
                     do! peek (fun setter -> promise { setter.set (Atoms.username, None) })
                     do! peek (fun setter -> promise { setter.set (Atoms.sessionRestored, true) })
 
-                    [|
-                        "login"
-                    |]
-                    |> expectUrl
+                    do!
+                        [|
+                            "login"
+                        |]
+                        |> expectUrl
                 }
             )
 

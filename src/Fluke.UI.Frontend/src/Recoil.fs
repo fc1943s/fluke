@@ -127,37 +127,61 @@ module Recoil =
             let rec view =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof view}",
-                    (fun (_username: Username) -> View.View.HabitTracker)
+                    (fun (_username: Username) -> View.View.HabitTracker),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) view username ""
+                        ])
                 )
 
             let rec color =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof color}",
-                    (fun (_username: Username) -> UserColor.Black)
+                    (fun (_username: Username) -> UserColor.Black),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) color username ""
+                        ])
                 )
 
             let rec weekStart =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof weekStart}",
-                    (fun (_username: Username) -> DayOfWeek.Sunday)
+                    (fun (_username: Username) -> DayOfWeek.Sunday),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) weekStart username ""
+                        ])
                 )
 
             let rec dayStart =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof dayStart}",
-                    (fun (_username: Username) -> FlukeTime.Create 0 0)
+                    (fun (_username: Username) -> FlukeTime.Create 0 0),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) dayStart username ""
+                        ])
                 )
 
             let rec sessionLength =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof sessionLength}",
-                    (fun (_username: Username) -> Minute 25.)
+                    (fun (_username: Username) -> Minute 25.),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) sessionLength username ""
+                        ])
                 )
 
             let rec sessionBreakLength =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof sessionBreakLength}",
-                    (fun (_username: Username) -> Minute 5.)
+                    (fun (_username: Username) -> Minute 5.),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) sessionBreakLength username ""
+                        ])
                 )
 
             let rec daysBefore =
@@ -166,82 +190,88 @@ module Recoil =
                     (fun (_username: Username) -> 7),
                     (fun (username: Username) ->
                         [
-                            (fun e ->
-                                let gun = box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj> option
-
-                                match gun with
-                                //                                | Some _gun ->
-                                //                                    let atom = selected (username, taskId, dateId)
-                                //                                    let gunAtomKey = getGunAtomKey (Some username) atom.key
-                                //
-                                //                                    let newId =
-                                //                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
-                                //                                                                                                           formatDateId
-                                //                                                                                                               dateId
-                                //                                        }"""
-                                //
-                                //                                    printfn
-                                //                                        $"""skipping effect.
-                                //                                    gunAtomKey={gunAtomKey}
-                                //                                    atom.key={atom.key}
-                                //                                    newKey={newId}
-                                //                                    """
-                                //
-                                //                                    fun () -> ()
-                                | Some gun ->
-                                    let atom = daysBefore username
-
-                                    let gunAtomKey =
-                                        Recoil.getGunAtomKey
-                                            (Some username)
-                                            (atom.key.Replace ((JSe.RegExp "__\[.*?\]"), ""))
-
-                                    let newId = $"""{gunAtomKey.Split "//" |> Seq.head}"""
-
-                                    printfn
-                                        $"""atom: .effects. gunAtomKey={gunAtomKey} atom.key={atom.key} newKey={newId} usernamestr={ (atom.key.Replace ((JSe.RegExp "__\[.*?\]"), "")) } """
-
-                                    let gunAtomNode = Gun.getGunAtomNode gun newId
-
-                                    match e.trigger with
-                                    | "get" ->
-                                        gunAtomNode.on
-                                            (fun data ->
-                                                printfn
-                                                    $"atom: gunAtomNode.on() effect. newId={newId} data={
-                                                                                                             JS.JSON.stringify
-                                                                                                                 data
-                                                    }"
-
-                                                match Gun.deserializeGunAtomNode data with
-                                                | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
-                                                | None -> ()
-                                                )
-                                    | _ -> ()
-
-                                    e.onSet
-                                        (fun value oldValue ->
-                                            Gun.putGunAtomNode gunAtomNode value
-
-                                            printfn
-                                                $"atom: effects. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {
-                                                                                                                               value
-                                                }")
-
-                                    fun () ->
-                                        printfn "atom: > unsubscribe atom. calling selected.off ()"
-                                        gunAtomNode.off () |> ignore
-
-                                | None ->
-                                    failwith "atom: Gun not found"
-                                    fun () -> ())
+                            Recoil.gunEffect (Some username) daysBefore username ""
                         ])
                 )
 
             let rec daysAfter =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof daysAfter}",
-                    (fun (_username: Username) -> 7)
+                    (fun (_username: Username) -> 7),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) daysAfter username ""
+                        ])
+                )
+
+            let rec cellMenuOpened =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof cellMenuOpened}",
+                    (fun (_username: Username) -> None: (TaskId * DateId) option),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) cellMenuOpened username ""
+                        ])
+                )
+
+            let rec cellSize =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof cellSize}",
+                    (fun (_username: Username) -> 17),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) cellSize username ""
+                        ])
+                )
+
+            let rec leftDock =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof leftDock}",
+                    (fun (_username: Username) -> None: TempUI.DockType option),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) leftDock username ""
+                        ])
+                )
+
+            let rec formDatabaseId =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof formDatabaseId}",
+                    (fun (_username: Username) -> None: State.DatabaseId option),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) formDatabaseId username ""
+                        ])
+                )
+
+            let rec formDatabaseVisibleFlag =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof formDatabaseVisibleFlag}",
+                    (fun (_username: Username) -> false),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) formDatabaseVisibleFlag username ""
+                        ])
+                )
+
+            let rec formTaskId =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof formTaskId}",
+                    (fun (_username: Username) -> None: TaskId option),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) formTaskId username ""
+                        ])
+                )
+
+            let rec formTaskVisibleFlag =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof formTaskVisibleFlag}",
+                    (fun (_username: Username) -> false),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) formTaskVisibleFlag username ""
+                        ])
                 )
 
 
@@ -296,8 +326,15 @@ module Recoil =
                     (fun (_taskId: TaskId, _dateId: DateId) -> []: TaskSession list)
                 )
 
-            let formatTaskId (TaskId taskId) = $"TaskId/{taskId}"
-            let formatDateId (DateId referenceDay) = $"DateId/{referenceDay.Stringify ()}"
+            type TaskId with
+                member this.KeyFormat () =
+                    let (TaskId taskId) = this
+                    $"TaskId/{taskId}"
+
+            type DateId with
+                member this.KeyFormat () =
+                    let (DateId referenceDay) = this
+                    $"DateId/{referenceDay.Stringify ()}"
 
             let rec selected =
                 Recoil.atomFamilyWithProfiling (
@@ -305,13 +342,39 @@ module Recoil =
                     (fun (_username: Username, _taskId: TaskId, _dateId: DateId) -> false),
                     (fun (username: Username, taskId: TaskId, dateId: DateId) ->
                         [
-                            (fun e ->
-                                let gun = box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj> option
-
-                                match gun with
-                                //                                | Some _gun ->
+                            Recoil.gunEffect
+                                (Some username)
+                                selected
+                                (username, taskId, dateId)
+                                $"/{taskId.KeyFormat ()}/{dateId.KeyFormat ()}"
+                        ])
+                //                    (fun (username: Username, taskId: TaskId, dateId: DateId) ->
+//                        [
+//                            (fun e ->
+//                                let gun = box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj> option
+//
+//                                match gun with
+//                                //                                | Some _gun ->
+////                                    let atom = selected (username, taskId, dateId)
+////                                    let gunAtomKey = getGunAtomKey (Some username) atom.key
+////
+////                                    let newId =
+////                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
+////                                                                                                           formatDateId
+////                                                                                                               dateId
+////                                        }"""
+////
+////                                    printfn
+////                                        $"""skipping effect.
+////                                    gunAtomKey={gunAtomKey}
+////                                    atom.key={atom.key}
+////                                    newKey={newId}
+////                                    """
+////
+////                                    fun () -> ()
+//                                | Some gun ->
 //                                    let atom = selected (username, taskId, dateId)
-//                                    let gunAtomKey = getGunAtomKey (Some username) atom.key
+//                                    let gunAtomKey = Recoil.getGunAtomKey (Some username) atom.key
 //
 //                                    let newId =
 //                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
@@ -320,61 +383,44 @@ module Recoil =
 //                                        }"""
 //
 //                                    printfn
-//                                        $"""skipping effect.
+//                                        $"""cell.selected .effects.
 //                                    gunAtomKey={gunAtomKey}
 //                                    atom.key={atom.key}
 //                                    newKey={newId}
 //                                    """
 //
-//                                    fun () -> ()
-                                | Some gun ->
-                                    let atom = selected (username, taskId, dateId)
-                                    let gunAtomKey = Recoil.getGunAtomKey (Some username) atom.key
-
-                                    let newId =
-                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
-                                                                                                           formatDateId
-                                                                                                               dateId
-                                        }"""
-
-                                    printfn
-                                        $"""cell.selected .effects.
-                                    gunAtomKey={gunAtomKey}
-                                    atom.key={atom.key}
-                                    newKey={newId}
-                                    """
-
-                                    let gunAtomNode = Gun.getGunAtomNode gun newId
-
-                                    match e.trigger with
-                                    | "get" ->
-                                        gunAtomNode.on
-                                            (fun data ->
-                                                printfn
-                                                    $"gunAtomNode.on() effect. newId={newId}
-                                                    data={JS.JSON.stringify data}"
-
-                                                match Gun.deserializeGunAtomNode data with
-                                                | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
-                                                | None -> ())
-                                    | _ -> ()
-
-                                    e.onSet
-                                        (fun value oldValue ->
-                                            Gun.putGunAtomNode gunAtomNode value
-
-                                            printfn
-                                                $"cell.selected. effects. onSet.
-                                                oldValue: {JS.JSON.stringify oldValue}; newValue: {value}")
-
-                                    fun () ->
-                                        printfn "> unsubscribe cell. calling selected.off ()"
-                                        gunAtomNode.off () |> ignore
-
-                                | None ->
-                                    failwith "Gun not found"
-                                    fun () -> ())
-                        ])
+//                                    let gunAtomNode = Gun.getGunAtomNode gun newId
+//
+//                                    match e.trigger with
+//                                    | "get" ->
+//                                        gunAtomNode.on
+//                                            (fun data ->
+//                                                printfn
+//                                                    $"gunAtomNode.on() effect. newId={newId}
+//                                                    data={JS.JSON.stringify data}"
+//
+//                                                match Gun.deserializeGunAtomNode data with
+//                                                | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
+//                                                | None -> ())
+//                                    | _ -> ()
+//
+//                                    e.onSet
+//                                        (fun value oldValue ->
+//                                            Gun.putGunAtomNode gunAtomNode value
+//
+//                                            printfn
+//                                                $"cell.selected. effects. onSet.
+//                                                oldValue: {JS.JSON.stringify oldValue}; newValue: {value}")
+//
+//                                    fun () ->
+//                                        printfn "> unsubscribe cell. calling selected.off ()"
+//                                        gunAtomNode.off () |> ignore
+//
+//                                | None ->
+//                                    failwith "Gun not found"
+//                                    fun () -> ())
+//                        ]
+//                     )
                 )
 
 
@@ -425,7 +471,6 @@ module Recoil =
 
         let rec isTesting = Recoil.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.isTesting)
 
-
         let rec selectedDatabaseIds =
             Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof selectedDatabaseIds}",
@@ -445,33 +490,6 @@ module Recoil =
                         AtomEffect Storage.local
                     ]
             )
-
-        let rec cellMenuOpened =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof cellMenuOpened}",
-                (None: (Username * TaskId * DateId) option)
-            )
-
-        let rec cellSize = Recoil.atomWithProfiling ($"{nameof atom}/{nameof cellSize}", 17)
-
-        let rec leftDock =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof leftDock}",
-                (None: TempUI.DockType option),
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec formDatabaseId =
-            Recoil.atomWithProfiling ($"{nameof atom}/{nameof formDatabaseId}", (None: State.DatabaseId option))
-
-        let rec formDatabaseVisibleFlag =
-            Recoil.atomWithProfiling ($"{nameof atom}/{nameof formDatabaseVisibleFlag}", false)
-
-        let rec formTaskId = Recoil.atomWithProfiling ($"{nameof atom}/{nameof formTaskId}", (None: TaskId option))
-        let rec formTaskVisibleFlag = Recoil.atomWithProfiling ($"{nameof atom}/{nameof formTaskVisibleFlag}", false)
 
         let rec apiBaseUrl =
             Recoil.atomWithProfiling (

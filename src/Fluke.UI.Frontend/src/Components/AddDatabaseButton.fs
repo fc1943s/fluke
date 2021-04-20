@@ -12,8 +12,10 @@ module AddDatabaseButton =
     [<ReactComponent>]
     let AddDatabaseButton (input: {| Props: Chakra.IChakraProps |}) =
         let username = Recoil.useValue Recoil.Atoms.username
-        let formDatabaseId, setFormDatabaseId = Recoil.useState Recoil.Atoms.formDatabaseId
-        let formDatabaseVisibleFlag, setFormDatabaseVisibleFlag = Recoil.useState Recoil.Atoms.formDatabaseVisibleFlag
+        let formDatabaseId, setFormDatabaseId = Recoil.useStateDefault Recoil.Atoms.User.formDatabaseId username
+
+        let formDatabaseVisibleFlag, setFormDatabaseVisibleFlag =
+            Recoil.useStateDefault Recoil.Atoms.User.formDatabaseVisibleFlag username
 
         React.fragment [
             Button.Button

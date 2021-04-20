@@ -14,7 +14,7 @@ module LeftDock =
 
     [<ReactComponent>]
     let LeftDock (input: {| Username: Username |}) =
-        let leftDock = Recoil.useValue Recoil.Atoms.leftDock
+        let leftDock = Recoil.useValue (Recoil.Atoms.User.leftDock input.Username)
 
         let items =
             [
@@ -76,7 +76,7 @@ module LeftDock =
                                                     DockType = dockType
                                                     Name = name
                                                     Icon = icon
-                                                    Atom = Recoil.Atoms.leftDock
+                                                    Atom = Recoil.Atoms.User.leftDock input.Username
                                                 |})
                             ]
                     ]
@@ -99,7 +99,7 @@ module LeftDock =
                                     {|
                                         Name = name
                                         Icon = icon
-                                        Atom = Recoil.Atoms.leftDock
+                                        Atom = Recoil.Atoms.User.leftDock input.Username
                                         children =
                                             [
                                                 content ()

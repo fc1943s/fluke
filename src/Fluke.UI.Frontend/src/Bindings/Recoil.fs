@@ -8,6 +8,9 @@ open Fluke.UI.Frontend
 open Fable.Core.JsInterop
 open Feliz
 open React
+open Fluke.UI.Frontend.Bindings
+open Fable.Core
+open Fable.Extras
 
 
 module Recoil =
@@ -148,22 +151,96 @@ module Recoil =
                                     | Some (UserInteraction.Username username) -> $"user/{username}/"
                                     | _ -> ""
             }{
-                atomKey
-                    .Replace("__withFallback", "")
-                    .Replace("\"", "")
-                    .Replace("\\", "")
-                    .Replace("__", "/")
-                    .Replace(".", "/")
-                    .Replace("[", "/")
-                    .Replace("]", "/")
-                    .Replace(",", "/")
-                    .Replace("//", "/")
+                (atomKey.Split "__" |> Seq.head)
+//                    .Replace("__withFallback", "")
+//                    .Replace("\"", "")
+//                    .Replace("\\", "")
+//                    .Replace("__", "/")
+//                    .Replace(".", "/")
+//                    .Replace("[", "/")
+//                    .Replace("]", "/")
+//                    .Replace(",", "/")
+//                    .Replace("//", "/")
                     .Trim ()
             }"""
 
         match result with
         | String.ValidString when result |> Seq.last = '/' -> result |> String.take (result.Length - 1)
         | _ -> result
+
+    let rec waitForObject fn =
+        async {
+            let obj = fn ()
+
+            if box obj <> null then
+                return obj
+            else
+                printfn "waitForObject: null. waiting..."
+                do! Async.Sleep 100
+                return! waitForObject fn
+        }
+
+    let getGun () =
+        waitForObject (fun () -> box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj>)
+
+    let getGunAtomNode (username: UserInteraction.Username option) (atom: RecoilValue<_, _>) (keySuffix: string) =
+        async {
+            let! gun = getGun ()
+
+            let gunAtomKey = getGunAtomKey username atom.key
+
+            let newId = $"""{gunAtomKey}{keySuffix}"""
+
+            printfn
+                $"""getGunAtomNode. gunAtomKey={gunAtomKey} atom.key={atom.key} newKey={newId}
+                usernamestr={atom.key.Replace ((JSe.RegExp "__\[.*?\]"), "")} """
+
+            return Gun.getGunAtomNode gun newId, newId
+
+        }
+
+    let inline gunEffect
+        (username: UserInteraction.Username option)
+        (atomFamily: 'TKey -> RecoilValue<'TValue, _>)
+        (atomKey: 'TKey)
+        (keySuffix: string)
+        =
+        (fun (e: EffectProps<'TValue>) ->
+            let atom = atomFamily atomKey
+
+            match e.trigger with
+            | "get" ->
+                (promise {
+                    let! gunAtomNode, id = getGunAtomNode username atom keySuffix
+
+                    gunAtomNode.on
+                        (fun data ->
+                            printfn $"gunEffect. gunAtomNode.on() effect. id={id} data={JS.JSON.stringify data}"
+
+                            match Gun.deserializeGunAtomNode data with
+                            | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
+                            | None -> ())
+                 })
+                |> Promise.start
+            | _ -> ()
+
+            e.onSet
+                (fun value oldValue ->
+                    (promise {
+                        let! gunAtomNode, _ = getGunAtomNode username atom keySuffix
+                        Gun.putGunAtomNode gunAtomNode value
+
+                        printfn $"gunEffect. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {value}"
+                     })
+                    |> Promise.start)
+
+            fun () ->
+                (promise {
+                    let! gunAtomNode, _ = getGunAtomNode username atom keySuffix
+                    printfn "gunEffect. unsubscribe atom. calling selected.off ()"
+                    gunAtomNode.off () |> ignore
+                 })
+                |> Promise.start)
 
 // TODO: move to recoilize file?
 module Recoilize =

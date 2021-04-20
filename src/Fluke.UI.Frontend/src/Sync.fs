@@ -44,7 +44,7 @@ module Sync =
                 result?isRejected <- fun () -> isRejected
                 result
 
-        let withTimeout (ms: int) (fn: JS.Promise<Choice<'T, exn>>) =
+        let withTimeout<'T> (ms: int) (fn: JS.Promise<Choice<'T, exn>>) =
             promise {
                 let timeout =
                     Promise.create

@@ -29,8 +29,8 @@ module Cell =
         let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments (input.TaskId, input.DateId))
         let showUser = Recoil.useValue (Recoil.Selectors.Task.showUser input.TaskId)
         let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday referenceDay)
-        let cellMenuOpened, setCellMenuOpened = Recoil.useState Recoil.Atoms.cellMenuOpened
-        let isCurrentCellMenuOpened = cellMenuOpened = Some (input.Username, input.TaskId, input.DateId)
+        let cellMenuOpened, setCellMenuOpened = Recoil.useState (Recoil.Atoms.User.cellMenuOpened input.Username)
+        let isCurrentCellMenuOpened = cellMenuOpened = Some (input.TaskId, input.DateId)
 
         let selected, setSelected =
             Recoil.useState (Recoil.Selectors.Cell.selected (input.Username, input.TaskId, input.DateId))
@@ -52,7 +52,7 @@ module Cell =
                             if isCurrentCellMenuOpened then
                                 setCellMenuOpened None
                             else
-                                setCellMenuOpened (Some (input.Username, input.TaskId, input.DateId))
+                                setCellMenuOpened (Some (input.TaskId, input.DateId))
 
                     //                gun.get("test").get("test2").put(1)
                     })
@@ -67,11 +67,10 @@ module Cell =
 
         Chakra.center
             (fun x ->
-                x?``data-testid`` <-
-                    if isTesting then
-                        $"cell-{input.TaskId}-{referenceDay.DateTime.ToShortDateString ()}"
-                    else
-                        null
+                x?``data-testid`` <- if isTesting then
+                                         $"cell-{input.TaskId}-{referenceDay.DateTime.ToShortDateString ()}"
+                                     else
+                                         null
 
                 x.onClick <- onCellClick
                 x.width <- "17px"

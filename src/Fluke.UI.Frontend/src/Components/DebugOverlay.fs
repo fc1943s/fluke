@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.React
-open Fable.Core.JsInterop
 open Feliz
 open Feliz.UseListener
 open Feliz.Recoil

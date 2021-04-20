@@ -15,8 +15,10 @@ module AddTaskButton =
         let username = Recoil.useValue Recoil.Atoms.username
         let selectedPosition = Recoil.useValue Recoil.Atoms.selectedPosition
         let selectedDatabaseIds = Recoil.useValue Recoil.Atoms.selectedDatabaseIds
-        let formTaskId, setFormTaskId = Recoil.useState Recoil.Atoms.formTaskId
-        let formTaskVisibleFlag, setFormTaskVisibleFlag = Recoil.useState Recoil.Atoms.formTaskVisibleFlag
+        let formTaskId, setFormTaskId = Recoil.useStateDefault Recoil.Atoms.User.formTaskId username
+
+        let formTaskVisibleFlag, setFormTaskVisibleFlag =
+            Recoil.useStateDefault Recoil.Atoms.User.formTaskVisibleFlag username
 
         let hintText =
             match selectedDatabaseIds, selectedPosition with
