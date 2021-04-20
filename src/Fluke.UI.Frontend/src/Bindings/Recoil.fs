@@ -1,6 +1,8 @@
 namespace Fluke.UI.Frontend.Bindings
 
 open Fable.React
+open Fluke.Shared.Domain
+open Fluke.Shared
 open Feliz.Recoil
 open Fluke.UI.Frontend
 open Fable.Core.JsInterop
@@ -72,6 +74,16 @@ module Recoil =
 
         Recoil.useValue atom
 
+    let useStateDefault<'TKey, 'TValue> (atom: 'TKey -> RecoilValue<'TValue, ReadWrite>) (key: 'TKey option) =
+        let atom =
+            match key with
+            | Some key -> atom key
+            | None -> box (RecoilValue.lift null) :?> RecoilValue<'TValue, ReadWrite>
+
+        let value, setValue = Recoil.useState atom
+
+        value, (if key.IsNone then (fun _ -> ()) else setValue)
+
 
     let useAtomField<'TValue, 'TKey when 'TValue: equality> atom =
         let atomField = getAtomField<'TValue, 'TKey> atom
@@ -127,6 +139,31 @@ module Recoil =
             )
 
         atomFieldOptions
+
+    let getGunAtomKey (username: UserInteraction.Username option) (atomKey: string) =
+
+        let result =
+            $"""{nameof Fluke}/{
+                                    match username with
+                                    | Some (UserInteraction.Username username) -> $"user/{username}/"
+                                    | _ -> ""
+            }{
+                atomKey
+                    .Replace("__withFallback", "")
+                    .Replace("\"", "")
+                    .Replace("\\", "")
+                    .Replace("__", "/")
+                    .Replace(".", "/")
+                    .Replace("[", "/")
+                    .Replace("]", "/")
+                    .Replace(",", "/")
+                    .Replace("//", "/")
+                    .Trim ()
+            }"""
+
+        match result with
+        | String.ValidString when result |> Seq.last = '/' -> result |> String.take (result.Length - 1)
+        | _ -> result
 
 // TODO: move to recoilize file?
 module Recoilize =
@@ -285,6 +322,7 @@ module RecoilMagic =
 //                //    storage.subscribe(value => setSelf(value));
 //
 //                fun () -> printfn "> unsubscribe")
+
     type Recoil with
         static member inline atomWithProfiling
             (
@@ -294,14 +332,7 @@ module RecoilMagic =
                 ?_persistence,
                 ?_dangerouslyAllowMutability
             ) =
-            Recoil.atom (
-                atomKey,
-                promise {
-                    //                    Profiling.addCount atomKey
-                    return defaultValue
-                },
-                effects |> Option.defaultValue []
-            )
+            Recoil.atom (atomKey, promise { return defaultValue }, effects |> Option.defaultValue [])
 
         static member inline atomFamilyWithProfiling
             (

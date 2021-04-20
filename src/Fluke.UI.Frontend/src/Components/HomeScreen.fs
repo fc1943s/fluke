@@ -18,7 +18,7 @@ module HomeScreen =
         (input: {| Username: Username
                    Props: Chakra.IChakraProps |})
         =
-        let view, setView = Recoil.useState Recoil.Atoms.view
+        let view, setView = Recoil.useState (Recoil.Atoms.User.view input.Username)
 
         let tabs =
             [
@@ -97,8 +97,7 @@ module HomeScreen =
                                                                 (JS.newObj
                                                                     (fun x ->
                                                                         x.borderBottomWidth <- "2px"
-                                                                        x.borderBottomColor <- "gray.45"
-                                                                        ))
+                                                                        x.borderBottomColor <- "gray.45"))
 
                                                             x._selected <-
                                                                 (JS.newObj

@@ -14,7 +14,6 @@ open Fluke.UI.Frontend.Tests.Core
 open Fluke.UI.Frontend.Recoil
 open Fluke.Shared
 open Fable.React
-open Fable.Core.JsInterop
 open Fluke.UI.Frontend.Hooks
 
 
@@ -79,9 +78,9 @@ module CellSelection =
                     )
 
                     setter.set (Atoms.username, Some testUser.Username)
-                    setter.set (Atoms.view, View.View.Priority)
-                    setter.set (Atoms.daysBefore, 2)
-                    setter.set (Atoms.daysAfter, 2)
+                    setter.set (Atoms.User.view testUser.Username, View.View.Priority)
+                    setter.set (Atoms.User.daysBefore testUser.Username, 2)
+                    setter.set (Atoms.User.daysAfter testUser.Username, 2)
                     setter.set (Atoms.gunHash, System.Guid.NewGuid().ToString ())
                     setter.set (Atoms.selectedPosition, Some dslTemplate.Position)
 

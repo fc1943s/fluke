@@ -71,6 +71,14 @@ module Full =
                     (**)
 
                     (**)
+                    (Cy.contains (nameof Databases) None).click ()
+                    |> ignore
+
+                    Cy.wait 1500
+
+                    (**)
+
+                    (**)
 
                     (Cy.contains "Add Database" (Some {| timeout = timeout |}))
                         .click ()
@@ -85,10 +93,8 @@ module Full =
                     (Cy.contains "Save" None).click () |> ignore
                     (**)
 
-                    (**)
-                    (Cy.contains (nameof Databases) None).click ()
-                    |> ignore
 
+                    (**)
                     Cy
                         .get(
                             $"[data-testid={nameof Databases}]"
@@ -98,10 +104,8 @@ module Full =
                         {| ensureScrollable = false |}
 
                     (Cy.contains dbName None).click () |> ignore
-
-                    Cy.wait 500
-
                     (**)
+
 
                     (**)
                     (Cy.contains "Add Task" None).click () |> ignore

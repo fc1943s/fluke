@@ -19,7 +19,7 @@ module GunBind =
         let username = Recoil.useValue Recoil.Atoms.username
 
         React.useMemo (
-            (fun () -> Recoil.getGunAtomKey username atom),
+            (fun () -> Recoil.getGunAtomKey username atom.key),
             [|
                 box atom
                 box username

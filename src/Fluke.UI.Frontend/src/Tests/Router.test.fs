@@ -44,13 +44,13 @@ module Router =
             let initialize peek = promise { do! peek initialSetter }
 
             let setView peek (view: View.View) =
-                peek (fun (setter: CallbackMethods) -> promise { setter.set (Atoms.view, view) })
+                peek (fun (setter: CallbackMethods) -> promise { setter.set (Atoms.User.view testUser.Username, view) })
 
             let expectView peek (expected: View.View) =
                 peek
                     (fun (setter: CallbackMethods) ->
                         promise {
-                            let! view = setter.snapshot.getPromise Atoms.view
+                            let! view = setter.snapshot.getPromise (Atoms.User.view testUser.Username)
 
                             Jest.expect(string view).toEqual (string expected)
                         })

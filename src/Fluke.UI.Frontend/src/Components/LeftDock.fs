@@ -24,6 +24,7 @@ module LeftDock =
                  (fun () ->
                      Settings.Settings
                          {|
+                             Username = input.Username
                              Props =
                                  JS.newObj
                                      (fun x ->

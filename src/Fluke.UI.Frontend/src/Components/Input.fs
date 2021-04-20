@@ -172,13 +172,13 @@ module Input =
             (fun x -> x.spacing <- "5px")
             [
 
-                GunBind.GunBind
-                    {|
-                        Atom =
-                            match input.atomScope with
-                            | Some Recoil.AtomScope.ReadOnly -> atomFieldOptions.AtomField.ReadOnly
-                            | _ -> atomFieldOptions.AtomField.ReadWrite
-                    |}
+//                GunBind.GunBind
+//                    {|
+//                        Atom =
+//                            match input.atomScope with
+//                            | Some Recoil.AtomScope.ReadOnly -> atomFieldOptions.AtomField.ReadOnly
+//                            | _ -> atomFieldOptions.AtomField.ReadWrite
+//                    |}
 
                 if input.label <> null then
                     Chakra.flex

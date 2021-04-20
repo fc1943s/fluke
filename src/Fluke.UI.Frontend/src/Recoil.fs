@@ -21,58 +21,6 @@ module Recoil =
     open Domain.State
     open View
 
-
-    //    let peersArray =
-//        let peer1 = Browser.Dom.window.localStorage.getItem "peer1"
-//        let peer2 = Browser.Dom.window.localStorage.getItem "peer2"
-//        // "http://localhost:8765/gun"
-//        // "https://???.brazilsouth.azurecontainer.io:8765/gun"
-//        match peer1, peer2 with
-//        | (""
-//          | null),
-//          (""
-//          | null) -> [||]
-//        | peer1,
-//          (""
-//          | null) ->
-//            [|
-//                peer1
-//            |]
-//        | peer1, peer2 ->
-//            [|
-//                peer1
-//                peer2
-//            |]
-//
-//    printfn $"peersArray {peersArray}"
-    let getGunAtomKey username (atom: RecoilValue<'T, ReadWrite>) =
-
-        let result =
-            $"""{nameof Fluke}/{
-                                    match username with
-                                    | Some (Username username) -> $"user/{username}/"
-                                    | _ -> ""
-            }{
-                atom
-                    .key
-                    .Replace("__withFallback", "")
-                    .Replace("\"", "")
-                    .Replace("\\", "")
-                    .Replace("__", "/")
-                    .Replace(".", "/")
-                    .Replace("[", "/")
-                    .Replace("]", "/")
-                    .Replace(",", "/")
-                    .Replace("//", "/")
-                    .Trim ()
-            }"""
-
-        match result with
-        | String.ValidString when result |> Seq.last = '/' -> result |> String.take (result.Length - 1)
-        | _ -> result
-
-
-
     module Atoms =
         module rec Events =
             type EventId = EventId of position: float * guid: Guid
@@ -176,6 +124,12 @@ module Recoil =
 
 
         module rec User =
+            let rec view =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof view}",
+                    (fun (_username: Username) -> View.View.HabitTracker)
+                )
+
             let rec color =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof color}",
@@ -204,6 +158,90 @@ module Recoil =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof sessionBreakLength}",
                     (fun (_username: Username) -> Minute 5.)
+                )
+
+            let rec daysBefore =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof daysBefore}",
+                    (fun (_username: Username) -> 7),
+                    (fun (username: Username) ->
+                        [
+                            (fun e ->
+                                let gun = box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj> option
+
+                                match gun with
+                                //                                | Some _gun ->
+                                //                                    let atom = selected (username, taskId, dateId)
+                                //                                    let gunAtomKey = getGunAtomKey (Some username) atom.key
+                                //
+                                //                                    let newId =
+                                //                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
+                                //                                                                                                           formatDateId
+                                //                                                                                                               dateId
+                                //                                        }"""
+                                //
+                                //                                    printfn
+                                //                                        $"""skipping effect.
+                                //                                    gunAtomKey={gunAtomKey}
+                                //                                    atom.key={atom.key}
+                                //                                    newKey={newId}
+                                //                                    """
+                                //
+                                //                                    fun () -> ()
+                                | Some gun ->
+                                    let atom = daysBefore username
+
+                                    let gunAtomKey =
+                                        Recoil.getGunAtomKey
+                                            (Some username)
+                                            (atom.key.Replace ((JSe.RegExp "__\[.*?\]"), ""))
+
+                                    let newId = $"""{gunAtomKey.Split "//" |> Seq.head}"""
+
+                                    printfn
+                                        $"""atom: .effects. gunAtomKey={gunAtomKey} atom.key={atom.key} newKey={newId} usernamestr={ (atom.key.Replace ((JSe.RegExp "__\[.*?\]"), "")) } """
+
+                                    let gunAtomNode = Gun.getGunAtomNode gun newId
+
+                                    match e.trigger with
+                                    | "get" ->
+                                        gunAtomNode.on
+                                            (fun data ->
+                                                printfn
+                                                    $"atom: gunAtomNode.on() effect. newId={newId} data={
+                                                                                                             JS.JSON.stringify
+                                                                                                                 data
+                                                    }"
+
+                                                match Gun.deserializeGunAtomNode data with
+                                                | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
+                                                | None -> ()
+                                                )
+                                    | _ -> ()
+
+                                    e.onSet
+                                        (fun value oldValue ->
+                                            Gun.putGunAtomNode gunAtomNode value
+
+                                            printfn
+                                                $"atom: effects. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {
+                                                                                                                               value
+                                                }")
+
+                                    fun () ->
+                                        printfn "atom: > unsubscribe atom. calling selected.off ()"
+                                        gunAtomNode.off () |> ignore
+
+                                | None ->
+                                    failwith "atom: Gun not found"
+                                    fun () -> ())
+                        ])
+                )
+
+            let rec daysAfter =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof daysAfter}",
+                    (fun (_username: Username) -> 7)
                 )
 
 
@@ -273,7 +311,7 @@ module Recoil =
                                 match gun with
                                 //                                | Some _gun ->
 //                                    let atom = selected (username, taskId, dateId)
-//                                    let gunAtomKey = getGunAtomKey (Some username) atom
+//                                    let gunAtomKey = getGunAtomKey (Some username) atom.key
 //
 //                                    let newId =
 //                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
@@ -291,7 +329,7 @@ module Recoil =
 //                                    fun () -> ()
                                 | Some gun ->
                                     let atom = selected (username, taskId, dateId)
-                                    let gunAtomKey = getGunAtomKey (Some username) atom
+                                    let gunAtomKey = Recoil.getGunAtomKey (Some username) atom.key
 
                                     let newId =
                                         $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
@@ -387,7 +425,6 @@ module Recoil =
 
         let rec isTesting = Recoil.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.isTesting)
 
-        let rec view = Recoil.atomWithProfiling ($"{nameof atom}/{nameof view}", View.View.HabitTracker)
 
         let rec selectedDatabaseIds =
             Recoil.atomWithProfiling (
@@ -416,10 +453,6 @@ module Recoil =
             )
 
         let rec cellSize = Recoil.atomWithProfiling ($"{nameof atom}/{nameof cellSize}", 17)
-
-        let rec daysBefore = Recoil.atomWithProfiling ($"{nameof atom}/{nameof daysBefore}", 7)
-
-        let rec daysAfter = Recoil.atomWithProfiling ($"{nameof atom}/{nameof daysAfter}", 7)
 
         let rec leftDock =
             Recoil.atomWithProfiling (
@@ -450,11 +483,7 @@ module Recoil =
                     ]
             )
 
-        let rec gunHash =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof gunHash}",
-                ""
-            )
+        let rec gunHash = Recoil.atomWithProfiling ($"{nameof atom}/{nameof gunHash}", "")
 
         let rec gunPeer1 =
             Recoil.atomWithProfiling (
@@ -614,13 +643,13 @@ module Recoil =
             Recoil.selectorWithProfiling (
                 $"{nameof selector}/{nameof dateSequence}",
                 (fun getter ->
-                    let daysBefore = getter.get Atoms.daysBefore
-                    let daysAfter = getter.get Atoms.daysAfter
                     let username = getter.get Atoms.username
                     let position = getter.get position
 
                     match position, username with
                     | Some position, Some username ->
+                        let daysBefore = getter.get (Atoms.User.daysBefore username)
+                        let daysAfter = getter.get (Atoms.User.daysAfter username)
                         let dayStart = getter.get (Atoms.User.dayStart username)
                         let dateId = dateId dayStart position
                         let (DateId referenceDay) = dateId
@@ -1054,7 +1083,7 @@ module Recoil =
                     (fun (username: Username) getter ->
                         let databaseStateMap = getter.get (Atoms.Session.databaseStateMapCache username)
                         let dateSequence = getter.get dateSequence
-                        let view = getter.get Atoms.view
+                        let view = getter.get (Atoms.User.view username)
                         let position = getter.get position
                         let selectedDatabaseIds = getter.get Atoms.selectedDatabaseIds
 

@@ -30,6 +30,7 @@ module Cypress =
             abstract should : string -> string -> string -> unit
             abstract invoke : string -> string -> string -> Chainable2<'T>
             abstract click : unit -> Chainable2<'T>
+            abstract debug : unit -> unit
             abstract clear : unit -> Chainable2<'T>
             abstract focus : unit -> unit
             abstract ``then`` : (Chainable2<'T> -> unit) -> unit
@@ -53,6 +54,9 @@ module Cypress =
 
         [<Emit("cy.visit($0)")>]
         let visit (_url: string) : unit = jsNative
+
+        [<Emit("cy.pause()")>]
+        let pause () : unit = jsNative
 
         [<Emit("cy.wait($0)")>]
         let wait (_time: int) : unit = jsNative

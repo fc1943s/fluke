@@ -25,7 +25,7 @@ module RouterObserver =
     let RouterObserver () =
         let sessionRestored, setSessionRestored = Recoil.useState Recoil.Atoms.sessionRestored
         let username = Recoil.useValue Recoil.Atoms.username
-        let view, setView = Recoil.useState Recoil.Atoms.view
+        let view, setView = Recoil.useStateDefault Recoil.Atoms.User.view username
 
         let onKeyDown =
             Recoil.useCallbackRef
