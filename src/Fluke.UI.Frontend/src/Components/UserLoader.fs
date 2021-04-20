@@ -23,14 +23,14 @@ module UserLoader =
                         let! user = setter.snapshot.getPromise Recoil.Selectors.apiCurrentUserAsync
 
                         match user with
-                        | Some user ->
+                        | Ok user ->
                             if user.Username = username then
                                 setter.set (Recoil.Atoms.User.color user.Username, user.Color)
                                 setter.set (Recoil.Atoms.User.dayStart user.Username, user.DayStart)
                                 setter.set (Recoil.Atoms.User.sessionLength user.Username, user.SessionLength)
                                 setter.set (Recoil.Atoms.User.weekStart user.Username, user.WeekStart)
                                 setter.set (Recoil.Atoms.User.sessionBreakLength user.Username, user.SessionBreakLength)
-                        | None -> ()
+                        | Error _ -> ()
                     })
 
         React.useEffect (

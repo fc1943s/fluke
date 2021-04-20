@@ -7,7 +7,6 @@ open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
-open Fable.Core
 
 module SessionDataLoader =
 
@@ -86,7 +85,6 @@ module SessionDataLoader =
                             api
                             |> Option.bind (fun api -> Some (api.databaseStateList username position))
                             |> Sync.handleRequest
-                            |> Async.StartAsPromise
 
                         let templates =
                             Templates.getDatabaseMap TempData.testUser
@@ -118,9 +116,8 @@ module SessionDataLoader =
 
                         let newDatabaseStateList =
                             databaseStateList
-                            |> Option.defaultValue []
+                            |> Result.defaultValue []
                             |> List.append templates
-
 
                         let databaseStateMap =
                             newDatabaseStateList

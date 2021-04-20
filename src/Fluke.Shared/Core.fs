@@ -22,6 +22,12 @@ module List =
         |> Seq.intersperse element
         |> Seq.toList
 
+module Result =
+    let defaultValue def result =
+        match result with
+        | Ok result -> result
+        | Error _ -> def
+
 module Map =
     let singleton key value =
         [
