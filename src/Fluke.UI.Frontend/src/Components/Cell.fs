@@ -1,7 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
-open Browser.Types
 open Fable.React
+open Fable.Core.JsInterop
 open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend
@@ -67,7 +67,7 @@ module Cell =
 
         Chakra.center
             (fun x ->
-                x.``data-testid`` <-
+                x?``data-testid`` <-
                     if isTesting then
                         $"cell-{input.TaskId}-{referenceDay.DateTime.ToShortDateString ()}"
                     else

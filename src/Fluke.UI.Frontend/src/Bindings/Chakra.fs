@@ -37,7 +37,6 @@ module Chakra =
         abstract columns : int with get, set
         abstract content : string with get, set
         abstract cursor : string with get, set
-        abstract ``data-testid`` : string with get, set
         abstract direction : string with get, set
         abstract disabled : bool with get, set
         abstract display : string with get, set

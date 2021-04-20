@@ -105,5 +105,6 @@ module Setup =
                             cellMap <- cellList |> Array.collect id |> Map.ofArray
                         })
 
+            printfn $"cellMap.Count={cellMap.Count}"
             return cellMap
         }

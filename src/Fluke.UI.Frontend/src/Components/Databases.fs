@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core.JsInterop
 open Browser.Types
 open Fluke.Shared
 open Feliz
@@ -81,7 +82,7 @@ module Databases =
 
             Checkbox.Checkbox
                 (fun x ->
-                    x.``data-testid`` <- if isTesting then $"menu-item-{databaseId.ToString ()}" else null
+                    x?``data-testid`` <- if isTesting then $"menu-item-{databaseId.ToString ()}" else null
                     x.value <- input.DatabaseId
                     x.isChecked <- selected
                     x.isDisabled <- if enabled then false else true
@@ -105,7 +106,7 @@ module Databases =
         Chakra.stack
             (fun x ->
                 x <+ input.Props
-                x.``data-testid`` <- if isTesting then nameof Databases else null)
+                x?``data-testid`` <- if isTesting then nameof Databases else null)
             [
                 yield!
                     availableDatabaseIds

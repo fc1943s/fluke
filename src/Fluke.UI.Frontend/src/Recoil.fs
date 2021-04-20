@@ -77,6 +77,9 @@ module Recoil =
         module rec Events =
             type EventId = EventId of position: float * guid: Guid
 
+            let newEventId () =
+                EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
+
             [<RequireQualifiedAccess>]
             type Event =
                 | AddDatabase of id: EventId * name: DatabaseName * dayStart: FlukeTime
@@ -447,6 +450,12 @@ module Recoil =
                     ]
             )
 
+        let rec gunHash =
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof gunHash}",
+                ""
+            )
+
         let rec gunPeer1 =
             Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof gunPeer1}",
@@ -518,6 +527,7 @@ module Recoil =
             Recoil.selectorWithProfiling (
                 $"{nameof selector}/{nameof gunPeers}",
                 (fun getter ->
+                    let _gunHash = getter.get Atoms.gunHash
                     let gunPeer1 = getter.get Atoms.gunPeer1
                     let gunPeer2 = getter.get Atoms.gunPeer2
                     let gunPeer3 = getter.get Atoms.gunPeer3
@@ -540,9 +550,7 @@ module Recoil =
                         Gun.gun (
                             {
                                 Gun.GunProps.peers = if JS.isTesting then None else Some gunPeers
-
                                 Gun.GunProps.radisk = if JS.isTesting then None else Some false
-
                                 Gun.GunProps.localStorage = if JS.isTesting then None else Some true
                             }
                             |> unbox
@@ -551,7 +559,6 @@ module Recoil =
                     Browser.Dom.window?lastGun <- gun
 
                     printfn $"gun selector. peers={gunPeers}. returning gun..."
-                    gun.put null |> ignore
 
                     {| ref = gun |})
             )

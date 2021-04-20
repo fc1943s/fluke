@@ -13,7 +13,7 @@ module Crypto =
 
     let sha3 = crypto.SHA3
 
-    let getGuidHash value =
+    let getTextGuidHash value =
         value
         |> sha3
         |> string

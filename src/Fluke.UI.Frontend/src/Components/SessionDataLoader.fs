@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open System
 open Fable.React
 open Feliz
 open Feliz.Recoil
@@ -73,15 +72,6 @@ module SessionDataLoader =
 
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 
-    let getDatabaseIdFromName name =
-        name
-        |> Crypto.sha3
-        |> string
-        |> String.take 16
-        |> System.Text.Encoding.UTF8.GetBytes
-        |> Guid
-        |> DatabaseId
-
     let fetchDatabaseStateMap (setter: CallbackMethods) username =
         promise {
             let! position = setter.snapshot.getPromise Recoil.Selectors.position
@@ -103,11 +93,27 @@ module SessionDataLoader =
                             |> Map.toList
                             |> List.map
                                 (fun (templateName, dslTemplate) ->
+                                    let databaseId =
+                                        templateName
+                                        |> Crypto.getTextGuidHash
+                                        |> DatabaseId
+
                                     Templates.databaseStateFromDslTemplate
                                         TempData.testUser
-                                        (DatabaseId.NewId ())
+                                        databaseId
                                         templateName
                                         dslTemplate)
+                            |> List.map
+                                (fun databaseState ->
+                                    { databaseState with
+                                        TaskStateMap =
+                                            databaseState.TaskStateMap
+                                            |> Map.map
+                                                (fun { Name = TaskName taskName } taskState ->
+                                                    { taskState with
+                                                        TaskId = taskName |> Crypto.getTextGuidHash |> TaskId
+                                                    })
+                                    })
 
 
                         let newDatabaseStateList =
@@ -118,11 +124,7 @@ module SessionDataLoader =
 
                         let databaseStateMap =
                             newDatabaseStateList
-                            |> List.map
-                                (fun databaseState ->
-                                    let (DatabaseName databaseName) = databaseState.Database.Name
-                                    let id = getDatabaseIdFromName databaseName
-                                    id, databaseState)
+                            |> List.map (fun databaseState -> databaseState.Database.Id, databaseState)
                             |> Map.ofList
 
                         return databaseStateMap

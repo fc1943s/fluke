@@ -17,6 +17,10 @@ module DatabaseSelection =
     open State
     open TempData
 
+    [<RequireQualifiedAccess>]
+    type MenuItemStatus =
+        | Disabled
+        | Enabled
 
     Jest.describe (
         "database selection",
@@ -44,11 +48,11 @@ module DatabaseSelection =
                 |> Array.map
                     (fun (el: Browser.Types.HTMLElement option) ->
                         match el with
-                        | None -> false
+                        | None -> MenuItemStatus.Disabled
                         | Some el ->
                             match el.getAttribute "data-disabled" |> Option.ofObj with
-                            | Some _ -> false
-                            | None -> true)
+                            | Some _ -> MenuItemStatus.Disabled
+                            | None -> MenuItemStatus.Enabled)
 
                 |> fun menuItemsVisibility -> Jest.expect(menuItemsVisibility).toEqual array
 
@@ -73,6 +77,12 @@ module DatabaseSelection =
                                     x.flexBasis <- 0)
                     |}
 
+            let click el =
+                promise {
+                    RTL.fireEvent.click el
+                    do! RTL.waitFor id
+                }
+
             Jest.test (
                 "database list updates correctly with user clicks",
                 promise {
@@ -83,115 +93,115 @@ module DatabaseSelection =
 
                     menuItems
                     |> testMenuItemsState [|
-                        true
-                        true
-                        true
-                        true
-                        true
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
                        |]
 
-                    RTL.fireEvent.click menuItems.[2].Value
+                    do! click menuItems.[2].Value
 
                     let menuItems = queryMenuItems subject
 
                     menuItems
                     |> testMenuItemsState [|
-                        false
-                        false
-                        true
-                        false
-                        false
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
                        |]
 
-                    RTL.fireEvent.click menuItems.[2].Value
+                    do! click menuItems.[2].Value
 
                     let menuItems = queryMenuItems subject
 
                     menuItems
                     |> testMenuItemsState [|
-                        true
-                        true
-                        true
-                        true
-                        true
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
                        |]
 
-                    RTL.fireEvent.click menuItems.[1].Value
+                    do! click menuItems.[1].Value
 
                     let menuItems = queryMenuItems subject
 
                     menuItems
                     |> testMenuItemsState [|
-                        true
-                        true
-                        false
-                        false
-                        false
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
                        |]
 
-                    RTL.fireEvent.click menuItems.[0].Value
+                    do! click menuItems.[0].Value
 
                     let menuItems = queryMenuItems subject
 
                     menuItems
                     |> testMenuItemsState [|
-                        true
-                        true
-                        false
-                        false
-                        false
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
                        |]
 
-                    RTL.fireEvent.click menuItems.[1].Value
+                    do! click menuItems.[1].Value
 
                     let menuItems = queryMenuItems subject
 
                     menuItems
                     |> testMenuItemsState [|
-                        true
-                        true
-                        false
-                        false
-                        false
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
                        |]
 
-                    RTL.fireEvent.click menuItems.[0].Value
+                    do! click menuItems.[0].Value
 
                     let menuItems = queryMenuItems subject
 
                     menuItems
                     |> testMenuItemsState [|
-                        true
-                        true
-                        true
-                        true
-                        true
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
                        |]
 
-                    RTL.fireEvent.click menuItems.[3].Value
+                    do! click menuItems.[3].Value
 
                     let menuItems = queryMenuItems subject
 
                     menuItems
                     |> testMenuItemsState [|
-                        false
-                        false
-                        false
-                        true
-                        true
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
                        |]
 
-                    RTL.fireEvent.click menuItems.[4].Value
+                    do! click menuItems.[4].Value
 
                     let menuItems = queryMenuItems subject
 
                     menuItems
                     |> testMenuItemsState [|
-                        false
-                        false
-                        false
-                        true
-                        true
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
                        |]
                 }
             )
@@ -220,11 +230,11 @@ module DatabaseSelection =
 
                     menuItems
                     |> testMenuItemsState [|
-                        true
-                        true
-                        false
-                        false
-                        false
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Enabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
+                        MenuItemStatus.Disabled
                        |]
                 }
             )

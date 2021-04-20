@@ -25,7 +25,7 @@ module TaskForm =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) _ ->
                     promise {
-                        let eventId = Recoil.Atoms.Events.EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
+                        let eventId = Recoil.Atoms.Events.newEventId ()
 
                         let! name = setter.snapshot.getReadWritePromise Recoil.Atoms.Task.name input.TaskId
 
