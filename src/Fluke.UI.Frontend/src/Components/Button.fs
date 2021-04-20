@@ -45,8 +45,8 @@ module Button =
                         (fun x ->
                             x <+ input.Props
                             x.height <- "auto"
-                            x.paddingTop <- "2px"
-                            x.paddingBottom <- "2px")
+                            x.paddingTop <- "3px"
+                            x.paddingBottom <- "3px")
                         [
                             Chakra.stack
                                 (fun x ->

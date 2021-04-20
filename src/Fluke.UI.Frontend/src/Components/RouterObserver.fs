@@ -31,10 +31,10 @@ module RouterObserver =
             Recoil.useCallbackRef
                 (fun _ (e: KeyboardEvent) ->
                     match e.ctrlKey, e.shiftKey, e.key with
-                    | _, true, "H" -> setView View.View.HabitTracker
-                    | _, true, "P" -> setView View.View.Priority
-                    | _, true, "B" -> setView View.View.BulletJournal
-                    | _, true, "I" ->
+                    | false, true, "H" -> setView View.View.HabitTracker
+                    | false, true, "P" -> setView View.View.Priority
+                    | false, true, "B" -> setView View.View.BulletJournal
+                    | false, true, "I" ->
                         printfn "RouterObserver.onKeyDown() View.Information"
                         setView View.View.Information
                     | _ -> ())

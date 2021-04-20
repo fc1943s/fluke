@@ -88,22 +88,39 @@ module LoginScreen =
                         Chakra.hStack
                             (fun x -> x.align <- "stretch")
                             [
-                                Chakra.button
-                                    (fun x ->
-                                        x.flex <- 1
-                                        x.onClick <- signInClick
-                                        x.color <- "gray")
-                                    [
-                                        str "Sign In"
-                                    ]
-                                Chakra.button
-                                    (fun x ->
-                                        x.flex <- 1
-                                        x.onClick <- signUpClick
-                                        x.color <- "gray")
-                                    [
-                                        str "Sign Up"
-                                    ]
+
+                                Button.Button
+                                    {|
+                                        Icon = None
+                                        Hint = None
+                                        Props =
+                                            JS.newObj
+                                                (fun x ->
+                                                    x.flex <- 1
+                                                    x.onClick <- signInClick
+                                                    x.color <- "gray"
+
+                                                    x.children <-
+                                                        [
+                                                            str "Login"
+                                                        ])
+                                    |}
+                                Button.Button
+                                    {|
+                                        Icon = None
+                                        Hint = None
+                                        Props =
+                                            JS.newObj
+                                                (fun x ->
+                                                    x.flex <- 1
+                                                    x.onClick <- signUpClick
+                                                    x.color <- "gray"
+
+                                                    x.children <-
+                                                        [
+                                                            str "Register"
+                                                        ])
+                                    |}
                             ]
                     ]
             ]
