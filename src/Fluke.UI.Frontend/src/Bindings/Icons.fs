@@ -22,7 +22,9 @@ module Icons =
                 FaPlus: obj
                 FaRegClock: obj
                 FaRegUser: obj
-                FaSortNumericDownAlt: obj |} =
+                FaSortDown: obj
+                FaSortNumericDownAlt: obj
+                FaSortUp: obj |} =
         jsNative
 
     [<ImportAll "react-icons/fi">]
@@ -50,7 +52,9 @@ module Icons =
     let faPlus () = wrap fa.FaPlus
     let faRegClock () = wrap fa.FaRegClock
     let faRegUser () = wrap fa.FaRegUser
+    let faSortUp () = wrap fa.FaSortUp
     let faSortNumericDownAlt () = wrap fa.FaSortNumericDownAlt
+    let faSortDown () = wrap fa.FaSortDown
     let fiDatabase () = wrap fi.FiDatabase
     let fiLogOut () = wrap fi.FiLogOut
     let giHourglass () = wrap gi.GiHourglass

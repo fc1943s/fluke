@@ -47,7 +47,7 @@ module DockPanel =
                                 x.border <- "0"
                                 x.width <- "30px"
                                 x.height <- "30px"
-                                x.borderRadius <- 0
+                                x.borderRadius <- "0"
                                 x.onClick <- fun _ -> promise { setAtom None })
                             []
                     ]

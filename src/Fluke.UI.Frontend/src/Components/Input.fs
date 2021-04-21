@@ -83,15 +83,17 @@ module Input =
                 |]
             )
 
+        let fireChange () =
+            inputRef.current.dispatchEvent (Dom.createEvent "change" {| bubbles = true |})
+            |> ignore
+
         React.useEffect (
             (fun () ->
                 if inputRef.current <> null then
                     inputRef.current.value <- currentValueString
 
                     if not mounted then
-                        if input.atom.IsSome then
-                            inputRef.current.dispatchEvent (Dom.createEvent "change" {| bubbles = true |})
-                            |> ignore
+                        if input.atom.IsSome then fireChange ()
 
                         setMounted true
 
@@ -161,46 +163,104 @@ module Input =
                             Props = JS.newObj (fun _ -> ())
                         |}
 
-                Chakra.input
-                    (fun x ->
-                        x.onChange <- onChange
-                        x.ref <- inputRef
-                        x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
-                        x.autoFocus <- input.autoFocus
-                        x.placeholder <- input.placeholder
+                Chakra.box
+                    (fun x -> x.position <- "relative")
+                    [
+                        Chakra.input
+                            (fun x ->
+                                x.onChange <- onChange
+                                x.ref <- inputRef
+                                x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
+                                x.autoFocus <- input.autoFocus
+                                x.placeholder <- input.placeholder
 
-                        x.onKeyDown <-
-                            fun (e: KeyboardEvent) ->
-                                promise {
-                                    match box input.onKeyDown with
-                                    | null -> ()
-                                    | _ -> do! input.onKeyDown e
+                                x.onKeyDown <-
+                                    fun (e: KeyboardEvent) ->
+                                        promise {
+                                            match box input.onKeyDown with
+                                            | null -> ()
+                                            | _ -> do! input.onKeyDown e
 
 
-                                    match box input.onChange with
-                                    | null -> ()
-                                    | _ -> do! input.onChange e
+                                            match box input.onChange with
+                                            | null -> ()
+                                            | _ -> do! input.onChange e
 
-                                    match input.onEnterPress with
-                                    | Some onEnterPress -> if e.key = "Enter" then do! onEnterPress ()
-                                    | None -> ()
-                                }
+                                            match input.onEnterPress with
+                                            | Some onEnterPress -> if e.key = "Enter" then do! onEnterPress ()
+                                            | None -> ()
+                                        }
 
-                        x.``type`` <-
-                            match input.inputFormat with
-                            | Some inputFormat ->
-                                match inputFormat with
-                                | InputFormat.Date -> "date"
-                                | InputFormat.Time -> "time"
-                                | InputFormat.Number -> "number"
-                                | InputFormat.DateTime -> "datetime-local"
-                                | InputFormat.Email -> "email"
-                                | InputFormat.Password -> "password"
-                            | None -> null
+                                x.``type`` <-
+                                    match input.inputFormat with
+                                    | Some inputFormat ->
+                                        match inputFormat with
+                                        | InputFormat.Date -> "date"
+                                        | InputFormat.Time -> "time"
+                                        | InputFormat.Number -> "number"
+                                        | InputFormat.DateTime -> "datetime-local"
+                                        | InputFormat.Email -> "email"
+                                        | InputFormat.Password -> "password"
+                                    | None -> null
 
-                        x.paddingTop <-
-                            match input.inputFormat, deviceInfo with
-                            | Some InputFormat.Password, { IsEdge = true } -> "7px"
-                            | _ -> null)
-                    []
+                                x.paddingTop <-
+                                    match input.inputFormat, deviceInfo with
+                                    | Some InputFormat.Password, { IsEdge = true } -> "7px"
+                                    | _ -> null)
+                            []
+
+                        match input.inputFormat with
+                        | Some InputFormat.Number ->
+                            Chakra.stack
+                                (fun x ->
+                                    x.position <- "absolute"
+                                    x.right <- "1px"
+                                    x.top <- "0"
+                                    x.height <- "100%"
+                                    x.spacing <- "0")
+                                [
+                                    Button.Button
+                                        {|
+                                            Hint = None
+                                            Icon = Some (Icons.faSortUp, Button.IconPosition.Left)
+                                            Props =
+                                                JS.newObj
+                                                    (fun x ->
+                                                        x.height <- "50%"
+                                                        x.paddingTop <- "6px"
+                                                        x.borderRadius <- "0 5px 0 0"
+
+                                                        x.onClick <-
+                                                            (fun _ ->
+                                                                promise {
+                                                                    inputRef.current.valueAsNumber <-
+                                                                        inputRef.current.valueAsNumber + 1.
+
+                                                                    fireChange ()
+                                                                }))
+                                        |}
+
+                                    Button.Button
+                                        {|
+                                            Hint = None
+                                            Icon = Some (Icons.faSortDown, Button.IconPosition.Left)
+                                            Props =
+                                                JS.newObj
+                                                    (fun x ->
+                                                        x.height <- "50%"
+                                                        x.paddingBottom <- "6px"
+                                                        x.borderRadius <- "0 0 5px 0"
+
+                                                        x.onClick <-
+                                                            (fun _ ->
+                                                                promise {
+                                                                    inputRef.current.valueAsNumber <-
+                                                                        inputRef.current.valueAsNumber - 1.
+
+                                                                    fireChange ()
+                                                                }))
+                                        |}
+                                ]
+                        | _ -> ()
+                    ]
             ]

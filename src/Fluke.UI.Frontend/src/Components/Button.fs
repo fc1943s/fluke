@@ -26,14 +26,14 @@ module Button =
         Tooltip.wrap
             (input.Hint |> Option.defaultValue null)
             [
-                match input.Props.children |> Seq.toList with
-                | [] ->
+                match icon, input.Props.children with
+                | Some icon, x when x = null || x |> Seq.isEmpty ->
                     Chakra.iconButton
                         (fun x ->
                             x <+ input.Props
-                            x.icon <- icon)
+                            x.icon <- icon ())
                         []
-                | children ->
+                | _, children ->
                     let icon =
                         Chakra.box
                             (fun x ->

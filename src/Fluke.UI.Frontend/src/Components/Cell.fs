@@ -195,7 +195,7 @@ overriding any other behavior.
                                                 x.border <- "0"
                                                 x.width <- "30px"
                                                 x.height <- "15px"
-                                                x.borderRadius <- 0
+                                                x.borderRadius <- "0"
                                                 x.onClick <- fun _ -> promise { () })
                                             []
                                     ]

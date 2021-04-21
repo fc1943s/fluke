@@ -8,11 +8,13 @@ module Full =
     open Fluke.UI.Frontend.Components
 
     let typeText<'T> (text: string) =
+        Cy.focused().should "have.value" "" null
+
         text
         |> Seq.iter
             (fun letter ->
                 let letter = string letter
-                Cy.wait 10
+                Cy.wait 20
                 Cy.focused().``type`` letter |> ignore)
 
         Cy.focused().should "have.value" text null

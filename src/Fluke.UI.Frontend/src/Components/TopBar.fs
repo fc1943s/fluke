@@ -20,7 +20,7 @@ module TopBarIconButton =
                 x.fontSize <- "18px"
                 x.width <- "30px"
                 x.height <- "30px"
-                x.borderRadius <- 0)
+                x.borderRadius <- "0")
             []
 
 module TopBar =

@@ -31,6 +31,7 @@
         <Compile Include="src\Components\Hint.fs" />
         <Compile Include="src\Components\InputLabel.fs" />
         <Compile Include="src\Components\GunBind.fs" />
+        <Compile Include="src\Components\Button.fs" />
         <Compile Include="src\Components\Input.fs" />
         <Compile Include="src\Components\MonthResponsiveCell.fs" />
         <Compile Include="src\Components\Day.fs" />
@@ -41,7 +42,6 @@
         <Compile Include="src\Components\InformationName.fs" />
         <Compile Include="src\Components\TaskInformationName.fs" />
         <Compile Include="src\Components\TaskPriority.fs" />
-        <Compile Include="src\Components\Button.fs" />
         <Compile Include="src\Components\CellStatusUserIndicator.fs" />
         <Compile Include="src\Components\CellBorder.fs" />
         <Compile Include="src\Components\CellSessionIndicator.fs" />
