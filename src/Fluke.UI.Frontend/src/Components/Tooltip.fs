@@ -16,7 +16,7 @@ module Tooltip =
                 x.zIndex <- 20000)
             input.Props.children
 
-    let wrap label children =
+    let inline wrap label children =
         Tooltip
             {|
                 Props =

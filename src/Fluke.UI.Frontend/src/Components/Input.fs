@@ -20,7 +20,6 @@ module Input =
         | Password
         | Number
 
-
     type IProps<'TValue, 'TKey> =
         inherit Chakra.IChakraProps
 
@@ -35,38 +34,9 @@ module Input =
         abstract inputFormat : InputFormat option with get, set
 
     [<ReactComponent>]
-    let inline Input (input: IProps<'TValue, 'TKey>) =
-        let atomFieldOptions = Recoil.useAtomField<'TValue, 'TKey> input.atom
+    let Input (input: IProps<'TValue, 'TKey>) =
+        let atomFieldOptions = Recoil.useAtomField<'TValue, 'TKey> input.atom input.atomScope
 
-        let atomValue =
-            React.useMemo (
-                (fun () ->
-                    match input.atomScope with
-                    | Some Recoil.AtomScope.ReadOnly -> atomFieldOptions.ReadOnlyValue
-                    | _ -> atomFieldOptions.ReadWriteValue),
-                [|
-                    box input.atomScope
-                    box atomFieldOptions.ReadOnlyValue
-                    box atomFieldOptions.ReadWriteValue
-                |]
-            )
-
-        let setAtomValue =
-            React.useMemo (
-                (fun () ->
-                    match input.atomScope with
-                    | Some Recoil.AtomScope.ReadOnly -> atomFieldOptions.SetReadOnlyValue
-                    | _ -> atomFieldOptions.SetReadWriteValue),
-                [|
-                    box input.atomScope
-                    box atomFieldOptions.SetReadOnlyValue
-                    box atomFieldOptions.SetReadWriteValue
-                |]
-            )
-
-        //        let (AtomFieldFamily atom) = input.atom
-//        let resetAtom = Recoil.useResetState atom
-//        let atom, setAtom = Recoil.useState atom
         let deviceInfo = Recoil.useValue Recoil.Selectors.deviceInfo
 
         let inputRef = React.useRef<HTMLInputElement> null
@@ -81,7 +51,7 @@ module Input =
                         | _, Some value -> Some value
                         | false, None -> None
                         | true, None ->
-                            match inputRef.current, box atomValue with
+                            match inputRef.current, box atomFieldOptions.AtomValue with
                             | null, _ -> None
                             | _, null ->
                                 match input.onValidate with
@@ -89,7 +59,7 @@ module Input =
                                 | None -> None
                             | _ ->
                                 match input.atom with
-                                | Some _ -> Some atomValue
+                                | Some _ -> Some atomFieldOptions.AtomValue
                                 | None -> None
 
 
@@ -109,7 +79,7 @@ module Input =
                     box input.onValidate
                     box input.onFormat
                     box inputRef
-                    box atomValue
+                    box atomFieldOptions.AtomValue
                 |]
             )
 
@@ -164,15 +134,15 @@ module Input =
 
                             if input.atom.IsSome then
                                 match validValue with
-                                | Some value -> setAtomValue value
-                                | None -> setAtomValue atomFieldOptions.ReadOnlyValue
+                                | Some value -> atomFieldOptions.SetAtomValue value
+                                | None -> atomFieldOptions.SetAtomValue atomFieldOptions.ReadOnlyValue
                     })
 
         Chakra.stack
             (fun x -> x.spacing <- "5px")
             [
 
-//                GunBind.GunBind
+                //                GunBind.GunBind
 //                    {|
 //                        Atom =
 //                            match input.atomScope with
@@ -180,26 +150,16 @@ module Input =
 //                            | _ -> atomFieldOptions.AtomField.ReadWrite
 //                    |}
 
-                if input.label <> null then
-                    Chakra.flex
-                        (fun _ -> ())
-                        [
-                            str $"{input.label}:"
-                            Hint.Hint (
-                                JS.newObj
-                                    (fun x ->
-                                        x.hint <- input.hint
-
-                                        x.hintTitle <-
-                                            Some (
-                                                match input.hintTitle with
-                                                | Some hintTitle -> hintTitle
-                                                | None -> input.label
-                                            ))
-                            )
-                        ]
-                else
-                    nothing
+                match input.label with
+                | null -> nothing
+                | _ ->
+                    InputLabel.InputLabel
+                        {|
+                            Hint = input.hint
+                            HintTitle = input.hintTitle
+                            Label = input.label
+                            Props = JS.newObj (fun _ -> ())
+                        |}
 
                 Chakra.input
                     (fun x ->

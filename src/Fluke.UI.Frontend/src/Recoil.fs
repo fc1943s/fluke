@@ -348,79 +348,6 @@ module Recoil =
                                 (username, taskId, dateId)
                                 $"/{taskId.KeyFormat ()}/{dateId.KeyFormat ()}"
                         ])
-                //                    (fun (username: Username, taskId: TaskId, dateId: DateId) ->
-//                        [
-//                            (fun e ->
-//                                let gun = box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj> option
-//
-//                                match gun with
-//                                //                                | Some _gun ->
-////                                    let atom = selected (username, taskId, dateId)
-////                                    let gunAtomKey = getGunAtomKey (Some username) atom.key
-////
-////                                    let newId =
-////                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
-////                                                                                                           formatDateId
-////                                                                                                               dateId
-////                                        }"""
-////
-////                                    printfn
-////                                        $"""skipping effect.
-////                                    gunAtomKey={gunAtomKey}
-////                                    atom.key={atom.key}
-////                                    newKey={newId}
-////                                    """
-////
-////                                    fun () -> ()
-//                                | Some gun ->
-//                                    let atom = selected (username, taskId, dateId)
-//                                    let gunAtomKey = Recoil.getGunAtomKey (Some username) atom.key
-//
-//                                    let newId =
-//                                        $"""{gunAtomKey.Split "//" |> Seq.head}/{formatTaskId taskId}/{
-//                                                                                                           formatDateId
-//                                                                                                               dateId
-//                                        }"""
-//
-//                                    printfn
-//                                        $"""cell.selected .effects.
-//                                    gunAtomKey={gunAtomKey}
-//                                    atom.key={atom.key}
-//                                    newKey={newId}
-//                                    """
-//
-//                                    let gunAtomNode = Gun.getGunAtomNode gun newId
-//
-//                                    match e.trigger with
-//                                    | "get" ->
-//                                        gunAtomNode.on
-//                                            (fun data ->
-//                                                printfn
-//                                                    $"gunAtomNode.on() effect. newId={newId}
-//                                                    data={JS.JSON.stringify data}"
-//
-//                                                match Gun.deserializeGunAtomNode data with
-//                                                | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
-//                                                | None -> ())
-//                                    | _ -> ()
-//
-//                                    e.onSet
-//                                        (fun value oldValue ->
-//                                            Gun.putGunAtomNode gunAtomNode value
-//
-//                                            printfn
-//                                                $"cell.selected. effects. onSet.
-//                                                oldValue: {JS.JSON.stringify oldValue}; newValue: {value}")
-//
-//                                    fun () ->
-//                                        printfn "> unsubscribe cell. calling selected.off ()"
-//                                        gunAtomNode.off () |> ignore
-//
-//                                | None ->
-//                                    failwith "Gun not found"
-//                                    fun () -> ())
-//                        ]
-//                     )
                 )
 
 
@@ -503,30 +430,10 @@ module Recoil =
 
         let rec gunHash = Recoil.atomWithProfiling ($"{nameof atom}/{nameof gunHash}", "")
 
-        let rec gunPeer1 =
+        let rec gunPeers =
             Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof gunPeer1}",
-                "",
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec gunPeer2 =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof gunPeer2}",
-                "",
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec gunPeer3 =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof gunPeer3}",
-                "",
+                $"{nameof atom}/{nameof gunPeers}",
+                ([]: string list),
                 effects =
                     [
                         AtomEffect Storage.local
@@ -570,33 +477,16 @@ module Recoil =
 
 
     module Selectors =
-        let rec gunPeers =
-            Recoil.selectorWithProfiling (
-                $"{nameof selector}/{nameof gunPeers}",
-                (fun getter ->
-                    let _gunHash = getter.get Atoms.gunHash
-                    let gunPeer1 = getter.get Atoms.gunPeer1
-                    let gunPeer2 = getter.get Atoms.gunPeer2
-                    let gunPeer3 = getter.get Atoms.gunPeer3
-                    //                        let gun = Gun.gun peers
-                    [|
-                        gunPeer1
-                        gunPeer2
-                        gunPeer3
-                    |]
-                    |> Array.filter (String.IsNullOrWhiteSpace >> not))
-            )
-
         let rec gun =
             Recoil.selectorWithProfiling (
                 $"{nameof selector}/{nameof gun}",
                 (fun getter ->
-                    let gunPeers = getter.get gunPeers
+                    let gunPeers = getter.get Atoms.gunPeers
 
                     let gun =
                         Gun.gun (
                             {
-                                Gun.GunProps.peers = if JS.isTesting then None else Some gunPeers
+                                Gun.GunProps.peers = if JS.isTesting then None else Some (gunPeers |> List.toArray)
                                 Gun.GunProps.radisk = if JS.isTesting then None else Some false
                                 Gun.GunProps.localStorage = if JS.isTesting then None else Some true
                             }

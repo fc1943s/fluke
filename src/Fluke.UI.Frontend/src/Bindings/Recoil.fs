@@ -88,7 +88,7 @@ module Recoil =
         value, (if key.IsNone then (fun _ -> ()) else setValue)
 
 
-    let useAtomField<'TValue, 'TKey when 'TValue: equality> atom =
+    let useAtomField<'TValue, 'TKey when 'TValue: equality> atom atomScope =
         let atomField = getAtomField<'TValue, 'TKey> atom
 
         let readOnlyValue, setReadOnlyValue = Recoil.useState atomField.ReadOnly
@@ -123,14 +123,27 @@ module Recoil =
         let atomFieldOptions =
             React.useMemo (
                 (fun () ->
+                    let readWriteValue = if not readWriteValueMounted then readOnlyValue else readWriteValue
+                    let setReadWriteValue = if atom.IsSome then setReadWriteValue else (fun _ -> ())
+                    let setReadOnlyValue = if atom.IsSome then setReadOnlyValue else (fun _ -> ())
+
                     {|
-                        ReadWriteValue = if not readWriteValueMounted then readOnlyValue else readWriteValue
-                        SetReadWriteValue = if atom.IsSome then setReadWriteValue else (fun _ -> ())
+                        ReadWriteValue = readWriteValue
+                        SetReadWriteValue = setReadWriteValue
                         ReadOnlyValue = readOnlyValue
-                        SetReadOnlyValue = if atom.IsSome then setReadOnlyValue else (fun _ -> ())
+                        SetReadOnlyValue = setReadOnlyValue
                         AtomField = atomField
+                        AtomValue =
+                            match atomScope with
+                            | Some AtomScope.ReadOnly -> readOnlyValue
+                            | _ -> readWriteValue
+                        SetAtomValue =
+                            match atomScope with
+                            | Some AtomScope.ReadOnly -> setReadOnlyValue
+                            | _ -> setReadWriteValue
                     |}),
                 [|
+                    box atomScope
                     box readWriteValueMounted
                     box atom
                     box atomField
@@ -152,7 +165,7 @@ module Recoil =
                                     | _ -> ""
             }{
                 (atomKey.Split "__" |> Seq.head)
-//                    .Replace("__withFallback", "")
+                    //                    .Replace("__withFallback", "")
 //                    .Replace("\"", "")
 //                    .Replace("\\", "")
 //                    .Replace("__", "/")
@@ -242,11 +255,6 @@ module Recoil =
                  })
                 |> Promise.start)
 
-// TODO: move to recoilize file?
-module Recoilize =
-    let recoilizeDebugger<'T> =
-        //        importDefault "recoilize"
-        nothing |> composeComponent
 
 [<AutoOpen>]
 module RecoilMagic =
@@ -338,67 +346,6 @@ module RecoilMagic =
                 ]
                 |> createObj
             )
-
-    //    module Effects =
-//        type Wrapper = { Value: string }
-//
-//        let localStorage<'T> =
-//            (fun ({ node = node; onSet = onSet; setSelf = setSelf }: Recoil.EffectProps<'T>) ->
-//                let storageJson =
-//                    Browser.Dom.window.localStorage.getItem node.key
-//                    |> Option.ofObj
-//
-//                let value =
-//                    //                    let parsed1 = Fable.Core.JS.JSON.parse storageJson :?> Wrapper<'T> option
-//                    let parsed2 =
-//                        match storageJson with
-//                        | Some json ->
-//                            try
-//                                Json.parseAs<Wrapper> json
-//                            with ex ->
-//                                printfn "simplejson error: %A" ex
-//                                Fable.Core.JS.JSON.parse json :?> Wrapper
-//                        | None -> { Value = "" }
-//                    //                        | Ok wrapper -> wrapper.Value
-////                        | Error error ->
-////                            printfn "Internal Specific Json parse error (input: %A): %A" storageJson error
-////                            None
-//
-//                    //                    let parsed3 =
-////                        let decoder : Decoder<Wrapper<'T>> =
-////                            Decode.object
-////                                (fun get -> { Value = get.Required.Field "value" Decode.string })
-////                        Thoth.Json.Decode.fromString decoder storageJson
-////                        |> function
-////                            | Ok x -> Some x
-////                            | Error error ->
-////                                printfn "Internal Specific Json parse error (input: %A): %A" storageJson error
-////                                None
-//
-//                    //                    match Thoth.Json.Decode.Auto.fromString<Wrapper<'T>> storageJson with
-//                    match parsed2 with
-//                    //                    | Ok wrapper -> Some wrapper.Value
-////                    | Error error ->
-////                        printfn "json parse error (input: %A): %A" storageJson error
-////                        None
-//                    | { Value = value } -> setSelf (unbox value)
-////                    | _ -> printfn "json parse error (key: %A; input: %A)" node.key storageJson
-//
-//
-//                onSet (fun value _oldValue ->
-//                    printfn "onSet. oldValue: %Avalue: %A" _oldValue value
-//
-//                    let valueJson = Json.serialize value
-//                    let wrapper = { Value = valueJson }
-//                    let json = Json.serialize wrapper
-//                    //                    let json = Thoth.Json.Encode.Auto.toString (0, wrapper)
-////                    let json = Fable.Core.JS.JSON.stringify wrapper
-//                    Browser.Dom.window.localStorage.setItem (node.key, json))
-//
-//                //    // Subscribe to storage updates
-//                //    storage.subscribe(value => setSelf(value));
-//
-//                fun () -> printfn "> unsubscribe")
 
     type Recoil with
         static member inline atomWithProfiling
@@ -517,3 +464,71 @@ module RecoilMagic =
                             Profiling.addCount $"{atomKey} (SET)"
                         | None -> ())
             }
+
+
+// TODO: move to recoilize file?
+module Recoilize =
+    let recoilizeDebugger<'T> =
+        //        importDefault "recoilize"
+        nothing |> composeComponent
+
+//    module Effects =
+//        type Wrapper = { Value: string }
+//
+//        let localStorage<'T> =
+//            (fun ({ node = node; onSet = onSet; setSelf = setSelf }: Recoil.EffectProps<'T>) ->
+//                let storageJson =
+//                    Browser.Dom.window.localStorage.getItem node.key
+//                    |> Option.ofObj
+//
+//                let value =
+//                    //                    let parsed1 = Fable.Core.JS.JSON.parse storageJson :?> Wrapper<'T> option
+//                    let parsed2 =
+//                        match storageJson with
+//                        | Some json ->
+//                            try
+//                                Json.parseAs<Wrapper> json
+//                            with ex ->
+//                                printfn "simplejson error: %A" ex
+//                                Fable.Core.JS.JSON.parse json :?> Wrapper
+//                        | None -> { Value = "" }
+//                    //                        | Ok wrapper -> wrapper.Value
+//                        | Error error ->
+//                            printfn "Internal Specific Json parse error (input: %A): %A" storageJson error
+//                            None
+//
+//                    //                    let parsed3 =
+//                        let decoder : Decoder<Wrapper<'T>> =
+//                            Decode.object
+//                                (fun get -> { Value = get.Required.Field "value" Decode.string })
+//                        Thoth.Json.Decode.fromString decoder storageJson
+//                        |> function
+//                            | Ok x -> Some x
+//                            | Error error ->
+//                                printfn "Internal Specific Json parse error (input: %A): %A" storageJson error
+//                                None
+//
+//                    //                    match Thoth.Json.Decode.Auto.fromString<Wrapper<'T>> storageJson with
+//                    match parsed2 with
+//                    //                    | Ok wrapper -> Some wrapper.Value
+//                    | Error error ->
+//                        printfn "json parse error (input: %A): %A" storageJson error
+//                        None
+//                    | { Value = value } -> setSelf (unbox value)
+//                    | _ -> printfn "json parse error (key: %A; input: %A)" node.key storageJson
+//
+//
+//                onSet (fun value _oldValue ->
+//                    printfn "onSet. oldValue: %Avalue: %A" _oldValue value
+//
+//                    let valueJson = Json.serialize value
+//                    let wrapper = { Value = valueJson }
+//                    let json = Json.serialize wrapper
+//                    //                    let json = Thoth.Json.Encode.Auto.toString (0, wrapper)
+//                    let json = Fable.Core.JS.JSON.stringify wrapper
+//                    Browser.Dom.window.localStorage.setItem (node.key, json))
+//
+//                //    // Subscribe to storage updates
+//                //    storage.subscribe(value => setSelf(value));
+//
+//                fun () -> printfn "> unsubscribe")

@@ -37,7 +37,7 @@ module Full =
                         .location()
                         .should (fun location ->
                             expect(location.href)
-                                .``to``.contain $"{homeUrl}/#/login")
+                                .``to``.contain $"{homeUrl}/login")
 
                     Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"
                     (**)

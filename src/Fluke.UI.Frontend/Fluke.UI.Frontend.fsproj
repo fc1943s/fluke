@@ -27,7 +27,9 @@
         <Compile Include="src\Hooks\Auth.fs" />
         <Compile Include="src\Components\Empty.fs" />
         <Compile Include="src\Components\Tooltip.fs" />
+        <Compile Include="src\Components\InputLabelIconButton.fs" />
         <Compile Include="src\Components\Hint.fs" />
+        <Compile Include="src\Components\InputLabel.fs" />
         <Compile Include="src\Components\GunBind.fs" />
         <Compile Include="src\Components\Input.fs" />
         <Compile Include="src\Components\MonthResponsiveCell.fs" />
@@ -60,6 +62,7 @@
         <Compile Include="src\Components\ExternalLink.fs" />
         <Compile Include="src\Components\TopBar.fs" />
         <Compile Include="src\Components\Databases.fs" />
+        <Compile Include="src\Components\InputList.fs" />
         <Compile Include="src\Components\Settings.fs" />
         <Compile Include="src\Components\DockButton.fs" />
         <Compile Include="src\Components\DockPanel.fs" />

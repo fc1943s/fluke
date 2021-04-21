@@ -15,11 +15,11 @@ module InitialPeers =
     [<ReactComponent>]
     let InitialPeers () =
         let gunPeer, setGunPeer = React.useState ""
-        let setGunPeer1 = Recoil.useSetState Atoms.gunPeer1
+        let setGunPeers = Recoil.useSetState Atoms.gunPeers
         let setInitialPeerSkipped = Recoil.useSetState Atoms.initialPeerSkipped
 
         let nextClick _ =
-            promise { if gunPeer.Length > 0 then setGunPeer1 gunPeer }
+            promise { if gunPeer.Length > 0 then setGunPeers [ gunPeer ] }
 
         let skipClick _ = promise { setInitialPeerSkipped true }
 

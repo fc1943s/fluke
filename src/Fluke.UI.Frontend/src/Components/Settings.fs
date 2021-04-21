@@ -47,27 +47,11 @@ module Settings =
                             x.atomScope <- Some Recoil.AtomScope.ReadOnly)
                 )
 
-                Input.Input (
+                InputList.InputList (
                     JS.newObj
                         (fun x ->
-                            x.label <- str "Gun peer 1"
-                            x.atom <- Some (Recoil.Atom Atoms.gunPeer1)
-                            x.atomScope <- Some Recoil.AtomScope.ReadOnly)
-                )
-
-                Input.Input (
-                    JS.newObj
-                        (fun x ->
-                            x.label <- str "Gun peer 2"
-                            x.atom <- Some (Recoil.Atom Atoms.gunPeer2)
-                            x.atomScope <- Some Recoil.AtomScope.ReadOnly)
-                )
-
-                Input.Input (
-                    JS.newObj
-                        (fun x ->
-                            x.label <- str "Gun peer 3"
-                            x.atom <- Some (Recoil.Atom Atoms.gunPeer3)
+                            x.label <- str "Gun peers"
+                            x.atom <- Some (Recoil.Atom Atoms.gunPeers)
                             x.atomScope <- Some Recoil.AtomScope.ReadOnly)
                 )
             ]
