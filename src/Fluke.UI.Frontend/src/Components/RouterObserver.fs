@@ -103,6 +103,14 @@ module RouterObserver =
                             [|
                                 "login"
                             |]
+                        |> Array.append (
+                            if Browser.Dom.window.location.host.EndsWith "github.io" then
+                                [|
+                                    initialSegments.[0]
+                                |]
+                            else
+                                [||]
+                        )
 
                     log
                         $"RouterObserver. #1 {

@@ -15,7 +15,7 @@ open Fable.React
 module InitialPeers =
     [<ReactComponent>]
     let InitialPeers () =
-        let gunPeer, setGunPeer = React.useState ""
+        let gunPeer, setGunPeer = React.useState "https://flukegunpeer-test.herokuapp.com/gun"
         let setGunPeers = Recoil.useSetState Atoms.gunPeers
         let setInitialPeerSkipped = Recoil.useSetState Atoms.initialPeerSkipped
 
@@ -56,7 +56,7 @@ module InitialPeers =
                                         )
 
 
-                                    x.value <- Some "https://flukegunpeer-test.herokuapp.com/gun"
+                                    x.value <- Some gunPeer
                                     x.placeholder <- "https://??????.herokuapp.com/gun"
                                     x.onEnterPress <- Some nextClick
                                     x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value }))
