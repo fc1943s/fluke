@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Tests
 
+open Fable.Core
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz.Recoil
@@ -57,9 +58,8 @@ module Router =
 
             let expectUrl (expected: string []) =
                 promise {
-                    do! Promise.sleep 100
                     do! RTL.waitFor id
-                    let segments = Router.currentUrl () |> List.toArray
+                    let segments = Router.currentPath () |> List.toArray
 
                     Jest
                         .expect(string segments)
@@ -67,7 +67,17 @@ module Router =
                 }
 
             let navigate (segments: string []) =
-                RTL.act (fun () -> Router.navigate segments)
+                RTL.act (fun () -> Router.navigatePath segments)
+
+            Jest.beforeEach (
+                promise {
+                    printfn "Before each"
+                    Browser.Dom.window.localStorage.clear ()
+//                    Jest.clearAllTimers ()
+//                    JsInterop.emitJsExpr () "jest.clearAllMocks()"
+                }
+            )
+
 
             Jest.test (
                 "starting with blank url",
@@ -76,7 +86,6 @@ module Router =
 
                     let! _subject, peek = getComponent () |> Setup.render
                     do! initialize peek
-                    do! peek (fun setter -> promise { setter.set (Atoms.sessionRestored, true) })
 
                     do!
                         [|
@@ -94,7 +103,6 @@ module Router =
                 promise {
                     let! _subject, peek = getComponent () |> Setup.render
                     do! initialize peek
-                    do! peek (fun setter -> promise { setter.set (Atoms.sessionRestored, true) })
 
                     do! setView peek View.View.BulletJournal
 
@@ -110,11 +118,10 @@ module Router =
             )
 
             Jest.test (
-                "navigating from url",
+                "navigating from url (logged in)",
                 promise {
                     let! _subject, peek = getComponent () |> Setup.render
                     do! initialize peek
-                    do! peek (fun setter -> promise { setter.set (Atoms.sessionRestored, true) })
 
                     [|
                         "view"
@@ -127,12 +134,11 @@ module Router =
             )
 
             Jest.test (
-                "navigating from url (not logged)",
+                "navigating from url (not logged in)",
                 promise {
                     let! _subject, peek = getComponent () |> Setup.render
                     do! initialize peek
                     do! peek (fun setter -> promise { setter.set (Atoms.username, None) })
-                    do! peek (fun setter -> promise { setter.set (Atoms.sessionRestored, true) })
 
                     [|
                         "view"
@@ -149,8 +155,9 @@ module Router =
             )
 
             Jest.test (
-                "starting with filled url",
+                "starting with filled_ url (logged in)",
                 promise {
+
                     [|
                         "view"
                         "Information"
@@ -159,7 +166,6 @@ module Router =
 
                     let! _subject, peek = getComponent () |> Setup.render
                     do! initialize peek
-                    do! peek (fun setter -> promise { setter.set (Atoms.sessionRestored, true) })
 
                     do!
                         [|
@@ -174,7 +180,7 @@ module Router =
             )
 
             Jest.test (
-                "starting with filled url (not logged)",
+                "starting with filled url (not logged in)",
                 promise {
                     [|
                         "view"
@@ -185,7 +191,6 @@ module Router =
                     let! _subject, peek = getComponent () |> Setup.render
                     do! initialize peek
                     do! peek (fun setter -> promise { setter.set (Atoms.username, None) })
-                    do! peek (fun setter -> promise { setter.set (Atoms.sessionRestored, true) })
 
                     do!
                         [|

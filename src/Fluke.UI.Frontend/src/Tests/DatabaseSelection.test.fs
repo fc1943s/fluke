@@ -83,6 +83,13 @@ module DatabaseSelection =
                     do! RTL.waitFor id
                 }
 
+            Jest.beforeEach (
+                promise {
+                    printfn "Before each"
+                    Browser.Dom.window.localStorage.clear ()
+                }
+            )
+
             Jest.test (
                 "database list updates correctly with user clicks",
                 promise {
