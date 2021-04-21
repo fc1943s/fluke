@@ -74,7 +74,7 @@ module Full =
                     (Cy.contains (nameof Databases) None).click ()
                     |> ignore
 
-                    Cy.wait 1500
+                    Cy.wait 2000
 
                     (**)
 

@@ -178,7 +178,7 @@ module Recoil =
             }"""
 
         match result with
-        | String.ValidString when result |> Seq.last = '/' -> result |> String.take (result.Length - 1)
+        | String.ValidString _ when result |> Seq.last = '/' -> result |> String.take (result.Length - 1)
         | _ -> result
 
     let rec waitForObject fn =

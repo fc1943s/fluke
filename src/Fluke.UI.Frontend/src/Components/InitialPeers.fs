@@ -7,6 +7,7 @@ open Fluke.UI.Frontend.Bindings
 open Feliz.Recoil
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend
+open Fluke.Shared
 open Fluke.UI.Frontend.Recoil
 open Fable.React
 
@@ -19,7 +20,11 @@ module InitialPeers =
         let setInitialPeerSkipped = Recoil.useSetState Atoms.initialPeerSkipped
 
         let nextClick _ =
-            promise { if gunPeer.Length > 0 then setGunPeers [ gunPeer ] }
+            promise {
+                match gunPeer with
+                | String.ValidString _ -> setGunPeers [ gunPeer ]
+                | _ -> ()
+            }
 
         let skipClick _ = promise { setInitialPeerSkipped true }
 

@@ -16,7 +16,7 @@ module Content =
         let username = Recoil.useValue Recoil.Atoms.username
         let sessionRestored = Recoil.useValue Recoil.Atoms.sessionRestored
         let initialPeerSkipped = Recoil.useValue Recoil.Atoms.initialPeerSkipped
-        let gunPeers = Recoil.useValue Recoil.Atoms.gunPeers
+        let gunPeers = Recoil.useValue Recoil.Selectors.gunPeers
         let deviceInfo = Recoil.useValue Recoil.Selectors.deviceInfo
 
         Chakra.flex

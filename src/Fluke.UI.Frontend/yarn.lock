@@ -1257,14 +1257,6 @@
     "@chakra-ui/utils" "1.6.0"
     "@chakra-ui/visually-hidden" "1.0.10"
 
-"@chakra-ui/clickable@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@chakra-ui/clickable/-/clickable-1.1.2.tgz#95b53c9157c63d66f6e8d0319763ebb6eabf46b5"
-  integrity sha512-ZOyJEdwkWmOXry5oX0ofw9fSyKSN/UjHlPa2yXT0uvyDk/YHwCGDDfJhyyCYwLK62vSR6z7xmhUiLsplLJUBcA==
-  dependencies:
-    "@chakra-ui/react-utils" "1.1.1"
-    "@chakra-ui/utils" "1.5.2"
-
 "@chakra-ui/clickable@1.1.3":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@chakra-ui/clickable/-/clickable-1.1.3.tgz#065f9a121242da3506e1bfdd13157de13e6c3bb4"
@@ -1309,13 +1301,6 @@
   resolved "https://registry.yarnpkg.com/@chakra-ui/css-reset/-/css-reset-1.0.0.tgz#8395921b35ef27bee0579a4d730c5ab7f7b39734"
   integrity sha512-UaPsImGHvCgFO3ayp6Ugafu2/3/EG8wlW/8Y9Ihfk1UFv8cpV+3BfWKmuZ7IcmxcBL9dkP6E8p3/M1T0FB92hg==
 
-"@chakra-ui/descendant@1.1.2":
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/@chakra-ui/descendant/-/descendant-1.1.2.tgz#440f4a7fae77b90113896306a13788ee475d70df"
-  integrity sha512-mHiH/r2BjnlYDYKnYjrYgQ5vR8HcwG47e1GsDjEy8J/i1LdPyW3iiNu0ZxxAqAsrFHkxTXp3HD276hqDJv81KA==
-  dependencies:
-    "@chakra-ui/hooks" "1.4.0"
-
 "@chakra-ui/descendant@1.1.3":
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/@chakra-ui/descendant/-/descendant-1.1.3.tgz#28d8c86ed1c81b748d26654fc6d33ba28de1d3a8"
@@ -1349,16 +1334,6 @@
     "@chakra-ui/icon" "1.1.7"
     "@chakra-ui/react-utils" "1.1.1"
     "@chakra-ui/utils" "1.6.0"
-
-"@chakra-ui/hooks@1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@chakra-ui/hooks/-/hooks-1.4.0.tgz#295c043e72cd8747b7037d17c12d4fa4c29da8ce"
-  integrity sha512-bZBH29tHjDzvlDOns9UA4HZ/XODNQ8QhaTjc4+2DGeJOGOzcb7KecUr0/4ppT/dlnkNOv+8zOGMA4MWaw/0E6w==
-  dependencies:
-    "@chakra-ui/react-utils" "1.1.1"
-    "@chakra-ui/utils" "1.5.2"
-    compute-scroll-into-view "1.0.14"
-    copy-to-clipboard "3.3.1"
 
 "@chakra-ui/hooks@1.5.0":
   version "1.5.0"
@@ -1426,17 +1401,17 @@
     "@chakra-ui/utils" "1.6.0"
 
 "@chakra-ui/menu@1.5.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@chakra-ui/menu/-/menu-1.4.0.tgz#b84219e120f6f079e966b58e60ad3ae1c64150ff"
-  integrity sha512-EwqWfLjIQ6eHhlRVssCTtj5SLkEek4pl2pq2CF6H1blMJsHsjyY3VV65GpwdscdNGMbiOP2AyilRU7LBdtwbrA==
+  version "1.5.0"
+  resolved "https://registry.yarnpkg.com/@chakra-ui/menu/-/menu-1.5.0.tgz#453e2384b3043e81e0fe6a1d970fa8ca4d368d48"
+  integrity sha512-ngo/oBMs07uf458vuXbG5FYvk10hmsaxl9DckHhcGCaEXChwQcnTWPyStVR1Vd9+sAPrjSNGS9t12Q3HslGBig==
   dependencies:
-    "@chakra-ui/clickable" "1.1.2"
-    "@chakra-ui/descendant" "1.1.2"
-    "@chakra-ui/hooks" "1.4.0"
+    "@chakra-ui/clickable" "1.1.3"
+    "@chakra-ui/descendant" "1.1.3"
+    "@chakra-ui/hooks" "1.5.0"
     "@chakra-ui/popper" "2.1.1"
     "@chakra-ui/react-utils" "1.1.1"
-    "@chakra-ui/transition" "1.2.0"
-    "@chakra-ui/utils" "1.5.2"
+    "@chakra-ui/transition" "1.2.1"
+    "@chakra-ui/utils" "1.6.0"
 
 "@chakra-ui/modal@1.8.3":
   version "1.8.3"
@@ -1735,14 +1710,6 @@
     "@chakra-ui/utils" "1.6.0"
     "@chakra-ui/visually-hidden" "1.0.10"
 
-"@chakra-ui/transition@1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@chakra-ui/transition/-/transition-1.2.0.tgz#47474789a16929385f93fd0810af5d2fda5c644d"
-  integrity sha512-2XBnr2LEbBd7R81K+1vGKUr68yfTG9Dd9QxCTBfbjnzWIwkqRgZGwfP3+MLX07KDvg8vbupRXDx1pb9LuqY02g==
-  dependencies:
-    "@chakra-ui/hooks" "1.4.0"
-    "@chakra-ui/utils" "1.5.2"
-
 "@chakra-ui/transition@1.2.1":
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/@chakra-ui/transition/-/transition-1.2.1.tgz#c371bfa6a95ea6365d26ac3c82ee55e810565573"
@@ -1750,15 +1717,6 @@
   dependencies:
     "@chakra-ui/hooks" "1.5.0"
     "@chakra-ui/utils" "1.6.0"
-
-"@chakra-ui/utils@1.5.2":
-  version "1.5.2"
-  resolved "https://registry.yarnpkg.com/@chakra-ui/utils/-/utils-1.5.2.tgz#48bcbaf4856bd9c1c877b69c7edc7cb767454dc9"
-  integrity sha512-oGBIx93b4bDHm6fpRZp6QQ5hJQOElVi2yI1/ptlSiCCSOKfyuqh8fu+PYMsinWXp44kmTQ4gfEhuRIY4Z/vhbg==
-  dependencies:
-    "@types/lodash.mergewith" "4.6.6"
-    css-box-model "1.2.1"
-    lodash.mergewith "4.6.2"
 
 "@chakra-ui/utils@1.6.0", "@chakra-ui/utils@^1.5.1":
   version "1.6.0"
@@ -5561,10 +5519,10 @@ cyclist@^1.0.1:
   resolved "https://registry.yarnpkg.com/cyclist/-/cyclist-1.0.1.tgz#596e9698fd0c80e12038c2b82d6eb1b35b6224d9"
   integrity sha1-WW6WmP0MgOEgOMK4LW6xs1tiJNk=
 
-cypress-terminal-report@~3.0:
-  version "3.0.3"
-  resolved "https://registry.yarnpkg.com/cypress-terminal-report/-/cypress-terminal-report-3.0.3.tgz#6eeaaa93e7153cbcb443f3fb99124018bcf58cf0"
-  integrity sha512-X0QBAbh3oSsviCiKS9sOllNXJd8rhnjOMA9WfEl5m53jSsuGPSRbOCPx/kPi07NTuY55aFkhU+Bpm1lgaq2OJg==
+cypress-terminal-report@~3.1:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/cypress-terminal-report/-/cypress-terminal-report-3.1.0.tgz#cc0706d8866a92e488c452d668027d0a1f3c2755"
+  integrity sha512-LObtzn5AGLP7b92bRuGg1SX2KtI5P0YsK93r9JI1noQzkPL70eqAFoflGqmllmac/0Aslk5awXStcPcjiKaw+w==
   dependencies:
     chalk "^3.0.0"
     fs-extra "^9.0.1"
@@ -12239,14 +12197,14 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@0.0.0-experimental-af1a4cbf7:
-  version "0.0.0-experimental-af1a4cbf7"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-af1a4cbf7.tgz#8b0b494661cedbf065023fbc197e4271bc4ff297"
-  integrity sha512-RH2H6rnLfIWPvOaSJJjnAbQrWcaME0fs7GSKp2JM8cTn95qmjdKUfh8MZJIbFVVzimWecZhTvnlV7+C/Z7hFRg==
+react-dom@0.0.0-experimental-89847bf6e:
+  version "0.0.0-experimental-89847bf6e"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-89847bf6e.tgz#38ead0665e6d3c54ab3ee181edf40b7e29b1ed05"
+  integrity sha512-YYySWGHr8vhLUkgCSI0F8tEZ1DD1Sy2kbEQaCp+Rm3rsiDlsibF1JcdyYcVSJwLg3FCCUHTVxdqKfv5zgrVQVg==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    scheduler "0.0.0-experimental-af1a4cbf7"
+    scheduler "0.0.0-experimental-89847bf6e"
 
 react-error-overlay@^6.0.9:
   version "6.0.9"
@@ -12407,10 +12365,10 @@ react-style-singleton@^2.1.0:
     invariant "^2.2.4"
     tslib "^1.0.0"
 
-react@0.0.0-experimental-af1a4cbf7:
-  version "0.0.0-experimental-af1a4cbf7"
-  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-af1a4cbf7.tgz#540691ac8c1b616371b6cf90ebdb74a98e35fff9"
-  integrity sha512-E7Lxiu4Wp9FCqkRRR9D63sdKoFX6JyQhgPEFKLzUe0yagD5DvO4n0L9ycr4PDUsGM0MzpeVD1AkxsKCyTl71vQ==
+react@0.0.0-experimental-89847bf6e:
+  version "0.0.0-experimental-89847bf6e"
+  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-89847bf6e.tgz#9cf35e5e219f083328250723c32057c960c1c0db"
+  integrity sha512-BVG3t15IT96Kqc1fcclKydQwzjp7GjktJ+80AojqZiZxg5Ek/PDud/+FpMLdaGf12bpI50JB5TYW4rTZLtRxzg==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -13071,10 +13029,10 @@ saxes@^5.0.1:
   dependencies:
     xmlchars "^2.2.0"
 
-scheduler@0.0.0-experimental-af1a4cbf7:
-  version "0.0.0-experimental-af1a4cbf7"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-af1a4cbf7.tgz#a8eede7e55777625cb3419574eaa74a9ee9ce5d6"
-  integrity sha512-U67yQZ6my5LqzLkPZtg1aMd/j0cZ+7mxYfsnILNLSxPRg9hZHqiefv7yDUY9NNSRQglKpJI/Kpo6x53CaiuazA==
+scheduler@0.0.0-experimental-89847bf6e:
+  version "0.0.0-experimental-89847bf6e"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-89847bf6e.tgz#1faf606deda1ea3a503546bc3149c2b78330d586"
+  integrity sha512-WxXseFme6tqGCWHr4cHELh32zADS1fDaQi1mTC4qYWsoXSmyfEh66Nyfs+TKEoKwvaelJOlbVTtWCKVex+n40Q==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"

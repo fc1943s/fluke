@@ -84,4 +84,4 @@ module String =
         match str with
         | null -> NullString
         | str when String.IsNullOrWhiteSpace str -> WhitespaceStr
-        | _ -> ValidString
+        | str -> ValidString str

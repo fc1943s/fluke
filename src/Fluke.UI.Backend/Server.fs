@@ -19,9 +19,8 @@ module Server =
             let readFile path =
                 let getEnvVar name =
                     match Environment.GetEnvironmentVariable name with
-                    | null
-                    | "" -> Error $"Invalid EnvVar: {name}"
-                    | s -> s |> Ok
+                    | String.ValidString value -> Ok value
+                    | _ -> Error $"Invalid EnvVar: {name}"
 
                 match getEnvVar "FLUKE_TEMP_DATA_PATH" with
                 | Ok tempDataPath ->

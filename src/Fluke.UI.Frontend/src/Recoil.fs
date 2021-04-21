@@ -477,11 +477,22 @@ module Recoil =
 
 
     module Selectors =
+        let rec gunPeers =
+            Recoil.selectorWithProfiling (
+                $"{nameof selector}/{nameof gunPeers}",
+                (fun getter ->
+                    let _gunHash = getter.get Atoms.gunHash
+                    let gunPeers = getter.get Atoms.gunPeers
+
+                    gunPeers
+                    |> List.filter (String.IsNullOrWhiteSpace >> not))
+            )
+
         let rec gun =
             Recoil.selectorWithProfiling (
                 $"{nameof selector}/{nameof gun}",
                 (fun getter ->
-                    let gunPeers = getter.get Atoms.gunPeers
+                    let gunPeers = getter.get gunPeers
 
                     let gun =
                         Gun.gun (
