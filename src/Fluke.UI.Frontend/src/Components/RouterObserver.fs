@@ -53,18 +53,42 @@ module RouterObserver =
         let initialSegments, _ = React.useState currentSegments
         let restoringInitialSegments, setRestoringInitialSegments = React.useState false
 
-        let parseSegments segments =
-            match segments with
-            | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
-            | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
-            | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
-            | [ "view"; "Information" ] -> { View = Some View.View.Information }
-            | _ -> { View = None }
-
-        let parsedSegments =
+        let isRootHosted =
             React.useMemo (
-                (fun () -> parseSegments currentSegments),
+                (fun () ->
+                    Browser.Dom.window.location.host.EndsWith "github.io"
+                    |> not),
+                [||]
+            )
+
+        let parseSegments =
+            Recoil.useCallbackRef
+                (fun _ segments ->
+                    match (segments
+                           |> List.skip (if isRootHosted then 0 else 1)) with
+                    | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
+                    | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
+                    | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
+                    | [ "view"; "Information" ] -> { View = Some View.View.Information }
+                    | _ -> { View = None })
+
+        let pathPrefix, parsedSegments =
+            React.useMemo (
+                (fun () ->
+                    let pathPrefix =
+                        if not isRootHosted then
+                            [|
+                                initialSegments.[0]
+                            |]
+                        else
+                            [||]
+
+                    let parsedSegments = parseSegments currentSegments
+                    pathPrefix, parsedSegments),
                 [|
+                    parseSegments
+                    initialSegments
+                    isRootHosted
                     currentSegments
                 |]
             )
@@ -103,14 +127,7 @@ module RouterObserver =
                             [|
                                 "login"
                             |]
-                        |> Array.append (
-                            if Browser.Dom.window.location.host.EndsWith "github.io" then
-                                [|
-                                    initialSegments.[0]
-                                |]
-                            else
-                                [||]
-                        )
+                        |> Array.append pathPrefix
 
                     log
                         $"RouterObserver. #1 {
@@ -167,6 +184,8 @@ module RouterObserver =
                     JS.setTimeout (fun () -> setSessionRestored true) 0
                     |> ignore),
             [|
+                box pathPrefix
+                box parseSegments
                 box log
                 box restoringInitialSegments
                 box setRestoringInitialSegments
