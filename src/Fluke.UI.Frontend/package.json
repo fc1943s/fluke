@@ -24,7 +24,7 @@
   },
   "scripts": {
     "build:fable": "dotnet tool restore && dotnet paket install && dotnet fable",
-    "build:react": "cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
+    "build:react": "cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build && cp build/index.html build/404.html",
     "watch:frontend-build": "dotnet fable watch",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
     "watch": "concurrently \"yarn:watch:*\"",
