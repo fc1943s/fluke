@@ -83,9 +83,11 @@ module Input =
                 |]
             )
 
-        let fireChange () =
-            inputRef.current.dispatchEvent (Dom.createEvent "change" {| bubbles = true |})
-            |> ignore
+        let fireChange =
+            Recoil.useCallbackRef
+                (fun _ ->
+                    inputRef.current.dispatchEvent (Dom.createEvent "change" {| bubbles = true |})
+                    |> ignore)
 
         React.useEffect (
             (fun () ->
@@ -99,6 +101,7 @@ module Input =
 
                 ),
             [|
+                box fireChange
                 box input.atom
                 box inputRef
                 box currentValueString

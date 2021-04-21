@@ -95,6 +95,7 @@
         <Compile Include="src\Tests\Full.spec.fs" />
         <Content Include="public\index.html" />
         <Content Include="public\index.tsx" />
+        <Content Include="public\404.html" />
         <Content Include="public\index.ts" />
         <Content Include="public\index.jsx" />
         <Content Include="public\index.js" />
