@@ -74,7 +74,9 @@ module Full =
                     (Cy.contains (nameof Databases) None).click ()
                     |> ignore
 
-                    Cy.wait 2000
+                    (Cy.contains "Lane Rendering" (Some {| timeout = timeout |}))
+                        .should "be.visible"
+                    |> ignore
 
                     (**)
 
