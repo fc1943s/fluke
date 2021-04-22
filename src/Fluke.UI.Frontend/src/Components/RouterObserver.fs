@@ -32,10 +32,11 @@ module RouterObserver =
         React.useEffect (
             (fun () ->
                 let redirect = Browser.Dom.window.sessionStorage?redirect
-                JS.delete "sessionStorage.redirect"
+                emitJsExpr () "delete sessionStorage.redirect"
 
                 match redirect with
-                | String.ValidString _ when redirect <> Browser.Dom.window.location.href -> Router.navigatePath redirect
+                | String.ValidString _ when redirect <> Browser.Dom.window.location.href ->
+                    Router.navigatePath (redirect.Split "/" |> Array.skip 3)
                 | _ -> ()),
             [||]
         )
