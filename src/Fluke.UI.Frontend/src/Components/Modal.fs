@@ -15,8 +15,7 @@ module Modal =
         React.useEffect (
             (fun () ->
                 if input.Props.isOpen <> isOpenRef.current then
-                    isOpenRef.current <- input.Props.isOpen
-                    Dom.resetZoom ()),
+                    isOpenRef.current <- input.Props.isOpen),
             [|
                 box input.Props.isOpen
                 box isOpenRef

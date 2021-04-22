@@ -71,6 +71,8 @@
     "electron-devtools-installer": "~3.2",
     "devtron": "~1.4",
 
+    "react-checkbox-tree":"~1.6",
+
     "react-markdown": "~6.0",
     "date-fns": "~2.21",
     "crypto-js": "~4.0"

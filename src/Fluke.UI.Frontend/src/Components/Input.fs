@@ -220,6 +220,8 @@ module Input =
                                     x.right <- "1px"
                                     x.top <- "0"
                                     x.height <- "100%"
+                                    x.borderLeftWidth <- "1px"
+                                    x.borderLeftColor <- "#484848"
                                     x.spacing <- "0")
                                 [
                                     Button.Button

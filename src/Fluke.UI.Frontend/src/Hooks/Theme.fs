@@ -109,6 +109,10 @@ module Theme =
                                     {|
                                         boxShadow = $"0 0 0 1px {theme.colors.heliotrope} !important"
                                     |}
+                                ``.rct-collapse-btn:focus`` =
+                                    {|
+                                        boxShadow = "none !important"
+                                    |}
                                 ``*, *::before, *::after`` = {| wordWrap = "break-word" |}
                                 ``.markdown-container h1`` =
                                     {|

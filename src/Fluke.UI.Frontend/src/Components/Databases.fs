@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.Core.JsInterop
+open Fable.Core
 open Browser.Types
 open Fluke.Shared
 open Feliz
@@ -103,11 +104,148 @@ module Databases =
 
         printfn $"Databases(): availableDatabaseIds.Length={availableDatabaseIds.Length}"
 
+        let ``checked``, setChecked = React.useState [||]
+        let expanded, setExpanded = React.useState [||]
+
+        printfn
+            $"Databases {
+                             JS.JSON.stringify
+                                 {|
+                                     ``checked`` = ``checked``
+                                     expanded = expanded
+                                 |}
+            }"
+
         Chakra.stack
             (fun x ->
                 x <+ input.Props
                 x?``data-testid`` <- if isTesting then nameof Databases else null)
             [
+                Chakra.box
+                    (fun x -> x.margin <- "1px")
+                    [
+                        let parent value label children =
+                            {|
+                                                                                    value = value
+                                                                                    label =
+                                                                                        Chakra.box
+                                                                                            (fun x ->
+                                                                                                x.fontSize <- "main"
+                                                                                                x.marginLeft <- "-6px"
+                                                                                                x.display <- "inline")
+                                                                                            [
+                                                                                                str label
+                                                                                            ]
+                                                                                    children = children
+                                                                                |}
+                        let leaf value label =
+                            {|
+                                                                                    value = value
+                                                                                    label =
+                                                                                        Chakra.box
+                                                                                            (fun x ->
+                                                                                                x.fontSize <- "main"
+                                                                                                x.marginLeft <- "-6px"
+                                                                                                x.display <- "inline")
+                                                                                            [
+                                                                                                str label
+                                                                                            ]
+                                                                                    children = null
+                                                                                |}
+                        CheckboxTree.render
+                            {|
+                                ``checked`` = ``checked``
+                                expanded = expanded
+                                onCheck = setChecked
+                                onExpand = setExpanded
+                                expandOnClick = true
+                                onlyLeafCheckboxes = true
+                                nodes =
+                                    [|
+                                        parent "templates" "Templates / Unit Tests" [|
+                                            leaf "test1" "test1"
+                                            leaf "test2" "test2"
+                                        |]
+                                        parent "my" "Created by Me" [|
+                                            leaf "test11" "test11"
+                                            leaf "test22" "test21"
+                                        |]
+                                        parent "shared" "Shared With Me" [|
+                                            leaf "test111" "test111"
+                                            leaf "test221" "test211"
+                                        |]
+
+                                    |]
+                                icons =
+                                    {|
+                                        check =
+                                            Chakra.box
+                                                (fun x ->
+                                                    x.``as`` <- Icons.md.MdCheckBox
+                                                    x.marginLeft <- "-39px"
+                                                    x.height <- "17px"
+                                                    x.width <- "17px"
+                                                    x.color <- "white")
+                                                []
+                                        halfCheck =
+                                            Chakra.box
+                                                (fun x ->
+                                                    x.``as`` <- Icons.md.MdIndeterminateCheckBox
+                                                    x.marginLeft <- "-39px"
+                                                    x.height <- "17px"
+                                                    x.width <- "17px"
+                                                    x.color <- "white")
+                                                []
+                                        uncheck =
+                                            Chakra.box
+                                                (fun x ->
+                                                    x.``as`` <- Icons.md.MdCheckBoxOutlineBlank
+                                                    x.marginLeft <- "-39px"
+                                                    x.height <- "17px"
+                                                    x.width <- "17px"
+                                                    x.color <- "white")
+                                                []
+                                        expandOpen =
+                                            Chakra.box
+                                                (fun x ->
+                                                    x.``as`` <- Icons.fa.FaChevronDown
+                                                    x.marginTop <- "5px"
+                                                    x.marginBottom <- "5px"
+                                                    x.color <- "white")
+                                                []
+                                        expandClose =
+                                            Chakra.box
+                                                (fun x ->
+                                                    x.``as`` <- Icons.fa.FaChevronRight
+                                                    x.marginTop <- "5px"
+                                                    x.marginBottom <- "5px"
+                                                    x.color <- "white")
+                                                []
+                                        parentClose =
+                                            Chakra.box
+                                                (fun x ->
+                                                    x.``as`` <- Icons.ai.AiFillFolder
+                                                    x.marginLeft <- "-3px"
+                                                    x.color <- "white")
+                                                []
+                                        parentOpen =
+                                            Chakra.box
+                                                (fun x ->
+                                                    x.``as`` <- Icons.ai.AiFillFolderOpen
+                                                    x.marginLeft <- "-3px"
+                                                    x.color <- "white")
+                                                []
+                                        leaf =
+                                            Chakra.box
+                                                (fun x ->
+                                                    x.``as`` <- Icons.fi.FiDatabase
+                                                    x.marginLeft <- "-3px"
+                                                    x.color <- "white")
+                                                []
+                                    |}
+                            |}
+                    ]
+
                 yield!
                     availableDatabaseIds
                     |> List.map

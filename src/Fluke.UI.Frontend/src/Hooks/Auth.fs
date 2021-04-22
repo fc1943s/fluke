@@ -34,8 +34,6 @@ module Auth =
                 promise {
                     setUsername (Some username)
                     setGunKeys gunNamespace.ref.``_``.sea
-
-                    Dom.resetZoom ()
                 })
 
     let useSignIn () =
