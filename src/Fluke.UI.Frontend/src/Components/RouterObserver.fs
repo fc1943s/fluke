@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.Core
+open Fable.Core.JsInterop
 open Browser.Types
 open Feliz.Router
 open Feliz
@@ -28,6 +29,17 @@ module RouterObserver =
 
     [<ReactComponent>]
     let RouterObserver () =
+        React.useEffect (
+            (fun () ->
+                let redirect = Browser.Dom.window.sessionStorage?redirect
+                JS.delete "sessionStorage.redirect"
+
+                match redirect with
+                | String.ValidString _ when redirect <> Browser.Dom.window.location.href -> Router.navigatePath redirect
+                | _ -> ()),
+            [||]
+        )
+
         let log = useLog ()
         let sessionRestored, setSessionRestored = Recoil.useState Recoil.Atoms.sessionRestored
         let username = Recoil.useValue Recoil.Atoms.username
