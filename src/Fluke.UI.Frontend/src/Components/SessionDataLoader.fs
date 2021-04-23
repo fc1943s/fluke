@@ -71,7 +71,40 @@ module SessionDataLoader =
 
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 
-    let fetchDatabaseStateMap (setter: CallbackMethods) username =
+    let fetchTemplatesDatabaseStateMap () =
+        promise {
+            let templates =
+                Templates.getDatabaseMap TempData.testUser
+                |> Map.toList
+                |> List.map
+                    (fun (templateName, dslTemplate) ->
+                        let databaseId =
+                            templateName
+                            |> Crypto.getTextGuidHash
+                            |> DatabaseId
+
+                        Templates.databaseStateFromDslTemplate TempData.testUser databaseId templateName dslTemplate)
+                |> List.map
+                    (fun databaseState ->
+                        { databaseState with
+                            TaskStateMap =
+                                databaseState.TaskStateMap
+                                |> Map.map
+                                    (fun { Name = TaskName taskName } taskState ->
+                                        { taskState with
+                                            TaskId = taskName |> Crypto.getTextGuidHash |> TaskId
+                                        })
+                        })
+
+            let databaseStateMap =
+                templates
+                |> List.map (fun databaseState -> databaseState.Database.Id, databaseState)
+                |> Map.ofList
+
+            return databaseStateMap
+        }
+
+    let fetchLegacyDatabaseStateMap (setter: CallbackMethods) username =
         promise {
             let! position = setter.snapshot.getPromise Recoil.Selectors.position
 
@@ -86,41 +119,9 @@ module SessionDataLoader =
                             |> Option.bind (fun api -> Some (api.databaseStateList username position))
                             |> Sync.handleRequest
 
-                        let templates =
-                            Templates.getDatabaseMap TempData.testUser
-                            |> Map.toList
-                            |> List.map
-                                (fun (templateName, dslTemplate) ->
-                                    let databaseId =
-                                        templateName
-                                        |> Crypto.getTextGuidHash
-                                        |> DatabaseId
-
-                                    Templates.databaseStateFromDslTemplate
-                                        TempData.testUser
-                                        databaseId
-                                        templateName
-                                        dslTemplate)
-                            |> List.map
-                                (fun databaseState ->
-                                    { databaseState with
-                                        TaskStateMap =
-                                            databaseState.TaskStateMap
-                                            |> Map.map
-                                                (fun { Name = TaskName taskName } taskState ->
-                                                    { taskState with
-                                                        TaskId = taskName |> Crypto.getTextGuidHash |> TaskId
-                                                    })
-                                    })
-
-
-                        let newDatabaseStateList =
+                        let databaseStateMap =
                             databaseStateList
                             |> Result.defaultValue []
-                            |> List.append templates
-
-                        let databaseStateMap =
-                            newDatabaseStateList
                             |> List.map (fun databaseState -> databaseState.Database.Id, databaseState)
                             |> Map.ofList
 
@@ -142,7 +143,13 @@ module SessionDataLoader =
                 (fun getter ->
                     promise {
                         if not loaded then
-                            let! databaseStateMap = fetchDatabaseStateMap getter input.Username
+                            let! templatesDatabaseStateMap = fetchTemplatesDatabaseStateMap ()
+
+                            let! legacyDatabaseStateMap = fetchLegacyDatabaseStateMap getter input.Username
+
+                            let databaseStateMap =
+                                templatesDatabaseStateMap
+                                |> Map.union legacyDatabaseStateMap
 
                             printfn
                                 $"SessionDataLoader.updateDatabaseStateMap():

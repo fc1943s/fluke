@@ -126,32 +126,34 @@ module Databases =
                     [
                         let parent value label children =
                             {|
-                                                                                    value = value
-                                                                                    label =
-                                                                                        Chakra.box
-                                                                                            (fun x ->
-                                                                                                x.fontSize <- "main"
-                                                                                                x.marginLeft <- "-6px"
-                                                                                                x.display <- "inline")
-                                                                                            [
-                                                                                                str label
-                                                                                            ]
-                                                                                    children = children
-                                                                                |}
+                                value = value
+                                label =
+                                    Chakra.box
+                                        (fun x ->
+                                            x.fontSize <- "main"
+                                            x.marginLeft <- "-6px"
+                                            x.display <- "inline")
+                                        [
+                                            str label
+                                        ]
+                                children = children
+                            |}
+
                         let leaf value label =
                             {|
-                                                                                    value = value
-                                                                                    label =
-                                                                                        Chakra.box
-                                                                                            (fun x ->
-                                                                                                x.fontSize <- "main"
-                                                                                                x.marginLeft <- "-6px"
-                                                                                                x.display <- "inline")
-                                                                                            [
-                                                                                                str label
-                                                                                            ]
-                                                                                    children = null
-                                                                                |}
+                                value = value
+                                label =
+                                    Chakra.box
+                                        (fun x ->
+                                            x.fontSize <- "main"
+                                            x.marginLeft <- "-6px"
+                                            x.display <- "inline")
+                                        [
+                                            str label
+                                        ]
+                                children = null
+                            |}
+
                         CheckboxTree.render
                             {|
                                 ``checked`` = ``checked``
@@ -162,18 +164,27 @@ module Databases =
                                 onlyLeafCheckboxes = true
                                 nodes =
                                     [|
-                                        parent "templates" "Templates / Unit Tests" [|
-                                            leaf "test1" "test1"
-                                            leaf "test2" "test2"
-                                        |]
-                                        parent "my" "Created by Me" [|
-                                            leaf "test11" "test11"
-                                            leaf "test22" "test21"
-                                        |]
-                                        parent "shared" "Shared With Me" [|
-                                            leaf "test111" "test111"
-                                            leaf "test221" "test211"
-                                        |]
+                                        parent
+                                            "templates"
+                                            "Templates / Unit Tests"
+                                            [|
+                                                leaf "test1" "test1"
+                                                leaf "test2" "test2"
+                                            |]
+                                        parent
+                                            "my"
+                                            "Created by Me"
+                                            [|
+                                                leaf "test11" "test11"
+                                                leaf "test22" "test21"
+                                            |]
+                                        parent
+                                            "shared"
+                                            "Shared With Me"
+                                            [|
+                                                leaf "test111" "test111"
+                                                leaf "test221" "test211"
+                                            |]
 
                                     |]
                                 icons =

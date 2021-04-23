@@ -29,31 +29,27 @@ module Content =
                 | false -> LoadingScreen.LoadingScreen ()
                 | true ->
                     match username with
-                    | Some username ->
-                        React.suspense (
-                            [
-                                SessionDataLoader.SessionDataLoader {| Username = username |}
-                                SoundPlayer.SoundPlayer {| Username = username |}
-
-                                Chakra.stack
-                                    (fun x ->
-                                        x.spacing <- "0"
-                                        x.flex <- 1)
-                                    [
-                                        TopBar.TopBar ()
-                                        HomeScreen.HomeScreen
-                                            {|
-                                                Username = username
-                                                Props = JS.newObj (fun x -> x.flex <- 1)
-                                            |}
-                                        StatusBar.StatusBar {| Username = username |}
-                                    ]
-                            ],
-                            LoadingScreen.LoadingScreen ()
-                        )
-
                     | None ->
                         match gunPeers, initialPeerSkipped with
                         | [], false -> InitialPeers.InitialPeers ()
                         | _ -> LoginScreen.LoginScreen ()
+                    | Some username ->
+                        React.fragment [
+                            SessionDataLoader.SessionDataLoader {| Username = username |}
+                            SoundPlayer.SoundPlayer {| Username = username |}
+
+                            Chakra.stack
+                                (fun x ->
+                                    x.spacing <- "0"
+                                    x.flex <- 1)
+                                [
+                                    TopBar.TopBar ()
+                                    HomeScreen.HomeScreen
+                                        {|
+                                            Username = username
+                                            Props = JS.newObj (fun x -> x.flex <- 1)
+                                        |}
+                                    StatusBar.StatusBar {| Username = username |}
+                                ]
+                        ]
             ]

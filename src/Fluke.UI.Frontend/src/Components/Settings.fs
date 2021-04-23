@@ -42,7 +42,7 @@ module Settings =
                 Input.Input (
                     JS.newObj
                         (fun x ->
-                            x.label <- str "Old API URL"
+                            x.label <- str "Legacy API URL"
                             x.atom <- Some (Recoil.Atom Atoms.apiBaseUrl)
                             x.atomScope <- Some Recoil.AtomScope.ReadOnly)
                 )
