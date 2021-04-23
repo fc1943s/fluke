@@ -15,13 +15,103 @@ open Fable.Extras
 
 
 module Recoil =
-
     open Model
     open Domain.UserInteraction
     open Domain.State
     open View
 
+
     module Atoms =
+        let rec isTesting = Recoil.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.isTesting)
+
+        let rec debug =
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof debug}",
+                false,
+                effects =
+                    [
+                        AtomEffect Storage.local
+                    ]
+            )
+
+        let rec sessionRestored = Recoil.atomWithProfiling ($"{nameof atom}/{nameof sessionRestored}", false)
+
+        let rec gunPeers =
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof gunPeers}",
+                ([]: string list),
+                effects =
+                    [
+                        AtomEffect Storage.local
+                    ]
+            )
+
+        let rec gunHash = Recoil.atomWithProfiling ($"{nameof atom}/{nameof gunHash}", "")
+
+        let rec gunKeys =
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof gunKeys}",
+                {
+                    Gun.pub = ""
+                    Gun.epub = ""
+                    Gun.priv = ""
+                    Gun.epriv = ""
+                }
+
+            //                local_storage
+            )
+
+        let rec initialPeerSkipped = Recoil.atomWithProfiling ($"{nameof atom}/{nameof initialPeerSkipped}", false)
+
+        let rec username = Recoil.atomWithProfiling ($"{nameof atom}/{nameof username}", None)
+
+        let rec apiBaseUrl =
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof apiBaseUrl}",
+                $"https://localhost:{Sync.serverPort}",
+                effects =
+                    [
+                        AtomEffect Storage.local
+                    ]
+            )
+
+        let rec api = Recoil.atomWithProfiling ($"{nameof atom}/{nameof api}", (None: Sync.Api option))
+
+        let rec selectedDatabaseIds =
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof selectedDatabaseIds}",
+                ([||]: DatabaseId []),
+                effects =
+                    [
+                        AtomEffect Storage.local
+                    ]
+            )
+
+        let rec selectedPosition =
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof selectedPosition}",
+                (None: FlukeDateTime option),
+                effects =
+                    [
+                        AtomEffect Storage.local
+                    ]
+            )
+
+        let rec getLivePosition =
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof getLivePosition}",
+                {|
+                    Get = fun () -> FlukeDateTime.FromDateTime DateTime.Now
+                |}
+            )
+
+        let rec positionTrigger = Recoil.atomWithProfiling ($"{nameof atom}/{nameof positionTrigger}", 0)
+
+        let rec ctrlPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof ctrlPressed}", false)
+
+        let rec shiftPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof shiftPressed}", false)
+
+
         module rec Events =
             type EventId = EventId of position: float * guid: Guid
 
@@ -38,88 +128,6 @@ module Recoil =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Events}/{nameof events}",
                     (fun (_eventId: EventId) -> Event.NoOp)
-                )
-
-
-        module rec Information =
-            type InformationId = InformationId of id: string
-
-            let rec wrappedInformation =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Information}/{nameof wrappedInformation}",
-                    (fun (_informationId: InformationId) -> Area (Area.Default, []))
-                )
-
-            let rec attachments =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Information}/{nameof attachments}",
-                    (fun (_informationId: InformationId) -> []: Attachment list)
-                )
-
-            let rec informationId (information: Information) : InformationId =
-                match information with
-                | Archive _ ->
-                    let (InformationId archiveId) = informationId information
-                    $"{Information.toString information}/{archiveId}"
-                | _ ->
-                    let (InformationName informationName) = information.Name
-                    $"{Information.toString information}/{informationName}"
-                |> InformationId
-
-
-        module rec Task =
-            let rec task =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof task}",
-                    (fun (_taskId: TaskId option) -> Task.Default)
-                )
-
-            let rec informationId =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof informationId}",
-                    (fun (_taskId: TaskId option) -> Information.informationId Task.Default.Information)
-                )
-
-            let rec name =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof name}",
-                    (fun (_taskId: TaskId option) -> Task.Default.Name)
-                )
-
-            let rec scheduling =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof scheduling}",
-                    (fun (_taskId: TaskId option) -> Task.Default.Scheduling)
-                )
-
-            let rec pendingAfter =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof pendingAfter}",
-                    (fun (_taskId: TaskId option) -> Task.Default.PendingAfter)
-                )
-
-            let rec missedAfter =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof missedAfter}",
-                    (fun (_taskId: TaskId option) -> Task.Default.MissedAfter)
-                )
-
-            let rec priority =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof priority}",
-                    (fun (_taskId: TaskId option) -> Task.Default.Priority)
-                )
-
-            let rec attachments =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof attachments}",
-                    (fun (_taskId: TaskId option) -> []: Attachment list) // TODO: move from here?
-                )
-
-            let rec duration =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof duration}",
-                    (fun (_taskId: TaskId option) -> Task.Default.Duration)
                 )
 
 
@@ -275,23 +283,117 @@ module Recoil =
                 )
 
 
-        module rec Session =
-            let rec databaseStateMapCache =
+        module rec Database =
+            let rec name =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Session}/{nameof databaseStateMapCache}",
-                    (fun (_username: Username) -> Map.empty: Map<DatabaseId, DatabaseState>)
+                    $"{nameof atomFamily}/{nameof Database}/{nameof name}",
+                    (fun (_databaseId: DatabaseId option) -> DatabaseName "")
                 )
 
-            let rec availableDatabaseIds =
+            let rec owner =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Session}/{nameof availableDatabaseIds}",
-                    (fun (_username: Username) -> []: DatabaseId list)
+                    $"{nameof atomFamily}/{nameof Database}/{nameof owner}",
+                    (fun (_databaseId: DatabaseId option) -> None: Username option)
                 )
 
-            let rec taskIdList =
+            let rec sharedWith =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Session}/{nameof taskIdList}",
-                    (fun (_username: Username) -> []: TaskId list)
+                    $"{nameof atomFamily}/{nameof Database}/{nameof sharedWith}",
+                    (fun (_databaseId: DatabaseId option) -> DatabaseAccess.Public)
+                )
+
+            let rec dayStart =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Database}/{nameof dayStart}",
+                    (fun (_databaseId: DatabaseId option) -> FlukeTime.Create 7 0)
+                )
+
+            let rec position =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Database}/{nameof position}",
+                    (fun (_databaseId: DatabaseId option) -> None: FlukeDateTime option)
+                )
+
+
+        module rec Information =
+            type InformationId = InformationId of id: string
+
+            let rec wrappedInformation =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Information}/{nameof wrappedInformation}",
+                    (fun (_informationId: InformationId) -> Area (Area.Default, []))
+                )
+
+            let rec attachments =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Information}/{nameof attachments}",
+                    (fun (_informationId: InformationId) -> []: Attachment list)
+                )
+
+            let rec informationId (information: Information) : InformationId =
+                match information with
+                | Archive _ ->
+                    let (InformationId archiveId) = informationId information
+                    $"{Information.toString information}/{archiveId}"
+                | _ ->
+                    let (InformationName informationName) = information.Name
+                    $"{Information.toString information}/{informationName}"
+                |> InformationId
+
+
+        module rec Task =
+            let rec task =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof task}",
+                    (fun (_taskId: TaskId option) -> Task.Default)
+                )
+
+            let rec informationId =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof informationId}",
+                    (fun (_taskId: TaskId option) -> Information.informationId Task.Default.Information)
+                )
+
+            let rec name =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof name}",
+                    (fun (_taskId: TaskId option) -> Task.Default.Name)
+                )
+
+            let rec scheduling =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof scheduling}",
+                    (fun (_taskId: TaskId option) -> Task.Default.Scheduling)
+                )
+
+            let rec pendingAfter =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof pendingAfter}",
+                    (fun (_taskId: TaskId option) -> Task.Default.PendingAfter)
+                )
+
+            let rec missedAfter =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof missedAfter}",
+                    (fun (_taskId: TaskId option) -> Task.Default.MissedAfter)
+                )
+
+            let rec priority =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof priority}",
+                    (fun (_taskId: TaskId option) -> Task.Default.Priority)
+                )
+
+            let rec attachments =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof attachments}",
+                    (fun (_taskId: TaskId option) -> []: Attachment list) // TODO: move from here?
+                )
+
+            let rec duration =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof duration}",
+                    (fun (_taskId: TaskId option) -> Task.Default.Duration)
                 )
 
 
@@ -351,129 +453,24 @@ module Recoil =
                 )
 
 
-        module rec Database =
-            let rec name =
+        module rec Session =
+            let rec databaseStateMapCache =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Database}/{nameof name}",
-                    (fun (_databaseId: DatabaseId option) -> DatabaseName "")
+                    $"{nameof atomFamily}/{nameof Session}/{nameof databaseStateMapCache}",
+                    (fun (_username: Username) -> Map.empty: Map<DatabaseId, DatabaseState>)
                 )
 
-
-            let rec owner =
+            let rec availableDatabaseIds =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Database}/{nameof owner}",
-                    (fun (_databaseId: DatabaseId option) -> None: Username option)
+                    $"{nameof atomFamily}/{nameof Session}/{nameof availableDatabaseIds}",
+                    (fun (_username: Username) -> []: DatabaseId list)
                 )
 
-
-            let rec sharedWith =
+            let rec taskIdList =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Database}/{nameof sharedWith}",
-                    (fun (_databaseId: DatabaseId option) -> DatabaseAccess.Public)
+                    $"{nameof atomFamily}/{nameof Session}/{nameof taskIdList}",
+                    (fun (_username: Username) -> []: TaskId list)
                 )
-
-            let rec dayStart =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Database}/{nameof dayStart}",
-                    (fun (_databaseId: DatabaseId option) -> FlukeTime.Create 7 0)
-                )
-
-
-            let rec position =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Database}/{nameof position}",
-                    (fun (_databaseId: DatabaseId option) -> None: FlukeDateTime option)
-                )
-
-
-        let rec debug =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof debug}",
-                false,
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec isTesting = Recoil.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.isTesting)
-
-        let rec selectedDatabaseIds =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof selectedDatabaseIds}",
-                ([||]: DatabaseId []),
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec selectedPosition =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof selectedPosition}",
-                (None: FlukeDateTime option),
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec apiBaseUrl =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof apiBaseUrl}",
-                $"https://localhost:{Sync.serverPort}",
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec gunHash = Recoil.atomWithProfiling ($"{nameof atom}/{nameof gunHash}", "")
-
-        let rec gunPeers =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof gunPeers}",
-                ([]: string list),
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec gunKeys =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof gunKeys}",
-                {
-                    Gun.pub = ""
-                    Gun.epub = ""
-                    Gun.priv = ""
-                    Gun.epriv = ""
-                }
-
-            //                local_storage
-            )
-
-        let rec api = Recoil.atomWithProfiling ($"{nameof atom}/{nameof api}", (None: Sync.Api option))
-
-        let rec username = Recoil.atomWithProfiling ($"{nameof atom}/{nameof username}", None)
-
-        let rec sessionRestored = Recoil.atomWithProfiling ($"{nameof atom}/{nameof sessionRestored}", false)
-
-        let rec getLivePosition =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof getLivePosition}",
-                {|
-                    Get = fun () -> FlukeDateTime.FromDateTime DateTime.Now
-                |}
-            )
-
-        let rec ctrlPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof ctrlPressed}", false)
-
-        let rec shiftPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof shiftPressed}", false)
-
-        let rec initialPeerSkipped = Recoil.atomWithProfiling ($"{nameof atom}/{nameof initialPeerSkipped}", false)
-
-        let rec positionTrigger = Recoil.atomWithProfiling ($"{nameof atom}/{nameof positionTrigger}", 0)
 
 
     module Selectors =
@@ -682,6 +679,7 @@ module Recoil =
                     deviceInfo)
             )
 
+
         module rec FlukeDate =
             let isToday =
                 Recoil.selectorFamilyWithProfiling (
@@ -714,8 +712,12 @@ module Recoil =
                         | None -> false)
                 )
 
+
+
+
         module rec Information =
             ()
+
 
         module rec Task =
             let rec lastSession =
@@ -800,6 +802,96 @@ module Recoil =
                                 (fun date -> getter.get (Atoms.Cell.selected (username, taskId, DateId date)))
                         | None -> false)
                 )
+
+
+        module rec Cell =
+            let rec selected =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}",
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
+                        getter.get (Atoms.Cell.selected (username, taskId, dateId))),
+                    (fun (_username: Username, taskId: TaskId, (DateId referenceDay)) setter (newValue: bool) ->
+                        let username = setter.get Atoms.username
+
+                        match username with
+                        | Some username ->
+                            let ctrlPressed = setter.get Atoms.ctrlPressed
+                            let shiftPressed = setter.get Atoms.shiftPressed
+
+                            let newCellSelectionMap =
+                                match shiftPressed, ctrlPressed with
+                                | false, false ->
+                                    let newTaskSelection = if newValue then Set.singleton referenceDay else Set.empty
+
+                                    [
+                                        taskId, newTaskSelection
+                                    ]
+                                    |> Map.ofList
+                                | false, true ->
+                                    let swapSelection oldSelection taskId date =
+                                        let oldSet =
+                                            oldSelection
+                                            |> Map.tryFind taskId
+                                            |> Option.defaultValue Set.empty
+
+                                        let newSet =
+                                            let fn = if newValue then Set.add else Set.remove
+
+                                            fn date oldSet
+
+                                        oldSelection |> Map.add taskId newSet
+
+                                    let oldSelection = setter.get cellSelectionMap
+                                    swapSelection oldSelection taskId referenceDay
+                                | true, _ ->
+                                    let taskIdList = setter.get (Atoms.Session.taskIdList username)
+                                    let oldCellSelectionMap = setter.get cellSelectionMap
+
+                                    let initialTaskIdSet =
+                                        oldCellSelectionMap
+                                        |> Map.toSeq
+                                        |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
+                                        |> Seq.map fst
+                                        |> Set.ofSeq
+                                        |> Set.add taskId
+
+                                    let newTaskIdList =
+                                        taskIdList
+                                        |> List.skipWhile (initialTaskIdSet.Contains >> not)
+                                        |> List.rev
+                                        |> List.skipWhile (initialTaskIdSet.Contains >> not)
+                                        |> List.rev
+
+                                    let initialDateList =
+                                        oldCellSelectionMap
+                                        |> Map.values
+                                        |> Set.unionMany
+                                        |> Set.add referenceDay
+                                        |> Set.toList
+                                        |> List.sort
+
+                                    let dateSet =
+                                        match initialDateList with
+                                        | [] -> []
+                                        | dateList ->
+                                            [
+                                                dateList.Head
+                                                dateList |> List.last
+                                            ]
+                                            |> Rendering.getDateSequence (0, 0)
+                                        |> Set.ofList
+
+                                    let newMap =
+                                        newTaskIdList
+                                        |> List.map (fun taskId -> taskId, dateSet)
+                                        |> Map.ofList
+
+                                    newMap
+
+                            setter.set (cellSelectionMap, newCellSelectionMap)
+                        | None -> ())
+                )
+
 
         module rec Session =
             let rec activeSessions =
@@ -1030,93 +1122,4 @@ module Recoil =
 
                             Some newSession
                         | _ -> None)
-                )
-
-
-        module rec Cell =
-            let rec selected =
-                Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}",
-                    (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
-                        getter.get (Atoms.Cell.selected (username, taskId, dateId))),
-                    (fun (_username: Username, taskId: TaskId, (DateId referenceDay)) setter (newValue: bool) ->
-                        let username = setter.get Atoms.username
-
-                        match username with
-                        | Some username ->
-                            let ctrlPressed = setter.get Atoms.ctrlPressed
-                            let shiftPressed = setter.get Atoms.shiftPressed
-
-                            let newCellSelectionMap =
-                                match shiftPressed, ctrlPressed with
-                                | false, false ->
-                                    let newTaskSelection = if newValue then Set.singleton referenceDay else Set.empty
-
-                                    [
-                                        taskId, newTaskSelection
-                                    ]
-                                    |> Map.ofList
-                                | false, true ->
-                                    let swapSelection oldSelection taskId date =
-                                        let oldSet =
-                                            oldSelection
-                                            |> Map.tryFind taskId
-                                            |> Option.defaultValue Set.empty
-
-                                        let newSet =
-                                            let fn = if newValue then Set.add else Set.remove
-
-                                            fn date oldSet
-
-                                        oldSelection |> Map.add taskId newSet
-
-                                    let oldSelection = setter.get cellSelectionMap
-                                    swapSelection oldSelection taskId referenceDay
-                                | true, _ ->
-                                    let taskIdList = setter.get (Atoms.Session.taskIdList username)
-                                    let oldCellSelectionMap = setter.get cellSelectionMap
-
-                                    let initialTaskIdSet =
-                                        oldCellSelectionMap
-                                        |> Map.toSeq
-                                        |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
-                                        |> Seq.map fst
-                                        |> Set.ofSeq
-                                        |> Set.add taskId
-
-                                    let newTaskIdList =
-                                        taskIdList
-                                        |> List.skipWhile (initialTaskIdSet.Contains >> not)
-                                        |> List.rev
-                                        |> List.skipWhile (initialTaskIdSet.Contains >> not)
-                                        |> List.rev
-
-                                    let initialDateList =
-                                        oldCellSelectionMap
-                                        |> Map.values
-                                        |> Set.unionMany
-                                        |> Set.add referenceDay
-                                        |> Set.toList
-                                        |> List.sort
-
-                                    let dateSet =
-                                        match initialDateList with
-                                        | [] -> []
-                                        | dateList ->
-                                            [
-                                                dateList.Head
-                                                dateList |> List.last
-                                            ]
-                                            |> Rendering.getDateSequence (0, 0)
-                                        |> Set.ofList
-
-                                    let newMap =
-                                        newTaskIdList
-                                        |> List.map (fun taskId -> taskId, dateSet)
-                                        |> Map.ofList
-
-                                    newMap
-
-                            setter.set (cellSelectionMap, newCellSelectionMap)
-                        | None -> ())
                 )
