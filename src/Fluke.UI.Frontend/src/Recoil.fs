@@ -667,15 +667,19 @@ module Recoil =
                         else
                             Browser.Dom.window?navigator?userAgent
 
-                    {
-                        IsEdge = (JSe.RegExp @"Edg\/").Test userAgent
-                        IsMobile =
-                            JSe
-                                .RegExp("Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop",
-                                        JSe.RegExpFlag().i)
-                                .Test userAgent
-                        IsExtension = Browser.Dom.window.location.protocol = "chrome-extension:"
-                    })
+                    let deviceInfo =
+                        {
+                            IsEdge = (JSe.RegExp @"Edg\/").Test userAgent
+                            IsMobile =
+                                JSe
+                                    .RegExp("Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop",
+                                            JSe.RegExpFlag().i)
+                                    .Test userAgent
+                            IsExtension = Browser.Dom.window.location.protocol = "chrome-extension:"
+                        }
+
+                    printfn $"userAgent: {userAgent} deviceInfo: {deviceInfo}"
+                    deviceInfo)
             )
 
         module rec FlukeDate =

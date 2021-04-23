@@ -75,12 +75,12 @@ module Sync =
                 fn
                 |> Async.Catch
                 |> Async.StartAsPromise
-                |> Promise.withTimeout 4000
+                |> Promise.withTimeout 10000
 
             return
                 match result with
                 | Choice1Of2 output ->
-                    printfn $"internalHandleRequest success. output={JS.JSON.stringify output}"
+                    printfn "internalHandleRequest success"
                     Ok output
                 | Choice2Of2 ex ->
                     match ex with
