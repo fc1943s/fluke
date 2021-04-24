@@ -87,23 +87,40 @@ module LeftDock =
                     match itemsMap |> Map.tryFind leftDock with
                     | None -> nothing
                     | Some (name, icon, content) ->
-                        Chakra.flex
-                            (fun x ->
-                                x.minWidth <- "200px"
-                                x.maxWidth <- "300px"
-                                x.borderRightWidth <- "1px"
-                                x.borderRightColor <- "gray.16"
-                                x.flex <- 1)
-                            [
-                                DockPanel.DockPanel
+                        Resizable.resizable
+                            {|
+                                defaultSize = {| width = "25vw" |}
+                                minWidth = "25vw"
+                                enable =
                                     {|
-                                        Name = name
-                                        Icon = icon
-                                        Atom = Recoil.Atoms.User.leftDock input.Username
-                                        children =
-                                            [
-                                                content ()
-                                            ]
+                                        top = false
+                                        right = true
+                                        bottom = false
+                                        left = false
+                                        topRight = false
+                                        bottomRight = false
+                                        bottomLeft = false
+                                        topLeft = false
                                     |}
+                            |}
+                            [
+                                Chakra.flex
+                                    (fun x ->
+                                        x.height <- "100%"
+                                        x.borderRightWidth <- "1px"
+                                        x.borderRightColor <- "gray.16"
+                                        x.flex <- 1)
+                                    [
+                                        DockPanel.DockPanel
+                                            {|
+                                                Name = name
+                                                Icon = icon
+                                                Atom = Recoil.Atoms.User.leftDock input.Username
+                                                children =
+                                                    [
+                                                        content ()
+                                                    ]
+                                            |}
+                                    ]
                             ]
             ]

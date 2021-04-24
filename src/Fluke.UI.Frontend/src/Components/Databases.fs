@@ -92,7 +92,61 @@ module Databases =
                     str databaseName
                 ]
 
+    let node value label children =
+        {|
+            value = value
+            label =
+                Chakra.box
+                    (fun x ->
+                        x.fontSize <- "main"
+                        x.marginLeft <- "-6px"
+                        x.display <- "inline")
+                    [
+                        str label
+                    ]
+            children = children
+        |}
 
+    type Node = Node of value: string * label: string * children: Node list
+
+    let buildNodesFromPath (paths: string list) =
+        let rec groupNodes nodes =
+            nodes
+            |> List.groupBy (fun (Node (_, label, _)) -> label)
+            |> List.map
+                (fun (label, nodes) ->
+                    let (Node (value, _, _)) = nodes.[0]
+
+                    Node (
+                        value,
+                        label,
+                        (nodes
+                         |> List.collect (fun (Node (_, _, children)) -> children)
+                         |> groupNodes)
+                    ))
+
+        paths
+        |> List.map (fun path -> path.Split "/" |> Array.toList)
+        |> List.map
+            (fun nodes ->
+                let rec loop depth list =
+                    let fullPath = nodes |> List.take depth |> String.concat "/"
+                    let nodeId = fullPath |> Crypto.getTextGuidHash |> string
+
+                    match list with
+                    | [ head ] -> Node (nodeId, head, [])
+                    | head :: tail ->
+                        Node (
+                            nodeId,
+                            head,
+                            [
+                                loop (depth + 1) tail
+                            ]
+                        )
+                    | [] -> Node ("", "", [])
+
+                loop 1 nodes)
+        |> groupNodes
 
     [<ReactComponent>]
     let rec Databases
@@ -101,6 +155,31 @@ module Databases =
         =
         let isTesting = Recoil.useValue Recoil.Atoms.isTesting
         let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
+        let availableDatabaseNames = Recoil.useValue (Recoil.Selectors.Session.availableDatabaseNames input.Username)
+
+        let nodes =
+            React.useMemo (
+                (fun () ->
+                    let nodes = buildNodesFromPath availableDatabaseNames
+
+                    let rec loop nodes =
+                        match nodes with
+                        | Node (value, label, children) :: tail ->
+                            let children =
+                                match children with
+                                | [] -> JS.undefined
+                                | _ -> box (loop children |> List.toArray)
+
+                            node value label children :: (loop tail)
+                        | [] -> []
+
+                    loop nodes |> List.toArray),
+                [|
+                    box availableDatabaseNames
+                |]
+            )
+
+        Browser.Dom.window?nodes <- nodes
 
         printfn $"Databases(): availableDatabaseIds.Length={availableDatabaseIds.Length}"
 
@@ -124,35 +203,6 @@ module Databases =
                 Chakra.box
                     (fun x -> x.margin <- "1px")
                     [
-                        let parent value label children =
-                            {|
-                                value = value
-                                label =
-                                    Chakra.box
-                                        (fun x ->
-                                            x.fontSize <- "main"
-                                            x.marginLeft <- "-6px"
-                                            x.display <- "inline")
-                                        [
-                                            str label
-                                        ]
-                                children = children
-                            |}
-
-                        let leaf value label =
-                            {|
-                                value = value
-                                label =
-                                    Chakra.box
-                                        (fun x ->
-                                            x.fontSize <- "main"
-                                            x.marginLeft <- "-6px"
-                                            x.display <- "inline")
-                                        [
-                                            str label
-                                        ]
-                                children = null
-                            |}
 
                         CheckboxTree.render
                             {|
@@ -164,26 +214,25 @@ module Databases =
                                 onlyLeafCheckboxes = true
                                 nodes =
                                     [|
-                                        parent
+                                        node
                                             "templates"
                                             "Templates / Unit Tests"
                                             [|
-                                                leaf "test1" "test1"
-                                                leaf "test2" "test2"
+                                                yield! nodes
                                             |]
-                                        parent
+                                        node
                                             "my"
                                             "Created by Me"
                                             [|
-                                                leaf "test11" "test11"
-                                                leaf "test22" "test21"
+                                                node "test11" "test11" JS.undefined
+                                                node "test22" "test21" JS.undefined
                                             |]
-                                        parent
+                                        node
                                             "shared"
                                             "Shared With Me"
                                             [|
-                                                leaf "test111" "test111"
-                                                leaf "test221" "test211"
+                                                node "test111" "test111" JS.undefined
+                                                node "test221" "test211" JS.undefined
                                             |]
 
                                     |]

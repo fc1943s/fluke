@@ -997,7 +997,7 @@ module Templates =
                     }
 
 
-                    "Recurrency for the next days should work normally while today is still optional/suggested (before PendingAfter)",
+                    "Recurrency for the next days should work normally while today is still suggested (before PendingAfter)",
                     {
                         Position =
                             {

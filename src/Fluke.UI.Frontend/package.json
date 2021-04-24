@@ -49,15 +49,15 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-a15586001",
-    "react-dom": "0.0.0-experimental-a15586001",
+    "react": "0.0.0-experimental-709f94841",
+    "react-dom": "0.0.0-experimental-709f94841",
 
     "recoil": "~0.2",
     "recoilize": "~2.0",
 
     "gun": "amark/gun.git#master",
 
-    "@chakra-ui/react": "~1.5",
+    "@chakra-ui/react": "~1.6",
     "@chakra-ui/system": "~1.6",
     "@chakra-ui/icons": "~1.0",
     "@chakra-ui/theme-tools": "~1.1",
@@ -74,6 +74,7 @@
     "react-checkbox-tree":"~1.6",
 
     "react-markdown": "~6.0",
+    "re-resizable": "~6.9",
     "date-fns": "~2.21",
     "crypto-js": "~4.0"
   },
@@ -94,7 +95,7 @@
 
     "@typescript-eslint/eslint-plugin": "~4.22",
     "@typescript-eslint/parser": "~4.22",
-    "eslint": "~7.24",
+    "eslint": "~7.25",
     "eslint-plugin-react": "~7.23",
     "eslint-plugin-import": "~2.22",
     "eslint-plugin-jsx-a11y": "~6.4",
@@ -139,8 +140,8 @@
     "concurrently": "~6.0"
   },
   "resolutions": {
-    "react": "0.0.0-experimental-a15586001",
-    "react-dom": "0.0.0-experimental-a15586001"
+    "react": "0.0.0-experimental-709f94841",
+    "react-dom": "0.0.0-experimental-709f94841"
   },
   "browserslist": {
     "production": [
