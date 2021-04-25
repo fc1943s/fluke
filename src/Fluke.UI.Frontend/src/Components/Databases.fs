@@ -96,14 +96,19 @@ module Databases =
         {|
             value = value
             label =
-                Chakra.box
-                    (fun x ->
-                        x.fontSize <- "main"
-                        x.marginLeft <- "-6px"
-                        x.display <- "inline")
-                    [
-                        str label
-                    ]
+                React.fragment [
+                    Chakra.box
+                        (fun x ->
+                            x.fontSize <- "12px"
+                            x.lineHeight <- "15px"
+                            x.marginLeft <- "-6px"
+                            x.display <- "inline")
+                        [
+                            str label
+                        ]
+
+                    Chakra.box (fun x -> x.marginTop <- "-8px") []
+                ]
             children = children
         |}
 
@@ -242,6 +247,7 @@ module Databases =
                                             Chakra.box
                                                 (fun x ->
                                                     x.``as`` <- Icons.md.MdCheckBox
+                                                    x.marginTop <- "5px"
                                                     x.marginLeft <- "-39px"
                                                     x.height <- "17px"
                                                     x.width <- "17px"
@@ -251,6 +257,7 @@ module Databases =
                                             Chakra.box
                                                 (fun x ->
                                                     x.``as`` <- Icons.md.MdIndeterminateCheckBox
+                                                    x.marginTop <- "5px"
                                                     x.marginLeft <- "-39px"
                                                     x.height <- "17px"
                                                     x.width <- "17px"
@@ -269,16 +276,14 @@ module Databases =
                                             Chakra.box
                                                 (fun x ->
                                                     x.``as`` <- Icons.fa.FaChevronDown
-                                                    x.marginTop <- "5px"
-                                                    x.marginBottom <- "5px"
+                                                    x.marginTop <- "-5px"
                                                     x.color <- "white")
                                                 []
                                         expandClose =
                                             Chakra.box
                                                 (fun x ->
                                                     x.``as`` <- Icons.fa.FaChevronRight
-                                                    x.marginTop <- "5px"
-                                                    x.marginBottom <- "5px"
+                                                    x.marginTop <- "-5px"
                                                     x.color <- "white")
                                                 []
                                         parentClose =

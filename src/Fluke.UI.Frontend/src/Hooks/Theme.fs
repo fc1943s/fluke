@@ -113,6 +113,10 @@ module Theme =
                                     {|
                                         boxShadow = "none !important"
                                     |}
+                                ``.react-checkbox-tree label:hover`` =
+                                    {|
+                                        background = "none"
+                                    |}
                                 ``*, *::before, *::after`` = {| wordWrap = "break-word" |}
                                 ``.markdown-container h1`` =
                                     {|

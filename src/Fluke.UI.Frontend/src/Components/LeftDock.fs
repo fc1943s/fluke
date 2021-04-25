@@ -89,8 +89,8 @@ module LeftDock =
                     | Some (name, icon, content) ->
                         Resizable.resizable
                             {|
-                                defaultSize = {| width = "25vw" |}
-                                minWidth = "25vw"
+                                defaultSize = {| width = "300px" |}
+                                minWidth = "300px"
                                 enable =
                                     {|
                                         top = false
