@@ -247,7 +247,6 @@ module Databases =
                                             Chakra.box
                                                 (fun x ->
                                                     x.``as`` <- Icons.md.MdCheckBox
-                                                    x.marginTop <- "5px"
                                                     x.marginLeft <- "-39px"
                                                     x.height <- "17px"
                                                     x.width <- "17px"
@@ -257,7 +256,6 @@ module Databases =
                                             Chakra.box
                                                 (fun x ->
                                                     x.``as`` <- Icons.md.MdIndeterminateCheckBox
-                                                    x.marginTop <- "5px"
                                                     x.marginLeft <- "-39px"
                                                     x.height <- "17px"
                                                     x.width <- "17px"
