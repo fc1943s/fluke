@@ -57,6 +57,7 @@ module Theme =
                     ``global`` =
                         fun (props: {| colorMode: string |}) ->
                             {|
+                                ``*, *::before, *::after`` = {| wordWrap = "break-word" |}
                                 html = {| fontSize = "main" |}
                                 body =
                                     {|
@@ -76,15 +77,15 @@ module Theme =
                                         userSelect = "none"
                                         touchAction = "pan-x pan-y"
                                     |}
-                                ``*::-webkit-calendar-picker-indicator`` =
-                                    {|
-                                        filter = if props.colorMode = "dark" then "invert(1)" else ""
-                                    |}
                                 ``input::-ms-reveal`` =
                                     {|
                                         filter = if props.colorMode = "dark" then "invert(1)" else ""
                                     |}
                                 ``input::-ms-clear`` =
+                                    {|
+                                        filter = if props.colorMode = "dark" then "invert(1)" else ""
+                                    |}
+                                ``*::-webkit-calendar-picker-indicator`` =
                                     {|
                                         filter = if props.colorMode = "dark" then "invert(1)" else ""
                                     |}
@@ -113,11 +114,18 @@ module Theme =
                                     {|
                                         boxShadow = "none !important"
                                     |}
+                                ``.rct-disabled svg`` =
+                                    {|
+                                        opacity = "0"
+                                    |}
+                                ``.rct-disabled .rct-title`` =
+                                    {|
+                                        marginLeft = "-14px"
+                                    |}
                                 ``.react-checkbox-tree label:hover`` =
                                     {|
                                         background = "none"
                                     |}
-                                ``*, *::before, *::after`` = {| wordWrap = "break-word" |}
                                 ``.markdown-container h1`` =
                                     {|
                                         borderBottom = "1px solid #777"

@@ -1,80 +1,75 @@
 namespace Fluke.UI.Frontend.Bindings
 
-open Fable.Core
 
+open Fable.Core
+open Fluke.UI.Frontend.Bindings.Vendor
 
 module Icons =
+    open ReactIcons
+
     [<ImportAll "react-icons/ai">]
-    let ai : {| AiFillFolder: obj
-                AiFillFolderOpen: obj
-                AiOutlineGithub: obj |} =
-        jsNative
+    let ai : __ai_index.IExports = jsNative
 
     [<ImportAll "react-icons/bi">]
-    let bi : {| BiTask: obj |} = jsNative
+    let bi : __bi_index.IExports = jsNative
 
     [<ImportAll "react-icons/bs">]
-    let bs : {| BsGrid: obj
-                BsListCheck: obj
-                BsQuestionCircle: obj
-                BsThreeDots: obj |} =
-        jsNative
+    let bs : __bs_index.IExports = jsNative
+
+    [<ImportAll "react-icons/cg">]
+    let cg : __cg_index.IExports = jsNative
+
+    [<ImportAll "react-icons/di">]
+    let di : __di_index.IExports = jsNative
 
     [<ImportAll "react-icons/fa">]
-    let fa : {| FaChevronDown: obj
-                FaChevronRight: obj
-                FaMinus: obj
-                FaPlus: obj
-                FaRegClock: obj
-                FaRegUser: obj
-                FaSortDown: obj
-                FaSortNumericDownAlt: obj
-                FaSortUp: obj |} =
-        jsNative
+    let fa : __fa_index.IExports = jsNative
+
+    [<ImportAll "react-icons/fc">]
+    let fc : __fc_index.IExports = jsNative
 
     [<ImportAll "react-icons/fi">]
-    let fi : {| FiDatabase: obj; FiLogOut: obj |} = jsNative
+    let fi : __fi_index.IExports = jsNative
 
     [<ImportAll "react-icons/gi">]
-    let gi : {| GiHourglass: obj |} = jsNative
+    let gi : __gi_index.IExports = jsNative
+
+    [<ImportAll "react-icons/go">]
+    let go : __go_index.IExports = jsNative
+
+    [<ImportAll "react-icons/gr">]
+    let gr : __gr_index.IExports = jsNative
+
+    [<ImportAll "react-icons/hi">]
+    let hi : __hi_index.IExports = jsNative
+
+    [<ImportAll "react-icons/im">]
+    let im : __im_index.IExports = jsNative
+
+    [<ImportAll "react-icons/io">]
+    let io : __io_index.IExports = jsNative
+
+    [<ImportAll "react-icons/io5">]
+    let io5 : __io5_index.IExports = jsNative
 
     [<ImportAll "react-icons/md">]
-    let md : {| MdCheckBox: obj
-                MdCheckBoxOutlineBlank: obj
-                MdClear: obj
-                MdIndeterminateCheckBox: obj
-                MdSettings: obj |} =
-        jsNative
+    let md : __md_index.IExports = jsNative
+
+    [<ImportAll "react-icons/ri">]
+    let ri : __ri_index.IExports = jsNative
+
+    [<ImportAll "react-icons/si">]
+    let si : __si_index.IExports = jsNative
 
     [<ImportAll "react-icons/ti">]
-    let ti : {| TiFlowChildren: obj |} = jsNative
+    let ti : __ti_index.IExports = jsNative
 
-    let wrap cmp = React.bindComponent () [] cmp
-    //    let wrap cmp (props: {| fontSize: string |}) = Chakra.box {| props with ``as`` = cmp |} []
+    [<ImportAll "react-icons/vsc">]
+    let vsc : __vsc_index.IExports = jsNative
 
-    let aiFillFolder () = wrap ai.AiFillFolder
-    let aiFillFolderOpen () = wrap ai.AiFillFolderOpen
-    let aiOutlineGithub () = wrap ai.AiOutlineGithub
-    let biTask () = wrap bi.BiTask
-    let bsGrid () = wrap bs.BsGrid
-    let bsListCheck () = wrap bs.BsListCheck
-    let bsQuestionCircle () = wrap bs.BsQuestionCircle
-    let bsThreeDots () = wrap bs.BsThreeDots
-    let faChevronDown () = wrap fa.FaChevronDown
-    let faChevronRight () = wrap fa.FaChevronRight
-    let faMinus () = wrap fa.FaMinus
-    let faPlus () = wrap fa.FaPlus
-    let faRegClock () = wrap fa.FaRegClock
-    let faRegUser () = wrap fa.FaRegUser
-    let faSortUp () = wrap fa.FaSortUp
-    let faSortNumericDownAlt () = wrap fa.FaSortNumericDownAlt
-    let faSortDown () = wrap fa.FaSortDown
-    let fiDatabase () = wrap fi.FiDatabase
-    let fiLogOut () = wrap fi.FiLogOut
-    let giHourglass () = wrap gi.GiHourglass
-    let mdCheckBox () = wrap md.MdCheckBox
-    let mdCheckBoxOutlineBlank () = wrap md.MdCheckBoxOutlineBlank
-    let mdClear () = wrap md.MdClear
-    let mdIndeterminateCheckBox () = wrap md.MdIndeterminateCheckBox
-    let mdSettings () = wrap md.MdSettings
-    let tiFlowChildren () = wrap ti.TiFlowChildren
+    [<ImportAll "react-icons/wi">]
+    let wi : __wi_index.IExports = jsNative
+
+    let render cmp = React.bindComponent () [] cmp
+
+    let wrap cmp = fun () -> render cmp

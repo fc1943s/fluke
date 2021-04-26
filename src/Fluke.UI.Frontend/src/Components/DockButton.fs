@@ -30,7 +30,7 @@ module DockButton =
                 x.onClick <-
                     fun _ -> promise { setAtom (if atom = Some input.DockType then None else Some input.DockType) })
             [
-                Chakra.box
+                Chakra.icon
                     (fun x ->
                         x.``as`` <- input.Icon
                         x.marginRight <- "6px")

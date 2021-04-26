@@ -21,7 +21,7 @@ module AddDatabaseButton =
             Button.Button
                 {|
                     Hint = None
-                    Icon = Some (Icons.fiDatabase, Button.IconPosition.Left)
+                    Icon = Some (Icons.fi.FiDatabase |> Icons.wrap, Button.IconPosition.Left)
                     Props =
                         JS.newObj
                             (fun x ->

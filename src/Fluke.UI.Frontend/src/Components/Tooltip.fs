@@ -11,6 +11,7 @@ module Tooltip =
         Chakra.tooltip
             (fun x ->
                 x <+ input.Props
+                x.paddingTop <- "3px"
                 x.backgroundColor <- "gray.77"
                 x.color <- "black"
                 x.zIndex <- 20000)

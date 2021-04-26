@@ -43,7 +43,7 @@ module InputList =
                                                         Props =
                                                             JS.newObj
                                                                 (fun x ->
-                                                                    x.icon <- Icons.faPlus ()
+                                                                    x.icon <- Icons.fa.FaPlus |> Icons.render
 
                                                                     x.onClick <-
                                                                         fun _ ->
@@ -108,7 +108,7 @@ module InputList =
                                                             Props =
                                                                 JS.newObj
                                                                     (fun x ->
-                                                                        x.icon <- Icons.faMinus ()
+                                                                        x.icon <- Icons.fa.FaMinus |> Icons.render
 
                                                                         x.onClick <-
                                                                             fun _ ->

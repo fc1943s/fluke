@@ -92,9 +92,148 @@ module Databases =
                     str databaseName
                 ]
 
-    let node value label children =
+    let leafIcon locked paused =
+        Chakra.stack
+            (fun x ->
+                x.display <- "inline"
+                x.spacing <- "1px"
+                x.direction <- "row")
+            [
+                if locked then
+                    Tooltip.wrap
+                        (str "Private")
+                        [
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    Chakra.icon
+                                        (fun x ->
+                                            x.``as`` <- Icons.fa.FaUserShield
+                                            x.color <- "#a4ff8d"
+                                            x.marginLeft <- "-3px")
+                                        []
+                                ]
+                        ]
+                else
+                    Tooltip.wrap
+                        (Chakra.box
+                            (fun _ -> ())
+                            [
+                                str "Owner: ?"
+                                br []
+                                str "Shared with: ?"
+                            ])
+                        [
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    Chakra.icon
+                                        (fun x ->
+                                            x.``as`` <- Icons.hi.HiUsers
+                                            x.color <- "#ffb836"
+                                            x.marginLeft <- "-3px")
+                                        []
+                                ]
+                        ]
+                if paused then
+                    Tooltip.wrap
+                        (str "Database paused at position XX")
+                        [
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    Chakra.icon
+                                        (fun x ->
+                                            x.``as`` <- Icons.bs.BsPauseFill
+                                            x.color <- "#ffb836"
+                                            x.marginLeft <- "-3px")
+                                        []
+                                ]
+                        ]
+                else
+                    Tooltip.wrap
+                        (str "Live Database")
+                        [
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    Chakra.icon
+                                        (fun x ->
+                                            x.``as`` <- Icons.bs.BsPlayFill
+                                            x.color <- "#a4ff8d"
+                                            x.marginLeft <- "-3px")
+                                        []
+                                ]
+                        ]
+            ]
+
+    let icons =
+        {|
+            check =
+                Chakra.icon
+                    (fun x ->
+                        x.``as`` <- Icons.md.MdCheckBox
+                        x.marginLeft <- "-39px"
+                        x.marginTop <- "-1px"
+                        x.height <- "17px"
+                        x.width <- "17px"
+                        x.color <- "white")
+                    []
+            halfCheck =
+                Chakra.icon
+                    (fun x ->
+                        x.``as`` <- Icons.md.MdIndeterminateCheckBox
+                        x.marginLeft <- "-39px"
+                        x.marginTop <- "-1px"
+                        x.height <- "17px"
+                        x.width <- "17px"
+                        x.color <- "white")
+                    []
+            uncheck =
+                Chakra.icon
+                    (fun x ->
+                        x.``as`` <- Icons.md.MdCheckBoxOutlineBlank
+                        x.marginLeft <- "-39px"
+                        x.marginTop <- "-1px"
+                        x.height <- "17px"
+                        x.width <- "17px"
+                        x.color <- "white")
+                    []
+            expandOpen =
+                Chakra.icon
+                    (fun x ->
+                        x.``as`` <- Icons.fa.FaChevronDown
+                        x.marginTop <- "-5px"
+                        x.color <- "white")
+                    []
+            expandClose =
+                Chakra.icon
+                    (fun x ->
+                        x.``as`` <- Icons.fa.FaChevronRight
+                        x.marginTop <- "-5px"
+                        x.color <- "white")
+                    []
+            parentClose =
+                Chakra.icon
+                    (fun x ->
+                        x.``as`` <- Icons.fi.FiDatabase
+                        x.marginLeft <- "-3px"
+                        x.color <- "white")
+                    []
+            parentOpen =
+                Chakra.icon
+                    (fun x ->
+                        x.``as`` <- Icons.fi.FiDatabase
+                        x.marginLeft <- "-3px"
+                        x.color <- "white")
+                    []
+        |}
+
+    let node value label children icon =
         {|
             value = value
+            showCheckbox = value <> ""
+            disabled = value = ""
             label =
                 React.fragment [
                     Chakra.box
@@ -110,45 +249,48 @@ module Databases =
                     Chakra.box (fun x -> x.marginTop <- "-8px") []
                 ]
             children = children
+            icon = icon
         |}
 
-    type Node = Node of value: string * label: string * children: Node list
+    type Node = Node of value: string * label: string * children: Node list * index: int option
 
     let buildNodesFromPath (paths: string list) =
         let rec groupNodes nodes =
             nodes
-            |> List.groupBy (fun (Node (_, label, _)) -> label)
+            |> List.groupBy (fun (Node (_, label, _, _)) -> label)
             |> List.map
                 (fun (label, nodes) ->
-                    let (Node (value, _, _)) = nodes.[0]
+                    let (Node (value, _, _, index)) = nodes.[0]
 
                     Node (
                         value,
                         label,
                         (nodes
-                         |> List.collect (fun (Node (_, _, children)) -> children)
-                         |> groupNodes)
+                         |> List.collect (fun (Node (_, _, children, _)) -> children)
+                         |> groupNodes),
+                        index
                     ))
 
         paths
         |> List.map (fun path -> path.Split "/" |> Array.toList)
-        |> List.map
-            (fun nodes ->
+        |> List.mapi
+            (fun i nodes ->
                 let rec loop depth list =
                     let fullPath = nodes |> List.take depth |> String.concat "/"
                     let nodeId = fullPath |> Crypto.getTextGuidHash |> string
 
                     match list with
-                    | [ head ] -> Node (nodeId, head, [])
+                    | [ head ] -> Node (nodeId, head, [], Some i)
                     | head :: tail ->
                         Node (
                             nodeId,
                             head,
                             [
                                 loop (depth + 1) tail
-                            ]
+                            ],
+                            None
                         )
-                    | [] -> Node ("", "", [])
+                    | [] -> Node ("", "", [], None)
 
                 loop 1 nodes)
         |> groupNodes
@@ -160,7 +302,19 @@ module Databases =
         =
         let isTesting = Recoil.useValue Recoil.Atoms.isTesting
         let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
-        let availableDatabaseNames = Recoil.useValue (Recoil.Selectors.Session.availableDatabaseNames input.Username)
+
+        let availableDatabaseNames =
+            availableDatabaseIds
+            |> List.map (fun databaseId -> Recoil.Atoms.Database.name (Some databaseId))
+            |> Recoil.waitForAll
+            |> Recoil.useValue
+            |> List.map (fun (DatabaseName databaseName) -> databaseName)
+
+        let availableDatabasePositions =
+            availableDatabaseIds
+            |> List.map (fun databaseId -> Recoil.Atoms.Database.position (Some databaseId))
+            |> Recoil.waitForAll
+            |> Recoil.useValue
 
         let nodes =
             React.useMemo (
@@ -169,20 +323,55 @@ module Databases =
 
                     let rec loop nodes =
                         match nodes with
-                        | Node (value, label, children) :: tail ->
-                            let children =
+                        | Node (value, label, children, index) :: tail ->
+                            let nodeChildren =
                                 match children with
                                 | [] -> JS.undefined
                                 | _ -> box (loop children |> List.toArray)
 
-                            node value label children :: (loop tail)
+                            let icon =
+                                match index with
+                                | Some index ->
+                                    match availableDatabasePositions.[index] with
+                                    | Some _ -> leafIcon false true
+                                    | _ -> leafIcon false false
+                                | _ -> JS.undefined
+
+                            node value label nodeChildren icon :: (loop tail)
                         | [] -> []
 
                     loop nodes |> List.toArray),
                 [|
                     box availableDatabaseNames
+                    box availableDatabasePositions
                 |]
             )
+
+        let allNodes =
+            [|
+                node
+                    "templates"
+                    "Templates / Unit Tests"
+                    [|
+                        yield! nodes
+                    |]
+                    JS.undefined
+                node
+                    "owned"
+                    "Created by Me"
+                    [|
+                        node "default" "Default" JS.undefined (leafIcon true false)
+                        node "fluke" "GitHub: Fluke" JS.undefined (leafIcon false false)
+                    |]
+                    JS.undefined
+                node
+                    "shared"
+                    "Shared With Me"
+                    [|
+                        node "" "None" JS.undefined (Chakra.box (fun _ -> ()) [])
+                    |]
+                    JS.undefined
+            |]
 
         Browser.Dom.window?nodes <- nodes
 
@@ -200,6 +389,20 @@ module Databases =
                                  |}
             }"
 
+        let checkboxTreeRef = React.useRef null
+
+        React.useEffect (
+            (fun () ->
+                if checkboxTreeRef.current <> null then
+                    printfn $"CURR ${checkboxTreeRef.current}"
+                    Browser.Dom.window?CURR <- checkboxTreeRef.current
+
+                ()),
+            [|
+                box checkboxTreeRef
+            |]
+        )
+
         Chakra.stack
             (fun x ->
                 x <+ input.Props
@@ -208,104 +411,21 @@ module Databases =
                 Chakra.box
                     (fun x -> x.margin <- "1px")
                     [
-
                         CheckboxTree.render
                             {|
+                                ref = checkboxTreeRef
                                 ``checked`` = ``checked``
                                 expanded = expanded
                                 onCheck = setChecked
-                                onExpand = setExpanded
+                                onExpand =
+                                    fun expanded targetNode ->
+                                        Browser.Dom.window?targetNode <- targetNode
+                                        printfn $"onExpand. expanded={expanded} targetNode={targetNode}"
+                                        setExpanded expanded
                                 expandOnClick = true
                                 onlyLeafCheckboxes = true
-                                nodes =
-                                    [|
-                                        node
-                                            "templates"
-                                            "Templates / Unit Tests"
-                                            [|
-                                                yield! nodes
-                                            |]
-                                        node
-                                            "my"
-                                            "Created by Me"
-                                            [|
-                                                node "test11" "test11" JS.undefined
-                                                node "test22" "test21" JS.undefined
-                                            |]
-                                        node
-                                            "shared"
-                                            "Shared With Me"
-                                            [|
-                                                node "test111" "test111" JS.undefined
-                                                node "test221" "test211" JS.undefined
-                                            |]
-
-                                    |]
-                                icons =
-                                    {|
-                                        check =
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- Icons.md.MdCheckBox
-                                                    x.marginLeft <- "-39px"
-                                                    x.height <- "17px"
-                                                    x.width <- "17px"
-                                                    x.color <- "white")
-                                                []
-                                        halfCheck =
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- Icons.md.MdIndeterminateCheckBox
-                                                    x.marginLeft <- "-39px"
-                                                    x.height <- "17px"
-                                                    x.width <- "17px"
-                                                    x.color <- "white")
-                                                []
-                                        uncheck =
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- Icons.md.MdCheckBoxOutlineBlank
-                                                    x.marginLeft <- "-39px"
-                                                    x.height <- "17px"
-                                                    x.width <- "17px"
-                                                    x.color <- "white")
-                                                []
-                                        expandOpen =
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- Icons.fa.FaChevronDown
-                                                    x.marginTop <- "-5px"
-                                                    x.color <- "white")
-                                                []
-                                        expandClose =
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- Icons.fa.FaChevronRight
-                                                    x.marginTop <- "-5px"
-                                                    x.color <- "white")
-                                                []
-                                        parentClose =
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- Icons.ai.AiFillFolder
-                                                    x.marginLeft <- "-3px"
-                                                    x.color <- "white")
-                                                []
-                                        parentOpen =
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- Icons.ai.AiFillFolderOpen
-                                                    x.marginLeft <- "-3px"
-                                                    x.color <- "white")
-                                                []
-                                        leaf =
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- Icons.fi.FiDatabase
-                                                    x.marginLeft <- "-3px"
-                                                    x.color <- "white")
-                                                []
-                                    |}
+                                nodes = allNodes
+                                icons = icons
                             |}
                     ]
 

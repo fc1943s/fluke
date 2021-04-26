@@ -5,6 +5,7 @@
         <LangVersion>preview</LangVersion>
     </PropertyGroup>
     <ItemGroup>
+        <Compile Include="src\Bindings\Vendor\ReactIcons.fs" />
         <Compile Include="src\Bindings\Dom.fs" />
         <Compile Include="src\Bindings\CheckboxTree.fs" />
         <Compile Include="src\Bindings\Resizable.fs" />

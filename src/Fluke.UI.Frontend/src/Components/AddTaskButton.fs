@@ -29,7 +29,7 @@ module AddTaskButton =
             Button.Button
                 {|
                     Hint = hintText
-                    Icon = Some (Icons.biTask, Button.IconPosition.Left)
+                    Icon = Some (Icons.bi.BiTask |> Icons.wrap, Button.IconPosition.Left)
                     Props =
                         JS.newObj
                             (fun x ->

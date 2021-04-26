@@ -29,7 +29,7 @@ module StatusBar =
                 Chakra.flex
                     (fun _ -> ())
                     [
-                        Chakra.box
+                        Chakra.icon
                             (fun x ->
                                 x.``as`` <- Icons.fa.FaRegUser
                                 x.marginRight <- "4px")
@@ -44,7 +44,7 @@ module StatusBar =
                 Chakra.flex
                     (fun _ -> ())
                     [
-                        Chakra.box
+                        Chakra.icon
                             (fun x ->
                                 x.``as`` <- Icons.gi.GiHourglass
                                 x.marginRight <- "4px")
@@ -84,7 +84,7 @@ module StatusBar =
 
                 Chakra.spacer (fun _ -> ()) []
 
-                Chakra.box
+                Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.bi.BiTask
                         x.marginRight <- "4px")
@@ -101,7 +101,7 @@ module StatusBar =
                     Chakra.flex
                         (fun _ -> ())
                         [
-                            Chakra.box
+                            Chakra.icon
                                 (fun x ->
                                     x.``as`` <- Icons.fa.FaRegClock
                                     x.marginRight <- "4px")

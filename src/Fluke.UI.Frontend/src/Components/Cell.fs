@@ -188,7 +188,7 @@ overriding any other behavior.
                                     [
                                         Chakra.iconButton
                                             (fun x ->
-                                                x.icon <- Icons.mdClear ()
+                                                x.icon <- Icons.md.MdClear |> Icons.render
                                                 x.backgroundColor <- TempUI.cellStatusColor Disabled
                                                 x._hover <- JS.newObj (fun x -> x.opacity <- 0.8)
                                                 x.variant <- "outline"

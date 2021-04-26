@@ -35,7 +35,7 @@ module Button =
                         []
                 | _, children ->
                     let icon =
-                        Chakra.box
+                        Chakra.icon
                             (fun x ->
                                 x.``as`` <- icon
                                 x.fontSize <- "21px")

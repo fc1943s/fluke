@@ -105,7 +105,7 @@ module HomeScreen =
                                                                         x.color <- "gray.77"
                                                                         x.borderColor <- "gray.77")))
                                                         [
-                                                            Chakra.box
+                                                            Chakra.icon
                                                                 (fun x ->
                                                                     x.``as`` <- tab.Icon
                                                                     x.marginRight <- "6px")

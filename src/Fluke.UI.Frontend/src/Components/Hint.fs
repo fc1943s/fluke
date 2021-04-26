@@ -22,7 +22,7 @@ module Hint =
                             [
                                 InputLabelIconButton.InputLabelIconButton
                                     {|
-                                        Props = JS.newObj (fun x -> x.icon <- Icons.bsQuestionCircle ())
+                                        Props = JS.newObj (fun x -> x.icon <- Icons.bs.BsQuestionCircle |> Icons.render)
                                     |}
                             ]
                     ]
@@ -45,10 +45,10 @@ module Hint =
                                         [
                                             Chakra.icon
                                                 (fun x ->
+                                                    x.``as`` <- Icons.bs.BsQuestionCircle
                                                     x.marginTop <- "-3px"
                                                     x.marginRight <- "5px"
-                                                    x.color <- "heliotrope"
-                                                    x.icon <- Icons.bsQuestionCircle ())
+                                                    x.color <- "heliotrope")
                                                 []
 
                                             hintTitle

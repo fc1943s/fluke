@@ -96,7 +96,9 @@ module TopBar =
                                     [
                                         TopBarIconButton.TopBarIconButton
                                             {|
-                                                Props = JS.newObj (fun x -> x.icon <- Icons.aiOutlineGithub ())
+                                                Props =
+                                                    JS.newObj
+                                                        (fun x -> x.icon <- Icons.ai.AiOutlineGithub |> Icons.render)
                                             |}
                                     ]
                             ]
@@ -109,7 +111,7 @@ module TopBar =
                                         Props =
                                             JS.newObj
                                                 (fun x ->
-                                                    x.icon <- Icons.fiLogOut ()
+                                                    x.icon <- Icons.fi.FiLogOut |> Icons.render
                                                     x.onClick <- logout)
                                     |}
                             ]

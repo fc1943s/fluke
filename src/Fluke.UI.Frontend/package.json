@@ -31,6 +31,7 @@
     "enable-build-watch":"yarn cra-build-watch",
     "disable-build-watch":"yarn --check-files",
     "build": "yarn build:fable && yarn build:react",
+    "ts2fable-react-icons": "ts2fable node_modules/react-icons/all.d.ts src/Bindings/Vendor/ReactIcons.fs -e react-icons",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --rootDir . --runInBand --testNamePattern=",
     "cypress-install": "cypress install --force",
     "cypress": "cypress open",
@@ -71,7 +72,7 @@
     "electron-devtools-installer": "~3.2",
     "devtron": "~1.4",
 
-    "react-checkbox-tree":"~1.6",
+    "react-checkbox-tree": "~1.6",
 
     "react-markdown": "~6.0",
     "re-resizable": "~6.9",
@@ -85,6 +86,7 @@
     "typescript": "~4.2",
     "ts-node": "~9.1",
     "@types/node" : "~14.14",
+    "ts2fable" : "~0.8.0-build.613",
 
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",

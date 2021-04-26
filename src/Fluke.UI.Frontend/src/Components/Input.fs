@@ -227,7 +227,7 @@ module Input =
                                     Button.Button
                                         {|
                                             Hint = None
-                                            Icon = Some (Icons.faSortUp, Button.IconPosition.Left)
+                                            Icon = Some (Icons.fa.FaSortUp |> Icons.wrap, Button.IconPosition.Left)
                                             Props =
                                                 JS.newObj
                                                     (fun x ->
@@ -248,7 +248,7 @@ module Input =
                                     Button.Button
                                         {|
                                             Hint = None
-                                            Icon = Some (Icons.faSortDown, Button.IconPosition.Left)
+                                            Icon = Some (Icons.fa.FaSortDown |> Icons.wrap, Button.IconPosition.Left)
                                             Props =
                                                 JS.newObj
                                                     (fun x ->

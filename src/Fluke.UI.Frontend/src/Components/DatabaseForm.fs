@@ -45,7 +45,7 @@ module DatabaseForm =
                         ]
                     Chakra.iconButton
                         (fun x ->
-                            x.icon <- Icons.bsThreeDots ()
+                            x.icon <- Icons.bs.BsThreeDots |> Icons.render
                             x.disabled <- true
                             x.width <- "22px"
                             x.height <- "15px"

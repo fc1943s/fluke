@@ -894,19 +894,6 @@ module Recoil =
 
 
         module rec Session =
-            let rec availableDatabaseNames =
-                Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Session}/{nameof availableDatabaseNames}",
-                    (fun (username: Username) getter ->
-                        let availableDatabaseIds = getter.get (Atoms.Session.availableDatabaseIds username)
-
-                        availableDatabaseIds
-                        |> List.map
-                            (fun databaseId ->
-                                let (DatabaseName databaseName) = getter.get (Atoms.Database.name (Some databaseId))
-                                databaseName))
-                )
-
             let rec activeSessions =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof activeSessions}",

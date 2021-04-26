@@ -30,7 +30,7 @@ module DockPanel =
                         x.borderBottomColor <- "gray.16"
                         x.align <- "center")
                     [
-                        Chakra.box
+                        Chakra.icon
                             (fun x ->
                                 x.``as`` <- input.Icon
                                 x.marginRight <- "6px")
@@ -41,7 +41,7 @@ module DockPanel =
 
                         Chakra.iconButton
                             (fun x ->
-                                x.icon <- Icons.faMinus ()
+                                x.icon <- Icons.fa.FaMinus |> Icons.render
                                 x.backgroundColor <- "transparent"
                                 x.variant <- "outline"
                                 x.border <- "0"
