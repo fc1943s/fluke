@@ -3,7 +3,7 @@ namespace Fluke.UI.Frontend.Hooks
 open System
 open Fable.Core
 open Feliz
-
+open Feliz.Recoil
 
 module Scheduling =
     type SchedulingType =
@@ -15,7 +15,7 @@ module Scheduling =
         | Timeout -> JS.setTimeout, JS.clearTimeout
         | Interval -> JS.setInterval, JS.clearInterval
 
-    let useScheduling schedulingType duration (fn: unit -> unit) =
+    let useScheduling schedulingType duration (fn: unit -> JS.Promise<unit>) =
         let savedCallback = React.useRef fn
 
         React.useEffect (
@@ -26,17 +26,19 @@ module Scheduling =
             |]
         )
 
+        let fn = Recoil.useCallbackRef (fun _ -> promise { do! savedCallback.current () })
+
         React.useEffect (
             (fun () ->
                 let set, clear = schedulingFn schedulingType
-                let onExecute () = savedCallback.current ()
 
-                let id = set onExecute duration
+                let id = set (fn >> Promise.start) duration
 
                 { new IDisposable with
                     member _.Dispose () = clear id
                 }),
             [|
+                box fn
                 box schedulingType
                 box savedCallback
                 box duration

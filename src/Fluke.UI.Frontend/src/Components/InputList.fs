@@ -84,7 +84,7 @@ module InputList =
                                             JS.newObj
                                                 (fun x ->
                                                     x.onChange <-
-                                                        fun e ->
+                                                        fun (e: Browser.Types.KeyboardEvent) ->
                                                             promise {
                                                                 atomFieldOptions.SetAtomValue (
                                                                     atomFieldOptions.AtomValue

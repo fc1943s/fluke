@@ -230,7 +230,7 @@ module DatabaseSelection =
                                         |]
                                     )
 
-                                    setter.set (Atoms.selectedPosition, snd databaseList.Head)
+                                    setter.set (Atoms.position, snd databaseList.Head)
                                 })
 
                     let menuItems = queryMenuItems subject

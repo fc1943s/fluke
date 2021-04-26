@@ -77,7 +77,7 @@
     "react-markdown": "~6.0",
     "re-resizable": "~6.9",
     "date-fns": "~2.21",
-    "crypto-js": "~4.0"
+    "jssha": "~3.2"
   },
   "devDependencies": {
     "@types/react": "~17.0",

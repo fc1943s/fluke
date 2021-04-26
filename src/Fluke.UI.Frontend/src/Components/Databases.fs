@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.Core.JsInterop
 open Fable.Core
-open Browser.Types
 open Fluke.Shared
 open Feliz
 open Fable.React
@@ -16,90 +15,14 @@ module Databases =
     open Domain.UserInteraction
     open Domain.State
 
-    module MenuItem =
-        [<ReactComponent>]
-        let MenuItem
-            (input: {| Username: Username
-                       DatabaseId: DatabaseId |})
-            =
-            let (DatabaseId databaseId) = input.DatabaseId
-
-            let isTesting = Recoil.useValue Recoil.Atoms.isTesting
-            let selectedPosition, setSelectedPosition = Recoil.useState Recoil.Atoms.selectedPosition
-            let (DatabaseName databaseName) = Recoil.useValue (Recoil.Atoms.Database.name (Some input.DatabaseId))
-            let databasePosition = Recoil.useValue (Recoil.Atoms.Database.position (Some input.DatabaseId))
-            let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
-
-            let selectedDatabaseIds, setSelectedDatabaseIds = Recoil.useState Recoil.Atoms.selectedDatabaseIds
-
-            let availableDatabaseIdsSet = set availableDatabaseIds
-
-            let selectedDatabaseIdsSet =
-                selectedDatabaseIds
-                |> set
-                |> Set.intersect availableDatabaseIdsSet
-
-            let selected = selectedDatabaseIdsSet.Contains input.DatabaseId
-
-            let changeSelection =
-                Recoil.useCallbackRef
-                    (fun _setter newSelectedDatabaseIds ->
-                        setSelectedDatabaseIds newSelectedDatabaseIds
-
-                        match newSelectedDatabaseIds with
-                        | [||] -> None
-                        | _ -> databasePosition
-                        |> setSelectedPosition)
-
-            let onChange =
-                fun (e: KeyboardEvent) ->
-                    promise {
-                        if JS.instanceof (e.target, nameof HTMLInputElement) then
-                            let swap value set =
-                                if set |> Set.contains value then
-                                    set |> Set.remove value
-                                else
-                                    set |> Set.add value
-
-                            let newSelectedDatabaseIds =
-                                selectedDatabaseIdsSet
-                                |> swap input.DatabaseId
-                                |> Set.toArray
-
-                            changeSelection newSelectedDatabaseIds
-                    }
-
-            let (|RenderCheckbox|HideCheckbox|) (selectedPosition, databasePosition) =
-                match selectedPosition, databasePosition with
-                | None, None -> RenderCheckbox
-                | None, Some _ when selectedDatabaseIdsSet.IsEmpty -> RenderCheckbox
-                | Some _, Some _ when selectedPosition = databasePosition -> RenderCheckbox
-                | _ -> HideCheckbox
-
-            let enabled =
-                match selectedPosition, databasePosition with
-                | RenderCheckbox -> true
-                | _ -> false
-
-            Checkbox.Checkbox
-                (fun x ->
-                    x?``data-testid`` <- if isTesting then $"menu-item-{databaseId.ToString ()}" else null
-                    x.value <- input.DatabaseId
-                    x.isChecked <- selected
-                    x.isDisabled <- if enabled then false else true
-                    x.onChange <- onChange)
-                [
-                    str databaseName
-                ]
-
-    let leafIcon locked paused =
+    let leafIcon (input: {| locked: bool; paused: bool |}) =
         Chakra.stack
             (fun x ->
                 x.display <- "inline"
-                x.spacing <- "1px"
+                x.spacing <- "4px"
                 x.direction <- "row")
             [
-                if locked then
+                if input.locked then
                     Tooltip.wrap
                         (str "Private")
                         [
@@ -135,7 +58,7 @@ module Databases =
                                         []
                                 ]
                         ]
-                if paused then
+                if input.paused then
                     Tooltip.wrap
                         (str "Database paused at position XX")
                         [
@@ -229,27 +152,35 @@ module Databases =
                     []
         |}
 
-    let node value label children icon =
+    let node
+        (input: {| disabled: bool
+                   isTesting: bool
+                   value: string
+                   label: string
+                   children: obj
+                   icon: obj |})
+        =
         {|
-            value = value
-            showCheckbox = value <> ""
-            disabled = value = ""
+            value = input.value
+            showCheckbox = input.value <> ""
+            disabled = input.disabled || input.value = ""
             label =
                 React.fragment [
                     Chakra.box
                         (fun x ->
+                            x?``data-testid`` <- if input.isTesting then $"menu-item-{input.value}" else null
                             x.fontSize <- "12px"
                             x.lineHeight <- "15px"
                             x.marginLeft <- "-6px"
                             x.display <- "inline")
                         [
-                            str label
+                            str input.label
                         ]
 
                     Chakra.box (fun x -> x.marginTop <- "-8px") []
                 ]
-            children = children
-            icon = icon
+            children = input.children
+            icon = input.icon
         |}
 
     type Node = Node of value: string * label: string * children: Node list * index: int option
@@ -295,6 +226,12 @@ module Databases =
                 loop 1 nodes)
         |> groupNodes
 
+    type NodeType =
+        | Template
+        | Owned
+        | Shared
+        | Legacy
+
     [<ReactComponent>]
     let rec Databases
         (input: {| Username: Username
@@ -302,24 +239,29 @@ module Databases =
         =
         let isTesting = Recoil.useValue Recoil.Atoms.isTesting
         let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
+        let apiBaseUrl = Recoil.useValue Recoil.Atoms.apiBaseUrl
 
-        let availableDatabaseNames =
-            availableDatabaseIds
-            |> List.map (fun databaseId -> Recoil.Atoms.Database.name (Some databaseId))
-            |> Recoil.waitForAll
-            |> Recoil.useValue
-            |> List.map (fun (DatabaseName databaseName) -> databaseName)
+        let selectedDatabaseIds, setSelectedDatabaseIds = Recoil.useState Recoil.Atoms.selectedDatabaseIds
+        let expandedDatabaseIds, setExpandedDatabaseIds = Recoil.useState Recoil.Atoms.expandedDatabaseIds
 
-        let availableDatabasePositions =
+        let availableDatabases =
             availableDatabaseIds
-            |> List.map (fun databaseId -> Recoil.Atoms.Database.position (Some databaseId))
+            |> List.map Recoil.Selectors.Database.database
             |> Recoil.waitForAll
             |> Recoil.useValue
 
         let nodes =
             React.useMemo (
                 (fun () ->
-                    let nodes = buildNodesFromPath availableDatabaseNames
+                    let availableDatabasesMap =
+                        availableDatabases
+                        |> List.map (fun database -> database.Id, database)
+                        |> Map.ofList
+
+                    let nodes =
+                        availableDatabases
+                        |> List.map (fun { Name = DatabaseName name } -> name)
+                        |> buildNodesFromPath
 
                     let rec loop nodes =
                         match nodes with
@@ -332,76 +274,139 @@ module Databases =
                             let icon =
                                 match index with
                                 | Some index ->
-                                    match availableDatabasePositions.[index] with
-                                    | Some _ -> leafIcon false true
-                                    | _ -> leafIcon false false
+                                    match availableDatabases.[index].Position with
+                                    | Some _ -> leafIcon {| locked = false; paused = true |}
+                                    | _ -> leafIcon {| locked = false; paused = false |}
                                 | _ -> JS.undefined
 
-                            node value label nodeChildren icon :: (loop tail)
+                            let disabled =
+                                match index with
+                                | Some index ->
+                                    match availableDatabases.[index].Position with
+                                    | Some position ->
+                                        selectedDatabaseIds
+                                        |> Array.map (fun databaseId -> availableDatabasesMap.[databaseId])
+                                        |> Array.exists
+                                            (fun database ->
+                                                database.Position.IsNone
+                                                || database.Position <> (Some position))
+                                    | None ->
+                                        selectedDatabaseIds
+                                        |> Array.map (fun databaseId -> availableDatabasesMap.[databaseId].Position)
+                                        |> Array.exists Option.isSome
+                                | _ -> false
+
+                            node
+                                {|
+                                    disabled = disabled
+                                    isTesting = isTesting
+                                    value = value
+                                    label = label
+                                    children = nodeChildren
+                                    icon = icon
+                                |}
+                            :: (loop tail)
                         | [] -> []
 
                     loop nodes |> List.toArray),
                 [|
-                    box availableDatabaseNames
-                    box availableDatabasePositions
+                    box selectedDatabaseIds
+                    box isTesting
+                    box availableDatabases
                 |]
             )
 
         let allNodes =
-            [|
-                node
-                    "templates"
-                    "Templates / Unit Tests"
-                    [|
-                        yield! nodes
-                    |]
-                    JS.undefined
-                node
-                    "owned"
-                    "Created by Me"
-                    [|
-                        node "default" "Default" JS.undefined (leafIcon true false)
-                        node "fluke" "GitHub: Fluke" JS.undefined (leafIcon false false)
-                    |]
-                    JS.undefined
-                node
-                    "shared"
-                    "Shared With Me"
-                    [|
-                        node "" "None" JS.undefined (Chakra.box (fun _ -> ()) [])
-                    |]
-                    JS.undefined
-            |]
+            if true then
+                box nodes
+            else
+                box [|
+                    node
+                        {|
+                            disabled = false
+                            isTesting = isTesting
+                            value = "templates"
+                            label = "Templates / Unit Tests"
+                            children = nodes
+                            icon = JS.undefined
+                        |}
+
+                    node
+                        {|
+                            disabled = false
+                            isTesting = isTesting
+                            value = "owned"
+                            label = "Created by me"
+                            children =
+                                [|
+                                    node
+                                        {|
+                                            disabled = false
+                                            isTesting = isTesting
+                                            value = "default"
+                                            label = "Default"
+                                            children = JS.undefined
+                                            icon = leafIcon {| locked = true; paused = false |}
+                                        |}
+                                    node
+                                        {|
+                                            disabled = false
+                                            isTesting = isTesting
+                                            value = "default"
+                                            label = "Default"
+                                            children = JS.undefined
+                                            icon = leafIcon {| locked = false; paused = false |}
+                                        |}
+                                |]
+                            icon = JS.undefined
+                        |}
+                    node
+                        {|
+                            disabled = false
+                            isTesting = isTesting
+                            value = "shared"
+                            label = "Shared with me"
+                            children =
+                                [|
+                                    node
+                                        {|
+                                            disabled = false
+                                            isTesting = isTesting
+                                            value = ""
+                                            label = "None"
+                                            children = JS.undefined
+                                            icon = (Chakra.box (fun _ -> ()) [])
+                                        |}
+                                |]
+                            icon = JS.undefined
+                        |}
+
+                    match apiBaseUrl with
+                    | String.ValidString _ ->
+                        node
+                            {|
+                                disabled = false
+                                isTesting = isTesting
+                                value = "legacy"
+                                label = "Legacy"
+                                children =
+                                    [|
+                                        node
+                                            {|
+                                                disabled = false
+                                                isTesting = isTesting
+                                                value = ""
+                                                label = "None"
+                                                children = JS.undefined
+                                                icon = (Chakra.box (fun _ -> ()) [])
+                                            |}
+                                    |]
+                                icon = JS.undefined
+                            |}
+                    | _ -> ()
+                |]
 
         Browser.Dom.window?nodes <- nodes
-
-        printfn $"Databases(): availableDatabaseIds.Length={availableDatabaseIds.Length}"
-
-        let ``checked``, setChecked = React.useState [||]
-        let expanded, setExpanded = React.useState [||]
-
-        printfn
-            $"Databases {
-                             JS.JSON.stringify
-                                 {|
-                                     ``checked`` = ``checked``
-                                     expanded = expanded
-                                 |}
-            }"
-
-        let checkboxTreeRef = React.useRef null
-
-        React.useEffect (
-            (fun () ->
-                if checkboxTreeRef.current <> null then
-                    printfn $"CURR ${checkboxTreeRef.current}"
-                    Browser.Dom.window?CURR <- checkboxTreeRef.current
-
-                ()),
-            [|
-                box checkboxTreeRef
-            |]
-        )
 
         Chakra.stack
             (fun x ->
@@ -413,29 +418,14 @@ module Databases =
                     [
                         CheckboxTree.render
                             {|
-                                ref = checkboxTreeRef
-                                ``checked`` = ``checked``
-                                expanded = expanded
-                                onCheck = setChecked
-                                onExpand =
-                                    fun expanded targetNode ->
-                                        Browser.Dom.window?targetNode <- targetNode
-                                        printfn $"onExpand. expanded={expanded} targetNode={targetNode}"
-                                        setExpanded expanded
+                                ``checked`` = selectedDatabaseIds |> Array.map DatabaseId.Value
+                                expanded = expandedDatabaseIds |> Array.map DatabaseId.Value
+                                onCheck = Array.map DatabaseId >> setSelectedDatabaseIds
+                                onExpand = Array.map DatabaseId >> setExpandedDatabaseIds
                                 expandOnClick = true
                                 onlyLeafCheckboxes = true
                                 nodes = allNodes
                                 icons = icons
                             |}
                     ]
-
-                yield!
-                    availableDatabaseIds
-                    |> List.map
-                        (fun databaseId ->
-                            MenuItem.MenuItem
-                                {|
-                                    Username = input.Username
-                                    DatabaseId = databaseId
-                                |})
             ]

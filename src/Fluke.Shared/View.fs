@@ -119,7 +119,7 @@ module View =
                    DayStart: FlukeTime
                    DateSequence: FlukeDate list
                    View: View
-                   Position: FlukeDateTime
+                   Position: FlukeDateTime option
                    DatabaseStateMap: Map<DatabaseId, DatabaseState>
                    SelectedDatabaseIds: Set<DatabaseId> |})
         =
@@ -210,96 +210,90 @@ module View =
                             newInformationStateMap, newTaskStateMap
                         | _ -> informationStateMap, taskStateMap)
 
-        if input.DateSequence.IsEmpty then failwith "DateSequence is empty"
+        let head =
+            input.DateSequence
+            |> List.tryHead
+            |> Option.map (fun x -> x.DateTime)
 
-        let dateRange =
-            // TODO: handle
-            let head =
-                input.DateSequence
-                |> List.head
-                |> fun x -> x.DateTime
+        let last =
+            input.DateSequence
+            |> List.tryLast
+            |> Option.map (fun x -> x.DateTime)
 
-            let last =
-                input.DateSequence
-                |> List.last
-                |> fun x -> x.DateTime
-
-            head, last
-
-
-
-        let filteredTaskStateList = filterTaskStateList input.View dateRange taskStateList
-
-        let filteredLanes =
-            filteredTaskStateList
-            |> List.map (Rendering.renderLane input.DayStart input.Position input.DateSequence)
-
-
-        //            let taskOrderList = RootPrivateData.databaseData.TaskOrderList // @ RootPrivateData.taskOrderList
-//            let taskOrderList = [] // @ RootPrivateData.taskOrderList
-
-
-
-        let sortedTaskStateList =
-            sortLanes
-                {|
-                    View = input.View
-                    DayStart = input.DayStart
-                    Position = input.Position
-                    InformationStateList = informationStateList
-                    Lanes = filteredLanes
-                |}
-            |> List.map
-                (fun (taskState, cells) ->
-                    let newCells =
-                        cells
-                        |> List.map (fun (address, status) -> address.DateId, status)
-                        |> Map.ofList
-
-                    taskState, newCells)
-
-        //                    let sortedTaskList =
-//                        sortedTaskList
-////                        |> List.sortByDescending (fun x -> x.StatusEntries.Length)
-//                        |> List.take 50
 
         let newTaskStateList =
-            sortedTaskStateList
-            |> List.map
-                (fun (taskState, statusMap) ->
-                    let newCellStateMap =
-                        seq {
-                            yield! taskState.CellStateMap |> Map.keys
-                            yield! statusMap |> Map.keys
-                        }
-                        |> Seq.distinct
-                        |> Seq.map
-                            (fun dateId ->
-                                let newStatus =
-                                    statusMap
-                                    |> Map.tryFind dateId
-                                    |> Option.defaultValue Disabled
+            match input.Position, head, last with
+            | Some position, Some head, Some last ->
+                let dateRange = head, last
+                let filteredTaskStateList = filterTaskStateList input.View dateRange taskStateList
 
-                                let cellState =
-                                    taskState.CellStateMap
-                                    |> Map.tryFind dateId
-                                    |> Option.defaultValue
-                                        {
-                                            Status = Disabled
-                                            Selected = Selection false
-                                            Sessions = []
-                                            Attachments = []
-                                        }
+                let filteredLanes =
+                    filteredTaskStateList
+                    |> List.map (Rendering.renderLane input.DayStart position input.DateSequence)
 
-                                dateId, { cellState with Status = newStatus })
-                        |> Map.ofSeq
+                //            let taskOrderList = RootPrivateData.databaseData.TaskOrderList // @ RootPrivateData.taskOrderList
+                //            let taskOrderList = [] // @ RootPrivateData.taskOrderList
 
-                    let newTaskState =
-                        { taskState with
-                            CellStateMap = newCellStateMap
-                        }
+                let sortedTaskStateList =
+                    sortLanes
+                        {|
+                            View = input.View
+                            DayStart = input.DayStart
+                            Position = position
+                            InformationStateList = informationStateList
+                            Lanes = filteredLanes
+                        |}
+                    |> List.map
+                        (fun (taskState, cells) ->
+                            let newCells =
+                                cells
+                                |> List.map (fun (address, status) -> address.DateId, status)
+                                |> Map.ofList
 
-                    newTaskState)
+                            taskState, newCells)
+
+                //                    let sortedTaskList =
+                //                        sortedTaskList
+                ////                        |> List.sortByDescending (fun x -> x.StatusEntries.Length)
+                //                        |> List.take 50
+
+                sortedTaskStateList
+                |> List.map
+                    (fun (taskState, statusMap) ->
+                        let newCellStateMap =
+                            seq {
+                                yield! taskState.CellStateMap |> Map.keys
+                                yield! statusMap |> Map.keys
+                            }
+                            |> Seq.distinct
+                            |> Seq.map
+                                (fun dateId ->
+                                    let newStatus =
+                                        statusMap
+                                        |> Map.tryFind dateId
+                                        |> Option.defaultValue Disabled
+
+                                    let cellState =
+                                        taskState.CellStateMap
+                                        |> Map.tryFind dateId
+                                        |> Option.defaultValue
+                                            {
+                                                Status = Disabled
+                                                Selected = Selection false
+                                                Sessions = []
+                                                Attachments = []
+                                            }
+
+                                    dateId, { cellState with Status = newStatus })
+                            |> Map.ofSeq
+
+                        let newTaskState =
+                            { taskState with
+                                CellStateMap = newCellStateMap
+                            }
+
+                        newTaskState)
+            | _ -> []
 
         let newInformationStateMap =
             informationStateList
@@ -315,7 +309,6 @@ module View =
             newTaskStateList
             |> List.map (fun taskState -> taskState.Task)
 
-        //                    User = Some input.User
         let newSession =
             {
                 InformationStateMap = newInformationStateMap

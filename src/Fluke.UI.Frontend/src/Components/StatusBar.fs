@@ -15,7 +15,7 @@ module StatusBar =
 
     [<ReactComponent>]
     let StatusBar (input: {| Username: Username |}) =
-        let position = Recoil.useValue Recoil.Selectors.position
+        let position = Recoil.useValue Recoil.Atoms.position
         let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList input.Username)
         let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
         let activeSessions = Recoil.useValue (Recoil.Selectors.Session.activeSessions input.Username)
@@ -90,9 +90,7 @@ module StatusBar =
                         x.marginRight <- "4px")
                     []
 
-                match sessionData with
-                | Some sessionData -> str $"{taskIdList.Length} of {sessionData.UnfilteredTaskCount} tasks visible"
-                | None -> ()
+                str $"{taskIdList.Length} of {sessionData.UnfilteredTaskCount} tasks visible"
 
                 Chakra.spacer (fun _ -> ()) []
 

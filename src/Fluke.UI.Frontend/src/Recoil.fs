@@ -64,6 +64,7 @@ module Recoil =
         let rec initialPeerSkipped = Recoil.atomWithProfiling ($"{nameof atom}/{nameof initialPeerSkipped}", false)
 
         let rec username = Recoil.atomWithProfiling ($"{nameof atom}/{nameof username}", None)
+        let rec position = Recoil.atomWithProfiling ($"{nameof atom}/{nameof position}", None)
 
         let rec apiBaseUrl =
             Recoil.atomWithProfiling (
@@ -87,25 +88,15 @@ module Recoil =
                     ]
             )
 
-        let rec selectedPosition =
+        let rec expandedDatabaseIds =
             Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof selectedPosition}",
-                (None: FlukeDateTime option),
+                $"{nameof atom}/{nameof expandedDatabaseIds}",
+                ([||]: DatabaseId []),
                 effects =
                     [
                         AtomEffect Storage.local
                     ]
             )
-
-        let rec getLivePosition =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof getLivePosition}",
-                {|
-                    Get = fun () -> FlukeDateTime.FromDateTime DateTime.Now
-                |}
-            )
-
-        let rec positionTrigger = Recoil.atomWithProfiling ($"{nameof atom}/{nameof positionTrigger}", 0)
 
         let rec ctrlPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof ctrlPressed}", false)
 
@@ -242,43 +233,33 @@ module Recoil =
                         ])
                 )
 
-            let rec formDatabaseId =
+            let rec formIdFlag =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof formDatabaseId}",
-                    (fun (_username: Username) -> None: State.DatabaseId option),
-                    (fun (username: Username) ->
+                    $"{nameof atomFamily}/{nameof User}/{nameof formIdFlag}",
+                    (fun (_username: Username, _key: string) -> None: Guid option),
+                    (fun (username: Username, key: string) ->
                         [
-                            Recoil.gunEffect (Some username) formDatabaseId username ""
+                            Recoil.gunEffect (Some username) formIdFlag (username, key) $"/{key}"
                         ])
                 )
 
-            let rec formDatabaseVisibleFlag =
+            let rec formVisibleFlag =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof formDatabaseVisibleFlag}",
-                    (fun (_username: Username) -> false),
-                    (fun (username: Username) ->
+                    $"{nameof atomFamily}/{nameof User}/{nameof formVisibleFlag}",
+                    (fun (_username: Username, _key: string) -> false),
+                    (fun (username: Username, key: string) ->
                         [
-                            Recoil.gunEffect (Some username) formDatabaseVisibleFlag username ""
+                            Recoil.gunEffect (Some username) formVisibleFlag (username, key) $"/{key}"
                         ])
                 )
 
-            let rec formTaskId =
+            let rec accordionFlag =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof formTaskId}",
-                    (fun (_username: Username) -> None: TaskId option),
-                    (fun (username: Username) ->
+                    $"{nameof atomFamily}/{nameof User}/{nameof accordionFlag}",
+                    (fun (_username: Username, _key: string) -> [||]: string []),
+                    (fun (username: Username, key: string) ->
                         [
-                            Recoil.gunEffect (Some username) formTaskId username ""
-                        ])
-                )
-
-            let rec formTaskVisibleFlag =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof formTaskVisibleFlag}",
-                    (fun (_username: Username) -> false),
-                    (fun (username: Username) ->
-                        [
-                            Recoil.gunEffect (Some username) formTaskVisibleFlag username ""
+                            Recoil.gunEffect (Some username) accordionFlag (username, key) $"/{key}"
                         ])
                 )
 
@@ -539,28 +520,12 @@ module Recoil =
                     })
             )
 
-        let rec position =
-            Recoil.selectorWithProfiling (
-                $"{nameof selector}/{nameof position}",
-                (fun getter ->
-                    let _positionTrigger = getter.get Atoms.positionTrigger
-                    let getLivePosition = getter.get Atoms.getLivePosition
-                    let selectedPosition = getter.get Atoms.selectedPosition
-
-                    selectedPosition
-                    |> Option.defaultValue (getLivePosition.Get ())
-                    |> Some
-
-                    ),
-                (fun setter _newValue -> setter.set (Atoms.positionTrigger, (fun x -> x + 1)))
-            )
-
         let rec dateSequence =
             Recoil.selectorWithProfiling (
                 $"{nameof selector}/{nameof dateSequence}",
                 (fun getter ->
                     let username = getter.get Atoms.username
-                    let position = getter.get position
+                    let position = getter.get Atoms.position
 
                     match position, username with
                     | Some position, Some username ->
@@ -686,7 +651,7 @@ module Recoil =
                     $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof isToday}",
                     (fun (date: FlukeDate) getter ->
                         let username = getter.get Atoms.username
-                        let position = getter.get position
+                        let position = getter.get Atoms.position
 
                         match username, position with
                         | Some username, Some position ->
@@ -713,6 +678,22 @@ module Recoil =
                 )
 
 
+        module rec Database =
+            let rec database =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Database}/{nameof database}",
+                    (fun (databaseId: DatabaseId) getter ->
+                        {
+                            Id = databaseId
+                            Name = getter.get (Atoms.Database.name (Some databaseId))
+                            Owner =
+                                getter.get (Atoms.Database.owner (Some databaseId))
+                                |> Option.defaultValue TempData.testUser.Username
+                            SharedWith = getter.get (Atoms.Database.sharedWith (Some databaseId))
+                            Position = getter.get (Atoms.Database.position (Some databaseId))
+                            DayStart = getter.get (Atoms.Database.dayStart (Some databaseId))
+                        })
+                )
 
 
         module rec Information =
@@ -741,7 +722,7 @@ module Recoil =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof activeSession}",
                     (fun (taskId: TaskId) getter ->
-                        let position = getter.get position
+                        let position = getter.get Atoms.position
                         let lastSession = getter.get (lastSession taskId)
 
                         match position, lastSession with
@@ -958,7 +939,7 @@ module Recoil =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof weekCellsMap}",
                     (fun (username: Username) getter ->
-                        let position = getter.get position
+                        let position = getter.get Atoms.position
                         let taskIdList = getter.get (Atoms.Session.taskIdList username)
 
                         match position with
@@ -1096,30 +1077,23 @@ module Recoil =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof sessionData}",
                     (fun (username: Username) getter ->
-                        let databaseStateMap = getter.get (Atoms.Session.databaseStateMapCache username)
+                        let databaseStateMapCache = getter.get (Atoms.Session.databaseStateMapCache username)
                         let dateSequence = getter.get dateSequence
                         let view = getter.get (Atoms.User.view username)
-                        let position = getter.get position
+                        let position = getter.get Atoms.position
                         let selectedDatabaseIds = getter.get Atoms.selectedDatabaseIds
-
                         let dayStart = getter.get (Atoms.User.dayStart username)
 
-                        match position, databaseStateMap.Count, dateSequence.Length with
-                        | Some position, databaseCount, dateSequenceLength when
-                            databaseCount > 0 && dateSequenceLength > 0 ->
+                        getSessionData
+                            {|
+                                Username = username
+                                DayStart = dayStart
+                                DateSequence = dateSequence
+                                View = view
+                                Position = position
+                                SelectedDatabaseIds = selectedDatabaseIds |> Set.ofArray
+                                DatabaseStateMap = databaseStateMapCache
+                            |}
 
-                            let newSession =
-                                getSessionData
-                                    {|
-                                        Username = username
-                                        DayStart = dayStart
-                                        DateSequence = dateSequence
-                                        View = view
-                                        Position = position
-                                        SelectedDatabaseIds = selectedDatabaseIds |> Set.ofArray
-                                        DatabaseStateMap = databaseStateMap
-                                    |}
-
-                            Some newSession
-                        | _ -> None)
+                        )
                 )

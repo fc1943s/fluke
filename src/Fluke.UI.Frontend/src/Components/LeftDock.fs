@@ -19,34 +19,44 @@ module LeftDock =
         let items =
             [
                 TempUI.DockType.Settings,
-                ("Settings",
-                 Icons.md.MdSettings,
-                 (fun () ->
-                     Settings.Settings
-                         {|
-                             Username = input.Username
-                             Props =
-                                 JS.newObj
-                                     (fun x ->
-                                         x.flex <- 1
-                                         x.overflowY <- "auto"
-                                         x.flexBasis <- 0)
-                         |}))
+                {|
+                    Name = "Settings"
+                    Icon = Icons.md.MdSettings
+                    Content =
+                        fun () ->
+                            Settings.Settings
+                                {|
+                                    Username = input.Username
+                                    Props =
+                                        JS.newObj
+                                            (fun x ->
+                                                x.flex <- 1
+                                                x.overflowY <- "auto"
+                                                x.flexBasis <- 0)
+                                |}
+                    Menu = None
+                |}
 
                 TempUI.DockType.Databases,
-                ("Databases",
-                 Icons.fi.FiDatabase,
-                 (fun () ->
-                     Databases.Databases
-                         {|
-                             Username = input.Username
-                             Props =
-                                 JS.newObj
-                                     (fun x ->
-                                         x.flex <- 1
-                                         x.overflowY <- "auto"
-                                         x.flexBasis <- 0)
-                         |}))
+                {|
+                    Name = "Databases"
+                    Icon = Icons.fi.FiDatabase
+                    Content =
+                        fun () ->
+
+                            Databases.Databases
+                                {|
+                                    Username = input.Username
+                                    Props =
+                                        JS.newObj
+                                            (fun x ->
+                                                x.flex <- 1
+                                                x.overflowY <- "auto"
+                                                x.flexBasis <- 0)
+                                |}
+                    Menu = Some ()
+                |}
+
             ]
 
         let itemsMap = items |> Map.ofList
@@ -70,12 +80,12 @@ module LeftDock =
                                 yield!
                                     items
                                     |> List.map
-                                        (fun (dockType, (name, icon, _)) ->
+                                        (fun (dockType, item) ->
                                             DockButton.DockButton
                                                 {|
                                                     DockType = dockType
-                                                    Name = name
-                                                    Icon = icon
+                                                    Name = item.Name
+                                                    Icon = item.Icon
                                                     Atom = Recoil.Atoms.User.leftDock input.Username
                                                 |})
                             ]
@@ -86,7 +96,7 @@ module LeftDock =
                 | Some leftDock ->
                     match itemsMap |> Map.tryFind leftDock with
                     | None -> nothing
-                    | Some (name, icon, content) ->
+                    | Some item ->
                         Resizable.resizable
                             {|
                                 defaultSize = {| width = "300px" |}
@@ -113,12 +123,13 @@ module LeftDock =
                                     [
                                         DockPanel.DockPanel
                                             {|
-                                                Name = name
-                                                Icon = icon
+                                                Name = item.Name
+                                                Icon = item.Icon
+                                                Menu = item.Menu
                                                 Atom = Recoil.Atoms.User.leftDock input.Username
                                                 children =
                                                     [
-                                                        content ()
+                                                        item.Content ()
                                                     ]
                                             |}
                                     ]

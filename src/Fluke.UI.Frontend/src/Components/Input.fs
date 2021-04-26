@@ -234,6 +234,7 @@ module Input =
                                                         x.height <- "50%"
                                                         x.paddingTop <- "6px"
                                                         x.borderRadius <- "0 5px 0 0"
+                                                        x.minWidth <- "26px"
 
                                                         x.onClick <-
                                                             (fun _ ->
@@ -255,6 +256,7 @@ module Input =
                                                         x.height <- "50%"
                                                         x.paddingBottom <- "6px"
                                                         x.borderRadius <- "0 0 5px 0"
+                                                        x.minWidth <- "26px"
 
                                                         x.onClick <-
                                                             (fun _ ->

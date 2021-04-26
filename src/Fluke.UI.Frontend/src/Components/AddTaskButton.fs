@@ -4,6 +4,7 @@ open Fable.React
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
+open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
@@ -13,36 +14,34 @@ module AddTaskButton =
     [<ReactComponent>]
     let AddTaskButton (input: {| Props: Chakra.IChakraProps |}) =
         let username = Recoil.useValue Recoil.Atoms.username
-        let selectedPosition = Recoil.useValue Recoil.Atoms.selectedPosition
-        let selectedDatabaseIds = Recoil.useValue Recoil.Atoms.selectedDatabaseIds
-        let formTaskId, setFormTaskId = Recoil.useStateDefault Recoil.Atoms.User.formTaskId username
 
-        let formTaskVisibleFlag, setFormTaskVisibleFlag =
-            Recoil.useStateDefault Recoil.Atoms.User.formTaskVisibleFlag username
+        let formIdFlag, setFormIdFlag =
+            Recoil.useStateDefault
+                Recoil.Atoms.User.formIdFlag
+                (username
+                 |> Option.map (fun username -> username, nameof TaskForm))
 
-        let hintText =
-            match selectedDatabaseIds, selectedPosition with
-            | [| _ |], None -> None
-            | _ -> Some (str "Select at least one live database")
+        let formVisibleFlag, setFormVisibleFlag =
+            Recoil.useStateDefault
+                Recoil.Atoms.User.formVisibleFlag
+                (username
+                 |> Option.map (fun username -> username, nameof TaskForm))
 
         React.fragment [
             Button.Button
                 {|
-                    Hint = hintText
+                    Hint = None
                     Icon = Some (Icons.bi.BiTask |> Icons.wrap, Button.IconPosition.Left)
                     Props =
                         JS.newObj
                             (fun x ->
                                 x <+ input.Props
-                                x.cursor <- if hintText.IsNone then "pointer" else "default"
-                                x.opacity <- if hintText.IsNone then 1. else 0.5
 
                                 x.onClick <-
                                     (fun _ ->
                                         promise {
-                                            if hintText.IsNone then
-                                                setFormTaskId None
-                                                setFormTaskVisibleFlag true
+                                            setFormIdFlag None
+                                            setFormVisibleFlag true
                                         })
 
                                 x.children <-
@@ -56,13 +55,13 @@ module AddTaskButton =
                     Props =
                         JS.newObj
                             (fun x ->
-                                x.isOpen <- formTaskVisibleFlag
+                                x.isOpen <- formVisibleFlag
 
                                 x.onClose <-
                                     (fun () ->
                                         promise {
-                                            setFormTaskId None
-                                            setFormTaskVisibleFlag false
+                                            setFormIdFlag None
+                                            setFormVisibleFlag false
                                         })
 
                                 x.children <-
@@ -72,8 +71,8 @@ module AddTaskButton =
                                             TaskForm.TaskForm
                                                 {|
                                                     Username = username
-                                                    TaskId = formTaskId
-                                                    OnSave = fun () -> promise { setFormTaskVisibleFlag false }
+                                                    TaskId = formIdFlag |> Option.map TaskId
+                                                    OnSave = fun () -> promise { setFormVisibleFlag false }
                                                 |}
                                         | _ -> ()
                                     ])

@@ -22,27 +22,29 @@ module DebugOverlay =
             Scheduling.Interval
             1000
             (fun () ->
-                if not debug then
-                    ()
-                else
-                    let json =
-                        {|
-                            CallCount =
-                                Profiling.profilingState.CallCount
-                                |> Seq.map (fun (KeyValue (k, v)) -> k, box <| string v)
-                                |> JsInterop.createObj
-                            Timestamps =
-                                Profiling.profilingState.Timestamps
-                                |> Seq.map (fun (k, v) -> $"{k} = {v}")
-                                |> Seq.toArray
-                        |}
-                        |> fun obj -> JS.JSON.stringify (obj, unbox null, 4)
-
-                    if json = oldJson then
+                promise {
+                    if not debug then
                         ()
                     else
-                        setText json
-                        setOldJson json)
+                        let json =
+                            {|
+                                CallCount =
+                                    Profiling.profilingState.CallCount
+                                    |> Seq.map (fun (KeyValue (k, v)) -> k, box <| string v)
+                                    |> JsInterop.createObj
+                                Timestamps =
+                                    Profiling.profilingState.Timestamps
+                                    |> Seq.map (fun (k, v) -> $"{k} = {v}")
+                                    |> Seq.toArray
+                            |}
+                            |> fun obj -> JS.JSON.stringify (obj, unbox null, 4)
+
+                        if json = oldJson then
+                            ()
+                        else
+                            setText json
+                            setOldJson json
+                })
 
         React.fragment [
             if debug then

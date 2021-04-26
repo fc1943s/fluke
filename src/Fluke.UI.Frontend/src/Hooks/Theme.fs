@@ -114,15 +114,15 @@ module Theme =
                                     {|
                                         boxShadow = "none !important"
                                     |}
-                                ``.rct-disabled svg`` =
+                                ``.rct-disabled .rct-checkbox svg`` =
                                     {|
                                         opacity = "0"
                                     |}
-                                ``.rct-disabled .rct-title`` =
-                                    {|
-                                        marginLeft = "-14px"
-                                    |}
-                                ``.react-checkbox-tree label:hover`` =
+//                                ``.rct-disabled .rct-title`` =
+//                                    {|
+//                                        marginLeft = "-14px"
+//                                    |}
+                                ``.react-checkbox-tree label:hover, .react-checkbox-tree label:active`` =
                                     {|
                                         background = "none"
                                     |}

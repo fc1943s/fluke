@@ -18,8 +18,8 @@ module App =
                 RouterObserver.RouterObserver ()
                 ApiSubscriber.ApiSubscriber ()
                 SelectionListener.SelectionListener ()
-                //                PositionUpdater.render ()
-//                GunObserver.GunObserver ()
+                PositionUpdater.PositionUpdater ()
+                //                GunObserver.GunObserver ()
                 UserLoader.UserLoader ()
 
                 Content.Content ()

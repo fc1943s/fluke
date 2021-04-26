@@ -21,7 +21,9 @@ module JS =
 
     [<Emit "process.env.JEST_WORKER_ID">]
     let jestWorkerId : bool = jsNative
+
     let isTesting = jestWorkerId || Browser.Dom.window?Cypress <> null
     let newObj fn = jsOptions<_> fn
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"
     let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
+    let toJsArray a = a |> Array.toList |> List.toArray

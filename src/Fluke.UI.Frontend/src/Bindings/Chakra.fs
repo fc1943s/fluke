@@ -15,6 +15,7 @@ module Chakra =
         abstract _selected : IChakraProps with get, set
         abstract ``as`` : obj with get, set
         abstract align : string with get, set
+        abstract allowMultiple : bool with get, set
         abstract autoFocus : bool with get, set
         abstract backgroundColor : string with get, set
         abstract border : string with get, set
@@ -37,6 +38,7 @@ module Chakra =
         abstract columns : int with get, set
         abstract content : string with get, set
         abstract cursor : string with get, set
+        abstract defaultIndex : int[] with get, set
         abstract direction : string with get, set
         abstract disabled : bool with get, set
         abstract display : string with get, set
@@ -51,7 +53,7 @@ module Chakra =
         abstract href : string with get, set
         abstract icon : obj with get, set
         abstract id : string with get, set
-        abstract index : int with get, set
+        abstract index : obj with get, set
         abstract isCentered : bool with get, set
         abstract isChecked : bool with get, set
         abstract isDisabled : bool with get, set
@@ -70,7 +72,7 @@ module Chakra =
         abstract maxWidth : string with get, set
         abstract minHeight : string with get, set
         abstract minWidth : string with get, set
-        abstract onChange : (KeyboardEvent -> JS.Promise<unit>) with get, set
+        abstract onChange : (_ -> JS.Promise<unit>) with get, set
         abstract onClick : (MouseEvent -> JS.Promise<unit>) with get, set
         abstract onClose : (unit -> JS.Promise<unit>) with get, set
         abstract onKeyDown : (KeyboardEvent -> JS.Promise<unit>) with get, set
@@ -87,6 +89,7 @@ module Chakra =
         abstract placement : string with get, set
         abstract position : string with get, set
         abstract ref : IRefValue<_> with get, set
+        abstract reduceMotion : bool with get, set
         abstract right : string with get, set
         abstract size : string with get, set
         abstract spacing : string with get, set
@@ -105,7 +108,12 @@ module Chakra =
         abstract zIndex : int with get, set
 
     [<ImportAll "@chakra-ui/react">]
-    let react : {| Box: obj
+    let react : {| Accordion: obj
+                   AccordionItem: obj
+                   AccordionButton: obj
+                   AccordionIcon: obj
+                   AccordionPanel: obj
+                   Box: obj
                    Button: obj
                    Center: obj
                    ChakraProvider: obj
@@ -167,6 +175,11 @@ module Chakra =
     module Icons =
         let externalLinkIcon<'T> = composeChakraComponent icons.ExternalLinkIcon
 
+    let accordion<'T> = composeChakraComponent react.Accordion
+    let accordionItem<'T> = composeChakraComponent react.AccordionItem
+    let accordionButton<'T> = composeChakraComponent react.AccordionButton
+    let accordionIcon<'T> = composeChakraComponent react.AccordionIcon
+    let accordionPanel<'T> = composeChakraComponent react.AccordionPanel
     let box<'T> = composeChakraComponent react.Box
     let button<'T> = composeChakraComponent react.Button
     let center<'T> = composeChakraComponent react.Center

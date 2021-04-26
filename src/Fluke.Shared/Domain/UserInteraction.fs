@@ -48,7 +48,7 @@ module UserInteraction =
             SessionBreakLength: Minute
         }
 
-    and Username = Username of string
+    and Username = Username of username:string
 
     and [<RequireQualifiedAccess>] UserColor =
         | Black
@@ -80,6 +80,9 @@ module UserInteraction =
         | Dismiss
         | Schedule
 
+
+    and Username with
+        static member inline Value (Username username) = username
 
     and FlukeDate with
         member inline this.DateTime =

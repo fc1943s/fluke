@@ -82,7 +82,7 @@ module CellSelection =
                     setter.set (Atoms.User.daysBefore testUser.Username, 2)
                     setter.set (Atoms.User.daysAfter testUser.Username, 2)
                     setter.set (Atoms.gunHash, System.Guid.NewGuid().ToString ())
-                    setter.set (Atoms.selectedPosition, Some dslTemplate.Position)
+                    setter.set (Atoms.position, Some dslTemplate.Position)
 
                     setter.set (
                         Atoms.selectedDatabaseIds,

@@ -14,6 +14,64 @@ module SessionDataLoader =
     open Domain.UserInteraction
     open Domain.State
 
+
+    let fetchTemplatesDatabaseStateMap () =
+        let templates =
+            Templates.getDatabaseMap TempData.testUser
+            |> Map.toList
+            |> List.map
+                (fun (templateName, dslTemplate) ->
+                    let databaseId =
+                        templateName
+                        |> Crypto.getTextGuidHash
+                        |> DatabaseId
+
+                    Templates.databaseStateFromDslTemplate TempData.testUser databaseId templateName dslTemplate)
+            |> List.map
+                (fun databaseState ->
+                    { databaseState with
+                        TaskStateMap =
+                            databaseState.TaskStateMap
+                            |> Map.map
+                                (fun { Name = TaskName taskName } taskState ->
+                                    { taskState with
+                                        TaskId = taskName |> Crypto.getTextGuidHash |> TaskId
+                                    })
+                    })
+
+        let databaseStateMap =
+            templates
+            |> List.map (fun databaseState -> databaseState.Database.Id, databaseState)
+            |> Map.ofList
+
+        databaseStateMap
+
+    let fetchLegacyDatabaseStateMap (setter: CallbackMethods) username =
+        promise {
+            let! position = setter.snapshot.getPromise Recoil.Atoms.position
+
+            return!
+                match position with
+                | Some position ->
+                    promise {
+                        let! api = setter.snapshot.getPromise Recoil.Atoms.api
+
+                        let! databaseStateList =
+                            api
+                            |> Option.bind (fun api -> Some (api.databaseStateList username position))
+                            |> Sync.handleRequest
+
+                        let databaseStateMap =
+                            databaseStateList
+                            |> Result.defaultValue []
+                            |> List.map (fun databaseState -> databaseState.Database.Id, databaseState)
+                            |> Map.ofList
+
+                        return databaseStateMap
+                    }
+                | _ -> promise { return Map.empty }
+        }
+
     let initializeSessionData username (setter: CallbackMethods) sessionData =
         let recoilInformationMap =
             sessionData.TaskList
@@ -71,109 +129,66 @@ module SessionDataLoader =
 
         setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
 
-    let fetchTemplatesDatabaseStateMap () =
-        promise {
-            let templates =
-                Templates.getDatabaseMap TempData.testUser
-                |> Map.toList
-                |> List.map
-                    (fun (templateName, dslTemplate) ->
-                        let databaseId =
-                            templateName
-                            |> Crypto.getTextGuidHash
-                            |> DatabaseId
-
-                        Templates.databaseStateFromDslTemplate TempData.testUser databaseId templateName dslTemplate)
-                |> List.map
-                    (fun databaseState ->
-                        { databaseState with
-                            TaskStateMap =
-                                databaseState.TaskStateMap
-                                |> Map.map
-                                    (fun { Name = TaskName taskName } taskState ->
-                                        { taskState with
-                                            TaskId = taskName |> Crypto.getTextGuidHash |> TaskId
-                                        })
-                        })
-
-            let databaseStateMap =
-                templates
-                |> List.map (fun databaseState -> databaseState.Database.Id, databaseState)
-                |> Map.ofList
-
-            return databaseStateMap
-        }
-
-    let fetchLegacyDatabaseStateMap (setter: CallbackMethods) username =
-        promise {
-            let! position = setter.snapshot.getPromise Recoil.Selectors.position
-
-            return!
-                match position with
-                | Some position ->
-                    promise {
-                        let! api = setter.snapshot.getPromise Recoil.Atoms.api
-
-                        let! databaseStateList =
-                            api
-                            |> Option.bind (fun api -> Some (api.databaseStateList username position))
-                            |> Sync.handleRequest
-
-                        let databaseStateMap =
-                            databaseStateList
-                            |> Result.defaultValue []
-                            |> List.map (fun databaseState -> databaseState.Database.Id, databaseState)
-                            |> Map.ofList
-
-                        return databaseStateMap
-                    }
-                | _ -> promise { return Map.empty }
-        }
-
-
     [<ReactComponent>]
     let SessionDataLoader (input: {| Username: Username |}) =
+        let update =
+            Recoil.useCallbackRef
+                (fun (getter: CallbackMethods) (databaseStateMapCache: Map<DatabaseId, DatabaseState>) (databaseStateMap: Map<DatabaseId, DatabaseState>) ->
+                    promise {
+                        printfn
+                            $"SessionDataLoader.updateDatabaseStateMap():
+                databaseStateMapCache.Count={databaseStateMapCache.Count}
+                newDatabaseStateMapCache.Count={databaseStateMap.Count}"
+
+                        if databaseStateMapCache.Count
+                           <> databaseStateMap.Count then
+                            getter.set (
+                                Recoil.Atoms.Session.databaseStateMapCache input.Username,
+                                TempData.mergeDatabaseStateMap databaseStateMapCache databaseStateMap
+                            )
+
+
+                    })
+
 
         let databaseStateMapCache = Recoil.useValue (Recoil.Atoms.Session.databaseStateMapCache input.Username)
-
         let loaded, setLoaded = React.useState false
 
-        let update =
+        let loadTemplates =
+            Recoil.useCallbackRef
+                (fun _ ->
+                    promise {
+                        if not loaded then
+                            let templatesDatabaseStateMap = fetchTemplatesDatabaseStateMap ()
+                            do! update databaseStateMapCache templatesDatabaseStateMap
+                            setLoaded true
+                    })
+
+        React.useEffect (
+            (fun () -> loadTemplates () |> Promise.start),
+            [|
+                box loadTemplates
+            |]
+        )
+
+        let databaseStateMapCache = Recoil.useValue (Recoil.Atoms.Session.databaseStateMapCache input.Username)
+        let loaded, setLoaded = React.useState false
+
+        let loadLegacy =
             Recoil.useCallbackRef
                 (fun getter ->
                     promise {
                         if not loaded then
-                            let! templatesDatabaseStateMap = fetchTemplatesDatabaseStateMap ()
 
                             let! legacyDatabaseStateMap = fetchLegacyDatabaseStateMap getter input.Username
-
-                            let databaseStateMap =
-                                templatesDatabaseStateMap
-                                |> Map.union legacyDatabaseStateMap
-
-                            printfn
-                                $"SessionDataLoader.updateDatabaseStateMap():
-                databaseStateMapCache.Count={databaseStateMapCache.Count}
-                newDatabaseStateMapCache.Count={databaseStateMap.Count}"
-
-                            if databaseStateMapCache.Count
-                               <> databaseStateMap.Count then
-                                getter.set (
-                                    Recoil.Atoms.Session.databaseStateMapCache input.Username,
-                                    TempData.mergeDatabaseStateMap databaseStateMapCache databaseStateMap
-                                )
-
-                                setLoaded true
-
+                            do! update databaseStateMapCache legacyDatabaseStateMap
+                            setLoaded true
                     })
 
         React.useEffect (
-            (fun () -> update () |> Promise.start),
+            (fun () -> loadLegacy () |> Promise.start),
             [|
-                box loaded
-                box setLoaded
-                box databaseStateMapCache
-                box update
+                box loadLegacy
             |]
         )
 
@@ -185,39 +200,29 @@ module SessionDataLoader =
                     promise {
                         Profiling.addTimestamp "dataLoader.loadStateCallback[0]"
 
-                        match sessionData with
-                        | Some sessionData ->
-                            let availableDatabaseIds =
-                                databaseStateMapCache
-                                |> Map.toList
-                                |> List.sortBy (fun (_id, databaseState) -> databaseState.Database.Name)
-                                |> List.map fst
-
-                            setter.set (Recoil.Atoms.Session.availableDatabaseIds input.Username, availableDatabaseIds)
-
-                            initializeSessionData input.Username setter sessionData
-
+                        let availableDatabaseIds =
                             databaseStateMapCache
-                            |> Map.iter
-                                (fun id databaseState ->
-                                    setter.set (Recoil.Atoms.Database.name (Some id), databaseState.Database.Name)
+                            |> Map.toList
+                            |> List.sortBy (fun (_id, databaseState) -> databaseState.Database.Name)
+                            |> List.map fst
 
-                                    setter.set (
-                                        Recoil.Atoms.Database.owner (Some id),
-                                        Some databaseState.Database.Owner
-                                    )
+                        setter.set (Recoil.Atoms.Session.availableDatabaseIds input.Username, availableDatabaseIds)
 
-                                    setter.set (
-                                        Recoil.Atoms.Database.sharedWith (Some id),
-                                        databaseState.Database.SharedWith
-                                    )
+                        initializeSessionData input.Username setter sessionData
 
-                                    setter.set (
-                                        Recoil.Atoms.Database.position (Some id),
-                                        databaseState.Database.Position
-                                    ))
+                        databaseStateMapCache
+                        |> Map.iter
+                            (fun id databaseState ->
+                                setter.set (Recoil.Atoms.Database.name (Some id), databaseState.Database.Name)
+                                setter.set (Recoil.Atoms.Database.owner (Some id), Some databaseState.Database.Owner)
 
-                        | _ -> ()
+                                setter.set (
+                                    Recoil.Atoms.Database.sharedWith (Some id),
+                                    databaseState.Database.SharedWith
+                                )
+
+                                setter.set (Recoil.Atoms.Database.position (Some id), databaseState.Database.Position))
+
 
                         Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
                     })

@@ -54,10 +54,7 @@ module Setup =
             (fun (setter: CallbackMethods) ->
                 promise {
                     let! sessionData = setter.snapshot.getPromise (Recoil.Selectors.Session.sessionData user.Username)
-
-                    match sessionData with
-                    | Some sessionData -> SessionDataLoader.initializeSessionData user.Username setter sessionData
-                    | None -> ()
+                    SessionDataLoader.initializeSessionData user.Username setter sessionData
                 })
 
     let taskIdByName name databaseState =
