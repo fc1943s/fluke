@@ -4,7 +4,7 @@ open Fable.React
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain.State
@@ -18,9 +18,9 @@ module TaskName =
     let TaskName (input: {| TaskId: TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
-        let hasSelection = Recoil.useValue (Recoil.Selectors.Task.hasSelection input.TaskId)
-        let (TaskName taskName) = Recoil.useValue (Recoil.Atoms.Task.name (Some input.TaskId))
-        let attachments = Recoil.useValue (Recoil.Atoms.Task.attachments (Some input.TaskId))
+        let hasSelection = Recoil.useValue (Selectors.Task.hasSelection input.TaskId)
+        let (TaskName taskName) = Recoil.useValue (Atoms.Task.name (Some input.TaskId))
+        let attachments = Recoil.useValue (Atoms.Task.attachments (Some input.TaskId))
 
         Chakra.box
             (fun x ->

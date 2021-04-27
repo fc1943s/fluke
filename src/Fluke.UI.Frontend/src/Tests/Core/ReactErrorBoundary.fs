@@ -28,10 +28,7 @@ module ReactErrorBoundary =
             x.setState (fun state _props -> { state with HasErrors = true })
 
         override x.render () =
-            if x.state.HasErrors then
-                x.props.ErrorComponent
-            else
-                x.props.Inner
+            if x.state.HasErrors then x.props.ErrorComponent else x.props.Inner
 
     let renderCatchSimple errorElement element =
         ofType<ErrorBoundary, _, _>

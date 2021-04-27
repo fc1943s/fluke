@@ -3,7 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
@@ -18,7 +18,7 @@ module HomeScreen =
         (input: {| Username: Username
                    Props: Chakra.IChakraProps |})
         =
-        let view, setView = Recoil.useState (Recoil.Atoms.User.view input.Username)
+        let view, setView = Recoil.useState (Atoms.User.view input.Username)
 
         let tabs =
             [

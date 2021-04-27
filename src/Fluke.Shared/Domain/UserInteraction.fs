@@ -7,7 +7,7 @@ module UserInteraction =
     open Model
 
 
-    type UserInteraction = UserInteraction of moment: FlukeDateTime * user: Username * interaction: Interaction
+    type UserInteraction = UserInteraction of moment: FlukeDateTime * username: Username * interaction: Interaction
 
     and FlukeDateTime = { Date: FlukeDate; Time: FlukeTime }
 
@@ -30,7 +30,7 @@ module UserInteraction =
     // Link: Auto:[Title, Favicon, Screenshot]
     // Image: Embed
     and [<RequireQualifiedAccess>] Attachment =
-        | Comment of user: Username * comment: Comment
+        | Comment of username: Username * comment: Comment
         | Link
         | Video
         | Image

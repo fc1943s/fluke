@@ -3,7 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 
 
@@ -14,10 +14,10 @@ module ShiftListener =
         Listener.useKeyPress
             (fun setter e ->
                 async {
-                    let! shiftPressed = setter.snapshot.getAsync Recoil.Atoms.shiftPressed
+                    let! shiftPressed = setter.snapshot.getAsync Atoms.shiftPressed
 
                     if e.shiftKey <> shiftPressed then
-                        setter.set (Recoil.Atoms.shiftPressed, e.shiftKey)
+                        setter.set (Atoms.shiftPressed, e.shiftKey)
                 })
 
         nothing

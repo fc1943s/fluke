@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Tests
 
-open Fable.Core
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz.Recoil
@@ -10,7 +9,7 @@ open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Tests.Core
-open Fluke.UI.Frontend.Recoil
+open Fluke.UI.Frontend.State
 open Fluke.Shared
 
 
@@ -73,7 +72,7 @@ module Router =
                 promise {
                     printfn "Before each"
                     Browser.Dom.window.localStorage.clear ()
-//                    Jest.clearAllTimers ()
+                //                    Jest.clearAllTimers ()
 //                    JsInterop.emitJsExpr () "jest.clearAllMocks()"
                 }
             )

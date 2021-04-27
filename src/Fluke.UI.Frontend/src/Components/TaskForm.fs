@@ -7,10 +7,10 @@ open Fluke.Shared.Domain
 open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core
+open Fluke.UI.Frontend.State
 
 
 module TaskForm =
@@ -25,20 +25,20 @@ module TaskForm =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) _ ->
                     promise {
-                        let eventId = Recoil.Atoms.Events.newEventId ()
+                        let eventId = Atoms.Events.newEventId ()
 
-                        let! name = setter.snapshot.getReadWritePromise Recoil.Atoms.Task.name input.TaskId
+                        let! name = setter.snapshot.getReadWritePromise Atoms.Task.name input.TaskId
 
-                        let! selectedDatabaseIds = setter.snapshot.getPromise Recoil.Atoms.selectedDatabaseIds
+                        let! selectedDatabaseIds = setter.snapshot.getPromise Atoms.selectedDatabaseIds
 
                         let databaseId = selectedDatabaseIds |> Array.last
 
-                        let event = Recoil.Atoms.Events.Event.AddTask (eventId, name)
+                        let event = Atoms.Events.Event.AddTask (eventId, name)
 
-                        setter.set (Recoil.Atoms.Events.events eventId, event)
+                        setter.set (Atoms.Events.events eventId, event)
 
                         let! databaseStateMapCache =
-                            setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache input.Username)
+                            setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache input.Username)
 
                         let databaseState = databaseStateMapCache |> Map.tryFind databaseId
 
@@ -93,18 +93,17 @@ module TaskForm =
                                     }
                             | None -> databaseStateMapCache
 
-                        setter.set (Recoil.Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
+                        setter.set (Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
 
-                        do! setter.readWriteReset Recoil.Atoms.Task.name input.TaskId
+                        do! setter.readWriteReset Atoms.Task.name input.TaskId
 
                         printfn $"event {event}"
                         do! input.OnSave ()
                     })
 
-        let selectedDatabaseIds = Recoil.useValue Recoil.Atoms.selectedDatabaseIds
+        let selectedDatabaseIds = Recoil.useValue Atoms.selectedDatabaseIds
 
-        let (DatabaseName databaseName) =
-            Recoil.useValue (Recoil.Atoms.Database.name (selectedDatabaseIds |> Array.tryHead))
+        let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name (selectedDatabaseIds |> Array.tryHead))
 
         Chakra.stack
             (fun x -> x.spacing <- "25px")
@@ -130,7 +129,7 @@ module TaskForm =
                                     x.autoFocus <- true
                                     x.label <- str "Name"
                                     x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
-                                    x.atom <- Some (Recoil.AtomFamily (Recoil.Atoms.Task.name, input.TaskId))
+                                    x.atom <- Some (Recoil.AtomFamily (Atoms.Task.name, input.TaskId))
                                     x.onFormat <- Some (fun (TaskName name) -> name)
                                     x.onEnterPress <- Some onSave
                                     x.onValidate <- Some (TaskName >> Some))

@@ -8,7 +8,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.Shared
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
 
@@ -24,7 +24,7 @@ module RouterObserver =
     type ParsedSegments = { View: View.View option }
 
     let useLog () =
-        let isTesting = false // Recoil.useValue Recoil.Atoms.isTesting
+        let isTesting = false // Recoil.useValue Atoms.isTesting
         Recoil.useCallbackRef (fun _ (str: string) -> if isTesting then printfn $"{str}")
 
     [<ReactComponent>]
@@ -42,9 +42,9 @@ module RouterObserver =
         )
 
         let log = useLog ()
-        let sessionRestored, setSessionRestored = Recoil.useState Recoil.Atoms.sessionRestored
-        let username = Recoil.useValue Recoil.Atoms.username
-        let view, setView = Recoil.useStateDefault Recoil.Atoms.User.view username
+        let sessionRestored, setSessionRestored = Recoil.useState Atoms.sessionRestored
+        let username = Recoil.useValue Atoms.username
+        let view, setView = Recoil.useStateDefault Atoms.User.view username
 
         let onKeyDown =
             Recoil.useCallbackRef
@@ -214,7 +214,6 @@ module RouterObserver =
                 box parsedSegments
             |]
         )
-
 
         React.router [
             router.pathMode

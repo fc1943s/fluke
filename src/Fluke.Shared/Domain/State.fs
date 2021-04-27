@@ -46,11 +46,11 @@ module State =
 
     and [<RequireQualifiedAccess>] DatabaseAccess =
         | Public
-        | Private of DatabaseAccessItem list
+        | Private of accessList: DatabaseAccessItem list
 
     and [<RequireQualifiedAccess>] DatabaseAccessItem =
-        | Admin of user: Username
-        | ReadOnly of user: Username
+        | Admin of username: Username
+        | ReadOnly of username: Username
 
     and InformationState =
         {
@@ -86,7 +86,7 @@ module State =
         | Pending
         | Missed
         | MissedToday
-        | UserStatus of user: Username * status: ManualCellStatus
+        | UserStatus of username: Username * status: ManualCellStatus
 
     and ManualCellStatus =
         | Completed
@@ -94,6 +94,12 @@ module State =
         | Dismissed
         | Scheduled
 
+
+    and DatabaseAccessItem with
+        static member inline Value item =
+            match item with
+            | DatabaseAccessItem.Admin username -> username
+            | DatabaseAccessItem.ReadOnly username -> username
 
     and DatabaseId with
         static member inline NewId () = DatabaseId (Guid.NewGuid ())

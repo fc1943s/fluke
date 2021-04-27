@@ -5,7 +5,7 @@ open Fable.Core
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
 
@@ -16,7 +16,7 @@ module GunBind =
         | Remote
 
     let useGunAtomKey (atom: RecoilValue<'T, ReadWrite>) =
-        let username = Recoil.useValue Recoil.Atoms.username
+        let username = Recoil.useValue Atoms.username
 
         React.useMemo (
             (fun () -> Recoil.getGunAtomKey username atom.key),
@@ -31,8 +31,8 @@ module GunBind =
         let atomValue, setAtomValue = Recoil.useState<'T> input.Atom
         let lastAtomValue, setLastAtomValue = React.useState<'T> atomValue
         let changeType, setChangeType = React.useState<ChangeType option> None
-        let gun = Recoil.useValue Recoil.Selectors.gun
-        let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
+        let gun = Recoil.useValue Selectors.gun
+        let gunNamespace = Recoil.useValue Selectors.gunNamespace
 
         let gunAtomKey = useGunAtomKey input.Atom
 

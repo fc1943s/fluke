@@ -3,7 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Browser.Types
 open Fable.React
 open Feliz
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Feliz.Recoil
 open Fable.Core
@@ -37,7 +37,7 @@ module Input =
     let Input (input: IProps<'TValue, 'TKey>) =
         let atomFieldOptions = Recoil.useAtomField<'TValue, 'TKey> input.atom input.atomScope
 
-        let deviceInfo = Recoil.useValue Recoil.Selectors.deviceInfo
+        let deviceInfo = Recoil.useValue Selectors.deviceInfo
 
         let inputRef = React.useRef<HTMLInputElement> null
 

@@ -3,7 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.Shared
 
 
@@ -12,7 +12,7 @@ module CellStatusUserIndicator =
 
     [<ReactComponent>]
     let CellStatusUserIndicator (input: {| Username: Username |}) =
-        let color = Recoil.useValue (Recoil.Atoms.User.color input.Username)
+        let color = Recoil.useValue (Atoms.User.color input.Username)
 
         Chakra.box
             (fun x ->
@@ -26,6 +26,7 @@ module CellStatusUserIndicator =
                     (JS.newObj
                         (fun x ->
                             x.borderBottomWidth <- "8px"
+
                             x.borderBottomColor <-
                                 match color with
                                 | UserColor.Blue -> "#000000"

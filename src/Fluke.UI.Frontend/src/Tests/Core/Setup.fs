@@ -53,7 +53,7 @@ module Setup =
         peek
             (fun (setter: CallbackMethods) ->
                 promise {
-                    let! sessionData = setter.snapshot.getPromise (Recoil.Selectors.Session.sessionData user.Username)
+                    let! sessionData = setter.snapshot.getPromise (Selectors.Session.sessionData user.Username)
                     SessionDataLoader.initializeSessionData user.Username setter sessionData
                 })
 
@@ -73,11 +73,10 @@ module Setup =
                 peek
                     (fun (setter: CallbackMethods) ->
                         promise {
-                            let! dateSequence = setter.snapshot.getPromise Recoil.Selectors.dateSequence
-                            let! username = setter.snapshot.getPromise Recoil.Atoms.username
+                            let! dateSequence = setter.snapshot.getPromise Selectors.dateSequence
+                            let! username = setter.snapshot.getPromise Atoms.username
 
-                            let! taskIdList =
-                                setter.snapshot.getPromise (Recoil.Atoms.Session.taskIdList username.Value)
+                            let! taskIdList = setter.snapshot.getPromise (Atoms.Session.taskIdList username.Value)
 
                             let! cellList =
                                 taskIdList
@@ -85,8 +84,7 @@ module Setup =
                                 |> Array.map
                                     (fun taskId ->
                                         promise {
-                                            let! name =
-                                                setter.snapshot.getPromise (Recoil.Atoms.Task.name (Some taskId))
+                                            let! name = setter.snapshot.getPromise (Atoms.Task.name (Some taskId))
 
                                             return
                                                 dateSequence

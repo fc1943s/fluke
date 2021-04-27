@@ -3,7 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
@@ -16,7 +16,7 @@ module CellBorder =
         (input: {| Username: Username
                    Date: FlukeDate |})
         =
-        let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
+        let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
 
         match (weekStart, input.Date) with
         | StartOfMonth -> Some ("1px", "#ffffff3d")

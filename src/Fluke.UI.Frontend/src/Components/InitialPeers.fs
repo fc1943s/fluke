@@ -6,9 +6,8 @@ open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Feliz.Recoil
 open Fluke.UI.Frontend.Hooks
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.Shared
-open Fluke.UI.Frontend.Recoil
 open Fable.React
 
 

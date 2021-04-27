@@ -5,8 +5,7 @@ open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Recoil
+open Fluke.UI.Frontend.State
 
 module ModalForm =
 

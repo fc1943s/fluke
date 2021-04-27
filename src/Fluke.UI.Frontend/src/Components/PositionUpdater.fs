@@ -5,7 +5,7 @@ open Fable.React
 open Feliz
 open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 
@@ -14,13 +14,12 @@ module PositionUpdater =
 
     [<ReactComponent>]
     let PositionUpdater () =
-
-        let position, setPosition = Recoil.useState Recoil.Atoms.position
-        let selectedDatabaseIds = Recoil.useValue Recoil.Atoms.selectedDatabaseIds
+        let position, setPosition = Recoil.useState Atoms.position
+        let selectedDatabaseIds = Recoil.useValue Atoms.selectedDatabaseIds
 
         let selectedDatabasePositions =
             selectedDatabaseIds
-            |> Array.map (Some >> Recoil.Atoms.Database.position)
+            |> Array.map (Some >> Atoms.Database.position)
             |> Recoil.waitForAll
             |> Recoil.useValue
 

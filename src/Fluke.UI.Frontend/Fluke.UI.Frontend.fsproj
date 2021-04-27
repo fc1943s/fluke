@@ -22,7 +22,7 @@
         <Compile Include="src\Sync.fs" />
         <Compile Include="src\TempAudio.fs" />
         <Compile Include="src\TempUI.fs" />
-        <Compile Include="src\Recoil.fs" />
+        <Compile Include="src\State.fs" />
         <Compile Include="src\Hooks\Scheduling.fs" />
         <Compile Include="src\Hooks\Listener.fs" />
         <Compile Include="src\Hooks\Theme.fs" />

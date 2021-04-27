@@ -3,17 +3,19 @@ namespace Fluke.UI.Frontend.Hooks
 open Feliz
 open Fable.Core
 open Feliz.Recoil
+open Fluke.Shared
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain
 open Fable.Core.JsInterop
 
 
 module Auth =
     let useLogout () =
-        let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
-        let setUsername = Recoil.useSetState Recoil.Atoms.username
-        let resetGunKeys = Recoil.useResetState Recoil.Atoms.gunKeys
+        let gunNamespace = Recoil.useValue Selectors.gunNamespace
+        let setUsername = Recoil.useSetState Atoms.username
+        let resetGunKeys = Recoil.useResetState Atoms.gunKeys
 
         Recoil.useCallbackRef
             (fun _setter _ ->
@@ -25,9 +27,9 @@ module Auth =
                 })
 
     let usePostSignIn () =
-        let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
-        let setUsername = Recoil.useSetState Recoil.Atoms.username
-        let setGunKeys = Recoil.useSetState Recoil.Atoms.gunKeys
+        let gunNamespace = Recoil.useValue Selectors.gunNamespace
+        let setUsername = Recoil.useSetState Atoms.username
+        let setGunKeys = Recoil.useSetState Atoms.gunKeys
 
         Recoil.useCallbackRef
             (fun _setter username ->
@@ -37,7 +39,7 @@ module Auth =
                 })
 
     let useSignIn () =
-        let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
+        let gunNamespace = Recoil.useValue Selectors.gunNamespace
         let postSignIn = usePostSignIn ()
 
         Recoil.useCallbackRef
@@ -56,20 +58,21 @@ module Auth =
                 })
 
     let useSignUp () =
-        let postSignIn = usePostSignIn ()
         let signIn = useSignIn ()
-        let gunNamespace = Recoil.useValue Recoil.Selectors.gunNamespace
+        let gunNamespace = Recoil.useValue Selectors.gunNamespace
 
         Recoil.useCallbackRef
             (fun _ username password ->
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
+                    elif username = (TempData.testUser.Username |> Username.Value) then
+                        return Error "Invalid username"
                     else
                         printfn $"Auth.useSignUp. gun.user() result: {JS.JSON.stringify gunNamespace.ref}"
 
                         let! ack = Gun.createUser gunNamespace.ref username password
-                        printfn $"Auth.useSignUp. Gun.createUser signUpAck:"
+                        printfn "Auth.useSignUp. Gun.createUser signUpAck:"
                         Browser.Dom.console.log ack
                         Browser.Dom.window?signUpAck <- ack
 
@@ -79,7 +82,7 @@ module Auth =
                                 | None ->
                                     match! signIn username password with
                                     | Ok () ->
-                                        do! postSignIn (UserInteraction.Username username)
+
 
                                         //                                        gunNamespace
 //                                            .ref

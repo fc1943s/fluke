@@ -3,7 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
@@ -15,7 +15,7 @@ module InformationView =
     let InformationView (input: {| Username: Username |}) =
         let groupIndentationLength = 20
 
-        let tasksByInformationKind = Recoil.useValue (Recoil.Selectors.Session.tasksByInformationKind input.Username)
+        let tasksByInformationKind = Recoil.useValue (Selectors.Session.tasksByInformationKind input.Username)
 
         Chakra.flex
             (fun _ -> ())

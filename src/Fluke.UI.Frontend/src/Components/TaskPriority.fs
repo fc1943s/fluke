@@ -3,7 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.State
@@ -13,7 +13,7 @@ module TaskPriority =
 
     [<ReactComponent>]
     let TaskPriority (input: {| TaskId: TaskId |}) =
-        let priority = Recoil.useValue (Recoil.Atoms.Task.priority (Some input.TaskId))
+        let priority = Recoil.useValue (Atoms.Task.priority (Some input.TaskId))
 
         let priorityText =
             priority

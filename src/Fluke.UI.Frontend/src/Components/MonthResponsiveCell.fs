@@ -4,7 +4,7 @@ open Fable.React
 open Feliz
 open Fable.DateFunctions
 open Fluke.Shared
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Feliz.Recoil
 
@@ -18,7 +18,7 @@ module MonthResponsiveCell =
                    Date: FlukeDate
                    Props: Chakra.IChakraProps |})
         =
-        let weekStart = Recoil.useValue (Recoil.Atoms.User.weekStart input.Username)
+        let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
         let month = input.Date.DateTime.Format "MMM"
 
         Chakra.box

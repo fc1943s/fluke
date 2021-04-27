@@ -14,7 +14,7 @@ open Fable.Core
 open Fable.Extras
 
 
-module Recoil =
+module State =
     open Model
     open Domain.UserInteraction
     open Domain.State

@@ -2,7 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
@@ -12,7 +12,7 @@ module HabitTrackerView =
 
     [<ReactComponent>]
     let HabitTrackerView (input: {| Username: Username |}) =
-        let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList input.Username)
+        let taskIdList = Recoil.useValue (Atoms.Session.taskIdList input.Username)
 
         Chakra.flex
             (fun _ -> ())

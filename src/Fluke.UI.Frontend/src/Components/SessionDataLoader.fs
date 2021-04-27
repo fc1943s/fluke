@@ -5,6 +5,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
 
@@ -48,13 +49,13 @@ module SessionDataLoader =
 
     let fetchLegacyDatabaseStateMap (setter: CallbackMethods) username =
         promise {
-            let! position = setter.snapshot.getPromise Recoil.Atoms.position
+            let! position = setter.snapshot.getPromise Atoms.position
 
             return!
                 match position with
                 | Some position ->
                     promise {
-                        let! api = setter.snapshot.getPromise Recoil.Atoms.api
+                        let! api = setter.snapshot.getPromise Atoms.api
 
                         let! databaseStateList =
                             api
@@ -81,10 +82,10 @@ module SessionDataLoader =
             |> Seq.map
                 (fun informationState ->
 
-                    let informationId = Recoil.Atoms.Information.informationId informationState.Information
+                    let informationId = Atoms.Information.informationId informationState.Information
 
-                    setter.set (Recoil.Atoms.Information.wrappedInformation informationId, informationState.Information)
-                    setter.set (Recoil.Atoms.Information.attachments informationId, informationState.Attachments)
+                    setter.set (Atoms.Information.wrappedInformation informationId, informationState.Information)
+                    setter.set (Atoms.Information.attachments informationId, informationState.Attachments)
                     informationState.Information, informationId)
             |> Map.ofSeq
 
@@ -95,15 +96,15 @@ module SessionDataLoader =
         |> List.iter
             (fun taskState ->
                 let taskId = Some taskState.TaskId
-                setter.set (Recoil.Atoms.Task.task taskId, taskState.Task)
-                setter.set (Recoil.Atoms.Task.name taskId, taskState.Task.Name)
-                setter.set (Recoil.Atoms.Task.informationId taskId, recoilInformationMap.[taskState.Task.Information])
-                setter.set (Recoil.Atoms.Task.pendingAfter taskId, taskState.Task.PendingAfter)
-                setter.set (Recoil.Atoms.Task.missedAfter taskId, taskState.Task.MissedAfter)
-                setter.set (Recoil.Atoms.Task.scheduling taskId, taskState.Task.Scheduling)
-                setter.set (Recoil.Atoms.Task.priority taskId, taskState.Task.Priority)
-                setter.set (Recoil.Atoms.Task.attachments taskId, taskState.Attachments)
-                setter.set (Recoil.Atoms.Task.duration taskId, taskState.Task.Duration)
+                setter.set (Atoms.Task.task taskId, taskState.Task)
+                setter.set (Atoms.Task.name taskId, taskState.Task.Name)
+                setter.set (Atoms.Task.informationId taskId, recoilInformationMap.[taskState.Task.Information])
+                setter.set (Atoms.Task.pendingAfter taskId, taskState.Task.PendingAfter)
+                setter.set (Atoms.Task.missedAfter taskId, taskState.Task.MissedAfter)
+                setter.set (Atoms.Task.scheduling taskId, taskState.Task.Scheduling)
+                setter.set (Atoms.Task.priority taskId, taskState.Task.Priority)
+                setter.set (Atoms.Task.attachments taskId, taskState.Attachments)
+                setter.set (Atoms.Task.duration taskId, taskState.Task.Duration)
 
                 taskState.CellStateMap
                 |> Map.filter
@@ -113,10 +114,10 @@ module SessionDataLoader =
                         || not cellState.Sessions.IsEmpty)
                 |> Map.iter
                     (fun dateId cellState ->
-                        setter.set (Recoil.Atoms.Cell.status (taskState.TaskId, dateId), cellState.Status)
-                        setter.set (Recoil.Atoms.Cell.attachments (taskState.TaskId, dateId), cellState.Attachments)
-                        setter.set (Recoil.Atoms.Cell.sessions (taskState.TaskId, dateId), cellState.Sessions)
-                        //                setter.set (Recoil.Atoms.Cell.selected (taskId, dateId), false)
+                        setter.set (Atoms.Cell.status (taskState.TaskId, dateId), cellState.Status)
+                        setter.set (Atoms.Cell.attachments (taskState.TaskId, dateId), cellState.Attachments)
+                        setter.set (Atoms.Cell.sessions (taskState.TaskId, dateId), cellState.Sessions)
+                        //                setter.set (Atoms.Cell.selected (taskId, dateId), false)
                         ))
 
         let taskIdList =
@@ -127,7 +128,7 @@ module SessionDataLoader =
                     |> Map.tryFind task
                     |> Option.map (fun x -> x.TaskId))
 
-        setter.set (Recoil.Atoms.Session.taskIdList username, taskIdList)
+        setter.set (Atoms.Session.taskIdList username, taskIdList)
 
     [<ReactComponent>]
     let SessionDataLoader (input: {| Username: Username |}) =
@@ -143,7 +144,7 @@ module SessionDataLoader =
                         if databaseStateMapCache.Count
                            <> databaseStateMap.Count then
                             getter.set (
-                                Recoil.Atoms.Session.databaseStateMapCache input.Username,
+                                Atoms.Session.databaseStateMapCache input.Username,
                                 TempData.mergeDatabaseStateMap databaseStateMapCache databaseStateMap
                             )
 
@@ -151,7 +152,7 @@ module SessionDataLoader =
                     })
 
 
-        let databaseStateMapCache = Recoil.useValue (Recoil.Atoms.Session.databaseStateMapCache input.Username)
+        let databaseStateMapCache = Recoil.useValue (Atoms.Session.databaseStateMapCache input.Username)
         let loaded, setLoaded = React.useState false
 
         let loadTemplates =
@@ -171,7 +172,7 @@ module SessionDataLoader =
             |]
         )
 
-        let databaseStateMapCache = Recoil.useValue (Recoil.Atoms.Session.databaseStateMapCache input.Username)
+        let databaseStateMapCache = Recoil.useValue (Atoms.Session.databaseStateMapCache input.Username)
         let loaded, setLoaded = React.useState false
 
         let loadLegacy =
@@ -192,7 +193,7 @@ module SessionDataLoader =
             |]
         )
 
-        let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
+        let sessionData = Recoil.useValue (Selectors.Session.sessionData input.Username)
 
         let loadState =
             Recoil.useCallbackRef
@@ -206,22 +207,19 @@ module SessionDataLoader =
                             |> List.sortBy (fun (_id, databaseState) -> databaseState.Database.Name)
                             |> List.map fst
 
-                        setter.set (Recoil.Atoms.Session.availableDatabaseIds input.Username, availableDatabaseIds)
+                        setter.set (Atoms.Session.availableDatabaseIds input.Username, availableDatabaseIds)
 
                         initializeSessionData input.Username setter sessionData
 
                         databaseStateMapCache
                         |> Map.iter
                             (fun id databaseState ->
-                                setter.set (Recoil.Atoms.Database.name (Some id), databaseState.Database.Name)
-                                setter.set (Recoil.Atoms.Database.owner (Some id), Some databaseState.Database.Owner)
+                                setter.set (Atoms.Database.name (Some id), databaseState.Database.Name)
+                                setter.set (Atoms.Database.owner (Some id), Some databaseState.Database.Owner)
 
-                                setter.set (
-                                    Recoil.Atoms.Database.sharedWith (Some id),
-                                    databaseState.Database.SharedWith
-                                )
+                                setter.set (Atoms.Database.sharedWith (Some id), databaseState.Database.SharedWith)
 
-                                setter.set (Recoil.Atoms.Database.position (Some id), databaseState.Database.Position))
+                                setter.set (Atoms.Database.position (Some id), databaseState.Database.Position))
 
 
                         Profiling.addTimestamp "dataLoader.loadStateCallback[1]"

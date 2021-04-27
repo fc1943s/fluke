@@ -23,25 +23,25 @@ module Cell =
         Profiling.addCount "CellComponent.render"
 
         let (DateId referenceDay) = input.DateId
-        let isTesting = Recoil.useValue Recoil.Atoms.isTesting
-        let status = Recoil.useValue (Recoil.Atoms.Cell.status (input.TaskId, input.DateId))
-        let sessions = Recoil.useValue (Recoil.Atoms.Cell.sessions (input.TaskId, input.DateId))
-        let attachments = Recoil.useValue (Recoil.Atoms.Cell.attachments (input.TaskId, input.DateId))
-        let showUser = Recoil.useValue (Recoil.Selectors.Task.showUser input.TaskId)
-        let isToday = Recoil.useValue (Recoil.Selectors.FlukeDate.isToday referenceDay)
-        let cellMenuOpened, setCellMenuOpened = Recoil.useState (Recoil.Atoms.User.cellMenuOpened input.Username)
+        let isTesting = Recoil.useValue Atoms.isTesting
+        let status = Recoil.useValue (Atoms.Cell.status (input.TaskId, input.DateId))
+        let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
+        let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
+        let showUser = Recoil.useValue (Selectors.Task.showUser input.TaskId)
+        let isToday = Recoil.useValue (Selectors.FlukeDate.isToday referenceDay)
+        let cellMenuOpened, setCellMenuOpened = Recoil.useState (Atoms.User.cellMenuOpened input.Username)
         let isCurrentCellMenuOpened = cellMenuOpened = Some (input.TaskId, input.DateId)
 
         let selected, setSelected =
-            Recoil.useState (Recoil.Selectors.Cell.selected (input.Username, input.TaskId, input.DateId))
-        //            let gun = Recoil.useValue Recoil.Atoms.gun
+            Recoil.useState (Selectors.Cell.selected (input.Username, input.TaskId, input.DateId))
+        //            let gun = Recoil.useValue Atoms.gun
 
         let onCellClick =
             Recoil.useCallbackRef
                 (fun setter _ ->
                     promise {
-                        let! ctrlPressed = setter.snapshot.getPromise Recoil.Atoms.ctrlPressed
-                        let! shiftPressed = setter.snapshot.getPromise Recoil.Atoms.shiftPressed
+                        let! ctrlPressed = setter.snapshot.getPromise Atoms.ctrlPressed
+                        let! shiftPressed = setter.snapshot.getPromise Atoms.shiftPressed
 
                         if ctrlPressed || shiftPressed then
                             setSelected (not selected)

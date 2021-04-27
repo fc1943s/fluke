@@ -4,7 +4,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared.Domain.State
 open Feliz
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
 
@@ -16,7 +16,7 @@ module Cells =
         =
         Profiling.addTimestamp "cells.render"
 
-        let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
+        let dateSequence = Recoil.useValue Selectors.dateSequence
 
         Chakra.box
             (fun _ -> ())

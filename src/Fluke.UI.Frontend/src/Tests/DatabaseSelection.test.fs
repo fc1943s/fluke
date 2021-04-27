@@ -6,10 +6,10 @@ open Fable.Jester
 open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Tests.Core
-open Fluke.UI.Frontend.Recoil
 open Fluke.Shared
 open Fluke.Shared.Domain
 

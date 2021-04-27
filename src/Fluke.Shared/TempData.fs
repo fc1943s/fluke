@@ -16,7 +16,7 @@ module TempData =
 
     let rec testUser =
         {
-            Username = Username (nameof testUser)
+            Username = Username "Fluke"
             Color = UserColor.Black
             WeekStart = DayOfWeek.Sunday
             DayStart = FlukeTime.Create 12 0

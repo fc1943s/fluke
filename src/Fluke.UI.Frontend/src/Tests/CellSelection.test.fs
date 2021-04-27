@@ -11,7 +11,6 @@ open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Tests.Core
-open Fluke.UI.Frontend.Recoil
 open Fluke.Shared
 open Fable.React
 open Fluke.UI.Frontend.Hooks

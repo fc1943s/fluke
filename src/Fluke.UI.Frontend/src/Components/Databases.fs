@@ -6,7 +6,7 @@ open Fluke.Shared
 open Feliz
 open Fable.React
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
 
@@ -15,14 +15,56 @@ module Databases =
     open Domain.UserInteraction
     open Domain.State
 
-    let leafIcon (input: {| locked: bool; paused: bool |}) =
+    let leafIcon (username: Username) (database: Database) =
+        let sharedWith =
+            match database.SharedWith with
+            | DatabaseAccess.Public -> []
+            | DatabaseAccess.Private accessList -> accessList |> List.map DatabaseAccessItem.Value
+
+        let isPrivate =
+            match database.SharedWith with
+            | DatabaseAccess.Public -> false
+            | _ ->
+                sharedWith
+                |> List.exists (fun share -> share <> username)
+                |> not
+
         Chakra.stack
             (fun x ->
                 x.display <- "inline"
                 x.spacing <- "4px"
                 x.direction <- "row")
             [
-                if input.locked then
+
+                match isPrivate with
+                | false ->
+                    Tooltip.wrap
+                        (Chakra.box
+                            (fun _ -> ())
+                            [
+                                str $"Owner: {database.Owner |> Username.Value}"
+                                br []
+                                if not sharedWith.IsEmpty then
+                                    str
+                                        $"""Shared with: {
+                                                              sharedWith
+                                                              |> List.map Username.Value
+                                                              |> String.concat ", "
+                                        }"""
+                            ])
+                        [
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    Chakra.icon
+                                        (fun x ->
+                                            x.``as`` <- Icons.hi.HiUsers
+                                            x.color <- "#ffb836"
+                                            x.marginLeft <- "-3px")
+                                        []
+                                ]
+                        ]
+                | _ ->
                     Tooltip.wrap
                         (str "Private")
                         [
@@ -37,30 +79,11 @@ module Databases =
                                         []
                                 ]
                         ]
-                else
+
+                match database.Position with
+                | Some position ->
                     Tooltip.wrap
-                        (Chakra.box
-                            (fun _ -> ())
-                            [
-                                str "Owner: ?"
-                                br []
-                                str "Shared with: ?"
-                            ])
-                        [
-                            Chakra.box
-                                (fun _ -> ())
-                                [
-                                    Chakra.icon
-                                        (fun x ->
-                                            x.``as`` <- Icons.hi.HiUsers
-                                            x.color <- "#ffb836"
-                                            x.marginLeft <- "-3px")
-                                        []
-                                ]
-                        ]
-                if input.paused then
-                    Tooltip.wrap
-                        (str "Database paused at position XX")
+                        (str $"Database paused at position {position.Stringify ()}")
                         [
                             Chakra.box
                                 (fun _ -> ())
@@ -73,7 +96,7 @@ module Databases =
                                         []
                                 ]
                         ]
-                else
+                | None ->
                     Tooltip.wrap
                         (str "Live Database")
                         [
@@ -242,17 +265,16 @@ module Databases =
         (input: {| Username: Username
                    Props: Chakra.IChakraProps |})
         =
-        let isTesting = Recoil.useValue Recoil.Atoms.isTesting
-        let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
-        let apiBaseUrl = Recoil.useValue Recoil.Atoms.apiBaseUrl
-        let hideTemplates = Recoil.useValue (Recoil.Atoms.User.hideTemplates input.Username)
+        let isTesting = Recoil.useValue Atoms.isTesting
+        let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
+        let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
 
-        let selectedDatabaseIds, setSelectedDatabaseIds = Recoil.useState Recoil.Atoms.selectedDatabaseIds
-        let expandedDatabaseIds, setExpandedDatabaseIds = Recoil.useState Recoil.Atoms.expandedDatabaseIds
+        let selectedDatabaseIds, setSelectedDatabaseIds = Recoil.useState Atoms.selectedDatabaseIds
+        let expandedDatabaseIds, setExpandedDatabaseIds = Recoil.useState Atoms.expandedDatabaseIds
 
         let availableDatabases =
             availableDatabaseIds
-            |> List.map Recoil.Selectors.Database.database
+            |> List.map Selectors.Database.database
             |> Recoil.waitForAll
             |> Recoil.useValue
 
@@ -299,9 +321,8 @@ module Databases =
                             let icon =
                                 match index with
                                 | Some index ->
-                                    match availableDatabases.[index].Position with
-                                    | Some _ -> leafIcon {| locked = false; paused = true |}
-                                    | _ -> leafIcon {| locked = false; paused = false |}
+                                    let database = availableDatabases.[index]
+                                    leafIcon input.Username database
                                 | _ -> JS.undefined
 
                             let disabled =
@@ -360,96 +381,6 @@ module Databases =
                 |]
             )
 
-        let allNodes =
-            if true then
-                box nodes
-            else
-                box [|
-                    node
-                        {|
-                            disabled = false
-                            isTesting = isTesting
-                            value = "templates"
-                            label = "Templates / Unit Tests"
-                            children = nodes
-                            icon = JS.undefined
-                        |}
-
-                    node
-                        {|
-                            disabled = false
-                            isTesting = isTesting
-                            value = "owned"
-                            label = "Created by me"
-                            children =
-                                [|
-                                    node
-                                        {|
-                                            disabled = false
-                                            isTesting = isTesting
-                                            value = "default"
-                                            label = "Default"
-                                            children = JS.undefined
-                                            icon = leafIcon {| locked = true; paused = false |}
-                                        |}
-                                    node
-                                        {|
-                                            disabled = false
-                                            isTesting = isTesting
-                                            value = "default"
-                                            label = "Default"
-                                            children = JS.undefined
-                                            icon = leafIcon {| locked = false; paused = false |}
-                                        |}
-                                |]
-                            icon = JS.undefined
-                        |}
-                    node
-                        {|
-                            disabled = false
-                            isTesting = isTesting
-                            value = "shared"
-                            label = "Shared with me"
-                            children =
-                                [|
-                                    node
-                                        {|
-                                            disabled = false
-                                            isTesting = isTesting
-                                            value = ""
-                                            label = "None"
-                                            children = JS.undefined
-                                            icon = (Chakra.box (fun _ -> ()) [])
-                                        |}
-                                |]
-                            icon = JS.undefined
-                        |}
-
-                    match apiBaseUrl with
-                    | String.ValidString _ ->
-                        node
-                            {|
-                                disabled = false
-                                isTesting = isTesting
-                                value = "legacy"
-                                label = "Legacy"
-                                children =
-                                    [|
-                                        node
-                                            {|
-                                                disabled = false
-                                                isTesting = isTesting
-                                                value = ""
-                                                label = "None"
-                                                children = JS.undefined
-                                                icon = (Chakra.box (fun _ -> ()) [])
-                                            |}
-                                    |]
-                                icon = JS.undefined
-                            |}
-                    | _ -> ()
-                |]
-
         Browser.Dom.window?nodes <- nodes
 
         Chakra.stack
@@ -468,7 +399,7 @@ module Databases =
                                 onExpand = Array.map DatabaseId >> setExpandedDatabaseIds
                                 expandOnClick = true
                                 onlyLeafCheckboxes = true
-                                nodes = allNodes
+                                nodes = nodes
                                 icons = icons
                             |}
                     ]

@@ -4,6 +4,7 @@ open Fable.React
 open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.Domain
@@ -15,10 +16,10 @@ module StatusBar =
 
     [<ReactComponent>]
     let StatusBar (input: {| Username: Username |}) =
-        let position = Recoil.useValue Recoil.Atoms.position
-        let taskIdList = Recoil.useValue (Recoil.Atoms.Session.taskIdList input.Username)
-        let sessionData = Recoil.useValue (Recoil.Selectors.Session.sessionData input.Username)
-        let activeSessions = Recoil.useValue (Recoil.Selectors.Session.activeSessions input.Username)
+        let position = Recoil.useValue Atoms.position
+        let taskIdList = Recoil.useValue (Atoms.Session.taskIdList input.Username)
+        let sessionData = Recoil.useValue (Selectors.Session.sessionData input.Username)
+        let activeSessions = Recoil.useValue (Selectors.Session.activeSessions input.Username)
 
         Chakra.flex
             (fun x ->

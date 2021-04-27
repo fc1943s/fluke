@@ -5,6 +5,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain
 
 module SoundPlayer =
@@ -15,11 +16,9 @@ module SoundPlayer =
     [<ReactComponent>]
     let SoundPlayer (input: {| Username: Username |}) =
         let oldActiveSessions = React.useRef []
-        let (Minute sessionLength) = Recoil.useValue (Recoil.Atoms.User.sessionLength input.Username)
-
-        let (Minute sessionBreakLength) = Recoil.useValue (Recoil.Atoms.User.sessionBreakLength input.Username)
-
-        let activeSessions = Recoil.useValue (Recoil.Selectors.Session.activeSessions input.Username)
+        let (Minute sessionLength) = Recoil.useValue (Atoms.User.sessionLength input.Username)
+        let (Minute sessionBreakLength) = Recoil.useValue (Atoms.User.sessionBreakLength input.Username)
+        let activeSessions = Recoil.useValue (Selectors.Session.activeSessions input.Username)
 
         React.useEffect (
             (fun () ->

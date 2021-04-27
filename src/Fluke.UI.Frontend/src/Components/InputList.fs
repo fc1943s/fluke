@@ -4,7 +4,6 @@ open Fable.Core
 open Feliz
 open Fable.React
 open Feliz.Recoil
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 
 

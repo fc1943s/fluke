@@ -110,22 +110,10 @@ module Theme =
                                     {|
                                         boxShadow = $"0 0 0 1px {theme.colors.heliotrope} !important"
                                     |}
-                                ``.rct-collapse-btn:focus`` =
-                                    {|
-                                        boxShadow = "none !important"
-                                    |}
-                                ``.rct-disabled .rct-checkbox svg`` =
-                                    {|
-                                        opacity = "0"
-                                    |}
-//                                ``.rct-disabled .rct-title`` =
-//                                    {|
-//                                        marginLeft = "-14px"
-//                                    |}
-                                ``.react-checkbox-tree label:hover, .react-checkbox-tree label:active`` =
-                                    {|
-                                        background = "none"
-                                    |}
+                                ``.rct-collapse-btn:focus`` = {| boxShadow = "none !important" |}
+                                ``.rct-disabled .rct-checkbox svg`` = {| opacity = "0" |}
+                                ``.rct-node label:hover, .rct-node label:active`` = {| background = "none" |}
+                                ``.rct-node-parent:not(:first-child)`` = {| marginTop = "5px" |}
                                 ``.markdown-container h1`` =
                                     {|
                                         borderBottom = "1px solid #777"

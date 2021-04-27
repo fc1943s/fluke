@@ -4,7 +4,7 @@ open Fable.React
 open Feliz
 open Feliz.UseListener
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
 open Fluke.UI.Frontend.Hooks
@@ -16,7 +16,7 @@ module DebugOverlay =
     let DebugOverlay () =
         let text, setText = React.useState ""
         let oldJson, setOldJson = React.useState ""
-        let debug, setDebug = Recoil.useState Recoil.Atoms.debug
+        let debug, setDebug = Recoil.useState Atoms.debug
 
         Scheduling.useScheduling
             Scheduling.Interval

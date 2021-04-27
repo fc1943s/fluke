@@ -64,21 +64,20 @@ module DatabaseForm =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) _ ->
                     promise {
-                        let eventId = Recoil.Atoms.Events.newEventId ()
-                        let! name = setter.snapshot.getReadWritePromise Recoil.Atoms.Database.name input.DatabaseId
+                        let eventId = Atoms.Events.newEventId ()
+                        let! name = setter.snapshot.getReadWritePromise Atoms.Database.name input.DatabaseId
 
-                        let! dayStart =
-                            setter.snapshot.getReadWritePromise Recoil.Atoms.Database.dayStart input.DatabaseId
+                        let! dayStart = setter.snapshot.getReadWritePromise Atoms.Database.dayStart input.DatabaseId
 
                         let! availableDatabaseIds =
-                            setter.snapshot.getPromise (Recoil.Atoms.Session.availableDatabaseIds input.Username)
+                            setter.snapshot.getPromise (Atoms.Session.availableDatabaseIds input.Username)
 
-                        let event = Recoil.Atoms.Events.Event.AddDatabase (eventId, name, dayStart)
+                        let event = Atoms.Events.Event.AddDatabase (eventId, name, dayStart)
 
-                        setter.set (Recoil.Atoms.Events.events eventId, event)
+                        setter.set (Atoms.Events.events eventId, event)
 
                         let! databaseStateMapCache =
-                            setter.snapshot.getPromise (Recoil.Atoms.Session.databaseStateMapCache input.Username)
+                            setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache input.Username)
 
                         let databaseId =
                             input.DatabaseId
@@ -113,18 +112,18 @@ module DatabaseForm =
                         databaseStateMapCache.Count={databaseStateMapCache.Count}
                         newDatabaseStateMapCache.Count={newDatabaseStateMapCache.Count}"
 
-                        setter.set (Recoil.Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
+                        setter.set (Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
 
                         setter.set (
-                            Recoil.Atoms.Session.availableDatabaseIds input.Username,
+                            Atoms.Session.availableDatabaseIds input.Username,
                             (availableDatabaseIds
                              @ [
                                  databaseId
                              ])
                         )
 
-                        do! setter.readWriteReset Recoil.Atoms.Database.name input.DatabaseId
-                        do! setter.readWriteReset Recoil.Atoms.Database.dayStart input.DatabaseId
+                        do! setter.readWriteReset Atoms.Database.name input.DatabaseId
+                        do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
 
                         printfn $"event {event}"
                         do! input.OnSave ()
@@ -159,7 +158,7 @@ module DatabaseForm =
                                         )
 
                                     x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
-                                    x.atom <- Some (Recoil.AtomFamily (Recoil.Atoms.Database.name, input.DatabaseId))
+                                    x.atom <- Some (Recoil.AtomFamily (Atoms.Database.name, input.DatabaseId))
                                     x.onFormat <- Some (fun (DatabaseName name) -> name)
                                     x.onValidate <- Some (DatabaseName >> Some)
                                     x.onEnterPress <- Some onSave)
@@ -181,8 +180,7 @@ module DatabaseForm =
 
                                     x.placeholder <- "00:00"
 
-                                    x.atom <-
-                                        Some (Recoil.AtomFamily (Recoil.Atoms.Database.dayStart, input.DatabaseId))
+                                    x.atom <- Some (Recoil.AtomFamily (Atoms.Database.dayStart, input.DatabaseId))
 
                                     x.inputFormat <- Some Input.InputFormat.Time
                                     x.onFormat <- Some (fun time -> time.Stringify ())

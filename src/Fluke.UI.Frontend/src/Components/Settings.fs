@@ -4,9 +4,8 @@ open Feliz
 open Fable.React
 open Feliz.Recoil
 open Fluke.Shared.Domain
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.Recoil
+open Fluke.UI.Frontend.State
 
 
 module Settings =

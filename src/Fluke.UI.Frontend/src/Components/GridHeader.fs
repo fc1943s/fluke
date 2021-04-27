@@ -3,7 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Fable.DateFunctions
 open Feliz
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
@@ -15,8 +15,8 @@ module GridHeader =
 
     [<ReactComponent>]
     let GridHeader (input: {| Username: Username |}) =
-        let cellSize = Recoil.useValue (Recoil.Atoms.User.cellSize input.Username)
-        let dateSequence = Recoil.useValue Recoil.Selectors.dateSequence
+        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let dateSequence = Recoil.useValue Selectors.dateSequence
 
         let datesByMonth =
             dateSequence

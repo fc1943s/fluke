@@ -4,7 +4,7 @@ open Fable.React
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
-open Fluke.UI.Frontend
+open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
 
@@ -12,7 +12,7 @@ module UserLoader =
 
     [<ReactComponent>]
     let UserLoader () =
-        let username = Recoil.useValue Recoil.Atoms.username
+        let username = Recoil.useValue Atoms.username
 
         let loadUser =
             Recoil.useCallbackRef
@@ -20,16 +20,16 @@ module UserLoader =
                     promise {
                         Profiling.addTimestamp "UserLoader.render.loadUser"
 
-                        let! user = setter.snapshot.getPromise Recoil.Selectors.apiCurrentUserAsync
+                        let! user = setter.snapshot.getPromise Selectors.apiCurrentUserAsync
 
                         match user with
                         | Ok user ->
                             if user.Username = username then
-                                setter.set (Recoil.Atoms.User.color user.Username, user.Color)
-                                setter.set (Recoil.Atoms.User.dayStart user.Username, user.DayStart)
-                                setter.set (Recoil.Atoms.User.sessionLength user.Username, user.SessionLength)
-                                setter.set (Recoil.Atoms.User.weekStart user.Username, user.WeekStart)
-                                setter.set (Recoil.Atoms.User.sessionBreakLength user.Username, user.SessionBreakLength)
+                                setter.set (Atoms.User.color user.Username, user.Color)
+                                setter.set (Atoms.User.dayStart user.Username, user.DayStart)
+                                setter.set (Atoms.User.sessionLength user.Username, user.SessionLength)
+                                setter.set (Atoms.User.weekStart user.Username, user.WeekStart)
+                                setter.set (Atoms.User.sessionBreakLength user.Username, user.SessionBreakLength)
                         | Error _ -> ()
                     })
 
