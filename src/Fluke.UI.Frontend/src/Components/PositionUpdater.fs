@@ -51,10 +51,9 @@ module PositionUpdater =
                         if position <> None then setPosition None
 
                         printfn
-                            $"Skipping position update.
-                        position={position |> Option.map (fun x -> x.Stringify ())} newPosition={
-                                                                                                     newPosition.Stringify
-                                                                                                         ()
+                            $"Skipping position update. position={position |> Option.map (fun x -> x.Stringify ())} newPosition={
+                                                                                                                                     newPosition.Stringify
+                                                                                                                                         ()
                             } selected={selectedDatabaseIds}"
                 })
 

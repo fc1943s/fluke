@@ -133,6 +133,10 @@ module Chakra =
                    MenuButton: obj
                    MenuList: obj
                    MenuItem: obj
+                   MenuItemOption: obj
+                   MenuOptionGroup: obj
+                   Modal: obj
+                   ModalBody: obj
                    Modal: obj
                    ModalBody: obj
                    ModalCloseButton: obj
@@ -198,6 +202,8 @@ module Chakra =
     let menuButton<'T> = composeChakraComponent react.MenuButton
     let menuList<'T> = composeChakraComponent react.MenuList
     let menuItem<'T> = composeChakraComponent react.MenuItem
+    let menuItemOption<'T> = composeChakraComponent react.MenuItemOption
+    let menuOptionGroup<'T> = composeChakraComponent react.MenuOptionGroup
     let modal<'T> = composeChakraComponent react.Modal
     let modalBody<'T> = composeChakraComponent react.ModalBody
     let modalContent<'T> = composeChakraComponent react.ModalContent

@@ -131,7 +131,7 @@ module Tests =
                                     DayStart = testUser.DayStart
                                     DateSequence = dateSequence
                                     View = View.View.HabitTracker
-                                    Position = dslTemplate.Position
+                                    Position = Some dslTemplate.Position
                                     DatabaseStateMap = databaseStateMap
                                     SelectedDatabaseIds =
                                         [

@@ -203,7 +203,11 @@ module Databases =
                     ))
 
         paths
-        |> List.map (fun path -> path.Split "/" |> Array.toList)
+        |> List.map
+            (fun path ->
+                path.Replace("\/", "|||").Split "/"
+                |> Array.map (fun str -> str.Replace ("|||", "/"))
+                |> Array.toList)
         |> List.mapi
             (fun i nodes ->
                 let rec loop depth list =
@@ -226,6 +230,7 @@ module Databases =
                 loop 1 nodes)
         |> groupNodes
 
+    [<RequireQualifiedAccess>]
     type NodeType =
         | Template
         | Owned
@@ -240,6 +245,7 @@ module Databases =
         let isTesting = Recoil.useValue Recoil.Atoms.isTesting
         let availableDatabaseIds = Recoil.useValue (Recoil.Atoms.Session.availableDatabaseIds input.Username)
         let apiBaseUrl = Recoil.useValue Recoil.Atoms.apiBaseUrl
+        let hideTemplates = Recoil.useValue (Recoil.Atoms.User.hideTemplates input.Username)
 
         let selectedDatabaseIds, setSelectedDatabaseIds = Recoil.useState Recoil.Atoms.selectedDatabaseIds
         let expandedDatabaseIds, setExpandedDatabaseIds = Recoil.useState Recoil.Atoms.expandedDatabaseIds
@@ -260,7 +266,26 @@ module Databases =
 
                     let nodes =
                         availableDatabases
-                        |> List.map (fun { Name = DatabaseName name } -> name)
+                        |> List.map
+                            (fun database ->
+                                let nodeType =
+                                    match database.Owner with
+                                    | owner when owner = TempData.testUser.Username -> NodeType.Template
+                                    | owner when owner = input.Username -> NodeType.Owned
+                                    | _ -> NodeType.Shared
+
+                                nodeType, database)
+                        |> List.filter (fun (nodeType, _) -> nodeType <> NodeType.Template || not hideTemplates)
+                        |> List.map
+                            (fun (nodeType, database) ->
+                                let prefix =
+                                    match nodeType with
+                                    | NodeType.Template -> "Templates\/Unit Tests"
+                                    | NodeType.Owned -> "Created by me"
+                                    | NodeType.Shared -> "Shared with me"
+                                    | NodeType.Legacy -> "Legacy"
+
+                                $"{prefix}/{database.Name |> DatabaseName.Value}")
                         |> buildNodesFromPath
 
                     let rec loop nodes =
@@ -282,34 +307,53 @@ module Databases =
                             let disabled =
                                 match index with
                                 | Some index ->
+                                    let validSelectedDatabases =
+                                        selectedDatabaseIds
+                                        |> Array.map (fun databaseId -> availableDatabasesMap |> Map.tryFind databaseId)
+
                                     match availableDatabases.[index].Position with
                                     | Some position ->
-                                        selectedDatabaseIds
-                                        |> Array.map (fun databaseId -> availableDatabasesMap.[databaseId])
+                                        validSelectedDatabases
                                         |> Array.exists
-                                            (fun database ->
+                                            (function
+                                            | Some database ->
                                                 database.Position.IsNone
-                                                || database.Position <> (Some position))
+                                                || database.Position <> (Some position)
+                                            | None -> false)
                                     | None ->
-                                        selectedDatabaseIds
-                                        |> Array.map (fun databaseId -> availableDatabasesMap.[databaseId].Position)
-                                        |> Array.exists Option.isSome
+                                        validSelectedDatabases
+                                        |> Array.exists
+                                            (function
+                                            | Some { Position = Some _ } -> false
+                                            | _ -> true)
                                 | _ -> false
 
-                            node
-                                {|
-                                    disabled = disabled
-                                    isTesting = isTesting
-                                    value = value
-                                    label = label
-                                    children = nodeChildren
-                                    icon = icon
-                                |}
-                            :: (loop tail)
+                            let newValue =
+                                match index with
+                                | Some index ->
+                                    availableDatabases.[index].Id
+                                    |> DatabaseId.Value
+                                    |> string
+                                | None -> value
+
+                            let newNode =
+                                node
+                                    {|
+                                        disabled = disabled
+                                        isTesting = isTesting
+                                        value = newValue
+                                        label = label
+                                        children = nodeChildren
+                                        icon = icon
+                                    |}
+
+                            newNode :: loop tail
                         | [] -> []
 
                     loop nodes |> List.toArray),
                 [|
+                    box input.Username
+                    box hideTemplates
                     box selectedDatabaseIds
                     box isTesting
                     box availableDatabases

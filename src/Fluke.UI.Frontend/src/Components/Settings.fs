@@ -18,7 +18,7 @@ module Settings =
         Accordion.Accordion
             {|
                 Props = JS.newObj (fun x -> x <+ input.Props)
-                Atom = Atoms.User.accordionFlag (input.Username, nameof Settings)
+                Atom = Atoms.User.accordionFlag (input.Username, TextKey (nameof Settings))
                 Items =
                     [
                         "View",

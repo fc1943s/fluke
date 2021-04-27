@@ -9,19 +9,6 @@ open Fluke.UI.Frontend.Bindings
 open Fable.Core
 open Fluke.Shared
 
-module TopBarIconButton =
-    let inline TopBarIconButton (input: {| Props: Chakra.IChakraProps |}) =
-        Chakra.iconButton
-            (fun x ->
-                x <+ input.Props
-                x.backgroundColor <- "transparent"
-                x.variant <- "outline"
-                x.border <- "0"
-                x.fontSize <- "18px"
-                x.width <- "30px"
-                x.height <- "30px"
-                x.borderRadius <- "0")
-            []
 
 module TopBar =
     [<ReactComponent>]
@@ -65,13 +52,9 @@ module TopBar =
                             ]
                     ]
 
-                AddDatabaseButton.AddDatabaseButton
-                    {|
-                        Props = JS.newObj (fun x -> x.marginLeft <- "37px")
-                    |}
                 AddTaskButton.AddTaskButton
                     {|
-                        Props = JS.newObj (fun x -> x.marginLeft <- "10px")
+                        Props = JS.newObj (fun x -> x.marginLeft <- "37px")
                     |}
 
                 Chakra.spacer (fun _ -> ()) []
@@ -94,7 +77,7 @@ module TopBar =
                                             Props = JS.newObj (fun _ -> ())
                                         |})
                                     [
-                                        TopBarIconButton.TopBarIconButton
+                                        TransparentIconButton.TransparentIconButton
                                             {|
                                                 Props =
                                                     JS.newObj
@@ -106,7 +89,7 @@ module TopBar =
                         Tooltip.wrap
                             (str "Logout")
                             [
-                                TopBarIconButton.TopBarIconButton
+                                TransparentIconButton.TransparentIconButton
                                     {|
                                         Props =
                                             JS.newObj

@@ -3,10 +3,12 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Feliz.Recoil
+open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Fluke.UI.Frontend.Recoil
 
 
 module LeftDock =
@@ -14,7 +16,8 @@ module LeftDock =
 
     [<ReactComponent>]
     let LeftDock (input: {| Username: Username |}) =
-        let leftDock = Recoil.useValue (Recoil.Atoms.User.leftDock input.Username)
+        let leftDock = Recoil.useValue (Atoms.User.leftDock input.Username)
+        let hideTemplates, setHideTemplates = Recoil.useState (Atoms.User.hideTemplates input.Username)
 
         let items =
             [
@@ -34,7 +37,7 @@ module LeftDock =
                                                 x.overflowY <- "auto"
                                                 x.flexBasis <- 0)
                                 |}
-                    Menu = None
+                    RightIcons = []
                 |}
 
                 TempUI.DockType.Databases,
@@ -54,7 +57,70 @@ module LeftDock =
                                                 x.overflowY <- "auto"
                                                 x.flexBasis <- 0)
                                 |}
-                    Menu = Some ()
+                    RightIcons =
+                        [
+                            DockPanel.DockPanelIcon.Component (
+                                ModalForm.ModalForm
+                                    {|
+                                        Username = input.Username
+                                        Trigger =
+                                            fun modalFormProps ->
+                                                Tooltip.wrap
+                                                    (str "Add Database")
+                                                    [
+                                                        TransparentIconButton.TransparentIconButton
+                                                            {|
+                                                                Props =
+                                                                    JS.newObj
+                                                                        (fun x ->
+                                                                            modalFormProps x
+                                                                            x.icon <- Icons.fi.FiPlus |> Icons.render)
+                                                            |}
+                                                    ]
+                                        Content =
+                                            fun (formIdFlag, onHide) ->
+                                                DatabaseForm.DatabaseForm
+                                                    {|
+                                                        Username = input.Username
+                                                        DatabaseId = formIdFlag |> Option.map DatabaseId
+                                                        OnSave = fun () -> promise { onHide () }
+                                                    |}
+                                        TextKey = TextKey (nameof DatabaseForm)
+                                        Props = JS.newObj (fun _ -> ())
+                                    |}
+                            )
+
+                            DockPanel.DockPanelIcon.Menu (
+                                "Options",
+                                Icons.bs.BsThreeDotsVertical |> Icons.render,
+                                [
+                                    Chakra.menuOptionGroup
+                                        (fun x ->
+                                            x.``type`` <- "checkbox"
+
+                                            x.value <-
+                                                [|
+                                                    if hideTemplates then yield nameof Atoms.User.hideTemplates
+                                                |]
+
+                                            x.onChange <-
+                                                fun (checks: string []) ->
+                                                    promise {
+                                                        setHideTemplates (
+                                                            checks
+                                                            |> Array.contains (nameof Atoms.User.hideTemplates)
+                                                        )
+                                                    })
+                                        [
+                                            Chakra.menuItemOption
+                                                (fun x -> x.value <- nameof Atoms.User.hideTemplates)
+                                                [
+                                                    str "Hide Templates"
+                                                ]
+                                        ]
+                                ]
+                            )
+                        ]
                 |}
 
             ]
@@ -86,7 +152,7 @@ module LeftDock =
                                                     DockType = dockType
                                                     Name = item.Name
                                                     Icon = item.Icon
-                                                    Atom = Recoil.Atoms.User.leftDock input.Username
+                                                    Atom = Atoms.User.leftDock input.Username
                                                 |})
                             ]
                     ]
@@ -125,8 +191,8 @@ module LeftDock =
                                             {|
                                                 Name = item.Name
                                                 Icon = item.Icon
-                                                Menu = item.Menu
-                                                Atom = Recoil.Atoms.User.leftDock input.Username
+                                                RightIcons = item.RightIcons
+                                                Atom = Atoms.User.leftDock input.Username
                                                 children =
                                                     [
                                                         item.Content ()

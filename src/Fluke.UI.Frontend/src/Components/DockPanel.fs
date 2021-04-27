@@ -9,12 +9,17 @@ open Fluke.UI.Frontend.Bindings
 
 module DockPanel =
 
+    [<RequireQualifiedAccess>]
+    type DockPanelIcon =
+        | Component of cmp: ReactElement
+        | Menu of title: string * icon: ReactElement * children: seq<ReactElement>
+
     [<ReactComponent>]
     let DockPanel
         (input: {| Name: string
                    Icon: obj
                    Atom: RecoilValue<TempUI.DockType option, ReadWrite>
-                   Menu: unit option
+                   RightIcons: DockPanelIcon list
                    children: seq<ReactElement> |})
         =
         let setAtom = Recoil.useSetState input.Atom
@@ -40,24 +45,37 @@ module DockPanel =
 
                         Chakra.spacer (fun _ -> ()) []
 
-                        match input.Menu with
-                        | Some _ ->
-                            Tooltip.wrap
-                                (str "Options")
-                                [
-                                    Chakra.iconButton
-                                        (fun x ->
-                                            x.icon <- Icons.bs.BsThreeDotsVertical |> Icons.render
-                                            x.backgroundColor <- "transparent"
-                                            x.variant <- "outline"
-                                            x.border <- "0"
-                                            x.width <- "30px"
-                                            x.height <- "30px"
-                                            x.borderRadius <- "0"
-                                            x.onClick <- fun _ -> promise { setAtom None })
-                                        []
-                                ]
-                        | None -> ()
+                        yield!
+                            input.RightIcons
+                            |> List.map
+                                (fun icon ->
+                                    match icon with
+                                    | DockPanelIcon.Component cmp -> cmp
+                                    | DockPanelIcon.Menu (title, icon, menu) ->
+                                        Chakra.menu
+                                            (fun _ -> ())
+                                            [
+                                                Tooltip.wrap
+                                                    (str title)
+                                                    [
+                                                        Chakra.menuButton
+                                                            (fun x ->
+                                                                x.``as`` <- Chakra.react.IconButton
+                                                                x.icon <- icon
+                                                                x.backgroundColor <- "transparent"
+                                                                x.variant <- "outline"
+                                                                x.border <- "0"
+                                                                x.width <- "30px"
+                                                                x.height <- "30px"
+                                                                x.borderRadius <- "0")
+                                                            []
+                                                    ]
+                                                Chakra.menuList
+                                                    (fun x -> x.backgroundColor <- "gray.13")
+                                                    [
+                                                        yield! menu
+                                                    ]
+                                            ])
 
                         Tooltip.wrap
                             (str "Hide")

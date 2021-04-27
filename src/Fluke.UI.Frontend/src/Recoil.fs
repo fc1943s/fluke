@@ -20,6 +20,10 @@ module Recoil =
     open Domain.State
     open View
 
+    type TextKey = TextKey of key: string
+
+    and TextKey with
+        static member inline Value (TextKey key) = key
 
     module Atoms =
         let rec isTesting = Recoil.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.isTesting)
@@ -233,33 +237,43 @@ module Recoil =
                         ])
                 )
 
+            let rec hideTemplates =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof hideTemplates}",
+                    (fun (_username: Username) -> false),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) hideTemplates username ""
+                        ])
+                )
+
             let rec formIdFlag =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof formIdFlag}",
-                    (fun (_username: Username, _key: string) -> None: Guid option),
-                    (fun (username: Username, key: string) ->
+                    (fun (_username: Username, _key: TextKey) -> None: Guid option),
+                    (fun (username: Username, key: TextKey) ->
                         [
-                            Recoil.gunEffect (Some username) formIdFlag (username, key) $"/{key}"
+                            Recoil.gunEffect (Some username) formIdFlag (username, key) $"/{key |> TextKey.Value}"
                         ])
                 )
 
             let rec formVisibleFlag =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof formVisibleFlag}",
-                    (fun (_username: Username, _key: string) -> false),
-                    (fun (username: Username, key: string) ->
+                    (fun (_username: Username, _key: TextKey) -> false),
+                    (fun (username: Username, key: TextKey) ->
                         [
-                            Recoil.gunEffect (Some username) formVisibleFlag (username, key) $"/{key}"
+                            Recoil.gunEffect (Some username) formVisibleFlag (username, key) $"/{key |> TextKey.Value}"
                         ])
                 )
 
             let rec accordionFlag =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof accordionFlag}",
-                    (fun (_username: Username, _key: string) -> [||]: string []),
-                    (fun (username: Username, key: string) ->
+                    (fun (_username: Username, _key: TextKey) -> [||]: string []),
+                    (fun (username: Username, key: TextKey) ->
                         [
-                            Recoil.gunEffect (Some username) accordionFlag (username, key) $"/{key}"
+                            Recoil.gunEffect (Some username) accordionFlag (username, key) $"/{key |> TextKey.Value}"
                         ])
                 )
 

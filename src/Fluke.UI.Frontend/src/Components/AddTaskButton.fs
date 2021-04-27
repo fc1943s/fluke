@@ -8,24 +8,25 @@ open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
+open Fluke.UI.Frontend.Recoil
 
 
 module AddTaskButton =
     [<ReactComponent>]
     let AddTaskButton (input: {| Props: Chakra.IChakraProps |}) =
-        let username = Recoil.useValue Recoil.Atoms.username
+        let username = Recoil.useValue Atoms.username
 
         let formIdFlag, setFormIdFlag =
             Recoil.useStateDefault
-                Recoil.Atoms.User.formIdFlag
+                Atoms.User.formIdFlag
                 (username
-                 |> Option.map (fun username -> username, nameof TaskForm))
+                 |> Option.map (fun username -> username, TextKey (nameof TaskForm)))
 
         let formVisibleFlag, setFormVisibleFlag =
             Recoil.useStateDefault
-                Recoil.Atoms.User.formVisibleFlag
+                Atoms.User.formVisibleFlag
                 (username
-                 |> Option.map (fun username -> username, nameof TaskForm))
+                 |> Option.map (fun username -> username, TextKey (nameof TaskForm)))
 
         React.fragment [
             Button.Button
