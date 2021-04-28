@@ -204,12 +204,6 @@ module Databases =
                     ]
                 Menu =
                     [
-                        Chakra.menuItem
-                            (fun x -> x.onClick <- fun e -> promise { e.preventDefault () })
-                            [
-                                str "Clone Database..."
-                            ]
-
                         ModalForm.ModalFormTrigger
                             {|
                                 Username = input.Username
@@ -229,6 +223,24 @@ module Databases =
                                 TextKey = TextKey (nameof TaskForm)
                                 TextKeyValue = None
                             |}
+
+                        Chakra.menuItem
+                            (fun x -> x.onClick <- fun e -> promise { e.preventDefault () })
+                            [
+                                str "Edit Database..."
+                            ]
+
+                        Chakra.menuItem
+                            (fun x -> x.onClick <- fun e -> promise { e.preventDefault () })
+                            [
+                                str "Clone Database..."
+                            ]
+
+                        Chakra.menuItem
+                            (fun x -> x.onClick <- fun e -> promise { e.preventDefault () })
+                            [
+                                str "Delete Database..."
+                            ]
                     ]
             |}
 
@@ -356,8 +368,11 @@ module Databases =
         let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
         let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
 
-        let selectedDatabaseIds, setSelectedDatabaseIds = Recoil.useState Atoms.selectedDatabaseIds
-        let expandedDatabaseIds, setExpandedDatabaseIds = Recoil.useState Atoms.expandedDatabaseIds
+        let expandedDatabaseIds, setExpandedDatabaseIds =
+            Recoil.useState (Atoms.User.expandedDatabaseIds input.Username)
+
+        let selectedDatabaseIds, setSelectedDatabaseIds =
+            Recoil.useState (Atoms.User.selectedDatabaseIds input.Username)
 
         let availableDatabases =
             availableDatabaseIds
@@ -368,12 +383,7 @@ module Databases =
         let nodes =
             React.useMemo (
                 (fun () ->
-                    let availableDatabasesMap =
-                        availableDatabases
-                        |> List.map (fun database -> database.Id, database)
-                        |> Map.ofList
-
-                    let nodes =
+                    let databases =
                         availableDatabases
                         |> List.map
                             (fun database ->
@@ -385,6 +395,14 @@ module Databases =
 
                                 nodeType, database)
                         |> List.filter (fun (nodeType, _) -> nodeType <> NodeType.Template || not hideTemplates)
+
+                    let availableDatabasesMap =
+                        databases
+                        |> List.map (fun (_, database) -> database.Id, database)
+                        |> Map.ofList
+
+                    let nodes =
+                        databases
                         |> List.map
                             (fun (nodeType, database) ->
                                 let prefix =
@@ -407,7 +425,7 @@ module Databases =
 
                             let database =
                                 match index with
-                                | Some index -> Some availableDatabases.[index]
+                                | Some index -> Some (databases.[index] |> snd)
                                 | _ -> None
 
                             let icon =
@@ -435,8 +453,8 @@ module Databases =
                                         validSelectedDatabases
                                         |> Array.exists
                                             (function
-                                            | Some { Position = Some _ } -> false
-                                            | _ -> true)
+                                            | Some { Position = Some _ } -> true
+                                            | _ -> false)
                                 | _ -> false
 
                             let newValue =

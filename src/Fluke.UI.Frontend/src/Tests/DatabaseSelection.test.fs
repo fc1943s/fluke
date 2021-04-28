@@ -224,7 +224,7 @@ module DatabaseSelection =
                             (fun setter ->
                                 promise {
                                     setter.set (
-                                        Atoms.selectedDatabaseIds,
+                                        Atoms.User.selectedDatabaseIds testUser.Username,
                                         [|
                                             fst databaseList.Head
                                         |]

@@ -34,6 +34,7 @@ module Content =
                         | _ -> LoginScreen.LoginScreen ()
                     | Some username ->
                         React.fragment [
+                            PositionUpdater.PositionUpdater {| Username = username |}
                             SessionDataLoader.SessionDataLoader {| Username = username |}
                             SoundPlayer.SoundPlayer {| Username = username |}
 

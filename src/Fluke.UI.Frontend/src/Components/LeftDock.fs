@@ -113,7 +113,6 @@ module LeftDock =
                             )
                         ]
                 |}
-
             ]
 
         let itemsMap = items |> Map.ofList

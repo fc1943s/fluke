@@ -38,8 +38,6 @@ module State =
                     ]
             )
 
-        let rec sessionRestored = Recoil.atomWithProfiling ($"{nameof atom}/{nameof sessionRestored}", false)
-
         let rec gunPeers =
             Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof gunPeers}",
@@ -49,6 +47,20 @@ module State =
                         AtomEffect Storage.local
                     ]
             )
+
+        let rec apiBaseUrl =
+            Recoil.atomWithProfiling (
+                $"{nameof atom}/{nameof apiBaseUrl}",
+                $"https://localhost:{Sync.serverPort}",
+                effects =
+                    [
+                        AtomEffect Storage.local
+                    ]
+            )
+
+        let rec api = Recoil.atomWithProfiling ($"{nameof atom}/{nameof api}", (None: Sync.Api option))
+
+        let rec sessionRestored = Recoil.atomWithProfiling ($"{nameof atom}/{nameof sessionRestored}", false)
 
         let rec gunHash = Recoil.atomWithProfiling ($"{nameof atom}/{nameof gunHash}", "")
 
@@ -66,44 +78,9 @@ module State =
             )
 
         let rec initialPeerSkipped = Recoil.atomWithProfiling ($"{nameof atom}/{nameof initialPeerSkipped}", false)
-
         let rec username = Recoil.atomWithProfiling ($"{nameof atom}/{nameof username}", None)
         let rec position = Recoil.atomWithProfiling ($"{nameof atom}/{nameof position}", None)
-
-        let rec apiBaseUrl =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof apiBaseUrl}",
-                $"https://localhost:{Sync.serverPort}",
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec api = Recoil.atomWithProfiling ($"{nameof atom}/{nameof api}", (None: Sync.Api option))
-
-        let rec selectedDatabaseIds =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof selectedDatabaseIds}",
-                ([||]: DatabaseId []),
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
-        let rec expandedDatabaseIds =
-            Recoil.atomWithProfiling (
-                $"{nameof atom}/{nameof expandedDatabaseIds}",
-                ([||]: DatabaseId []),
-                effects =
-                    [
-                        AtomEffect Storage.local
-                    ]
-            )
-
         let rec ctrlPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof ctrlPressed}", false)
-
         let rec shiftPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof shiftPressed}", false)
 
 
@@ -127,6 +104,26 @@ module State =
 
 
         module rec User =
+            let rec expandedDatabaseIds =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof expandedDatabaseIds}",
+                    (fun (_username: Username) -> [||]: DatabaseId []),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) expandedDatabaseIds username ""
+                        ])
+                )
+
+            let rec selectedDatabaseIds =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof selectedDatabaseIds}",
+                    (fun (_username: Username) -> [||]: DatabaseId []),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) selectedDatabaseIds username ""
+                        ])
+                )
+
             let rec view =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof view}",
@@ -279,34 +276,69 @@ module State =
 
 
         module rec Database =
+            let databaseIdSuffix (databaseId: DatabaseId option) =
+                match databaseId with
+                | Some databaseId -> $"/{databaseId |> DatabaseId.Value |> string}"
+                | None -> "/DatabaseId"
+
+            let rec databaseIds =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Database}/{nameof databaseIds}",
+                    (fun (_databaseId: DatabaseId option) -> DatabaseName ""),
+                    (fun (databaseId: DatabaseId option) ->
+                        [
+//                            Recoil.gunEffect None name databaseId (databaseIdSuffix databaseId)
+                        ])
+                )
+
             let rec name =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof name}",
-                    (fun (_databaseId: DatabaseId option) -> DatabaseName "")
+                    (fun (_databaseId: DatabaseId option) -> DatabaseName ""),
+                    (fun (databaseId: DatabaseId option) ->
+                        [
+                            Recoil.gunEffect None name databaseId (databaseIdSuffix databaseId)
+                        ])
                 )
 
             let rec owner =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof owner}",
-                    (fun (_databaseId: DatabaseId option) -> None: Username option)
+                    (fun (_databaseId: DatabaseId option) -> None: Username option),
+                    (fun (databaseId: DatabaseId option) ->
+                        [
+                            Recoil.gunEffect None owner databaseId (databaseIdSuffix databaseId)
+                        ])
                 )
 
             let rec sharedWith =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof sharedWith}",
-                    (fun (_databaseId: DatabaseId option) -> DatabaseAccess.Public)
+                    (fun (_databaseId: DatabaseId option) -> DatabaseAccess.Public),
+                    (fun (databaseId: DatabaseId option) ->
+                        [
+                            Recoil.gunEffect None sharedWith databaseId (databaseIdSuffix databaseId)
+                        ])
                 )
 
             let rec dayStart =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof dayStart}",
-                    (fun (_databaseId: DatabaseId option) -> FlukeTime.Create 7 0)
+                    (fun (_databaseId: DatabaseId option) -> FlukeTime.Create 7 0),
+                    (fun (databaseId: DatabaseId option) ->
+                        [
+                            Recoil.gunEffect None dayStart databaseId (databaseIdSuffix databaseId)
+                        ])
                 )
 
             let rec position =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof position}",
-                    (fun (_databaseId: DatabaseId option) -> None: FlukeDateTime option)
+                    (fun (_databaseId: DatabaseId option) -> None: FlukeDateTime option),
+                    (fun (databaseId: DatabaseId option) ->
+                        [
+                            Recoil.gunEffect None position databaseId (databaseIdSuffix databaseId)
+                        ])
                 )
 
 
@@ -1101,7 +1133,7 @@ module State =
                         let dateSequence = getter.get dateSequence
                         let view = getter.get (Atoms.User.view username)
                         let position = getter.get Atoms.position
-                        let selectedDatabaseIds = getter.get Atoms.selectedDatabaseIds
+                        let selectedDatabaseIds = getter.get (Atoms.User.selectedDatabaseIds username)
                         let dayStart = getter.get (Atoms.User.dayStart username)
 
                         getSessionData

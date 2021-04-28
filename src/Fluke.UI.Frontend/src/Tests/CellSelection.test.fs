@@ -84,7 +84,7 @@ module CellSelection =
                     setter.set (Atoms.position, Some dslTemplate.Position)
 
                     setter.set (
-                        Atoms.selectedDatabaseIds,
+                        Atoms.User.selectedDatabaseIds testUser.Username,
                         [|
                             databaseName
                             |> Crypto.getTextGuidHash

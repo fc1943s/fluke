@@ -13,9 +13,9 @@ open Fluke.UI.Frontend.Bindings
 module PositionUpdater =
 
     [<ReactComponent>]
-    let PositionUpdater () =
+    let PositionUpdater (input: {| Username: Username |}) =
         let position, setPosition = Recoil.useState Atoms.position
-        let selectedDatabaseIds = Recoil.useValue Atoms.selectedDatabaseIds
+        let selectedDatabaseIds = Recoil.useValue (Atoms.User.selectedDatabaseIds input.Username)
 
         let selectedDatabasePositions =
             selectedDatabaseIds
@@ -28,32 +28,29 @@ module PositionUpdater =
             1000
             (fun _ ->
                 promise {
-                    let newPosition = FlukeDateTime.FromDateTime DateTime.Now
+                    let pausedPosition =
+                        selectedDatabasePositions
+                        |> Array.choose id
+                        |> Array.tryHead
 
-                    if Some newPosition <> position
-                       && selectedDatabasePositions.Length > 0 then
-                        if selectedDatabasePositions
-                           |> Array.exists Option.isSome
-                           |> not then
-                            printfn $"Updating position newPosition={newPosition.Stringify ()}"
-                            setPosition (Some newPosition)
-                        else
+                    if selectedDatabasePositions.Length > 0 then
+                        if pausedPosition.IsNone then
+                            let newPosition = FlukeDateTime.FromDateTime DateTime.Now
+
+                            if Some newPosition <> position then
+                                printfn $"Updating position newPosition={newPosition.Stringify ()}"
+                                setPosition (Some newPosition)
+                        else if position <> pausedPosition then
                             printfn
                                 $"Updating position selectedDatabasePositions.[0]={
-                                                                                       selectedDatabasePositions.[0]
+                                                                                       pausedPosition
                                                                                        |> Option.map
                                                                                            (fun x -> x.Stringify ())
                                 }"
 
-                            setPosition selectedDatabasePositions.[0]
-                    else
-                        if position <> None then setPosition None
-
-                        printfn
-                            $"Skipping position update. position={position |> Option.map (fun x -> x.Stringify ())} newPosition={
-                                                                                                                                     newPosition.Stringify
-                                                                                                                                         ()
-                            } selected={selectedDatabaseIds}"
+                            setPosition pausedPosition
+                    elif position <> None then
+                        setPosition None
                 })
 
         nothing

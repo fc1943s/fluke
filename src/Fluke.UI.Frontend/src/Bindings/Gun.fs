@@ -104,8 +104,6 @@ module rec Gun =
             match newValue with
             | Ok newValue -> Some newValue
             | Error error ->
-                Browser.Dom.console.error error
-                failwithf "Deserialize error"
+                Browser.Dom.console.error ("Deserialize error!!!", error)
                 None
-
         | None -> None
