@@ -5,6 +5,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
@@ -195,6 +196,8 @@ module SessionDataLoader =
 
         let sessionData = Recoil.useValue (Selectors.Session.sessionData input.Username)
 
+        let hydrateDatabase = HydrateDatabase.useHydrateDatabase ()
+
         let loadState =
             Recoil.useCallbackRef
                 (fun setter ->
@@ -212,15 +215,9 @@ module SessionDataLoader =
                         initializeSessionData input.Username setter sessionData
 
                         databaseStateMapCache
-                        |> Map.iter
-                            (fun id databaseState ->
-                                setter.set (Atoms.Database.name (Some id), databaseState.Database.Name)
-                                setter.set (Atoms.Database.owner (Some id), Some databaseState.Database.Owner)
-
-                                setter.set (Atoms.Database.sharedWith (Some id), databaseState.Database.SharedWith)
-
-                                setter.set (Atoms.Database.position (Some id), databaseState.Database.Position))
-
+                        |> Map.values
+                        |> Seq.map (fun databaseState -> databaseState.Database)
+                        |> Seq.iter (hydrateDatabase Recoil.AtomScope.ReadOnly)
 
                         Profiling.addTimestamp "dataLoader.loadStateCallback[1]"
                     })

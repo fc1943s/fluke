@@ -27,3 +27,15 @@ module JS =
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"
     let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
     let toJsArray a = a |> Array.toList |> List.toArray
+
+    let rec waitForObject fn =
+        async {
+            let obj = fn ()
+
+            if box obj <> null then
+                return obj
+            else
+                printfn "waitForObject: null. waiting..."
+                do! Async.Sleep 100
+                return! waitForObject fn
+        }

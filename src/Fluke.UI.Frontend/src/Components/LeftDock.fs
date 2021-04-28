@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Feliz.Recoil
-open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
@@ -46,7 +45,6 @@ module LeftDock =
                     Icon = Icons.fi.FiDatabase
                     Content =
                         fun () ->
-
                             Databases.Databases
                                 {|
                                     Username = input.Username
@@ -60,11 +58,11 @@ module LeftDock =
                     RightIcons =
                         [
                             DockPanel.DockPanelIcon.Component (
-                                ModalForm.ModalForm
+                                ModalForm.ModalFormTrigger
                                     {|
                                         Username = input.Username
                                         Trigger =
-                                            fun modalFormProps ->
+                                            fun trigger ->
                                                 Tooltip.wrap
                                                     (str "Add Database")
                                                     [
@@ -73,20 +71,13 @@ module LeftDock =
                                                                 Props =
                                                                     JS.newObj
                                                                         (fun x ->
-                                                                            modalFormProps x
-                                                                            x.icon <- Icons.fi.FiPlus |> Icons.render)
+                                                                            x.icon <- Icons.fi.FiPlus |> Icons.render
+                                                                            x.fontSize <- "17px"
+                                                                            x.onClick <- fun _ -> promise { trigger () })
                                                             |}
                                                     ]
-                                        Content =
-                                            fun (formIdFlag, onHide) ->
-                                                DatabaseForm.DatabaseForm
-                                                    {|
-                                                        Username = input.Username
-                                                        DatabaseId = formIdFlag |> Option.map DatabaseId
-                                                        OnSave = fun () -> promise { onHide () }
-                                                    |}
                                         TextKey = TextKey (nameof DatabaseForm)
-                                        Props = JS.newObj (fun _ -> ())
+                                        TextKeyValue = None
                                     |}
                             )
 

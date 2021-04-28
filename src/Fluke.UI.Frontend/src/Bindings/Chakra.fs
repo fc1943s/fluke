@@ -88,6 +88,7 @@ module Chakra =
         abstract placeholder : string with get, set
         abstract placement : string with get, set
         abstract position : string with get, set
+        abstract preventOverflow : bool with get, set
         abstract ref : IRefValue<_> with get, set
         abstract reduceMotion : bool with get, set
         abstract right : string with get, set
@@ -233,38 +234,24 @@ module Chakra =
     let tooltip<'T> = composeChakraComponent react.Tooltip
 
 
-    type ToastState =
-        {
-            Title: string
-            Status: string
-            Description: string
-            Duration: int
-            IsClosable: bool
-        }
+    type IToastProps =
+        abstract title : string with get, set
+        abstract status : string with get, set
+        abstract description : string with get, set
+        abstract duration : int with get, set
+        abstract isClosable : bool with get, set
 
-    type ToastBuilder () =
-        member inline _.Yield _ =
-            {
-                Title = "Error"
-                Status = "error"
-                Description = "Message"
-                Duration = 4000
-                IsClosable = true
-            }
+    let useToast () =
+        let toast = react.useToast ()
 
-        [<CustomOperation("description")>]
-        member inline this.Description (state, description) =
-            { state with Description = description }
-
-        [<CustomOperation("title")>]
-        member inline _.Title (state, title) = { state with Title = title }
-
-        [<CustomOperation("status")>]
-        member inline _.Status (state, status) = { state with Status = status }
-
-        member inline _.Run (state: ToastState) =
-            fun () ->
-                let toast = react.useToast ()
-                toast.Invoke state
-
-    let useToast = ToastBuilder ()
+        fun (props: IToastProps -> unit) ->
+            toast.Invoke (
+                JS.newObj
+                    (fun (x: IToastProps) ->
+                        x.title <- "Error"
+                        x.status <- "error"
+                        x.description <- "Error"
+                        x.duration <- 4000
+                        x.isClosable <- true
+                        props x)
+            )

@@ -28,6 +28,7 @@
         <Compile Include="src\Hooks\Theme.fs" />
         <Compile Include="src\Hooks\React.fs" />
         <Compile Include="src\Hooks\Auth.fs" />
+        <Compile Include="src\Hooks\HydrateDatabase.fs" />
         <Compile Include="src\Components\Empty.fs" />
         <Compile Include="src\Components\Tooltip.fs" />
         <Compile Include="src\Components\InputLabelIconButton.fs" />
@@ -60,11 +61,11 @@
         <Compile Include="src\Components\Logo.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
         <Compile Include="src\Components\DatabaseForm.fs" />
-        <Compile Include="src\Components\AddTaskButton.fs" />
         <Compile Include="src\Components\TransparentIconButton.fs" />
         <Compile Include="src\Components\ModalForm.fs" />
         <Compile Include="src\Components\ExternalLink.fs" />
         <Compile Include="src\Components\TopBar.fs" />
+        <Compile Include="src\Components\Menu.fs" />
         <Compile Include="src\Components\Databases.fs" />
         <Compile Include="src\Components\InputList.fs" />
         <Compile Include="src\Components\Accordion.fs" />
@@ -86,6 +87,7 @@
         <Compile Include="src\Components\CtrlListener.fs" />
         <Compile Include="src\Components\ShiftListener.fs" />
         <Compile Include="src\Components\GunObserver.fs" />
+        <Compile Include="src\Components\ModalContainer.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\Components\RootWrapper.fs" />
         <Compile Include="src\Components\ApiSubscriber.fs" />

@@ -6,6 +6,7 @@ open System
 open Feliz.Recoil
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
+open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core
@@ -60,73 +61,95 @@ module DatabaseForm =
                    DatabaseId: State.DatabaseId option
                    OnSave: unit -> JS.Promise<unit> |})
         =
+        let toast = Chakra.useToast ()
+
         let onSave =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) _ ->
                     promise {
                         let eventId = Atoms.Events.newEventId ()
-                        let! name = setter.snapshot.getReadWritePromise Atoms.Database.name input.DatabaseId
+                        let! databaseName = setter.snapshot.getReadWritePromise Atoms.Database.name input.DatabaseId
 
-                        let! dayStart = setter.snapshot.getReadWritePromise Atoms.Database.dayStart input.DatabaseId
+                        match databaseName with
+                        | DatabaseName (String.NullString
+                        | String.WhitespaceStr) -> toast (fun x -> x.description <- "Invalid name")
+                        | _ ->
+                            let! availableDatabaseIds =
+                                setter.snapshot.getPromise (Atoms.Session.availableDatabaseIds input.Username)
 
-                        let! availableDatabaseIds =
-                            setter.snapshot.getPromise (Atoms.Session.availableDatabaseIds input.Username)
+                            let databaseId =
+                                input.DatabaseId
+                                |> Option.defaultValue (DatabaseId.NewId ())
 
-                        let event = Atoms.Events.Event.AddDatabase (eventId, name, dayStart)
+                            let! availableDatabaseNames =
+                                availableDatabaseIds
+                                |> List.filter ((<>) databaseId)
+                                |> List.map (fun databaseId -> Atoms.Database.name (Some databaseId))
+                                |> Recoil.waitForAll
+                                |> setter.snapshot.getPromise
 
-                        setter.set (Atoms.Events.events eventId, event)
+                            if availableDatabaseNames
+                               |> List.contains databaseName then
+                                toast (fun x -> x.description <- "Database with this name already exists")
+                            else
+                                let! dayStart =
+                                    setter.snapshot.getReadWritePromise Atoms.Database.dayStart input.DatabaseId
 
-                        let! databaseStateMapCache =
-                            setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache input.Username)
+                                let event = Atoms.Events.Event.AddDatabase (eventId, databaseName, dayStart)
 
-                        let databaseId =
-                            input.DatabaseId
-                            |> Option.defaultValue (DatabaseId.NewId ())
+                                setter.set (Atoms.Events.events eventId, event)
 
-                        let database =
-                            databaseStateMapCache
-                            |> Map.tryFind databaseId
-                            |> Option.defaultValue (
-                                DatabaseState.Create (
-                                    name = name,
-                                    owner = input.Username,
-                                    dayStart = dayStart,
-                                    id = databaseId
-                                )
-                            )
+                                let! databaseStateMapCache =
+                                    setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache input.Username)
 
-                        let newDatabaseStateMapCache =
-                            databaseStateMapCache
-                            |> Map.add
-                                databaseId
-                                { database with
-                                    Database =
-                                        { database.Database with
-                                            Name = name
-                                            DayStart = dayStart
+
+                                let database =
+                                    databaseStateMapCache
+                                    |> Map.tryFind databaseId
+                                    |> Option.defaultValue (
+                                        DatabaseState.Create (
+                                            name = databaseName,
+                                            owner = input.Username,
+                                            dayStart = dayStart,
+                                            id = databaseId
+                                        )
+                                    )
+
+                                let newDatabaseStateMapCache =
+                                    databaseStateMapCache
+                                    |> Map.add
+                                        databaseId
+                                        { database with
+                                            Database =
+                                                { database.Database with
+                                                    Name = databaseName
+                                                    DayStart = dayStart
+                                                }
                                         }
-                                }
 
-                        printfn
-                            $"DatabaseForm():
-                        databaseStateMapCache.Count={databaseStateMapCache.Count}
-                        newDatabaseStateMapCache.Count={newDatabaseStateMapCache.Count}"
+                                printfn
+                                    $"DatabaseForm():
+                            databaseStateMapCache.Count={databaseStateMapCache.Count}
+                            newDatabaseStateMapCache.Count={newDatabaseStateMapCache.Count}"
 
-                        setter.set (Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
+                                setter.set (
+                                    Atoms.Session.databaseStateMapCache input.Username,
+                                    newDatabaseStateMapCache
+                                )
 
-                        setter.set (
-                            Atoms.Session.availableDatabaseIds input.Username,
-                            (availableDatabaseIds
-                             @ [
-                                 databaseId
-                             ])
-                        )
+                                setter.set (
+                                    Atoms.Session.availableDatabaseIds input.Username,
+                                    (availableDatabaseIds
+                                     @ [
+                                         databaseId
+                                     ])
+                                )
 
-                        do! setter.readWriteReset Atoms.Database.name input.DatabaseId
-                        do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
+                                do! setter.readWriteReset Atoms.Database.name input.DatabaseId
+                                do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
 
-                        printfn $"event {event}"
-                        do! input.OnSave ()
+                                printfn $"event {event}"
+                                do! input.OnSave ()
 
                     })
 

@@ -57,6 +57,10 @@ module Theme =
                     ``global`` =
                         fun (props: {| colorMode: string |}) ->
                             {|
+                                ``:root`` =
+                                    {|
+                                        ``--chakra-shadows-outline`` = $"0 0 0 1px {theme.colors.heliotrope} !important"
+                                    |}
                                 ``*, *::before, *::after`` = {| wordWrap = "break-word" |}
                                 html = {| fontSize = "main" |}
                                 body =
@@ -106,14 +110,12 @@ module Theme =
                                         backgroundClip = "content-box"
                                         borderLeft = "3px solid transparent"
                                     |}
-                                ``*:focus`` =
-                                    {|
-                                        boxShadow = $"0 0 0 1px {theme.colors.heliotrope} !important"
-                                    |}
                                 ``.rct-collapse-btn:focus`` = {| boxShadow = "none !important" |}
                                 ``.rct-disabled .rct-checkbox svg`` = {| opacity = "0" |}
                                 ``.rct-node label:hover, .rct-node label:active`` = {| background = "none" |}
-                                ``.rct-node-parent:not(:first-child)`` = {| marginTop = "5px" |}
+                                ``.rct-node-parent:not(:first-of-type)`` = {| marginTop = "5px" |}
+                                ``.rct-node:first-of-type`` = {| marginTop = "2px" |}
+                                ``.rct-node-leaf`` = {| marginBottom = "-11px" |}
                                 ``.markdown-container h1`` =
                                     {|
                                         borderBottom = "1px solid #777"

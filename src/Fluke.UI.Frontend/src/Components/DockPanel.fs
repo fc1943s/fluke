@@ -8,7 +8,6 @@ open Fluke.UI.Frontend.Bindings
 
 
 module DockPanel =
-
     [<RequireQualifiedAccess>]
     type DockPanelIcon =
         | Component of cmp: ReactElement
@@ -52,45 +51,33 @@ module DockPanel =
                                     match icon with
                                     | DockPanelIcon.Component cmp -> cmp
                                     | DockPanelIcon.Menu (title, icon, menu) ->
-                                        Chakra.menu
-                                            (fun _ -> ())
-                                            [
-                                                Tooltip.wrap
-                                                    (str title)
-                                                    [
-                                                        Chakra.menuButton
-                                                            (fun x ->
-                                                                x.``as`` <- Chakra.react.IconButton
-                                                                x.icon <- icon
-                                                                x.backgroundColor <- "transparent"
-                                                                x.variant <- "outline"
-                                                                x.border <- "0"
-                                                                x.width <- "30px"
-                                                                x.height <- "30px"
-                                                                x.borderRadius <- "0")
-                                                            []
-                                                    ]
-                                                Chakra.menuList
-                                                    (fun x -> x.backgroundColor <- "gray.13")
-                                                    [
-                                                        yield! menu
-                                                    ]
-                                            ])
+                                        Menu.Menu
+                                            {|
+                                                Title = title
+                                                Trigger =
+                                                    TransparentIconButton.TransparentIconButton
+                                                        {|
+                                                            Props =
+                                                                JS.newObj
+                                                                    (fun x ->
+                                                                        x.``as`` <- Chakra.react.MenuButton
+                                                                        x.fontSize <- "14px"
+                                                                        x.icon <- icon)
+                                                        |}
+                                                Menu = menu
+                                            |})
 
                         Tooltip.wrap
                             (str "Hide")
                             [
-                                Chakra.iconButton
-                                    (fun x ->
-                                        x.icon <- Icons.fa.FaMinus |> Icons.render
-                                        x.backgroundColor <- "transparent"
-                                        x.variant <- "outline"
-                                        x.border <- "0"
-                                        x.width <- "30px"
-                                        x.height <- "30px"
-                                        x.borderRadius <- "0"
-                                        x.onClick <- fun _ -> promise { setAtom None })
-                                    []
+                                TransparentIconButton.TransparentIconButton
+                                    {|
+                                        Props =
+                                            JS.newObj
+                                                (fun x ->
+                                                    x.icon <- Icons.fa.FaMinus |> Icons.render
+                                                    x.onClick <- fun _ -> promise { setAtom None })
+                                    |}
                             ]
                     ]
 

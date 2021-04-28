@@ -52,11 +52,6 @@ module TopBar =
                             ]
                     ]
 
-                AddTaskButton.AddTaskButton
-                    {|
-                        Props = JS.newObj (fun x -> x.marginLeft <- "37px")
-                    |}
-
                 Chakra.spacer (fun _ -> ()) []
 
                 Chakra.stack
@@ -81,7 +76,9 @@ module TopBar =
                                             {|
                                                 Props =
                                                     JS.newObj
-                                                        (fun x -> x.icon <- Icons.ai.AiOutlineGithub |> Icons.render)
+                                                        (fun x ->
+                                                            x.icon <- Icons.ai.AiOutlineGithub |> Icons.render
+                                                            x.fontSize <- "17px")
                                             |}
                                     ]
                             ]
@@ -95,6 +92,7 @@ module TopBar =
                                             JS.newObj
                                                 (fun x ->
                                                     x.icon <- Icons.fi.FiLogOut |> Icons.render
+                                                    x.fontSize <- "17px"
                                                     x.onClick <- logout)
                                     |}
                             ]

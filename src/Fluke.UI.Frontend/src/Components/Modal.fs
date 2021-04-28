@@ -25,6 +25,7 @@ module Modal =
         Chakra.modal
             (fun x ->
                 x.isCentered <- true
+                x.isLazy <- true
                 x.isOpen <- input.Props.isOpen
                 x.onClose <- input.Props.onClose)
             [

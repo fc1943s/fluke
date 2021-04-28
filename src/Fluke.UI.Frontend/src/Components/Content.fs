@@ -50,5 +50,7 @@ module Content =
                                         |}
                                     StatusBar.StatusBar {| Username = username |}
                                 ]
+
+                            ModalContainer.ModalContainer {| Username = username |}
                         ]
             ]

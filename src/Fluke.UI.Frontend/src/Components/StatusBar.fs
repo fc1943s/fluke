@@ -109,5 +109,4 @@ module StatusBar =
                             str $"Position: {position.Stringify ()}"
                         ]
                 | None -> ()
-
             ]

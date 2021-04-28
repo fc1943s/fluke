@@ -1,8 +1,8 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
+open Fable.Core
 open Feliz.Recoil
-open Feliz.UseListener
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -10,45 +10,48 @@ open Fluke.UI.Frontend.State
 module ModalForm =
 
     [<ReactComponent>]
+    let ModalFormTrigger
+        (input: {| Username: Username
+                   TextKeyValue: System.Guid option
+                   TextKey: TextKey
+                   Trigger: (unit -> unit) -> ReactElement |})
+        =
+        let setFormIdFlag = Recoil.useSetState (Atoms.User.formIdFlag (input.Username, input.TextKey))
+
+        let setFormVisibleFlag = Recoil.useSetState (Atoms.User.formVisibleFlag (input.Username, input.TextKey))
+
+        input.Trigger
+            (fun () ->
+                setFormIdFlag input.TextKeyValue
+                setFormVisibleFlag true)
+
+    [<ReactComponent>]
     let ModalForm
         (input: {| Username: Username
                    TextKey: TextKey
-                   Trigger: (Chakra.IChakraProps -> unit) -> ReactElement
-                   Content: System.Guid option * (unit -> unit) -> ReactElement
-                   Props: Chakra.IChakraProps |})
+                   Content: System.Guid option * (unit -> unit) -> ReactElement |})
         =
         let formIdFlag, setFormIdFlag = Recoil.useState (Atoms.User.formIdFlag (input.Username, input.TextKey))
 
         let formVisibleFlag, setFormVisibleFlag =
             Recoil.useState (Atoms.User.formVisibleFlag (input.Username, input.TextKey))
 
-        React.fragment [
-            input.Trigger
-                (fun x ->
-                    x.onClick <-
-                        (fun _ ->
-                            promise {
-                                setFormIdFlag None
-                                setFormVisibleFlag true
-                            }))
+        Modal.Modal
+            {|
+                Props =
+                    JS.newObj
+                        (fun x ->
+                            x.isOpen <- formVisibleFlag
 
-            Modal.Modal
-                {|
-                    Props =
-                        JS.newObj
-                            (fun x ->
-                                x.isOpen <- formVisibleFlag
+                            x.onClose <-
+                                fun () ->
+                                    promise {
+                                        setFormIdFlag None
+                                        setFormVisibleFlag false
+                                    }
 
-                                x.onClose <-
-                                    fun () ->
-                                        promise {
-                                            setFormIdFlag None
-                                            setFormVisibleFlag false
-                                        }
-
-                                x.children <-
-                                    [
-                                        input.Content (formIdFlag, (fun () -> setFormVisibleFlag false))
-                                    ])
-                |}
-        ]
+                            x.children <-
+                                [
+                                    input.Content (formIdFlag, (fun () -> setFormVisibleFlag false))
+                                ])
+            |}

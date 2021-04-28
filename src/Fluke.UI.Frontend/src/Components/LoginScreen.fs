@@ -17,44 +17,25 @@ module LoginScreen =
         let signIn = Auth.useSignIn ()
         let signUp = Auth.useSignUp ()
 
-        let toast = Chakra.react.useToast ()
+        let toast = Chakra.useToast ()
 
         let signInClick _ =
             promise {
                 match! signIn usernameField passwordField with
                 | Ok () -> printfn "logged"
-                | Error error ->
-                    toast.Invoke
-                        {|
-                            title = "Error"
-                            status = "error"
-                            description = error
-                            duration = 4000
-                            isClosable = true
-                        |}
+                | Error error -> toast (fun x -> x.description <- error)
             }
 
         let signUpClick _ =
             promise {
                 match! signUp usernameField passwordField with
                 | Ok () ->
-                    toast.Invoke
-                        {|
-                            title = "Success"
-                            status = "success"
-                            description = "User registered successfully"
-                            duration = 4000
-                            isClosable = true
-                        |}
-                | Error error ->
-                    toast.Invoke
-                        {|
-                            title = "Error"
-                            status = "error"
-                            description = error
-                            duration = 4000
-                            isClosable = true
-                        |}
+                    toast
+                        (fun x ->
+                            x.title <- "Success"
+                            x.status <- "success"
+                            x.description <- "User registered successfully")
+                | Error error -> toast (fun x -> x.description <- error)
             }
 
         Chakra.center

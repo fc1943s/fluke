@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.Core.JsInterop
 open Fable.Core
+open Fable.Extras
 open Fluke.Shared
 open Feliz
 open Fable.React
@@ -15,11 +16,17 @@ module Databases =
     open Domain.UserInteraction
     open Domain.State
 
-    let leafIcon (username: Username) (database: Database) =
+    [<ReactComponent>]
+    let LeafIcon (username: Username) (database: Database) =
         let sharedWith =
-            match database.SharedWith with
-            | DatabaseAccess.Public -> []
-            | DatabaseAccess.Private accessList -> accessList |> List.map DatabaseAccessItem.Value
+            if database.Owner = TempData.testUser.Username then
+                [
+                    username
+                ]
+            else
+                match database.SharedWith with
+                | DatabaseAccess.Public -> []
+                | DatabaseAccess.Private accessList -> accessList |> List.map DatabaseAccessItem.Value
 
         let isPrivate =
             match database.SharedWith with
@@ -119,8 +126,7 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBox
-                        x.marginLeft <- "-39px"
-                        x.marginTop <- "-1px"
+                        x.marginLeft <- "-51px"
                         x.height <- "17px"
                         x.width <- "17px"
                         x.color <- "white")
@@ -129,8 +135,7 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdIndeterminateCheckBox
-                        x.marginLeft <- "-39px"
-                        x.marginTop <- "-1px"
+                        x.marginLeft <- "-51px"
                         x.height <- "17px"
                         x.width <- "17px"
                         x.color <- "white")
@@ -139,8 +144,7 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBoxOutlineBlank
-                        x.marginLeft <- "-39px"
-                        x.marginTop <- "-1px"
+                        x.marginLeft <- "-51px"
                         x.height <- "17px"
                         x.width <- "17px"
                         x.color <- "white")
@@ -149,14 +153,14 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronDown
-                        x.marginTop <- "-5px"
+                        x.marginLeft <- "-10px"
                         x.color <- "white")
                     []
             expandClose =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronRight
-                        x.marginTop <- "-5px"
+                        x.marginLeft <- "-10px"
                         x.color <- "white")
                     []
             parentClose =
@@ -175,35 +179,118 @@ module Databases =
                     []
         |}
 
+    [<ReactComponent>]
+    let NodeMenu
+        (input: {| Username: Username
+                   Database: Database |})
+        =
+        let setDatabaseId = Recoil.useSetState (Atoms.Task.databaseId None)
+
+        Menu.Menu
+            {|
+                Title = ""
+                Trigger =
+                    React.fragment [
+                        InputLabelIconButton.InputLabelIconButton
+                            {|
+                                Props =
+                                    JS.newObj
+                                        (fun x ->
+                                            x.``as`` <- Chakra.react.MenuButton
+                                            x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                            x.fontSize <- "10px"
+                                            x.marginLeft <- "6px")
+                            |}
+                    ]
+                Menu =
+                    [
+                        Chakra.menuItem
+                            (fun x -> x.onClick <- fun e -> promise { e.preventDefault () })
+                            [
+                                str "Clone Database..."
+                            ]
+
+                        ModalForm.ModalFormTrigger
+                            {|
+                                Username = input.Username
+                                Trigger =
+                                    fun trigger ->
+                                        Chakra.menuItem
+                                            (fun x ->
+                                                x.onClick <-
+                                                    fun _ ->
+                                                        promise {
+                                                            setDatabaseId (Some input.Database.Id)
+                                                            trigger ()
+                                                        })
+                                            [
+                                                str "Add Task..."
+                                            ]
+                                TextKey = TextKey (nameof TaskForm)
+                                TextKeyValue = None
+                            |}
+                    ]
+            |}
+
     let node
-        (input: {| disabled: bool
-                   isTesting: bool
-                   value: string
-                   label: string
-                   children: obj
-                   icon: obj |})
+        (input: {| Username: Username
+                   Database: Database option
+                   Disabled: bool
+                   IsTesting: bool
+                   Value: string
+                   Label: string
+                   Children: obj
+                   Icon: obj |})
         =
         {|
-            value = input.value
-            showCheckbox = input.value <> ""
-            disabled = input.disabled || input.value = ""
+            value = input.Value
+            showCheckbox = input.Value <> ""
+            disabled = input.Disabled || input.Value = ""
             label =
                 React.fragment [
+                    let label =
+                        if input.Children = JS.undefined then
+                            Some ((JSe.RegExp @"^(.*? )([^ ]+)$").Match input.Label)
+                        else
+                            None
+
                     Chakra.box
                         (fun x ->
-                            x?``data-testid`` <- if input.isTesting then $"menu-item-{input.value}" else null
+                            x?``data-testid`` <- if input.IsTesting then $"menu-item-{input.Value}" else null
                             x.fontSize <- "12px"
-                            x.lineHeight <- "15px"
+                            x.paddingTop <- "1px"
+                            x.paddingBottom <- "1px"
+                            x.lineHeight <- "19px"
                             x.marginLeft <- "-6px"
                             x.display <- "inline")
                         [
-                            str input.label
+                            match label with
+                            | Some label -> str (label |> Seq.item 1)
+                            | None -> str input.Label
                         ]
 
-                    Chakra.box (fun x -> x.marginTop <- "-8px") []
+                    match input.Database with
+                    | Some database ->
+                        Chakra.box
+                            (fun x ->
+                                x.display <- "inline"
+                                x.fontSize <- "initial"
+                                x.whiteSpace <- "nowrap")
+                            [
+                                match label with
+                                | Some label -> str (label |> Seq.item 2)
+                                | None -> ()
+
+                                NodeMenu
+                                    {|
+                                        Username = input.Username
+                                        Database = database
+                                    |}
+                            ]
+                    | _ -> ()
                 ]
-            children = input.children
-            icon = input.icon
+            children = input.Children
+            icon = input.Icon
         |}
 
     type Node = Node of value: string * label: string * children: Node list * index: int option
@@ -318,21 +405,24 @@ module Databases =
                                 | [] -> JS.undefined
                                 | _ -> box (loop children |> List.toArray)
 
-                            let icon =
+                            let database =
                                 match index with
-                                | Some index ->
-                                    let database = availableDatabases.[index]
-                                    leafIcon input.Username database
+                                | Some index -> Some availableDatabases.[index]
+                                | _ -> None
+
+                            let icon =
+                                match database with
+                                | Some database -> LeafIcon input.Username database
                                 | _ -> JS.undefined
 
                             let disabled =
-                                match index with
-                                | Some index ->
+                                match database with
+                                | Some database ->
                                     let validSelectedDatabases =
                                         selectedDatabaseIds
                                         |> Array.map (fun databaseId -> availableDatabasesMap |> Map.tryFind databaseId)
 
-                                    match availableDatabases.[index].Position with
+                                    match database.Position with
                                     | Some position ->
                                         validSelectedDatabases
                                         |> Array.exists
@@ -350,22 +440,21 @@ module Databases =
                                 | _ -> false
 
                             let newValue =
-                                match index with
-                                | Some index ->
-                                    availableDatabases.[index].Id
-                                    |> DatabaseId.Value
-                                    |> string
+                                match database with
+                                | Some database -> database.Id |> DatabaseId.Value |> string
                                 | None -> value
 
                             let newNode =
                                 node
                                     {|
-                                        disabled = disabled
-                                        isTesting = isTesting
-                                        value = newValue
-                                        label = label
-                                        children = nodeChildren
-                                        icon = icon
+                                        Username = input.Username
+                                        Database = database
+                                        Disabled = disabled
+                                        IsTesting = isTesting
+                                        Value = newValue
+                                        Label = label
+                                        Children = nodeChildren
+                                        Icon = icon
                                     |}
 
                             newNode :: loop tail
@@ -389,7 +478,7 @@ module Databases =
                 x?``data-testid`` <- if isTesting then nameof Databases else null)
             [
                 Chakra.box
-                    (fun x -> x.margin <- "1px")
+                    (fun x -> x.marginLeft <- "6px")
                     [
                         CheckboxTree.render
                             {|

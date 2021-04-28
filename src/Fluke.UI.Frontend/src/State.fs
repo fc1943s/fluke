@@ -355,6 +355,12 @@ module State =
                     (fun (_taskId: TaskId option) -> Task.Default.Name)
                 )
 
+            let rec databaseId =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof databaseId}",
+                    (fun (_taskId: TaskId option) -> None: DatabaseId option)
+                )
+
             let rec scheduling =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof scheduling}",

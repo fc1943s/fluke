@@ -181,20 +181,8 @@ module Recoil =
         | String.ValidString _ when result |> Seq.last = '/' -> result |> String.take (result.Length - 1)
         | _ -> result
 
-    let rec waitForObject fn =
-        async {
-            let obj = fn ()
-
-            if box obj <> null then
-                return obj
-            else
-                printfn "waitForObject: null. waiting..."
-                do! Async.Sleep 100
-                return! waitForObject fn
-        }
-
     let getGun () =
-        waitForObject (fun () -> box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj>)
+        JS.waitForObject (fun () -> box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj>)
 
     let getGunAtomNode (username: UserInteraction.Username option) (atom: RecoilValue<_, _>) (keySuffix: string) =
         async {
@@ -266,6 +254,18 @@ module RecoilMagic =
                 let! initialValue = this.snapshot.getPromise (Recoil.Atoms.Form.initialValue atomField.ReadOnly.key)
                 this.set (atomField.ReadWrite, initialValue :?> 'U)
             }
+
+        member this.readWriteSet<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>, key: 'T, value: 'U) =
+            let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
+            this.set (atomField.ReadWrite, value)
+
+        member this.scopedSet<'T, 'U>
+            (atomScope: Recoil.AtomScope)
+            (atom: 'T -> RecoilValue<'U, ReadWrite>, key: 'T, value: 'U)
+            =
+            match atomScope with
+            | Recoil.AtomScope.ReadOnly -> this.set (atom key, value)
+            | Recoil.AtomScope.ReadWrite -> this.readWriteSet (atom, key, value)
 
     type Snapshot with
         member this.getReadWritePromise atom key =

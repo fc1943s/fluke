@@ -21,89 +21,89 @@ module TaskForm =
                    TaskId: TaskId option
                    OnSave: unit -> JS.Promise<unit> |})
         =
+        let databaseId = Recoil.useValue (Atoms.Task.databaseId input.TaskId)
+        let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name databaseId)
+
+        printfn $"TaskForm databaseId={databaseId} databaseName={databaseName} input.TaskId={input.TaskId}"
+
         let onSave =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) _ ->
                     promise {
-                        let eventId = Atoms.Events.newEventId ()
+                        match databaseId with
+                        | Some databaseId ->
+                            let eventId = Atoms.Events.newEventId ()
 
-                        let! name = setter.snapshot.getReadWritePromise Atoms.Task.name input.TaskId
+                            let! name = setter.snapshot.getReadWritePromise Atoms.Task.name input.TaskId
 
-                        let! selectedDatabaseIds = setter.snapshot.getPromise Atoms.selectedDatabaseIds
+                            let event = Atoms.Events.Event.AddTask (eventId, name)
 
-                        let databaseId = selectedDatabaseIds |> Array.last
+                            setter.set (Atoms.Events.events eventId, event)
 
-                        let event = Atoms.Events.Event.AddTask (eventId, name)
+                            let! databaseStateMapCache =
+                                setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache input.Username)
 
-                        setter.set (Atoms.Events.events eventId, event)
+                            let databaseState = databaseStateMapCache |> Map.tryFind databaseId
 
-                        let! databaseStateMapCache =
-                            setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache input.Username)
+                            let newDatabaseStateMapCache =
+                                match databaseState with
+                                | Some databaseState ->
+                                    let information = Area ({ Name = AreaName "workflow" }, [])
 
-                        let databaseState = databaseStateMapCache |> Map.tryFind databaseId
+                                    let task =
+                                        {
+                                            Name = name
+                                            Information = information
+                                            Duration = None
+                                            PendingAfter = None
+                                            MissedAfter = None
+                                            Scheduling = Scheduling.Manual ManualScheduling.WithoutSuggestion
+                                            Priority = None
+                                        }
 
-                        let newDatabaseStateMapCache =
-                            match databaseState with
-                            | Some databaseState ->
-                                let information = Area ({ Name = AreaName "workflow" }, [])
+                                    let taskState =
+                                        {
+                                            TaskId = TaskId.NewId ()
+                                            Task = task
+                                            Sessions = []
+                                            Attachments = []
+                                            SortList = []
+                                            CellStateMap = Map.empty
+                                            InformationMap =
+                                                [
+                                                    information, ()
+                                                ]
+                                                |> Map.ofList
+                                        }
 
-                                let task =
-                                    {
-                                        Name = name
-                                        Information = information
-                                        Duration = None
-                                        PendingAfter = None
-                                        MissedAfter = None
-                                        Scheduling = Scheduling.Manual ManualScheduling.WithoutSuggestion
-                                        Priority = None
-                                    }
+                                    let informationState =
+                                        {
+                                            Information = information
+                                            Attachments = []
+                                            SortList = []
+                                        }
 
-                                let taskState =
-                                    {
-                                        TaskId = TaskId.NewId ()
-                                        Task = task
-                                        Sessions = []
-                                        Attachments = []
-                                        SortList = []
-                                        CellStateMap = Map.empty
-                                        InformationMap =
-                                            [
-                                                information, ()
-                                            ]
-                                            |> Map.ofList
-                                    }
+                                    databaseStateMapCache
+                                    |> Map.add
+                                        databaseId
+                                        { databaseState with
+                                            InformationStateMap =
+                                                databaseState.InformationStateMap
+                                                |> Map.add information informationState
+                                            TaskStateMap =
+                                                databaseState.TaskStateMap
+                                                |> Map.add task taskState
+                                        }
+                                | None -> databaseStateMapCache
 
-                                let informationState =
-                                    {
-                                        Information = information
-                                        Attachments = []
-                                        SortList = []
-                                    }
+                            setter.set (Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
 
-                                databaseStateMapCache
-                                |> Map.add
-                                    databaseId
-                                    { databaseState with
-                                        InformationStateMap =
-                                            databaseState.InformationStateMap
-                                            |> Map.add information informationState
-                                        TaskStateMap =
-                                            databaseState.TaskStateMap
-                                            |> Map.add task taskState
-                                    }
-                            | None -> databaseStateMapCache
+                            do! setter.readWriteReset Atoms.Task.name input.TaskId
 
-                        setter.set (Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
-
-                        do! setter.readWriteReset Atoms.Task.name input.TaskId
-
-                        printfn $"event {event}"
-                        do! input.OnSave ()
+                            printfn $"event {event}"
+                            do! input.OnSave ()
+                        | _ -> failwith "TaskForm: invalid databaseId"
                     })
-
-        let selectedDatabaseIds = Recoil.useValue Atoms.selectedDatabaseIds
-
-        let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name (selectedDatabaseIds |> Array.tryHead))
 
         Chakra.stack
             (fun x -> x.spacing <- "25px")
@@ -117,7 +117,7 @@ module TaskForm =
                 Chakra.box
                     (fun _ -> ())
                     [
-                        str $"Selected Database: {databaseName}"
+                        str $"Database: {databaseName}"
                     ]
 
                 Chakra.stack
