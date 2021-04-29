@@ -98,7 +98,6 @@
         <Compile Include="src\Tests\Core\Setup.fs" />
         <Compile Include="src\Tests\CellSelection.test.fs" />
         <Compile Include="src\Tests\Router.test.fs" />
-        <Compile Include="src\Tests\DatabaseSelection.test.fs" />
         <Compile Include="src\Tests\Full.spec.fs" />
         <Content Include="public\index.html" />
         <Content Include="public\index.tsx" />

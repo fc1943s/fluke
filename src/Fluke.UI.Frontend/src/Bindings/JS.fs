@@ -13,6 +13,8 @@ module Operators =
     let (<+) _o1 _o2 : unit = jsNative
 
 module JS =
+    let isProduction = Browser.Dom.window.location.host.EndsWith "github.io"
+
     [<Emit "(w => $0 instanceof w[$1])(window)">]
     let instanceof (_obj: obj, _typeName: string) : bool = jsNative
 

@@ -44,6 +44,7 @@ module RouterObserver =
         let log = useLog ()
         let sessionRestored, setSessionRestored = Recoil.useState Atoms.sessionRestored
         let username = Recoil.useValue Atoms.username
+        let deviceInfo = Recoil.useValue Selectors.deviceInfo
         let view, setView = Recoil.useStateDefault Atoms.User.view username
 
         let onKeyDown =
@@ -66,19 +67,11 @@ module RouterObserver =
         let initialSegments, _ = React.useState currentSegments
         let restoringInitialSegments, setRestoringInitialSegments = React.useState false
 
-        let isRootHosted =
-            React.useMemo (
-                (fun () ->
-                    Browser.Dom.window.location.host.EndsWith "github.io"
-                    |> not),
-                [||]
-            )
-
         let parseSegments =
             Recoil.useCallbackRef
                 (fun _ segments ->
                     match (segments
-                           |> List.skip (if isRootHosted then 0 else 1)) with
+                           |> List.skip (if not deviceInfo.IsProduction then 0 else 1)) with
                     | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
                     | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
                     | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
@@ -89,7 +82,7 @@ module RouterObserver =
             React.useMemo (
                 (fun () ->
                     let pathPrefix =
-                        if not isRootHosted then
+                        if deviceInfo.IsProduction then
                             [|
                                 initialSegments.[0]
                             |]
@@ -101,7 +94,7 @@ module RouterObserver =
                 [|
                     parseSegments
                     initialSegments
-                    isRootHosted
+                    deviceInfo
                     currentSegments
                 |]
             )

@@ -46,11 +46,11 @@ module State =
 
     and [<RequireQualifiedAccess>] DatabaseAccess =
         | Public
-        | Private of accessList: DatabaseAccessItem list
+        | Private of accessList: (Username * Access) list
 
-    and [<RequireQualifiedAccess>] DatabaseAccessItem =
-        | Admin of username: Username
-        | ReadOnly of username: Username
+    and [<RequireQualifiedAccess>] Access =
+        | ReadWrite
+        | ReadOnly
 
     and InformationState =
         {
@@ -95,12 +95,6 @@ module State =
         | Scheduled
 
 
-    and DatabaseAccessItem with
-        static member inline Value item =
-            match item with
-            | DatabaseAccessItem.Admin username -> username
-            | DatabaseAccessItem.ReadOnly username -> username
-
     and DatabaseId with
         static member inline NewId () = DatabaseId (Guid.NewGuid ())
         static member inline Value (DatabaseId guid) = guid
@@ -141,18 +135,23 @@ module State =
                 information, informationState)
         |> Map.ofList
 
-    let hasAccess database username =
+    let getAccess database username =
         match database with
-        | { Owner = owner } when owner = username -> true
-        | { SharedWith = DatabaseAccess.Public } -> true
+        | { Owner = owner } when owner = username -> Some Access.ReadWrite
+        | { SharedWith = DatabaseAccess.Public } -> Some Access.ReadWrite
         | {
               SharedWith = DatabaseAccess.Private accessList
           } ->
             accessList
-            |> List.exists
-                (function
-                | DatabaseAccessItem.Admin dbUser
-                | DatabaseAccessItem.ReadOnly dbUser -> dbUser = username)
+            |> List.choose (fun (username', access) -> if username' <> username then None else Some access)
+            |> List.sortWith
+                (fun x y ->
+                    match x, y with
+                    | Access.ReadWrite, Access.ReadWrite -> 2
+                    | Access.ReadWrite, _
+                    | _, Access.ReadWrite -> 1
+                    | _ -> 0)
+            |> List.tryHead
 
 
     let databaseStateWithInteractions (userInteractionList: UserInteraction list) (databaseState: DatabaseState) =

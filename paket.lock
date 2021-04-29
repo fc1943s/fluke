@@ -2,7 +2,7 @@ STORAGE: NONE
 RESTRICTION: == net50
 NUGET
   remote: https://api.nuget.org/v3/index.json
-    altcover (8.1.819)
+    altcover (8.2.820)
     BlackFox.VsWhere (1.1)
       FSharp.Core (>= 4.2.3)
       Microsoft.Win32.Registry (>= 4.7)
@@ -128,8 +128,8 @@ NUGET
       Fable.Remoting.MsgPack (>= 1.9)
       Fable.SimpleJson (>= 3.19)
       FSharp.Core (>= 4.7)
-    Fable.Remoting.Giraffe (5.6.0-rc-6)
-      Fable.Remoting.Server (>= 5.18)
+    Fable.Remoting.Giraffe (5.7.0-rc-6)
+      Fable.Remoting.Server (>= 5.19)
       FSharp.Core (>= 5.0)
       Giraffe (>= 5.0.0-rc-6)
     Fable.Remoting.Json (2.16)
@@ -138,7 +138,7 @@ NUGET
     Fable.Remoting.MsgPack (1.9)
       FSharp.Core (>= 4.7.2)
       TypeShape (>= 8.0.1)
-    Fable.Remoting.Server (5.18)
+    Fable.Remoting.Server (5.19)
       Fable.Remoting.Json (>= 2.16)
       Fable.Remoting.MsgPack (>= 1.9)
       FSharp.Core (>= 4.7.2)
@@ -235,7 +235,7 @@ NUGET
     Fantomas (4.4)
       FSharp.Compiler.Service (>= 38.0.2)
       FSharp.Core (>= 5.0)
-    Farmer (1.5.0-beta3)
+    Farmer (1.5)
       FSharp.Core (>= 5.0)
     Feliz (1.43)
       Fable.Core (>= 3.1.5)

@@ -67,10 +67,8 @@ module Cell =
 
         Chakra.center
             (fun x ->
-                x?``data-testid`` <- if isTesting then
-                                         $"cell-{input.TaskId}-{referenceDay.DateTime.ToShortDateString ()}"
-                                     else
-                                         null
+                if isTesting then
+                    x?``data-testid`` <- $"cell-{input.TaskId}-{referenceDay.DateTime.ToShortDateString ()}"
 
                 x.onClick <- onCellClick
                 x.width <- "17px"

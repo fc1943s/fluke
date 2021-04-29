@@ -37,6 +37,9 @@ module Cypress =
             abstract ``type`` : string -> Chainable2<'T>
             abstract scrollTo : string -> {| ensureScrollable: bool |} -> unit
             abstract get : string -> Chainable2<'T>
+            abstract parents : string -> Chainable2<'T>
+            abstract find : string -> Chainable2<'T>
+            abstract children : string -> Chainable2<'T>
 
         type Location =
             abstract pathname : string

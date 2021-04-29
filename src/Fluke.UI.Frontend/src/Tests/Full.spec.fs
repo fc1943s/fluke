@@ -76,16 +76,13 @@ module Full =
                     (Cy.contains (nameof Databases) None).click ()
                     |> ignore
 
-                    (Cy.contains "Lane Rendering" (Some {| timeout = timeout |}))
+                    (Cy.contains "Templates/Unit Tests" (Some {| timeout = timeout |}))
                         .should "be.visible"
                     |> ignore
 
                     (**)
 
-                    (**)
-
-                    (Cy.contains "Add Database" (Some {| timeout = timeout |}))
-                        .click ()
+                    (Cy.get "[data-testid='Add Database']").click ()
                     |> ignore
 
                     Cy
@@ -99,17 +96,21 @@ module Full =
 
 
                     (**)
-                    Cy
-                        .get(
-                            $"[data-testid={nameof Databases}]"
-                        )
-                        .scrollTo
-                        "bottom"
-                        {| ensureScrollable = false |}
+
+                    (Cy.contains "Created by me" None)
+                        .parents(".rct-text")
+                        .children(".rct-collapse-btn")
+                        .click ()
+                    |> ignore
 
                     (Cy.contains dbName None).click () |> ignore
-                    (**)
 
+                    (Cy.contains dbName None)
+                        .find(".chakra-button")
+                        .click ()
+                    |> ignore
+
+                    (**)
 
                     (**)
                     (Cy.contains "Add Task" None).click () |> ignore

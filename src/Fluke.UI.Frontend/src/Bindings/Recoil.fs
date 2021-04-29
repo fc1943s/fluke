@@ -192,9 +192,11 @@ module Recoil =
 
             let newId = $"""{gunAtomKey}{keySuffix}"""
 
-            printfn
-                $"""getGunAtomNode. gunAtomKey={gunAtomKey} atom.key={atom.key} newKey={newId}
-                usernamestr={atom.key.Replace ((JSe.RegExp "__\[.*?\]"), "")} """
+            if not JS.isProduction && not JS.isTesting then
+                //                printfn
+//                    $"""getGunAtomNode. gunAtomKey={gunAtomKey} atom.key={atom.key} newKey={newId}
+//                usernamestr={atom.key.Replace ((JSe.RegExp "__\[.*?\]"), "")} """
+                printfn $"""getGunAtomNode. newId={newId}"""
 
             return Gun.getGunAtomNode gun newId, newId
 
@@ -216,7 +218,8 @@ module Recoil =
 
                     gunAtomNode.on
                         (fun data ->
-                            printfn $"gunEffect. gunAtomNode.on() effect. id={id} data={JS.JSON.stringify data}"
+                            if not JS.isProduction && not JS.isTesting then
+                                printfn $"gunEffect. gunAtomNode.on() effect. id={id} data={JS.JSON.stringify data}"
 
                             match Gun.deserializeGunAtomNode data with
                             | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
@@ -231,14 +234,18 @@ module Recoil =
                         let! gunAtomNode, _ = getGunAtomNode username atom keySuffix
                         Gun.putGunAtomNode gunAtomNode value
 
-                        printfn $"gunEffect. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {value}"
+                        if not JS.isProduction && not JS.isTesting then
+                            printfn $"gunEffect. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {value}"
                      })
                     |> Promise.start)
 
             fun () ->
                 (promise {
                     let! gunAtomNode, _ = getGunAtomNode username atom keySuffix
-                    printfn "gunEffect. unsubscribe atom. calling selected.off ()"
+
+                    if not JS.isProduction && not JS.isTesting then
+                        printfn "gunEffect. unsubscribe atom. calling selected.off ()"
+
                     gunAtomNode.off () |> ignore
                  })
                 |> Promise.start)

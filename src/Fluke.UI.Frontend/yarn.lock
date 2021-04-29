@@ -5494,10 +5494,55 @@ cypress-terminal-report@~3.1:
     methods "^1.1.2"
     tv4 "^1.3.0"
 
-cypress@*, cypress@~7.1:
+cypress@*:
   version "7.1.0"
   resolved "https://registry.yarnpkg.com/cypress/-/cypress-7.1.0.tgz#6cb5dc22c6271a9d7a79a2477251a95afc77e531"
   integrity sha512-AptQP9fVtN/FfOv8rJ9hTGJE2XQFc8saLHT38r/EeyWhzp0q/+P/DYRTDtjGZHeLTCNznAUrT4lal8jm+ouS7Q==
+  dependencies:
+    "@cypress/listr-verbose-renderer" "^0.4.1"
+    "@cypress/request" "^2.88.5"
+    "@cypress/xvfb" "^1.2.4"
+    "@types/node" "^14.14.31"
+    "@types/sinonjs__fake-timers" "^6.0.2"
+    "@types/sizzle" "^2.3.2"
+    arch "^2.2.0"
+    blob-util "^2.0.2"
+    bluebird "^3.7.2"
+    cachedir "^2.3.0"
+    chalk "^4.1.0"
+    check-more-types "^2.24.0"
+    cli-table3 "~0.6.0"
+    commander "^5.1.0"
+    common-tags "^1.8.0"
+    dayjs "^1.10.4"
+    debug "4.3.2"
+    eventemitter2 "^6.4.3"
+    execa "4.1.0"
+    executable "^4.1.1"
+    extract-zip "^1.7.0"
+    fs-extra "^9.1.0"
+    getos "^3.2.1"
+    is-ci "^3.0.0"
+    is-installed-globally "~0.4.0"
+    lazy-ass "^1.6.0"
+    listr "^0.14.3"
+    lodash "^4.17.21"
+    log-symbols "^4.0.0"
+    minimist "^1.2.5"
+    ospath "^1.2.2"
+    pretty-bytes "^5.6.0"
+    ramda "~0.27.1"
+    request-progress "^3.0.0"
+    supports-color "^8.1.1"
+    tmp "~0.2.1"
+    untildify "^4.0.0"
+    url "^0.11.0"
+    yauzl "^2.10.0"
+
+cypress@~7.2:
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/cypress/-/cypress-7.2.0.tgz#6a3364e18972f898fff1fb12c1ff747939e45ddc"
+  integrity sha512-lHHGay+YsffDn4M0bkkwezylBVHUpwwhtqte4LNPrFRCHy77X38+1PUe3neFb3glVTM+rbILtTN6FhO2djcOuQ==
   dependencies:
     "@cypress/listr-verbose-renderer" "^0.4.1"
     "@cypress/request" "^2.88.5"
@@ -12152,14 +12197,14 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@0.0.0-experimental-709f94841:
-  version "0.0.0-experimental-709f94841"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-709f94841.tgz#c208d3d61e5b5ef14d2773a9bad3add60fb728dd"
-  integrity sha512-92jBeR6zUOP3LdcMGLLk/7riURspFXCX6yUy4aB4JSR07NRR6Wbo8dWYGpkJemFDEjPyMW2/dJRcGhScBOZVvw==
+react-dom@0.0.0-experimental-48740429b:
+  version "0.0.0-experimental-48740429b"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-0.0.0-experimental-48740429b.tgz#d1a69ea4e8f87bf6608f02d6e71d219ff135b8a0"
+  integrity sha512-757XOzCh2NJoSWdGfLc75b8JixibWbg5ortl8XCRqXUPzUl9ZrrS6i5DDbbuVE+LTzcJ+YmgmRBmd6yVryT96A==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    scheduler "0.0.0-experimental-709f94841"
+    scheduler "0.0.0-experimental-48740429b"
 
 react-error-overlay@^6.0.9:
   version "6.0.9"
@@ -12320,10 +12365,10 @@ react-style-singleton@^2.1.0:
     invariant "^2.2.4"
     tslib "^1.0.0"
 
-react@0.0.0-experimental-709f94841:
-  version "0.0.0-experimental-709f94841"
-  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-709f94841.tgz#1b2c1dfde19b9615b9e69b07042302f59bd7fb52"
-  integrity sha512-AL0tS042ahugKi40rAwxIV0pWZ0MpsBd9C+fWzJnmQAyIJnV4EoN/glOn6Yd+VZQnf5hgBrA41kqF9oGWSG9yg==
+react@0.0.0-experimental-48740429b:
+  version "0.0.0-experimental-48740429b"
+  resolved "https://registry.yarnpkg.com/react/-/react-0.0.0-experimental-48740429b.tgz#a01fabe13e53d206884f0eb9e4a912f788629631"
+  integrity sha512-kBPiv7aLzWB27U19PwbCS+D5x5gZ+Ic8XPH6SJQEpdMWgXyRunZhk+uTwK1CWf/3fmg0cXjsM9KqlBz5bMbo0g==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -12984,10 +13029,10 @@ saxes@^5.0.1:
   dependencies:
     xmlchars "^2.2.0"
 
-scheduler@0.0.0-experimental-709f94841:
-  version "0.0.0-experimental-709f94841"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-709f94841.tgz#b8aabc322295054a951a272105d8a04aac6296ac"
-  integrity sha512-FoejVV2wnRXCcofDoO+C9W1z8362cxIJ/j5NXLEk2HEahObutkmoFxLmWZYEyvRIM2CQoYkZaDappQZTl6qV8g==
+scheduler@0.0.0-experimental-48740429b:
+  version "0.0.0-experimental-48740429b"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.0.0-experimental-48740429b.tgz#efe9496841f62320dc29487b996c504c307c1c93"
+  integrity sha512-xeeNZkSA3U83Ws5iUYn+wkChgeEpvc24qwlYPESwJB11658IbqA0Og3C0kJ2KUnfyRbLsYmrbQAmHgjtQ7jGZg==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"

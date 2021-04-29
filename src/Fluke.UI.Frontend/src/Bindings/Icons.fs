@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Bindings
 
 
 open Fable.Core
+open Fluke.UI.Frontend.Bindings.Chakra
 open Fluke.UI.Frontend.Bindings.Vendor
 
 module Icons =
@@ -71,5 +72,12 @@ module Icons =
     let wi : __wi_index.IExports = jsNative
 
     let render cmp = React.bindComponent () [] cmp
+
+    let renderChakra (props: IChakraProps -> unit) cmp =
+        box
+            (fun x ->
+                props x
+                x.``as`` <- cmp)
+            []
 
     let wrap cmp = fun () -> render cmp

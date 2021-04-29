@@ -202,7 +202,7 @@ module View =
             ||> List.fold
                     (fun (informationStateMap, taskStateMap) databaseState ->
                         match databaseState with
-                        | databaseState when hasAccess databaseState.Database input.Username ->
+                        | databaseState when (getAccess databaseState.Database input.Username).IsSome ->
                             let newInformationStateMap =
                                 mergeInformationStateMap informationStateMap databaseState.InformationStateMap
 

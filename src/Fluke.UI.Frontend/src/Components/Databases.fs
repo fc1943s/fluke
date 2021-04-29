@@ -26,7 +26,7 @@ module Databases =
             else
                 match database.SharedWith with
                 | DatabaseAccess.Public -> []
-                | DatabaseAccess.Private accessList -> accessList |> List.map DatabaseAccessItem.Value
+                | DatabaseAccess.Private accessList -> accessList |> List.map fst
 
         let isPrivate =
             match database.SharedWith with
@@ -186,6 +186,10 @@ module Databases =
         =
         let setDatabaseId = Recoil.useSetState (Atoms.Task.databaseId None)
 
+        let isReadWrite =
+            input.Database.Owner <> TempData.testUser.Username
+            && (getAccess input.Database input.Username) = Some Access.ReadWrite
+
         Menu.Menu
             {|
                 Title = ""
@@ -204,43 +208,77 @@ module Databases =
                     ]
                 Menu =
                     [
-                        ModalForm.ModalFormTrigger
-                            {|
-                                Username = input.Username
-                                Trigger =
-                                    fun trigger ->
-                                        Chakra.menuItem
+                        if isReadWrite then
+                            ModalForm.ModalFormTrigger
+                                {|
+                                    Username = input.Username
+                                    Trigger =
+                                        fun trigger ->
+                                            Chakra.menuItem
+                                                (fun x ->
+                                                    x.icon <-
+                                                        Icons.bs.BsPlus
+                                                        |> Icons.renderChakra
+                                                            (fun x ->
+                                                                x.fontSize <- "13px"
+                                                                x.marginTop <- "-1px")
+
+                                                    x.onClick <-
+                                                        fun _ ->
+                                                            promise {
+                                                                setDatabaseId (Some input.Database.Id)
+                                                                trigger ()
+                                                            })
+                                                [
+                                                    str "Add Task"
+                                                ]
+                                    TextKey = TextKey (nameof TaskForm)
+                                    TextKeyValue = None
+                                |}
+
+                            Chakra.menuItem
+                                (fun x ->
+
+                                    x.icon <-
+                                        Icons.bs.BsPen
+                                        |> Icons.renderChakra
                                             (fun x ->
-                                                x.onClick <-
-                                                    fun _ ->
-                                                        promise {
-                                                            setDatabaseId (Some input.Database.Id)
-                                                            trigger ()
-                                                        })
-                                            [
-                                                str "Add Task..."
-                                            ]
-                                TextKey = TextKey (nameof TaskForm)
-                                TextKeyValue = None
-                            |}
+                                                x.fontSize <- "13px"
+                                                x.marginTop <- "-1px")
+
+                                    x.onClick <- fun e -> promise { e.preventDefault () })
+                                [
+                                    str "Edit Database"
+                                ]
+
+                            Chakra.menuItem
+                                (fun x ->
+                                    x.icon <-
+                                        Icons.bs.BsTrash
+                                        |> Icons.renderChakra
+                                            (fun x ->
+                                                x.fontSize <- "13px"
+                                                x.marginTop <- "-1px")
+
+                                    x.onClick <- fun e -> promise { e.preventDefault () })
+                                [
+                                    str "Delete Database"
+                                ]
 
                         Chakra.menuItem
-                            (fun x -> x.onClick <- fun e -> promise { e.preventDefault () })
+                            (fun x ->
+                                x.icon <-
+                                    Icons.fi.FiCopy
+                                    |> Icons.renderChakra
+                                        (fun x ->
+                                            x.fontSize <- "13px"
+                                            x.marginTop <- "-1px")
+
+                                x.onClick <- fun e -> promise { e.preventDefault () })
                             [
-                                str "Edit Database..."
+                                str "Clone Database"
                             ]
 
-                        Chakra.menuItem
-                            (fun x -> x.onClick <- fun e -> promise { e.preventDefault () })
-                            [
-                                str "Clone Database..."
-                            ]
-
-                        Chakra.menuItem
-                            (fun x -> x.onClick <- fun e -> promise { e.preventDefault () })
-                            [
-                                str "Delete Database..."
-                            ]
                     ]
             |}
 
@@ -268,7 +306,6 @@ module Databases =
 
                     Chakra.box
                         (fun x ->
-                            x?``data-testid`` <- if input.IsTesting then $"menu-item-{input.Value}" else null
                             x.fontSize <- "12px"
                             x.paddingTop <- "1px"
                             x.paddingBottom <- "1px"
@@ -491,9 +528,7 @@ module Databases =
         Browser.Dom.window?nodes <- nodes
 
         Chakra.stack
-            (fun x ->
-                x <+ input.Props
-                x?``data-testid`` <- if isTesting then nameof Databases else null)
+            (fun x -> x <+ input.Props)
             [
                 Chakra.box
                     (fun x -> x.marginLeft <- "6px")

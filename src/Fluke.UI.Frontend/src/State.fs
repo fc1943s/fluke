@@ -669,6 +669,7 @@ module State =
                 IsEdge: bool
                 IsMobile: bool
                 IsExtension: bool
+                IsProduction: bool
             }
 
         let rec deviceInfo =
@@ -690,6 +691,7 @@ module State =
                                             JSe.RegExpFlag().i)
                                     .Test userAgent
                             IsExtension = Browser.Dom.window.location.protocol = "chrome-extension:"
+                            IsProduction = JS.isProduction
                         }
 
                     printfn $"userAgent: {userAgent} deviceInfo: {deviceInfo}"

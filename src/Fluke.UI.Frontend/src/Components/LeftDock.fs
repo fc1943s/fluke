@@ -6,6 +6,7 @@ open Feliz.Recoil
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
+open Fable.Core.JsInterop
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 
@@ -71,6 +72,9 @@ module LeftDock =
                                                                 Props =
                                                                     JS.newObj
                                                                         (fun x ->
+                                                                            if JS.isTesting then
+                                                                                x?``data-testid`` <- "Add Database"
+
                                                                             x.icon <- Icons.fi.FiPlus |> Icons.render
                                                                             x.fontSize <- "17px"
                                                                             x.onClick <- fun _ -> promise { trigger () })
