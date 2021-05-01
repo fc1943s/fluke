@@ -60,10 +60,10 @@ module DatabaseForm =
     let DatabaseForm
         (input: {| Username: UserInteraction.Username
                    DatabaseId: State.DatabaseId option
-                   OnSave: unit -> JS.Promise<unit> |})
+                   OnSave: Database -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
-        let hydrateDatabase = HydrateDatabase.useHydrateDatabase ()
+//        let hydrateDatabase = HydrateDatabase.useHydrateDatabase ()
 
         let onSave =
             Recoil.useCallbackRef
@@ -93,6 +93,8 @@ module DatabaseForm =
                             else
                                 let! dayStart =
                                     setter.snapshot.getReadWritePromise Atoms.Database.dayStart input.DatabaseId
+
+                                printfn $"DatabaseForm.onSave getReadWritePromise(dayStart)={dayStart} input.DatabaseId={input.DatabaseId}"
 
                                 let! database =
                                     match input.DatabaseId with
@@ -124,12 +126,12 @@ module DatabaseForm =
 //                                setter.set (Atoms.Events.events eventId, event)
 //                                printfn $"event {event}"
 //
-                                hydrateDatabase Recoil.AtomScope.ReadOnly database
+//                                hydrateDatabase Recoil.AtomScope.ReadOnly database
 
-                                do! setter.readWriteReset Atoms.Database.name input.DatabaseId
-                                do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
-
-                                do! input.OnSave ()
+//                                do! setter.readWriteReset Atoms.Database.name input.DatabaseId
+//                                do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
+//
+                                do! input.OnSave database
 
 
                                 //                                let! databaseStateMapCache =
@@ -231,7 +233,6 @@ module DatabaseForm =
                                     x.placeholder <- "00:00"
 
                                     x.atom <- Some (Recoil.AtomFamily (Atoms.Database.dayStart, input.DatabaseId))
-
                                     x.inputFormat <- Some Input.InputFormat.Time
                                     x.onFormat <- Some (fun time -> time.Stringify ())
                                     x.onValidate <- Some (DateTime.Parse >> FlukeTime.FromDateTime >> Some))

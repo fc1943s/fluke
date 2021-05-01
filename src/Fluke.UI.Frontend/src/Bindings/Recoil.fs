@@ -23,11 +23,11 @@ module Recoil =
 
     module Atoms =
         module rec Form =
-            let rec initialValue =
-                atomFamily {
-                    key $"{nameof atomFamily}/{nameof Form}/{nameof initialValue}"
-                    def (fun (_key: obj) -> null: obj)
-                }
+            //            let rec initialValue =
+//                atomFamily {
+//                    key $"{nameof atomFamily}/{nameof Form}/{nameof initialValue}"
+//                    def (fun (_key: obj) -> null: obj)
+//                }
 
             let rec readWriteValue =
                 atomFamily {
@@ -35,11 +35,11 @@ module Recoil =
                     def (fun (_key: obj) -> null: obj)
                 }
 
-            let rec readWriteValueMounted =
-                atomFamily {
-                    key $"{nameof atomFamily}/{nameof Form}/{nameof readWriteValueMounted}"
-                    def (fun (_key: obj) -> false)
-                }
+    //            let rec readWriteValueMounted =
+//                atomFamily {
+//                    key $"{nameof atomFamily}/{nameof Form}/{nameof readWriteValueMounted}"
+//                    def (fun (_key: obj) -> false)
+//                }
 
     let wrapAtomField<'TValue, 'TKey> (atom: RecoilValue<'TValue, ReadWrite>) =
         {|
@@ -93,36 +93,36 @@ module Recoil =
         let readOnlyValue, setReadOnlyValue = Recoil.useState atomField.ReadOnly
         let readWriteValue, setReadWriteValue = Recoil.useState atomField.ReadWrite
 
-        let setInitialValue = Recoil.useSetState (Atoms.Form.initialValue atomField.ReadOnly.key)
+        //        let setInitialValue = Recoil.useSetState (Atoms.Form.initialValue atomField.ReadOnly.key)
+//
+//        let readWriteValueMounted, setReadWriteValueMounted =
+//            Recoil.useState (Atoms.Form.readWriteValueMounted atomField.ReadOnly.key)
 
-        let readWriteValueMounted, setReadWriteValueMounted =
-            Recoil.useState (Atoms.Form.readWriteValueMounted atomField.ReadOnly.key)
-
-        React.useEffect (
-            (fun () ->
-                if not readWriteValueMounted then
-                    setInitialValue readOnlyValue
-
-                    if readOnlyValue <> readWriteValue then
-                        setReadWriteValue readOnlyValue
-
-                    setReadWriteValueMounted true
-
-                ),
-            [|
-                box setInitialValue
-                box readWriteValueMounted
-                box setReadWriteValueMounted
-                box setReadWriteValue
-                box readOnlyValue
-                box readWriteValue
-            |]
-        )
+        //        React.useEffect (
+//            (fun () ->
+//                if not readWriteValueMounted then
+//                    setInitialValue readOnlyValue
+//
+//                    if readOnlyValue <> readWriteValue then
+//                        setReadWriteValue readOnlyValue
+//
+//                    setReadWriteValueMounted true
+//
+//                ),
+//            [|
+//                box setInitialValue
+//                box readWriteValueMounted
+//                box setReadWriteValueMounted
+//                box setReadWriteValue
+//                box readOnlyValue
+//                box readWriteValue
+//            |]
+//        )
 
         let atomFieldOptions =
             React.useMemo (
                 (fun () ->
-                    let readWriteValue = if not readWriteValueMounted then readOnlyValue else readWriteValue
+                    let readWriteValue = if box readWriteValue = null then readOnlyValue else readWriteValue
                     let setReadWriteValue = if atom.IsSome then setReadWriteValue else (fun _ -> ())
                     let setReadOnlyValue = if atom.IsSome then setReadOnlyValue else (fun _ -> ())
 
@@ -143,7 +143,7 @@ module Recoil =
                     |}),
                 [|
                     box atomScope
-                    box readWriteValueMounted
+                    //                    box readWriteValueMounted
                     box atom
                     box atomField
                     box readOnlyValue
@@ -191,11 +191,12 @@ module Recoil =
 
             let newId = $"""{gunAtomKey}{keySuffix}"""
 
-            if not JS.isProduction && not JS.isTesting then
-                //                printfn
-//                    $"""getGunAtomNode. gunAtomKey={gunAtomKey} atom.key={atom.key} newKey={newId}
-//                usernamestr={atom.key.Replace ((JSe.RegExp "__\[.*?\]"), "")} """
-                printfn $"""getGunAtomNode. newId={newId}"""
+            //            if not JS.isProduction && not JS.isTesting then
+            //                printfn
+////                    $"""getGunAtomNode. gunAtomKey={gunAtomKey} atom.key={atom.key} newKey={newId}
+////                usernamestr={atom.key.Replace ((JSe.RegExp "__\[.*?\]"), "")} """
+
+            //                printfn $"""getGunAtomNode. newId={newId}"""
 
             return Gun.getGunAtomNode gun newId, newId
 
@@ -233,11 +234,15 @@ module Recoil =
                 (fun value oldValue ->
                     (async {
                         if oldValue <> value then
-                            let! gunAtomNode, _ = getGunAtomNode username atom keySuffix
+                            let! gunAtomNode, id = getGunAtomNode username atom keySuffix
                             Gun.putGunAtomNode gunAtomNode value
 
                             if not JS.isProduction && not JS.isTesting then
-                                printfn $"gunEffect. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {JS.JSON.stringify value}"
+                                printfn
+                                    $"gunEffect. onSet. id={id} oldValue: {JS.JSON.stringify oldValue}; newValue: {
+                                                                                                                       JS.JSON.stringify
+                                                                                                                           value
+                                    }"
                         else
                             printfn $"gunEffect. onSet. value=oldValue. skipping. newValue: {JS.JSON.stringify value}"
                      })
@@ -261,12 +266,12 @@ module Recoil =
 module RecoilMagic =
 
     type CallbackMethods with
-        member this.readWriteReset<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>) key =
-            promise {
-                let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
-                let! initialValue = this.snapshot.getPromise (Recoil.Atoms.Form.initialValue atomField.ReadOnly.key)
-                this.set (atomField.ReadWrite, initialValue :?> 'U)
-            }
+        //        member this.readWriteReset<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>) key =
+//            promise {
+//                let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
+//                let! initialValue = this.snapshot.getPromise (Recoil.Atoms.Form.initialValue atomField.ReadOnly.key)
+//                this.set (atomField.ReadWrite, initialValue :?> 'U)
+//            }
 
         member this.readWriteSet<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>, key: 'T, value: 'U) =
             let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
@@ -282,9 +287,16 @@ module RecoilMagic =
 
     type Snapshot with
         member this.getReadWritePromise atom key =
-            this.getPromise
-                (Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key))))
-                    .ReadWrite
+            promise {
+                let! readOnlyValue = this.getPromise (atom key)
+
+                let! readWriteValue =
+                    this.getPromise
+                        (Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key))))
+                            .ReadWrite
+
+                return if box readWriteValue = null then readOnlyValue else readWriteValue
+            }
 
 
     type AtomStateWithEffects<'T, 'U, 'V> =

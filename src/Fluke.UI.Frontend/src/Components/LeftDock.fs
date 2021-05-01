@@ -8,6 +8,7 @@ open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fable.Core.JsInterop
 open Fluke.Shared
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 
 
@@ -77,7 +78,16 @@ module LeftDock =
 
                                                                             x.icon <- Icons.fi.FiPlus |> Icons.render
                                                                             x.fontSize <- "17px"
-                                                                            x.onClick <- fun _ -> promise { trigger () })
+
+                                                                            x.onClick <-
+                                                                                fun _ ->
+                                                                                    promise {
+                                                                                        trigger ()
+                                                                                        //                                                                                let! setter = (trigger ())()
+//                                                                                let! value = setter.snapshot.getPromise (Selectors.Database.database None)
+//                                                                                hydrateDatabase Recoil.AtomScope.ReadWrite value
+                                                                                        ()
+                                                                                    })
                                                             |}
                                                     ]
                                         TextKey = TextKey (nameof DatabaseForm)

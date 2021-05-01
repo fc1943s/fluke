@@ -8,6 +8,7 @@ open Feliz
 open Fable.React
 open Feliz.Recoil
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
@@ -185,6 +186,7 @@ module Databases =
         (input: {| Username: Username
                    Database: Database |})
         =
+        let hydrateDatabase = HydrateDatabase.useHydrateDatabase ()
         let setTaskDatabaseId = Recoil.useSetState (Atoms.Task.databaseId None)
 
         let isReadWrite =
@@ -229,6 +231,8 @@ module Databases =
                                                             promise {
                                                                 setTaskDatabaseId (Some input.Database.Id)
                                                                 trigger ()
+                                                                //                                                                let _ = (trigger ())()
+                                                                ()
                                                             })
                                                 [
                                                     str "Add Task"
@@ -251,7 +255,14 @@ module Databases =
                                                                 x.fontSize <- "13px"
                                                                 x.marginTop <- "-1px")
 
-                                                    x.onClick <- fun _ -> promise { trigger () })
+                                                    x.onClick <-
+                                                        fun _ ->
+                                                            promise {
+                                                                //                                                                                hydrateDatabase Recoil.AtomScope.ReadWrite input.Database
+                                                                trigger ()
+                                                                //                                                                                let! setter = (trigger ())()
+                                                                ()
+                                                            })
                                                 [
                                                     str "Edit Database"
                                                 ]
@@ -410,7 +421,7 @@ module Databases =
                    Props: Chakra.IChakraProps |})
         =
         let isTesting = Recoil.useValue Atoms.isTesting
-//        let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
+        //        let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
         let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
 
         let expandedDatabaseIds, setExpandedDatabaseIds =

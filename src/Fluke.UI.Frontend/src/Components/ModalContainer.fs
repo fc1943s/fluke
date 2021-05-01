@@ -6,12 +6,15 @@ open Feliz.UseListener
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 
 
 module ModalContainer =
     [<ReactComponent>]
     let ModalContainer (input: {| Username: Username |}) =
+        let hydrateDatabase = HydrateDatabase.useHydrateDatabase ()
+
         React.fragment [
             ModalForm.ModalForm
                 {|
@@ -22,7 +25,12 @@ module ModalContainer =
                                 {|
                                     Username = input.Username
                                     DatabaseId = formIdFlag |> Option.map DatabaseId
-                                    OnSave = fun () -> promise { onHide () }
+                                    OnSave =
+                                        fun database ->
+                                            promise {
+                                                hydrateDatabase Recoil.AtomScope.ReadOnly database
+                                                onHide ()
+                                            }
                                 |}
                     TextKey = TextKey (nameof DatabaseForm)
                 |}

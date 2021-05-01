@@ -98,8 +98,8 @@ module TaskForm =
 
                             setter.set (Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
 
-                            do! setter.readWriteReset Atoms.Task.name input.TaskId
-
+//                            do! setter.readWriteReset Atoms.Task.name input.TaskId
+//
                             do! input.OnSave ()
                         | _ -> failwith "TaskForm: invalid databaseId"
                     })

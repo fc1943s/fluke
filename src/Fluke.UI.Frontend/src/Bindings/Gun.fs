@@ -93,7 +93,7 @@ module rec Gun =
         :?> IGunChainReference<'T>
 
     let inline putGunAtomNode<'T> (gun: IGunChainReference<obj>) (value: 'T) =
-        gun.put (Encode.Auto.toString (0, value))
+        gun.put (if box value = null then null else (Encode.Auto.toString (0, value)))
         |> ignore
 
     let inline deserializeGunAtomNode (data: obj) =
