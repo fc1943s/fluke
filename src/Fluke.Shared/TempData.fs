@@ -1,7 +1,6 @@
 namespace Fluke.Shared
 
 open Fluke.Shared
-open System
 
 
 module LintTests =
@@ -12,17 +11,6 @@ module TempData =
     open Domain.Model
     open Domain.UserInteraction
     open Domain.State
-    open Templates
-
-    let rec testUser =
-        {
-            Username = Username "Fluke"
-            Color = UserColor.Black
-            WeekStart = DayOfWeek.Sunday
-            DayStart = FlukeTime.Create 12 0
-            SessionLength = Minute 25.
-            SessionBreakLength = Minute 5.
-        }
 
 
     module Events =
@@ -148,13 +136,14 @@ module TempData =
                 |> List.choose
                     (fun (task, manualCellStatus) ->
                         task
-                        |> Option.map (fun task -> createCellStatusChangeInteraction user task date manualCellStatus)))
+                        |> Option.map
+                            (fun task -> Templates.createCellStatusChangeInteraction user task date manualCellStatus)))
 
 
 
 
 
-    let dslDatabaseWithUser (user: User) (dslDatabase: (Information * (string * DslTask list) list) list) =
+    let dslDatabaseWithUser (user: User) (dslDatabase: (Information * (string * Templates.DslTask list) list) list) =
         dslDatabase
         |> List.map
             (fun (information, tasks) ->
@@ -226,7 +215,7 @@ module TempData =
     let createDslData
         moment
         taskContainerFactory
-        (dslDatabase: (Information * (string * (DslTask * User) list) list) list)
+        (dslDatabase: (Information * (string * (Templates.DslTask * User) list) list) list)
         =
 
         let taskMap, taskStateList =
@@ -265,7 +254,7 @@ module TempData =
                                                     |> Some
 
                                             let taskState, userInteractions =
-                                                createTaskState moment newTask fakeTaskMap dslTasks
+                                                Templates.createTaskState moment newTask fakeTaskMap dslTasks
 
                                             let newTaskMap = taskMap |> Map.add taskName taskState.Task
 
@@ -324,9 +313,9 @@ module TempData =
 
         let dslData =
             {
-                TaskStateList = taskStateList
+                Templates.TaskStateList = taskStateList
                 //                TaskOrderList = taskOrderList
-                InformationStateMap = informationStateMap
+                Templates.InformationStateMap = informationStateMap
             }
 
         dslData, tasks
@@ -361,15 +350,15 @@ module TempData =
             (input: {| User: User
                        Position: FlukeDateTime
                        Task: Task
-                       Events: DslTask list |})
+                       Events: Templates.DslTask list |})
             =
             let eventsWithUser = input.Events |> List.map (fun x -> x, input.User)
 
             let dslData =
                 {
-                    TaskStateList =
+                    Templates.TaskStateList =
                         [
-                            createTaskState input.Position input.Task None eventsWithUser
+                            Templates.createTaskState input.Position input.Task None eventsWithUser
                         ]
                     //                    TaskOrderList =
 //                        [
@@ -379,7 +368,7 @@ module TempData =
 //                            }
 //                        ]
 //                    //                    GetLivePosition = fun () -> input.Position
-                    InformationStateMap =
+                    Templates.InformationStateMap =
                         [
                             input.Task.Information
                         ]
@@ -406,7 +395,7 @@ module TempData =
         let createLaneSortingDslData
             (input: {| User: User
                        Position: FlukeDateTime
-                       Data: (Task * DslTask list) list
+                       Data: (Task * Templates.DslTask list) list
                        Expected: string list |})
             =
             let dslData =
@@ -416,7 +405,7 @@ module TempData =
                         (fun (task, events) ->
                             events
                             |> List.map (fun dslTask -> dslTask, input.User)
-                            |> createTaskState input.Position task None)
+                            |> Templates.createTaskState input.Position task None)
 
                 //                let taskOrderList =
 //                    input.Data
@@ -431,10 +420,10 @@ module TempData =
                     |> informationListToStateMap
 
                 {
-                    TaskStateList = taskStateList
+                    Templates.TaskStateList = taskStateList
                     //                    TaskOrderList = taskOrderList
                     //                    GetLivePosition = getLivePosition
-                    InformationStateMap = informationStateMap
+                    Templates.InformationStateMap = informationStateMap
                 }
 
             //            let getLivePosition = fun () -> input.Position

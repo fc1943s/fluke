@@ -22,13 +22,14 @@
         <Compile Include="src\Sync.fs" />
         <Compile Include="src\TempAudio.fs" />
         <Compile Include="src\TempUI.fs" />
+        <Compile Include="src\TestUser.fs" />
         <Compile Include="src\State.fs" />
         <Compile Include="src\Hooks\Scheduling.fs" />
         <Compile Include="src\Hooks\Listener.fs" />
         <Compile Include="src\Hooks\Theme.fs" />
         <Compile Include="src\Hooks\React.fs" />
-        <Compile Include="src\Hooks\Auth.fs" />
         <Compile Include="src\Hooks\HydrateDatabase.fs" />
+        <Compile Include="src\Hooks\Auth.fs" />
         <Compile Include="src\Components\Empty.fs" />
         <Compile Include="src\Components\Tooltip.fs" />
         <Compile Include="src\Components\InputLabelIconButton.fs" />
@@ -78,7 +79,6 @@
         <Compile Include="src\Components\LoginScreen.fs" />
         <Compile Include="src\Components\InitialPeers.fs" />
         <Compile Include="src\Components\LoadingScreen.fs" />
-        <Compile Include="src\Components\UserLoader.fs" />
         <Compile Include="src\Components\SoundPlayer.fs" />
         <Compile Include="src\Components\SessionDataLoader.fs" />
         <Compile Include="src\Components\PositionUpdater.fs" />

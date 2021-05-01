@@ -54,7 +54,7 @@ module GunBind =
                     printfn $"GunBind.useEffect. gunAtomKey={gunAtomKey} lastAtomValue={lastAtomValue}"
 
                     gunAtomNode.on
-                        (fun data ->
+                        (fun data _ ->
                             match Gun.deserializeGunAtomNode data with
                             | Some gunAtomNodeValue ->
 

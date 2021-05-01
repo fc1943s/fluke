@@ -84,23 +84,23 @@ module State =
         let rec shiftPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof shiftPressed}", false)
 
 
-        module rec Events =
-            type EventId = EventId of position: float * guid: Guid
-
-            let newEventId () =
-                EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
-
-            [<RequireQualifiedAccess>]
-            type Event =
-                | AddDatabase of id: EventId * name: DatabaseName * dayStart: FlukeTime
-                | AddTask of id: EventId * name: TaskName
-                | NoOp
-
-            let rec events =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Events}/{nameof events}",
-                    (fun (_eventId: EventId) -> Event.NoOp)
-                )
+//        module rec Events =
+//            type EventId = EventId of position: float * guid: Guid
+//
+//            let newEventId () =
+//                EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
+//
+//            [<RequireQualifiedAccess>]
+//            type Event =
+//                | AddDatabase of id: EventId * name: DatabaseName * dayStart: FlukeTime
+//                | AddTask of id: EventId * name: TaskName
+//                | NoOp
+//
+//            let rec events =
+//                Recoil.atomFamilyWithProfiling (
+//                    $"{nameof atomFamily}/{nameof Events}/{nameof events}",
+//                    (fun (_eventId: EventId) -> Event.NoOp)
+//                )
 
 
         module rec User =
@@ -280,16 +280,6 @@ module State =
                 match databaseId with
                 | Some databaseId -> $"/{databaseId |> DatabaseId.Value |> string}"
                 | None -> "/DatabaseId"
-
-            let rec databaseIds =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Database}/{nameof databaseIds}",
-                    (fun (_databaseId: DatabaseId option) -> DatabaseName ""),
-                    (fun (databaseId: DatabaseId option) ->
-                        [
-//                            Recoil.gunEffect None name databaseId (databaseIdSuffix databaseId)
-                        ])
-                )
 
             let rec name =
                 Recoil.atomFamilyWithProfiling (
@@ -493,10 +483,114 @@ module State =
                     (fun (_username: Username) -> Map.empty: Map<DatabaseId, DatabaseState>)
                 )
 
-            let rec availableDatabaseIds =
+//            let rec availableDatabaseIds =
+//                Recoil.atomFamilyWithProfiling (
+//                    $"{nameof atomFamily}/{nameof Session}/{nameof availableDatabaseIds}",
+//                    (fun (_username: Username) -> []: DatabaseId list)
+//                )
+
+            let rec databaseIds =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Session}/{nameof availableDatabaseIds}",
-                    (fun (_username: Username) -> []: DatabaseId list)
+                    $"{nameof atomFamily}/{nameof Session}/{nameof databaseIds}",
+                    (fun (_username: Username) -> []: DatabaseId list),
+                    (fun (username: Username) ->
+                        let atomFamily = databaseIds
+                        let atomKey = username
+                        let username = Some username
+                        let keySuffix = ""
+
+                        [
+                            (fun (e: Recoil.EffectProps<_>) ->
+                                let path = "Fluke/atomFamily/Database/name"
+
+                                match e.trigger with
+                                | "get" ->
+                                    (async {
+                                        let! gun = Recoil.getGun ()
+                                        let gunAtomNode = Gun.getGunAtomNode gun path
+
+                                        gunAtomNode
+                                            .map()
+                                            .on (fun v k ->
+//                                                if not JS.isProduction && not JS.isTesting then
+//                                                    printfn
+//                                                        $"@@@gunEffect. gunAtomNode.on() effect. data={
+//                                                                                                           JS.JSON.stringify
+//                                                                                                               {|
+//                                                                                                                   v = v
+//                                                                                                                   k = k
+//                                                                                                               |}
+//                                                        }"
+
+                                                e.setSelf
+                                                    (fun oldValue ->
+//                                                        printfn $"@@@oldValue={JS.JSON.stringify oldValue};newValue={k}"
+
+                                                        oldValue
+                                                        @ [
+                                                            k |> Guid |> DatabaseId
+                                                        ])
+                                                //                                                match Gun.deserializeGunAtomNode v with
+//                                                | Some gunAtomNodeValue ->
+//                                                    e.setSelf (fun oldValue -> printfn $"oldValue={oldValue};newValue={gunAtomNodeValue}"; gunAtomNodeValue)
+//                                                | None -> ()
+                                                )
+
+                                     //                                        let atom = atomFamily atomKey
+
+                                     //                                        let! gunAtomNode, id = Recoil.getGunAtomNode username atom keySuffix
+
+                                     //                                        gunAtomNode.on
+//                                            (fun data ->
+//                                                if not JS.isProduction && not JS.isTesting then
+//                                                    printfn
+//                                                        $"gunEffect. gunAtomNode.on() effect. id={id} data={
+//                                                                                                                JS.JSON.stringify
+//                                                                                                                    data
+//                                                        }"
+//
+//                                                //                                                match Gun.deserializeGunAtomNode data with
+////                                                | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
+////                                                | None -> ()
+//                                                )
+                                     })
+                                    |> Async.StartAsPromise
+                                    |> Promise.start
+                                | _ -> ()
+
+                                e.onSet
+                                    (fun value oldValue ->
+                                        (promise {
+                                            if oldValue <> value then
+                                                //                                            let! gunAtomNode, _ = Recoil.getGunAtomNode username atom keySuffix
+                                                //                                            Gun.putGunAtomNode gunAtomNode value
+
+                                                if not JS.isProduction && not JS.isTesting then
+                                                    printfn
+                                                        $"@@@gunEffect. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {
+                                                                                                                                      JS.JSON.stringify
+                                                                                                                                          value
+                                                        }"
+                                            else
+                                                printfn
+                                                    $"gunEffect. onSet. value=oldValue. skipping. newValue: {
+                                                                                                                 JS.JSON.stringify
+                                                                                                                     value
+                                                    }"
+                                         })
+                                        |> Promise.start)
+
+                                fun () ->
+                                    (promise {
+                                        //                                        let! gunAtomNode, _ = Recoil.getGunAtomNode username atom keySuffix
+
+                                        if not JS.isProduction && not JS.isTesting then
+                                            printfn "@@@gunEffect. unsubscribe atom. calling selected.off ()"
+
+                                     //                                        gunAtomNode.off () |> ignore
+                                     })
+                                    |> Promise.start)
+                        ])
                 )
 
             let rec taskIdList =
@@ -742,7 +836,7 @@ module State =
                             Name = getter.get (Atoms.Database.name (Some databaseId))
                             Owner =
                                 getter.get (Atoms.Database.owner (Some databaseId))
-                                |> Option.defaultValue TempData.testUser.Username
+                                |> Option.defaultValue TestUser.testUser.Username
                             SharedWith = getter.get (Atoms.Database.sharedWith (Some databaseId))
                             Position = getter.get (Atoms.Database.position (Some databaseId))
                             DayStart = getter.get (Atoms.Database.dayStart (Some databaseId))

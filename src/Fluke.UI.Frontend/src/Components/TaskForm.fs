@@ -32,13 +32,13 @@ module TaskForm =
                     promise {
                         match databaseId with
                         | Some databaseId ->
-                            let eventId = Atoms.Events.newEventId ()
 
                             let! name = setter.snapshot.getReadWritePromise Atoms.Task.name input.TaskId
-
-                            let event = Atoms.Events.Event.AddTask (eventId, name)
-
-                            setter.set (Atoms.Events.events eventId, event)
+//
+//                            let eventId = Atoms.Events.newEventId ()
+//                            let event = Atoms.Events.Event.AddTask (eventId, name)
+//                            setter.set (Atoms.Events.events eventId, event)
+//                            printfn $"event {event}"
 
                             let! databaseStateMapCache =
                                 setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache input.Username)
@@ -100,7 +100,6 @@ module TaskForm =
 
                             do! setter.readWriteReset Atoms.Task.name input.TaskId
 
-                            printfn $"event {event}"
                             do! input.OnSave ()
                         | _ -> failwith "TaskForm: invalid databaseId"
                     })

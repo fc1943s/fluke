@@ -19,7 +19,6 @@ open Fluke.UI.Frontend.Hooks
 module CellSelection =
     open Sync
     open Templates
-    open TempData
     open State
 
 
@@ -31,7 +30,7 @@ module CellSelection =
                     Position =
                         {
                             Date = FlukeDate.Create 2020 Month.January 10
-                            Time = testUser.DayStart
+                            Time = TestUser.testUser.DayStart
                         }
                     Tasks =
                         [
@@ -56,7 +55,7 @@ module CellSelection =
                 |> Crypto.getTextGuidHash
                 |> DatabaseId
 
-            let databaseState = databaseStateFromDslTemplate testUser databaseId databaseName dslTemplate
+            let databaseState = databaseStateFromDslTemplate TestUser.testUser databaseId databaseName dslTemplate
 
             let initialSetter (setter: CallbackMethods) =
                 promise {
@@ -64,7 +63,7 @@ module CellSelection =
                         Atoms.api,
                         Some
                             {
-                                currentUser = async { return testUser }
+                                currentUser = async { return TestUser.testUser }
                                 databaseStateList =
                                     fun _username _moment ->
                                         async {
@@ -76,15 +75,15 @@ module CellSelection =
                             }
                     )
 
-                    setter.set (Atoms.username, Some testUser.Username)
-                    setter.set (Atoms.User.view testUser.Username, View.View.Priority)
-                    setter.set (Atoms.User.daysBefore testUser.Username, 2)
-                    setter.set (Atoms.User.daysAfter testUser.Username, 2)
+                    setter.set (Atoms.username, Some TestUser.testUser.Username)
+                    setter.set (Atoms.User.view TestUser.testUser.Username, View.View.Priority)
+                    setter.set (Atoms.User.daysBefore TestUser.testUser.Username, 2)
+                    setter.set (Atoms.User.daysAfter TestUser.testUser.Username, 2)
                     setter.set (Atoms.gunHash, System.Guid.NewGuid().ToString ())
                     setter.set (Atoms.position, Some dslTemplate.Position)
 
                     setter.set (
-                        Atoms.User.selectedDatabaseIds testUser.Username,
+                        Atoms.User.selectedDatabaseIds TestUser.testUser.Username,
                         [|
                             databaseName
                             |> Crypto.getTextGuidHash

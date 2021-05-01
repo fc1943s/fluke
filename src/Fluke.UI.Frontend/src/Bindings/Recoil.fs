@@ -10,7 +10,6 @@ open Feliz
 open React
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
-open Fable.Extras
 
 
 module Recoil =
@@ -19,7 +18,7 @@ module Recoil =
             node: {| key: string |}
             onSet: ('T -> 'T -> unit) -> unit
             trigger: string
-            setSelf: 'T -> unit
+            setSelf: ('T -> 'T) -> unit
         }
 
     module Atoms =
@@ -213,34 +212,40 @@ module Recoil =
 
             match e.trigger with
             | "get" ->
-                (promise {
+                (async {
                     let! gunAtomNode, id = getGunAtomNode username atom keySuffix
 
                     gunAtomNode.on
-                        (fun data ->
+                        (fun data key ->
                             if not JS.isProduction && not JS.isTesting then
-                                printfn $"gunEffect. gunAtomNode.on() effect. id={id} data={JS.JSON.stringify data}"
+                                printfn
+                                    $"gunEffect. gunAtomNode.on() effect. id={id} key={key} data={JS.JSON.stringify data}"
 
                             match Gun.deserializeGunAtomNode data with
-                            | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
+                            | Some gunAtomNodeValue -> e.setSelf (fun _ -> gunAtomNodeValue)
                             | None -> ())
                  })
+                |> Async.StartAsPromise
                 |> Promise.start
             | _ -> ()
 
             e.onSet
                 (fun value oldValue ->
-                    (promise {
-                        let! gunAtomNode, _ = getGunAtomNode username atom keySuffix
-                        Gun.putGunAtomNode gunAtomNode value
+                    (async {
+                        if oldValue <> value then
+                            let! gunAtomNode, _ = getGunAtomNode username atom keySuffix
+                            Gun.putGunAtomNode gunAtomNode value
 
-                        if not JS.isProduction && not JS.isTesting then
-                            printfn $"gunEffect. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {value}"
+                            if not JS.isProduction && not JS.isTesting then
+                                printfn $"gunEffect. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {JS.JSON.stringify value}"
+                        else
+                            printfn $"gunEffect. onSet. value=oldValue. skipping. newValue: {JS.JSON.stringify value}"
                      })
+                    |> Async.StartAsPromise
                     |> Promise.start)
 
             fun () ->
-                (promise {
+                (async {
                     let! gunAtomNode, _ = getGunAtomNode username atom keySuffix
 
                     if not JS.isProduction && not JS.isTesting then
@@ -248,6 +253,7 @@ module Recoil =
 
                     gunAtomNode.off () |> ignore
                  })
+                |> Async.StartAsPromise
                 |> Promise.start)
 
 

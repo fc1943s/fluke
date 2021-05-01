@@ -4,7 +4,6 @@ open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz.Recoil
 open Feliz.Router
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Components
@@ -15,7 +14,6 @@ open Fluke.Shared
 
 module Router =
     open Sync
-    open TempData
 
     Jest.describe (
         "router",
@@ -26,12 +24,12 @@ module Router =
                         Atoms.api,
                         Some
                             {
-                                currentUser = async { return testUser }
+                                currentUser = async { return TestUser.testUser }
                                 databaseStateList = fun _username _moment -> async { return [] }
                             }
                     )
 
-                    setter.set (Atoms.username, Some testUser.Username)
+                    setter.set (Atoms.username, Some TestUser.testUser.Username)
                 }
 
             let getComponent () =
@@ -44,13 +42,15 @@ module Router =
             let initialize peek = promise { do! peek initialSetter }
 
             let setView peek (view: View.View) =
-                peek (fun (setter: CallbackMethods) -> promise { setter.set (Atoms.User.view testUser.Username, view) })
+                peek
+                    (fun (setter: CallbackMethods) ->
+                        promise { setter.set (Atoms.User.view TestUser.testUser.Username, view) })
 
             let expectView peek (expected: View.View) =
                 peek
                     (fun (setter: CallbackMethods) ->
                         promise {
-                            let! view = setter.snapshot.getPromise (Atoms.User.view testUser.Username)
+                            let! view = setter.snapshot.getPromise (Atoms.User.view TestUser.testUser.Username)
 
                             Jest.expect(string view).toEqual (string expected)
                         })

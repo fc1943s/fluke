@@ -19,7 +19,6 @@ module App =
                 ApiSubscriber.ApiSubscriber ()
                 SelectionListener.SelectionListener ()
                 //                GunObserver.GunObserver ()
-                UserLoader.UserLoader ()
 
                 Content.Content ()
 

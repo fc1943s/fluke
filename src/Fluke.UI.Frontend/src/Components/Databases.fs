@@ -7,6 +7,7 @@ open Fluke.Shared
 open Feliz
 open Fable.React
 open Feliz.Recoil
+open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
@@ -19,7 +20,7 @@ module Databases =
     [<ReactComponent>]
     let LeafIcon (username: Username) (database: Database) =
         let sharedWith =
-            if database.Owner = TempData.testUser.Username then
+            if database.Owner = TestUser.testUser.Username then
                 [
                     username
                 ]
@@ -184,10 +185,10 @@ module Databases =
         (input: {| Username: Username
                    Database: Database |})
         =
-        let setDatabaseId = Recoil.useSetState (Atoms.Task.databaseId None)
+        let setTaskDatabaseId = Recoil.useSetState (Atoms.Task.databaseId None)
 
         let isReadWrite =
-            input.Database.Owner <> TempData.testUser.Username
+            input.Database.Owner <> TestUser.testUser.Username
             && (getAccess input.Database input.Username) = Some Access.ReadWrite
 
         Menu.Menu
@@ -226,7 +227,7 @@ module Databases =
                                                     x.onClick <-
                                                         fun _ ->
                                                             promise {
-                                                                setDatabaseId (Some input.Database.Id)
+                                                                setTaskDatabaseId (Some input.Database.Id)
                                                                 trigger ()
                                                             })
                                                 [
@@ -236,20 +237,27 @@ module Databases =
                                     TextKeyValue = None
                                 |}
 
-                            Chakra.menuItem
-                                (fun x ->
+                            ModalForm.ModalFormTrigger
+                                {|
+                                    Username = input.Username
+                                    Trigger =
+                                        fun trigger ->
+                                            Chakra.menuItem
+                                                (fun x ->
+                                                    x.icon <-
+                                                        Icons.bs.BsPen
+                                                        |> Icons.renderChakra
+                                                            (fun x ->
+                                                                x.fontSize <- "13px"
+                                                                x.marginTop <- "-1px")
 
-                                    x.icon <-
-                                        Icons.bs.BsPen
-                                        |> Icons.renderChakra
-                                            (fun x ->
-                                                x.fontSize <- "13px"
-                                                x.marginTop <- "-1px")
-
-                                    x.onClick <- fun e -> promise { e.preventDefault () })
-                                [
-                                    str "Edit Database"
-                                ]
+                                                    x.onClick <- fun _ -> promise { trigger () })
+                                                [
+                                                    str "Edit Database"
+                                                ]
+                                    TextKey = TextKey (nameof DatabaseForm)
+                                    TextKeyValue = input.Database.Id |> DatabaseId.Value |> Some
+                                |}
 
                             Chakra.menuItem
                                 (fun x ->
@@ -402,7 +410,7 @@ module Databases =
                    Props: Chakra.IChakraProps |})
         =
         let isTesting = Recoil.useValue Atoms.isTesting
-        let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
+//        let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
         let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
 
         let expandedDatabaseIds, setExpandedDatabaseIds =
@@ -411,8 +419,10 @@ module Databases =
         let selectedDatabaseIds, setSelectedDatabaseIds =
             Recoil.useState (Atoms.User.selectedDatabaseIds input.Username)
 
+        let databaseIds = Recoil.useValue (Atoms.Session.databaseIds input.Username)
+
         let availableDatabases =
-            availableDatabaseIds
+            databaseIds
             |> List.map Selectors.Database.database
             |> Recoil.waitForAll
             |> Recoil.useValue
@@ -426,7 +436,7 @@ module Databases =
                             (fun database ->
                                 let nodeType =
                                     match database.Owner with
-                                    | owner when owner = TempData.testUser.Username -> NodeType.Template
+                                    | owner when owner = TestUser.testUser.Username -> NodeType.Template
                                     | owner when owner = input.Username -> NodeType.Owned
                                     | _ -> NodeType.Shared
 

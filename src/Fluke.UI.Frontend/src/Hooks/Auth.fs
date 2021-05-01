@@ -3,12 +3,13 @@ namespace Fluke.UI.Frontend.Hooks
 open Feliz
 open Fable.Core
 open Feliz.Recoil
-open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
+open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
-open Fluke.Shared.Domain
 open Fable.Core.JsInterop
+open Fluke.UI.Frontend.Hooks
+open Fluke.Shared
 
 
 module Auth =
@@ -51,22 +52,36 @@ module Auth =
                         promise {
                             match ack.err with
                             | None ->
-                                do! postSignIn (UserInteraction.Username username)
+                                do! postSignIn (Username username)
                                 return Ok ()
                             | Some error -> return Error error
                         }
                 })
 
+
+    let useHydrateTemplates () =
+        let hydrateDatabase = HydrateDatabase.useHydrateDatabase ()
+
+        Recoil.useCallbackRef
+            (fun _ ->
+                promise {
+                    TestUser.fetchTemplatesDatabaseStateMap ()
+                    |> Map.values
+                    |> Seq.map (fun databaseState -> databaseState.Database)
+                    |> Seq.iter (hydrateDatabase Recoil.AtomScope.ReadOnly)
+                })
+
     let useSignUp () =
         let signIn = useSignIn ()
         let gunNamespace = Recoil.useValue Selectors.gunNamespace
+        let hydrateTemplates = useHydrateTemplates ()
 
         Recoil.useCallbackRef
             (fun _ username password ->
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
-                    elif username = (TempData.testUser.Username |> Username.Value) then
+                    elif username = (TestUser.testUser.Username |> Username.Value) then
                         return Error "Invalid username"
                     else
                         printfn $"Auth.useSignUp. gun.user() result: {JS.JSON.stringify gunNamespace.ref}"
@@ -82,7 +97,7 @@ module Auth =
                                 | None ->
                                     match! signIn username password with
                                     | Ok () ->
-
+                                        do! hydrateTemplates ()
 
                                         //                                        gunNamespace
 //                                            .ref
