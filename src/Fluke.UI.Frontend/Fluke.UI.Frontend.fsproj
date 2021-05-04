@@ -19,16 +19,15 @@
         <Compile Include="src\Bindings\Icons.fs" />
         <Compile Include="src\Bindings\Markdown.fs" />
         <Compile Include="src\Bindings\Cypress.fs" />
-        <Compile Include="src\Sync.fs" />
         <Compile Include="src\TempAudio.fs" />
         <Compile Include="src\TempUI.fs" />
-        <Compile Include="src\TestUser.fs" />
+        <Compile Include="src\Templates.fs" />
         <Compile Include="src\State.fs" />
         <Compile Include="src\Hooks\Scheduling.fs" />
         <Compile Include="src\Hooks\Listener.fs" />
         <Compile Include="src\Hooks\Theme.fs" />
         <Compile Include="src\Hooks\React.fs" />
-        <Compile Include="src\Hooks\HydrateDatabase.fs" />
+        <Compile Include="src\Hooks\Hydrate.fs" />
         <Compile Include="src\Hooks\Auth.fs" />
         <Compile Include="src\Components\Empty.fs" />
         <Compile Include="src\Components\Tooltip.fs" />
@@ -80,7 +79,6 @@
         <Compile Include="src\Components\InitialPeers.fs" />
         <Compile Include="src\Components\LoadingScreen.fs" />
         <Compile Include="src\Components\SoundPlayer.fs" />
-        <Compile Include="src\Components\SessionDataLoader.fs" />
         <Compile Include="src\Components\PositionUpdater.fs" />
         <Compile Include="src\Components\RouterObserver.fs" />
         <Compile Include="src\Components\SelectionListener.fs" />
@@ -90,7 +88,6 @@
         <Compile Include="src\Components\ModalContainer.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\Components\RootWrapper.fs" />
-        <Compile Include="src\Components\ApiSubscriber.fs" />
         <Compile Include="src\App.fs" />
         <Compile Include="src\Main.fs" />
         <Content Include="src\index.ts" />

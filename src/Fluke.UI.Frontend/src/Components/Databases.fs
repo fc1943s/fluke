@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open System
 open Fable.Core.JsInterop
 open Fable.Core
 open Fable.Extras
@@ -7,7 +8,6 @@ open Fluke.Shared
 open Feliz
 open Fable.React
 open Feliz.Recoil
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
@@ -21,7 +21,7 @@ module Databases =
     [<ReactComponent>]
     let LeafIcon (username: Username) (database: Database) =
         let sharedWith =
-            if database.Owner = TestUser.testUser.Username then
+            if database.Owner = Templates.templatesUser.Username then
                 [
                     username
                 ]
@@ -186,11 +186,11 @@ module Databases =
         (input: {| Username: Username
                    Database: Database |})
         =
-        let hydrateDatabase = HydrateDatabase.useHydrateDatabase ()
         let setTaskDatabaseId = Recoil.useSetState (Atoms.Task.databaseId None)
 
         let isReadWrite =
-            input.Database.Owner <> TestUser.testUser.Username
+            input.Database.Owner
+            <> Templates.templatesUser.Username
             && (getAccess input.Database input.Username) = Some Access.ReadWrite
 
         Menu.Menu
@@ -229,7 +229,7 @@ module Databases =
                                                     x.onClick <-
                                                         fun _ ->
                                                             promise {
-                                                                setTaskDatabaseId (Some input.Database.Id)
+                                                                setTaskDatabaseId input.Database.Id
                                                                 trigger ()
                                                                 //                                                                let _ = (trigger ())()
                                                                 ()
@@ -413,7 +413,6 @@ module Databases =
         | Template
         | Owned
         | Shared
-        | Legacy
 
     [<ReactComponent>]
     let rec Databases
@@ -424,16 +423,16 @@ module Databases =
         //        let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
         let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
 
-        let expandedDatabaseIds, setExpandedDatabaseIds =
-            Recoil.useState (Atoms.User.expandedDatabaseIds input.Username)
+        let expandedDatabaseIdList, setExpandedDatabaseIdList =
+            Recoil.useState (Atoms.User.expandedDatabaseIdList input.Username)
 
-        let selectedDatabaseIds, setSelectedDatabaseIds =
-            Recoil.useState (Atoms.User.selectedDatabaseIds input.Username)
+        let selectedDatabaseIdList, setSelectedDatabaseIdList =
+            Recoil.useState (Atoms.User.selectedDatabaseIdList input.Username)
 
-        let databaseIds = Recoil.useValue (Atoms.Session.databaseIds input.Username)
+        let databaseIdList = Recoil.useValue (Atoms.Session.databaseIdList input.Username)
 
         let availableDatabases =
-            databaseIds
+            databaseIdList
             |> List.map Selectors.Database.database
             |> Recoil.waitForAll
             |> Recoil.useValue
@@ -447,7 +446,7 @@ module Databases =
                             (fun database ->
                                 let nodeType =
                                     match database.Owner with
-                                    | owner when owner = TestUser.testUser.Username -> NodeType.Template
+                                    | owner when owner = Templates.templatesUser.Username -> NodeType.Template
                                     | owner when owner = input.Username -> NodeType.Owned
                                     | _ -> NodeType.Shared
 
@@ -468,7 +467,6 @@ module Databases =
                                     | NodeType.Template -> "Templates\/Unit Tests"
                                     | NodeType.Owned -> "Created by me"
                                     | NodeType.Shared -> "Shared with me"
-                                    | NodeType.Legacy -> "Legacy"
 
                                 $"{prefix}/{database.Name |> DatabaseName.Value}")
                         |> buildNodesFromPath
@@ -495,13 +493,13 @@ module Databases =
                                 match database with
                                 | Some database ->
                                     let validSelectedDatabases =
-                                        selectedDatabaseIds
-                                        |> Array.map (fun databaseId -> availableDatabasesMap |> Map.tryFind databaseId)
+                                        selectedDatabaseIdList
+                                        |> List.map (fun databaseId -> availableDatabasesMap |> Map.tryFind databaseId)
 
                                     match database.Position with
                                     | Some position ->
                                         validSelectedDatabases
-                                        |> Array.exists
+                                        |> List.exists
                                             (function
                                             | Some database ->
                                                 database.Position.IsNone
@@ -509,7 +507,7 @@ module Databases =
                                             | None -> false)
                                     | None ->
                                         validSelectedDatabases
-                                        |> Array.exists
+                                        |> List.exists
                                             (function
                                             | Some { Position = Some _ } -> true
                                             | _ -> false)
@@ -540,7 +538,7 @@ module Databases =
                 [|
                     box input.Username
                     box hideTemplates
-                    box selectedDatabaseIds
+                    box selectedDatabaseIdList
                     box isTesting
                     box availableDatabases
                 |]
@@ -556,10 +554,26 @@ module Databases =
                     [
                         CheckboxTree.render
                             {|
-                                ``checked`` = selectedDatabaseIds |> Array.map DatabaseId.Value
-                                expanded = expandedDatabaseIds |> Array.map DatabaseId.Value
-                                onCheck = Array.map DatabaseId >> setSelectedDatabaseIds
-                                onExpand = Array.map DatabaseId >> setExpandedDatabaseIds
+                                ``checked`` =
+                                    selectedDatabaseIdList
+                                    |> List.map DatabaseId.Value
+                                    |> List.toArray
+                                expanded =
+                                    expandedDatabaseIdList
+                                    |> List.map DatabaseId.Value
+                                    |> List.toArray
+                                onCheck =
+                                    (fun (x: string []) ->
+                                        x
+                                        |> Array.map (Guid >> DatabaseId)
+                                        |> Array.toList
+                                        |> setSelectedDatabaseIdList)
+                                onExpand =
+                                    (fun (x: string []) ->
+                                        x
+                                        |> Array.map (Guid >> DatabaseId)
+                                        |> Array.toList
+                                        |> setExpandedDatabaseIdList)
                                 expandOnClick = true
                                 onlyLeafCheckboxes = true
                                 nodes = nodes

@@ -60,7 +60,7 @@ module Auth =
 
 
     let useHydrateTemplates () =
-        let hydrateDatabase = HydrateDatabase.useHydrateDatabase ()
+        let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
         Recoil.useCallbackRef
             (fun _ ->
@@ -81,7 +81,7 @@ module Auth =
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
-                    elif username = (TestUser.testUser.Username |> Username.Value) then
+                    elif username = (Templates.templatesUser.Username |> Username.Value) then
                         return Error "Invalid username"
                     else
                         printfn $"Auth.useSignUp. gun.user() result: {JS.JSON.stringify gunNamespace.ref}"

@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Browser.Types
 open Fable.React
 open Feliz
-open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Feliz.Recoil
 open Fable.Core
@@ -36,8 +35,6 @@ module Input =
     [<ReactComponent>]
     let Input (input: IProps<'TValue, 'TKey>) =
         let atomFieldOptions = Recoil.useAtomField<'TValue, 'TKey> input.atom input.atomScope
-
-        let deviceInfo = Recoil.useValue Selectors.deviceInfo
 
         let inputRef = React.useRef<HTMLInputElement> null
 
@@ -204,12 +201,7 @@ module Input =
                                         | InputFormat.DateTime -> "datetime-local"
                                         | InputFormat.Email -> "email"
                                         | InputFormat.Password -> "password"
-                                    | None -> null
-
-                                x.paddingTop <-
-                                    match input.inputFormat, deviceInfo with
-                                    | Some InputFormat.Password, { IsEdge = true } -> "7px"
-                                    | _ -> null)
+                                    | None -> null)
                             []
 
                         match input.inputFormat with

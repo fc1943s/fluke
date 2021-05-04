@@ -121,7 +121,7 @@ module View =
                    View: View
                    Position: FlukeDateTime option
                    DatabaseStateMap: Map<DatabaseId, DatabaseState>
-                   SelectedDatabaseIds: Set<DatabaseId> |})
+                   SelectedDatabaseIdList: Set<DatabaseId> |})
         =
         //                                GetLivePosition: unit -> FlukeDateTime
         //            let selectedDatabaseIds =
@@ -130,7 +130,7 @@ module View =
 
         //
         let databaseStateList =
-            input.SelectedDatabaseIds
+            input.SelectedDatabaseIdList
             |> Set.toList
             |> List.choose (fun databaseId -> input.DatabaseStateMap |> Map.tryFind databaseId)
 
@@ -140,7 +140,7 @@ module View =
                 (fun databaseState ->
                     databaseState.InformationStateMap
                     |> Map.values
-                    |> Seq.distinctBy (fun informationState -> informationState.Information.Name)
+                    |> Seq.distinctBy (fun informationState -> informationState.Information |> Information.Name)
                     |> Seq.toList)
 
         let taskStateList =
@@ -202,7 +202,9 @@ module View =
             ||> List.fold
                     (fun (informationStateMap, taskStateMap) databaseState ->
                         match databaseState with
-                        | databaseState when (getAccess databaseState.Database input.Username).IsSome ->
+                        | databaseState when
+                            (getAccess databaseState.Database input.Username)
+                                .IsSome ->
                             let newInformationStateMap =
                                 mergeInformationStateMap informationStateMap databaseState.InformationStateMap
 

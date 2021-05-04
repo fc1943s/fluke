@@ -15,11 +15,11 @@ module PositionUpdater =
     [<ReactComponent>]
     let PositionUpdater (input: {| Username: Username |}) =
         let position, setPosition = Recoil.useState Atoms.position
-        let selectedDatabaseIds = Recoil.useValue (Atoms.User.selectedDatabaseIds input.Username)
+        let selectedDatabaseIdList = Recoil.useValue (Atoms.User.selectedDatabaseIdList input.Username)
 
         let selectedDatabasePositions =
-            selectedDatabaseIds
-            |> Array.map (Some >> Atoms.Database.position)
+            selectedDatabaseIdList
+            |> List.map (Some >> Atoms.Database.position)
             |> Recoil.waitForAll
             |> Recoil.useValue
 
@@ -30,8 +30,8 @@ module PositionUpdater =
                 promise {
                     let pausedPosition =
                         selectedDatabasePositions
-                        |> Array.choose id
-                        |> Array.tryHead
+                        |> List.choose id
+                        |> List.tryHead
 
                     if selectedDatabasePositions.Length > 0 then
                         if pausedPosition.IsNone then

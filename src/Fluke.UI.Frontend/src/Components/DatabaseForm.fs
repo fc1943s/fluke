@@ -10,7 +10,6 @@ open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core
-open Fluke.UI.Frontend.Hooks
 
 
 module DatabaseForm =
@@ -75,10 +74,10 @@ module DatabaseForm =
                         | DatabaseName (String.NullString
                         | String.WhitespaceStr) -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let! databaseIds = setter.snapshot.getPromise (Atoms.Session.databaseIds input.Username)
+                            let! databaseIdList = setter.snapshot.getPromise (Atoms.Session.databaseIdList input.Username)
 
                             let! databaseNames =
-                                databaseIds
+                                databaseIdList
                                 |> List.filter
                                     (fun databaseId ->
                                         match input.DatabaseId with
@@ -93,8 +92,6 @@ module DatabaseForm =
                             else
                                 let! dayStart =
                                     setter.snapshot.getReadWritePromise Atoms.Database.dayStart input.DatabaseId
-
-                                printfn $"DatabaseForm.onSave getReadWritePromise(dayStart)={dayStart} input.DatabaseId={input.DatabaseId}"
 
                                 let! database =
                                     match input.DatabaseId with
@@ -128,8 +125,8 @@ module DatabaseForm =
 //
 //                                hydrateDatabase Recoil.AtomScope.ReadOnly database
 
-//                                do! setter.readWriteReset Atoms.Database.name input.DatabaseId
-//                                do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
+                                do! setter.readWriteReset Atoms.Database.name input.DatabaseId
+                                do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
 //
                                 do! input.OnSave database
 

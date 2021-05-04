@@ -17,25 +17,52 @@ module Model =
 
     [<Generator.DuCases "Domain">]
     type Information =
-        | Project of project: Project * tasks: Task list
-        | Area of area: Area * tasks: Task list
-        | Resource of resource: Resource * tasks: Task list
+        | Project of project: Project
+        | Area of area: Area
+        | Resource of resource: Resource
         | Archive of information: Information
 
-    and Area = { Name: AreaName }
+    and Area = { Id: AreaId; Name: AreaName }
+
+    and AreaId = AreaId of guid: Guid
 
     and AreaName = AreaName of name: string
 
-    and Project = { Name: ProjectName; Area: Area }
+    and Project =
+        {
+            Id: ProjectId
+            Area: Area
+            Name: ProjectName
+        }
+
+    and ProjectId = ProjectId of guid: Guid
 
     and ProjectName = ProjectName of name: string
 
-    and Resource = { Name: ResourceName; Area: Area }
+    and Resource =
+        {
+            Id: ResourceId
+            Area: Area
+            Name: ResourceName
+        }
+
+    and ResourceId = ResourceId of guid: Guid
 
     and ResourceName = ResourceName of name: string
 
+    and [<RequireQualifiedAccess>] InformationId =
+        | Area of id: AreaId
+        | Project of id: ProjectId
+        | Resource of id: ResourceId
+
+    and [<RequireQualifiedAccess>] InformationName =
+        | Area of name: AreaName
+        | Project of name: ProjectName
+        | Resource of name: ResourceName
+
     and Task =
         {
+            Id: TaskId
             Name: TaskName
             Information: Information
             Duration: Minute option
@@ -44,6 +71,8 @@ module Model =
             Scheduling: Scheduling
             Priority: Priority option
         }
+
+    and TaskId = TaskId of guid: Guid
 
     and TaskName = TaskName of name: string
 
@@ -103,25 +132,39 @@ module Model =
         | High9
         | Critical10
 
-
     and Information with
-        member this.Name =
-            match this with
-            | Project ({ Name = ProjectName name }, _) -> InformationName name
-            | Area ({ Name = AreaName name }, _) -> InformationName name
-            | Resource ({ Name = ResourceName name }, _) -> InformationName name
-            | Archive information ->
-                let (InformationName name) = information.Name
-                $"[%s{name}]" |> InformationName
+        static member Id information =
+            match information with
+            | Project { Id = id } -> InformationId.Project id
+            | Area { Id = id } -> InformationId.Area id
+            | Resource { Id = id } -> InformationId.Resource id
+            | Archive information -> information |> Information.Id
 
-    and InformationName = InformationName of name: string
+        static member Name information =
+            match information with
+            | Project { Name = name } -> InformationName.Project name
+            | Area { Name = name } -> InformationName.Area name
+            | Resource { Name = name } -> InformationName.Resource name
+            | Archive information -> information |> Information.Name
+
+    and InformationName with
+        static member Value informationName =
+            match informationName with
+            | Project (ProjectName name) -> name
+            | Area (AreaName name) -> name
+            | Resource (ResourceName name) -> name
 
     and Area with
-        static member inline Default = { Name = AreaName "" }
+        static member inline Default =
+            {
+                Id = AreaId Guid.Empty
+                Name = AreaName ""
+            }
 
     and Project with
         static member inline Default : Project =
             {
+                Id = ProjectId Guid.Empty
                 Name = ProjectName ""
                 Area = Area.Default
             }
@@ -129,6 +172,7 @@ module Model =
     and Resource with
         static member inline Default =
             {
+                Id = ResourceId Guid.Empty
                 Name = ResourceName ""
                 Area = Area.Default
             }
@@ -136,8 +180,9 @@ module Model =
     type Task with
         static member inline Default =
             {
+                Id = TaskId Guid.Empty
                 Name = TaskName ""
-                Information = Area (Area.Default, [])
+                Information = Area Area.Default
                 PendingAfter = None
                 MissedAfter = None
                 Scheduling = Manual WithoutSuggestion

@@ -41,3 +41,6 @@ module JS =
                 do! Async.Sleep 100
                 return! waitForObject fn
         }
+
+    let ofObjDefault def obj =
+        if (JS.Constructors.Object.keys obj).Count = 0 then def else obj

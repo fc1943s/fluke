@@ -17,8 +17,6 @@ open Fluke.UI.Frontend.Hooks
 
 
 module CellSelection =
-    open Sync
-    open Templates
     open State
 
 
@@ -27,12 +25,12 @@ module CellSelection =
         (fun () ->
             let dslTemplate =
                 {
-                    Position =
+                    Templates.Position =
                         {
                             Date = FlukeDate.Create 2020 Month.January 10
-                            Time = TestUser.testUser.DayStart
+                            Time = Templates.templatesUser.DayStart
                         }
-                    Tasks =
+                    Templates.Tasks =
                         [
                             1 .. 4
                         ]
@@ -55,40 +53,25 @@ module CellSelection =
                 |> Crypto.getTextGuidHash
                 |> DatabaseId
 
-            let databaseState = databaseStateFromDslTemplate TestUser.testUser databaseId databaseName dslTemplate
+            let databaseState =
+                Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
 
             let initialSetter (setter: CallbackMethods) =
                 promise {
-                    setter.set (
-                        Atoms.api,
-                        Some
-                            {
-                                currentUser = async { return TestUser.testUser }
-                                databaseStateList =
-                                    fun _username _moment ->
-                                        async {
-                                            return
-                                                [
-                                                    databaseState
-                                                ]
-                                        }
-                            }
-                    )
-
-                    setter.set (Atoms.username, Some TestUser.testUser.Username)
-                    setter.set (Atoms.User.view TestUser.testUser.Username, View.View.Priority)
-                    setter.set (Atoms.User.daysBefore TestUser.testUser.Username, 2)
-                    setter.set (Atoms.User.daysAfter TestUser.testUser.Username, 2)
+                    setter.set (Atoms.username, Some Templates.templatesUser.Username)
+                    setter.set (Atoms.User.view Templates.templatesUser.Username, View.View.Priority)
+                    setter.set (Atoms.User.daysBefore Templates.templatesUser.Username, 2)
+                    setter.set (Atoms.User.daysAfter Templates.templatesUser.Username, 2)
                     setter.set (Atoms.gunHash, System.Guid.NewGuid().ToString ())
                     setter.set (Atoms.position, Some dslTemplate.Position)
 
                     setter.set (
-                        Atoms.User.selectedDatabaseIds TestUser.testUser.Username,
-                        [|
+                        Atoms.User.selectedDatabaseIdList Templates.templatesUser.Username,
+                        [
                             databaseName
                             |> Crypto.getTextGuidHash
                             |> DatabaseId
-                        |]
+                        ]
                     )
                 }
 
@@ -135,7 +118,10 @@ module CellSelection =
                         peek
                             (fun (setter: CallbackMethods) ->
                                 promise {
-                                    let! cellSelectionMap = setter.snapshot.getPromise Selectors.cellSelectionMap
+                                    let! cellSelectionMap =
+                                        setter.snapshot.getPromise (
+                                            Selectors.Session.cellSelectionMap Templates.templatesUser.Username
+                                        )
 
                                     Jest
                                         .expect(toString cellSelectionMap)

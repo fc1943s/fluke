@@ -13,24 +13,12 @@ open Fluke.Shared
 
 
 module Router =
-    open Sync
 
     Jest.describe (
         "router",
         (fun () ->
             let initialSetter (setter: CallbackMethods) =
-                promise {
-                    setter.set (
-                        Atoms.api,
-                        Some
-                            {
-                                currentUser = async { return TestUser.testUser }
-                                databaseStateList = fun _username _moment -> async { return [] }
-                            }
-                    )
-
-                    setter.set (Atoms.username, Some TestUser.testUser.Username)
-                }
+                promise { setter.set (Atoms.username, Some Templates.templatesUser.Username) }
 
             let getComponent () =
                 Chakra.box
@@ -44,13 +32,13 @@ module Router =
             let setView peek (view: View.View) =
                 peek
                     (fun (setter: CallbackMethods) ->
-                        promise { setter.set (Atoms.User.view TestUser.testUser.Username, view) })
+                        promise { setter.set (Atoms.User.view Templates.templatesUser.Username, view) })
 
             let expectView peek (expected: View.View) =
                 peek
                     (fun (setter: CallbackMethods) ->
                         promise {
-                            let! view = setter.snapshot.getPromise (Atoms.User.view TestUser.testUser.Username)
+                            let! view = setter.snapshot.getPromise (Atoms.User.view Templates.templatesUser.Username)
 
                             Jest.expect(string view).toEqual (string expected)
                         })

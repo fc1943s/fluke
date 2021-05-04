@@ -266,12 +266,10 @@ module Recoil =
 module RecoilMagic =
 
     type CallbackMethods with
-        //        member this.readWriteReset<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>) key =
-//            promise {
-//                let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
-//                let! initialValue = this.snapshot.getPromise (Recoil.Atoms.Form.initialValue atomField.ReadOnly.key)
-//                this.set (atomField.ReadWrite, initialValue :?> 'U)
-//            }
+        member this.readWriteReset<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>) key =
+            promise {
+                this.set (Recoil.Atoms.Form.readWriteValue (atom key).key, null)
+            }
 
         member this.readWriteSet<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>, key: 'T, value: 'U) =
             let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))

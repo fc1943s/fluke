@@ -18,7 +18,7 @@ module Day =
                    Label: string |})
         =
         let isToday = Recoil.useValue (Selectors.FlukeDate.isToday input.Date)
-        let hasSelection = Recoil.useValue (Selectors.FlukeDate.hasSelection input.Date)
+        let hasSelection = Recoil.useValue (Selectors.Session.hasSelection input.Date)
         let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
 
         Chakra.box

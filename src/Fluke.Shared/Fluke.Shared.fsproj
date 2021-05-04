@@ -17,7 +17,6 @@
         <Compile Include="Sorting.fs" />
         <Compile Include="View.fs" />
         <Compile Include="Templates.fs" />
-        <Compile Include="Sync.fs" />
         <Compile Include="TempData.fs" />
         <Content Include="paket.references" />
         <Content Include="myriad.toml" />

@@ -49,12 +49,71 @@ module Setup =
             return subject, peekFn
         }
 
+    let baseInitializeSessionData username (setter: CallbackMethods) sessionData =
+        let recoilInformationMap =
+            sessionData.TaskList
+            |> Seq.map (fun task -> task.Information)
+            |> Seq.distinct
+            |> Seq.map (fun information -> sessionData.InformationStateMap.[information])
+            |> Seq.map
+                (fun informationState ->
+
+                    let informationId = informationState.Information |> Information.Id
+
+                    setter.set (Atoms.Information.wrappedInformation informationId, informationState.Information)
+                    setter.set (Atoms.Information.attachments informationId, informationState.Attachments)
+                    informationState.Information, informationId)
+            |> Map.ofSeq
+
+        Profiling.addTimestamp "state.set[1]"
+
+        sessionData.TaskList
+        |> List.map (fun task -> sessionData.TaskStateMap.[task])
+        |> List.iter
+            (fun taskState ->
+                let taskId = Some taskState.TaskId
+                setter.set (Atoms.Task.task taskId, taskState.Task)
+                setter.set (Atoms.Task.name taskId, taskState.Task.Name)
+                setter.set (Atoms.Task.informationId taskId, recoilInformationMap.[taskState.Task.Information])
+                setter.set (Atoms.Task.pendingAfter taskId, taskState.Task.PendingAfter)
+                setter.set (Atoms.Task.missedAfter taskId, taskState.Task.MissedAfter)
+                setter.set (Atoms.Task.scheduling taskId, taskState.Task.Scheduling)
+                setter.set (Atoms.Task.priority taskId, taskState.Task.Priority)
+                setter.set (Atoms.Task.attachments taskId, taskState.Attachments)
+                setter.set (Atoms.Task.duration taskId, taskState.Task.Duration)
+
+                taskState.CellStateMap
+                |> Map.filter
+                    (fun _dateId cellState ->
+                        (<>) cellState.Status Disabled
+                        || not cellState.Attachments.IsEmpty
+                        || not cellState.Sessions.IsEmpty)
+                |> Map.iter
+                    (fun dateId cellState ->
+                        setter.set (Atoms.Cell.status (taskState.TaskId, dateId), cellState.Status)
+                        setter.set (Atoms.Cell.attachments (taskState.TaskId, dateId), cellState.Attachments)
+                        setter.set (Atoms.Cell.sessions (taskState.TaskId, dateId), cellState.Sessions)
+                        //                setter.set (Atoms.Cell.selected (taskId, dateId), false)
+                        ))
+
+        let taskIdList =
+            sessionData.TaskList
+            |> List.choose
+                (fun task ->
+                    sessionData.TaskStateMap
+                    |> Map.tryFind task
+                    |> Option.map (fun x -> x.TaskId))
+
+        setter.set (Selectors.Session.taskIdList username, taskIdList)
+
+
     let initializeSessionData user peek =
         peek
             (fun (setter: CallbackMethods) ->
                 promise {
                     let! sessionData = setter.snapshot.getPromise (Selectors.Session.sessionData user.Username)
-                    SessionDataLoader.initializeSessionData user.Username setter sessionData
+                    //                    initializeSessionData user.Username setter sessionData
+                    ()
                 })
 
     let taskIdByName name databaseState =
@@ -76,7 +135,7 @@ module Setup =
                             let! dateSequence = setter.snapshot.getPromise Selectors.dateSequence
                             let! username = setter.snapshot.getPromise Atoms.username
 
-                            let! taskIdList = setter.snapshot.getPromise (Atoms.Session.taskIdList username.Value)
+                            let! taskIdList = setter.snapshot.getPromise (Selectors.Session.taskIdList username.Value)
 
                             let! cellList =
                                 taskIdList

@@ -8,7 +8,6 @@ open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fable.Core.JsInterop
 open Fluke.Shared
-open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 
 

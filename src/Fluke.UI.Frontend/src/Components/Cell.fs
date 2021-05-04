@@ -4,6 +4,7 @@ open Fable.React
 open Fable.Core.JsInterop
 open Feliz
 open Feliz.Recoil
+open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain

@@ -54,14 +54,6 @@ module Settings =
                                             x.atom <- Some (Recoil.Atom Atoms.gunPeers)
                                             x.atomScope <- Some Recoil.AtomScope.ReadOnly)
                                 )
-
-                                Input.Input (
-                                    JS.newObj
-                                        (fun x ->
-                                            x.label <- str "Legacy API URL"
-                                            x.atom <- Some (Recoil.Atom Atoms.apiBaseUrl)
-                                            x.atomScope <- Some Recoil.AtomScope.ReadOnly)
-                                )
                             ])
                     ]
             |}

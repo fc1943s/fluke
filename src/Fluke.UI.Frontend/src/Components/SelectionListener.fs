@@ -20,11 +20,11 @@ module SelectionListener =
 
                     match username with
                     | Some username ->
-                        let! cellSelectionMap = setter.snapshot.getAsync Selectors.cellSelectionMap
+                        let! cellSelectionMap = setter.snapshot.getAsync (Selectors.Session.cellSelectionMap username)
 
                         if e.key = "Escape" && e.``type`` = "keydown" then
                             if not cellSelectionMap.IsEmpty then
-                                setter.set (Selectors.cellSelectionMap, Map.empty)
+                                setter.set (Selectors.Session.cellSelectionMap username, Map.empty)
 
                             setter.set (Atoms.User.cellMenuOpened username, None)
 
@@ -50,7 +50,7 @@ module SelectionListener =
 
                                         Map.singleton key cellSelectionMap.[key]
 
-                                setter.set (Selectors.cellSelectionMap, newMap)
+                                setter.set (Selectors.Session.cellSelectionMap username, newMap)
                     | None -> ()
                 })
 

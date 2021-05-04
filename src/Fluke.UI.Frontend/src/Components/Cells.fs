@@ -1,7 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.Shared.Domain.State
 open Feliz
 open Feliz.Recoil
 open Fluke.UI.Frontend.State

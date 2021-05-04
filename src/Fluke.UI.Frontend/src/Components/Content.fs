@@ -35,7 +35,6 @@ module Content =
                     | Some username ->
                         React.fragment [
                             PositionUpdater.PositionUpdater {| Username = username |}
-                            SessionDataLoader.SessionDataLoader {| Username = username |}
                             SoundPlayer.SoundPlayer {| Username = username |}
 
                             Chakra.stack

@@ -70,7 +70,6 @@ module State =
             InformationMap: Map<Information, unit>
         }
 
-    and TaskId = TaskId of guid: Guid
     //        type Cell = Cell of address: CellAddress * status: CellStatus
     and CellState =
         {
@@ -104,6 +103,18 @@ module State =
 
     and TaskId with
         static member inline NewId () = TaskId (Guid.NewGuid ())
+        static member inline Value (TaskId guid) = guid
+
+    and Database with
+        static member inline Default =
+            {
+                Id = DatabaseId Guid.Empty
+                Name = DatabaseName ""
+                Owner = Username ""
+                SharedWith = DatabaseAccess.Private []
+                Position = None
+                DayStart = FlukeTime.Create 7 0
+            }
 
     and DatabaseState with
         static member inline Create (name, owner, dayStart, ?id, ?sharedWith, ?position) =

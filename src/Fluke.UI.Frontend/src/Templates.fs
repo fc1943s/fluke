@@ -1,29 +1,16 @@
 namespace Fluke.UI.Frontend
 
-open System
 open Feliz.Recoil
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
-open Fluke.Shared.Domain
 
 
 module TestUser =
-    let rec testUser =
-        {
-            Username = Username "Fluke"
-            Color = UserColor.Black
-            WeekStart = DayOfWeek.Sunday
-            DayStart = FlukeTime.Create 12 0
-            SessionLength = Minute 25.
-            SessionBreakLength = Minute 5.
-        }
-
     let fetchTemplatesDatabaseStateMap () =
         let templates =
-            Templates.getDatabaseMap testUser
+            Templates.getDatabaseMap Templates.templatesUser
             |> Map.toList
             |> List.map
                 (fun (templateName, dslTemplate) ->
@@ -32,7 +19,7 @@ module TestUser =
                         |> Crypto.getTextGuidHash
                         |> DatabaseId
 
-                    Templates.databaseStateFromDslTemplate testUser databaseId templateName dslTemplate)
+                    Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId templateName dslTemplate)
             |> List.map
                 (fun databaseState ->
                     { databaseState with

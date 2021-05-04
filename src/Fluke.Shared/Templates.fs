@@ -2018,3 +2018,13 @@ module Templates =
                         |> mergeDslDataIntoDatabaseState dslData)
 
         newDatabaseState
+
+    let templatesUser =
+        {
+            Username = Username "Fluke"
+            Color = UserColor.Black
+            WeekStart = DayOfWeek.Sunday
+            DayStart = FlukeTime.Create 12 0
+            SessionLength = Minute 25.
+            SessionBreakLength = Minute 5.
+        }

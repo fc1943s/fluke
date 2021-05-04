@@ -3,10 +3,10 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.Recoil
+open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
-open Fluke.Shared.Domain.State
 
 
 module TaskPriority =

@@ -13,7 +13,7 @@ module PriorityView =
 
     [<ReactComponent>]
     let PriorityView (input: {| Username: Username |}) =
-        let taskIdList = Recoil.useValue (Atoms.Session.taskIdList input.Username)
+        let taskIdList = Recoil.useValue (Selectors.Session.taskIdList input.Username)
 
         Chakra.flex
             (fun _ -> ())

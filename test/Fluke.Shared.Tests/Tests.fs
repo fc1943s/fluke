@@ -40,7 +40,7 @@ module Tests =
 
 
     let testWithTemplateData (dslTemplate: DslTemplate) =
-        let databaseState = databaseStateFromDslTemplate testUser dslTemplate
+        let databaseState = databaseStateFromDslTemplate templatesUser dslTemplate
 
         dslTemplate.Tasks
         |> List.iter
@@ -92,7 +92,7 @@ module Tests =
                     | [] -> []
                     | expectedStatus ->
                         let laneStatusMap =
-                            Rendering.renderLane testUser.DayStart dslTemplate.Position dateSequence taskState
+                            Rendering.renderLane templatesUser.DayStart dslTemplate.Position dateSequence taskState
                             |> fun (_taskState, cells) ->
                                 cells
                                 |> List.map (fun ({ DateId = DateId referenceDay }, status) -> referenceDay, status)
@@ -127,13 +127,13 @@ module Tests =
                         let sessionData =
                             View.getSessionData
                                 {|
-                                    Username = testUser.Username
-                                    DayStart = testUser.DayStart
+                                    Username = templatesUser.Username
+                                    DayStart = templatesUser.DayStart
                                     DateSequence = dateSequence
                                     View = View.View.HabitTracker
                                     Position = Some dslTemplate.Position
                                     DatabaseStateMap = databaseStateMap
-                                    SelectedDatabaseIds =
+                                    SelectedDatabaseIdList =
                                         [
                                             databaseId
                                         ]
@@ -149,7 +149,7 @@ module Tests =
                                     taskState.Sessions
                                     |> List.filter
                                         (fun (TaskSession (start, _, _)) ->
-                                            isToday testUser.DayStart start (DateId date))
+                                            isToday templatesUser.DayStart start (DateId date))
                                     |> List.length
 
                                 count, sessionCount)
@@ -187,7 +187,7 @@ module Tests =
                     ])
 
     let getDatabaseTests () =
-        let database = getDatabase testUser
+        let database = getDatabase templatesUser
         let tests = createTests database
         tests
 
@@ -228,7 +228,7 @@ module Tests =
                                 let dslData =
                                     Testing.createLaneSortingDslData
                                         {|
-                                            User = testUser
+                                            User = templatesUser
                                             Position = props.Position
                                             Expected = props.Expected
                                             Data = props.Data
@@ -236,8 +236,8 @@ module Tests =
 
                                 DatabaseState.Create (
                                     name = DatabaseName "Test",
-                                    owner = testUser.Username,
-                                    dayStart = testUser.DayStart
+                                    owner = templatesUser.Username,
+                                    dayStart = templatesUser.DayStart
                                 )
                                 |> mergeDslDataIntoDatabaseState dslData
 
@@ -251,24 +251,24 @@ module Tests =
 
                             databaseState.TaskStateMap
                             |> Map.values
-                            |> Seq.map (Rendering.renderLane testUser.DayStart props.Position dateSequence)
+                            |> Seq.map (Rendering.renderLane templatesUser.DayStart props.Position dateSequence)
                             |> Seq.toList
                             |> fun lanes ->
                                 match props.Sort with
                                 | NoSorting -> lanes
                                 | Frequency -> Sorting.sortLanesByFrequency lanes
                                 | IncomingRecurrency ->
-                                    Sorting.sortLanesByIncomingRecurrency testUser.DayStart props.Position lanes
-                                | TimeOfDay -> Sorting.sortLanesByTimeOfDay testUser.DayStart props.Position lanes
+                                    Sorting.sortLanesByIncomingRecurrency templatesUser.DayStart props.Position lanes
+                                | TimeOfDay -> Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position lanes
                                 | All ->
                                     lanes
                                     |> Sorting.sortLanesByFrequency
-                                    |> Sorting.sortLanesByIncomingRecurrency testUser.DayStart props.Position
-                                    |> Sorting.sortLanesByTimeOfDay testUser.DayStart props.Position //input.TaskOrderList
+                                    |> Sorting.sortLanesByIncomingRecurrency templatesUser.DayStart props.Position
+                                    |> Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position //input.TaskOrderList
                             |> List.map (fun ({ Task = { Name = TaskName name } }, _) -> name)
                             |> Expect.equal "" props.Expected
 
-                        let databaseMap = getDatabaseMap testUser
+                        let databaseMap = getDatabaseMap templatesUser
 
                         let dslTemplate = databaseMap.["Lane Sorting/Default/All task types mixed"]
 
