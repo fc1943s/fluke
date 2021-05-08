@@ -5,18 +5,17 @@ open Fable.Core.JsInterop
 open Fable.Core
 open Fable.Extras
 open Fluke.Shared
+open Fluke.Shared.Domain.State
+open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fable.React
 open Feliz.Recoil
 open Fluke.UI.Frontend.Hooks
-open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.State
 
 
 module Databases =
-
-    open Domain.UserInteraction
-    open Domain.State
 
     [<ReactComponent>]
     let LeafIcon (username: Username) (database: Database) =
@@ -184,7 +183,8 @@ module Databases =
     [<ReactComponent>]
     let NodeMenu
         (input: {| Username: Username
-                   Database: Database |})
+                   Database: Database
+                   Disabled: bool |})
         =
         let setTaskDatabaseId = Recoil.useSetState (Atoms.Task.databaseId None)
 
@@ -205,7 +205,8 @@ module Databases =
                                         (fun x ->
                                             x.``as`` <- Chakra.react.MenuButton
                                             x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                            x.fontSize <- "10px"
+                                            x.fontSize <- "11px"
+                                            x.disabled <- input.Disabled
                                             x.marginLeft <- "6px")
                             |}
                     ]
@@ -293,13 +294,22 @@ module Databases =
                                             x.fontSize <- "13px"
                                             x.marginTop <- "-1px")
 
+                                x.isDisabled <- true
                                 x.onClick <- fun e -> promise { e.preventDefault () })
                             [
                                 str "Clone Database"
                             ]
-
                     ]
             |}
+
+    type CheckboxTreeNode =
+        {
+            children: CheckboxTreeNode [] option
+            disabled: bool
+            icon: obj
+            label: ReactElement
+            value: string
+        }
 
     let node
         (input: {| Username: Username
@@ -308,58 +318,79 @@ module Databases =
                    IsTesting: bool
                    Value: string
                    Label: string
-                   Children: obj
+                   Children: CheckboxTreeNode []
                    Icon: obj |})
         =
-        {|
+        let disabled = input.Disabled || input.Value = ""
+
+        let labelText =
+            if input.Children = JS.undefined then
+                Some ((JSe.RegExp @"^(.*? )([^ ]+)$").Match input.Label)
+            else
+                None
+
+        let isEmptyNode = input.Value = (Database.Default.Id |> DatabaseId.Value |> string)
+
+        {
             value = input.Value
-            showCheckbox = input.Value <> ""
-            disabled = input.Disabled || input.Value = ""
+            disabled = isEmptyNode || disabled
+            children = Some input.Children
+            icon = if isEmptyNode then box (Chakra.box (fun _ -> ()) []) else input.Icon
             label =
-                React.fragment [
-                    let label =
-                        if input.Children = JS.undefined then
-                            Some ((JSe.RegExp @"^(.*? )([^ ]+)$").Match input.Label)
-                        else
-                            None
-
-                    Chakra.box
-                        (fun x ->
-                            x.fontSize <- "12px"
-                            x.paddingTop <- "1px"
-                            x.paddingBottom <- "1px"
-                            x.lineHeight <- "19px"
-                            x.marginLeft <- "-6px"
-                            x.display <- "inline")
-                        [
-                            match label with
-                            | Some label -> str (label |> Seq.item 1)
-                            | None -> str input.Label
-                        ]
-
-                    match input.Database with
-                    | Some database ->
+                Tooltip.wrap
+                    (if input.Disabled then
+                         (str "There are databases selected with a different position")
+                     else
+                         nothing)
+                    [
                         Chakra.box
                             (fun x ->
                                 x.display <- "inline"
-                                x.fontSize <- "initial"
-                                x.whiteSpace <- "nowrap")
+                                x.lineHeight <- "19px")
                             [
-                                match label with
-                                | Some label -> str (label |> Seq.item 2)
-                                | None -> ()
+                                Chakra.box
+                                    (fun x ->
+                                        x.fontSize <- "12px"
+                                        x.paddingTop <- "1px"
+                                        x.paddingBottom <- "1px"
+                                        x.marginLeft <- if input.Database.IsNone then "2px" else null
+                                        x.display <- "inline")
+                                    [
+                                        match labelText with
+                                        | Some label -> str (label |> Seq.item 1)
+                                        | _ -> str input.Label
+                                    ]
 
-                                NodeMenu
-                                    {|
-                                        Username = input.Username
-                                        Database = database
-                                    |}
+                                match input.Database with
+                                | Some database ->
+                                    Chakra.box
+                                        (fun x ->
+                                            x.display <- "inline"
+                                            x.fontSize <- "initial"
+
+                                            x.visibility <-
+                                                if database.Id = Database.Default.Id then "hidden" else "visible"
+
+                                            x.whiteSpace <- "nowrap")
+                                        [
+                                            match labelText with
+                                            | Some label -> str (label |> Seq.item 2)
+                                            | None -> ()
+
+                                            NodeMenu
+                                                {|
+                                                    Username = input.Username
+                                                    Database = database
+                                                    Disabled = disabled
+                                                |}
+                                        ]
+
+                                    Chakra.box (fun x -> x.height <- "14px") []
+                                | _ -> ()
+
                             ]
-                    | _ -> ()
-                ]
-            children = input.Children
-            icon = input.Icon
-        |}
+                    ]
+        }
 
     type Node = Node of value: string * label: string * children: Node list * index: int option
 
@@ -422,6 +453,7 @@ module Databases =
         let isTesting = Recoil.useValue Atoms.isTesting
         //        let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
         let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
+        let hideTemplatesCache = React.useRef<bool option> None
 
         let expandedDatabaseIdList, setExpandedDatabaseIdList =
             Recoil.useState (Atoms.User.expandedDatabaseIdList input.Username)
@@ -440,7 +472,7 @@ module Databases =
         let nodes =
             React.useMemo (
                 (fun () ->
-                    let databases =
+                    let tasksNodeTypeMap =
                         availableDatabases
                         |> List.map
                             (fun database ->
@@ -452,36 +484,59 @@ module Databases =
 
                                 nodeType, database)
                         |> List.filter (fun (nodeType, _) -> nodeType <> NodeType.Template || not hideTemplates)
-
-                    let availableDatabasesMap =
-                        databases
-                        |> List.map (fun (_, database) -> database.Id, database)
+                        |> List.groupBy fst
                         |> Map.ofList
+                        |> Map.map (fun _ v -> v |> List.map snd)
 
-                    let nodes =
-                        databases
+                    let nodeData =
+                        [
+                            if not hideTemplates then yield NodeType.Template
+                            yield NodeType.Owned
+                            yield NodeType.Shared
+                        ]
                         |> List.map
-                            (fun (nodeType, database) ->
+                            (fun nodeType ->
+                                let databases =
+                                    tasksNodeTypeMap
+                                    |> Map.tryFind nodeType
+                                    |> Option.defaultValue [
+                                        { Database.Default with
+                                            Name = DatabaseName "None"
+                                        }
+                                       ]
+
                                 let prefix =
                                     match nodeType with
                                     | NodeType.Template -> "Templates\/Unit Tests"
                                     | NodeType.Owned -> "Created by me"
                                     | NodeType.Shared -> "Shared with me"
 
-                                $"{prefix}/{database.Name |> DatabaseName.Value}")
-                        |> buildNodesFromPath
+                                let nodeNames =
+                                    databases
+                                    |> List.map (fun database -> $"{prefix}/{database.Name |> DatabaseName.Value}")
+                                    |> List.sort
+
+                                databases, nodeNames)
+
+                    let databases = nodeData |> List.collect fst
+                    let nodes = nodeData |> List.collect snd |> buildNodesFromPath
+
+                    let availableDatabasesMap =
+                        databases
+                        |> List.map (fun database -> database.Id, database)
+                        |> Map.ofList
 
                     let rec loop nodes =
                         match nodes with
                         | Node (value, label, children, index) :: tail ->
                             let nodeChildren =
                                 match children with
-                                | [] -> JS.undefined
-                                | _ -> box (loop children |> List.toArray)
+                                | [] -> unbox JS.undefined
+                                | _ -> loop children |> List.toArray
 
                             let database =
                                 match index with
-                                | Some index -> Some (databases.[index] |> snd)
+                                | Some index -> Some databases.[index]
                                 | _ -> None
 
                             let icon =
@@ -543,6 +598,34 @@ module Databases =
                     box availableDatabases
                 |]
             )
+
+        React.useEffect (
+            (fun () ->
+                let newExpandedDatabaseIdList =
+                    match hideTemplates, hideTemplatesCache.current with
+                    | true,
+                      (None
+                      | Some false) -> []
+                    | _ -> expandedDatabaseIdList
+
+                hideTemplatesCache.current <- Some hideTemplates
+
+                match newExpandedDatabaseIdList with
+                | [] ->
+                    setExpandedDatabaseIdList (
+                        nodes
+                        |> Array.map (fun node -> node.value |> Guid |> DatabaseId)
+                        |> Array.toList
+                    )
+                | _ -> ()),
+            [|
+                box nodes
+                box expandedDatabaseIdList
+                box setExpandedDatabaseIdList
+                box hideTemplates
+                box hideTemplatesCache
+            |]
+        )
 
         Browser.Dom.window?nodes <- nodes
 

@@ -19,18 +19,29 @@ module TestUser =
                         |> Crypto.getTextGuidHash
                         |> DatabaseId
 
-                    Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId templateName dslTemplate)
-            |> List.map
-                (fun databaseState ->
-                    { databaseState with
-                        TaskStateMap =
-                            databaseState.TaskStateMap
-                            |> Map.map
-                                (fun { Name = TaskName taskName } taskState ->
-                                    { taskState with
-                                        TaskId = taskName |> Crypto.getTextGuidHash |> TaskId
-                                    })
-                    })
+                    let newDslTemplate =
+                        { dslTemplate with
+                            Tasks =
+                                dslTemplate.Tasks
+                                |> List.map
+                                    (fun taskTemplate ->
+                                        { taskTemplate with
+                                            Task =
+                                                { taskTemplate.Task with
+                                                    Id =
+                                                        taskTemplate.Task.Name
+                                                        |> TaskName.Value
+                                                        |> Crypto.getTextGuidHash
+                                                        |> TaskId
+                                                }
+                                        })
+                        }
+
+                    Templates.databaseStateFromDslTemplate
+                        Templates.templatesUser
+                        databaseId
+                        templateName
+                        newDslTemplate)
 
         let databaseStateMap =
             templates

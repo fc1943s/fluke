@@ -94,20 +94,22 @@ module StatusBar =
 
                 str $"{visibleTaskIdList.Length} of {taskIdList.Length} tasks visible"
 
-                Chakra.spacer (fun _ -> ()) []
-
                 match position with
                 | Some position ->
-                    Chakra.flex
-                        (fun _ -> ())
-                        [
-                            Chakra.icon
-                                (fun x ->
-                                    x.``as`` <- Icons.fa.FaRegClock
-                                    x.marginRight <- "4px")
-                                []
+                    React.fragment [
+                        Chakra.spacer (fun _ -> ()) []
 
-                            str $"Position: {position.Stringify ()}"
-                        ]
+                        Chakra.flex
+                            (fun _ -> ())
+                            [
+                                Chakra.icon
+                                    (fun x ->
+                                        x.``as`` <- Icons.fa.FaRegClock
+                                        x.marginRight <- "4px")
+                                    []
+
+                                str $"Position: {position.Stringify ()}"
+                            ]
+                    ]
                 | None -> ()
             ]

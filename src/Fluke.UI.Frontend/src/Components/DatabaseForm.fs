@@ -62,7 +62,6 @@ module DatabaseForm =
                    OnSave: Database -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
-//        let hydrateDatabase = HydrateDatabase.useHydrateDatabase ()
 
         let onSave =
             Recoil.useCallbackRef
@@ -74,7 +73,8 @@ module DatabaseForm =
                         | DatabaseName (String.NullString
                         | String.WhitespaceStr) -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let! databaseIdList = setter.snapshot.getPromise (Atoms.Session.databaseIdList input.Username)
+                            let! databaseIdList =
+                                setter.snapshot.getPromise (Atoms.Session.databaseIdList input.Username)
 
                             let! databaseNames =
                                 databaseIdList
@@ -117,66 +117,16 @@ module DatabaseForm =
                                         }
                                         |> Promise.lift
 
-
-//                                let eventId = Atoms.Events.newEventId ()
+                                //                                let eventId = Atoms.Events.newEventId ()
 //                                let event = Atoms.Events.Event.AddDatabase (eventId, databaseName, dayStart)
 //                                setter.set (Atoms.Events.events eventId, event)
 //                                printfn $"event {event}"
-//
-//                                hydrateDatabase Recoil.AtomScope.ReadOnly database
 
                                 do! setter.readWriteReset Atoms.Database.name input.DatabaseId
+
                                 do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
-//
+
                                 do! input.OnSave database
-
-
-                                //                                let! databaseStateMapCache =
-//                                    setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache input.Username)
-
-
-                                //                                let database =
-//                                    databaseStateMapCache
-//                                    |> Map.tryFind databaseId
-//                                    |> Option.defaultValue (
-//                                        DatabaseState.Create (
-//                                            name = databaseName,
-//                                            owner = input.Username,
-//                                            dayStart = dayStart,
-//                                            id = databaseId
-//                                        )
-//                                    )
-
-                                //                                let newDatabaseStateMapCache =
-//                                    databaseStateMapCache
-//                                    |> Map.add
-//                                        databaseId
-//                                        { database with
-//                                            Database =
-//                                                { database.Database with
-//                                                    Name = databaseName
-//                                                    DayStart = dayStart
-//                                                }
-//                                        }
-//
-//                                printfn
-//                                    $"DatabaseForm():
-//                            databaseStateMapCache.Count={databaseStateMapCache.Count}
-//                            newDatabaseStateMapCache.Count={newDatabaseStateMapCache.Count}"
-
-                                //                                setter.set (
-//                                    Atoms.Session.databaseStateMapCache input.Username,
-//                                    newDatabaseStateMapCache
-//                                )
-//
-//                                setter.set (
-//                                    Atoms.Session.availableDatabaseIds input.Username,
-//                                    (availableDatabaseIds
-//                                     @ [
-//                                         databaseId
-//                                     ])
-//                                )
-
                     })
 
         Chakra.stack

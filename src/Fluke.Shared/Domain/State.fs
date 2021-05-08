@@ -101,10 +101,6 @@ module State =
     and DatabaseName with
         static member inline Value (DatabaseName name) = name
 
-    and TaskId with
-        static member inline NewId () = TaskId (Guid.NewGuid ())
-        static member inline Value (TaskId guid) = guid
-
     and Database with
         static member inline Default =
             {

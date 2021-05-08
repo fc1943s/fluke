@@ -116,6 +116,7 @@ module Theme =
                                 ``.rct-node-parent:not(:first-of-type)`` = {| marginTop = "5px" |}
                                 ``.rct-node:first-of-type`` = {| marginTop = "2px" |}
                                 ``.rct-node-leaf`` = {| marginBottom = "-11px" |}
+                                ``.rct-title`` = {| display = "contents" |}
                                 ``.markdown-container h1`` =
                                     {|
                                         borderBottom = "1px solid #777"

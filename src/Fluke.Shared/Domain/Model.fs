@@ -177,6 +177,14 @@ module Model =
                 Area = Area.Default
             }
 
+
+    and TaskId with
+        static member inline NewId () = TaskId (Guid.NewGuid ())
+        static member inline Value (TaskId guid) = guid
+
+    and TaskName with
+        static member inline Value (TaskName name) = name
+
     type Task with
         static member inline Default =
             {

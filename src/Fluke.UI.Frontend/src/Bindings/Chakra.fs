@@ -104,6 +104,7 @@ module Chakra =
         abstract ``type`` : string with get, set
         abstract value : obj with get, set
         abstract variant : string with get, set
+        abstract visibility : string with get, set
         abstract width : string with get, set
         abstract whiteSpace : string with get, set
         abstract zIndex : int with get, set

@@ -1952,15 +1952,10 @@ module Templates =
         dslData
 
     let mergeDslDataIntoDatabaseState (dslData: DslData) (databaseState: DatabaseState) =
-
         let newInformationStateMap =
             mergeInformationStateMap databaseState.InformationStateMap dslData.InformationStateMap
-
         let taskStateList, userInteractionsBundle = dslData.TaskStateList |> List.unzip
-
-
         let userInteractions = userInteractionsBundle |> List.collect id
-
         let newDatabaseState = databaseStateWithInteractions userInteractions databaseState
 
         let newTaskStateMap =

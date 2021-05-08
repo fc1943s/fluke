@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.React
 open Feliz
 open Fluke.UI.Frontend.Bindings
 
@@ -18,11 +19,14 @@ module Tooltip =
             input.Props.children
 
     let inline wrap label children =
-        Tooltip
-            {|
-                Props =
-                    JS.newObj
-                        (fun x ->
-                            x.label <- label
-                            x.children <- children)
-            |}
+        if label = nothing then
+            React.fragment children
+        else
+            Tooltip
+                {|
+                    Props =
+                        JS.newObj
+                            (fun x ->
+                                x.label <- label
+                                x.children <- children)
+                |}

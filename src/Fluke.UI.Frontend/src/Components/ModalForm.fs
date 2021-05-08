@@ -29,12 +29,14 @@ module ModalForm =
     let ModalForm
         (input: {| Username: Username
                    TextKey: TextKey
-                   Content: System.Guid option * (unit -> unit) -> ReactElement |})
+                   Content: System.Guid option * (unit -> unit) * (unit -> CallbackMethods) -> ReactElement |})
         =
         let formIdFlag, setFormIdFlag = Recoil.useState (Atoms.User.formIdFlag (input.Username, input.TextKey))
 
         let formVisibleFlag, setFormVisibleFlag =
             Recoil.useState (Atoms.User.formVisibleFlag (input.Username, input.TextKey))
+
+        let setter = Recoil.useCallbackRef id
 
         Modal.Modal
             {|
@@ -52,6 +54,6 @@ module ModalForm =
 
                             x.children <-
                                 [
-                                    input.Content (formIdFlag, (fun () -> setFormVisibleFlag false))
+                                    input.Content (formIdFlag, (fun () -> setFormVisibleFlag false), setter)
                                 ])
             |}

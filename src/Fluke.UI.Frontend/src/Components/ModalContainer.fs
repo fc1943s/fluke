@@ -22,7 +22,7 @@ module ModalContainer =
                 {|
                     Username = input.Username
                     Content =
-                        fun (formIdFlag, onHide) ->
+                        fun (formIdFlag, onHide, _) ->
                             DatabaseForm.DatabaseForm
                                 {|
                                     Username = input.Username
@@ -41,15 +41,23 @@ module ModalContainer =
                 {|
                     Username = input.Username
                     Content =
-                        fun (formIdFlag, onHide) ->
+                        fun (formIdFlag, onHide, setter) ->
+                            let taskId = formIdFlag |> Option.map TaskId
+
                             TaskForm.TaskForm
                                 {|
                                     Username = input.Username
-                                    TaskId = formIdFlag |> Option.map TaskId
-                                    OnSave = fun task -> promise {
-                                        hydrateTask Recoil.AtomScope.ReadOnly task
-                                        onHide ()
-                                    }
+                                    TaskId = taskId
+                                    OnSave =
+                                        fun task ->
+                                            promise {
+                                                let! databaseId =
+                                                    setter()
+                                                        .snapshot.getPromise (Atoms.Task.databaseId taskId)
+
+                                                hydrateTask Recoil.AtomScope.ReadOnly databaseId task
+                                                onHide ()
+                                            }
                                 |}
                     TextKey = TextKey (nameof TaskForm)
                 |}

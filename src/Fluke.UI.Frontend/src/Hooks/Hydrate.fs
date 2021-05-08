@@ -35,13 +35,14 @@ module Hydrate =
         let hydrateInformation = useHydrateInformation ()
 
         Recoil.useCallbackRef
-            (fun (setter: CallbackMethods) atomScope (data: Task) ->
+            (fun (setter: CallbackMethods) atomScope databaseId (data: Task) ->
                 let set atom value =
                     setter.scopedSet atomScope (atom, (Some data.Id), value)
 
                 hydrateInformation atomScope data.Information
 
                 set Atoms.Task.name data.Name
+                set Atoms.Task.databaseId databaseId
                 set Atoms.Task.informationId (data.Information |> Information.Id)
                 set Atoms.Task.duration data.Duration
                 set Atoms.Task.pendingAfter data.PendingAfter
