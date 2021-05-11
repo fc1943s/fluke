@@ -33,8 +33,9 @@ module Input =
         abstract inputFormat : InputFormat option with get, set
 
     [<ReactComponent>]
-    let Input (input: IProps<'TValue, 'TKey>) =
-        let atomFieldOptions = Recoil.useAtomField<'TValue, 'TKey> input.atom input.atomScope
+    let Input (props: IProps<'TValue, 'TKey> -> unit) =
+        let props = JS.newObj props
+        let atomFieldOptions = Recoil.useAtomField<'TValue, 'TKey> props.atom props.atomScope
 
         let inputRef = React.useRef<HTMLInputElement> null
 
@@ -44,18 +45,18 @@ module Input =
             React.useMemo (
                 (fun () ->
                     let value =
-                        match mounted, input.value with
+                        match mounted, props.value with
                         | _, Some value -> Some value
                         | false, None -> None
                         | true, None ->
                             match inputRef.current, box atomFieldOptions.AtomValue with
                             | null, _ -> None
                             | _, null ->
-                                match input.onValidate with
+                                match props.onValidate with
                                 | Some onValidate -> onValidate inputRef.current.value
                                 | None -> None
                             | _ ->
-                                match input.atom with
+                                match props.atom with
                                 | Some _ -> Some atomFieldOptions.AtomValue
                                 | None -> None
 
@@ -63,7 +64,7 @@ module Input =
                     let valueString =
                         match value with
                         | Some value when box value <> null ->
-                            match input.onFormat with
+                            match props.onFormat with
                             | Some onFormat -> onFormat value
                             | None -> string value
                         | _ -> ""
@@ -71,10 +72,7 @@ module Input =
                     value, valueString),
                 [|
                     box mounted
-                    box input.atom
-                    box input.value
-                    box input.onValidate
-                    box input.onFormat
+                    box props
                     box inputRef
                     box atomFieldOptions.AtomValue
                 |]
@@ -92,14 +90,14 @@ module Input =
                     inputRef.current.value <- currentValueString
 
                     if not mounted then
-                        if input.atom.IsSome then fireChange ()
+                        if props.atom.IsSome then fireChange ()
 
                         setMounted true
 
                 ),
             [|
                 box fireChange
-                box input.atom
+                box props
                 box inputRef
                 box currentValueString
                 box mounted
@@ -112,12 +110,12 @@ module Input =
                 (fun _setter (e: KeyboardEvent) ->
                     promise {
                         if inputRef.current <> null && e.target <> null then
-                            match box input.onChange with
+                            match box props.onChange with
                             | null -> ()
-                            | _ -> do! input.onChange e
+                            | _ -> do! props.onChange e
 
                             let validValue =
-                                match input.onValidate with
+                                match props.onValidate with
                                 | Some onValidate ->
                                     let validValue = onValidate e.Value
                                     validValue
@@ -126,7 +124,7 @@ module Input =
                             let validValueString =
                                 match validValue with
                                 | Some validValue ->
-                                    match input.onFormat with
+                                    match props.onFormat with
                                     | Some onFormat -> onFormat validValue
                                     | None -> string validValue
                                 | None -> ""
@@ -134,7 +132,7 @@ module Input =
                             if validValueString <> currentValueString then
                                 inputRef.current.value <- validValueString
 
-                            if input.atom.IsSome then
+                            if props.atom.IsSome then
                                 match validValue with
                                 | Some value -> atomFieldOptions.SetAtomValue value
                                 | None -> atomFieldOptions.SetAtomValue atomFieldOptions.ReadOnlyValue
@@ -152,15 +150,15 @@ module Input =
 //                            | _ -> atomFieldOptions.AtomField.ReadWrite
 //                    |}
 
-                match input.label with
+                match props.label with
                 | null -> nothing
                 | _ ->
                     InputLabel.InputLabel
                         {|
-                            Hint = input.hint
-                            HintTitle = input.hintTitle
-                            Label = input.label
-                            Props = JS.newObj (fun _ -> ())
+                            Hint = props.hint
+                            HintTitle = props.hintTitle
+                            Label = props.label
+                            Props = fun _ -> ()
                         |}
 
                 Chakra.box
@@ -171,28 +169,27 @@ module Input =
                                 x.onChange <- onChange
                                 x.ref <- inputRef
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
-                                x.autoFocus <- input.autoFocus
-                                x.placeholder <- input.placeholder
+                                x.autoFocus <- props.autoFocus
+                                x.placeholder <- props.placeholder
 
                                 x.onKeyDown <-
                                     fun (e: KeyboardEvent) ->
                                         promise {
-                                            match box input.onKeyDown with
+                                            match box props.onKeyDown with
                                             | null -> ()
-                                            | _ -> do! input.onKeyDown e
+                                            | _ -> do! props.onKeyDown e
 
-
-                                            match box input.onChange with
+                                            match box props.onChange with
                                             | null -> ()
-                                            | _ -> do! input.onChange e
+                                            | _ -> do! props.onChange e
 
-                                            match input.onEnterPress with
+                                            match props.onEnterPress with
                                             | Some onEnterPress -> if e.key = "Enter" then do! onEnterPress ()
                                             | None -> ()
                                         }
 
                                 x.``type`` <-
-                                    match input.inputFormat with
+                                    match props.inputFormat with
                                     | Some inputFormat ->
                                         match inputFormat with
                                         | InputFormat.Date -> "date"
@@ -204,7 +201,7 @@ module Input =
                                     | None -> null)
                             []
 
-                        match input.inputFormat with
+                        match props.inputFormat with
                         | Some InputFormat.Number ->
                             Chakra.stack
                                 (fun x ->
@@ -221,21 +218,21 @@ module Input =
                                             Hint = None
                                             Icon = Some (Icons.fa.FaSortUp |> Icons.wrap, Button.IconPosition.Left)
                                             Props =
-                                                JS.newObj
-                                                    (fun x ->
-                                                        x.height <- "50%"
-                                                        x.paddingTop <- "6px"
-                                                        x.borderRadius <- "0 5px 0 0"
-                                                        x.minWidth <- "26px"
+                                                fun x ->
+                                                    x.height <- "50%"
+                                                    x.paddingTop <- "6px"
+                                                    x.borderRadius <- "0 5px 0 0"
+                                                    x.minWidth <- "26px"
 
-                                                        x.onClick <-
-                                                            (fun _ ->
-                                                                promise {
-                                                                    inputRef.current.valueAsNumber <-
-                                                                        inputRef.current.valueAsNumber + 1.
+                                                    x.onClick <-
+                                                        (fun _ ->
+                                                            promise {
+                                                                inputRef.current.valueAsNumber <-
+                                                                    inputRef.current.valueAsNumber + 1.
 
-                                                                    fireChange ()
-                                                                }))
+                                                                fireChange ()
+                                                            })
+                                            Children = []
                                         |}
 
                                     Button.Button
@@ -243,21 +240,21 @@ module Input =
                                             Hint = None
                                             Icon = Some (Icons.fa.FaSortDown |> Icons.wrap, Button.IconPosition.Left)
                                             Props =
-                                                JS.newObj
-                                                    (fun x ->
-                                                        x.height <- "50%"
-                                                        x.paddingBottom <- "6px"
-                                                        x.borderRadius <- "0 0 5px 0"
-                                                        x.minWidth <- "26px"
+                                                fun x ->
+                                                    x.height <- "50%"
+                                                    x.paddingBottom <- "6px"
+                                                    x.borderRadius <- "0 0 5px 0"
+                                                    x.minWidth <- "26px"
 
-                                                        x.onClick <-
-                                                            (fun _ ->
-                                                                promise {
-                                                                    inputRef.current.valueAsNumber <-
-                                                                        inputRef.current.valueAsNumber - 1.
+                                                    x.onClick <-
+                                                        (fun _ ->
+                                                            promise {
+                                                                inputRef.current.valueAsNumber <-
+                                                                    inputRef.current.valueAsNumber - 1.
 
-                                                                    fireChange ()
-                                                                }))
+                                                                fireChange ()
+                                                            })
+                                            Children = []
                                         |}
                                 ]
                         | _ -> ()

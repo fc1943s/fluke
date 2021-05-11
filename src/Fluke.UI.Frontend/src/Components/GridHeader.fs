@@ -45,7 +45,7 @@ module GridHeader =
                                         {|
                                             Username = input.Username
                                             Date = firstDate
-                                            Props = JS.newObj (fun x -> x.width <- $"{cellWidth}px")
+                                            Props = (fun x -> x.width <- $"{cellWidth}px")
                                         |})
                     ]
 

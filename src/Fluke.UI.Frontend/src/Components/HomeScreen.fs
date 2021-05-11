@@ -16,7 +16,7 @@ module HomeScreen =
     [<ReactComponent>]
     let HomeScreen
         (input: {| Username: Username
-                   Props: Chakra.IChakraProps |})
+                   Props: Chakra.IChakraProps -> unit |})
         =
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
 
@@ -61,7 +61,7 @@ module HomeScreen =
             }
 
         Chakra.flex
-            (fun x -> x <+ input.Props)
+            input.Props
             [
                 LeftDock.LeftDock {| Username = input.Username |}
 
@@ -94,16 +94,16 @@ module HomeScreen =
                                                             x.color <- "gray.45"
 
                                                             x._hover <-
-                                                                (JS.newObj
+                                                                JS.newObj
                                                                     (fun x ->
                                                                         x.borderBottomWidth <- "2px"
-                                                                        x.borderBottomColor <- "gray.45"))
+                                                                        x.borderBottomColor <- "gray.45")
 
                                                             x._selected <-
-                                                                (JS.newObj
+                                                                JS.newObj
                                                                     (fun x ->
                                                                         x.color <- "gray.77"
-                                                                        x.borderColor <- "gray.77")))
+                                                                        x.borderColor <- "gray.77"))
                                                         [
                                                             Chakra.icon
                                                                 (fun x ->

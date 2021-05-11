@@ -84,6 +84,9 @@ module UserInteraction =
     and Username with
         static member inline Value (Username username) = username
 
+    and DateId with
+        static member inline Value (DateId referenceDay) = referenceDay
+
     and FlukeDate with
         member inline this.DateTime =
             let Year year, Day day = this.Year, this.Day

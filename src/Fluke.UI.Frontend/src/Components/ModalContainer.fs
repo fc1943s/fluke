@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
+open Fable.React
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.Shared.Domain.Model
@@ -60,5 +61,28 @@ module ModalContainer =
                                             }
                                 |}
                     TextKey = TextKey (nameof TaskForm)
+                |}
+
+            ModalForm.ModalForm
+                {|
+                    Username = input.Username
+                    Content =
+                        fun (formIdFlag, onHide, setter) ->
+                            let taskId = formIdFlag |> Option.map TaskId
+
+                            AreaForm.AreaForm
+                                {|
+                                    Username = input.Username
+                                    TaskId = taskId
+                                    OnSave =
+                                        fun area ->
+                                            promise {
+                                                setter()
+                                                    .set (Atoms.Task.information taskId, Area area)
+
+                                                onHide ()
+                                            }
+                                |}
+                    TextKey = TextKey (nameof AreaForm)
                 |}
         ]

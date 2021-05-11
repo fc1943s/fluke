@@ -46,7 +46,7 @@ module Content =
                                     HomeScreen.HomeScreen
                                         {|
                                             Username = username
-                                            Props = JS.newObj (fun x -> x.flex <- 1)
+                                            Props = fun x -> x.flex <- 1
                                         |}
                                     StatusBar.StatusBar {| Username = username |}
                                 ]

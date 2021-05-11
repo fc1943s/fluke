@@ -321,22 +321,10 @@ module State =
 
 
         module rec Information =
-            let rec wrappedInformation =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Information}/{nameof wrappedInformation}",
-                    (fun (_informationId: InformationId) -> Area Area.Default)
-                )
-
-            let rec name =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Information}/{nameof name}",
-                    (fun (_informationId: InformationId option) -> Area.Default.Name |> InformationName.Area)
-                )
-
             let rec attachments =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Information}/{nameof attachments}",
-                    (fun (_informationId: InformationId) -> []: Attachment list)
+                    (fun (_information: Information) -> []: Attachment list)
                 )
 
 
@@ -362,13 +350,13 @@ module State =
                         ])
                 )
 
-            let rec informationId =
+            let rec information =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof informationId}",
-                    (fun (_taskId: TaskId option) -> Task.Default.Information |> Information.Id),
+                    $"{nameof atomFamily}/{nameof Task}/{nameof information}",
+                    (fun (_taskId: TaskId option) -> Task.Default.Information),
                     (fun (taskId: TaskId option) ->
                         [
-                            Recoil.gunEffect None informationId taskId (taskIdSuffix taskId)
+                            Recoil.gunEffect None information taskId (taskIdSuffix taskId)
                         ])
                 )
 
@@ -513,10 +501,10 @@ module State =
                     $"{nameof atomFamily}/{nameof Session}/{nameof databaseIdList}",
                     (fun (_username: Username) -> []: DatabaseId list),
                     (fun (username: Username) ->
-                        let atomFamily = databaseIdList
-                        let atomKey = username
-                        let username = Some username
-                        let keySuffix = ""
+                        let _atomFamily = databaseIdList
+                        let _atomKey = username
+                        let _username = Some username
+                        let _keySuffix = ""
 
                         [
                             (fun (e: Recoil.EffectProps<_>) ->
@@ -530,7 +518,7 @@ module State =
 
                                         gunAtomNode
                                             .map()
-                                            .on (fun v k ->
+                                            .on (fun _v k ->
                                                 //                                                if not JS.isProduction && not JS.isTesting then
 //                                                    printfn
 //                                                        $"@@@gunEffect. gunAtomNode.on() effect. data={
@@ -617,10 +605,10 @@ module State =
                     $"{nameof atomFamily}/{nameof Session}/{nameof taskMap}",
                     (fun (_username: Username) -> Map.empty: Map<DatabaseId, Set<TaskId>>),
                     (fun (username: Username) ->
-                        let atomFamily = databaseIdList
-                        let atomKey = username
-                        let username = Some username
-                        let keySuffix = ""
+                        let _atomFamily = databaseIdList
+                        let _atomKey = username
+                        let _username = Some username
+                        let _keySuffix = ""
 
                         [
                             (fun (e: Recoil.EffectProps<_>) ->
@@ -899,26 +887,15 @@ module State =
                 )
 
 
-        module rec Information =
-            let rec information =
-                Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Information}/{nameof information}",
-                    (fun (informationId: InformationId) getter ->
-                        getter.get (Atoms.Information.wrappedInformation informationId))
-                )
-
-
         module rec Task =
             let rec task =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof task}",
                     (fun (taskId: TaskId) getter ->
-                        let informationId = getter.get (Atoms.Task.informationId (Some taskId))
-
                         {
                             Id = taskId
                             Name = getter.get (Atoms.Task.name (Some taskId))
-                            Information = getter.get (Information.information informationId)
+                            Information = getter.get (Atoms.Task.information (Some taskId))
                             PendingAfter = getter.get (Atoms.Task.pendingAfter (Some taskId))
                             MissedAfter = getter.get (Atoms.Task.missedAfter (Some taskId))
                             Scheduling = getter.get (Atoms.Task.scheduling (Some taskId))
@@ -1011,9 +988,31 @@ module State =
                 )
 
 
-
-
         module rec Session =
+            let rec informationList =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Session}/{nameof informationList}",
+                    (fun (username: Username) getter ->
+                        let taskMap = getter.get (Atoms.Session.taskMap username)
+
+                        taskMap
+                        |> Map.values
+                        |> Seq.collect id
+                        |> Seq.map (fun taskId -> getter.get (Atoms.Task.information (Some taskId)))
+                        |> Seq.append [
+                            getter.get (Atoms.Task.information None)
+                           ]
+                        |> Seq.distinct
+                        |> Seq.filter
+                            (fun information ->
+                                information
+                                |> Information.Name
+                                |> InformationName.Value
+                                |> String.IsNullOrWhiteSpace
+                                |> not)
+                        |> Seq.toList)
+                )
+
             let rec taskIdList =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof taskIdList}",
@@ -1060,7 +1059,7 @@ module State =
                         |> List.filter (fun (_, dates) -> Set.isEmpty dates |> not)
                         |> Map.ofList),
 
-                    (fun (username: Username) setter (newSelection: Map<TaskId, Set<FlukeDate>>) ->
+                    (fun (_username: Username) setter (newSelection: Map<TaskId, Set<FlukeDate>>) ->
                         let username = setter.get Atoms.username
 
                         match username with
@@ -1139,28 +1138,14 @@ module State =
 
                         let informationMap =
                             taskIdList
-                            |> List.map (fun taskId -> taskId, getter.get (Atoms.Task.informationId (Some taskId)))
-                            |> List.map
-                                (fun (taskId, informationId) ->
-                                    taskId, getter.get (Atoms.Information.wrappedInformation informationId))
+                            |> List.map (fun taskId -> taskId, getter.get (Atoms.Task.information (Some taskId)))
                             |> Map.ofList
 
                         taskIdList
                         |> List.groupBy (fun taskId -> informationMap.[taskId])
                         |> List.sortBy (fun (information, _) -> information |> Information.Name)
                         |> List.groupBy (fun (information, _) -> Information.toString information)
-                        |> List.sortBy (snd >> List.head >> fst >> Information.toTag)
-                        |> List.map
-                            (fun (informationKindName, groups) ->
-                                let newGroups =
-                                    groups
-                                    |> List.map
-                                        (fun (information, taskIdList) ->
-                                            let informationId = information |> Information.Id
-
-                                            informationId, taskIdList)
-
-                                informationKindName, newGroups))
+                        |> List.sortBy (snd >> List.head >> fst >> Information.toTag))
                 )
 
             let rec weekCellsMap =
@@ -1351,7 +1336,7 @@ module State =
                     $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}",
                     (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
                         getter.get (Atoms.Cell.selected (username, taskId, dateId))),
-                    (fun (_username: Username, taskId: TaskId, (DateId referenceDay)) setter (newValue: bool) ->
+                    (fun (_username: Username, taskId: TaskId, dateId: DateId) setter (newValue: bool) ->
                         let username = setter.get Atoms.username
 
                         match username with
@@ -1362,7 +1347,8 @@ module State =
                             let newCellSelectionMap =
                                 match shiftPressed, ctrlPressed with
                                 | false, false ->
-                                    let newTaskSelection = if newValue then Set.singleton referenceDay else Set.empty
+                                    let newTaskSelection =
+                                        if newValue then Set.singleton (dateId |> DateId.Value) else Set.empty
 
                                     [
                                         taskId, newTaskSelection
@@ -1383,7 +1369,7 @@ module State =
                                         oldSelection |> Map.add taskId newSet
 
                                     let oldSelection = setter.get (Session.cellSelectionMap username)
-                                    swapSelection oldSelection taskId referenceDay
+                                    swapSelection oldSelection taskId (dateId |> DateId.Value)
                                 | true, _ ->
                                     let taskIdList = setter.get (Session.taskIdList username)
                                     let oldCellSelectionMap = setter.get (Session.cellSelectionMap username)
@@ -1407,7 +1393,7 @@ module State =
                                         oldCellSelectionMap
                                         |> Map.values
                                         |> Set.unionMany
-                                        |> Set.add referenceDay
+                                        |> Set.add (dateId |> DateId.Value)
                                         |> Set.toList
                                         |> List.sort
 

@@ -15,7 +15,8 @@ module Button =
     let Button
         (input: {| Icon: ((unit -> ReactElement) * IconPosition) option
                    Hint: ReactElement option
-                   Props: Chakra.IChakraProps |})
+                   Props: Chakra.IChakraProps -> unit
+                   Children: seq<ReactElement> |})
         =
 
         let icon, iconPosition =
@@ -26,12 +27,12 @@ module Button =
         Tooltip.wrap
             (input.Hint |> Option.defaultValue null)
             [
-                match icon, input.Props.children with
-                | Some icon, x when x = null || x |> Seq.isEmpty ->
+                match icon, input.Children |> Seq.toList with
+                | Some icon, [] ->
                     Chakra.iconButton
                         (fun x ->
-                            x <+ input.Props
-                            x.icon <- icon ())
+                            x.icon <- icon ()
+                            input.Props x)
                         []
                 | _, children ->
                     let icon =
@@ -43,10 +44,10 @@ module Button =
 
                     Chakra.button
                         (fun x ->
-                            x <+ input.Props
                             x.height <- "auto"
                             x.paddingTop <- "3px"
-                            x.paddingBottom <- "3px")
+                            x.paddingBottom <- "3px"
+                            input.Props x)
                         [
                             Chakra.stack
                                 (fun x ->

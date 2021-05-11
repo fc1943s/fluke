@@ -7,7 +7,6 @@ open Feliz.UseListener
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
-open Fluke.Shared.Domain.State
 open Fluke.Shared
 
 

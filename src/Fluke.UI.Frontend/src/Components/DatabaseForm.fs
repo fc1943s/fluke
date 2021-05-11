@@ -141,49 +141,45 @@ module DatabaseForm =
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")
                     [
-                        Input.Input (
-                            JS.newObj
-                                (fun x ->
-                                    x.autoFocus <- true
-                                    x.label <- str "Name"
+                        Input.Input
+                            (fun x ->
+                                x.autoFocus <- true
+                                x.label <- str "Name"
 
-                                    x.hint <-
-                                        Some (
-                                            Chakra.box
-                                                (fun _ -> ())
-                                                [
-                                                    str "Documentation"
-                                                ]
-                                        )
+                                x.hint <-
+                                    Some (
+                                        Chakra.box
+                                            (fun _ -> ())
+                                            [
+                                                str "Documentation"
+                                            ]
+                                    )
 
-                                    x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
-                                    x.atom <- Some (Recoil.AtomFamily (Atoms.Database.name, input.DatabaseId))
-                                    x.onFormat <- Some (fun (DatabaseName name) -> name)
-                                    x.onValidate <- Some (DatabaseName >> Some)
-                                    x.onEnterPress <- Some onSave)
-                        )
+                                x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
+                                x.atom <- Some (Recoil.AtomFamily (Atoms.Database.name, input.DatabaseId))
+                                x.onFormat <- Some (fun (DatabaseName name) -> name)
+                                x.onValidate <- Some (DatabaseName >> Some)
+                                x.onEnterPress <- Some onSave)
 
-                        Input.Input (
-                            JS.newObj
-                                (fun x ->
-                                    x.label <- str "Day starts at"
+                        Input.Input
+                            (fun x ->
+                                x.label <- str "Day starts at"
 
-                                    x.hint <-
-                                        Some (
-                                            Chakra.box
-                                                (fun _ -> ())
-                                                [
-                                                    str "Documentation"
-                                                ]
-                                        )
+                                x.hint <-
+                                    Some (
+                                        Chakra.box
+                                            (fun _ -> ())
+                                            [
+                                                str "Documentation"
+                                            ]
+                                    )
 
-                                    x.placeholder <- "00:00"
+                                x.placeholder <- "00:00"
 
-                                    x.atom <- Some (Recoil.AtomFamily (Atoms.Database.dayStart, input.DatabaseId))
-                                    x.inputFormat <- Some Input.InputFormat.Time
-                                    x.onFormat <- Some (fun time -> time.Stringify ())
-                                    x.onValidate <- Some (DateTime.Parse >> FlukeTime.FromDateTime >> Some))
-                        )
+                                x.atom <- Some (Recoil.AtomFamily (Atoms.Database.dayStart, input.DatabaseId))
+                                x.inputFormat <- Some Input.InputFormat.Time
+                                x.onFormat <- Some (fun time -> time.Stringify ())
+                                x.onValidate <- Some (DateTime.Parse >> FlukeTime.FromDateTime >> Some))
 
                         Chakra.stack
                             (fun x ->

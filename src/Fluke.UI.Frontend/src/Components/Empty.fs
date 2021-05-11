@@ -12,9 +12,9 @@ open Feliz.Recoil
 
 module Empty =
     [<ReactComponent>]
-    let Empty (input: {| Props: Chakra.IChakraProps |}) =
+    let Empty (input: {| Props: Chakra.IChakraProps -> unit |}) =
         Chakra.box
-            (fun _ -> ())
+            (fun x -> input.Props x)
             [
                 str ""
             ]

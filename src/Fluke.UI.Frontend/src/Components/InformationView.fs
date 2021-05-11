@@ -52,12 +52,12 @@ module InformationView =
                                                             yield!
                                                                 groups
                                                                 |> List.map
-                                                                    (fun (informationId, taskIdList) ->
+                                                                    (fun (information, taskIdList) ->
                                                                         Chakra.box
                                                                             (fun x -> x.paddingLeft <- "17px")
                                                                             [
                                                                                 InformationName.InformationName
-                                                                                    {| InformationId = informationId |}
+                                                                                    {| Information = information |}
 
                                                                                 // Task Name
                                                                                 Chakra.box

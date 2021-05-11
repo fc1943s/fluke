@@ -13,9 +13,8 @@ open Fluke.Shared.Domain.Model
 module InformationName =
 
     [<ReactComponent>]
-    let InformationName (input: {| InformationId: InformationId |}) =
-        let information = Recoil.useValue (Atoms.Information.wrappedInformation input.InformationId)
-        let attachments = Recoil.useValue (Atoms.Information.attachments input.InformationId)
+    let InformationName (input: {| Information: Information |}) =
+        let attachments = Recoil.useValue (Atoms.Information.attachments input.Information)
 
         Chakra.box
             (fun x ->
@@ -26,10 +25,10 @@ module InformationName =
                 Chakra.box
                     (fun x ->
                         x.whiteSpace <- "nowrap"
-                        x.color <- TempUI.informationColor information)
+                        x.color <- TempUI.informationColor input.Information)
                     [
                         str (
-                            information
+                            input.Information
                             |> Information.Name
                             |> InformationName.Value
                         )

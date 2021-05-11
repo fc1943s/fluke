@@ -32,13 +32,12 @@ module Accordion =
     let Accordion
         (input: {| Items: (string * ReactElement) list
                    Atom: Recoil.RecoilValue<string [], _>
-                   Props: Chakra.IChakraProps |})
+                   Props: Chakra.IChakraProps -> unit |})
         =
         let atomValue, setAtomValue = Recoil.useState input.Atom
 
         Chakra.accordion
             (fun x ->
-                x <+ input.Props
                 x.allowMultiple <- true
                 x.reduceMotion <- true
 
@@ -75,7 +74,9 @@ module Accordion =
                                 |> Array.map (fun index -> input.Items.[index] |> fst)
 
                             if newIndexes.Length > 0 then setAtomValue newIndexes
-                        })
+                        }
+
+                input.Props x)
             [
                 yield!
                     input.Items

@@ -10,7 +10,9 @@ module Hint =
         abstract hintTitle : ReactElement option with get, set
 
     [<ReactComponent>]
-    let Hint (input: IProps) =
+    let Hint (props: IProps -> unit) =
+        let props = JS.newObj props
+
         Chakra.popover
             (fun _ -> ())
             [
@@ -22,7 +24,11 @@ module Hint =
                             [
                                 InputLabelIconButton.InputLabelIconButton
                                     {|
-                                        Props = JS.newObj (fun x -> x.icon <- Icons.bs.BsQuestionCircle |> Icons.render)
+                                        Props =
+                                            (fun x ->
+                                                x.icon <- Icons.bs.BsQuestionCircle |> Icons.render
+                                                x.marginLeft <- "4px"
+                                                x.marginTop <- "-5px")
                                     |}
                             ]
                     ]
@@ -36,7 +42,7 @@ module Hint =
                                 x.padding <- "10px"
                                 x.backgroundColor <- "gray.13")
                             [
-                                match input.hintTitle with
+                                match props.hintTitle with
                                 | Some hintTitle ->
                                     Chakra.box
                                         (fun x ->
@@ -54,7 +60,7 @@ module Hint =
                                             hintTitle
                                         ]
                                 | None -> ()
-                                input.hint
+                                props.hint
                             ]
                     ]
             ]

@@ -31,11 +31,10 @@ module LeftDock =
                                 {|
                                     Username = input.Username
                                     Props =
-                                        JS.newObj
-                                            (fun x ->
-                                                x.flex <- 1
-                                                x.overflowY <- "auto"
-                                                x.flexBasis <- 0)
+                                        fun x ->
+                                            x.flex <- 1
+                                            x.overflowY <- "auto"
+                                            x.flexBasis <- 0
                                 |}
                     RightIcons = []
                 |}
@@ -50,11 +49,10 @@ module LeftDock =
                                 {|
                                     Username = input.Username
                                     Props =
-                                        JS.newObj
-                                            (fun x ->
-                                                x.flex <- 1
-                                                x.overflowY <- "auto"
-                                                x.flexBasis <- 0)
+                                        fun x ->
+                                            x.flex <- 1
+                                            x.overflowY <- "auto"
+                                            x.flexBasis <- 0
                                 |}
                     RightIcons =
                         [
@@ -70,23 +68,22 @@ module LeftDock =
                                                         TransparentIconButton.TransparentIconButton
                                                             {|
                                                                 Props =
-                                                                    JS.newObj
-                                                                        (fun x ->
-                                                                            if JS.isTesting then
-                                                                                x?``data-testid`` <- "Add Database"
+                                                                    fun x ->
+                                                                        if JS.isTesting then
+                                                                            x?``data-testid`` <- "Add Database"
 
-                                                                            x.icon <- Icons.fi.FiPlus |> Icons.render
-                                                                            x.fontSize <- "17px"
+                                                                        x.icon <- Icons.fi.FiPlus |> Icons.render
+                                                                        x.fontSize <- "17px"
 
-                                                                            x.onClick <-
-                                                                                fun _ ->
-                                                                                    promise {
-                                                                                        trigger ()
-                                                                                        //                                                                                let! setter = (trigger ())()
+                                                                        x.onClick <-
+                                                                            fun _ ->
+                                                                                promise {
+                                                                                    trigger ()
+                                                                                    //                                                                                let! setter = (trigger ())()
 //                                                                                let! value = setter.snapshot.getPromise (Selectors.Database.database None)
 //                                                                                hydrateDatabase Recoil.AtomScope.ReadWrite value
-                                                                                        ()
-                                                                                    })
+                                                                                    ()
+                                                                                }
                                                             |}
                                                     ]
                                         TextKey = TextKey (nameof DatabaseForm)

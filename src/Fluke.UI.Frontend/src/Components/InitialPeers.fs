@@ -33,33 +33,27 @@ module InitialPeers =
                 Chakra.stack
                     (fun x -> x.minWidth <- "200px")
                     [
-                        Input.Input (
-                            JS.newObj
-                                (fun x ->
-                                    x.autoFocus <- true
-                                    x.label <- str "Gun peer"
+                        Input.Input
+                            (fun x ->
+                                x.autoFocus <- true
+                                x.label <- str "Gun peer"
 
-                                    x.hint <-
-                                        Some (
-                                            ExternalLink.ExternalLink
-                                                {|
-                                                    Text = "Read documentation"
-                                                    Props =
-                                                        JS.newObj
-                                                            (fun x ->
-                                                                x.isExternal <- true
-
-                                                                x.href <-
-                                                                    "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers")
-                                                |}
-                                        )
+                                x.hint <-
+                                    Some (
+                                        ExternalLink.ExternalLink
+                                            {|
+                                                Link = str "Read documentation"
+                                                Href =
+                                                    "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers"
+                                                Props = fun _ -> ()
+                                            |}
+                                    )
 
 
-                                    x.value <- Some gunPeer
-                                    x.placeholder <- "https://??????.herokuapp.com/gun"
-                                    x.onEnterPress <- Some nextClick
-                                    x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value }))
-                        )
+                                x.value <- Some gunPeer
+                                x.placeholder <- "https://??????.herokuapp.com/gun"
+                                x.onEnterPress <- Some nextClick
+                                x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value }))
 
                         Chakra.hStack
                             (fun x -> x.align <- "stretch")
@@ -69,17 +63,15 @@ module InitialPeers =
                                         Icon = None
                                         Hint = None
                                         Props =
-                                            JS.newObj
-                                                (fun x ->
-                                                    x.flex <- 1
-                                                    x.autoFocus <- true
-                                                    x.onClick <- skipClick
-                                                    x.color <- "gray"
-
-                                                    x.children <-
-                                                        [
-                                                            str "Skip"
-                                                        ])
+                                            fun x ->
+                                                x.flex <- 1
+                                                x.autoFocus <- true
+                                                x.onClick <- skipClick
+                                                x.color <- "gray"
+                                        Children =
+                                            [
+                                                str "Skip"
+                                            ]
                                     |}
 
                                 Button.Button
@@ -87,17 +79,15 @@ module InitialPeers =
                                         Icon = None
                                         Hint = None
                                         Props =
-                                            JS.newObj
-                                                (fun x ->
-                                                    x.flex <- 1
-                                                    x.onClick <- nextClick
-                                                    x.color <- "gray"
-                                                    x.disabled <- gunPeer.Length = 0
-
-                                                    x.children <-
-                                                        [
-                                                            str "Next"
-                                                        ])
+                                            fun x ->
+                                                x.flex <- 1
+                                                x.onClick <- nextClick
+                                                x.color <- "gray"
+                                                x.disabled <- gunPeer.Length = 0
+                                        Children =
+                                            [
+                                                str "Next"
+                                            ]
                                     |}
 
                             ]

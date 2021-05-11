@@ -11,10 +11,10 @@ open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core
 open Fluke.UI.Frontend.State
+open Fluke.Shared
 
 
 module TaskForm =
-
     [<ReactComponent>]
     let TaskForm
         (input: {| Username: UserInteraction.Username
@@ -24,97 +24,65 @@ module TaskForm =
         let databaseId = Recoil.useValue (Atoms.Task.databaseId input.TaskId)
         let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name (Some databaseId))
 
-        printfn $"TaskForm databaseId={databaseId} databaseName={databaseName} input.TaskId={input.TaskId}"
+        let toast = Chakra.useToast ()
+
+
+        //        printfn
+//            $"TaskForm databaseId={databaseId} databaseName={databaseName}
+//        input.TaskId={input.TaskId} informationFieldOptions={informationFieldOptions}"
 
         let onSave =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) _ ->
                     promise {
                         let! taskName = setter.snapshot.getReadWritePromise Atoms.Task.name input.TaskId
-                        //
+                        let! taskInformation = setter.snapshot.getReadWritePromise Atoms.Task.information input.TaskId
+
+
+                        match taskName |> TaskName.Value,
+                              taskInformation
+                              |> Information.Name
+                              |> InformationName.Value with
+                        | (String.NullString
+                          | String.WhitespaceStr),
+                          _ -> toast (fun x -> x.description <- "Invalid name")
+                        | _,
+                          (String.NullString
+                          | String.WhitespaceStr) -> toast (fun x -> x.description <- "Invalid information")
+                        | _ ->
+
+                            //
 //                            let eventId = Atoms.Events.newEventId ()
 //                            let event = Atoms.Events.Event.AddTask (eventId, name)
 //                            setter.set (Atoms.Events.events eventId, event)
 //                            printfn $"event {event}"
 
-                        //                            let! databaseStateMapCache =
-//                                setter.snapshot.getPromise (Atoms.Session.databaseStateMapCache input.Username)
-//
-//                            let databaseState = databaseStateMapCache |> Map.tryFind databaseId
+                            let! task =
+                                match input.TaskId with
+                                | Some taskId ->
+                                    promise {
+                                        let! task = setter.snapshot.getPromise (Selectors.Task.task taskId)
 
-                        let! task =
-                            match input.TaskId with
-                            | Some taskId ->
-                                promise {
-                                    let! task = setter.snapshot.getPromise (Selectors.Task.task taskId)
+                                        return
+                                            { task with
+                                                Name = taskName
+                                                Information = taskInformation
+                                            }
+                                    }
+                                | None ->
+                                    { Task.Default with
+                                        Id = TaskId.NewId ()
+                                        Name = taskName
+                                        Information = taskInformation
+                                    }
+                                    |> Promise.lift
 
-                                    return { task with Name = taskName }
-                                }
-                            | None ->
-                                { Task.Default with
-                                    Id = TaskId.NewId ()
-                                    Name = taskName
-                                }
-                                |> Promise.lift
+                            setter.set (Atoms.Task.databaseId (Some task.Id), databaseId)
 
-                        //                            let newDatabaseStateMapCache =
-//                                match databaseState with
-//                                | Some databaseState ->
-//                                    let information = Area ({ Name = AreaName "workflow" }, [])
-//
-//                                    let task =
-//                                        {
-//                                            Name = taskName
-//                                            Information = information
-//                                            Duration = None
-//                                            PendingAfter = None
-//                                            MissedAfter = None
-//                                            Scheduling = Scheduling.Manual ManualScheduling.WithoutSuggestion
-//                                            Priority = None
-//                                        }
-//
-//                                    let taskState =
-//                                        {
-//                                            TaskId = TaskId.NewId ()
-//                                            Task = task
-//                                            Sessions = []
-//                                            Attachments = []
-//                                            SortList = []
-//                                            CellStateMap = Map.empty
-//                                            InformationMap =
-//                                                [
-//                                                    information, ()
-//                                                ]
-//                                                |> Map.ofList
-//                                        }
-//
-//                                    let informationState =
-//                                        {
-//                                            Information = information
-//                                            Attachments = []
-//                                            SortList = []
-//                                        }
-//
-//                                    databaseStateMapCache
-//                                    |> Map.add
-//                                        databaseId
-//                                        { databaseState with
-//                                            InformationStateMap =
-//                                                databaseState.InformationStateMap
-//                                                |> Map.add information informationState
-//                                            TaskStateMap =
-//                                                databaseState.TaskStateMap
-//                                                |> Map.add task taskState
-//                                        }
-//                                | None -> databaseStateMapCache
+                            do! setter.readWriteReset Atoms.Task.name input.TaskId
+                            do! setter.readWriteReset Atoms.Task.information input.TaskId
 
-                        //                            setter.set (Atoms.Session.databaseStateMapCache input.Username, newDatabaseStateMapCache)
-
-                        setter.set (Atoms.Task.databaseId (Some task.Id), databaseId)
-
-                        do! setter.readWriteReset Atoms.Task.name input.TaskId
-                        //
-                        do! input.OnSave task
+                            do! input.OnSave task
                     })
 
         Chakra.stack
@@ -132,20 +100,25 @@ module TaskForm =
                         str $"Database: {databaseName}"
                     ]
 
+                InformationSelector.InformationSelector
+                    {|
+                        Username = input.Username
+                        SelectionType = InformationSelector.InformationSelectionType.Information
+                        TaskId = input.TaskId
+                    |}
+
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")
                     [
-                        Input.Input (
-                            JS.newObj
-                                (fun x ->
-                                    x.autoFocus <- true
-                                    x.label <- str "Name"
-                                    x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
-                                    x.atom <- Some (Recoil.AtomFamily (Atoms.Task.name, input.TaskId))
-                                    x.onFormat <- Some (fun (TaskName name) -> name)
-                                    x.onEnterPress <- Some onSave
-                                    x.onValidate <- Some (TaskName >> Some))
-                        )
+                        Input.Input
+                            (fun x ->
+                                x.autoFocus <- true
+                                x.label <- str "Name"
+                                x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
+                                x.atom <- Some (Recoil.AtomFamily (Atoms.Task.name, input.TaskId))
+                                x.onFormat <- Some (fun (TaskName name) -> name)
+                                x.onEnterPress <- Some onSave
+                                x.onValidate <- Some (TaskName >> Some))
                     ]
 
                 Chakra.button

@@ -17,13 +17,14 @@ module InputList =
         abstract atomScope : Recoil.AtomScope option with get, set
 
     [<ReactComponent>]
-    let InputList<'TValue, 'TKey when 'TValue: equality> (input: IProps<'TValue list, 'TKey>) =
-        let atomFieldOptions = Recoil.useAtomField<'TValue list, 'TKey> input.atom input.atomScope
+    let InputList<'TValue, 'TKey when 'TValue: equality> (props: IProps<'TValue list, 'TKey> -> unit) =
+        let props = JS.newObj props
+        let atomFieldOptions = Recoil.useAtomField<'TValue list, 'TKey> props.atom props.atomScope
 
         Chakra.box
             (fun _ -> ())
             [
-                match input.label with
+                match props.label with
                 | null -> nothing
                 | _ ->
                     InputLabel.InputLabel
@@ -32,7 +33,7 @@ module InputList =
                                 Chakra.box
                                     (fun _ -> ())
                                     [
-                                        input.label
+                                        props.label
 
                                         Tooltip.wrap
                                             (str "Add row")
@@ -40,29 +41,28 @@ module InputList =
                                                 InputLabelIconButton.InputLabelIconButton
                                                     {|
                                                         Props =
-                                                            JS.newObj
-                                                                (fun x ->
-                                                                    x.icon <- Icons.fa.FaPlus |> Icons.render
+                                                            fun x ->
+                                                                x.icon <- Icons.fa.FaPlus |> Icons.render
 
-                                                                    x.onClick <-
-                                                                        fun _ ->
-                                                                            promise {
-                                                                                atomFieldOptions.SetAtomValue (
-                                                                                    atomFieldOptions.AtomValue
-                                                                                    @ [
-                                                                                        unbox ""
-                                                                                    ]
-                                                                                )
-                                                                            })
+                                                                x.onClick <-
+                                                                    fun _ ->
+                                                                        promise {
+                                                                            atomFieldOptions.SetAtomValue (
+                                                                                atomFieldOptions.AtomValue
+                                                                                @ [
+                                                                                    unbox ""
+                                                                                ]
+                                                                            )
+                                                                        }
                                                     |}
                                             ]
                                     ]
-                            Hint = input.hint
-                            HintTitle = input.hintTitle
-                            Props = JS.newObj (fun x -> x.marginBottom <- "5px")
+                            Hint = props.hint
+                            HintTitle = props.hintTitle
+                            Props = fun x -> x.marginBottom <- "5px"
                         |}
 
-                match input.atom with
+                match props.atom with
                 | Some (Recoil.InputAtom.Atom _) ->
                     let inputList =
                         match atomFieldOptions.AtomValue with
@@ -79,22 +79,19 @@ module InputList =
                                 Chakra.box
                                     (fun x -> x.position <- "relative")
                                     [
-                                        Input.Input (
-                                            JS.newObj
-                                                (fun x ->
-                                                    x.onChange <-
-                                                        fun (e: Browser.Types.KeyboardEvent) ->
-                                                            promise {
-                                                                atomFieldOptions.SetAtomValue (
-                                                                    atomFieldOptions.AtomValue
-                                                                    |> List.mapi
-                                                                        (fun i' v ->
-                                                                            if i' = i then unbox e.Value else v)
-                                                                )
-                                                            }
+                                        Input.Input
+                                            (fun x ->
+                                                x.onChange <-
+                                                    fun (e: Browser.Types.KeyboardEvent) ->
+                                                        promise {
+                                                            atomFieldOptions.SetAtomValue (
+                                                                atomFieldOptions.AtomValue
+                                                                |> List.mapi
+                                                                    (fun i' v -> if i' = i then unbox e.Value else v)
+                                                            )
+                                                        }
 
-                                                    x.value <- Some value)
-                                        )
+                                                x.value <- Some value)
 
                                         match inputList.Length with
                                         | 1 -> nothing
@@ -105,28 +102,27 @@ module InputList =
                                                     InputLabelIconButton.InputLabelIconButton
                                                         {|
                                                             Props =
-                                                                JS.newObj
-                                                                    (fun x ->
-                                                                        x.icon <- Icons.fa.FaMinus |> Icons.render
+                                                                fun x ->
+                                                                    x.icon <- Icons.fa.FaMinus |> Icons.render
 
-                                                                        x.onClick <-
-                                                                            fun _ ->
-                                                                                promise {
-                                                                                    atomFieldOptions.SetAtomValue (
-                                                                                        atomFieldOptions.AtomValue
-                                                                                        |> Seq.indexed
-                                                                                        |> Seq.filter
-                                                                                            (fun (i', _) -> i' <> i)
-                                                                                        |> Seq.map snd
-                                                                                        |> Seq.toList
-                                                                                    )
-                                                                                }
+                                                                    x.onClick <-
+                                                                        fun _ ->
+                                                                            promise {
+                                                                                atomFieldOptions.SetAtomValue (
+                                                                                    atomFieldOptions.AtomValue
+                                                                                    |> Seq.indexed
+                                                                                    |> Seq.filter
+                                                                                        (fun (i', _) -> i' <> i)
+                                                                                    |> Seq.map snd
+                                                                                    |> Seq.toList
+                                                                                )
+                                                                            }
 
-                                                                        x.position <- "absolute"
-                                                                        x.right <- "5px"
-                                                                        x.top <- "50%"
-                                                                        x.transform <- "translate(0, -50%)"
-                                                                        x.margin <- "0")
+                                                                    x.position <- "absolute"
+                                                                    x.right <- "5px"
+                                                                    x.top <- "50%"
+                                                                    x.transform <- "translate(0, -50%)"
+                                                                    x.margin <- "0"
                                                         |}
                                                 ]
                                     ])

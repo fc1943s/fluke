@@ -8,20 +8,23 @@ open Fluke.UI.Frontend.Bindings
 module Menu =
     [<ReactComponent>]
     let Menu
-        (input: {| Title: string
+        (input: {| Tooltip: string
                    Trigger: ReactElement
-                   Menu: seq<ReactElement> |})
+                   Menu: seq<ReactElement>
+                   MenuListProps: Chakra.IChakraProps -> unit |})
         =
         Chakra.menu
             (fun x -> x.isLazy <- false)
             [
                 Tooltip.wrap
-                    (str input.Title)
+                    (str input.Tooltip)
                     [
                         input.Trigger
                     ]
                 Chakra.menuList
-                    (fun x -> x.backgroundColor <- "gray.13")
+                    (fun x ->
+                        x.backgroundColor <- "gray.13"
+                        input.MenuListProps x)
                     [
                         yield! input.Menu
                     ]

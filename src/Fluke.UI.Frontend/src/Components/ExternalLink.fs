@@ -6,18 +6,29 @@ open Fable.React
 
 
 module ExternalLink =
+    let externalLinkIcon =
+        Chakra.Icons.externalLinkIcon
+            (fun x ->
+                x.marginLeft <- "3px"
+                x.marginTop <- "-1px")
+            []
+
     [<ReactComponent>]
     let ExternalLink
-        (input: {| Text: string
-                   Props: Chakra.IChakraProps |})
+        (input: {| Link: ReactElement
+                   Href: string
+                   Props: Chakra.IChakraProps -> unit |})
         =
-        Chakra.link
-            (fun x -> x <+ input.Props)
+        Tooltip.wrap
+            (str input.Href)
             [
-                str input.Text
-                Chakra.Icons.externalLinkIcon
+                Chakra.link
                     (fun x ->
-                        x.marginLeft <- "3px"
-                        x.marginTop <- "-1px")
-                    []
+                        x.href <- input.Href
+                        x.isExternal <- true
+                        input.Props x)
+                    [
+                        input.Link
+                        externalLinkIcon
+                    ]
             ]

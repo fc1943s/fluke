@@ -6,7 +6,6 @@ open Feliz.Recoil
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
-open Fable.Core
 open Fluke.Shared
 
 
@@ -59,26 +58,23 @@ module TopBar =
                         x.spacing <- "10px"
                         x.direction <- "row")
                     [
-                        Chakra.link
-                            (fun x ->
-                                x.href <- "https://github.com/fc1943s/fluke"
-                                x.isExternal <- true)
+                        Tooltip.wrap
+                            (React.fragment [
+                                str "GitHub repository"
+                                ExternalLink.externalLinkIcon
+                             ])
                             [
-
-                                Tooltip.wrap
-                                    (ExternalLink.ExternalLink
-                                        {|
-                                            Text = "GitHub repository"
-                                            Props = JS.newObj (fun _ -> ())
-                                        |})
+                                Chakra.link
+                                    (fun x ->
+                                        x.href <- "https://github.com/fc1943s/fluke"
+                                        x.isExternal <- true)
                                     [
                                         TransparentIconButton.TransparentIconButton
                                             {|
                                                 Props =
-                                                    JS.newObj
-                                                        (fun x ->
-                                                            x.icon <- Icons.ai.AiOutlineGithub |> Icons.render
-                                                            x.fontSize <- "17px")
+                                                    fun x ->
+                                                        x.icon <- Icons.ai.AiOutlineGithub |> Icons.render
+                                                        x.fontSize <- "17px"
                                             |}
                                     ]
                             ]
@@ -89,11 +85,10 @@ module TopBar =
                                 TransparentIconButton.TransparentIconButton
                                     {|
                                         Props =
-                                            JS.newObj
-                                                (fun x ->
-                                                    x.icon <- Icons.fi.FiLogOut |> Icons.render
-                                                    x.fontSize <- "17px"
-                                                    x.onClick <- logout)
+                                            fun x ->
+                                                x.icon <- Icons.fi.FiLogOut |> Icons.render
+                                                x.fontSize <- "17px"
+                                                x.onClick <- logout
                                     |}
                             ]
                     ]

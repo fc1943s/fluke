@@ -8,15 +8,18 @@ open Fluke.UI.Frontend.Bindings
 module Tooltip =
 
     [<ReactComponent>]
-    let Tooltip (input: {| Props: Chakra.IChakraProps |}) =
+    let Tooltip
+        (input: {| Children: seq<ReactElement>
+                   Props: Chakra.IChakraProps -> unit |})
+        =
         Chakra.tooltip
             (fun x ->
-                x <+ input.Props
                 x.paddingTop <- "3px"
                 x.backgroundColor <- "gray.77"
                 x.color <- "black"
-                x.zIndex <- 20000)
-            input.Props.children
+                x.zIndex <- 20000
+                input.Props x)
+            input.Children
 
     let inline wrap label children =
         if label = nothing then
@@ -24,9 +27,6 @@ module Tooltip =
         else
             Tooltip
                 {|
-                    Props =
-                        JS.newObj
-                            (fun x ->
-                                x.label <- label
-                                x.children <- children)
+                    Children = children
+                    Props = (fun x -> x.label <- label)
                 |}

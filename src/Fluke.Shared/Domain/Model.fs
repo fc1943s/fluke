@@ -22,38 +22,17 @@ module Model =
         | Resource of resource: Resource
         | Archive of information: Information
 
-    and Area = { Id: AreaId; Name: AreaName }
-
-    and AreaId = AreaId of guid: Guid
+    and Area = { Name: AreaName }
 
     and AreaName = AreaName of name: string
 
-    and Project =
-        {
-            Id: ProjectId
-            Area: Area
-            Name: ProjectName
-        }
-
-    and ProjectId = ProjectId of guid: Guid
+    and Project = { Name: ProjectName; Area: Area }
 
     and ProjectName = ProjectName of name: string
 
-    and Resource =
-        {
-            Id: ResourceId
-            Area: Area
-            Name: ResourceName
-        }
-
-    and ResourceId = ResourceId of guid: Guid
+    and Resource = { Name: ResourceName; Area: Area }
 
     and ResourceName = ResourceName of name: string
-
-    and [<RequireQualifiedAccess>] InformationId =
-        | Area of id: AreaId
-        | Project of id: ProjectId
-        | Resource of id: ResourceId
 
     and [<RequireQualifiedAccess>] InformationName =
         | Area of name: AreaName
@@ -133,13 +112,6 @@ module Model =
         | Critical10
 
     and Information with
-        static member Id information =
-            match information with
-            | Project { Id = id } -> InformationId.Project id
-            | Area { Id = id } -> InformationId.Area id
-            | Resource { Id = id } -> InformationId.Resource id
-            | Archive information -> information |> Information.Id
-
         static member Name information =
             match information with
             | Project { Name = name } -> InformationName.Project name
@@ -155,16 +127,11 @@ module Model =
             | Resource (ResourceName name) -> name
 
     and Area with
-        static member inline Default =
-            {
-                Id = AreaId Guid.Empty
-                Name = AreaName ""
-            }
+        static member inline Default = { Name = AreaName "" }
 
     and Project with
         static member inline Default : Project =
             {
-                Id = ProjectId Guid.Empty
                 Name = ProjectName ""
                 Area = Area.Default
             }
@@ -172,7 +139,6 @@ module Model =
     and Resource with
         static member inline Default =
             {
-                Id = ResourceId Guid.Empty
                 Name = ResourceName ""
                 Area = Area.Default
             }

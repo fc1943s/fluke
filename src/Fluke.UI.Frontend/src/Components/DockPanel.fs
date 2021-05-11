@@ -53,18 +53,18 @@ module DockPanel =
                                     | DockPanelIcon.Menu (title, icon, menu) ->
                                         Menu.Menu
                                             {|
-                                                Title = title
+                                                Tooltip = title
                                                 Trigger =
                                                     TransparentIconButton.TransparentIconButton
                                                         {|
                                                             Props =
-                                                                JS.newObj
-                                                                    (fun x ->
-                                                                        x.``as`` <- Chakra.react.MenuButton
-                                                                        x.fontSize <- "14px"
-                                                                        x.icon <- icon)
+                                                                fun x ->
+                                                                    x.``as`` <- Chakra.react.MenuButton
+                                                                    x.fontSize <- "14px"
+                                                                    x.icon <- icon
                                                         |}
                                                 Menu = menu
+                                                MenuListProps = fun _ -> ()
                                             |})
 
                         Tooltip.wrap
@@ -73,10 +73,9 @@ module DockPanel =
                                 TransparentIconButton.TransparentIconButton
                                     {|
                                         Props =
-                                            JS.newObj
-                                                (fun x ->
-                                                    x.icon <- Icons.fa.FaMinus |> Icons.render
-                                                    x.onClick <- fun _ -> promise { setAtom None })
+                                            fun x ->
+                                                x.icon <- Icons.fa.FaMinus |> Icons.render
+                                                x.onClick <- fun _ -> promise { setAtom None }
                                     |}
                             ]
                     ]

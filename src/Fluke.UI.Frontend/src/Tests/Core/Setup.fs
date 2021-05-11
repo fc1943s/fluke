@@ -9,7 +9,6 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
-open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Hooks
 
 
@@ -50,21 +49,6 @@ module Setup =
         }
 
     let baseInitializeSessionData username (setter: CallbackMethods) sessionData =
-        let recoilInformationMap =
-            sessionData.TaskList
-            |> Seq.map (fun task -> task.Information)
-            |> Seq.distinct
-            |> Seq.map (fun information -> sessionData.InformationStateMap.[information])
-            |> Seq.map
-                (fun informationState ->
-
-                    let informationId = informationState.Information |> Information.Id
-
-                    setter.set (Atoms.Information.wrappedInformation informationId, informationState.Information)
-                    setter.set (Atoms.Information.attachments informationId, informationState.Attachments)
-                    informationState.Information, informationId)
-            |> Map.ofSeq
-
         Profiling.addTimestamp "state.set[1]"
 
         sessionData.TaskList
@@ -74,7 +58,7 @@ module Setup =
                 let taskId = Some taskState.TaskId
                 setter.set (Atoms.Task.task taskId, taskState.Task)
                 setter.set (Atoms.Task.name taskId, taskState.Task.Name)
-                setter.set (Atoms.Task.informationId taskId, recoilInformationMap.[taskState.Task.Information])
+                setter.set (Atoms.Task.information taskId, taskState.Task.Information)
                 setter.set (Atoms.Task.pendingAfter taskId, taskState.Task.PendingAfter)
                 setter.set (Atoms.Task.missedAfter taskId, taskState.Task.MissedAfter)
                 setter.set (Atoms.Task.scheduling taskId, taskState.Task.Scheduling)
@@ -111,7 +95,7 @@ module Setup =
         peek
             (fun (setter: CallbackMethods) ->
                 promise {
-                    let! sessionData = setter.snapshot.getPromise (Selectors.Session.sessionData user.Username)
+                    let! _sessionData = setter.snapshot.getPromise (Selectors.Session.sessionData user.Username)
                     //                    initializeSessionData user.Username setter sessionData
                     ()
                 })

@@ -35,16 +35,19 @@ module Chakra =
         abstract children : seq<ReactElement> with get, set
         abstract className : string with get, set
         abstract color : string with get, set
+        abstract colorScheme : string with get, set
         abstract columns : int with get, set
         abstract content : string with get, set
         abstract cursor : string with get, set
         abstract defaultIndex : int [] with get, set
+        abstract defaultValue : obj with get, set
         abstract direction : string with get, set
         abstract disabled : bool with get, set
         abstract display : string with get, set
         abstract flex : int with get, set
         abstract flexBasis : int with get, set
         abstract flexDirection : string with get, set
+        abstract flip : bool with get, set
         abstract fontFamily : string with get, set
         abstract fontSize : string with get, set
         abstract fontWeight : string with get, set
@@ -92,6 +95,8 @@ module Chakra =
         abstract ref : IRefValue<_> with get, set
         abstract reduceMotion : bool with get, set
         abstract right : string with get, set
+        abstract rightIcon : ReactElement with get, set
+        abstract scrollBehavior : string with get, set
         abstract size : string with get, set
         abstract spacing : string with get, set
         abstract textAlign : string with get, set
@@ -155,6 +160,8 @@ module Chakra =
                    PopoverCloseButton: obj
                    PopoverContent: obj
                    PopoverTrigger: obj
+                   Radio: obj
+                   RadioGroup: obj
                    SimpleGrid: obj
                    Spacer: obj
                    Spinner: obj
@@ -172,13 +179,16 @@ module Chakra =
     let themeTools : {| mode: string * string -> obj -> obj |} = jsNative
 
     [<ImportAll "@chakra-ui/icons">]
-    let icons : {| ExternalLinkIcon: obj |} = jsNative
+    let icons : {| ChevronDownIcon: obj
+                   ExternalLinkIcon: obj |} =
+        jsNative
 
     let composeChakraComponent cmp (props: IChakraProps -> unit) = composeComponent cmp (JS.newObj props)
 
     type ChakraInput<'T> = 'T -> unit
 
     module Icons =
+        let chevronDownIcon<'T> = composeChakraComponent icons.ChevronDownIcon
         let externalLinkIcon<'T> = composeChakraComponent icons.ExternalLinkIcon
 
     let accordion<'T> = composeChakraComponent react.Accordion
@@ -223,6 +233,8 @@ module Chakra =
     let popoverContent<'T> = composeChakraComponent react.PopoverContent
     let popoverTrigger<'T> = composeChakraComponent react.PopoverTrigger
     let provider<'T> = composeChakraComponent react.ChakraProvider
+    let radio<'T> = composeChakraComponent react.Radio
+    let radioGroup<'T> = composeChakraComponent react.RadioGroup
     let simpleGrid<'T> = composeChakraComponent react.SimpleGrid
     let spacer<'T> = composeChakraComponent react.Spacer
     let spinner<'T> = composeChakraComponent react.Spinner

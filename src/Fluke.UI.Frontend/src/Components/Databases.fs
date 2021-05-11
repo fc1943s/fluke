@@ -195,21 +195,18 @@ module Databases =
 
         Menu.Menu
             {|
-                Title = ""
+                Tooltip = ""
                 Trigger =
-                    React.fragment [
-                        InputLabelIconButton.InputLabelIconButton
-                            {|
-                                Props =
-                                    JS.newObj
-                                        (fun x ->
-                                            x.``as`` <- Chakra.react.MenuButton
-                                            x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                            x.fontSize <- "11px"
-                                            x.disabled <- input.Disabled
-                                            x.marginLeft <- "6px")
-                            |}
-                    ]
+                    InputLabelIconButton.InputLabelIconButton
+                        {|
+                            Props =
+                                fun x ->
+                                    x.``as`` <- Chakra.react.MenuButton
+                                    x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                    x.fontSize <- "11px"
+                                    x.disabled <- input.Disabled
+                                    x.marginLeft <- "6px"
+                        |}
                 Menu =
                     [
                         if isReadWrite then
@@ -300,6 +297,7 @@ module Databases =
                                 str "Clone Database"
                             ]
                     ]
+                MenuListProps = fun _ -> ()
             |}
 
     type CheckboxTreeNode =
@@ -448,7 +446,7 @@ module Databases =
     [<ReactComponent>]
     let rec Databases
         (input: {| Username: Username
-                   Props: Chakra.IChakraProps |})
+                   Props: Chakra.IChakraProps -> unit |})
         =
         let isTesting = Recoil.useValue Atoms.isTesting
         //        let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
@@ -630,7 +628,7 @@ module Databases =
         Browser.Dom.window?nodes <- nodes
 
         Chakra.stack
-            (fun x -> x <+ input.Props)
+            input.Props
             [
                 Chakra.box
                     (fun x -> x.marginLeft <- "6px")

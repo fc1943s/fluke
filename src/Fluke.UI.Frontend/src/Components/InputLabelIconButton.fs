@@ -4,7 +4,7 @@ open Fluke.UI.Frontend.Bindings
 
 
 module InputLabelIconButton =
-    let inline InputLabelIconButton (input: {| Props: Chakra.IChakraProps |}) =
+    let inline InputLabelIconButton (input: {| Props: Chakra.IChakraProps -> unit |}) =
         Chakra.iconButton
             (fun x ->
                 x.border <- "0"
@@ -15,5 +15,5 @@ module InputLabelIconButton =
                 x.minWidth <- "0"
                 x.width <- "auto"
                 x.height <- "auto"
-                x <+ input.Props)
+                input.Props x)
             []

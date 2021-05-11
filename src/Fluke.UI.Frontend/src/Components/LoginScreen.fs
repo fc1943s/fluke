@@ -44,63 +44,54 @@ module LoginScreen =
                 Chakra.stack
                     (fun _ -> ())
                     [
-                        Input.Input (
-                            JS.newObj
-                                (fun x ->
-                                    x.autoFocus <- true
-                                    x.value <- Some usernameField
-                                    x.placeholder <- "Username"
+                        Input.Input
+                            (fun x ->
+                                x.autoFocus <- true
+                                x.value <- Some usernameField
+                                x.placeholder <- "Username"
 
-                                    x.onChange <- (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value }))
-                        )
+                                x.onChange <- (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value }))
 
-                        Input.Input (
-                            JS.newObj
-                                (fun x ->
-                                    x.value <- Some passwordField
-                                    x.placeholder <- "Password"
-                                    x.inputFormat <- Some Input.InputFormat.Password
+                        Input.Input
+                            (fun x ->
+                                x.value <- Some passwordField
+                                x.placeholder <- "Password"
+                                x.inputFormat <- Some Input.InputFormat.Password
 
-                                    x.onChange <- (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
+                                x.onChange <- (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
 
-                                    x.onEnterPress <- Some signInClick)
-                        )
+                                x.onEnterPress <- Some signInClick)
 
                         Chakra.hStack
                             (fun x -> x.align <- "stretch")
                             [
-
                                 Button.Button
                                     {|
                                         Icon = None
                                         Hint = None
                                         Props =
-                                            JS.newObj
-                                                (fun x ->
-                                                    x.flex <- 1
-                                                    x.onClick <- signInClick
-                                                    x.color <- "gray"
-
-                                                    x.children <-
-                                                        [
-                                                            str "Login"
-                                                        ])
+                                            fun x ->
+                                                x.flex <- 1
+                                                x.onClick <- signInClick
+                                                x.color <- "gray"
+                                        Children =
+                                            [
+                                                str "Login"
+                                            ]
                                     |}
                                 Button.Button
                                     {|
                                         Icon = None
                                         Hint = None
                                         Props =
-                                            JS.newObj
-                                                (fun x ->
-                                                    x.flex <- 1
-                                                    x.onClick <- signUpClick
-                                                    x.color <- "gray"
-
-                                                    x.children <-
-                                                        [
-                                                            str "Register"
-                                                        ])
+                                            fun x ->
+                                                x.flex <- 1
+                                                x.onClick <- signUpClick
+                                                x.color <- "gray"
+                                        Children =
+                                            [
+                                                str "Register"
+                                            ]
                                     |}
                             ]
                     ]

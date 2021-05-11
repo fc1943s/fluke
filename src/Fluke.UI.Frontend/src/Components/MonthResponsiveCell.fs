@@ -16,14 +16,13 @@ module MonthResponsiveCell =
     let MonthResponsiveCell
         (input: {| Username: Username
                    Date: FlukeDate
-                   Props: Chakra.IChakraProps |})
+                   Props: Chakra.IChakraProps -> unit |})
         =
         let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
         let month = input.Date.DateTime.Format "MMM"
 
         Chakra.box
             (fun x ->
-                x <+ input.Props
                 x.textAlign <- "center"
                 x.height <- "17px"
                 x.lineHeight <- "17px"
@@ -36,7 +35,9 @@ module MonthResponsiveCell =
                 x.borderLeftColor <-
                     match (weekStart, input.Date) with
                     | StartOfMonth -> "#ffffff3d"
-                    | _ -> null)
+                    | _ -> null
+
+                input.Props x)
             [
                 str month
             ]
