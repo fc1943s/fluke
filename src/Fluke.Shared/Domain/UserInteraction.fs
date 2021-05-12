@@ -55,6 +55,10 @@ module UserInteraction =
         | Pink
         | Blue
 
+    and [<RequireQualifiedAccess>] Language =
+        | English
+        | Portuguese
+
     and [<RequireQualifiedAccess>] TaskInteraction =
         | Attachment of attachment: Attachment
         | Archive

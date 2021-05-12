@@ -1,5 +1,6 @@
-namespace Fluke.UI.Frontend.Components
+namespace rec Fluke.UI.Frontend.Components
 
+open System
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain
@@ -21,10 +22,12 @@ module InformationSelector =
     [<ReactComponent>]
     let InformationSelector
         (input: {| Username: UserInteraction.Username
+                   DisableResource: bool
                    SelectionType: InformationSelectionType
                    TaskId: TaskId option |})
         =
         let informationList = Recoil.useValue (Selectors.Session.informationList input.Username)
+        let newInformation = Recoil.useValue (Atoms.Task.information None)
 
         let informationFieldOptions =
             Recoil.useAtomField
@@ -36,28 +39,52 @@ module InformationSelector =
                         Recoil.AtomScope.ReadWrite
                 ))
 
-        //        let a =
-//            match informationFieldOptions.AtomValue |> Information.toString with
-//            | Project project -> ()
-//            | Area area -> ()
-//            | Resource resource -> ()
-//            | Archive _ -> ()
-//
         let radioValue, setRadioValue =
             React.useState (
-                if input.TaskId.IsNone then
-                    None
+                if informationFieldOptions.AtomValue
+                   |> Information.Name
+                   |> InformationName.Value
+                   |> String.IsNullOrWhiteSpace then
+                    ""
                 else
                     informationFieldOptions.AtomValue
                     |> Information.toString
-                    |> Some
             )
+
+        let isVisibleInformation information =
+            match information with
+            | information when
+                information |> Information.isProject
+                && radioValue = nameof Project -> true
+            | information when
+                information |> Information.isArea
+                && radioValue = nameof Area -> true
+            | information when
+                information |> Information.isResource
+                && radioValue = nameof Resource -> true
+            | _ -> false
+
+        let informationName =
+            if isVisibleInformation informationFieldOptions.AtomValue then
+                informationFieldOptions.AtomValue
+                |> Information.Name
+                |> InformationName.Value
+            else
+                ""
+
+        let sortedInformationList =
+            (informationList
+             @ [
+                 newInformation
+             ])
+            |> List.filter isVisibleInformation
+            |> List.sort
 
         let formParams =
             match radioValue with
-            | Some (nameof Project) -> Some (TextKey (nameof AreaForm), "Add Project")
-            | Some (nameof Area) -> Some (TextKey (nameof AreaForm), "Add Area")
-            | Some (nameof Resource) -> Some (TextKey (nameof AreaForm), "Add Resource")
+            | nameof Project -> Some (TextKey (nameof ProjectForm), "Add Project")
+            | nameof Area -> Some (TextKey (nameof AreaForm), "Add Area")
+            | nameof Resource -> Some (TextKey (nameof AreaForm), "Add Resource")
             | _ -> None
 
         Chakra.stack
@@ -89,15 +116,8 @@ module InformationSelector =
                                     x.``as`` <- Chakra.react.Button
                                     x.rightIcon <- Chakra.Icons.chevronDownIcon (fun _ -> ()) [])
                                 [
-                                    match informationFieldOptions.AtomValue
-                                          |> Information.Name
-                                          |> InformationName.Value with
-                                    | String.ValidString name ->
-                                        str
-                                            $"{
-                                                informationFieldOptions.AtomValue
-                                                |> Information.toString
-                                            }: {name}"
+                                    match informationName with
+                                    | String.ValidString _ -> str $"{radioValue}: {informationName}"
                                     | _ -> str "Select..."
                                 ]
                         Menu =
@@ -106,8 +126,7 @@ module InformationSelector =
                                 | InformationSelectionType.Information ->
                                     Chakra.radioGroup
                                         (fun x ->
-                                            x.onChange <-
-                                                fun (selected: string) -> promise { setRadioValue (Some selected) }
+                                            x.onChange <- fun (selected: string) -> promise { setRadioValue selected }
 
                                             x.value <- radioValue)
                                         [
@@ -116,26 +135,43 @@ module InformationSelector =
                                                     x.spacing <- "15px"
                                                     x.direction <- "row")
                                                 [
+                                                    let label text =
+                                                        Chakra.box
+                                                            (fun x -> x.marginBottom <- "-2px")
+                                                            [
+                                                                str text
+                                                            ]
+
                                                     Chakra.radio
                                                         (fun x ->
                                                             x.colorScheme <- "purple"
                                                             x.value <- nameof Project)
                                                         [
-                                                            str "Project"
+                                                            label "Project"
                                                         ]
+
                                                     Chakra.radio
                                                         (fun x ->
                                                             x.colorScheme <- "purple"
                                                             x.value <- nameof Area)
                                                         [
-                                                            str "Area"
+                                                            label "Area"
                                                         ]
+
                                                     Chakra.radio
                                                         (fun x ->
                                                             x.colorScheme <- "purple"
+                                                            x.isDisabled <- input.DisableResource
                                                             x.value <- nameof Resource)
                                                         [
-                                                            str "Resource"
+                                                            Tooltip.wrap
+                                                                (if input.DisableResource then
+                                                                     str "Tasks can't be assigned to Resources"
+                                                                 else
+                                                                     nothing)
+                                                                [
+                                                                    label "Resource"
+                                                                ]
                                                         ]
                                                 ]
                                         ]
@@ -155,19 +191,7 @@ module InformationSelector =
                                                 (fun x -> x.value <- informationFieldOptions.AtomValue)
                                                 [
                                                     yield!
-                                                        informationList
-                                                        |> List.filter
-                                                            (function
-                                                            | information when
-                                                                information |> Information.isProject
-                                                                && radioValue = Some (nameof Project) -> true
-                                                            | information when
-                                                                information |> Information.isArea
-                                                                && radioValue = Some (nameof Area) -> true
-                                                            | information when
-                                                                information |> Information.isResource
-                                                                && radioValue = Some (nameof Resource) -> true
-                                                            | _ -> false)
+                                                        sortedInformationList
                                                         |> List.map
                                                             (fun information ->
                                                                 Chakra.menuItemOption
@@ -216,6 +240,53 @@ module InformationSelector =
                                                                 |}
                                                     TextKey = formTextKey
                                                     TextKeyValue = input.TaskId |> Option.map TaskId.Value
+                                                |}
+
+                                            ModalForm.ModalForm
+                                                {|
+                                                    Username = input.Username
+                                                    Content =
+                                                        fun (formIdFlag, onHide, _) ->
+                                                            let taskId = formIdFlag |> Option.map TaskId
+
+
+                                                            match radioValue with
+                                                            | nameof Project ->
+                                                                ProjectForm.ProjectForm
+                                                                    {|
+                                                                        Username = input.Username
+                                                                        TaskId = taskId
+                                                                        OnSave =
+                                                                            fun project ->
+                                                                                promise {
+                                                                                    informationFieldOptions.SetAtomValue (
+                                                                                        Project project
+                                                                                    )
+
+                                                                                    onHide ()
+                                                                                }
+                                                                    |}
+                                                            | nameof Area ->
+                                                                AreaForm.AreaForm
+                                                                    {|
+                                                                        Username = input.Username
+                                                                        Area =
+                                                                            match informationFieldOptions.AtomValue with
+                                                                            | Area area -> area
+                                                                            | _ -> Area.Default
+                                                                        OnSave =
+                                                                            fun area ->
+                                                                                promise {
+                                                                                    informationFieldOptions.SetAtomValue (
+                                                                                        Area area
+                                                                                    )
+
+                                                                                    onHide ()
+                                                                                }
+                                                                    |}
+                                                            | nameof Resource -> nothing
+                                                            | _ -> nothing
+                                                    TextKey = formTextKey
                                                 |}
                                         ]
                                 | _ -> nothing

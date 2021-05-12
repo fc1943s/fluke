@@ -34,7 +34,6 @@
         <Compile Include="src\Components\InputLabelIconButton.fs" />
         <Compile Include="src\Components\Hint.fs" />
         <Compile Include="src\Components\InputLabel.fs" />
-        <Compile Include="src\Components\GunBind.fs" />
         <Compile Include="src\Components\Button.fs" />
         <Compile Include="src\Components\Input.fs" />
         <Compile Include="src\Components\MonthResponsiveCell.fs" />
@@ -63,6 +62,8 @@
         <Compile Include="src\Components\AreaForm.fs" />
         <Compile Include="src\Components\ModalForm.fs" />
         <Compile Include="src\Components\ExternalLink.fs" />
+        <Compile Include="src\Components\AreaSelector.fs" />
+        <Compile Include="src\Components\ProjectForm.fs" />
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
         <Compile Include="src\Components\DatabaseForm.fs" />

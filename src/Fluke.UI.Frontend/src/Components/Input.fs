@@ -28,7 +28,7 @@ module Input =
         abstract atomScope : Recoil.AtomScope option with get, set
         abstract value : 'TValue option with get, set
         abstract onFormat : ('TValue -> string) option with get, set
-        abstract onValidate : (string -> 'TValue option) option with get, set
+        abstract onValidate : (string * 'TValue option -> 'TValue option) option with get, set
         abstract onEnterPress : (_ -> JS.Promise<unit>) option with get, set
         abstract inputFormat : InputFormat option with get, set
 
@@ -53,7 +53,8 @@ module Input =
                             | null, _ -> None
                             | _, null ->
                                 match props.onValidate with
-                                | Some onValidate -> onValidate inputRef.current.value
+                                | Some onValidate ->
+                                    onValidate (inputRef.current.value, Some atomFieldOptions.AtomValue)
                                 | None -> None
                             | _ ->
                                 match props.atom with
@@ -117,7 +118,7 @@ module Input =
                             let validValue =
                                 match props.onValidate with
                                 | Some onValidate ->
-                                    let validValue = onValidate e.Value
+                                    let validValue = onValidate (e.Value, Some atomFieldOptions.AtomValue)
                                     validValue
                                 | None -> Some (box e.Value :?> 'TValue)
 
@@ -141,15 +142,6 @@ module Input =
         Chakra.stack
             (fun x -> x.spacing <- "5px")
             [
-
-                //                GunBind.GunBind
-//                    {|
-//                        Atom =
-//                            match input.atomScope with
-//                            | Some Recoil.AtomScope.ReadOnly -> atomFieldOptions.AtomField.ReadOnly
-//                            | _ -> atomFieldOptions.AtomField.ReadWrite
-//                    |}
-
                 match props.label with
                 | null -> nothing
                 | _ ->

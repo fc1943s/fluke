@@ -158,7 +158,7 @@ module DatabaseForm =
                                 x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
                                 x.atom <- Some (Recoil.AtomFamily (Atoms.Database.name, input.DatabaseId))
                                 x.onFormat <- Some (fun (DatabaseName name) -> name)
-                                x.onValidate <- Some (DatabaseName >> Some)
+                                x.onValidate <- Some (fst >> DatabaseName >> Some)
                                 x.onEnterPress <- Some onSave)
 
                         Input.Input
@@ -179,7 +179,14 @@ module DatabaseForm =
                                 x.atom <- Some (Recoil.AtomFamily (Atoms.Database.dayStart, input.DatabaseId))
                                 x.inputFormat <- Some Input.InputFormat.Time
                                 x.onFormat <- Some (fun time -> time.Stringify ())
-                                x.onValidate <- Some (DateTime.Parse >> FlukeTime.FromDateTime >> Some))
+
+                                x.onValidate <-
+                                    Some (
+                                        fst
+                                        >> DateTime.Parse
+                                        >> FlukeTime.FromDateTime
+                                        >> Some
+                                    ))
 
                         Chakra.stack
                             (fun x ->

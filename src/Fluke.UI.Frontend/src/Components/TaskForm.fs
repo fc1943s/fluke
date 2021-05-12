@@ -103,6 +103,7 @@ module TaskForm =
                 InformationSelector.InformationSelector
                     {|
                         Username = input.Username
+                        DisableResource = true
                         SelectionType = InformationSelector.InformationSelectionType.Information
                         TaskId = input.TaskId
                     |}
@@ -118,7 +119,7 @@ module TaskForm =
                                 x.atom <- Some (Recoil.AtomFamily (Atoms.Task.name, input.TaskId))
                                 x.onFormat <- Some (fun (TaskName name) -> name)
                                 x.onEnterPress <- Some onSave
-                                x.onValidate <- Some (TaskName >> Some))
+                                x.onValidate <- Some (fst >> TaskName >> Some))
                     ]
 
                 Chakra.button

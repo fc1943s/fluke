@@ -155,66 +155,69 @@ module Recoil =
 
         atomFieldOptions
 
-    let getGunAtomKey (username: UserInteraction.Username option) (atomKey: string) =
+    let getGunAtomKey
+        (username: UserInteraction.Username option)
+        (atomFamily: 'TKey -> RecoilValue<'TValue, _>)
+        (atomKey: 'TKey)
+        (keyIdentifier: string list)
+        =
+        let userBlock =
+            match username with
+            | Some (UserInteraction.Username username) -> $"user/{username}/"
+            | _ -> ""
 
-        let result =
-            $"""{nameof Fluke}/{
-                                    match username with
-                                    | Some (UserInteraction.Username username) -> $"user/{username}/"
-                                    | _ -> ""
-            }{
-                (atomKey.Split "__" |> Seq.head)
-                    //                    .Replace("__withFallback", "")
-//                    .Replace("\"", "")
-//                    .Replace("\\", "")
-//                    .Replace("__", "/")
-//                    .Replace(".", "/")
-//                    .Replace("[", "/")
-//                    .Replace("]", "/")
-//                    .Replace(",", "/")
-//                    .Replace("//", "/")
-                    .Trim ()
-            }"""
+        let atom = atomFamily atomKey
 
-        match result with
-        | String.ValidString _ when result |> Seq.last = '/' -> result |> String.take (result.Length - 1)
-        | _ -> result
+        let atomPath =
+            match (atom.key.Split "__" |> Seq.head).Trim () with
+            | String.ValidString atomPath when atomPath |> Seq.last = '/' ->
+                atomPath |> String.take (atomPath.Length - 1)
+            | String.ValidString atomPath -> atomPath
+            | _ -> failwith $"Invalid atom key: {atom.key}"
+
+        let newAtomPath =
+            match keyIdentifier with
+            | [] -> atomPath
+            | keyIdentifier ->
+                let nodes = atomPath.Split "/"
+
+                [
+                    yield! nodes |> Array.take (nodes.Length - 1)
+                    yield! keyIdentifier
+                    nodes |> Array.last
+                ]
+                |> String.concat "/"
+
+        let result = $"{nameof Fluke}/{userBlock}{newAtomPath}"
+        printfn $"ATOM MATCHES result={result} {newAtomPath} atomPath={atomPath} atomKey={atom.key} keyIdentifier={keyIdentifier}"
+        result
 
     let getGun () =
         JS.waitForObject (fun () -> box Browser.Dom.window?lastGun :?> Gun.IGunChainReference<obj>)
 
-    let getGunAtomNode (username: UserInteraction.Username option) (atom: RecoilValue<_, _>) (keySuffix: string) =
+    let getGunAtomNode
+        (username: UserInteraction.Username option)
+        (atomFamily: 'TKey -> RecoilValue<'TValue, _>)
+        (atomKey: 'TKey)
+        (keyIdentifier: string list)
+        =
         async {
+            let gunAtomKey = getGunAtomKey username atomFamily atomKey keyIdentifier
             let! gun = getGun ()
-
-            let gunAtomKey = getGunAtomKey username atom.key
-
-            let newId = $"""{gunAtomKey}{keySuffix}"""
-
-            //            if not JS.isProduction && not JS.isTesting then
-            //                printfn
-////                    $"""getGunAtomNode. gunAtomKey={gunAtomKey} atom.key={atom.key} newKey={newId}
-////                usernamestr={atom.key.Replace ((JSe.RegExp "__\[.*?\]"), "")} """
-
-            //                printfn $"""getGunAtomNode. newId={newId}"""
-
-            return Gun.getGunAtomNode gun newId, newId
-
+            return Gun.getGunAtomNode gun gunAtomKey, gunAtomKey
         }
 
     let inline gunEffect
         (username: UserInteraction.Username option)
         (atomFamily: 'TKey -> RecoilValue<'TValue, _>)
         (atomKey: 'TKey)
-        (keySuffix: string)
+        (keyIdentifier: string list)
         =
         (fun (e: EffectProps<'TValue>) ->
-            let atom = atomFamily atomKey
-
             match e.trigger with
             | "get" ->
                 (async {
-                    let! gunAtomNode, id = getGunAtomNode username atom keySuffix
+                    let! gunAtomNode, id = getGunAtomNode username atomFamily atomKey keyIdentifier
 
                     gunAtomNode.on
                         (fun data key ->
@@ -234,7 +237,7 @@ module Recoil =
                 (fun value oldValue ->
                     (async {
                         if oldValue <> value then
-                            let! gunAtomNode, id = getGunAtomNode username atom keySuffix
+                            let! gunAtomNode, id = getGunAtomNode username atomFamily atomKey keyIdentifier
                             Gun.putGunAtomNode gunAtomNode value
 
                             if not JS.isProduction && not JS.isTesting then
@@ -251,7 +254,7 @@ module Recoil =
 
             fun () ->
                 (async {
-                    let! gunAtomNode, _ = getGunAtomNode username atom keySuffix
+                    let! gunAtomNode, _ = getGunAtomNode username atomFamily atomKey keyIdentifier
 
                     if not JS.isProduction && not JS.isTesting then
                         printfn "gunEffect. unsubscribe atom. calling selected.off ()"
@@ -267,9 +270,7 @@ module RecoilMagic =
 
     type CallbackMethods with
         member this.readWriteReset<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>) key =
-            promise {
-                this.set (Recoil.Atoms.Form.readWriteValue (atom key).key, null)
-            }
+            promise { this.set (Recoil.Atoms.Form.readWriteValue (atom key).key, null) }
 
         member this.readWriteSet<'T, 'U> (atom: 'T -> RecoilValue<'U, ReadWrite>, key: 'T, value: 'U) =
             let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))

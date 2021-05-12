@@ -392,7 +392,7 @@ module Databases =
 
     type Node = Node of value: string * label: string * children: Node list * index: int option
 
-    let buildNodesFromPath (paths: string list) =
+    let buildNodesFromPath (ids: Guid list) (paths: string list) =
         let rec groupNodes nodes =
             nodes
             |> List.groupBy (fun (Node (_, label, _, _)) -> label)
@@ -418,12 +418,12 @@ module Databases =
         |> List.mapi
             (fun i nodes ->
                 let rec loop depth list =
-                    let fullPath = nodes |> List.take depth |> String.concat "/"
-                    let nodeId = fullPath |> Crypto.getTextGuidHash |> string
-
                     match list with
-                    | [ head ] -> Node (nodeId, head, [], Some i)
+                    | [ head ] -> Node (ids.[i] |> string, head, [], Some i)
                     | head :: tail ->
+                        let fullPath = nodes |> List.take depth |> String.concat "/"
+                        let nodeId = fullPath |> Crypto.getTextGuidHash |> string
+
                         Node (
                             nodeId,
                             head,
@@ -517,7 +517,15 @@ module Databases =
                                 databases, nodeNames)
 
                     let databases = nodeData |> List.collect fst
-                    let nodes = nodeData |> List.collect snd |> buildNodesFromPath
+
+                    let nodes =
+                        let ids =
+                            nodeData
+                            |> List.collect fst
+                            |> List.map (fun database -> database.Id |> DatabaseId.Value)
+
+                        let paths = nodeData |> List.collect snd
+                        buildNodesFromPath ids paths
 
                     let availableDatabasesMap =
                         databases

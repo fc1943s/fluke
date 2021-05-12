@@ -4,7 +4,6 @@ open Feliz.Recoil
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
-open Fluke.UI.Frontend.Bindings
 
 
 module TestUser =
@@ -14,11 +13,6 @@ module TestUser =
             |> Map.toList
             |> List.map
                 (fun (templateName, dslTemplate) ->
-                    let databaseId =
-                        templateName
-                        |> Crypto.getTextGuidHash
-                        |> DatabaseId
-
                     let newDslTemplate =
                         { dslTemplate with
                             Tasks =
@@ -29,17 +23,14 @@ module TestUser =
                                             Task =
                                                 { taskTemplate.Task with
                                                     Id =
-                                                        taskTemplate.Task.Name
-                                                        |> TaskName.Value
-                                                        |> Crypto.getTextGuidHash
-                                                        |> TaskId
+                                                        TaskId.NewId ()
                                                 }
                                         })
                         }
 
                     Templates.databaseStateFromDslTemplate
                         Templates.templatesUser
-                        databaseId
+                        (DatabaseId.NewId ())
                         templateName
                         newDslTemplate)
 
