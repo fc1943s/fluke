@@ -19,6 +19,19 @@ module InformationSelector =
         | Area
         | Resource
 
+    let isVisibleInformation informationString information =
+        match information with
+        | information when
+            information |> Information.isProject
+            && informationString = nameof Project -> true
+        | information when
+            information |> Information.isArea
+            && informationString = nameof Area -> true
+        | information when
+            information |> Information.isResource
+            && informationString = nameof Resource -> true
+        | _ -> false
+
     [<ReactComponent>]
     let InformationSelector
         (input: {| Username: UserInteraction.Username
@@ -27,7 +40,6 @@ module InformationSelector =
                    TaskId: TaskId option |})
         =
         let informationList = Recoil.useValue (Selectors.Session.informationList input.Username)
-        let newInformation = Recoil.useValue (Atoms.Task.information None)
 
         let informationFieldOptions =
             Recoil.useAtomField
@@ -51,21 +63,9 @@ module InformationSelector =
                     |> Information.toString
             )
 
-        let isVisibleInformation information =
-            match information with
-            | information when
-                information |> Information.isProject
-                && radioValue = nameof Project -> true
-            | information when
-                information |> Information.isArea
-                && radioValue = nameof Area -> true
-            | information when
-                information |> Information.isResource
-                && radioValue = nameof Resource -> true
-            | _ -> false
 
         let informationName =
-            if isVisibleInformation informationFieldOptions.AtomValue then
+            if isVisibleInformation radioValue informationFieldOptions.AtomValue then
                 informationFieldOptions.AtomValue
                 |> Information.Name
                 |> InformationName.Value
@@ -73,11 +73,8 @@ module InformationSelector =
                 ""
 
         let sortedInformationList =
-            (informationList
-             @ [
-                 newInformation
-             ])
-            |> List.filter isVisibleInformation
+            informationList
+            |> List.filter (isVisibleInformation radioValue)
             |> List.sort
 
         let formParams =
@@ -126,7 +123,17 @@ module InformationSelector =
                                 | InformationSelectionType.Information ->
                                     Chakra.radioGroup
                                         (fun x ->
-                                            x.onChange <- fun (selected: string) -> promise { setRadioValue selected }
+                                            x.onChange <-
+                                                fun (radioValueSelected: string) ->
+                                                    promise {
+                                                        setRadioValue radioValueSelected
+
+                                                        if informationFieldOptions.AtomValue
+                                                           |> isVisibleInformation radioValueSelected
+                                                           |> not then
+                                                            informationFieldOptions.SetAtomValue
+                                                                Task.Default.Information
+                                                    }
 
                                             x.value <- radioValue)
                                         [
@@ -188,15 +195,19 @@ module InformationSelector =
                                             x.flexBasis <- 0)
                                         [
                                             Chakra.menuOptionGroup
-                                                (fun x -> x.value <- informationFieldOptions.AtomValue)
+                                                (fun x ->
+                                                    x.value <-
+                                                        sortedInformationList
+                                                        |> List.tryFindIndex ((=) informationFieldOptions.AtomValue)
+                                                        |> Option.defaultValue -1)
                                                 [
                                                     yield!
                                                         sortedInformationList
-                                                        |> List.map
-                                                            (fun information ->
+                                                        |> List.mapi
+                                                            (fun i information ->
                                                                 Chakra.menuItemOption
                                                                     (fun x ->
-                                                                        x.value <- information
+                                                                        x.value <- i
 
                                                                         x.onClick <-
                                                                             fun _ ->

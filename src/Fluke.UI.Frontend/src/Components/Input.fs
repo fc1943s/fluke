@@ -33,9 +33,9 @@ module Input =
         abstract inputFormat : InputFormat option with get, set
 
     [<ReactComponent>]
-    let Input (props: IProps<'TValue, 'TKey> -> unit) =
+    let Input<'TValue, 'TKey> (props: IProps<'TValue, 'TKey> -> unit) =
         let props = JS.newObj props
-        let atomFieldOptions = Recoil.useAtomField<'TValue, 'TKey> props.atom props.atomScope
+        let atomFieldOptions = Recoil.useAtomField props.atom props.atomScope
 
         let inputRef = React.useRef<HTMLInputElement> null
 

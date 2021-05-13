@@ -19,7 +19,7 @@ module InputList =
     [<ReactComponent>]
     let InputList<'TValue, 'TKey when 'TValue: equality> (props: IProps<'TValue list, 'TKey> -> unit) =
         let props = JS.newObj props
-        let atomFieldOptions = Recoil.useAtomField<'TValue list, 'TKey> props.atom props.atomScope
+        let atomFieldOptions = Recoil.useAtomField props.atom props.atomScope
 
         Chakra.box
             (fun _ -> ())

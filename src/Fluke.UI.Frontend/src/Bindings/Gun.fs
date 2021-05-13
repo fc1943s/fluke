@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Bindings
 
 open Fable.Core.JsInterop
 open Feliz.Recoil
-open Thoth.Json
 
 
 module rec Gun =
@@ -54,11 +53,11 @@ module rec Gun =
         abstract set : 'V -> IGunChainReference<'U>
         abstract put : 'V -> IGunChainReference<'U>
         abstract user : unit -> IGunUser
-        abstract on : ('T -> string -> unit) -> unit
+        abstract on : (string -> string -> unit) -> unit
         abstract on : event: string * (unit -> unit) -> unit
         abstract map : unit -> IGunChainReference<'U>
         abstract off : unit -> IGunChainReference<'T>
-        abstract once : ('T -> unit) -> unit
+        abstract once : (string -> unit) -> unit
 
     type GunProps =
         {
@@ -87,24 +86,33 @@ module rec Gun =
                     printfn "authUser error: {ex}"
                     err ex)
 
-    let getGunAtomNode<'T> (gun: IGunChainReference<obj>) (gunAtomKey: string) =
-        (gun, gunAtomKey.Split "/" |> Array.toList)
-        ||> List.fold (fun result -> result.get)
-        :?> IGunChainReference<'T>
+    let getGunAtomNode (gun: IGunChainReference<'U> option) (gunAtomKey: string) =
+        (box gun :?> IGunChainReference<'T> option, gunAtomKey.Split "/" |> Array.toList)
+        ||> List.fold
+                (fun result node ->
+                    result
+                    |> Option.map (fun result -> result.get node))
 
-    let inline putGunAtomNode<'T> (gun: IGunChainReference<obj>) (value: 'T) =
-        gun.put (if box value = null then null else (Encode.Auto.toString (0, value)))
+    let inline encode text =
+        Fable.SimpleJson.SimpleJson.stringify text
+    //        Thoth.Json.Encode.Auto.toString (0, text)
+//        ""
+
+    let inline decode< 'T> data =
+        data
+        |> Fable.SimpleJson.SimpleJson.parse
+        |> Fable.SimpleJson.SimpleJson.toPlainObject
+        :?> 'T
+        |> Some
+    //        Thoth.Json.Decode.Auto.unsafeFromString data |> Some
+//        None
+//        None
+
+    let inline putGunAtomNode (gun: IGunChainReference<_>) (value: string) =
+        gun.put (if box value = null then null else encode value)
         |> ignore
 
-    let inline deserializeGunAtomNode (data: obj) =
-        match data :?> string option with
-        | Some data ->
-
-            let newValue = Decode.Auto.fromString<'T> data
-
-            match newValue with
-            | Ok newValue -> Some newValue
-            | Error error ->
-                Browser.Dom.console.error ("Deserialize error!!!", error)
-                None
+    let inline deserializeGunAtomNode data =
+        match box data :?> string option with
+        | Some data -> decode data
         | None -> None

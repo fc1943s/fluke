@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend
 
+
 #nowarn "40"
 
 open System
@@ -98,7 +99,7 @@ module State =
                     (fun (_username: Username) -> []: DatabaseId list),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) expandedDatabaseIdList username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (expandedDatabaseIdList, username)) []
                         ])
                 )
 
@@ -108,7 +109,7 @@ module State =
                     (fun (_username: Username) -> []: DatabaseId list),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) selectedDatabaseIdList username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (selectedDatabaseIdList, username)) []
                         ])
                 )
 
@@ -118,7 +119,7 @@ module State =
                     (fun (_username: Username) -> View.View.HabitTracker),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) view username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (view, username)) []
                         ])
                 )
 
@@ -128,7 +129,7 @@ module State =
                     (fun (_username: Username) -> Language.English),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) language username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (language, username)) []
                         ])
                 )
 
@@ -138,7 +139,7 @@ module State =
                     (fun (_username: Username) -> UserColor.Black),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) color username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (color, username)) []
                         ])
                 )
 
@@ -148,7 +149,7 @@ module State =
                     (fun (_username: Username) -> DayOfWeek.Sunday),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) weekStart username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (weekStart, username)) []
                         ])
                 )
 
@@ -158,7 +159,7 @@ module State =
                     (fun (_username: Username) -> FlukeTime.Create 0 0),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) dayStart username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (dayStart, username)) []
                         ])
                 )
 
@@ -168,7 +169,7 @@ module State =
                     (fun (_username: Username) -> Minute 25.),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) sessionLength username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (sessionLength, username)) []
                         ])
                 )
 
@@ -178,7 +179,7 @@ module State =
                     (fun (_username: Username) -> Minute 5.),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) sessionBreakLength username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (sessionBreakLength, username)) []
                         ])
                 )
 
@@ -188,7 +189,7 @@ module State =
                     (fun (_username: Username) -> 7),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) daysBefore username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (daysBefore, username)) []
                         ])
                 )
 
@@ -198,7 +199,7 @@ module State =
                     (fun (_username: Username) -> 7),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) daysAfter username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (daysAfter, username)) []
                         ])
                 )
 
@@ -208,7 +209,7 @@ module State =
                     (fun (_username: Username) -> None: (TaskId * DateId) option),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) cellMenuOpened username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (cellMenuOpened, username)) []
                         ])
                 )
 
@@ -218,7 +219,7 @@ module State =
                     (fun (_username: Username) -> 17),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) cellSize username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (cellSize, username)) []
                         ])
                 )
 
@@ -228,7 +229,7 @@ module State =
                     (fun (_username: Username) -> None: TempUI.DockType option),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) leftDock username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (leftDock, username)) []
                         ])
                 )
 
@@ -238,7 +239,7 @@ module State =
                     (fun (_username: Username) -> false),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) hideTemplates username []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (hideTemplates, username)) []
                         ])
                 )
 
@@ -250,8 +251,7 @@ module State =
                         [
                             Recoil.gunEffect
                                 (Some username)
-                                formIdFlag
-                                (username, key)
+                                (Recoil.AtomFamily (formIdFlag, (username, key)))
                                 (key |> TextKey.Value |> List.singleton)
                         ])
                 )
@@ -264,8 +264,7 @@ module State =
                         [
                             Recoil.gunEffect
                                 (Some username)
-                                formVisibleFlag
-                                (username, key)
+                                (Recoil.AtomFamily (formVisibleFlag, (username, key)))
                                 (key |> TextKey.Value |> List.singleton)
                         ])
                 )
@@ -278,8 +277,7 @@ module State =
                         [
                             Recoil.gunEffect
                                 (Some username)
-                                accordionFlag
-                                (username, key)
+                                (Recoil.AtomFamily (accordionFlag, (username, key)))
                                 (key |> TextKey.Value |> List.singleton)
                         ])
                 )
@@ -299,7 +297,10 @@ module State =
                     (fun (_databaseId: DatabaseId option) -> Database.Default.Name),
                     (fun (databaseId: DatabaseId option) ->
                         [
-                            Recoil.gunEffect None name databaseId (databaseIdIdentifier databaseId)
+                            Recoil.gunEffect
+                                None
+                                (Recoil.AtomFamily (name, databaseId))
+                                (databaseIdIdentifier databaseId)
                         ])
                 )
 
@@ -309,7 +310,10 @@ module State =
                     (fun (_databaseId: DatabaseId option) -> Database.Default.Owner),
                     (fun (databaseId: DatabaseId option) ->
                         [
-                            Recoil.gunEffect None owner databaseId (databaseIdIdentifier databaseId)
+                            Recoil.gunEffect
+                                None
+                                (Recoil.AtomFamily (owner, databaseId))
+                                (databaseIdIdentifier databaseId)
                         ])
                 )
 
@@ -319,7 +323,10 @@ module State =
                     (fun (_databaseId: DatabaseId option) -> Database.Default.SharedWith),
                     (fun (databaseId: DatabaseId option) ->
                         [
-                            Recoil.gunEffect None sharedWith databaseId (databaseIdIdentifier databaseId)
+                            Recoil.gunEffect
+                                None
+                                (Recoil.AtomFamily (sharedWith, databaseId))
+                                (databaseIdIdentifier databaseId)
                         ])
                 )
 
@@ -329,7 +336,10 @@ module State =
                     (fun (_databaseId: DatabaseId option) -> Database.Default.DayStart),
                     (fun (databaseId: DatabaseId option) ->
                         [
-                            Recoil.gunEffect None dayStart databaseId (databaseIdIdentifier databaseId)
+                            Recoil.gunEffect
+                                None
+                                (Recoil.AtomFamily (dayStart, databaseId))
+                                (databaseIdIdentifier databaseId)
                         ])
                 )
 
@@ -339,7 +349,10 @@ module State =
                     (fun (_databaseId: DatabaseId option) -> Database.Default.Position),
                     (fun (databaseId: DatabaseId option) ->
                         [
-                            Recoil.gunEffect None position databaseId (databaseIdIdentifier databaseId)
+                            Recoil.gunEffect
+                                None
+                                (Recoil.AtomFamily (position, databaseId))
+                                (databaseIdIdentifier databaseId)
                         ])
                 )
 
@@ -372,7 +385,7 @@ module State =
                     (fun (_taskId: TaskId option) -> Database.Default.Id),
                     (fun (taskId: TaskId option) ->
                         [
-                            Recoil.gunEffect None databaseId taskId (taskIdIdentifier taskId)
+                            Recoil.gunEffect None (Recoil.AtomFamily (databaseId, taskId)) (taskIdIdentifier taskId)
                         ])
                 )
 
@@ -382,7 +395,7 @@ module State =
                     (fun (_taskId: TaskId option) -> Task.Default.Information),
                     (fun (taskId: TaskId option) ->
                         [
-                            Recoil.gunEffect None information taskId (taskIdIdentifier taskId)
+                            Recoil.gunEffect None (Recoil.AtomFamily (information, taskId)) (taskIdIdentifier taskId)
                         ])
                 )
 
@@ -392,7 +405,7 @@ module State =
                     (fun (_taskId: TaskId option) -> Task.Default.Name),
                     (fun (taskId: TaskId option) ->
                         [
-                            Recoil.gunEffect None name taskId (taskIdIdentifier taskId)
+                            Recoil.gunEffect None (Recoil.AtomFamily (name, taskId)) (taskIdIdentifier taskId)
                         ])
                 )
 
@@ -402,7 +415,7 @@ module State =
                     (fun (_taskId: TaskId option) -> Task.Default.Scheduling),
                     (fun (taskId: TaskId option) ->
                         [
-                            Recoil.gunEffect None scheduling taskId (taskIdIdentifier taskId)
+                            Recoil.gunEffect None (Recoil.AtomFamily (scheduling, taskId)) (taskIdIdentifier taskId)
                         ])
                 )
 
@@ -412,7 +425,7 @@ module State =
                     (fun (_taskId: TaskId option) -> Task.Default.PendingAfter),
                     (fun (taskId: TaskId option) ->
                         [
-                            Recoil.gunEffect None pendingAfter taskId (taskIdIdentifier taskId)
+                            Recoil.gunEffect None (Recoil.AtomFamily (pendingAfter, taskId)) (taskIdIdentifier taskId)
                         ])
                 )
 
@@ -422,7 +435,7 @@ module State =
                     (fun (_taskId: TaskId option) -> Task.Default.MissedAfter),
                     (fun (taskId: TaskId option) ->
                         [
-                            Recoil.gunEffect None missedAfter taskId (taskIdIdentifier taskId)
+                            Recoil.gunEffect None (Recoil.AtomFamily (missedAfter, taskId)) (taskIdIdentifier taskId)
                         ])
                 )
 
@@ -432,7 +445,7 @@ module State =
                     (fun (_taskId: TaskId option) -> Task.Default.Priority),
                     (fun (taskId: TaskId option) ->
                         [
-                            Recoil.gunEffect None priority taskId (taskIdIdentifier taskId)
+                            Recoil.gunEffect None (Recoil.AtomFamily (priority, taskId)) (taskIdIdentifier taskId)
                         ])
                 )
 
@@ -442,7 +455,7 @@ module State =
                     (fun (_taskId: TaskId option) -> Task.Default.Duration),
                     (fun (taskId: TaskId option) ->
                         [
-                            Recoil.gunEffect None duration taskId (taskIdIdentifier taskId)
+                            Recoil.gunEffect None (Recoil.AtomFamily (duration, taskId)) (taskIdIdentifier taskId)
                         ])
                 )
 
@@ -502,8 +515,7 @@ module State =
                         [
                             Recoil.gunEffect
                                 (Some username)
-                                selected
-                                (username, taskId, dateId)
+                                (Recoil.AtomFamily (selected, (username, taskId, dateId)))
                                 [
                                     taskId.KeyFormat ()
                                     dateId.KeyFormat ()
@@ -536,40 +548,52 @@ module State =
                         let _keySuffix = ""
 
                         [
-                            (fun (e: Recoil.EffectProps<_>) ->
+                            (fun (e: RecoilEffectProps<_>) ->
                                 let path = "Fluke/atomFamily/Database"
 
                                 match e.trigger with
                                 | "get" ->
                                     (async {
                                         let! gun = Recoil.getGun ()
-                                        let gunAtomNode = Gun.getGunAtomNode gun path
+                                        let gunAtomNode = Gun.getGunAtomNode (Some gun) path
 
-                                        gunAtomNode
-                                            .map()
-                                            .on (fun _v k ->
-                                                e.setSelf
-                                                    (fun oldValue ->
-                                                        oldValue
-                                                        @ [
-                                                            k |> Guid |> DatabaseId
-                                                        ]))
+                                        match gunAtomNode with
+                                        | Some gunAtomNode ->
+                                            gunAtomNode
+                                                .map()
+                                                .on (fun _v k ->
+                                                    e.setSelf
+                                                        (fun oldValue ->
+                                                            oldValue
+                                                            @ [
+                                                                k |> Guid |> DatabaseId
+                                                            ]))
+                                        | None ->
+                                            Browser.Dom.console.error
+                                                $"[databaseIdList.effect] Gun node not found: {id}"
                                      })
                                     |> Async.StartAsPromise
                                     |> Promise.start
                                 | _ -> ()
 
-                                e.onSet (fun value oldValue -> failwith "[databaseIdList.effect] read only atom")
+                                e.onSet (fun _ _ -> failwith "[databaseIdList.effect] read only atom")
 
                                 fun () ->
                                     (promise {
                                         let! gun = Recoil.getGun ()
-                                        let gunAtomNode = Gun.getGunAtomNode gun path
+                                        let gunAtomNode = Gun.getGunAtomNode (Some gun) path
 
-                                        if not JS.isProduction && not JS.isTesting then
-                                            printfn "[databaseIdList.effect] unsubscribe atom. calling selected.off ()"
+                                        match gunAtomNode with
+                                        | Some gunAtomNode ->
 
-                                        gunAtomNode.map().off () |> ignore
+                                            if not JS.isProduction && not JS.isTesting then
+                                                printfn
+                                                    "[databaseIdList.effect] unsubscribe atom. calling selected.off ()"
+
+                                            gunAtomNode.map().off () |> ignore
+                                        | None ->
+                                            Browser.Dom.console.error
+                                                $"[databaseIdList.effect.off] Gun node not found: {id}"
                                      })
                                     |> Promise.start)
                         ])
@@ -586,40 +610,50 @@ module State =
                         let _keySuffix = ""
 
                         [
-                            (fun (e: Recoil.EffectProps<_>) ->
+                            (fun (e: RecoilEffectProps<_>) ->
                                 let path = "Fluke/atomFamily/Task"
 
                                 match e.trigger with
                                 | "get" ->
                                     (async {
                                         let! gun = Recoil.getGun ()
-                                        let gunAtomNode = Gun.getGunAtomNode gun path
+                                        let gunAtomNode = Gun.getGunAtomNode (Some gun) path
 
-                                        gunAtomNode
-                                            .map()
-                                            .on (fun _v k ->
-                                                e.setSelf
-                                                    (fun oldValue ->
-                                                        oldValue
-                                                        @ [
-                                                            k |> Guid |> TaskId
-                                                        ]))
+                                        match gunAtomNode with
+                                        | Some gunAtomNode ->
+                                            gunAtomNode
+                                                .map()
+                                                .on (fun _v k ->
+                                                    e.setSelf
+                                                        (fun oldValue ->
+                                                            oldValue
+                                                            @ [
+                                                                k |> Guid |> TaskId
+                                                            ]))
+                                        | None ->
+                                            Browser.Dom.console.error $"[taskIdList.effect] Gun node not found: {id}"
                                      })
                                     |> Async.StartAsPromise
                                     |> Promise.start
                                 | _ -> ()
 
-                                e.onSet (fun value oldValue -> failwith "[taskIdList.effect] read only atom")
+                                e.onSet (fun _ _ -> failwith "[taskIdList.effect] read only atom")
 
                                 fun () ->
                                     (promise {
                                         let! gun = Recoil.getGun ()
-                                        let gunAtomNode = Gun.getGunAtomNode gun path
+                                        let gunAtomNode = Gun.getGunAtomNode (Some gun) path
 
-                                        if not JS.isProduction && not JS.isTesting then
-                                            printfn "[taskIdList.effect] unsubscribe atom. calling selected.off ()"
+                                        match gunAtomNode with
+                                        | Some gunAtomNode ->
+                                            if not JS.isProduction && not JS.isTesting then
+                                                printfn "[taskIdList.effect] unsubscribe atom. calling selected.off ()"
 
-                                        gunAtomNode.map().off () |> ignore
+                                            gunAtomNode.map().off () |> ignore
+                                        | None ->
+                                            Browser.Dom.console.error
+                                                $"[taskIdList.effect.off] Gun node not found: {id}"
+
                                      })
                                     |> Promise.start)
                         ])
@@ -774,14 +808,12 @@ module State =
                     let gunPeers = getter.get gunPeers
 
                     let gun =
-                        Gun.gun (
+                        Gun.gun
                             {
                                 Gun.GunProps.peers = if JS.isTesting then None else Some (gunPeers |> List.toArray)
                                 Gun.GunProps.radisk = if JS.isTesting then None else Some false
                                 Gun.GunProps.localStorage = if JS.isTesting then None else Some true
                             }
-                            |> unbox
-                        )
 
                     Browser.Dom.window?lastGun <- gun
 
