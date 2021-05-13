@@ -32,6 +32,7 @@ module Input =
         abstract onEnterPress : (_ -> JS.Promise<unit>) option with get, set
         abstract inputFormat : InputFormat option with get, set
 
+
     [<ReactComponent>]
     let Input<'TValue, 'TKey> (props: IProps<'TValue, 'TKey> -> unit) =
         let props = JS.newObj props

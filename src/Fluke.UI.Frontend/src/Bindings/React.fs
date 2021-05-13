@@ -9,7 +9,7 @@ module React =
     let private react : {| StrictMode: obj -> ReactElement |} = jsNative
 
     [<ImportAll "react-dom">]
-    let private reactDom : {| unstable_createRoot: HTMLElement -> {| render: ReactElement -> unit |} |} = jsNative
+    let private reactDom : {| createRoot: HTMLElement -> {| render: ReactElement -> unit |} |} = jsNative
 
     let bindComponent<'C, 'P> (props: 'P) (children: seq<ReactElement>) (cmp: 'C) =
         ReactBindings.React.createElement (cmp, props, children)
@@ -24,5 +24,5 @@ module React =
     //    ReactDOM.render (appMain (), document.getElementById "root")
     let render rootElement appComponent =
         reactDom
-            .unstable_createRoot(rootElement)
+            .createRoot(rootElement)
             .render appComponent

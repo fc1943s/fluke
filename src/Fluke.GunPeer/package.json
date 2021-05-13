@@ -12,6 +12,5 @@
   "dependencies": {
     "gun": "amark/gun.git#master"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

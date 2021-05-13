@@ -108,7 +108,7 @@ module GunObserver =
 //                                |> Promise.start
                             //                                setUsername (Some (UserInteraction.Username username))
                             | None ->
-                                printfn $"GunObserver.render: Auth occurred without username: %A{gunNamespace.ref.is}"
+                                printfn $"GunObserver.render: Auth occurred without username: {gunNamespace.ref.is}"
                         | true -> ())
                 )),
             [|

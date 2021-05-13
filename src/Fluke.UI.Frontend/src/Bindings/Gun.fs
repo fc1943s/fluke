@@ -45,18 +45,18 @@ module rec Gun =
                pub: string option |}
 
         abstract ``_`` : {| sea: GunKeys |}
-        abstract get : string -> IGunChainReference<_>
+        abstract get : string -> IGunChainReference
         abstract leave : unit -> unit
 
-    type IGunChainReference<'T> =
-        abstract get : string -> IGunChainReference<'U>
-        abstract set : 'V -> IGunChainReference<'U>
-        abstract put : 'V -> IGunChainReference<'U>
+    type IGunChainReference =
+        abstract get : string -> IGunChainReference
+        abstract set : string -> IGunChainReference
+        abstract put : string -> IGunChainReference
         abstract user : unit -> IGunUser
         abstract on : ('T -> string -> unit) -> unit
         abstract on : event: string * (unit -> unit) -> unit
-        abstract map : unit -> IGunChainReference<'U>
-        abstract off : unit -> IGunChainReference<'T>
+        abstract map : unit -> IGunChainReference
+        abstract off : unit -> IGunChainReference
         abstract once : (string -> unit) -> unit
 
     type GunProps =
@@ -66,7 +66,7 @@ module rec Gun =
             localStorage: bool option
         }
 
-    let gun : GunProps -> IGunChainReference<obj> = importDefault "gun/gun"
+    let gun : GunProps -> IGunChainReference = importDefault "gun/gun"
 
     let createUser (user: IGunUser) username password =
         Promise.create
@@ -86,33 +86,34 @@ module rec Gun =
                     printfn "authUser error: {ex}"
                     err ex)
 
-    let getGunAtomNode (gun: IGunChainReference<'U> option) (gunAtomKey: string) =
-        (box gun :?> IGunChainReference<'T> option, gunAtomKey.Split "/" |> Array.toList)
+    let getGunAtomNode (gun: IGunChainReference option) (gunAtomKey: string) =
+        (gun, gunAtomKey.Split "/" |> Array.toList)
         ||> List.fold
                 (fun result node ->
                     result
                     |> Option.map (fun result -> result.get node))
 
-    let inline encode text =
-        Fable.SimpleJson.SimpleJson.stringify text
-    //        Thoth.Json.Encode.Auto.toString (0, text)
+    let inline encode<'T> text =
+//        Fable.SimpleJson.SimpleJson.stringify text
+        Thoth.Json.Encode.Auto.toString<'T> (0, text)
 //        ""
 
     let inline decode< 'T> data =
-        data
-        |> Fable.SimpleJson.SimpleJson.parse
-        |> Fable.SimpleJson.SimpleJson.toPlainObject
-        :?> 'T
-        |> Some
-    //        Thoth.Json.Decode.Auto.unsafeFromString data |> Some
+//        data
+//        |> Fable.SimpleJson.SimpleJson.parse
+//        |> Fable.SimpleJson.SimpleJson.toPlainObject
+//        :?> 'T
+//        |> Some
+
+
+
+        Thoth.Json.Decode.Auto.unsafeFromString<'T> data |> Some
+
+
+
 //        None
 //        None
 
-    let inline putGunAtomNode (gun: IGunChainReference<_>) (value: string) =
-        gun.put (if value = null then null else value)
+    let inline put (gun: IGunChainReference) (value: string) =
+        gun.put value
         |> ignore
-
-    let inline deserializeGunAtomNode data =
-        match box data :?> string option with
-        | Some data -> decode data
-        | None -> None
