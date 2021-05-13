@@ -53,7 +53,7 @@ module rec Gun =
         abstract set : 'V -> IGunChainReference<'U>
         abstract put : 'V -> IGunChainReference<'U>
         abstract user : unit -> IGunUser
-        abstract on : (string -> string -> unit) -> unit
+        abstract on : ('T -> string -> unit) -> unit
         abstract on : event: string * (unit -> unit) -> unit
         abstract map : unit -> IGunChainReference<'U>
         abstract off : unit -> IGunChainReference<'T>
@@ -109,7 +109,7 @@ module rec Gun =
 //        None
 
     let inline putGunAtomNode (gun: IGunChainReference<_>) (value: string) =
-        gun.put (if box value = null then null else encode value)
+        gun.put (if value = null then null else value)
         |> ignore
 
     let inline deserializeGunAtomNode data =
