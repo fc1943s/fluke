@@ -46,12 +46,11 @@ module InformationSelector =
                 (Some (Recoil.AtomFamily (Atoms.Task.information, input.TaskId)))
                 (Some (
                     if input.TaskId.IsNone then
-                        Recoil.AtomScope.ReadOnly
+                        Recoil.InputScope.ReadOnly
                     else
-                        Recoil.AtomScope.ReadWrite
+                        Recoil.InputScope.ReadWrite Gun.defaultSerializer
                 ))
-                Gun.jsonEncode
-                Gun.jsonDecode
+
 
         let radioValue, setRadioValue =
             React.useState (

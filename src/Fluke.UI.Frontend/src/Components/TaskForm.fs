@@ -117,6 +117,7 @@ module TaskForm =
                                 x.label <- str "Name"
                                 x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
                                 x.atom <- Some (Recoil.AtomFamily (Atoms.Task.name, input.TaskId))
+                                x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
                                 x.onFormat <- Some (fun (TaskName name) -> name)
                                 x.onEnterPress <- Some onSave
                                 x.onValidate <- Some (fst >> TaskName >> Some))

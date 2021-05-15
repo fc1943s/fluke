@@ -14,18 +14,13 @@ module InputList =
         abstract hint : ReactElement option with get, set
         abstract hintTitle : ReactElement option with get, set
         abstract atom : Recoil.InputAtom<'TValue, 'TKey> option with get, set
-        abstract atomScope : Recoil.AtomScope option with get, set
+        abstract inputScope : Recoil.InputScope<'TValue> option with get, set
 
     [<ReactComponent>]
-    let inline InputList<'TValue, 'TKey> (props: IProps<'TValue list, 'TKey> -> unit) =
+    let InputList (props: IProps<'TValue list, 'TKey> -> unit) =
         let props = JS.newObj props
 
-        let atomFieldOptions =
-            Recoil.useAtomFieldOptions<'TValue list, 'TKey>
-                props.atom
-                props.atomScope
-                (fun x -> Gun.jsonEncode<'TValue list> x)
-                (fun x -> Gun.jsonDecode<'TValue list> x)
+        let atomFieldOptions = Recoil.useAtomFieldOptions<'TValue list, 'TKey> props.atom props.inputScope
 
         Chakra.box
             (fun _ -> ())

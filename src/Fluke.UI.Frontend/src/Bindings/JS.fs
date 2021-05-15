@@ -15,16 +15,23 @@ module Operators =
 module JS =
     let isProduction = Browser.Dom.window.location.host.EndsWith "github.io"
 
+    [<Emit "process.env.JEST_WORKER_ID">]
+    let jestWorkerId : bool = jsNative
+
+    let isTesting = jestWorkerId || Browser.Dom.window?Cypress <> null
+
+    let inline log fn =
+        if not isProduction && not isTesting then
+            printfn $"[log] {fn ()}"
+        else
+            ()
+
     [<Emit "(w => $0 instanceof w[$1])(window)">]
     let instanceof (_obj: obj, _typeName: string) : bool = jsNative
 
     [<Emit "(() => { var audio = new Audio($0); audio.volume = 0.5; return audio; })().play();">]
     let playAudio (_file: string) : unit = jsNative
 
-    [<Emit "process.env.JEST_WORKER_ID">]
-    let jestWorkerId : bool = jsNative
-
-    let isTesting = jestWorkerId || Browser.Dom.window?Cypress <> null
     let newObj fn = jsOptions<_> fn
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"
     let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
@@ -37,7 +44,7 @@ module JS =
             if box obj <> null then
                 return obj
             else
-                printfn "waitForObject: null. waiting..."
+                log (fun () -> "waitForObject: null. waiting...")
                 do! Async.Sleep 100
                 return! waitForObject fn
         }

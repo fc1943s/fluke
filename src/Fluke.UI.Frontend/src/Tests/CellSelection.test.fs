@@ -49,16 +49,17 @@ module CellSelection =
 
             let databaseName = "Test"
 
-            let databaseId =
-                databaseName
-                |> Crypto.getTextGuidHash
-                |> DatabaseId
-
-            let databaseState =
-                Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
-
             let initialSetter (setter: CallbackMethods) =
                 promise {
+                    let databaseId = DatabaseId.NewId ()
+
+                    let databaseState =
+                        Templates.databaseStateFromDslTemplate
+                            Templates.templatesUser
+                            databaseId
+                            databaseName
+                            dslTemplate
+
                     setter.set (Atoms.username, Some Templates.templatesUser.Username)
                     setter.set (Atoms.User.view Templates.templatesUser.Username, View.View.Priority)
                     setter.set (Atoms.User.daysBefore Templates.templatesUser.Username, 2)
@@ -70,7 +71,13 @@ module CellSelection =
 
                     databaseState.TaskStateMap
                     |> Map.keys
-                    |> Seq.iter (Hydrate.hydrateTask setter Recoil.AtomScope.ReadOnly databaseId)
+                    |> Seq.iter
+                        (fun task ->
+                            Hydrate.hydrateTask
+                                setter
+                                Recoil.AtomScope.ReadOnly
+                                databaseId
+                                { task with Id = TaskId.NewId () })
 
                     setter.set (
                         Atoms.User.selectedDatabaseIdList Templates.templatesUser.Username,
@@ -109,20 +116,18 @@ module CellSelection =
                         map
                         |> Map.toList
                         |> List.map
-                            (fun ((TaskId taskId), dates) ->
-                                taskId,
+                            (fun (taskId, dates) ->
+                                taskId |> TaskId.Value,
                                 dates
                                 |> Set.toList
                                 |> List.map (fun (date: FlukeDate) -> date.Stringify ()))
                         |> string
 
-                    //                    do! peek (fun _ -> promise { () })
-                    do! RTL.waitFor id
-
                     do!
                         peek
                             (fun (setter: CallbackMethods) ->
                                 promise {
+
                                     let! cellSelectionMap =
                                         setter.snapshot.getPromise (
                                             Selectors.Session.cellSelectionMap Templates.templatesUser.Username
@@ -140,12 +145,16 @@ module CellSelection =
                     do! RTL.waitFor id
                 }
 
-            Jest.afterEach (
-                promise {
-                    printfn "After each"
-                    Browser.Dom.window.localStorage.clear ()
-                }
-            )
+            let getCell (cellMap, taskName, date) =
+                cellMap
+                |> Map.pick
+                    (fun ((_, taskName'), date') el -> if taskName = taskName' && date = date' then Some el else None)
+                |> Option.get
+
+            let taskIdByName cellMap taskName =
+                cellMap
+                |> Map.pick
+                    (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
 
             Jest.test (
                 "single cell toggle",
@@ -155,14 +164,12 @@ module CellSelection =
 
                     do! peek (fun setter -> promise { setter.set (Atoms.ctrlPressed, true) })
 
-                    do!
-                        click
-                            cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
-                                .Value
+
+                    do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 
                     do!
                         [
-                            databaseState |> Setup.taskIdByName "2",
+                            taskIdByName cellMap "2",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                             ]
@@ -170,21 +177,15 @@ module CellSelection =
                         |> Map.ofList
                         |> expectSelection peek
 
-                    do!
-                        click
-                            cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
-                                .Value
+                    do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 
                     do! [] |> Map.ofList |> expectSelection peek
 
-                    do!
-                        click
-                            cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
-                                .Value
+                    do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 11))
 
                     do!
                         [
-                            databaseState |> Setup.taskIdByName "2",
+                            taskIdByName cellMap "2",
                             set [
                                 FlukeDate.Create 2020 Month.January 11
                             ]
@@ -202,19 +203,15 @@ module CellSelection =
 
                     do! peek (fun setter -> promise { setter.set (Atoms.ctrlPressed, true) })
 
-                    do!
-                        click
-                            cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
-                                .Value
+                    do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 
-                    do!
-                        click
-                            cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
-                                .Value
+
+                    do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 11))
+
 
                     do!
                         [
-                            databaseState |> Setup.taskIdByName "2",
+                            taskIdByName cellMap "2",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                                 FlukeDate.Create 2020 Month.January 11
@@ -233,19 +230,15 @@ module CellSelection =
 
                     do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
-                    do!
-                        click
-                            cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
-                                .Value
+                    do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 
-                    do!
-                        click
-                            cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 11]
-                                .Value
+
+                    do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 11))
+
 
                     do!
                         [
-                            databaseState |> Setup.taskIdByName "2",
+                            taskIdByName cellMap "2",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                                 FlukeDate.Create 2020 Month.January 10
@@ -265,24 +258,18 @@ module CellSelection =
 
                     do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
-                    do!
-                        click
-                            cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
-                                .Value
+                    do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 
-                    do!
-                        click
-                            cellMap.[TaskName "3", FlukeDate.Create 2020 Month.January 9]
-                                .Value
+                    do! click (getCell (cellMap, TaskName "3", FlukeDate.Create 2020 Month.January 9))
 
                     do!
                         [
-                            databaseState |> Setup.taskIdByName "2",
+                            taskIdByName cellMap "2",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                             ]
 
-                            databaseState |> Setup.taskIdByName "3",
+                            taskIdByName cellMap "3",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                             ]
@@ -300,25 +287,20 @@ module CellSelection =
 
                     do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
-                    do!
-                        click
-                            cellMap.[TaskName "2", FlukeDate.Create 2020 Month.January 9]
-                                .Value
+                    printfn $"cellMap=%A{cellMap |> Map.keys |> Seq.map fst |> Seq.distinct}"
 
-                    do!
-                        click
-                            cellMap.[TaskName "3", FlukeDate.Create 2020 Month.January 10]
-                                .Value
+                    do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
+                    do! click (getCell (cellMap, TaskName "3", FlukeDate.Create 2020 Month.January 10))
 
                     do!
                         [
-                            databaseState |> Setup.taskIdByName "2",
+                            taskIdByName cellMap "2",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                                 FlukeDate.Create 2020 Month.January 10
                             ]
 
-                            databaseState |> Setup.taskIdByName "3",
+                            taskIdByName cellMap "3",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                                 FlukeDate.Create 2020 Month.January 10
@@ -327,28 +309,26 @@ module CellSelection =
                         |> Map.ofList
                         |> expectSelection peek
 
-                    do!
-                        click
-                            cellMap.[TaskName "4", FlukeDate.Create 2020 Month.January 11]
-                                .Value
+
+                    do! click (getCell (cellMap, TaskName "4", FlukeDate.Create 2020 Month.January 11))
 
                     do!
                         [
-                            databaseState |> Setup.taskIdByName "2",
+                            taskIdByName cellMap "2",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                                 FlukeDate.Create 2020 Month.January 10
                                 FlukeDate.Create 2020 Month.January 11
                             ]
 
-                            databaseState |> Setup.taskIdByName "3",
+                            taskIdByName cellMap "3",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                                 FlukeDate.Create 2020 Month.January 10
                                 FlukeDate.Create 2020 Month.January 11
                             ]
 
-                            databaseState |> Setup.taskIdByName "4",
+                            taskIdByName cellMap "4",
                             set [
                                 FlukeDate.Create 2020 Month.January 9
                                 FlukeDate.Create 2020 Month.January 10
@@ -358,14 +338,11 @@ module CellSelection =
                         |> Map.ofList
                         |> expectSelection peek
 
-                    do!
-                        click
-                            cellMap.[TaskName "1", FlukeDate.Create 2020 Month.January 8]
-                                .Value
+                    do! click (getCell (cellMap, TaskName "1", FlukeDate.Create 2020 Month.January 8))
 
                     do!
                         [
-                            databaseState |> Setup.taskIdByName "1",
+                            taskIdByName cellMap "1",
                             set [
                                 FlukeDate.Create 2020 Month.January 8
                                 FlukeDate.Create 2020 Month.January 9
@@ -373,7 +350,7 @@ module CellSelection =
                                 FlukeDate.Create 2020 Month.January 11
                             ]
 
-                            databaseState |> Setup.taskIdByName "2",
+                            taskIdByName cellMap "2",
                             set [
                                 FlukeDate.Create 2020 Month.January 8
                                 FlukeDate.Create 2020 Month.January 9
@@ -381,7 +358,7 @@ module CellSelection =
                                 FlukeDate.Create 2020 Month.January 11
                             ]
 
-                            databaseState |> Setup.taskIdByName "3",
+                            taskIdByName cellMap "3",
                             set [
                                 FlukeDate.Create 2020 Month.January 8
                                 FlukeDate.Create 2020 Month.January 9
@@ -389,7 +366,7 @@ module CellSelection =
                                 FlukeDate.Create 2020 Month.January 11
                             ]
 
-                            databaseState |> Setup.taskIdByName "4",
+                            taskIdByName cellMap "4",
                             set [
                                 FlukeDate.Create 2020 Month.January 8
                                 FlukeDate.Create 2020 Month.January 9

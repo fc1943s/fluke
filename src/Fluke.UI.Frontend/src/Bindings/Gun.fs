@@ -100,4 +100,8 @@ module rec Gun =
     let inline jsonDecode<'T> data =
         Thoth.Json.Decode.Auto.unsafeFromString<'T> data
 
+    type Serializer<'T> = ('T -> string) * (string -> 'T)
+
+    let inline defaultSerializer<'T> : Serializer<'T> = jsonEncode<'T>, jsonDecode<'T>
+
     let inline put (gun: IGunChainReference) (value: string) = gun.put value |> ignore

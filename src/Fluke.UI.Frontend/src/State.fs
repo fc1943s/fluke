@@ -531,12 +531,6 @@ module State =
                     (fun (_username: Username) -> Map.empty: Map<DatabaseId, DatabaseState>)
                 )
 
-            //            let rec availableDatabaseIds =
-//                Recoil.atomFamilyWithProfiling (
-//                    $"{nameof atomFamily}/{nameof Session}/{nameof availableDatabaseIds}",
-//                    (fun (_username: Username) -> []: DatabaseId list)
-//                )
-
             let rec databaseIdList =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Session}/{nameof databaseIdList}",
@@ -590,22 +584,23 @@ module State =
                                 e.onSet (fun _ _ -> failwith "[databaseIdList.effect] read only atom")
 
                                 fun () ->
-                                    (promise {
+                                    (async {
                                         let! gun = Recoil.getGun ()
                                         let gunAtomNode = Gun.getGunAtomNode (Some gun) path
 
                                         match gunAtomNode with
                                         | Some gunAtomNode ->
 
-                                            if not JS.isProduction && not JS.isTesting then
-                                                printfn
-                                                    "[databaseIdList.effect] unsubscribe atom. calling selected.off ()"
+                                            JS.log
+                                                (fun () ->
+                                                    "[databaseIdList.effect] unsubscribe atom. calling selected.off ()")
 
                                             gunAtomNode.map().off () |> ignore
                                         | None ->
                                             Browser.Dom.console.error
                                                 $"[databaseIdList.effect.off] Gun node not found: path={path}"
                                      })
+                                    |> Async.StartAsPromise
                                     |> Promise.start)
                         ])
                 )
@@ -653,14 +648,16 @@ module State =
                                 e.onSet (fun _ _ -> failwith "[taskIdList.effect] read only atom")
 
                                 fun () ->
-                                    (promise {
+                                    (async {
                                         let! gun = Recoil.getGun ()
                                         let gunAtomNode = Gun.getGunAtomNode (Some gun) path
 
                                         match gunAtomNode with
                                         | Some gunAtomNode ->
-                                            if not JS.isProduction && not JS.isTesting then
-                                                printfn "[taskIdList.effect] unsubscribe atom. calling selected.off ()"
+                                            //                                            JS.log ("[taskIdList.effect] unsubscribe atom. calling selected.off ()" |> fun x -> fun a -> x)
+                                            JS.log
+                                                (fun () ->
+                                                    "[taskIdList.effect] unsubscribe atom. calling selected.off ()")
 
                                             gunAtomNode.map().off () |> ignore
                                         | None ->
@@ -668,138 +665,10 @@ module State =
                                                 $"[taskIdList.effect.off] Gun node not found: path={path}"
 
                                      })
+                                    |> Async.StartAsPromise
                                     |> Promise.start)
                         ])
                 )
-
-    //            let rec taskMap =
-//                Recoil.atomFamilyWithProfiling (
-//                    $"{nameof atomFamily}/{nameof Session}/{nameof taskMap}",
-//                    (fun (_username: Username) -> Map.empty: Map<DatabaseId, Set<TaskId>>),
-//                    (fun (username: Username) ->
-//                        let _atomFamily = databaseIdList
-//                        let _atomKey = username
-//                        let _username = Some username
-//                        let _keySuffix = ""
-//
-//                        [
-//                            (fun (e: Recoil.EffectProps<_>) ->
-//                                let path = "Fluke/atomFamily/Task"
-//
-//                                match e.trigger with
-//                                | "get" ->
-//                                    (async {
-//                                        let! gun = Recoil.getGun ()
-//                                        let gunAtomNode = Gun.getGunAtomNode gun path
-//
-//                                        gunAtomNode
-//                                            .map()
-//                                            .on (fun _v k ->
-//                                                printfn $"!!!@ on effect. k={k} v={_v}"
-//                                                let taskId = k |> Guid |> TaskId
-//
-//                                                let databaseId =
-//                                                    Thoth.Json.Decode.Auto.fromString<DatabaseId option> v
-//                                                    |> function
-//                                                    | Ok value -> value
-//                                                    | Error error -> failwith error
-//                                                //                                                if not JS.isProduction && not JS.isTesting then
-////                                                    printfn
-////                                                        $"@@@gunEffect. gunAtomNode.on() effect. data={
-////                                                                                                           JS.JSON.stringify
-////                                                                                                               {|
-////                                                                                                                   v = v
-////                                                                                                                   k = k
-////                                                                                                               |}
-////                                                        }"
-//                                                printfn $"!!! on effect. taskId={taskId} databaseId={databaseId}"
-//
-//                                                match taskId, databaseId with
-//                                                | TaskId taskIdGuid, Some databaseId when taskIdGuid <> Guid.Empty ->
-//                                                    e.setSelf
-//                                                        (fun oldValue ->
-//
-//
-//                                                            //                                                        printfn $"@@@oldValue={JS.JSON.stringify oldValue};newValue={k}"
-//                                                            let currentMap = oldValue |> JS.ofObjDefault Map.empty
-//
-//                                                            printfn $"!!! on effect. currentMap={currentMap}"
-//
-//                                                            let newTaskIdSet =
-//                                                                currentMap
-//                                                                |> Map.tryFind databaseId
-//                                                                |> Option.defaultValue Set.empty
-//                                                                |> Set.add taskId
-//
-//                                                            printfn
-//                                                                $"!!! on effect. oldValue={JS.JSON.stringify oldValue} newTaskIdSet={
-//                                                                                                                                         newTaskIdSet
-//                                                                }"
-//
-//                                                            currentMap |> Map.add databaseId newTaskIdSet)
-//                                                | _ -> ()
-//                                                //                                                match Gun.deserializeGunAtomNode v with
-////                                                | Some gunAtomNodeValue ->
-////                                                    e.setSelf (fun oldValue -> printfn $"oldValue={oldValue};newValue={gunAtomNodeValue}"; gunAtomNodeValue)
-////                                                | None -> ()
-//                                                )
-//
-//                                     //                                        let atom = atomFamily atomKey
-//
-//                                     //                                        let! gunAtomNode, id = Recoil.getGunAtomNode username atom keySuffix
-//
-//                                     //                                        gunAtomNode.on
-////                                            (fun data ->
-////                                                if not JS.isProduction && not JS.isTesting then
-////                                                    printfn
-////                                                        $"gunEffect. gunAtomNode.on() effect. id={id} data={
-////                                                                                                                JS.JSON.stringify
-////                                                                                                                    data
-////                                                        }"
-////
-////                                                //                                                match Gun.deserializeGunAtomNode data with
-//////                                                | Some gunAtomNodeValue -> e.setSelf gunAtomNodeValue
-//////                                                | None -> ()
-////                                                )
-//                                     })
-//                                    |> Async.StartAsPromise
-//                                    |> Promise.start
-//                                | _ -> ()
-//
-//                                e.onSet
-//                                    (fun value oldValue ->
-//                                        (promise {
-//                                            if oldValue <> value then
-//                                                //                                            let! gunAtomNode, _ = Recoil.getGunAtomNode username atom keySuffix
-//                                                //                                            Gun.putGunAtomNode gunAtomNode value
-//
-//                                                if not JS.isProduction && not JS.isTesting then
-//                                                    printfn
-//                                                        $"@@@gunEffect. onSet. oldValue: {JS.JSON.stringify oldValue}; newValue: {
-//                                                                                                                                      JS.JSON.stringify
-//                                                                                                                                          value
-//                                                        }"
-//                                            else
-//                                                printfn
-//                                                    $"gunEffect. onSet. value=oldValue. skipping. newValue: {
-//                                                                                                                 JS.JSON.stringify
-//                                                                                                                     value
-//                                                    }"
-//                                         })
-//                                        |> Promise.start)
-//
-//                                fun () ->
-//                                    (promise {
-//                                        //                                        let! gunAtomNode, _ = Recoil.getGunAtomNode username atom keySuffix
-//
-//                                        if not JS.isProduction && not JS.isTesting then
-//                                            printfn "@@@gunEffect. unsubscribe atom. calling selected.off ()"
-//
-//                                     //                                        gunAtomNode.off () |> ignore
-//                                     })
-//                                    |> Promise.start)
-//                        ])
-//                )
 
 
     module Selectors =
@@ -818,14 +687,15 @@ module State =
             Recoil.selectorWithProfiling (
                 $"{nameof selector}/{nameof gun}",
                 (fun getter ->
+                    let isTesting = getter.get Atoms.isTesting
                     let gunPeers = getter.get gunPeers
 
                     let gun =
                         Gun.gun
                             {
-                                Gun.GunProps.peers = if JS.isTesting then None else Some (gunPeers |> List.toArray)
-                                Gun.GunProps.radisk = if JS.isTesting then None else Some false
-                                Gun.GunProps.localStorage = if JS.isTesting then None else Some true
+                                Gun.GunProps.peers = if isTesting then None else Some (gunPeers |> List.toArray)
+                                Gun.GunProps.radisk = if isTesting then None else Some false
+                                Gun.GunProps.localStorage = if isTesting then None else Some true
                             }
 
                     Browser.Dom.window?lastGun <- gun
@@ -850,21 +720,6 @@ module State =
 
                     {| ref = user |})
             )
-
-
-        //        let rec apiCurrentUserAsync =
-//            Recoil.asyncSelectorWithProfiling (
-//                $"{nameof selector}/{nameof apiCurrentUserAsync}",
-//                (fun getter ->
-//                    promise {
-//                        let api = getter.get Atoms.api
-//
-//                        return!
-//                            api
-//                            |> Option.bind (fun api -> Some api.currentUser)
-//                            |> Sync.handleRequest
-//                    })
-//            )
 
         let rec dateSequence =
             Recoil.selectorWithProfiling (

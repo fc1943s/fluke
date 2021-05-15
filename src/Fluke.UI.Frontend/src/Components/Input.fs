@@ -19,13 +19,14 @@ module Input =
         | Password
         | Number
 
+
     type IProps<'TValue, 'TKey> =
         inherit Chakra.IChakraProps
 
         abstract hint : ReactElement option with get, set
         abstract hintTitle : ReactElement option with get, set
         abstract atom : Recoil.InputAtom<'TValue, 'TKey> option with get, set
-        abstract atomScope : Recoil.AtomScope option with get, set
+        abstract inputScope : Recoil.InputScope<'TValue> option with get, set
         abstract value : 'TValue option with get, set
         abstract onFormat : ('TValue -> string) option with get, set
         abstract onValidate : (string * 'TValue option -> 'TValue option) option with get, set
@@ -34,15 +35,10 @@ module Input =
 
 
     [<ReactComponent>]
-    let inline Input<'TValue, 'TKey> (props: IProps<'TValue, 'TKey> -> unit) =
+    let Input (props: IProps<'TValue, 'TKey> -> unit) =
         let props = JS.newObj props
 
-        let atomFieldOptions =
-            Recoil.useAtomFieldOptions<'TValue, 'TKey>
-                props.atom
-                props.atomScope
-                (fun x -> Gun.jsonEncode<'TValue> x)
-                (fun x -> Gun.jsonDecode<'TValue> x)
+        let atomFieldOptions = Recoil.useAtomFieldOptions<'TValue, 'TKey> props.atom props.inputScope
 
         let inputRef = React.useRef<HTMLInputElement> null
 

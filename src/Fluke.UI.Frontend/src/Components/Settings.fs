@@ -28,14 +28,12 @@ module Settings =
                                     (fun x ->
                                         x.label <- str "Days Before"
                                         x.atom <- Some (Recoil.Atom (Atoms.User.daysBefore input.Username))
-                                        x.atomScope <- Some Recoil.AtomScope.ReadOnly
                                         x.inputFormat <- Some Input.InputFormat.Number)
 
                                 Input.Input
                                     (fun x ->
                                         x.label <- str "Days After"
                                         x.atom <- Some (Recoil.Atom (Atoms.User.daysAfter input.Username))
-                                        x.atomScope <- Some Recoil.AtomScope.ReadOnly
                                         x.inputFormat <- Some Input.InputFormat.Number)
                             ])
 
@@ -46,8 +44,7 @@ module Settings =
                                 InputList.InputList
                                     (fun x ->
                                         x.label <- str "Gun peers"
-                                        x.atom <- Some (Recoil.Atom Atoms.gunPeers)
-                                        x.atomScope <- Some Recoil.AtomScope.ReadOnly)
+                                        x.atom <- Some (Recoil.Atom Atoms.gunPeers))
                             ])
                     ]
             |}

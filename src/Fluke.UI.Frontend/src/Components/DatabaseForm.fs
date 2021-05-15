@@ -157,6 +157,7 @@ module DatabaseForm =
 
                                 x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
                                 x.atom <- Some (Recoil.AtomFamily (Atoms.Database.name, input.DatabaseId))
+                                x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
                                 x.onFormat <- Some (fun (DatabaseName name) -> name)
                                 x.onValidate <- Some (fst >> DatabaseName >> Some)
                                 x.onEnterPress <- Some onSave)
@@ -177,6 +178,7 @@ module DatabaseForm =
                                 x.placeholder <- "00:00"
 
                                 x.atom <- Some (Recoil.AtomFamily (Atoms.Database.dayStart, input.DatabaseId))
+                                x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
                                 x.inputFormat <- Some Input.InputFormat.Time
                                 x.onFormat <- Some (fun time -> time.Stringify ())
 

@@ -1,19 +1,25 @@
 namespace Fluke.UI.Frontend.Tests.Core
 
+open Fable.Core.JsInterop
 open Fable.ReactTestingLibrary
-open Fable.React
 open Feliz
 open Feliz.Recoil
+open Feliz.UseListener
+open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend
+open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend
-open Fluke.UI.Frontend.Bindings
-open Fluke.Shared.Domain
+open Fluke.UI.Frontend.Tests.Core
+open Fluke.Shared
+open Fable.React
 open Fluke.UI.Frontend.Hooks
 
 
 module Setup =
     open State
+
+    import "jest" "@jest/globals"
 
     let rootWrapper cmp =
         React.memo
@@ -100,14 +106,6 @@ module Setup =
                     ()
                 })
 
-    let taskIdByName name databaseState =
-        databaseState.TaskStateMap
-        |> Map.pick
-            (fun task taskState ->
-                match task with
-                | { Name = TaskName taskName } when taskName = name -> Some taskState.Task.Id
-                | _ -> None)
-
     let getCellMap (subject: Bindings.render<_, _>) peek =
         promise {
             let mutable cellMap = Map.empty
@@ -127,14 +125,14 @@ module Setup =
                                 |> Array.map
                                     (fun taskId ->
                                         promise {
-                                            let! name = setter.snapshot.getPromise (Atoms.Task.name (Some taskId))
+                                            let! taskName = setter.snapshot.getPromise (Atoms.Task.name (Some taskId))
 
                                             return
                                                 dateSequence
                                                 |> List.toArray
                                                 |> Array.map
                                                     (fun date ->
-                                                        (name, date),
+                                                        ((taskId, taskName), date),
                                                         subject.queryByTestId
                                                             $"cell-{taskId}-{date.DateTime.ToShortDateString ()}")
                                         })
