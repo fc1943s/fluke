@@ -116,7 +116,7 @@ module State =
             let rec view =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof view}",
-                    (fun (_username: Username) -> View.View.HabitTracker),
+                    (fun (_username: Username) -> TempUI.defaultView),
                     (fun (username: Username) ->
                         [
                             Recoil.gunEffect (Some username) (Recoil.AtomFamily (view, username)) []
@@ -549,7 +549,12 @@ module State =
 
                         [
                             (fun (e: RecoilEffectProps<_>) ->
-                                let path = "Fluke/atomFamily/Database"
+
+                                let atomFamilyDatabase = Recoil.getGunAtomKey None (Database.owner None).key []
+
+                                printfn $"@@@@--- atomFamilyDatabase={atomFamilyDatabase} (Database.owner None).key={(Database.owner None).key}"
+
+                                let path = "GunRecoil/atomFamily/Database"
 
                                 match e.trigger with
                                 | "get" ->
@@ -562,15 +567,16 @@ module State =
                                             gunAtomNode
                                                 .map()
                                                 .on (fun _v k ->
-                                                    e.setSelf
-                                                        (fun oldValue ->
-                                                            oldValue
-                                                            @ [
-                                                                k |> Guid |> DatabaseId
-                                                            ]))
+                                                    if string Recoil.atomFormGuid <> k then
+                                                        e.setSelf
+                                                            (fun oldValue ->
+                                                                oldValue
+                                                                @ [
+                                                                    k |> Guid |> DatabaseId
+                                                                ]))
                                         | None ->
                                             Browser.Dom.console.error
-                                                $"[databaseIdList.effect] Gun node not found: {id}"
+                                                $"[databaseIdList.effect] Gun node not found: path={path}"
                                      })
                                     |> Async.StartAsPromise
                                     |> Promise.start
@@ -593,7 +599,7 @@ module State =
                                             gunAtomNode.map().off () |> ignore
                                         | None ->
                                             Browser.Dom.console.error
-                                                $"[databaseIdList.effect.off] Gun node not found: {id}"
+                                                $"[databaseIdList.effect.off] Gun node not found: path={path}"
                                      })
                                     |> Promise.start)
                         ])
@@ -611,7 +617,7 @@ module State =
 
                         [
                             (fun (e: RecoilEffectProps<_>) ->
-                                let path = "Fluke/atomFamily/Task"
+                                let path = "GunRecoil/atomFamily/Task"
 
                                 match e.trigger with
                                 | "get" ->
@@ -624,14 +630,15 @@ module State =
                                             gunAtomNode
                                                 .map()
                                                 .on (fun _v k ->
-                                                    e.setSelf
-                                                        (fun oldValue ->
-                                                            oldValue
-                                                            @ [
-                                                                k |> Guid |> TaskId
-                                                            ]))
+                                                    if string Recoil.atomFormGuid <> k then
+                                                        e.setSelf
+                                                            (fun oldValue ->
+                                                                oldValue
+                                                                @ [
+                                                                    k |> Guid |> TaskId
+                                                                ]))
                                         | None ->
-                                            Browser.Dom.console.error $"[taskIdList.effect] Gun node not found: {id}"
+                                            Browser.Dom.console.error $"[taskIdList.effect] Gun node not found: path={path}"
                                      })
                                     |> Async.StartAsPromise
                                     |> Promise.start
@@ -652,7 +659,7 @@ module State =
                                             gunAtomNode.map().off () |> ignore
                                         | None ->
                                             Browser.Dom.console.error
-                                                $"[taskIdList.effect.off] Gun node not found: {id}"
+                                                $"[taskIdList.effect.off] Gun node not found: path={path}"
 
                                      })
                                     |> Promise.start)

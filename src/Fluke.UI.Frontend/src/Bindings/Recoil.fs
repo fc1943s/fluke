@@ -251,7 +251,7 @@ module Recoil =
                 |> String.concat "/"
 
 
-        let result = $"{nameof Fluke}/{userBlock}{newAtomPath}"
+        let result = $"{nameof Gun}{nameof Recoil}/{userBlock}{newAtomPath}"
 
         printfn $"getGunAtomKey. result={result}"
 
@@ -278,12 +278,18 @@ module Recoil =
             return Gun.getGunAtomNode (Some gun) gunAtomKey, gunAtomKey
         }
 
-    let inline gunEffect
+    let inline log fn =
+        if not JS.isProduction && not JS.isTesting then
+            printfn $"log: {fn jsTypeof}"
+        else
+            ()
+
+    let inline gunEffect<'TValue3, 'TKey>
         (username: UserInteraction.Username option)
-        (atom: InputAtom<_, _>)
+        (atom: InputAtom<'TValue3, 'TKey>)
         (keyIdentifier: string list)
         =
-        (fun (e: RecoilEffectProps<_>) ->
+        (fun (e: RecoilEffectProps<'TValue3>) ->
             match e.trigger with
             | "get" ->
                 (async {
@@ -293,21 +299,30 @@ module Recoil =
                     | Some gunAtomNode ->
                         gunAtomNode.on
                             (fun data _key ->
-                                let decoded = if box data = null then None else Gun.decode data
+                                Browser.Dom.window?data <- unbox data
 
-                                if not JS.isProduction && not JS.isTesting then
-                                    if string (unbox decoded) = "HabitTracker" then
-                                        Browser.Dom.window?decoded <- unbox decoded
-                                        Browser.Dom.window?data <- unbox data
-                                        Browser.Dom.window?data2 <- unbox View.View.HabitTracker
-//                                        Browser.Dom.window?data3 <- (Gun.encode View.View.HabitTracker)
-//                                        Browser.Dom.window?data4 <- Gun.decode (Gun.encode View.View.HabitTracker)
-                                    printfn $"[gunEffect.onGunData()] id={id} data={unbox data} decoded={unbox decoded}"
+                                log
+                                    (fun typeof ->
+                                        $"[gunEffect.onGunData1()] id={id} data={unbox data}; typeof data={typeof data}; data.stringify={
+                                                                                                                                             JS.JSON.stringify
+                                                                                                                                                 data
+                                        }")
 
-                                match decoded with
-                                | Some gunAtomNodeValue -> e.setSelf (fun _ -> gunAtomNodeValue)
-                                | None -> ()
-                                )
+                                let decoded = if box data = null then unbox null else Gun.jsonDecode<'TValue3> data
+                                Browser.Dom.window?decoded <- unbox decoded
+
+                                log
+                                    (fun typeof ->
+                                        //                                            Browser.Dom.window?data2 <- unbox View.View.HabitTracker
+//                                            Browser.Dom.window?data3 <- (Gun.jsonEncode View.View.HabitTracker)
+//                                            Browser.Dom.window?data4 <- Gun.jsonDecode (Gun.jsonEncode View.View.HabitTracker)
+
+                                        $"[gunEffect.onGunData2()] id={id} decoded={unbox decoded}; typeof decoded={
+                                                                                                                        typeof
+                                                                                                                            decoded
+                                        }; decoded.stringify={JS.JSON.stringify decoded}")
+
+                                e.setSelf (fun _ -> unbox decoded))
                     | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {id}"
                  })
                 |> Async.StartAsPromise
@@ -317,26 +332,49 @@ module Recoil =
             e.onSet
                 (fun value oldValue ->
                     (async {
-                        if not JS.isProduction && not JS.isTesting then
-                                printfn $"[gunEffect.onRecoilSet()] oldValue={oldValue}; jsTypeof-value={jsTypeof value} value={value}"
+                        Browser.Dom.window?oldValue <- unbox oldValue
+                        Browser.Dom.window?value <- unbox value
 
-//                        let newValue = if jsTypeof value = "string" then value else Gun.encode value
+                        if not JS.isProduction && not JS.isTesting then
+                            let! _, tempId = getGunAtomNode username atom keyIdentifier
+
+                            printfn
+                                $"[gunEffect.onRecoilSet1()] tempId={tempId} typeof value={jsTypeof value}
+                                 typeof oldValue={jsTypeof oldValue}; oldValue={oldValue}; oldValue.stringify={
+                                                                                                                   JS.JSON.stringify
+                                                                                                                       oldValue
+                                };
+                                 typeof value={jsTypeof value}; value={value}; value.stringify={JS.JSON.stringify value};"
+
+                        //                        let newValue = if jsTypeof value = "string" then value else Gun.encode value
 //
-                        if oldValue <> value then
+
+                        let newValueJson =
+                            if (JS.ofObjDefault null (box value)) = null then
+                                null
+                            else
+                                Gun.jsonEncode<'TValue3> value
+
+                        let getOldValueJson () =
+                            if (JS.ofObjDefault null (box oldValue)) = null then
+                                null
+                            else
+                                Gun.jsonEncode<'TValue3> oldValue
+
+                        // TODO: remove?
+                        if jsTypeof value <> jsTypeof oldValue
+                           || getOldValueJson () <> newValueJson then
                             let! gunAtomNode, id = getGunAtomNode username atom keyIdentifier
 
                             match gunAtomNode with
                             | Some gunAtomNode ->
-                                Browser.Dom.window?value <- unbox value
-                                let newValue = if box value = null then null else Gun.encode value
-                                Gun.put gunAtomNode newValue
+                                Gun.put gunAtomNode newValueJson
 
                                 if not JS.isProduction && not JS.isTesting then
                                     printfn
-                                        $"[gunEffect.onRecoilSet()] id={id} oldValue={oldValue}; newValue={newValue} jsTypeof-value={
-                                                                                                                                         jsTypeof
-                                                                                                                                             value
-                                        }"
+                                        $"[gunEffect.onRecoilSet2()] id={id} oldValue={oldValue}; newValueJson={
+                                                                                                                    newValueJson
+                                        } jsTypeof-value={jsTypeof value}"
                             | None -> Browser.Dom.console.error $"[gunEffect.onRecoilSet] Gun node not found: {id}"
                         else
                             printfn $"[gunEffect.onRecoilSet()]. newValue==oldValue. skipping. value={value}"
@@ -360,6 +398,8 @@ module Recoil =
                 |> Promise.start)
 
 
+    let atomFormGuid = Guid.Parse "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"
+
     module Atoms =
         module rec Form =
             let rec readWriteValue =
@@ -372,15 +412,32 @@ module Recoil =
                                 None
                                 (AtomKey key)
                                 [
-                                    Guid.Empty |> string
+                                    string atomFormGuid
                                 ])
                         ])
                 )
 
+    module Selectors =
+        let rec atomOption<'TValue, 'TKey> =
+            Recoil.selectorFamilyWithProfiling (
+                $"{nameof selectorFamily}/{nameof atomOption}",
+                (fun (atom: RecoilValue<'TValue, ReadWrite> option) getter -> atom |> Option.map getter.get),
+                (fun (atom: RecoilValue<'TValue, ReadWrite> option) setter newValue ->
+                    match atom, newValue with
+                    | Some atom, Some newValue -> setter.set (atom, newValue)
+                    | _ -> ())
+            )
+
+    type AtomField<'TValue67> =
+        {
+            ReadOnly: RecoilValue<'TValue67, ReadWrite> option
+            ReadWrite: RecoilValue<string, ReadWrite> option
+        }
+
     let getAtomField atom =
         match atom with
         | Some (Atom atom) ->
-            {|
+            {
                 ReadOnly = Some atom
                 ReadWrite =
                     Atoms.Form.readWriteValue (
@@ -388,13 +445,13 @@ module Recoil =
                             None
                             atom.key
                             [
-                                Guid.Empty |> string
+                                atomFormGuid |> string
                             ]
                     )
                     |> Some
-            |}
+            }
         | Some (AtomFamily (atom, key)) ->
-            {|
+            {
                 ReadOnly = Some (atom key)
                 ReadWrite =
                     Atoms.Form.readWriteValue (
@@ -402,44 +459,34 @@ module Recoil =
                             None
                             (atom key).key
                             [
-                                Guid.Empty |> string
+                                atomFormGuid |> string
                             ]
                     )
                     |> Some
-            |}
-        | _ -> {| ReadOnly = None; ReadWrite = None |}
+            }
+        | _ -> { ReadOnly = None; ReadWrite = None }
 
-    //    let useValueDefault<'TValue, 'TKey, 'TPerm when 'TPerm :> ReadOnly>
-//        (atom: 'TKey -> RecoilValue<'TValue, 'TPerm>)
-//        (key: 'TKey option)
-//        =
-//        let atom =
-//            match key with
-//            | Some key -> atom key
-//            | None -> box (RecoilValue.lift null) :?> RecoilValue<'TValue, 'TPerm>
-//
-//        Recoil.useValue atom
-//
+    let useStateKeyDefault (atom: 'TKey -> RecoilValue<'TValue5, ReadWrite>) (key: 'TKey option) (defaultValue: 'TValue5) =
+            let atom =
+                match key with
+                | Some key -> atom key
+                | None -> box (RecoilValue.lift defaultValue) :?> RecoilValue<'TValue5, ReadWrite>
 
-    let useStateKeyDefault (atom: 'TKey -> RecoilValue<'TValue5, ReadWrite>) (key: 'TKey option) =
-        let atom =
-            match key with
-            | Some key -> atom key
-            | None -> box (RecoilValue.lift null) :?> RecoilValue<'TValue5, ReadWrite>
+            let value, setValue = Recoil.useState atom
 
-        let value, setValue = Recoil.useState atom
+            value, (if key.IsNone then (fun _ -> ()) else setValue)
 
-        value, (if key.IsNone then (fun _ -> ()) else setValue)
 
-    let useStateDefault (atom: RecoilValue<'TValue6, ReadWrite> option) =
-        let flatAtom =
-            match atom with
-            | Some atom -> atom
-            | None -> box (RecoilValue.lift null) :?> RecoilValue<'TValue6, ReadWrite>
-
-        let value, setValue = Recoil.useState flatAtom
-
-        value, (if atom.IsNone then (fun _ -> ()) else setValue)
+//        let rec atomKeyOption<'TValue, 'TKey> =
+//            Recoil.selectorFamilyWithProfiling (
+//                $"{nameof selectorFamily}/{nameof atomKeyOption}",
+//                (fun (props: {| Atom: 'TKey -> RecoilValue<'TValue, ReadWrite>; Key: 'TKey option |}) getter ->
+//                    props.Key |> Option.map (props.Atom >> getter.get)),
+//                (fun (props: {| Atom: 'TKey -> RecoilValue<'TValue, ReadWrite>; Key: 'TKey option |}) setter newValue ->
+//                    match props.Key, newValue with
+//                    | Some key, Some newValue -> setter.set (props.Atom key, newValue)
+//                    | _ -> ())
+//            )
 
 
     [<RequireQualifiedAccess>]
@@ -447,59 +494,80 @@ module Recoil =
         | ReadOnly
         | ReadWrite
 
-    let useAtomField atom atomScope =
+    let useAtomFieldOptions<'TValue7, 'TKey>
+        (atom: InputAtom<'TValue7, 'TKey> option)
+        atomScope
+        (jsonEncode: 'TValue7 -> string)
+        (jsonDecode: string -> 'TValue7)
+        =
         let atomField = getAtomField atom
 
-        let readOnlyValue, setReadOnlyValue = useStateDefault atomField.ReadOnly
-        let readWriteValue, setReadWriteValue = useStateDefault atomField.ReadWrite
+        let readOnlyValue, setReadOnlyValue = Recoil.useState (Selectors.atomOption<'TValue7, 'TKey> atomField.ReadOnly)
+        let readWriteValue, setReadWriteValue = Recoil.useState (Selectors.atomOption<string, 'TKey> atomField.ReadWrite)
 
-        let atomFieldOptions =
-            React.useMemo (
-                (fun () ->
-                    let readWriteValue = if readWriteValue = null then readOnlyValue else unbox (Gun.decode readWriteValue)
+        React.useMemo (
+            (fun () ->
+                let newReadWriteValue =
+                    match readWriteValue |> Option.defaultValue null with
+                    | readWriteValue when readWriteValue <> null ->
+                        printfn
+                            $"useAtomFieldOptions. readOnlyValue={readOnlyValue} readWriteValue={readWriteValue} typeof readWriteValue={
+                                                                                                                                            jsTypeof
+                                                                                                                                                readWriteValue
+                            }"
 
-                    let setReadWriteValue =
-                        if atom.IsSome then
-                            (fun newValue -> setReadWriteValue (Gun.encode newValue))
-                        else
-                            (fun _ -> ())
+                        Browser.Dom.window?readWriteValue <- readWriteValue
+                        printfn $"useAtomFieldOptions. decoder readWriteValue={jsonDecode readWriteValue}"
+                        jsonDecode readWriteValue
+                    | _ -> readOnlyValue |> Option.defaultValue (unbox null)
 
-                    let setReadOnlyValue = if atom.IsSome then setReadOnlyValue else (fun _ -> ())
+                let setReadWriteValue =
+                    if atom.IsSome then
+                        (fun newValue ->
+                            printfn
+                                $"useAtomFieldOptions. ONSET. newValue={newValue} typeof newValue={jsTypeof newValue}"
 
-                    {|
-                        ReadWriteValue = readWriteValue
-                        SetReadWriteValue = setReadWriteValue
-                        ReadOnlyValue = readOnlyValue
-                        SetReadOnlyValue = setReadOnlyValue
-                        AtomField = atomField
-                        AtomValue =
-                            match atomScope with
-                            | Some AtomScope.ReadOnly -> readOnlyValue
-                            | _ -> readWriteValue
-                        SetAtomValue =
-                            match atomScope with
-                            | Some AtomScope.ReadOnly -> setReadOnlyValue
-                            | _ -> setReadWriteValue
-                    |}),
-                [|
-                    box atomScope
-                    box atom
-                    box atomField
-                    box readOnlyValue
-                    box readWriteValue
-                    box setReadOnlyValue
-                    box setReadWriteValue
-                |]
-            )
+                            Browser.Dom.window?newValue <- readWriteValue
+                            setReadWriteValue (if box newValue = null then None else Some (jsonEncode newValue)))
+                    else
+                        (fun _ -> ())
 
-        atomFieldOptions
+                let setReadOnlyValue = if atom.IsSome then setReadOnlyValue else (fun _ -> ())
+
+                {|
+                    ReadWriteValue = newReadWriteValue
+                    SetReadWriteValue = setReadWriteValue
+                    ReadOnlyValue = readOnlyValue |> Option.defaultValue (unbox null)
+                    SetReadOnlyValue = setReadOnlyValue
+                    AtomField = atomField
+                    AtomValue =
+                        match atomScope with
+                        | Some AtomScope.ReadOnly -> readOnlyValue |> Option.defaultValue (unbox null)
+                        | _ -> newReadWriteValue
+                    SetAtomValue =
+                        match atomScope with
+                        | Some AtomScope.ReadOnly -> Some >> setReadOnlyValue
+                        | _ -> setReadWriteValue
+                |}),
+            [|
+                box jsonEncode
+                box jsonDecode
+                box atomScope
+                box atom
+                box atomField
+                box readOnlyValue
+                box readWriteValue
+                box setReadOnlyValue
+                box setReadWriteValue
+            |]
+        )
 
 
 [<AutoOpen>]
 module RecoilGetterExtensions =
 
     type CallbackMethods with
-        member inline this.readWriteReset (atom: 'TKey -> RecoilValue<'TValue8, ReadWrite>) key =
+        member inline this.readWriteReset<'TValue8, 'TKey> (atom: 'TKey -> RecoilValue<'TValue8, ReadWrite>) key =
             promise {
                 let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
 
@@ -510,31 +578,39 @@ module RecoilGetterExtensions =
                             None
                             atom.key
                             [
-                                Guid.Empty |> string
+                                Recoil.atomFormGuid |> string
                             ]
 
                     this.set (Recoil.Atoms.Form.readWriteValue atomKey, null)
                 | _ -> ()
             }
 
-        member inline this.readWriteSet (atom: 'TKey -> RecoilValue<'TValue9, ReadWrite>, key: 'TKey, value: 'TValue9) =
+        member inline this.readWriteSet<'TValue9, 'TKey>
+            (
+                atom: 'TKey -> RecoilValue<'TValue9, ReadWrite>,
+                key: 'TKey,
+                value: 'TValue9
+            ) =
             let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
 
             match atomField.ReadWrite with
-            | Some atom -> this.set (atom, value |> Gun.encode)
+            | Some atom -> this.set (atom, value |> Gun.jsonEncode<'TValue9>)
             | _ -> ()
 
 
-        member this.scopedSet
+        member inline this.scopedSet<'TValue10, 'TKey>
             (atomScope: Recoil.AtomScope)
             (atom: 'TKey -> RecoilValue<'TValue10, ReadWrite>, key: 'TKey, value: 'TValue10)
             =
             match atomScope with
             | Recoil.AtomScope.ReadOnly -> this.set (atom key, value)
-            | Recoil.AtomScope.ReadWrite -> this.readWriteSet (atom, key, value)
+            | Recoil.AtomScope.ReadWrite -> this.readWriteSet<'TValue10, 'TKey> (atom, key, value)
 
     type Snapshot with
-        member this.getReadWritePromise (atom: 'TKey -> RecoilValue<'TValue11, ReadWrite>) key =
+        member inline this.getReadWritePromise<'TValue11, 'TKey>
+            (atom: 'TKey -> RecoilValue<'TValue11, ReadWrite>)
+            key
+            =
             promise {
                 let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
 
@@ -542,9 +618,10 @@ module RecoilGetterExtensions =
                 | Some readWriteAtom ->
                     let! value = this.getPromise readWriteAtom
 
-                    match Gun.decode value with
-                    | Some result -> return result
-                    | None -> return! this.getPromise (atom key)
+                    if value <> null then
+                        return Gun.jsonDecode<'TValue11> value
+                    else
+                        return! this.getPromise (atom key)
                 | _ -> return! this.getPromise (atom key)
             }
 

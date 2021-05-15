@@ -34,9 +34,15 @@ module Input =
 
 
     [<ReactComponent>]
-    let Input<'TValue, 'TKey> (props: IProps<'TValue, 'TKey> -> unit) =
+    let inline Input<'TValue, 'TKey> (props: IProps<'TValue, 'TKey> -> unit) =
         let props = JS.newObj props
-        let atomFieldOptions = Recoil.useAtomField props.atom props.atomScope
+
+        let atomFieldOptions =
+            Recoil.useAtomFieldOptions<'TValue, 'TKey>
+                props.atom
+                props.atomScope
+                (fun x -> Gun.jsonEncode<'TValue> x)
+                (fun x -> Gun.jsonDecode<'TValue> x)
 
         let inputRef = React.useRef<HTMLInputElement> null
 

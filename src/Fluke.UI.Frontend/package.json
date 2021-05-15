@@ -50,10 +50,10 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-2bf4805e4",
-    "react-dom": "0.0.0-experimental-2bf4805e4",
+    "react": "0.0.0-experimental-1a2d79250",
+    "react-dom": "0.0.0-experimental-1a2d79250",
 
-    "recoil": "~0.2",
+    "recoil": "~0.3",
     "recoilize": "~2.0",
 
     "gun": "amark/gun.git#master",
@@ -85,7 +85,7 @@
 
     "typescript": "~4.2",
     "ts-node": "~9.1",
-    "@types/node" : "~15.0",
+    "@types/node" : "~15.3",
     "ts2fable" : "~0.8.0-build.615",
 
     "fable-loader": "~2.1",
@@ -142,8 +142,8 @@
     "concurrently": "~6.1"
   },
   "resolutions": {
-    "react": "0.0.0-experimental-2bf4805e4",
-    "react-dom": "0.0.0-experimental-2bf4805e4"
+    "react": "0.0.0-experimental-1a2d79250",
+    "react-dom": "0.0.0-experimental-1a2d79250"
   },
   "browserslist": {
     "production": [

@@ -93,27 +93,11 @@ module rec Gun =
                     result
                     |> Option.map (fun result -> result.get node))
 
-    let inline encode<'T> text =
-//        Fable.SimpleJson.SimpleJson.stringify text
-        Thoth.Json.Encode.Auto.toString<'T> (0, text)
-//        ""
 
-    let inline decode< 'T> data =
-//        data
-//        |> Fable.SimpleJson.SimpleJson.parse
-//        |> Fable.SimpleJson.SimpleJson.toPlainObject
-//        :?> 'T
-//        |> Some
+    let inline jsonEncode<'T> obj =
+        Thoth.Json.Encode.Auto.toString<'T> (0, obj)
 
+    let inline jsonDecode<'T> data =
+        Thoth.Json.Decode.Auto.unsafeFromString<'T> data
 
-
-        Thoth.Json.Decode.Auto.unsafeFromString<'T> data |> Some
-
-
-
-//        None
-//        None
-
-    let inline put (gun: IGunChainReference) (value: string) =
-        gun.put value
-        |> ignore
+    let inline put (gun: IGunChainReference) (value: string) = gun.put value |> ignore

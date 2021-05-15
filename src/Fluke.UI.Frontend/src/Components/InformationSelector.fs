@@ -42,7 +42,7 @@ module InformationSelector =
         let informationList = Recoil.useValue (Selectors.Session.informationList input.Username)
 
         let informationFieldOptions =
-            Recoil.useAtomField
+            Recoil.useAtomFieldOptions
                 (Some (Recoil.AtomFamily (Atoms.Task.information, input.TaskId)))
                 (Some (
                     if input.TaskId.IsNone then
@@ -50,6 +50,8 @@ module InformationSelector =
                     else
                         Recoil.AtomScope.ReadWrite
                 ))
+                Gun.jsonEncode
+                Gun.jsonDecode
 
         let radioValue, setRadioValue =
             React.useState (

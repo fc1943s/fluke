@@ -8,6 +8,7 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.Shared
+open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
@@ -45,7 +46,7 @@ module RouterObserver =
         let sessionRestored, setSessionRestored = Recoil.useState Atoms.sessionRestored
         let username = Recoil.useValue Atoms.username
         let deviceInfo = Recoil.useValue Selectors.deviceInfo
-        let view, setView = Recoil.useStateKeyDefault Atoms.User.view username
+        let view, setView = Recoil.useStateKeyDefault Atoms.User.view username TempUI.defaultView
 
         let onKeyDown =
             Recoil.useCallbackRef

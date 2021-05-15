@@ -43,4 +43,9 @@ module JS =
         }
 
     let ofObjDefault def obj =
-        if (JS.Constructors.Object.keys obj).Count = 0 then def else obj
+        if obj = null
+           || (jsTypeof obj = "object"
+               && (JS.Constructors.Object.keys obj).Count = 0) then
+            def
+        else
+            obj

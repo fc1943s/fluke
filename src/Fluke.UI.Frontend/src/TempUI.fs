@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend
 
+open Fluke.Shared
 open Fluke.Shared.Domain
 
 
@@ -24,6 +25,8 @@ module TempUI =
 
     let colorCornerBlue = "#005688"
     let colorCornerPink = "#a91c77"
+
+    let defaultView = View.View.HabitTracker
 
     let rec informationColor =
         function

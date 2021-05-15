@@ -17,9 +17,15 @@ module InputList =
         abstract atomScope : Recoil.AtomScope option with get, set
 
     [<ReactComponent>]
-    let InputList<'TValue, 'TKey when 'TValue: equality> (props: IProps<'TValue list, 'TKey> -> unit) =
+    let inline InputList<'TValue, 'TKey> (props: IProps<'TValue list, 'TKey> -> unit) =
         let props = JS.newObj props
-        let atomFieldOptions = Recoil.useAtomField props.atom props.atomScope
+
+        let atomFieldOptions =
+            Recoil.useAtomFieldOptions<'TValue list, 'TKey>
+                props.atom
+                props.atomScope
+                (fun x -> Gun.jsonEncode<'TValue list> x)
+                (fun x -> Gun.jsonDecode<'TValue list> x)
 
         Chakra.box
             (fun _ -> ())
