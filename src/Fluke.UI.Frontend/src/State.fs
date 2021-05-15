@@ -552,7 +552,12 @@ module State =
 
                                 let atomFamilyDatabase = Recoil.getGunAtomKey None (Database.owner None).key []
 
-                                printfn $"@@@@--- atomFamilyDatabase={atomFamilyDatabase} (Database.owner None).key={(Database.owner None).key}"
+                                printfn
+                                    $"@@@@--- atomFamilyDatabase={atomFamilyDatabase} (Database.owner None).key={
+                                                                                                                     (Database.owner
+                                                                                                                         None)
+                                                                                                                         .key
+                                    }"
 
                                 let path = "GunRecoil/atomFamily/Database"
 
@@ -638,7 +643,8 @@ module State =
                                                                     k |> Guid |> TaskId
                                                                 ]))
                                         | None ->
-                                            Browser.Dom.console.error $"[taskIdList.effect] Gun node not found: path={path}"
+                                            Browser.Dom.console.error
+                                                $"[taskIdList.effect] Gun node not found: path={path}"
                                      })
                                     |> Async.StartAsPromise
                                     |> Promise.start
@@ -1307,7 +1313,6 @@ module State =
                                                                         let task = taskMap.[cellMetadata.TaskId]
 
                                                                         {
-                                                                            TaskId = cellMetadata.TaskId
                                                                             Task = task
                                                                             Sessions = taskSessions
                                                                             Attachments = []
@@ -1328,7 +1333,8 @@ module State =
                                                                 dayStart
                                                                 { Date = referenceDay; Time = dayStart }
                                                             |> List.indexed
-                                                            |> List.map (fun (i, (taskState, _)) -> taskState.TaskId, i)
+                                                            |> List.map
+                                                                (fun (i, (taskState, _)) -> taskState.Task.Id, i)
                                                             |> Map.ofList
 
                                                         let newCells =

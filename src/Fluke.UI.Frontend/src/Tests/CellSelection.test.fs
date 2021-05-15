@@ -39,6 +39,7 @@ module CellSelection =
                                 {
                                     Task =
                                         { Task.Default with
+                                            Id = n |> string |> Crypto.getTextGuidHash |> TaskId
                                             Name = TaskName (string n)
                                         }
                                     Events = []
@@ -65,12 +66,16 @@ module CellSelection =
                     setter.set (Atoms.gunHash, System.Guid.NewGuid().ToString ())
                     setter.set (Atoms.position, Some dslTemplate.Position)
 
+                    Hydrate.hydrateDatabase setter Recoil.AtomScope.ReadOnly databaseState.Database
+
+                    databaseState.TaskStateMap
+                    |> Map.keys
+                    |> Seq.iter (Hydrate.hydrateTask setter Recoil.AtomScope.ReadOnly databaseId)
+
                     setter.set (
                         Atoms.User.selectedDatabaseIdList Templates.templatesUser.Username,
                         [
-                            databaseName
-                            |> Crypto.getTextGuidHash
-                            |> DatabaseId
+                            databaseId
                         ]
                     )
                 }
@@ -135,9 +140,9 @@ module CellSelection =
                     do! RTL.waitFor id
                 }
 
-            Jest.beforeEach (
+            Jest.afterEach (
                 promise {
-                    printfn "Before each"
+                    printfn "After each"
                     Browser.Dom.window.localStorage.clear ()
                 }
             )

@@ -1758,7 +1758,6 @@ module Templates =
 
         let defaultTaskState : TaskState =
             {
-                TaskId = TaskId.NewId ()
                 Task = task
                 Sessions = []
                 Attachments = []

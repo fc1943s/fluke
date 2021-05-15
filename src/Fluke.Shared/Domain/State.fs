@@ -61,7 +61,6 @@ module State =
 
     and TaskState =
         {
-            TaskId: TaskId
             Task: Task
             Sessions: TaskSession list
             Attachments: Attachment list
@@ -208,7 +207,6 @@ module State =
                                 |> Map.tryFind task
                                 |> Option.defaultValue
                                     {
-                                        TaskId = TaskId.NewId ()
                                         Task = task
                                         Sessions = []
                                         Attachments = []
@@ -273,7 +271,6 @@ module State =
                                 |> Map.tryFind task
                                 |> Option.defaultValue
                                     {
-                                        TaskId = TaskId.NewId ()
                                         Task = task
                                         Sessions = []
                                         Attachments = []

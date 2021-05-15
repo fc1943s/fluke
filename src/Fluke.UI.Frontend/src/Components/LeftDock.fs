@@ -16,6 +16,7 @@ module LeftDock =
 
     [<ReactComponent>]
     let LeftDock (input: {| Username: Username |}) =
+        let isTesting = Recoil.useValue Atoms.isTesting
         let leftDock = Recoil.useValue (Atoms.User.leftDock input.Username)
         let hideTemplates, setHideTemplates = Recoil.useState (Atoms.User.hideTemplates input.Username)
 
@@ -69,7 +70,7 @@ module LeftDock =
                                                             {|
                                                                 Props =
                                                                     fun x ->
-                                                                        if JS.isTesting then
+                                                                        if isTesting then
                                                                             x?``data-testid`` <- "Add Database"
 
                                                                         x.icon <- Icons.fi.FiPlus |> Icons.render

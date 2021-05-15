@@ -55,7 +55,7 @@ module Setup =
         |> List.map (fun task -> sessionData.TaskStateMap.[task])
         |> List.iter
             (fun taskState ->
-                let taskId = Some taskState.TaskId
+                let taskId = Some taskState.Task.Id
                 setter.set (Atoms.Task.task taskId, taskState.Task)
                 setter.set (Atoms.Task.name taskId, taskState.Task.Name)
                 setter.set (Atoms.Task.information taskId, taskState.Task.Information)
@@ -74,9 +74,9 @@ module Setup =
                         || not cellState.Sessions.IsEmpty)
                 |> Map.iter
                     (fun dateId cellState ->
-                        setter.set (Atoms.Cell.status (taskState.TaskId, dateId), cellState.Status)
-                        setter.set (Atoms.Cell.attachments (taskState.TaskId, dateId), cellState.Attachments)
-                        setter.set (Atoms.Cell.sessions (taskState.TaskId, dateId), cellState.Sessions)
+                        setter.set (Atoms.Cell.status (taskState.Task.Id, dateId), cellState.Status)
+                        setter.set (Atoms.Cell.attachments (taskState.Task.Id, dateId), cellState.Attachments)
+                        setter.set (Atoms.Cell.sessions (taskState.Task.Id, dateId), cellState.Sessions)
                         //                setter.set (Atoms.Cell.selected (taskId, dateId), false)
                         ))
 
@@ -86,7 +86,7 @@ module Setup =
                 (fun task ->
                     sessionData.TaskStateMap
                     |> Map.tryFind task
-                    |> Option.map (fun x -> x.TaskId))
+                    |> Option.map (fun x -> x.Task.Id))
 
         setter.set (Selectors.Session.taskIdList username, taskIdList)
 
@@ -105,7 +105,7 @@ module Setup =
         |> Map.pick
             (fun task taskState ->
                 match task with
-                | { Name = TaskName taskName } when taskName = name -> Some taskState.TaskId
+                | { Name = TaskName taskName } when taskName = name -> Some taskState.Task.Id
                 | _ -> None)
 
     let getCellMap (subject: Bindings.render<_, _>) peek =
