@@ -85,10 +85,8 @@ module InformationSelector =
             | nameof Resource -> Some (TextKey (nameof AreaForm), "Add Resource")
             | _ -> None
 
-        Chakra.stack
-            (fun x ->
-                x.spacing <- "5px"
-                x.display <- "inline")
+        Chakra.box
+            (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
                     {|
@@ -103,7 +101,7 @@ module InformationSelector =
                             )
                         HintTitle = None
                         Label = str "Information"
-                        Props = fun _ -> ()
+                        Props = fun x -> x.marginBottom <- "5px"
                     |}
                 Menu.Menu
                     {|

@@ -86,8 +86,8 @@ module rec Gun =
                     printfn "authUser error: {ex}"
                     err ex)
 
-    let getGunAtomNode (gun: IGunChainReference option) (gunAtomKey: string) =
-        (gun, gunAtomKey.Split "/" |> Array.toList)
+    let getAtomNode (gun: IGunChainReference option) (atomPath: string) =
+        (gun, atomPath.Split "/" |> Array.toList)
         ||> List.fold
                 (fun result node ->
                     result

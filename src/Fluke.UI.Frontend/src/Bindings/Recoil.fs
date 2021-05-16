@@ -218,7 +218,7 @@ module Recoil =
     let getGun () =
         JS.waitForObject (fun () -> box Browser.Dom.window?lastGun :?> Gun.IGunChainReference)
 
-    let getGunAtomKey (username: UserInteraction.Username option) (rawAtomKey: string) (keyIdentifier: string list) =
+    let getAtomPath (username: UserInteraction.Username option) (rawAtomKey: string) (keyIdentifier: string list) =
         let userBlock =
             match username with
             | Some (UserInteraction.Username username) -> $"user/{username}/"
@@ -238,9 +238,18 @@ module Recoil =
                 let nodes = atomPath.Split "/"
 
                 [
-                    yield! nodes |> Array.take (nodes.Length - 1)
-                    yield! keyIdentifier
-                    nodes |> Array.last
+                    yield! nodes |> Array.take (nodes.Length - 2)
+
+                    let secondLast = nodes.[nodes.Length - 2]
+
+                    if secondLast |> Guid.TryParse |> fst then
+                        yield! keyIdentifier
+                        yield secondLast
+                    else
+                        yield secondLast
+                        yield! keyIdentifier
+
+                    yield nodes.[nodes.Length - 1]
                 ]
                 |> String.concat "/"
             | keyIdentifier ->
@@ -251,16 +260,18 @@ module Recoil =
                 |> String.concat "/"
 
 
-        let result = $"{nameof Gun}{nameof Recoil}/{userBlock}{newAtomPath}"
+        let header = $"{nameof Gun}{nameof Recoil}/"
+        let header = if newAtomPath.StartsWith header then "" else header
+        let result = $"{header}{userBlock}{newAtomPath}"
 
-        JS.log (fun () -> $"getGunAtomKey. result={result}")
+        JS.log (fun () -> $"getAtomPath. result={result}")
 
         result
 
     type InputAtom<'TValue1, 'TKey> =
         | Atom of RecoilValue<'TValue1, ReadWrite>
         | AtomFamily of ('TKey -> RecoilValue<'TValue1, ReadWrite>) * 'TKey
-        | AtomKey of string
+        | AtomPath of atomPath: string
 
     let inline getGunAtomNode
         (username: UserInteraction.Username option)
@@ -268,14 +279,14 @@ module Recoil =
         (keyIdentifier: string list)
         =
         async {
-            let gunAtomKey =
+            let atomPath =
                 match atom with
-                | Atom atom -> getGunAtomKey username atom.key keyIdentifier
-                | AtomFamily (atomFamily, atomKey) -> getGunAtomKey username (atomFamily atomKey).key keyIdentifier
-                | AtomKey key -> key
+                | Atom atom -> getAtomPath username atom.key keyIdentifier
+                | AtomFamily (atomFamily, atomKey) -> getAtomPath username (atomFamily atomKey).key keyIdentifier
+                | AtomPath atomPath -> atomPath
 
             let! gun = getGun ()
-            return Gun.getGunAtomNode (Some gun) gunAtomKey, gunAtomKey
+            return atomPath, Gun.getAtomNode (Some gun) atomPath
         }
 
     let inline gunEffect<'TValue3, 'TKey>
@@ -287,7 +298,7 @@ module Recoil =
             match e.trigger with
             | "get" ->
                 (async {
-                    let! gunAtomNode, id = getGunAtomNode username atom keyIdentifier
+                    let! atomPath, gunAtomNode = getGunAtomNode username atom keyIdentifier
 
                     match gunAtomNode with
                     | Some gunAtomNode ->
@@ -297,10 +308,10 @@ module Recoil =
 
                                 JS.log
                                     (fun () ->
-                                        $"[gunEffect.onGunData1()] id={id} data={unbox data}; typeof data={jsTypeof data}; data.stringify={
-                                                                                                                                               JS.JSON.stringify
-                                                                                                                                                   data
-                                        }")
+                                        $"[gunEffect.onGunData1()] atomPath={atomPath} data={unbox data}; typeof data={
+                                                                                                                           jsTypeof
+                                                                                                                               data
+                                        }; data.stringify={JS.JSON.stringify data}")
 
                                 let decoded = if box data = null then unbox null else Gun.jsonDecode<'TValue3> data
                                 Browser.Dom.window?decoded <- unbox decoded
@@ -311,13 +322,13 @@ module Recoil =
 //                                            Browser.Dom.window?data3 <- (Gun.jsonEncode View.View.HabitTracker)
 //                                            Browser.Dom.window?data4 <- Gun.jsonDecode (Gun.jsonEncode View.View.HabitTracker)
 
-                                        $"[gunEffect.onGunData2()] id={id} decoded={unbox decoded}; typeof decoded={
-                                                                                                                        jsTypeof
-                                                                                                                            decoded
+                                        $"[gunEffect.onGunData2()] atomPath={atomPath} decoded={unbox decoded}; typeof decoded={
+                                                                                                                                    jsTypeof
+                                                                                                                                        decoded
                                         }; decoded.stringify={JS.JSON.stringify decoded}")
 
                                 e.setSelf (fun _ -> unbox decoded))
-                    | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {id}"
+                    | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {atomPath}"
                  })
                 |> Async.StartAsPromise
                 |> Promise.start
@@ -358,7 +369,7 @@ module Recoil =
                         // TODO: remove?
                         if jsTypeof value <> jsTypeof oldValue
                            || getOldValueJson () <> newValueJson then
-                            let! gunAtomNode, id = getGunAtomNode username atom keyIdentifier
+                            let! atomPath, gunAtomNode = getGunAtomNode username atom keyIdentifier
 
                             match gunAtomNode with
                             | Some gunAtomNode ->
@@ -366,10 +377,11 @@ module Recoil =
 
                                 JS.log
                                     (fun () ->
-                                        $"[gunEffect.onRecoilSet2()] id={id} oldValue={oldValue}; newValueJson={
-                                                                                                                    newValueJson
+                                        $"[gunEffect.onRecoilSet2()] atomPath={atomPath} oldValue={oldValue}; newValueJson={
+                                                                                                                                newValueJson
                                         } jsTypeof-value={jsTypeof value}")
-                            | None -> Browser.Dom.console.error $"[gunEffect.onRecoilSet] Gun node not found: {id}"
+                            | None ->
+                                Browser.Dom.console.error $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
                         else
                             JS.log (fun () -> $"[gunEffect.onRecoilSet()]. newValue==oldValue. skipping. value={value}")
                      })
@@ -378,34 +390,43 @@ module Recoil =
 
             fun () ->
                 (async {
-                    let! gunAtomNode, id = getGunAtomNode username atom keyIdentifier
+                    let! atomPath, gunAtomNode = getGunAtomNode username atom keyIdentifier
 
                     match gunAtomNode with
                     | Some gunAtomNode ->
-                        JS.log (fun () -> $"[gunEffect.off()] id={id} ")
+                        JS.log (fun () -> $"[gunEffect.off()] atomPath={atomPath} ")
 
                         gunAtomNode.off () |> ignore
-                    | None -> Browser.Dom.console.error $"[gunEffect.off()] Gun node not found: {id}"
+                    | None -> Browser.Dom.console.error $"[gunEffect.off()] Gun node not found: {atomPath}"
                  })
                 |> Async.StartAsPromise
                 |> Promise.start)
 
 
-    let atomFormGuid = Guid.Parse "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"
+    let GUID_ATOM_FORM_TEMP = Guid.Parse "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"
 
     module Atoms =
         module rec Form =
             let rec readWriteValue =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Form}/{nameof readWriteValue}",
-                    (fun (_key: string) -> null: string),
-                    (fun (key: string) ->
+                    (fun (_atomPath: string) -> null: string),
+                    (fun (atomPath: string) ->
                         [
+                            let atomPath2 =
+                                getAtomPath
+                                    None
+                                    atomPath
+                                    [
+                                        string GUID_ATOM_FORM_TEMP
+                                    ]
+                            // put empty guid before the guid coming here. if not, before the last one
+                            do printfn $"## readWriteValue effect. atomPath={atomPath} atomPath2={atomPath2}"
+
                             (gunEffect
                                 None
-                                (AtomKey key)
+                                (AtomPath atomPath2)
                                 [
-                                    string atomFormGuid
                                 ])
                         ])
                 )
@@ -432,30 +453,12 @@ module Recoil =
         | Some (Atom atom) ->
             {
                 ReadOnly = Some atom
-                ReadWrite =
-                    Atoms.Form.readWriteValue (
-                        getGunAtomKey
-                            None
-                            atom.key
-                            [
-                                atomFormGuid |> string
-                            ]
-                    )
-                    |> Some
+                ReadWrite = Atoms.Form.readWriteValue (getAtomPath None atom.key []) |> Some
             }
         | Some (AtomFamily (atom, key)) ->
             {
                 ReadOnly = Some (atom key)
-                ReadWrite =
-                    Atoms.Form.readWriteValue (
-                        getGunAtomKey
-                            None
-                            (atom key).key
-                            [
-                                atomFormGuid |> string
-                            ]
-                    )
-                    |> Some
+                ReadWrite = Atoms.Form.readWriteValue (getAtomPath None (atom key).key [unbox key]) |> Some
             }
         | _ -> { ReadOnly = None; ReadWrite = None }
 
@@ -472,6 +475,16 @@ module Recoil =
         let value, setValue = Recoil.useState atom
 
         value, (if key.IsNone then (fun _ -> ()) else setValue)
+
+    let useStateOption (atom: RecoilValue<'TValue5, ReadWrite> option) =
+        let flatAtom =
+            match atom with
+            | Some atom -> atom
+            | None -> box (RecoilValue.lift null) :?> RecoilValue<'TValue5, ReadWrite>
+
+        let value, setValue = Recoil.useState flatAtom
+
+        (if atom.IsNone then None else Some value), (if atom.IsNone then (fun _ -> ()) else setValue)
 
 
     //        let rec atomKeyOption<'TValue, 'TKey> =
@@ -501,11 +514,8 @@ module Recoil =
         (inputScope: InputScope<'TValue7> option)
         =
         let atomField = getAtomField atom
-
-        let readOnlyValue, setReadOnlyValue = Recoil.useState (Selectors.atomOption<'TValue7, 'TKey> atomField.ReadOnly)
-
-        let readWriteValue, setReadWriteValue =
-            Recoil.useState (Selectors.atomOption<string, 'TKey> atomField.ReadWrite)
+        let readOnlyValue, setReadOnlyValue = useStateOption atomField.ReadOnly
+        let readWriteValue, setReadWriteValue = useStateOption atomField.ReadWrite
 
         React.useMemo (
             (fun () ->
@@ -539,13 +549,11 @@ module Recoil =
 
                             setReadWriteValue (
                                 if box newValue = null then
-                                    None
+                                    null
                                 else
-                                    Some (
-                                        match inputScope with
-                                        | Some (InputScope.ReadWrite (jsonEncode, _)) -> jsonEncode newValue
-                                        | _ -> defaultJsonEncode newValue
-                                    )
+                                    match inputScope with
+                                    | Some (InputScope.ReadWrite (jsonEncode, _)) -> jsonEncode newValue
+                                    | _ -> defaultJsonEncode newValue
                             ))
                     else
                         (fun _ -> ())
@@ -565,7 +573,7 @@ module Recoil =
                     SetAtomValue =
                         match inputScope with
                         | Some (InputScope.ReadWrite _) -> setReadWriteValue
-                        | _ -> Some >> setReadOnlyValue
+                        | _ -> setReadOnlyValue
                 |}),
             [|
                 box inputScope
@@ -588,16 +596,7 @@ module RecoilGetterExtensions =
                 let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
 
                 match atomField.ReadWrite with
-                | Some atom ->
-                    let atomKey =
-                        Recoil.getGunAtomKey
-                            None
-                            atom.key
-                            [
-                                Recoil.atomFormGuid |> string
-                            ]
-
-                    this.set (Recoil.Atoms.Form.readWriteValue atomKey, null)
+                | Some atom -> this.set (atom, null)
                 | _ -> ()
             }
 

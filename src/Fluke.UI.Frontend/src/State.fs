@@ -544,10 +544,10 @@ module State =
                         [
                             (fun (e: RecoilEffectProps<_>) ->
 
-                                let atomFamilyDatabase = Recoil.getGunAtomKey None (Database.owner None).key []
+                                let atomPath = Recoil.getAtomPath None (Database.owner None).key []
 
                                 printfn
-                                    $"@@@@--- atomFamilyDatabase={atomFamilyDatabase} (Database.owner None).key={
+                                    $"@@@@--- atomPath={atomPath} (Database.owner None).key={
                                                                                                                      (Database.owner
                                                                                                                          None)
                                                                                                                          .key
@@ -559,14 +559,14 @@ module State =
                                 | "get" ->
                                     (async {
                                         let! gun = Recoil.getGun ()
-                                        let gunAtomNode = Gun.getGunAtomNode (Some gun) path
+                                        let gunAtomNode = Gun.getAtomNode (Some gun) path
 
                                         match gunAtomNode with
                                         | Some gunAtomNode ->
                                             gunAtomNode
                                                 .map()
                                                 .on (fun _v k ->
-                                                    if string Recoil.atomFormGuid <> k then
+                                                    if string Recoil.GUID_ATOM_FORM_TEMP <> k then
                                                         e.setSelf
                                                             (fun oldValue ->
                                                                 oldValue
@@ -586,7 +586,7 @@ module State =
                                 fun () ->
                                     (async {
                                         let! gun = Recoil.getGun ()
-                                        let gunAtomNode = Gun.getGunAtomNode (Some gun) path
+                                        let gunAtomNode = Gun.getAtomNode (Some gun) path
 
                                         match gunAtomNode with
                                         | Some gunAtomNode ->
@@ -623,14 +623,14 @@ module State =
                                 | "get" ->
                                     (async {
                                         let! gun = Recoil.getGun ()
-                                        let gunAtomNode = Gun.getGunAtomNode (Some gun) path
+                                        let gunAtomNode = Gun.getAtomNode (Some gun) path
 
                                         match gunAtomNode with
                                         | Some gunAtomNode ->
                                             gunAtomNode
                                                 .map()
                                                 .on (fun _v k ->
-                                                    if string Recoil.atomFormGuid <> k then
+                                                    if string Recoil.GUID_ATOM_FORM_TEMP <> k then
                                                         e.setSelf
                                                             (fun oldValue ->
                                                                 oldValue
@@ -650,7 +650,7 @@ module State =
                                 fun () ->
                                     (async {
                                         let! gun = Recoil.getGun ()
-                                        let gunAtomNode = Gun.getGunAtomNode (Some gun) path
+                                        let gunAtomNode = Gun.getAtomNode (Some gun) path
 
                                         match gunAtomNode with
                                         | Some gunAtomNode ->

@@ -123,7 +123,6 @@ module DatabaseForm =
 //                                printfn $"event {event}"
 
                                 do! setter.readWriteReset Atoms.Database.name input.DatabaseId
-
                                 do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
 
                                 do! input.OnSave database

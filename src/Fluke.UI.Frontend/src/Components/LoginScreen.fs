@@ -49,7 +49,6 @@ module LoginScreen =
                                 x.autoFocus <- true
                                 x.value <- Some usernameField
                                 x.placeholder <- "Username"
-
                                 x.onChange <- (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value }))
 
                         Input.Input
@@ -57,9 +56,7 @@ module LoginScreen =
                                 x.value <- Some passwordField
                                 x.placeholder <- "Password"
                                 x.inputFormat <- Some Input.InputFormat.Password
-
                                 x.onChange <- (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
-
                                 x.onEnterPress <- Some signInClick)
 
                         Chakra.hStack
