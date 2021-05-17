@@ -1,5 +1,8 @@
 namespace Fluke.UI.Frontend.Bindings
 
+
+#nowarn "40"
+
 open System
 open Microsoft.FSharp.Core.Operators
 open Fluke.Shared.Domain
@@ -264,7 +267,7 @@ module Recoil =
         let header = if newAtomPath.StartsWith header then "" else header
         let result = $"{header}{userBlock}{newAtomPath}"
 
-        JS.log (fun () -> $"getAtomPath. result={result}")
+        JS.log (fun () -> $"getAtomPath. rawAtomKey={rawAtomKey} result={result}")
 
         result
 
@@ -337,9 +340,6 @@ module Recoil =
             e.onSet
                 (fun value oldValue ->
                     (async {
-                        Browser.Dom.window?oldValue <- unbox oldValue
-                        Browser.Dom.window?value <- unbox value
-
                         let! _, tempId = getGunAtomNode username atom keyIdentifier
 
                         JS.log
@@ -402,36 +402,54 @@ module Recoil =
                 |> Async.StartAsPromise
                 |> Promise.start)
 
-
-    let GUID_ATOM_FORM_TEMP = Guid.Parse "FFFFFFFF-FFFF-FFFF-FFFF-FFFFFFFFFFFF"
-
     module Atoms =
         module rec Form =
             let rec readWriteValue =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Form}/{nameof readWriteValue}",
-                    (fun (_atomPath: string) -> null: string),
-                    (fun (atomPath: string) ->
+                    (fun (_guid: Guid) -> null: string),
+                    (fun (guid: Guid) ->
                         [
-                            let atomPath2 =
-                                getAtomPath
-                                    None
-                                    atomPath
-                                    [
-                                        string GUID_ATOM_FORM_TEMP
-                                    ]
-                            // put empty guid before the guid coming here. if not, before the last one
-                            do printfn $"## readWriteValue effect. atomPath={atomPath} atomPath2={atomPath2}"
-
-                            (gunEffect
+                            gunEffect
                                 None
-                                (AtomPath atomPath2)
+                                (AtomFamily (readWriteValue, guid))
                                 [
-                                ])
+                                    string guid
+                                ]
                         ])
                 )
 
+    type ReadWriteValue =
+        {
+            AtomKey: string
+            Value: string option
+        }
+
     module Selectors =
+        module rec Form =
+            let rec readWriteValue =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Form}/{nameof readWriteValue}",
+                    (fun (atomKey: string) getter ->
+                        let value = getter.get (Atoms.Form.readWriteValue (Crypto.getTextGuidHash atomKey))
+
+                        if value = null then
+                            null
+                        else
+                            match Gun.jsonDecode<ReadWriteValue> value with
+                            | { Value = Some value } -> value
+                            | _ -> null),
+                    (fun (atomKey: string) setter newValue ->
+                        let newValue =
+                            Gun.jsonEncode
+                                {
+                                    AtomKey = atomKey
+                                    Value = newValue |> Option.ofObj
+                                }
+
+                        setter.set (Atoms.Form.readWriteValue (Crypto.getTextGuidHash atomKey), newValue))
+                )
+
         let rec atomOption<'TValue, 'TKey> =
             Recoil.selectorFamilyWithProfiling (
                 $"{nameof selectorFamily}/{nameof atomOption}",
@@ -453,12 +471,14 @@ module Recoil =
         | Some (Atom atom) ->
             {
                 ReadOnly = Some atom
-                ReadWrite = Atoms.Form.readWriteValue (getAtomPath None atom.key []) |> Some
+                ReadWrite = Selectors.Form.readWriteValue atom.key |> Some
             }
         | Some (AtomFamily (atom, key)) ->
             {
                 ReadOnly = Some (atom key)
-                ReadWrite = Atoms.Form.readWriteValue (getAtomPath None (atom key).key [unbox key]) |> Some
+                ReadWrite =
+                    Selectors.Form.readWriteValue (atom key).key
+                    |> Some
             }
         | _ -> { ReadOnly = None; ReadWrite = None }
 
@@ -514,8 +534,8 @@ module Recoil =
         (inputScope: InputScope<'TValue7> option)
         =
         let atomField = getAtomField atom
-        let readOnlyValue, setReadOnlyValue = useStateOption atomField.ReadOnly
-        let readWriteValue, setReadWriteValue = useStateOption atomField.ReadWrite
+        let readOnlyValue, setReadOnlyValue = Recoil.useState (Selectors.atomOption atomField.ReadOnly)
+        let readWriteValue, setReadWriteValue = Recoil.useState (Selectors.atomOption atomField.ReadWrite)
 
         React.useMemo (
             (fun () ->
@@ -524,17 +544,18 @@ module Recoil =
                 let newReadWriteValue =
                     match readWriteValue |> Option.defaultValue null with
                     | readWriteValue when readWriteValue <> null ->
-                        printfn
-                            $"useAtomFieldOptions. readOnlyValue={readOnlyValue} readWriteValue={readWriteValue} typeof readWriteValue={
-                                                                                                                                            jsTypeof
-                                                                                                                                                readWriteValue
-                            }"
+                        JS.log
+                            (fun () ->
+                                $"useAtomFieldOptions. readOnlyValue={readOnlyValue} readWriteValue={readWriteValue} typeof readWriteValue={
+                                                                                                                                                jsTypeof
+                                                                                                                                                    readWriteValue
+                                }")
 
                         Browser.Dom.window?readWriteValue <- readWriteValue
 
                         match inputScope with
                         | Some (InputScope.ReadWrite (_, jsonDecode)) ->
-                            printfn $"useAtomFieldOptions. decoder readWriteValue={jsonDecode readWriteValue}"
+                            JS.log (fun () -> $"useAtomFieldOptions. decoder readWriteValue={readWriteValue}")
                             jsonDecode readWriteValue
                         | _ -> defaultJsonDecode readWriteValue
                     | _ -> readOnlyValue |> Option.defaultValue (unbox null)
@@ -542,18 +563,21 @@ module Recoil =
                 let setReadWriteValue =
                     if atom.IsSome then
                         (fun newValue ->
-                            printfn
-                                $"useAtomFieldOptions. ONSET. newValue={newValue} typeof newValue={jsTypeof newValue}"
+                            JS.log
+                                (fun () ->
+                                    $"useAtomFieldOptions. ONSET. newValue={newValue} typeof newValue={jsTypeof newValue}")
 
                             Browser.Dom.window?newValue <- readWriteValue
 
                             setReadWriteValue (
                                 if box newValue = null then
-                                    null
+                                    None
                                 else
-                                    match inputScope with
-                                    | Some (InputScope.ReadWrite (jsonEncode, _)) -> jsonEncode newValue
-                                    | _ -> defaultJsonEncode newValue
+                                    Some (
+                                        match inputScope with
+                                        | Some (InputScope.ReadWrite (jsonEncode, _)) -> jsonEncode newValue
+                                        | _ -> defaultJsonEncode newValue
+                                    )
                             ))
                     else
                         (fun _ -> ())
@@ -573,7 +597,7 @@ module Recoil =
                     SetAtomValue =
                         match inputScope with
                         | Some (InputScope.ReadWrite _) -> setReadWriteValue
-                        | _ -> setReadOnlyValue
+                        | _ -> Some >> setReadOnlyValue
                 |}),
             [|
                 box inputScope
@@ -629,14 +653,22 @@ module RecoilGetterExtensions =
             promise {
                 let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
 
+                JS.log
+                    (fun () ->
+                        $"getReadWritePromise. atom.key={(atom key).key} atomField.ReadWrite={atomField.ReadWrite}")
+
                 match atomField.ReadWrite with
                 | Some readWriteAtom ->
+                    JS.log (fun () -> $"getReadWritePromise. atom.key={(atom key).key} readWriteAtom={readWriteAtom}")
+
                     let! value = this.getPromise readWriteAtom
 
-                    if value <> null then
-                        return Gun.jsonDecode<'TValue11> value
-                    else
-                        return! this.getPromise (atom key)
+                    Browser.Dom.window?value <- value
+                    JS.log (fun () -> $"getReadWritePromise. atom.key={(atom key).key} value={value}")
+
+                    match value with
+                    | value when value <> null -> return Gun.jsonDecode<'TValue11> value
+                    | _ -> return! this.getPromise (atom key)
                 | _ -> return! this.getPromise (atom key)
             }
 

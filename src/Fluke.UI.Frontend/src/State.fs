@@ -547,11 +547,7 @@ module State =
                                 let atomPath = Recoil.getAtomPath None (Database.owner None).key []
 
                                 printfn
-                                    $"@@@@--- atomPath={atomPath} (Database.owner None).key={
-                                                                                                                     (Database.owner
-                                                                                                                         None)
-                                                                                                                         .key
-                                    }"
+                                    $"@@@@--- atomPath={atomPath} (Database.owner None).key={(Database.owner None).key}"
 
                                 let path = "GunRecoil/atomFamily/Database"
 
@@ -566,13 +562,12 @@ module State =
                                             gunAtomNode
                                                 .map()
                                                 .on (fun _v k ->
-                                                    if string Recoil.GUID_ATOM_FORM_TEMP <> k then
-                                                        e.setSelf
-                                                            (fun oldValue ->
-                                                                oldValue
-                                                                @ [
-                                                                    k |> Guid |> DatabaseId
-                                                                ]))
+                                                    e.setSelf
+                                                        (fun oldValue ->
+                                                            oldValue
+                                                            @ [
+                                                                k |> Guid |> DatabaseId
+                                                            ]))
                                         | None ->
                                             Browser.Dom.console.error
                                                 $"[databaseIdList.effect] Gun node not found: path={path}"
@@ -630,13 +625,12 @@ module State =
                                             gunAtomNode
                                                 .map()
                                                 .on (fun _v k ->
-                                                    if string Recoil.GUID_ATOM_FORM_TEMP <> k then
-                                                        e.setSelf
-                                                            (fun oldValue ->
-                                                                oldValue
-                                                                @ [
-                                                                    k |> Guid |> TaskId
-                                                                ]))
+                                                    e.setSelf
+                                                        (fun oldValue ->
+                                                            oldValue
+                                                            @ [
+                                                                k |> Guid |> TaskId
+                                                            ]))
                                         | None ->
                                             Browser.Dom.console.error
                                                 $"[taskIdList.effect] Gun node not found: path={path}"
@@ -654,6 +648,7 @@ module State =
 
                                         match gunAtomNode with
                                         | Some gunAtomNode ->
+
                                             //                                            JS.log ("[taskIdList.effect] unsubscribe atom. calling selected.off ()" |> fun x -> fun a -> x)
                                             JS.log
                                                 (fun () ->
