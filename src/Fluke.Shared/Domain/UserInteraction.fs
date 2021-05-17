@@ -101,14 +101,13 @@ module UserInteraction =
             =
             DateTime (year, int month, day, 12, 0, 0)
 
-        member inline this.Stringify () =
-            let {
-                    Year = Year year
-                    Month = month
-                    Day = Day day
-                } =
-                this
-
+        static member inline Stringify
+            {
+                Year = Year year
+                Month = month
+                Day = Day day
+            }
+            =
             $"%d{year}-%02d{int month}-%02d{day}"
 
         static member inline Create year month day : FlukeDate =
@@ -128,14 +127,23 @@ module UserInteraction =
         static member inline MinValue = FlukeDate.FromDateTime DateTime.MinValue
 
     and FlukeDateTime with
-        member inline this.Stringify () =
-            $"{this.Date.Stringify ()} {this.Time.Stringify ()}"
+        static member inline Stringify{ Date = date; Time = time } =
+            $"{date |> FlukeDate.Stringify} {time |> FlukeTime.Stringify}"
 
-        member inline this.DateTime =
-            let Year year, Day day, Hour hour, Minute minute =
-                this.Date.Year, this.Date.Day, this.Time.Hour, this.Time.Minute
-
-            DateTime (year, int this.Date.Month, day, int hour, int minute, 0)
+        static member inline DateTime
+            {
+                Date = {
+                           Year = Year year
+                           Month = month
+                           Day = Day day
+                       }
+                Time = {
+                           Hour = Hour hour
+                           Minute = Minute minute
+                       }
+            }
+            =
+            DateTime (year, int month, day, int hour, int minute, 0)
 
         member inline this.GreaterEqualThan (dayStart: FlukeTime) (DateId (referenceDay: FlukeDate)) time =
             let testingAfterMidnight = dayStart.GreaterEqualThan time
@@ -150,7 +158,8 @@ module UserInteraction =
 
             let dateToCompare : FlukeDateTime = { Date = newDate; Time = time }
 
-            this.DateTime >= dateToCompare.DateTime
+            (this |> FlukeDateTime.DateTime)
+            >= (dateToCompare |> FlukeDateTime.DateTime)
 
         static member inline FromDateTime (date: DateTime) : FlukeDateTime =
             {
@@ -166,11 +175,13 @@ module UserInteraction =
 
 
     let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position: FlukeDateTime, DateId referenceDay) =
-        let dateStart = { Date = referenceDay; Time = dayStart }.DateTime
+        let dateStart =
+            { Date = referenceDay; Time = dayStart }
+            |> FlukeDateTime.DateTime
 
         let dateEnd = dateStart.AddDays 1.
 
-        match position.DateTime with
+        match position |> FlukeDateTime.DateTime with
         | position when position >=< (dateStart, dateEnd) -> Today
         | position when dateStart < position -> BeforeToday
         | _ -> AfterToday

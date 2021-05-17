@@ -174,13 +174,12 @@ module Model =
                 Minute = Minute (float minute)
             }
 
-        member inline this.Stringify () =
-            let {
-                    Hour = Hour hour
-                    Minute = Minute minute
-                } =
-                this
-
+        static member inline Stringify
+            {
+                Hour = Hour hour
+                Minute = Minute minute
+            }
+            =
             $"%02.0f{hour}:%02.0f{minute}"
 
         static member inline FromDateTime (date: DateTime) =

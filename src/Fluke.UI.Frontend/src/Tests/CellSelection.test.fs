@@ -120,7 +120,7 @@ module CellSelection =
                                 taskId |> TaskId.Value,
                                 dates
                                 |> Set.toList
-                                |> List.map (fun (date: FlukeDate) -> date.Stringify ()))
+                                |> List.map FlukeDate.Stringify)
                         |> string
 
                     do!

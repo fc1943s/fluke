@@ -105,8 +105,13 @@ module Rendering =
             | [||] -> dateSequence
             | dates ->
                 [
-                    dates |> Array.head |> min firstDateRange.DateTime
-                    dates |> Array.last |> max lastDateRange.DateTime
+                    dates
+                    |> Array.head
+                    |> min (firstDateRange |> FlukeDateTime.DateTime)
+
+                    dates
+                    |> Array.last
+                    |> max (lastDateRange |> FlukeDateTime.DateTime)
                 ]
                 |> List.map FlukeDate.FromDateTime
                 |> getDateSequence (0, 0)

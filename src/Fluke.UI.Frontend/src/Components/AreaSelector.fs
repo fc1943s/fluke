@@ -17,7 +17,7 @@ module AreaSelector =
                    Area: Area
                    OnSelect: Area -> unit |})
         =
-        let informationList = Recoil.useValue (Selectors.Session.informationList input.Username)
+        let informationSet = Recoil.useValue (Selectors.Session.informationSet input.Username)
         let area, setArea = React.useState input.Area
 
         Chakra.stack
@@ -66,19 +66,28 @@ module AreaSelector =
                                             (fun x -> x.value <- area)
                                             [
                                                 yield!
-                                                    informationList
+                                                    informationSet
+                                                    |> Set.toList
                                                     |> List.map
                                                         (function
                                                         | Area area ->
-                                                            Chakra.menuItemOption
-                                                                (fun x ->
-                                                                    x.value <- area
+                                                            let label = area.Name |> AreaName.Value
 
-                                                                    x.onClick <- fun _ -> promise { setArea area })
-                                                                [
-                                                                    area.Name |> AreaName.Value |> str
-                                                                ]
-                                                        | _ -> nothing)
+                                                            let cmp =
+                                                                Chakra.menuItemOption
+                                                                    (fun x ->
+                                                                        x.value <- area
+
+                                                                        x.onClick <- fun _ -> promise { setArea area })
+                                                                    [
+                                                                        str label
+                                                                    ]
+
+                                                            Some (label, cmp)
+                                                        | _ -> None)
+                                                    |> List.sortBy (Option.map fst)
+                                                    |> List.map (Option.map snd)
+                                                    |> List.map (Option.defaultValue nothing)
                                             ]
                                     ]
 

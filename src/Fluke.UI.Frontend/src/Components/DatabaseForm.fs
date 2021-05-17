@@ -180,7 +180,7 @@ module DatabaseForm =
                                 x.atom <- Some (Recoil.AtomFamily (Atoms.Database.dayStart, input.DatabaseId))
                                 x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
                                 x.inputFormat <- Some Input.InputFormat.Time
-                                x.onFormat <- Some (fun time -> time.Stringify ())
+                                x.onFormat <- Some FlukeTime.Stringify
 
                                 x.onValidate <-
                                     Some (

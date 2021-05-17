@@ -267,7 +267,7 @@ module Recoil =
         let header = if newAtomPath.StartsWith header then "" else header
         let result = $"{header}{userBlock}{newAtomPath}"
 
-        JS.log (fun () -> $"getAtomPath. rawAtomKey={rawAtomKey} result={result}")
+        JS.log (fun () -> $"getAtomPath. result={result} rawAtomKey={rawAtomKey}")
 
         result
 
@@ -307,28 +307,17 @@ module Recoil =
                     | Some gunAtomNode ->
                         gunAtomNode.on
                             (fun data _key ->
-                                Browser.Dom.window?data <- unbox data
-
-                                JS.log
-                                    (fun () ->
-                                        $"[gunEffect.onGunData1()] atomPath={atomPath} data={unbox data}; typeof data={
-                                                                                                                           jsTypeof
-                                                                                                                               data
-                                        }; data.stringify={JS.JSON.stringify data}")
-
                                 let decoded = if box data = null then unbox null else Gun.jsonDecode<'TValue3> data
-                                Browser.Dom.window?decoded <- unbox decoded
 
                                 JS.log
                                     (fun () ->
-                                        //                                            Browser.Dom.window?data2 <- unbox View.View.HabitTracker
-//                                            Browser.Dom.window?data3 <- (Gun.jsonEncode View.View.HabitTracker)
-//                                            Browser.Dom.window?data4 <- Gun.jsonDecode (Gun.jsonEncode View.View.HabitTracker)
-
-                                        $"[gunEffect.onGunData2()] atomPath={atomPath} decoded={unbox decoded}; typeof decoded={
-                                                                                                                                    jsTypeof
-                                                                                                                                        decoded
-                                        }; decoded.stringify={JS.JSON.stringify decoded}")
+                                        $"[gunEffect.onGunData()] atomPath={atomPath} data={unbox data}; typeof data={
+                                                                                                                          jsTypeof
+                                                                                                                              data
+                                        }; decoded={unbox decoded}; typeof decoded={
+                                                                                                                                jsTypeof
+                                                                                                                                    decoded
+                                        };")
 
                                 e.setSelf (fun _ -> unbox decoded))
                     | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {atomPath}"
@@ -340,19 +329,17 @@ module Recoil =
             e.onSet
                 (fun value oldValue ->
                     (async {
-                        let! _, tempId = getGunAtomNode username atom keyIdentifier
+                        let! tempId, _ = getGunAtomNode username atom keyIdentifier
 
                         JS.log
                             (fun () ->
-                                $"[gunEffect.onRecoilSet1()] tempId={tempId} typeof value={jsTypeof value}
-                                 typeof oldValue={jsTypeof oldValue}; oldValue={oldValue}; oldValue.stringify={
-                                                                                                                   JS.JSON.stringify
-                                                                                                                       oldValue
-                                };
-                                 typeof value={jsTypeof value}; value={value}; value.stringify={JS.JSON.stringify value};")
-
-                        //                        let newValue = if jsTypeof value = "string" then value else Gun.encode value
-//
+                                $"[gunEffect.onRecoilSet1()] tempIdAtomPath={tempId} typeof value={jsTypeof value} typeof oldValue={
+                                                                                                                                        jsTypeof
+                                                                                                                                            oldValue
+                                }; oldValue={oldValue}; oldValue.stringify={JS.JSON.stringify oldValue}; typeof value={
+                                                                                                                           jsTypeof
+                                                                                                                               value
+                                }; value={value}; value.stringify={JS.JSON.stringify value};")
 
                         let newValueJson =
                             if (JS.ofObjDefault null (box value)) = null then
@@ -366,9 +353,7 @@ module Recoil =
                             else
                                 Gun.jsonEncode<'TValue3> oldValue
 
-                        // TODO: remove?
-                        if jsTypeof value <> jsTypeof oldValue
-                           || getOldValueJson () <> newValueJson then
+                        if getOldValueJson () <> newValueJson then
                             let! atomPath, gunAtomNode = getGunAtomNode username atom keyIdentifier
 
                             match gunAtomNode with
@@ -507,18 +492,6 @@ module Recoil =
         (if atom.IsNone then None else Some value), (if atom.IsNone then (fun _ -> ()) else setValue)
 
 
-    //        let rec atomKeyOption<'TValue, 'TKey> =
-//            Recoil.selectorFamilyWithProfiling (
-//                $"{nameof selectorFamily}/{nameof atomKeyOption}",
-//                (fun (props: {| Atom: 'TKey -> RecoilValue<'TValue, ReadWrite>; Key: 'TKey option |}) getter ->
-//                    props.Key |> Option.map (props.Atom >> getter.get)),
-//                (fun (props: {| Atom: 'TKey -> RecoilValue<'TValue, ReadWrite>; Key: 'TKey option |}) setter newValue ->
-//                    match props.Key, newValue with
-//                    | Some key, Some newValue -> setter.set (props.Atom key, newValue)
-//                    | _ -> ())
-//            )
-
-
     [<RequireQualifiedAccess>]
     type AtomScope =
         | ReadOnly
@@ -544,31 +517,14 @@ module Recoil =
                 let newReadWriteValue =
                     match readWriteValue |> Option.defaultValue null with
                     | readWriteValue when readWriteValue <> null ->
-                        JS.log
-                            (fun () ->
-                                $"useAtomFieldOptions. readOnlyValue={readOnlyValue} readWriteValue={readWriteValue} typeof readWriteValue={
-                                                                                                                                                jsTypeof
-                                                                                                                                                    readWriteValue
-                                }")
-
-                        Browser.Dom.window?readWriteValue <- readWriteValue
-
                         match inputScope with
-                        | Some (InputScope.ReadWrite (_, jsonDecode)) ->
-                            JS.log (fun () -> $"useAtomFieldOptions. decoder readWriteValue={readWriteValue}")
-                            jsonDecode readWriteValue
+                        | Some (InputScope.ReadWrite (_, jsonDecode)) -> jsonDecode readWriteValue
                         | _ -> defaultJsonDecode readWriteValue
                     | _ -> readOnlyValue |> Option.defaultValue (unbox null)
 
                 let setReadWriteValue =
                     if atom.IsSome then
                         (fun newValue ->
-                            JS.log
-                                (fun () ->
-                                    $"useAtomFieldOptions. ONSET. newValue={newValue} typeof newValue={jsTypeof newValue}")
-
-                            Browser.Dom.window?newValue <- readWriteValue
-
                             setReadWriteValue (
                                 if box newValue = null then
                                     None
@@ -646,26 +602,12 @@ module RecoilGetterExtensions =
             | Recoil.AtomScope.ReadWrite -> this.readWriteSet<'TValue10, 'TKey> (atom, key, value)
 
     type Snapshot with
-        member inline this.getReadWritePromise<'TValue11, 'TKey>
-            (atom: 'TKey -> RecoilValue<'TValue11, ReadWrite>)
-            key
-            =
+        member inline this.getReadWritePromise<'TValue11, 'TKey> (atom: 'TKey -> RecoilValue<'TValue11, ReadWrite>) key =
             promise {
                 let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
-
-                JS.log
-                    (fun () ->
-                        $"getReadWritePromise. atom.key={(atom key).key} atomField.ReadWrite={atomField.ReadWrite}")
-
                 match atomField.ReadWrite with
                 | Some readWriteAtom ->
-                    JS.log (fun () -> $"getReadWritePromise. atom.key={(atom key).key} readWriteAtom={readWriteAtom}")
-
                     let! value = this.getPromise readWriteAtom
-
-                    Browser.Dom.window?value <- value
-                    JS.log (fun () -> $"getReadWritePromise. atom.key={(atom key).key} value={value}")
-
                     match value with
                     | value when value <> null -> return Gun.jsonDecode<'TValue11> value
                     | _ -> return! this.getPromise (atom key)
@@ -679,63 +621,3 @@ module RecoilGetterExtensions =
 //        //        importDefault "recoilize"
 //        nothing |> composeComponent
 
-//    module Effects =
-//        type Wrapper = { Value: string }
-//
-//        let localStorage<'T> =
-//            (fun ({ node = node; onSet = onSet; setSelf = setSelf }: Recoil.EffectProps<'T>) ->
-//                let storageJson =
-//                    Browser.Dom.window.localStorage.getItem node.key
-//                    |> Option.ofObj
-//
-//                let value =
-//                    //                    let parsed1 = Fable.Core.JS.JSON.parse storageJson :?> Wrapper<'T> option
-//                    let parsed2 =
-//                        match storageJson with
-//                        | Some json ->
-//                            try
-//                                Json.parseAs<Wrapper> json
-//                            with ex ->
-//                                printfn "simplejson error: %A" ex
-//                                Fable.Core.JS.JSON.parse json :?> Wrapper
-//                        | None -> { Value = "" }
-//                    //                        | Ok wrapper -> wrapper.Value
-//                        | Error error ->
-//                            printfn "Internal Specific Json parse error (input: %A): %A" storageJson error
-//                            None
-//
-//                    //                    let parsed3 =
-//                        let decoder : Decoder<Wrapper<'T>> =
-//                            Decode.object
-//                                (fun get -> { Value = get.Required.Field "value" Decode.string })
-//                        Thoth.Json.Decode.fromString decoder storageJson
-//                        |> function
-//                            | Ok x -> Some x
-//                            | Error error ->
-//                                printfn "Internal Specific Json parse error (input: %A): %A" storageJson error
-//                                None
-//
-//                    //                    match Thoth.Json.Decode.Auto.fromString<Wrapper<'T>> storageJson with
-//                    match parsed2 with
-//                    //                    | Ok wrapper -> Some wrapper.Value
-//                    | Error error ->
-//                        printfn "json parse error (input: %A): %A" storageJson error
-//                        None
-//                    | { Value = value } -> setSelf (unbox value)
-//                    | _ -> printfn "json parse error (key: %A; input: %A)" node.key storageJson
-//
-//
-//                onSet (fun value _oldValue ->
-//                    printfn "onSet. oldValue: %Avalue: %A" _oldValue value
-//
-//                    let valueJson = Json.serialize value
-//                    let wrapper = { Value = valueJson }
-//                    let json = Json.serialize wrapper
-//                    //                    let json = Thoth.Json.Encode.Auto.toString (0, wrapper)
-//                    let json = Fable.Core.JS.JSON.stringify wrapper
-//                    Browser.Dom.window.localStorage.setItem (node.key, json))
-//
-//                //    // Subscribe to storage updates
-//                //    storage.subscribe(value => setSelf(value));
-//
-//                fun () -> printfn "> unsubscribe")

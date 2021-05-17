@@ -39,18 +39,11 @@ module InformationSelector =
                    SelectionType: InformationSelectionType
                    TaskId: TaskId option |})
         =
-        let informationList = Recoil.useValue (Selectors.Session.informationList input.Username)
 
         let informationFieldOptions =
             Recoil.useAtomFieldOptions
                 (Some (Recoil.AtomFamily (Atoms.Task.information, input.TaskId)))
-                (Some (
-                    if input.TaskId.IsNone then
-                        Recoil.InputScope.ReadOnly
-                    else
-                        Recoil.InputScope.ReadWrite Gun.defaultSerializer
-                ))
-
+                (Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer))
 
         let radioValue, setRadioValue =
             React.useState (
@@ -64,7 +57,6 @@ module InformationSelector =
                     |> Information.toString
             )
 
-
         let informationName =
             if isVisibleInformation radioValue informationFieldOptions.AtomValue then
                 informationFieldOptions.AtomValue
@@ -73,9 +65,16 @@ module InformationSelector =
             else
                 ""
 
+        let informationSet = Recoil.useValue (Selectors.Session.informationSet input.Username)
+
         let sortedInformationList =
-            informationList
-            |> List.filter (isVisibleInformation radioValue)
+            match informationName with
+            | String.ValidString _ ->
+                informationSet
+                |> Set.add informationFieldOptions.AtomValue
+            | _ -> informationSet
+            |> Set.filter (isVisibleInformation radioValue)
+            |> Set.toList
             |> List.sort
 
         let formParams =

@@ -38,14 +38,14 @@ module PositionUpdater =
                             let newPosition = FlukeDateTime.FromDateTime DateTime.Now
 
                             if Some newPosition <> position then
-                                printfn $"Updating position newPosition={newPosition.Stringify ()}"
+                                printfn $"Updating position newPosition={newPosition |> FlukeDateTime.Stringify}"
                                 setPosition (Some newPosition)
                         else if position <> pausedPosition then
                             printfn
                                 $"Updating position selectedDatabasePositions.[0]={
                                                                                        pausedPosition
                                                                                        |> Option.map
-                                                                                           (fun x -> x.Stringify ())
+                                                                                           FlukeDateTime.Stringify
                                 }"
 
                             setPosition pausedPosition

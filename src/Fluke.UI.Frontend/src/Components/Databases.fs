@@ -91,7 +91,7 @@ module Databases =
                 match database.Position with
                 | Some position ->
                     Tooltip.wrap
-                        (str $"Database paused at position {position.Stringify ()}")
+                        (str $"Database paused at position {position |> FlukeDateTime.Stringify}")
                         [
                             Chakra.box
                                 (fun _ -> ())

@@ -20,34 +20,30 @@ module ProjectForm =
                    OnSave: Project -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
-        let information, setInformation = Recoil.useState (Atoms.Task.information input.TaskId)
+
+        let informationFieldOptions =
+            Recoil.useAtomFieldOptions
+                (Some (Recoil.AtomFamily (Atoms.Task.information, input.TaskId)))
+                (Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer))
 
         let project =
-            match information with
-            | Project project -> Some project
-            | _ -> None
+            match informationFieldOptions.AtomValue with
+            | Project project -> project
+            | _ -> Project.Default
 
         let onSave =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) _ ->
                     promise {
-                        let projectName =
-                            information
-                            |> Information.Name
-                            |> InformationName.Value
-
-                        match projectName with
-                        | String.NullString
-                        | String.WhitespaceStr -> toast (fun x -> x.description <- "Invalid name")
+                        match project.Name, project.Area.Name with
+                        | ProjectName (String.NullString
+                          | String.WhitespaceStr),
+                          _ -> toast (fun x -> x.description <- "Invalid name")
+                        | _,
+                          AreaName (String.NullString
+                          | String.WhitespaceStr) -> toast (fun x -> x.description <- "Invalid area")
                         | _ ->
-                            let project : Project =
-                                {
-                                    Name = ProjectName projectName
-                                    Area = { Name = AreaName "" }
-                                }
-
                             do! setter.readWriteReset Atoms.Task.information input.TaskId
-
                             do! input.OnSave project
                     })
 
@@ -63,17 +59,9 @@ module ProjectForm =
                 AreaSelector.AreaSelector
                     {|
                         Username = input.Username
-                        Area =
-                            (project |> Option.defaultValue Project.Default)
-                                .Area
+                        Area = project.Area
                         OnSelect =
-                            fun area ->
-                                setInformation (
-                                    Project
-                                        { (project |> Option.defaultValue Project.Default) with
-                                            Area = area
-                                        }
-                                )
+                            fun area -> informationFieldOptions.SetAtomValue (Project { project with Area = area })
                     |}
 
                 Chakra.stack
@@ -86,7 +74,7 @@ module ProjectForm =
                                 x.placeholder <- "e.g. home-renovation"
 
                                 x.value <-
-                                    information
+                                    informationFieldOptions.AtomValue
                                     |> Information.Name
                                     |> InformationName.Value
                                     |> Some
@@ -94,9 +82,9 @@ module ProjectForm =
                                 x.onChange <-
                                     fun (e: KeyboardEvent) ->
                                         promise {
-                                            setInformation (
+                                            informationFieldOptions.SetAtomValue (
                                                 Project
-                                                    { (project |> Option.defaultValue Project.Default) with
+                                                    { project with
                                                         Name = ProjectName e.Value
                                                     }
                                             )

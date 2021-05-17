@@ -108,7 +108,7 @@ module StatusBar =
                                         x.marginRight <- "4px")
                                     []
 
-                                str $"Position: {position.Stringify ()}"
+                                str $"Position: {position |> FlukeDateTime.Stringify}"
                             ]
                     ]
                 | None -> ()

@@ -467,10 +467,23 @@ module State =
 
 
         module rec Cell =
+            let cellIdentifier (taskId: TaskId) (dateId: DateId) =
+                [
+                    taskId |> TaskId.Value |> string
+                    dateId |> DateId.Value |> FlukeDate.Stringify
+                ]
+
             let rec status =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof status}",
-                    (fun (_taskId: TaskId, _dateId: DateId) -> Disabled)
+                    (fun (_taskId: TaskId, _dateId: DateId) -> Disabled),
+                    (fun (taskId: TaskId, dateId: DateId) ->
+                        [
+                            Recoil.gunEffect
+                                None
+                                (Recoil.AtomFamily (status, (taskId, dateId)))
+                                (cellIdentifier taskId dateId)
+                        ])
                 )
 
             let rec attachments =
@@ -485,16 +498,6 @@ module State =
                     (fun (_taskId: TaskId, _dateId: DateId) -> []: TaskSession list)
                 )
 
-            type TaskId with
-                member this.KeyFormat () =
-                    let (TaskId taskId) = this
-                    $"TaskId/{taskId}"
-
-            type DateId with
-                member this.KeyFormat () =
-                    let (DateId referenceDay) = this
-                    $"DateId/{referenceDay.Stringify ()}"
-
             let rec selected =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof selected}",
@@ -504,10 +507,7 @@ module State =
                             Recoil.gunEffect
                                 (Some username)
                                 (Recoil.AtomFamily (selected, (username, taskId, dateId)))
-                                [
-                                    taskId.KeyFormat ()
-                                    dateId.KeyFormat ()
-                                ]
+                                (cellIdentifier taskId dateId)
                         ])
                 )
 
@@ -811,7 +811,8 @@ module State =
                                 let sessions = getter.get (Atoms.Cell.sessions (taskId, DateId date))
 
                                 sessions
-                                |> List.sortByDescending (fun (TaskSession (start, _, _)) -> start.DateTime)
+                                |> List.sortByDescending
+                                    (fun (TaskSession (start, _, _)) -> start |> FlukeDateTime.DateTime)
                                 |> List.tryHead))
                 )
 
@@ -826,7 +827,10 @@ module State =
                         | Some position, Some lastSession ->
                             let (TaskSession (start, Minute duration, Minute breakDuration)) = lastSession
 
-                            let currentDuration = (position.DateTime - start.DateTime).TotalMinutes
+                            let currentDuration =
+                                ((position |> FlukeDateTime.DateTime)
+                                 - (start |> FlukeDateTime.DateTime))
+                                    .TotalMinutes
 
                             let active = currentDuration < duration + breakDuration
 
@@ -883,9 +887,9 @@ module State =
 
 
         module rec Session =
-            let rec informationList =
+            let rec informationSet =
                 Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Session}/{nameof informationList}",
+                    $"{nameof selectorFamily}/{nameof Session}/{nameof informationSet}",
                     (fun (username: Username) getter ->
                         let taskIdSet = getter.get (Atoms.Session.taskIdSet username)
 
@@ -898,7 +902,7 @@ module State =
                                 |> InformationName.Value
                                 |> String.IsNullOrWhiteSpace
                                 |> not)
-                        |> Set.toList)
+                        )
                 )
 
             let rec selectedTaskIdSet =
