@@ -23,13 +23,12 @@ module Cell =
         =
         Profiling.addCount "CellComponent.render"
 
-        let (DateId referenceDay) = input.DateId
         let isTesting = Recoil.useValue Atoms.isTesting
         let status = Recoil.useValue (Atoms.Cell.status (input.TaskId, input.DateId))
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
         let showUser = Recoil.useValue (Selectors.Task.showUser input.TaskId)
-        let isToday = Recoil.useValue (Selectors.FlukeDate.isToday referenceDay)
+        let isToday = Recoil.useValue (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value))
         let cellMenuOpened, setCellMenuOpened = Recoil.useState (Atoms.User.cellMenuOpened input.Username)
         let isCurrentCellMenuOpened = cellMenuOpened = Some (input.TaskId, input.DateId)
 
@@ -69,7 +68,10 @@ module Cell =
         Chakra.center
             (fun x ->
                 if isTesting then
-                    x?``data-testid`` <- $"cell-{input.TaskId}-{referenceDay.DateTime.ToShortDateString ()}"
+                    x?``data-testid`` <- $"cell-{input.TaskId}-{
+                                                                    (input.DateId |> DateId.Value |> FlukeDate.DateTime)
+                                                                        .ToShortDateString ()
+                    }"
 
                 x.onClick <- onCellClick
                 x.width <- "17px"
@@ -209,7 +211,7 @@ overriding any other behavior.
                     CellBorder.CellBorder
                         {|
                             Username = input.Username
-                            Date = referenceDay
+                            Date = input.DateId |> DateId.Value
                         |}
                 if showUser then
                     match status with

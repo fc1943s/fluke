@@ -94,7 +94,7 @@ module Setup =
                     |> Map.tryFind task
                     |> Option.map (fun x -> x.Task.Id))
 
-        setter.set (Selectors.Session.taskIdList username, taskIdList)
+        setter.set (Selectors.Session.selectedTaskIdSet username, taskIdList |> Set.ofList)
 
 
     let initializeSessionData user peek =
@@ -117,11 +117,12 @@ module Setup =
                             let! dateSequence = setter.snapshot.getPromise Selectors.dateSequence
                             let! username = setter.snapshot.getPromise Atoms.username
 
-                            let! taskIdList = setter.snapshot.getPromise (Selectors.Session.taskIdList username.Value)
+                            let! selectedTaskIdSet =
+                                setter.snapshot.getPromise (Selectors.Session.selectedTaskIdSet username.Value)
 
                             let! cellList =
-                                taskIdList
-                                |> List.toArray
+                                selectedTaskIdSet
+                                |> Set.toArray
                                 |> Array.map
                                     (fun taskId ->
                                         promise {
@@ -134,7 +135,10 @@ module Setup =
                                                     (fun date ->
                                                         ((taskId, taskName), date),
                                                         subject.queryByTestId
-                                                            $"cell-{taskId}-{date.DateTime.ToShortDateString ()}")
+                                                            $"cell-{taskId}-{
+                                                                                 (date |> FlukeDate.DateTime)
+                                                                                     .ToShortDateString ()
+                                                            }")
                                         })
                                 |> Promise.Parallel
 

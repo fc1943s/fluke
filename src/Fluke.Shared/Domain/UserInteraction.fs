@@ -48,7 +48,7 @@ module UserInteraction =
             SessionBreakLength: Minute
         }
 
-    and Username = Username of username:string
+    and Username = Username of username: string
 
     and [<RequireQualifiedAccess>] UserColor =
         | Black
@@ -92,9 +92,14 @@ module UserInteraction =
         static member inline Value (DateId referenceDay) = referenceDay
 
     and FlukeDate with
-        member inline this.DateTime =
-            let Year year, Day day = this.Year, this.Day
-            DateTime (year, int this.Month, day, 12, 0, 0)
+        static member inline DateTime
+            {
+                Year = Year year
+                Month = month
+                Day = Day day
+            }
+            =
+            DateTime (year, int month, day, 12, 0, 0)
 
         member inline this.Stringify () =
             let {
@@ -138,7 +143,7 @@ module UserInteraction =
 
             let newDate =
                 if testingAfterMidnight && currentlyBeforeMidnight then
-                    referenceDay.DateTime.AddDays 1.
+                    (referenceDay |> FlukeDate.DateTime).AddDays 1.
                     |> FlukeDate.FromDateTime
                 else
                     referenceDay
@@ -173,7 +178,7 @@ module UserInteraction =
     let (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, date) =
         match date with
         | { Day = Day 1 } -> StartOfMonth
-        | date when date.DateTime.DayOfWeek = weekStart -> StartOfWeek
+        | date when (date |> FlukeDate.DateTime).DayOfWeek = weekStart -> StartOfWeek
         | _ -> NormalDay
 
     let isToday dayStart position dateId =
@@ -185,7 +190,7 @@ module UserInteraction =
         match isToday dayStart position (DateId position.Date) with
         | true -> position.Date
         | false ->
-            position.Date.DateTime.AddDays -1.
+            (position.Date |> FlukeDate.DateTime).AddDays -1.
             |> FlukeDate.FromDateTime
         |> DateId
 

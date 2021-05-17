@@ -12,7 +12,6 @@ module Templates =
         | DslTaskComment of comment: string
         | DslSession of start: FlukeDateTime
         | DslPriority of priority: Priority
-        | DslInformationReferenceToggle of information: Information
         | DslStatusEntry of date: FlukeDate * manualCellStatus: ManualCellStatus
         | DslCellComment of date: FlukeDate * comment: string
         | DslTaskSet of taskSet: DslTaskSet
@@ -1755,19 +1754,8 @@ module Templates =
         userInteraction
 
     let createTaskState moment task (sortTaskMap: Map<TaskName, Task> option) (dslTasks: (DslTask * User) list) =
-
-        let defaultTaskState : TaskState =
-            {
-                Task = task
-                Sessions = []
-                Attachments = []
-                SortList = []
-                CellStateMap = Map.empty
-                InformationMap = Map.empty
-            }
-
         let taskState, userInteractions =
-            ((defaultTaskState, []), dslTasks)
+            (({ TaskState.Default with Task = task }, []), dslTasks)
             ||> List.fold
                     (fun (taskState, userInteractions) (dslTask, user) ->
                         match dslTask with
@@ -1872,13 +1860,6 @@ module Templates =
                                 }
 
                             newTaskState, userInteractions
-                        | DslInformationReferenceToggle information ->
-                            let newTaskState =
-                                { taskState with
-                                    InformationMap = taskState.InformationMap |> Map.add information ()
-                                }
-
-                            newTaskState, userInteractions
                         | DslTaskSet set ->
                             match set with
                             | DslSetScheduling (scheduling, _start) ->
@@ -1953,6 +1934,7 @@ module Templates =
     let mergeDslDataIntoDatabaseState (dslData: DslData) (databaseState: DatabaseState) =
         let newInformationStateMap =
             mergeInformationStateMap databaseState.InformationStateMap dslData.InformationStateMap
+
         let taskStateList, userInteractionsBundle = dslData.TaskStateList |> List.unzip
         let userInteractions = userInteractionsBundle |> List.collect id
         let newDatabaseState = databaseStateWithInteractions userInteractions databaseState

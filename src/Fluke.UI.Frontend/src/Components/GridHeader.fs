@@ -61,7 +61,7 @@ module GridHeader =
                                     Day.Day
                                         {|
                                             Date = date
-                                            Label = date.DateTime.Format "EEEEEE"
+                                            Label = (date |> FlukeDate.DateTime).Format "EEEEEE"
                                             Username = input.Username
                                         |})
                     ]

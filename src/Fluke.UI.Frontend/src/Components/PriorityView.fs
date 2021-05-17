@@ -13,7 +13,7 @@ module PriorityView =
 
     [<ReactComponent>]
     let PriorityView (input: {| Username: Username |}) =
-        let taskIdList = Recoil.useValue (Selectors.Session.taskIdList input.Username)
+        let selectedTaskIdSet = Recoil.useValue (Selectors.Session.selectedTaskIdSet input.Username)
 
         Chakra.flex
             (fun _ -> ())
@@ -32,8 +32,8 @@ module PriorityView =
                                     (fun x -> x.paddingRight <- "10px")
                                     [
                                         yield!
-                                            taskIdList
-                                            |> List.map
+                                            selectedTaskIdSet
+                                            |> Seq.map
                                                 (fun taskId ->
                                                     TaskInformationName.TaskInformationName {| TaskId = taskId |})
                                     ]
@@ -44,16 +44,16 @@ module PriorityView =
                                         x.textAlign <- "center")
                                     [
                                         yield!
-                                            taskIdList
-                                            |> List.map (fun taskId -> TaskPriority.TaskPriority {| TaskId = taskId |})
+                                            selectedTaskIdSet
+                                            |> Seq.map (fun taskId -> TaskPriority.TaskPriority {| TaskId = taskId |})
                                     ]
                                 // Column: Task Name
                                 Chakra.box
                                     (fun x -> x.width <- "200px")
                                     [
                                         yield!
-                                            taskIdList
-                                            |> List.map (fun taskId -> TaskName.TaskName {| TaskId = taskId |})
+                                            selectedTaskIdSet
+                                            |> Seq.map (fun taskId -> TaskName.TaskName {| TaskId = taskId |})
                                     ]
                             ]
                     ]
@@ -65,7 +65,7 @@ module PriorityView =
                         Cells.Cells
                             {|
                                 Username = input.Username
-                                TaskIdList = taskIdList
+                                TaskIdSet = selectedTaskIdSet
                             |}
                     ]
             ]

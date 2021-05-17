@@ -55,7 +55,8 @@ module BulletJournalView =
                                                                         else
                                                                             "")
                                                                 [
-                                                                    referenceDay.DateTime.Format "EEEE, dd MMM yyyy"
+                                                                    (referenceDay |> FlukeDate.DateTime)
+                                                                        .Format "EEEE, dd MMM yyyy"
                                                                     |> String.toLower
                                                                     |> str
                                                                 ]

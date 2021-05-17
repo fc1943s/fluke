@@ -19,7 +19,7 @@ module MonthResponsiveCell =
                    Props: Chakra.IChakraProps -> unit |})
         =
         let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
-        let month = input.Date.DateTime.Format "MMM"
+        let month = (input.Date |> FlukeDate.DateTime).Format "MMM"
 
         Chakra.box
             (fun x ->

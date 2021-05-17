@@ -12,7 +12,7 @@ module HabitTrackerView =
 
     [<ReactComponent>]
     let HabitTrackerView (input: {| Username: Username |}) =
-        let taskIdList = Recoil.useValue (Selectors.Session.taskIdList input.Username)
+        let selectedTaskIdSet = Recoil.useValue (Selectors.Session.selectedTaskIdSet input.Username)
 
         Chakra.flex
             (fun _ -> ())
@@ -31,8 +31,8 @@ module HabitTrackerView =
                                     (fun x -> x.paddingRight <- "10px")
                                     [
                                         yield!
-                                            taskIdList
-                                            |> List.map
+                                            selectedTaskIdSet
+                                            |> Seq.map
                                                 (fun taskId ->
                                                     TaskInformationName.TaskInformationName {| TaskId = taskId |})
                                     ]
@@ -43,16 +43,16 @@ module HabitTrackerView =
                                         x.textAlign <- "center")
                                     [
                                         yield!
-                                            taskIdList
-                                            |> List.map (fun taskId -> TaskPriority.TaskPriority {| TaskId = taskId |})
+                                            selectedTaskIdSet
+                                            |> Seq.map (fun taskId -> TaskPriority.TaskPriority {| TaskId = taskId |})
                                     ]
                                 // Column: Task Name
                                 Chakra.box
                                     (fun x -> x.width <- "200px")
                                     [
                                         yield!
-                                            taskIdList
-                                            |> List.map (fun taskId -> TaskName.TaskName {| TaskId = taskId |})
+                                            selectedTaskIdSet
+                                            |> Seq.map (fun taskId -> TaskName.TaskName {| TaskId = taskId |})
                                     ]
                             ]
                     ]
@@ -63,7 +63,7 @@ module HabitTrackerView =
                         Cells.Cells
                             {|
                                 Username = input.Username
-                                TaskIdList = taskIdList
+                                TaskIdSet = selectedTaskIdSet
                             |}
                     ]
             ]

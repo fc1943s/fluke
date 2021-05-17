@@ -54,7 +54,7 @@ module Sorting =
                         | { DateId = DateId referenceDay },
                           (CellStatus.Pending
                           | CellStatus.UserStatus (_, ManualCellStatus.Scheduled)) when
-                            referenceDay.DateTime > position.Date.DateTime -> true
+                            (referenceDay |> FlukeDate.DateTime) > (position.Date |> FlukeDate.DateTime) -> true
                         | _ -> false)
                     |> Option.defaultValue cells.Length)
 

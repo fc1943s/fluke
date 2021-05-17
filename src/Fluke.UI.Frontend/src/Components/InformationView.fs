@@ -133,7 +133,7 @@ module InformationView =
                                                                         Cells.Cells
                                                                             {|
                                                                                 Username = input.Username
-                                                                                TaskIdList = taskIdList
+                                                                                TaskIdSet = taskIdList |> Set.ofList
                                                                             |}
                                                                     ])
                                                 ])

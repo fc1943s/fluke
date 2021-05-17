@@ -64,7 +64,7 @@ module Auth =
         let hydrateTask = Hydrate.useHydrateTask ()
 
         Recoil.useCallbackRef
-            (fun _ ->
+            (fun setter ->
                 promise {
                     TestUser.fetchTemplatesDatabaseStateMap ()
                     |> Map.values
@@ -76,7 +76,22 @@ module Auth =
                             |> Map.values
                             |> Seq.iter
                                 (fun taskState ->
-                                    hydrateTask Recoil.AtomScope.ReadOnly databaseState.Database.Id taskState.Task))
+                                    hydrateTask Recoil.AtomScope.ReadOnly databaseState.Database.Id taskState.Task
+
+                                    taskState.CellStateMap
+                                    |> Map.iter
+                                        (fun dateId cellState ->
+                                            setter.set (Atoms.Cell.status (taskState.Task.Id, dateId), cellState.Status)
+
+                                            setter.set (
+                                                Atoms.Cell.attachments (taskState.Task.Id, dateId),
+                                                cellState.Attachments
+                                            )
+
+                                            setter.set (
+                                                Atoms.Cell.sessions (taskState.Task.Id, dateId),
+                                                cellState.Sessions
+                                            ))))
                 })
 
     let useSignUp () =

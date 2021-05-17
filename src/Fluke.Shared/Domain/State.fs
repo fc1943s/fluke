@@ -66,7 +66,6 @@ module State =
             Attachments: Attachment list
             SortList: (Task option * Task option) list
             CellStateMap: Map<DateId, CellState>
-            InformationMap: Map<Information, unit>
         }
 
     //        type Cell = Cell of address: CellAddress * status: CellStatus
@@ -109,6 +108,16 @@ module State =
                 SharedWith = DatabaseAccess.Private []
                 Position = None
                 DayStart = FlukeTime.Create 7 0
+            }
+
+    and TaskState with
+        static member inline Default =
+            {
+                Task = Task.Default
+                Sessions = []
+                Attachments = []
+                SortList = []
+                CellStateMap = Map.empty
             }
 
     and DatabaseState with
@@ -205,15 +214,7 @@ module State =
                             let taskState =
                                 databaseState.TaskStateMap
                                 |> Map.tryFind task
-                                |> Option.defaultValue
-                                    {
-                                        Task = task
-                                        Sessions = []
-                                        Attachments = []
-                                        SortList = []
-                                        CellStateMap = Map.empty
-                                        InformationMap = Map.empty
-                                    }
+                                |> Option.defaultValue { TaskState.Default with Task = task }
 
                             let newTaskState =
                                 match taskInteraction with
@@ -269,15 +270,7 @@ module State =
                             let taskState =
                                 databaseState.TaskStateMap
                                 |> Map.tryFind task
-                                |> Option.defaultValue
-                                    {
-                                        Task = task
-                                        Sessions = []
-                                        Attachments = []
-                                        SortList = []
-                                        CellStateMap = Map.empty
-                                        InformationMap = Map.empty
-                                    }
+                                |> Option.defaultValue { TaskState.Default with Task = task }
 
                             let cellState =
                                 taskState.CellStateMap
@@ -355,13 +348,12 @@ module State =
         oldMap |> Map.union newMap
 
     let mergeTaskState (oldValue: TaskState) (newValue: TaskState) =
-        { oldValue with
+        {
             Task = oldValue.Task
             Sessions = oldValue.Sessions @ newValue.Sessions
             Attachments = oldValue.Attachments @ newValue.Attachments
             SortList = oldValue.SortList @ newValue.SortList
             CellStateMap = mergeCellStateMap oldValue.CellStateMap newValue.CellStateMap
-            InformationMap = mergeInformationMap oldValue.InformationMap newValue.InformationMap
         }
 
     let mergeTaskStateMap (oldMap: Map<Task, TaskState>) (newMap: Map<Task, TaskState>) =

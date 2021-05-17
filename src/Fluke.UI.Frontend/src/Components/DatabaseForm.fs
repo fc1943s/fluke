@@ -73,11 +73,11 @@ module DatabaseForm =
                         | DatabaseName (String.NullString
                         | String.WhitespaceStr) -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let! databaseIdList =
-                                setter.snapshot.getPromise (Atoms.Session.databaseIdList input.Username)
+                            let! databaseIdSet = setter.snapshot.getPromise (Atoms.Session.databaseIdSet input.Username)
 
                             let! databaseNames =
-                                databaseIdList
+                                databaseIdSet
+                                |> Set.toList
                                 |> List.filter
                                     (fun databaseId ->
                                         match input.DatabaseId with
@@ -123,6 +123,7 @@ module DatabaseForm =
 //                                printfn $"event {event}"
 
                                 do! setter.readWriteReset Atoms.Database.name input.DatabaseId
+
                                 do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
 
                                 do! input.OnSave database

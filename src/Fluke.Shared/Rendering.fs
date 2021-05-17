@@ -20,7 +20,7 @@ module Rendering =
 
         let dates =
             cellDates
-            |> Seq.map (fun x -> x.DateTime)
+            |> Seq.map FlukeDate.DateTime
             |> Seq.sort
             |> Seq.toArray
 
@@ -97,7 +97,7 @@ module Rendering =
             let dates =
                 taskState.CellStateMap
                 |> Map.keys
-                |> Seq.map (fun (DateId referenceDay) -> referenceDay.DateTime)
+                |> Seq.map (DateId.Value >> FlukeDate.DateTime)
                 |> Seq.sort
                 |> Seq.toArray
 
@@ -181,7 +181,7 @@ module Rendering =
                                 recurrencyList
                                 |> List.map
                                     (function
-                                    | Weekly dayOfWeek -> dayOfWeek = referenceDay.DateTime.DayOfWeek
+                                    | Weekly dayOfWeek -> dayOfWeek = (referenceDay |> FlukeDate.DateTime).DayOfWeek
                                     | Monthly day -> day = referenceDay.Day
                                     | Yearly (day, month) ->
                                         day = referenceDay.Day

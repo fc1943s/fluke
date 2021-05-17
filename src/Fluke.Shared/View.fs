@@ -32,8 +32,9 @@ module View =
                     taskState.CellStateMap
                     |> Map.toSeq
                     |> Seq.exists
-                        (fun ((DateId referenceDay), cellState) ->
-                            referenceDay.DateTime >==< dateRange
+                        (fun (dateId, cellState) ->
+                            dateId |> DateId.Value |> FlukeDate.DateTime
+                            >==< dateRange
                             && (cellState.Attachments
                                 |> List.exists
                                     (function
@@ -41,7 +42,8 @@ module View =
                                     | _ -> false)
                                 || cellState.Status <> Disabled))
                     || taskState.Sessions
-                       |> List.exists (fun (TaskSession (start, _, _)) -> start.Date.DateTime >==< dateRange)
+                       |> List.exists
+                           (fun (TaskSession (start, _, _)) -> (start.Date |> FlukeDate.DateTime) >==< dateRange)
                 | _ -> true)
         | View.Priority ->
             taskStateList
@@ -120,108 +122,77 @@ module View =
                    DateSequence: FlukeDate list
                    View: View
                    Position: FlukeDateTime option
-                   DatabaseStateMap: Map<DatabaseId, DatabaseState>
-                   SelectedDatabaseIdList: Set<DatabaseId> |})
+                   TaskStateList: TaskState list |})
         =
-        //                                GetLivePosition: unit -> FlukeDateTime
-        //            let selectedDatabaseIds =
-//                input.State.Session.DatabaseSelection
-//                |> Set.map (fun databaseState -> databaseState.Id)
-
-        //
-        let databaseStateList =
-            input.SelectedDatabaseIdList
-            |> Set.toList
-            |> List.choose (fun databaseId -> input.DatabaseStateMap |> Map.tryFind databaseId)
-
         let informationStateList =
-            databaseStateList
-            |> List.collect
-                (fun databaseState ->
-                    databaseState.InformationStateMap
-                    |> Map.values
-                    |> Seq.distinctBy (fun informationState -> informationState.Information |> Information.Name)
-                    |> Seq.toList)
+            input.TaskStateList
+            |> List.map (fun taskState -> taskState.Task.Information)
+            |> List.distinct
+            |> List.map
+                (fun information ->
+                    {
+                        Information = information
+                        Attachments = []
+                        SortList = []
+                    })
 
         let taskStateList =
-            databaseStateList
-            |> List.collect
-                (fun databaseState ->
-                    databaseState.TaskStateMap
-                    |> Map.values
-                    |> Seq.toList
-                    |> List.map
-                        (fun taskState ->
-                            let sessionsMap =
-                                taskState.Sessions
-                                |> List.map
-                                    (fun session ->
-                                        match session with
-                                        | TaskSession (start, _duration, _breakDuration) as session ->
-                                            let dateId = dateId input.DayStart start
-                                            dateId, session)
-                                |> List.groupBy fst
-                                |> Map.ofList
-                                |> Map.mapValues (List.map snd)
+            input.TaskStateList
+            |> List.map
+                (fun taskState ->
+                    let sessionsMap =
+                        taskState.Sessions
+                        |> List.map
+                            (fun session ->
+                                match session with
+                                | TaskSession (start, _duration, _breakDuration) as session ->
+                                    let dateId = dateId input.DayStart start
+                                    dateId, session)
+                        |> List.groupBy fst
+                        |> Map.ofList
+                        |> Map.mapValues (List.map snd)
 
-                            let newCellStateMap =
-                                sessionsMap
-                                |> Map.keys
-                                |> Seq.map
-                                    (fun dateId ->
-                                        let cellState =
-                                            taskState.CellStateMap
-                                            |> Map.tryFind dateId
-                                            |> Option.defaultValue
-                                                {
-                                                    Status = Disabled
-                                                    Selected = Selection false
-                                                    Sessions = []
-                                                    Attachments = []
-                                                }
+                    let newCellStateMap =
+                        sessionsMap
+                        |> Map.keys
+                        |> Seq.map
+                            (fun dateId ->
+                                let cellState =
+                                    taskState.CellStateMap
+                                    |> Map.tryFind dateId
+                                    |> Option.defaultValue
+                                        {
+                                            Status = Disabled
+                                            Selected = Selection false
+                                            Sessions = []
+                                            Attachments = []
+                                        }
 
-                                        let newSessions =
-                                            sessionsMap
-                                            |> Map.tryFind dateId
-                                            |> Option.defaultValue []
-                                            |> List.append cellState.Sessions
+                                let newSessions =
+                                    sessionsMap
+                                    |> Map.tryFind dateId
+                                    |> Option.defaultValue []
+                                    |> List.append cellState.Sessions
 
-                                        dateId,
-                                        { cellState with
-                                            Sessions = newSessions
-                                        })
-                                |> Map.ofSeq
+                                dateId,
+                                { cellState with
+                                    Sessions = newSessions
+                                })
+                        |> Map.ofSeq
 
-                            { taskState with
-                                CellStateMap = mergeCellStateMap taskState.CellStateMap newCellStateMap
-                            }))
-
-        // TODO: this might be needed
-        let _informationStateMap, _taskStateMap =
-            ((Map.empty, Map.empty), databaseStateList)
-            ||> List.fold
-                    (fun (informationStateMap, taskStateMap) databaseState ->
-                        match databaseState with
-                        | databaseState when
-                            (getAccess databaseState.Database input.Username)
-                                .IsSome ->
-                            let newInformationStateMap =
-                                mergeInformationStateMap informationStateMap databaseState.InformationStateMap
-
-                            let newTaskStateMap = mergeTaskStateMap taskStateMap databaseState.TaskStateMap
-                            newInformationStateMap, newTaskStateMap
-                        | _ -> informationStateMap, taskStateMap)
+                    { taskState with
+                        CellStateMap = mergeCellStateMap taskState.CellStateMap newCellStateMap
+                    })
 
         let head =
             input.DateSequence
             |> List.tryHead
-            |> Option.map (fun x -> x.DateTime)
+            |> Option.map FlukeDate.DateTime
 
         let last =
             input.DateSequence
             |> List.tryLast
-            |> Option.map (fun x -> x.DateTime)
-
+            |> Option.map FlukeDate.DateTime
 
         let newTaskStateList =
             match input.Position, head, last with

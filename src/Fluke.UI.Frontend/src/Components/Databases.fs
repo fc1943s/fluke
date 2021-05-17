@@ -459,10 +459,11 @@ module Databases =
         let selectedDatabaseIdList, setSelectedDatabaseIdList =
             Recoil.useState (Atoms.User.selectedDatabaseIdList input.Username)
 
-        let databaseIdList = Recoil.useValue (Atoms.Session.databaseIdList input.Username)
+        let databaseIdSet = Recoil.useValue (Atoms.Session.databaseIdSet input.Username)
 
         let availableDatabases =
-            databaseIdList
+            databaseIdSet
+            |> Set.toList
             |> List.map Selectors.Database.database
             |> Recoil.waitForAll
             |> Recoil.useValue
@@ -492,7 +493,7 @@ module Databases =
                             yield NodeType.Owned
                             yield NodeType.Shared
                         ]
-                        |> List.map
+                        |> List.collect
                             (fun nodeType ->
                                 let databases =
                                     tasksNodeTypeMap
@@ -509,22 +510,20 @@ module Databases =
                                     | NodeType.Owned -> "Created by me"
                                     | NodeType.Shared -> "Shared with me"
 
-                                let nodeNames =
-                                    databases
-                                    |> List.map (fun database -> $"{prefix}/{database.Name |> DatabaseName.Value}")
-                                    |> List.sort
+                                databases
+                                |> List.map
+                                    (fun database -> database, $"{prefix}/{database.Name |> DatabaseName.Value}")
+                                |> List.sortBy snd)
 
-                                databases, nodeNames)
-
-                    let databases = nodeData |> List.collect fst
+                    let databases = nodeData |> List.map fst
 
                     let nodes =
                         let ids =
                             nodeData
-                            |> List.collect fst
+                            |> List.map fst
                             |> List.map (fun database -> database.Id |> DatabaseId.Value)
 
-                        let paths = nodeData |> List.collect snd
+                        let paths = nodeData |> List.map snd
                         buildNodesFromPath ids paths
 
                     let availableDatabasesMap =
