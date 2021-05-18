@@ -68,11 +68,9 @@ module State =
             CellStateMap: Map<DateId, CellState>
         }
 
-    //        type Cell = Cell of address: CellAddress * status: CellStatus
     and CellState =
         {
             Status: CellStatus
-            Selected: Selection
             Attachments: Attachment list
             Sessions: TaskSession list
         }
@@ -125,7 +123,7 @@ module State =
             {
                 Database =
                     {
-                        Id = id |> Option.defaultValue (DatabaseId.NewId ())
+                        Id = id |> Option.defaultWith DatabaseId.NewId
                         Name = name
                         Owner = owner
                         SharedWith = defaultArg sharedWith (DatabaseAccess.Private [])
@@ -278,7 +276,6 @@ module State =
                                 |> Option.defaultValue
                                     {
                                         Status = CellStatus.Disabled
-                                        Selected = Selection false
                                         Attachments = []
                                         Sessions = []
                                     }
@@ -308,9 +305,6 @@ module State =
                                             Status = CellStatus.UserStatus (user, manualCellStatus)
                                         }
 
-                                    newCellState
-                                | CellInteraction.Selection selected ->
-                                    let newCellState = { cellState with Selected = selected }
                                     newCellState
 
                             let newTaskState =

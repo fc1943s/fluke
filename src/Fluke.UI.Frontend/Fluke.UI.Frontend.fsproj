@@ -115,6 +115,8 @@
         <Content Include=".eslintrc.js" />
         <Content Include="paket.references" />
         <Content Include="tsconfig.json" />
+        <Content Include="jest.config.js" />
+        <Content Include="cypress.json" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />

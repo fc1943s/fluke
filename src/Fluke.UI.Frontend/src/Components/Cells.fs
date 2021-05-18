@@ -12,7 +12,7 @@ module Cells =
     [<ReactComponent>]
     let Cells
         (input: {| Username: Username
-                   TaskIdSet: Set<TaskId> |})
+                   TaskIdList: TaskId list |})
         =
         Profiling.addTimestamp "cells.render"
 
@@ -22,8 +22,8 @@ module Cells =
             (fun _ -> ())
             [
                 yield!
-                    input.TaskIdSet
-                    |> Seq.mapi
+                    input.TaskIdList
+                    |> List.mapi
                         (fun i taskId ->
                             Chakra.flex
                                 (fun _ -> ())

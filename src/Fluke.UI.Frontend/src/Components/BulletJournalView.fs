@@ -14,7 +14,7 @@ module BulletJournalView =
 
     [<ReactComponent>]
     let BulletJournalView (input: {| Username: Username |}) =
-        let weekCellsMap = Recoil.useValue (Selectors.Session.weekCellsMap input.Username)
+        let weekCellsMap = Recoil.useValue (Selectors.BulletJournalView.weekCellsMap input.Username)
 
         Chakra.box
             (fun _ -> ())

@@ -19,6 +19,48 @@ open Fluke.UI.Frontend.Hooks
 module CellSelection =
     open State
 
+    let getCellMap (subject: Bindings.render<_, _>) peek =
+        promise {
+            let mutable cellMap = Map.empty
+
+            do!
+                peek
+                    (fun (setter: CallbackMethods) ->
+                        promise {
+                            let! dateSequence = setter.snapshot.getPromise Selectors.dateSequence
+                            let! username = setter.snapshot.getPromise Atoms.username
+
+                            let! filteredTaskIdList =
+                                setter.snapshot.getPromise (Selectors.Session.filteredTaskIdList username.Value)
+
+                            let! cellList =
+                                filteredTaskIdList
+                                |> List.toArray
+                                |> Array.map
+                                    (fun taskId ->
+                                        promise {
+                                            let! taskName = setter.snapshot.getPromise (Atoms.Task.name (Some taskId))
+
+                                            return
+                                                dateSequence
+                                                |> List.toArray
+                                                |> Array.map
+                                                    (fun date ->
+                                                        ((taskId, taskName), date),
+                                                        subject.queryByTestId
+                                                            $"cell-{taskId}-{
+                                                                                 (date |> FlukeDate.DateTime)
+                                                                                     .ToShortDateString ()
+                                                            }")
+                                        })
+                                |> Promise.Parallel
+
+                            cellMap <- cellList |> Array.collect id |> Map.ofArray
+                        })
+
+            printfn $"cellMap.Count={cellMap.Count}"
+            return cellMap
+        }
 
     Jest.describe (
         "cell selection",
@@ -156,11 +198,15 @@ module CellSelection =
                 |> Map.pick
                     (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
 
+            Jest.beforeEach (fun () ->
+                Browser.Dom.window.localStorage.clear ()
+            )
+
             Jest.test (
                 "single cell toggle",
                 promise {
                     let! subject, peek = getApp () |> Setup.render
-                    let! cellMap = Setup.getCellMap subject peek
+                    let! cellMap = getCellMap subject peek
 
                     do! peek (fun setter -> promise { setter.set (Atoms.ctrlPressed, true) })
 
@@ -199,7 +245,7 @@ module CellSelection =
                 "ctrl pressed",
                 promise {
                     let! subject, peek = getApp () |> Setup.render
-                    let! cellMap = Setup.getCellMap subject peek
+                    let! cellMap = getCellMap subject peek
 
                     do! peek (fun setter -> promise { setter.set (Atoms.ctrlPressed, true) })
 
@@ -226,7 +272,7 @@ module CellSelection =
                 "horizontal shift pressed",
                 promise {
                     let! subject, peek = getApp () |> Setup.render
-                    let! cellMap = Setup.getCellMap subject peek
+                    let! cellMap = getCellMap subject peek
 
                     do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
@@ -254,7 +300,7 @@ module CellSelection =
                 "vertical shift pressed",
                 promise {
                     let! subject, peek = getApp () |> Setup.render
-                    let! cellMap = Setup.getCellMap subject peek
+                    let! cellMap = getCellMap subject peek
 
                     do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
@@ -283,7 +329,7 @@ module CellSelection =
                 "box selection",
                 promise {
                     let! subject, peek = getApp () |> Setup.render
-                    let! cellMap = Setup.getCellMap subject peek
+                    let! cellMap = getCellMap subject peek
 
                     do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 

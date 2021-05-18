@@ -97,12 +97,6 @@ module Full =
 
                     (**)
 
-                    (Cy.contains "Created by me" None)
-                        .parents(".rct-text")
-                        .children(".rct-collapse-btn")
-                        .click ()
-                    |> ignore
-
                     (Cy.contains dbName None).click () |> ignore
 
                     (Cy.contains dbName None)

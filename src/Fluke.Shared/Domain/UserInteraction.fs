@@ -74,9 +74,6 @@ module UserInteraction =
     and [<RequireQualifiedAccess>] CellInteraction =
         | Attachment of attachment: Attachment
         | StatusChange of cellStatusChange: CellStatusChange
-        | Selection of selected: Selection
-
-    and Selection = Selection of selection: bool
 
     and [<RequireQualifiedAccess>] CellStatusChange =
         | Postpone of until: FlukeTime option

@@ -24,7 +24,7 @@ module Cell =
         Profiling.addCount "CellComponent.render"
 
         let isTesting = Recoil.useValue Atoms.isTesting
-        let status = Recoil.useValue (Atoms.Cell.status (input.TaskId, input.DateId))
+        let status = Recoil.useValue (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
         let showUser = Recoil.useValue (Selectors.Task.showUser input.TaskId)

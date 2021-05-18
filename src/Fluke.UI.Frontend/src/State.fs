@@ -901,8 +901,7 @@ module State =
                                 |> Information.Name
                                 |> InformationName.Value
                                 |> String.IsNullOrWhiteSpace
-                                |> not)
-                        )
+                                |> not))
                 )
 
             let rec selectedTaskIdSet =
@@ -913,37 +912,129 @@ module State =
                         let selectedDatabaseIdList = getter.get (Atoms.User.selectedDatabaseIdList username)
                         let selectedDatabaseIdListSet = selectedDatabaseIdList |> Set.ofList
 
-                        let result =
-                            taskIdSet
-                            |> Set.map (fun taskId -> taskId, getter.get (Atoms.Task.databaseId (Some taskId)))
-                            |> Set.filter (fun (_, databaseId) -> selectedDatabaseIdListSet.Contains databaseId)
-                            |> Set.map fst
+                        taskIdSet
+                        |> Set.map (fun taskId -> taskId, getter.get (Atoms.Task.databaseId (Some taskId)))
+                        |> Set.filter (fun (_, databaseId) -> selectedDatabaseIdListSet.Contains databaseId)
+                        |> Set.map fst)
+                )
 
-                        result
+            let rec activeSessions =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Session}/{nameof activeSessions}",
+                    (fun (username: Username) getter ->
+                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
 
-                        )
+                        let sessionLength = getter.get (Atoms.User.sessionLength username)
+                        let sessionBreakLength = getter.get (Atoms.User.sessionBreakLength username)
+
+                        selectedTaskIdSet
+                        |> Set.toList
+                        |> List.map
+                            (fun taskId ->
+                                let (TaskName taskName) = getter.get (Atoms.Task.name (Some taskId))
+
+                                let duration = getter.get (Task.activeSession taskId)
+
+                                duration
+                                |> Option.map
+                                    (fun duration ->
+                                        TempUI.ActiveSession (
+                                            taskName,
+                                            Minute duration,
+                                            sessionLength,
+                                            sessionBreakLength
+                                        )))
+                        |> List.choose id)
+                )
+
+            let rec sessionData =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Session}/{nameof sessionData}",
+                    (fun (username: Username) getter ->
+                        let dateSequence = getter.get dateSequence
+                        let view = getter.get (Atoms.User.view username)
+                        let position = getter.get Atoms.position
+                        let dayStart = getter.get (Atoms.User.dayStart username)
+                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
+
+                        let taskList =
+                            selectedTaskIdSet
+                            |> Seq.map (Task.task >> getter.get)
+                            |> Seq.toList
+
+                        let taskStateList =
+                            taskList
+                            |> List.map
+                                (fun task ->
+                                    { TaskState.Default with
+                                        Task = task
+                                        CellStateMap =
+                                            dateSequence
+                                            |> List.map
+                                                (fun date ->
+                                                    let dateId = DateId date
+
+                                                    let cellState =
+                                                        {
+                                                            Status = getter.get (Atoms.Cell.status (task.Id, dateId))
+                                                            Sessions =
+                                                                getter.get (Atoms.Cell.sessions (task.Id, dateId))
+                                                            Attachments =
+                                                                getter.get (Atoms.Cell.attachments (task.Id, dateId))
+                                                        }
+
+                                                    dateId, cellState)
+                                            |> Map.ofList
+                                    })
+
+                        getSessionData
+                            {|
+                                Username = username
+                                DayStart = dayStart
+                                DateSequence = dateSequence
+                                View = view
+                                Position = position
+                                TaskStateList = taskStateList
+                            |})
                 )
 
             let rec filteredTaskIdList =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof filteredTaskIdList}",
                     (fun (username: Username) getter ->
-                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
+                        let sessionData = getter.get (Session.sessionData username)
 
-                        selectedTaskIdSet |> Set.toList
+                        sessionData.TaskList
+                        |> List.map (fun task -> task.Id))
+                )
 
-                        )
+            let rec tasksByInformationKind =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Session}/{nameof tasksByInformationKind}",
+                    (fun (username: Username) getter ->
+                        let filteredTaskIdList = getter.get (filteredTaskIdList username)
+
+                        let informationMap =
+                            filteredTaskIdList
+                            |> List.map (fun taskId -> taskId, getter.get (Atoms.Task.information (Some taskId)))
+                            |> Map.ofList
+
+                        filteredTaskIdList
+                        |> List.groupBy (fun taskId -> informationMap.[taskId])
+                        |> List.sortBy (fun (information, _) -> information |> Information.Name)
+                        |> List.groupBy (fun (information, _) -> Information.toString information)
+                        |> List.sortBy (snd >> List.head >> fst >> Information.toTag))
                 )
 
             let rec cellSelectionMap =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof cellSelectionMap}",
                     (fun (username: Username) getter ->
-                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
+                        let filteredTaskIdList = getter.get (filteredTaskIdList username)
                         let dateSequence = getter.get dateSequence
 
-                        selectedTaskIdSet
-                        |> Set.map
+                        filteredTaskIdList
+                        |> List.map
                             (fun taskId ->
                                 let dates =
                                     dateSequence
@@ -955,20 +1046,19 @@ module State =
                                     |> Set.ofList
 
                                 taskId, dates)
-                        |> Set.filter (fun (_, dates) -> Set.isEmpty dates |> not)
-                        |> Map.ofSeq),
+                        |> List.filter (fun (_, dates) -> Set.isEmpty dates |> not)
+                        |> Map.ofList),
 
                     (fun (_username: Username) setter (newSelection: Map<TaskId, Set<FlukeDate>>) ->
                         let username = setter.get Atoms.username
 
                         match username with
                         | Some username ->
-                            let selectedTaskIdSet = setter.get (selectedTaskIdSet username)
+                            let filteredTaskIdList = setter.get (filteredTaskIdList username)
                             let cellSelectionMap = setter.get (cellSelectionMap username)
 
                             let operations =
-                                selectedTaskIdSet
-                                |> Set.toList
+                                filteredTaskIdList
                                 |> List.collect
                                     (fun taskId ->
                                         let dates =
@@ -1002,60 +1092,138 @@ module State =
                         | None -> ())
                 )
 
-            let rec activeSessions =
+
+            let rec hasCellSelection =
                 Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Session}/{nameof activeSessions}",
-                    (fun (username: Username) getter ->
-                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
+                    $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof hasCellSelection}",
+                    (fun (date: FlukeDate) getter ->
+                        let username = getter.get Atoms.username
 
-                        let sessionLength = getter.get (Atoms.User.sessionLength username)
-                        let sessionBreakLength = getter.get (Atoms.User.sessionBreakLength username)
+                        match username with
+                        | Some username ->
+                            let filteredTaskIdList = getter.get (filteredTaskIdList username)
 
-                        selectedTaskIdSet
-                        |> Set.toList
-                        |> List.map
-                            (fun taskId ->
-                                let (TaskName taskName) = getter.get (Atoms.Task.name (Some taskId))
-
-                                let duration = getter.get (Task.activeSession taskId)
-
-                                duration
-                                |> Option.map
-                                    (fun duration ->
-                                        TempUI.ActiveSession (
-                                            taskName,
-                                            Minute duration,
-                                            sessionLength,
-                                            sessionBreakLength
-                                        )))
-                        |> List.choose id)
+                            filteredTaskIdList
+                            |> List.exists
+                                (fun taskId -> getter.get (Atoms.Cell.selected (username, taskId, DateId date)))
+                        | None -> false)
                 )
 
-            let rec tasksByInformationKind =
+        module rec Cell =
+            let rec status =
                 Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Session}/{nameof tasksByInformationKind}",
-                    (fun (username: Username) getter ->
-                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
+                    $"{nameof selectorFamily}/{nameof Cell}/{nameof status}",
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
+                        let sessionData = getter.get (Session.sessionData username)
 
-                        let informationMap =
-                            selectedTaskIdSet
-                            |> Set.map (fun taskId -> taskId, getter.get (Atoms.Task.information (Some taskId)))
-                            |> Map.ofSeq
-
-                        selectedTaskIdSet
-                        |> Set.toList
-                        |> List.groupBy (fun taskId -> informationMap.[taskId])
-                        |> List.sortBy (fun (information, _) -> information |> Information.Name)
-                        |> List.groupBy (fun (information, _) -> Information.toString information)
-                        |> List.sortBy (snd >> List.head >> fst >> Information.toTag))
+                        sessionData.TaskStateMap
+                        |> Map.tryPick (fun task taskState -> if task.Id = taskId then Some taskState else None)
+                        |> Option.map
+                            (fun taskState ->
+                                taskState.CellStateMap
+                                |> Map.tryFind dateId
+                                |> Option.map (fun cellState -> cellState.Status)
+                                |> Option.defaultValue Disabled)
+                        |> Option.defaultWith (fun () -> getter.get (Atoms.Cell.status (taskId, dateId)))),
+                    (fun (_username: Username, taskId: TaskId, dateId: DateId) setter (newValue: CellStatus) ->
+                        setter.set (Atoms.Cell.status (taskId, dateId), newValue))
                 )
 
+            let rec selected =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}",
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
+                        getter.get (Atoms.Cell.selected (username, taskId, dateId))),
+                    (fun (_username: Username, taskId: TaskId, dateId: DateId) setter (newValue: bool) ->
+                        let username = setter.get Atoms.username
+
+                        match username with
+                        | Some username ->
+                            let ctrlPressed = setter.get Atoms.ctrlPressed
+                            let shiftPressed = setter.get Atoms.shiftPressed
+
+                            let newCellSelectionMap =
+                                match shiftPressed, ctrlPressed with
+                                | false, false ->
+                                    let newTaskSelection =
+                                        if newValue then Set.singleton (dateId |> DateId.Value) else Set.empty
+
+                                    [
+                                        taskId, newTaskSelection
+                                    ]
+                                    |> Map.ofList
+                                | false, true ->
+                                    let swapSelection oldSelection taskId date =
+                                        let oldSet =
+                                            oldSelection
+                                            |> Map.tryFind taskId
+                                            |> Option.defaultValue Set.empty
+
+                                        let newSet =
+                                            let fn = if newValue then Set.add else Set.remove
+
+                                            fn date oldSet
+
+                                        oldSelection |> Map.add taskId newSet
+
+                                    let oldSelection = setter.get (Session.cellSelectionMap username)
+                                    swapSelection oldSelection taskId (dateId |> DateId.Value)
+                                | true, _ ->
+                                    let filteredTaskIdList = setter.get (Session.filteredTaskIdList username)
+                                    let oldCellSelectionMap = setter.get (Session.cellSelectionMap username)
+
+                                    let initialTaskIdSet =
+                                        oldCellSelectionMap
+                                        |> Map.toSeq
+                                        |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
+                                        |> Seq.map fst
+                                        |> Set.ofSeq
+                                        |> Set.add taskId
+
+                                    let newTaskIdList =
+                                        filteredTaskIdList
+                                        |> List.skipWhile (initialTaskIdSet.Contains >> not)
+                                        |> List.rev
+                                        |> List.skipWhile (initialTaskIdSet.Contains >> not)
+                                        |> List.rev
+
+                                    let initialDateList =
+                                        oldCellSelectionMap
+                                        |> Map.values
+                                        |> Set.unionMany
+                                        |> Set.add (dateId |> DateId.Value)
+                                        |> Set.toList
+                                        |> List.sort
+
+                                    let dateSet =
+                                        match initialDateList with
+                                        | [] -> []
+                                        | dateList ->
+                                            [
+                                                dateList.Head
+                                                dateList |> List.last
+                                            ]
+                                            |> Rendering.getDateSequence (0, 0)
+                                        |> Set.ofList
+
+                                    let newMap =
+                                        newTaskIdList
+                                        |> List.map (fun taskId -> taskId, dateSet)
+                                        |> Map.ofList
+
+                                    newMap
+
+                            setter.set (Session.cellSelectionMap username, newCellSelectionMap)
+                        | None -> ())
+                )
+
+        module rec BulletJournalView =
             let rec weekCellsMap =
                 Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Session}/{nameof weekCellsMap}",
+                    $"{nameof selectorFamily}/{nameof BulletJournalView}/{nameof weekCellsMap}",
                     (fun (username: Username) getter ->
                         let position = getter.get Atoms.position
-                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
+                        let filteredTaskIdList = getter.get (Session.filteredTaskIdList username)
 
                         match position with
                         | Some position ->
@@ -1090,15 +1258,13 @@ module State =
                                             |> List.map (dateId dayStart)
 
                                         let taskMap =
-                                            selectedTaskIdSet
-                                            |> Set.toList
+                                            filteredTaskIdList
                                             |> List.map
                                                 (fun taskId -> taskId, getter.get (Atoms.Task.task (Some taskId)))
                                             |> Map.ofList
 
                                         let result =
-                                            selectedTaskIdSet
-                                            |> Set.toList
+                                            filteredTaskIdList
                                             |> List.collect
                                                 (fun taskId ->
                                                     dateIdSequence
@@ -1108,7 +1274,7 @@ module State =
                                                             | DateId referenceDay as dateId ->
                                                                 //                                                    let taskId = getter.get task.Id
                                                                 let status =
-                                                                    getter.get (Atoms.Cell.status (taskId, dateId))
+                                                                    getter.get (Cell.status (username, taskId, dateId))
 
                                                                 let sessions =
                                                                     getter.get (Atoms.Cell.sessions (taskId, dateId))
@@ -1173,7 +1339,11 @@ module State =
 
                                                         let newCells =
                                                             cellsMetadata
-                                                            |> List.sortBy (fun cell -> sortedTasksMap.[cell.TaskId])
+                                                            |> List.sortBy
+                                                                (fun cell ->
+                                                                    sortedTasksMap
+                                                                    |> Map.tryFind cell.TaskId
+                                                                    |> Option.defaultValue -1)
 
                                                         dateId, newCells)
                                             |> Map.ofList
@@ -1182,162 +1352,4 @@ module State =
 
                             weeks
                         | _ -> [])
-                )
-
-            let rec sessionData =
-                Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Session}/{nameof sessionData}",
-                    (fun (username: Username) getter ->
-                        let dateSequence = getter.get dateSequence
-                        let view = getter.get (Atoms.User.view username)
-                        let position = getter.get Atoms.position
-                        let dayStart = getter.get (Atoms.User.dayStart username)
-                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
-
-                        let taskList =
-                            selectedTaskIdSet
-                            |> Seq.map (Task.task >> getter.get)
-                            |> Seq.toList
-
-                        let taskStateList =
-                            taskList
-                            |> List.map
-                                (fun task ->
-                                    { TaskState.Default with
-                                        Task = task
-                                        CellStateMap =
-                                            dateSequence
-                                            |> List.map
-                                                (fun date ->
-                                                    let dateId = DateId date
-
-                                                    let cellState =
-                                                        {
-                                                            Status = getter.get (Atoms.Cell.status (task.Id, dateId))
-                                                            Selected = Selection false
-                                                            Sessions =
-                                                                getter.get (Atoms.Cell.sessions (task.Id, dateId))
-                                                            Attachments =
-                                                                getter.get (Atoms.Cell.attachments (task.Id, dateId))
-                                                        }
-
-                                                    dateId, cellState)
-                                            |> Map.ofList
-                                    })
-
-                        getSessionData
-                            {|
-                                Username = username
-                                DayStart = dayStart
-                                DateSequence = dateSequence
-                                View = view
-                                Position = position
-                                TaskStateList = taskStateList
-                            |})
-                )
-
-            let rec hasSelection =
-                Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof hasSelection}",
-                    (fun (date: FlukeDate) getter ->
-                        let username = getter.get Atoms.username
-
-                        match username with
-                        | Some username ->
-                            let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
-
-                            selectedTaskIdSet
-                            |> Set.exists
-                                (fun taskId -> getter.get (Atoms.Cell.selected (username, taskId, DateId date)))
-                        | None -> false)
-                )
-
-        module rec Cell =
-            let rec selected =
-                Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}",
-                    (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
-                        getter.get (Atoms.Cell.selected (username, taskId, dateId))),
-                    (fun (_username: Username, taskId: TaskId, dateId: DateId) setter (newValue: bool) ->
-                        let username = setter.get Atoms.username
-
-                        match username with
-                        | Some username ->
-                            let ctrlPressed = setter.get Atoms.ctrlPressed
-                            let shiftPressed = setter.get Atoms.shiftPressed
-
-                            let newCellSelectionMap =
-                                match shiftPressed, ctrlPressed with
-                                | false, false ->
-                                    let newTaskSelection =
-                                        if newValue then Set.singleton (dateId |> DateId.Value) else Set.empty
-
-                                    [
-                                        taskId, newTaskSelection
-                                    ]
-                                    |> Map.ofList
-                                | false, true ->
-                                    let swapSelection oldSelection taskId date =
-                                        let oldSet =
-                                            oldSelection
-                                            |> Map.tryFind taskId
-                                            |> Option.defaultValue Set.empty
-
-                                        let newSet =
-                                            let fn = if newValue then Set.add else Set.remove
-
-                                            fn date oldSet
-
-                                        oldSelection |> Map.add taskId newSet
-
-                                    let oldSelection = setter.get (Session.cellSelectionMap username)
-                                    swapSelection oldSelection taskId (dateId |> DateId.Value)
-                                | true, _ ->
-                                    let selectedTaskIdSet = setter.get (Session.selectedTaskIdSet username)
-                                    let oldCellSelectionMap = setter.get (Session.cellSelectionMap username)
-
-                                    let initialTaskIdSet =
-                                        oldCellSelectionMap
-                                        |> Map.toSeq
-                                        |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
-                                        |> Seq.map fst
-                                        |> Set.ofSeq
-                                        |> Set.add taskId
-
-                                    let newTaskIdList =
-                                        selectedTaskIdSet
-                                        |> Set.toList
-                                        |> List.skipWhile (initialTaskIdSet.Contains >> not)
-                                        |> List.rev
-                                        |> List.skipWhile (initialTaskIdSet.Contains >> not)
-                                        |> List.rev
-
-                                    let initialDateList =
-                                        oldCellSelectionMap
-                                        |> Map.values
-                                        |> Set.unionMany
-                                        |> Set.add (dateId |> DateId.Value)
-                                        |> Set.toList
-                                        |> List.sort
-
-                                    let dateSet =
-                                        match initialDateList with
-                                        | [] -> []
-                                        | dateList ->
-                                            [
-                                                dateList.Head
-                                                dateList |> List.last
-                                            ]
-                                            |> Rendering.getDateSequence (0, 0)
-                                        |> Set.ofList
-
-                                    let newMap =
-                                        newTaskIdList
-                                        |> List.map (fun taskId -> taskId, dateSet)
-                                        |> Map.ofList
-
-                                    newMap
-
-                            setter.set (Session.cellSelectionMap username, newCellSelectionMap)
-                        | None -> ())
                 )

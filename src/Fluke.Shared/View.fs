@@ -163,7 +163,6 @@ module View =
                                     |> Option.defaultValue
                                         {
                                             Status = Disabled
-                                            Selected = Selection false
                                             Sessions = []
                                             Attachments = []
                                         }
@@ -252,7 +251,6 @@ module View =
                                         |> Option.defaultValue
                                             {
                                                 Status = Disabled
-                                                Selected = Selection false
                                                 Sessions = []
                                                 Attachments = []
                                             }
