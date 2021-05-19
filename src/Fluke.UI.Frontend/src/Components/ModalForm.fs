@@ -1,11 +1,14 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core.JsInterop
 open Feliz
 open Fable.Core
 open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
+open Fable.React
+
 
 module ModalForm =
 
@@ -14,16 +17,17 @@ module ModalForm =
         (input: {| Username: Username
                    TextKeyValue: System.Guid option
                    TextKey: TextKey
-                   Trigger: (unit -> unit) -> ReactElement |})
+                   Trigger: (unit -> unit) -> (unit -> CallbackMethods) -> ReactElement |})
         =
-        let setFormIdFlag = Recoil.useSetState (Atoms.User.formIdFlag (input.Username, input.TextKey))
+        let onTrigger =
+            Recoil.useCallbackRef
+                (fun setter ->
+                    setter.set (Atoms.User.formIdFlag (input.Username, input.TextKey), input.TextKeyValue)
+                    setter.set (Atoms.User.formVisibleFlag (input.Username, input.TextKey), true))
 
-        let setFormVisibleFlag = Recoil.useSetState (Atoms.User.formVisibleFlag (input.Username, input.TextKey))
+        let setter = Recoil.useCallbackRef id
 
-        input.Trigger
-            (fun () ->
-                setFormIdFlag input.TextKeyValue
-                setFormVisibleFlag true)
+        input.Trigger (fun () -> JS.setTimeout onTrigger 0 |> ignore) setter
 
     [<ReactComponent>]
     let ModalForm
@@ -31,6 +35,7 @@ module ModalForm =
                    TextKey: TextKey
                    Content: System.Guid option * (unit -> unit) * (unit -> CallbackMethods) -> ReactElement |})
         =
+        let isTesting = Recoil.useValue Atoms.isTesting
         let formIdFlag, setFormIdFlag = Recoil.useState (Atoms.User.formIdFlag (input.Username, input.TextKey))
 
         let formVisibleFlag, setFormVisibleFlag =
@@ -54,6 +59,10 @@ module ModalForm =
 
                             x.children <-
                                 [
-                                    input.Content (formIdFlag, (fun () -> setFormVisibleFlag false), setter)
+                                    Chakra.box
+                                        (fun x -> if isTesting then x?``data-testid`` <- input.TextKey)
+                                        [
+                                            input.Content (formIdFlag, (fun () -> setFormVisibleFlag false), setter)
+                                        ]
                                 ])
             |}

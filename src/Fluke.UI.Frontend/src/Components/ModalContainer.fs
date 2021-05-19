@@ -23,10 +23,15 @@ module ModalContainer =
                     Username = input.Username
                     Content =
                         fun (formIdFlag, onHide, _) ->
+                            let databaseId =
+                                formIdFlag
+                                |> Option.map DatabaseId
+                                |> Option.defaultValue Database.Default.Id
+
                             DatabaseForm.DatabaseForm
                                 {|
                                     Username = input.Username
-                                    DatabaseId = formIdFlag |> Option.map DatabaseId
+                                    DatabaseId = databaseId
                                     OnSave =
                                         fun database ->
                                             promise {
@@ -42,7 +47,10 @@ module ModalContainer =
                     Username = input.Username
                     Content =
                         fun (formIdFlag, onHide, setter) ->
-                            let taskId = formIdFlag |> Option.map TaskId
+                            let taskId =
+                                formIdFlag
+                                |> Option.map TaskId
+                                |> Option.defaultValue Task.Default.Id
 
                             TaskForm.TaskForm
                                 {|

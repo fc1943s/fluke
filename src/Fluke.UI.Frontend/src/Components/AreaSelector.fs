@@ -102,7 +102,7 @@ module AreaSelector =
                                             {|
                                                 Username = input.Username
                                                 Trigger =
-                                                    fun trigger ->
+                                                    fun trigger _ ->
 
                                                         Button.Button
                                                             {|

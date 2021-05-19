@@ -42,7 +42,7 @@ module InformationSelector =
         (input: {| Username: UserInteraction.Username
                    DisableResource: bool
                    SelectionType: InformationSelectionType
-                   TaskId: TaskId option |})
+                   TaskId: TaskId |})
         =
 
         let informationFieldOptions =
@@ -254,7 +254,7 @@ module InformationSelector =
                                                     {|
                                                         Username = input.Username
                                                         Trigger =
-                                                            fun trigger ->
+                                                            fun trigger _ ->
 
                                                                 Button.Button
                                                                     {|
@@ -279,7 +279,7 @@ module InformationSelector =
                                                                             ]
                                                                     |}
                                                         TextKey = formTextKey
-                                                        TextKeyValue = input.TaskId |> Option.map TaskId.Value
+                                                        TextKeyValue = input.TaskId |> TaskId.Value |> Some
                                                     |}
 
                                                 ModalForm.ModalForm

@@ -62,7 +62,7 @@ module LeftDock =
                                     {|
                                         Username = input.Username
                                         Trigger =
-                                            fun trigger ->
+                                            fun trigger _ ->
                                                 Tooltip.wrap
                                                     (str "Add Database")
                                                     [

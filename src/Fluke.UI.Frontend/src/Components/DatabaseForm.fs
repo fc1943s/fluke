@@ -5,6 +5,7 @@ open Feliz
 open System
 open Feliz.Recoil
 open Fluke.Shared.Domain
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
@@ -57,8 +58,8 @@ module DatabaseForm =
 
     [<ReactComponent>]
     let DatabaseForm
-        (input: {| Username: UserInteraction.Username
-                   DatabaseId: State.DatabaseId option
+        (input: {| Username: Username
+                   DatabaseId: DatabaseId
                    OnSave: Database -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
@@ -79,10 +80,9 @@ module DatabaseForm =
                                 |> Set.toList
                                 |> List.filter
                                     (fun databaseId ->
-                                        match input.DatabaseId with
-                                        | Some databaseId' -> databaseId' <> databaseId
-                                        | None -> true)
-                                |> List.map (fun databaseId -> Atoms.Database.name (Some databaseId))
+                                        input.DatabaseId <> Database.Default.Id
+                                        || input.DatabaseId <> databaseId)
+                                |> List.map Atoms.Database.name
                                 |> Recoil.waitForAll
                                 |> setter.snapshot.getPromise
 
@@ -93,19 +93,7 @@ module DatabaseForm =
                                     setter.snapshot.getReadWritePromise Atoms.Database.dayStart input.DatabaseId
 
                                 let! database =
-                                    match input.DatabaseId with
-                                    | Some databaseId ->
-                                        promise {
-                                            let! database =
-                                                setter.snapshot.getPromise (Selectors.Database.database databaseId)
-
-                                            return
-                                                { database with
-                                                    Name = databaseName
-                                                    DayStart = dayStart
-                                                }
-                                        }
-                                    | None ->
+                                    if input.DatabaseId = Database.Default.Id then
                                         {
                                             Id = DatabaseId.NewId ()
                                             Name = databaseName
@@ -115,6 +103,19 @@ module DatabaseForm =
                                             DayStart = dayStart
                                         }
                                         |> Promise.lift
+                                    else
+                                        promise {
+                                            let! database =
+                                                setter.snapshot.getPromise (
+                                                    Selectors.Database.database input.DatabaseId
+                                                )
+
+                                            return
+                                                { database with
+                                                    Name = databaseName
+                                                    DayStart = dayStart
+                                                }
+                                        }
 
                                 //                                let eventId = Atoms.Events.newEventId ()
 //                                let event = Atoms.Events.Event.AddDatabase (eventId, databaseName, dayStart)
@@ -134,7 +135,7 @@ module DatabaseForm =
                 Chakra.box
                     (fun x -> x.fontSize <- "15px")
                     [
-                        str $"""{if input.DatabaseId.IsNone then "Add" else "Edit"} Database"""
+                        str $"""{if input.DatabaseId = Database.Default.Id then "Add" else "Edit"} Database"""
                     ]
 
                 Chakra.stack

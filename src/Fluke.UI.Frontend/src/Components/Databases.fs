@@ -5,6 +5,7 @@ open Fable.Core.JsInterop
 open Fable.Core
 open Fable.Extras
 open Fluke.Shared
+open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Feliz
@@ -186,8 +187,6 @@ module Databases =
                    Database: Database
                    Disabled: bool |})
         =
-        let setTaskDatabaseId = Recoil.useSetState (Atoms.Task.databaseId None)
-
         let isReadWrite =
             input.Database.Owner
             <> Templates.templatesUser.Username
@@ -214,7 +213,7 @@ module Databases =
                                 {|
                                     Username = input.Username
                                     Trigger =
-                                        fun trigger ->
+                                        fun trigger setter ->
                                             Chakra.menuItem
                                                 (fun x ->
                                                     x.icon <-
@@ -227,10 +226,13 @@ module Databases =
                                                     x.onClick <-
                                                         fun _ ->
                                                             promise {
-                                                                setTaskDatabaseId input.Database.Id
+                                                                setter()
+                                                                    .set (
+                                                                        Atoms.Task.databaseId Task.Default.Id,
+                                                                        input.Database.Id
+                                                                    )
+
                                                                 trigger ()
-                                                                //                                                                let _ = (trigger ())()
-                                                                ()
                                                             })
                                                 [
                                                     str "Add Task"
@@ -243,7 +245,7 @@ module Databases =
                                 {|
                                     Username = input.Username
                                     Trigger =
-                                        fun trigger ->
+                                        fun trigger _ ->
                                             Chakra.menuItem
                                                 (fun x ->
                                                     x.icon <-

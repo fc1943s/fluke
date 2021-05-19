@@ -12,7 +12,7 @@ module TaskInformationName =
 
     [<ReactComponent>]
     let TaskInformationName (input: {| TaskId: TaskId |}) =
-        let information = Recoil.useValue (Atoms.Task.information (Some input.TaskId))
+        let information = Recoil.useValue (Atoms.Task.information input.TaskId)
         //        InformationName.informationName {| InformationId = informationId |}
 //        str "InformationName"
         nothing

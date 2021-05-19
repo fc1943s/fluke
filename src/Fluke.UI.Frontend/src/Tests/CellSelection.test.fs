@@ -39,7 +39,7 @@ module CellSelection =
                         |> List.map
                             (fun taskId ->
                                 promise {
-                                    let! taskName = setter.snapshot.getPromise (Atoms.Task.name (Some taskId))
+                                    let! taskName = setter.snapshot.getPromise (Atoms.Task.name taskId)
 
                                     return
                                         dateSequence

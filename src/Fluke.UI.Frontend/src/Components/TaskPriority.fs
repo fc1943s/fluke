@@ -13,7 +13,7 @@ module TaskPriority =
 
     [<ReactComponent>]
     let TaskPriority (input: {| TaskId: TaskId |}) =
-        let priority = Recoil.useValue (Atoms.Task.priority (Some input.TaskId))
+        let priority = Recoil.useValue (Atoms.Task.priority input.TaskId)
 
         let priorityText =
             priority

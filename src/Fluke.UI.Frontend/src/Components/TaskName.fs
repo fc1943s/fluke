@@ -18,8 +18,8 @@ module TaskName =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
         let hasSelection = Recoil.useValue (Selectors.Task.hasSelection input.TaskId)
-        let (TaskName taskName) = Recoil.useValue (Atoms.Task.name (Some input.TaskId))
-        let attachments = Recoil.useValue (Atoms.Task.attachments (Some input.TaskId))
+        let (TaskName taskName) = Recoil.useValue (Atoms.Task.name input.TaskId)
+        let attachments = Recoil.useValue (Atoms.Task.attachments input.TaskId)
 
         Chakra.box
             (fun x ->
