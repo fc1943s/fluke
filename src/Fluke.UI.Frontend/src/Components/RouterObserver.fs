@@ -93,10 +93,10 @@ module RouterObserver =
                     let parsedSegments = parseSegments currentSegments
                     pathPrefix, parsedSegments),
                 [|
-                    parseSegments
-                    initialSegments
-                    deviceInfo
-                    currentSegments
+                    box parseSegments
+                    box initialSegments
+                    box deviceInfo
+                    box currentSegments
                 |]
             )
 

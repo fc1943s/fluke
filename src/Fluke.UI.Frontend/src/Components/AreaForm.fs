@@ -27,8 +27,7 @@ module AreaForm =
                 (fun _ _ ->
                     promise {
                         match areaName |> AreaName.Value with
-                        | String.NullString
-                        | String.WhitespaceStr -> toast (fun x -> x.description <- "Invalid name")
+                        | String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
                             let area = { Name = areaName }
                             do! input.OnSave area

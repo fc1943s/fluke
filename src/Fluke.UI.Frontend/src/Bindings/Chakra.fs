@@ -15,6 +15,7 @@ module Chakra =
         abstract _selected : IChakraProps with get, set
         abstract ``as`` : obj with get, set
         abstract align : string with get, set
+        abstract alignSelf : string with get, set
         abstract allowMultiple : bool with get, set
         abstract autoFocus : bool with get, set
         abstract backgroundColor : string with get, set
@@ -34,6 +35,7 @@ module Chakra =
         abstract boxShadow : string with get, set
         abstract children : seq<ReactElement> with get, set
         abstract className : string with get, set
+        abstract closeOnSelect : bool with get, set
         abstract color : string with get, set
         abstract colorScheme : string with get, set
         abstract columns : int with get, set

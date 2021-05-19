@@ -148,6 +148,8 @@ module Model =
         static member inline NewId () = TaskId (Guid.NewGuid ())
         static member inline Value (TaskId guid) = guid
 
+    and ProjectName with
+        static member inline Value (ProjectName name) = name
     and AreaName with
         static member inline Value (AreaName name) = name
 

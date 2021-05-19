@@ -243,6 +243,16 @@ module State =
                         ])
                 )
 
+            let rec showUserActionsOnly =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof showUserActionsOnly}",
+                    (fun (_username: Username) -> false),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (showUserActionsOnly, username)) []
+                        ])
+                )
+
             let rec formIdFlag =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof formIdFlag}",
@@ -1114,17 +1124,22 @@ module State =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Cell}/{nameof status}",
                     (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
-                        let sessionData = getter.get (Session.sessionData username)
+                        let showUserActionsOnly = getter.get (Atoms.User.showUserActionsOnly username)
 
-                        sessionData.TaskStateMap
-                        |> Map.tryPick (fun task taskState -> if task.Id = taskId then Some taskState else None)
-                        |> Option.map
-                            (fun taskState ->
-                                taskState.CellStateMap
-                                |> Map.tryFind dateId
-                                |> Option.map (fun cellState -> cellState.Status)
-                                |> Option.defaultValue Disabled)
-                        |> Option.defaultWith (fun () -> getter.get (Atoms.Cell.status (taskId, dateId)))),
+                        if showUserActionsOnly then
+                            getter.get (Atoms.Cell.status (taskId, dateId))
+                        else
+                            let sessionData = getter.get (Session.sessionData username)
+
+                            sessionData.TaskStateMap
+                            |> Map.tryPick (fun task taskState -> if task.Id = taskId then Some taskState else None)
+                            |> Option.map
+                                (fun taskState ->
+                                    taskState.CellStateMap
+                                    |> Map.tryFind dateId
+                                    |> Option.map (fun cellState -> cellState.Status)
+                                    |> Option.defaultValue Disabled)
+                            |> Option.defaultWith (fun () -> getter.get (Atoms.Cell.status (taskId, dateId)))),
                     (fun (_username: Username, taskId: TaskId, dateId: DateId) setter (newValue: CellStatus) ->
                         setter.set (Atoms.Cell.status (taskId, dateId), newValue))
                 )

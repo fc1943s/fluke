@@ -14,7 +14,9 @@ module Menu =
                    MenuListProps: Chakra.IChakraProps -> unit |})
         =
         Chakra.menu
-            (fun x -> x.isLazy <- false)
+            (fun x ->
+                x.isLazy <- false
+                x.closeOnSelect <- false)
             [
                 Tooltip.wrap
                     (str input.Tooltip)

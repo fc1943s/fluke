@@ -37,6 +37,18 @@ module JS =
     let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
     let toJsArray a = a |> Array.toList |> List.toArray
 
+    let rec waitFor fn =
+        async {
+            let ok = fn ()
+
+            if ok then
+                return ()
+            else
+                log (fun () -> "waitForObject: null. waiting...")
+                do! Async.Sleep 100
+                return! waitFor fn
+        }
+
     let rec waitForObject fn =
         async {
             let obj = fn ()

@@ -87,7 +87,9 @@ module Cell =
 
                 x.position <- "relative"
                 x.textAlign <- "center"
-                x.border <- if selected then "1px solid #ffffff55 !important" else "none")
+                x.borderColor <- if selected then "#ffffffAA" else "transparent"
+                x.borderWidth <- "1px"
+                x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
             [
                 if isCurrentCellMenuOpened then
                     Chakra.stack
@@ -179,13 +181,8 @@ overriding any other behavior.
                                 ]
                             match status with
                             | UserStatus (_, status) when selectableStatusList |> List.contains status ->
-                                Chakra.tooltip
-                                    (fun x ->
-                                        x.backgroundColor <- "gray.10"
-                                        x.color <- "white"
-                                        x.label <- str "Clear"
-                                        x.placement <- "bottom"
-                                        x.hasArrow <- true)
+                                Tooltip.wrap
+                                    (str "Clear")
                                     [
                                         Chakra.iconButton
                                             (fun x ->

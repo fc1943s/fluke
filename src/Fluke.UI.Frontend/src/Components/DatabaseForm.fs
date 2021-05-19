@@ -70,8 +70,7 @@ module DatabaseForm =
                         let! databaseName = setter.snapshot.getReadWritePromise Atoms.Database.name input.DatabaseId
 
                         match databaseName with
-                        | DatabaseName (String.NullString
-                        | String.WhitespaceStr) -> toast (fun x -> x.description <- "Invalid name")
+                        | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
                             let! databaseIdSet = setter.snapshot.getPromise (Atoms.Session.databaseIdSet input.Username)
 

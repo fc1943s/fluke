@@ -314,10 +314,7 @@ module Recoil =
                                         $"[gunEffect.onGunData()] atomPath={atomPath} data={unbox data}; typeof data={
                                                                                                                           jsTypeof
                                                                                                                               data
-                                        }; decoded={unbox decoded}; typeof decoded={
-                                                                                                                                jsTypeof
-                                                                                                                                    decoded
-                                        };")
+                                        }; decoded={unbox decoded}; typeof decoded={jsTypeof decoded};")
 
                                 e.setSelf (fun _ -> unbox decoded))
                     | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {atomPath}"
@@ -435,15 +432,6 @@ module Recoil =
                         setter.set (Atoms.Form.readWriteValue (Crypto.getTextGuidHash atomKey), newValue))
                 )
 
-        let rec atomOption<'TValue, 'TKey> =
-            Recoil.selectorFamilyWithProfiling (
-                $"{nameof selectorFamily}/{nameof atomOption}",
-                (fun (atom: RecoilValue<'TValue, ReadWrite> option) getter -> atom |> Option.map getter.get),
-                (fun (atom: RecoilValue<'TValue, ReadWrite> option) setter newValue ->
-                    match atom, newValue with
-                    | Some atom, Some newValue -> setter.set (atom, newValue)
-                    | _ -> ())
-            )
 
     type AtomField<'TValue67> =
         {
@@ -507,8 +495,8 @@ module Recoil =
         (inputScope: InputScope<'TValue7> option)
         =
         let atomField = getAtomField atom
-        let readOnlyValue, setReadOnlyValue = Recoil.useState (Selectors.atomOption atomField.ReadOnly)
-        let readWriteValue, setReadWriteValue = Recoil.useState (Selectors.atomOption atomField.ReadWrite)
+        let readOnlyValue, setReadOnlyValue = useStateOption atomField.ReadOnly
+        let readWriteValue, setReadWriteValue = useStateOption atomField.ReadWrite
 
         React.useMemo (
             (fun () ->
@@ -527,13 +515,11 @@ module Recoil =
                         (fun newValue ->
                             setReadWriteValue (
                                 if box newValue = null then
-                                    None
+                                    null
                                 else
-                                    Some (
-                                        match inputScope with
-                                        | Some (InputScope.ReadWrite (jsonEncode, _)) -> jsonEncode newValue
-                                        | _ -> defaultJsonEncode newValue
-                                    )
+                                    match inputScope with
+                                    | Some (InputScope.ReadWrite (jsonEncode, _)) -> jsonEncode newValue
+                                    | _ -> defaultJsonEncode newValue
                             ))
                     else
                         (fun _ -> ())
@@ -553,7 +539,7 @@ module Recoil =
                     SetAtomValue =
                         match inputScope with
                         | Some (InputScope.ReadWrite _) -> setReadWriteValue
-                        | _ -> Some >> setReadOnlyValue
+                        | _ -> setReadOnlyValue
                 |}),
             [|
                 box inputScope
@@ -602,12 +588,17 @@ module RecoilGetterExtensions =
             | Recoil.AtomScope.ReadWrite -> this.readWriteSet<'TValue10, 'TKey> (atom, key, value)
 
     type Snapshot with
-        member inline this.getReadWritePromise<'TValue11, 'TKey> (atom: 'TKey -> RecoilValue<'TValue11, ReadWrite>) key =
+        member inline this.getReadWritePromise<'TValue11, 'TKey>
+            (atom: 'TKey -> RecoilValue<'TValue11, ReadWrite>)
+            key
+            =
             promise {
                 let atomField = Recoil.getAtomField (Some (Recoil.AtomFamily (atom, key)))
+
                 match atomField.ReadWrite with
                 | Some readWriteAtom ->
                     let! value = this.getPromise readWriteAtom
+
                     match value with
                     | value when value <> null -> return Gun.jsonDecode<'TValue11> value
                     | _ -> return! this.getPromise (atom key)
@@ -620,4 +611,3 @@ module RecoilGetterExtensions =
 //    let recoilizeDebugger<'T> =
 //        //        importDefault "recoilize"
 //        nothing |> composeComponent
-

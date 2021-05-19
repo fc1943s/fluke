@@ -14,53 +14,48 @@ open Fluke.UI.Frontend.Tests.Core
 open Fluke.Shared
 open Fable.React
 open Fluke.UI.Frontend.Hooks
+open Microsoft.FSharp.Core.Operators
 
 
 module CellSelection =
     open State
 
+
     let getCellMap (subject: Bindings.render<_, _>) peek =
-        promise {
-            let mutable cellMap = Map.empty
+        Setup.peekObj
+            peek
+            (fun (setter: CallbackMethods) ->
+                promise {
+                    let! dateSequence = setter.snapshot.getPromise Selectors.dateSequence
+                    let! username = setter.snapshot.getPromise Atoms.username
 
-            do!
-                peek
-                    (fun (setter: CallbackMethods) ->
-                        promise {
-                            let! dateSequence = setter.snapshot.getPromise Selectors.dateSequence
-                            let! username = setter.snapshot.getPromise Atoms.username
+                    let! filteredTaskIdList =
+                        setter.snapshot.getPromise (Selectors.Session.filteredTaskIdList username.Value)
 
-                            let! filteredTaskIdList =
-                                setter.snapshot.getPromise (Selectors.Session.filteredTaskIdList username.Value)
+                    printfn $"filteredTaskIdList={filteredTaskIdList}"
 
-                            let! cellList =
-                                filteredTaskIdList
-                                |> List.toArray
-                                |> Array.map
-                                    (fun taskId ->
-                                        promise {
-                                            let! taskName = setter.snapshot.getPromise (Atoms.Task.name (Some taskId))
+                    let! cellList =
+                        filteredTaskIdList
+                        |> List.map
+                            (fun taskId ->
+                                promise {
+                                    let! taskName = setter.snapshot.getPromise (Atoms.Task.name (Some taskId))
 
-                                            return
-                                                dateSequence
-                                                |> List.toArray
-                                                |> Array.map
-                                                    (fun date ->
-                                                        ((taskId, taskName), date),
-                                                        subject.queryByTestId
-                                                            $"cell-{taskId}-{
-                                                                                 (date |> FlukeDate.DateTime)
-                                                                                     .ToShortDateString ()
-                                                            }")
-                                        })
-                                |> Promise.Parallel
+                                    return
+                                        dateSequence
+                                        |> List.toArray
+                                        |> Array.map
+                                            (fun date ->
+                                                ((taskId, taskName), date),
+                                                subject.queryByTestId
+                                                    $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}")
+                                })
+                        |> Promise.all
 
-                            cellMap <- cellList |> Array.collect id |> Map.ofArray
-                        })
-
-            printfn $"cellMap.Count={cellMap.Count}"
-            return cellMap
-        }
+                    let cellMap = cellList |> Array.collect id |> Map.ofArray
+                    printfn $"cellMap.Count={cellMap.Count}"
+                    return cellMap
+                })
 
     Jest.describe (
         "cell selection",
@@ -165,6 +160,8 @@ module CellSelection =
                                 |> List.map FlukeDate.Stringify)
                         |> string
 
+                    do! RTL.waitFor id
+
                     do!
                         peek
                             (fun (setter: CallbackMethods) ->
@@ -198,8 +195,18 @@ module CellSelection =
                 |> Map.pick
                     (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
 
-            Jest.beforeEach (fun () ->
-                Browser.Dom.window.localStorage.clear ()
+            Jest.beforeEach (
+                promise {
+                    Browser.Dom.window.localStorage.clear ()
+                    do! RTL.waitFor id
+                }
+            )
+
+            Jest.afterEach (
+                promise {
+                    Browser.Dom.window.localStorage.clear ()
+                    do! RTL.waitFor id
+                }
             )
 
             Jest.test (

@@ -50,8 +50,8 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-1a2d79250",
-    "react-dom": "0.0.0-experimental-1a2d79250",
+    "react": "0.0.0-experimental-63927e084",
+    "react-dom": "0.0.0-experimental-63927e084",
 
     "recoil": "~0.3",
     "recoilize": "~2.0",
@@ -95,11 +95,11 @@
     "electron-webpack": "~2.8",
     "electron-builder": "~22.10",
 
-    "@typescript-eslint/eslint-plugin": "~4.23",
-    "@typescript-eslint/parser": "~4.23",
+    "@typescript-eslint/eslint-plugin": "~4.24",
+    "@typescript-eslint/parser": "~4.24",
     "eslint": "~7.26",
     "eslint-plugin-react": "~7.23",
-    "eslint-plugin-import": "~2.22",
+    "eslint-plugin-import": "~2.23",
     "eslint-plugin-jsx-a11y": "~6.4",
     "eslint-plugin-react-hooks": "~4.2",
     "eslint-plugin-jest-dom": "~3.9",
@@ -120,7 +120,7 @@
     "@testing-library/jest-dom": "~5.12",
 
     "cypress": "~7.3",
-    "cypress-terminal-report": "~3.1",
+    "cypress-terminal-report": "~3.2",
     "@types/cypress": "~1.1",
 
     "https-localhost": "~4.6",
@@ -142,8 +142,8 @@
     "concurrently": "~6.1"
   },
   "resolutions": {
-    "react": "0.0.0-experimental-1a2d79250",
-    "react-dom": "0.0.0-experimental-1a2d79250"
+    "react": "0.0.0-experimental-63927e084",
+    "react-dom": "0.0.0-experimental-63927e084"
   },
   "browserslist": {
     "production": [

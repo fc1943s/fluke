@@ -27,9 +27,9 @@ module CellBorder =
                 Chakra.box
                     (fun x ->
                         x.position <- "absolute"
-                        x.top <- "0"
-                        x.left <- "0"
-                        x.bottom <- "0"
+                        x.top <- "-1px"
+                        x.left <- "-1px"
+                        x.bottom <- "-1px"
                         x.borderLeftWidth <- borderLeftWidth
                         x.borderLeftColor <- borderLeftColor)
                     [])

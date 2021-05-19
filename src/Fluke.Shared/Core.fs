@@ -80,8 +80,14 @@ module String =
     let toLower (source: string) =
         if isNull source then source else source.ToLowerInvariant ()
 
-    let (|ValidString|WhitespaceStr|NullString|) (str: string) =
+    let (|ValidString|WhitespaceString|NullString|) (str: string) =
         match str with
         | null -> NullString
-        | str when String.IsNullOrWhiteSpace str -> WhitespaceStr
+        | str when String.IsNullOrWhiteSpace str -> WhitespaceString
         | str -> ValidString str
+
+    let (|InvalidString|_|) (str: string) =
+        match str with
+        | WhitespaceString
+        | NullString -> Some InvalidString
+        | _ -> None

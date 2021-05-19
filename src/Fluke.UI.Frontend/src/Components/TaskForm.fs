@@ -43,12 +43,8 @@ module TaskForm =
                               taskInformation
                               |> Information.Name
                               |> InformationName.Value with
-                        | (String.NullString
-                          | String.WhitespaceStr),
-                          _ -> toast (fun x -> x.description <- "Invalid name")
-                        | _,
-                          (String.NullString
-                          | String.WhitespaceStr) -> toast (fun x -> x.description <- "Invalid information")
+                        | String.InvalidString, _ -> toast (fun x -> x.description <- "Invalid name")
+                        | _, String.InvalidString -> toast (fun x -> x.description <- "Invalid information")
                         | _ ->
 
                             //

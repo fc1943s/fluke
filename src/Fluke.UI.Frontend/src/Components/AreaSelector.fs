@@ -1,5 +1,6 @@
 namespace rec Fluke.UI.Frontend.Components
 
+open System
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain
@@ -18,12 +19,9 @@ module AreaSelector =
                    OnSelect: Area -> unit |})
         =
         let informationSet = Recoil.useValue (Selectors.Session.informationSet input.Username)
-        let area, setArea = React.useState input.Area
 
-        Chakra.stack
-            (fun x ->
-                x.spacing <- "5px"
-                x.display <- "inline")
+        Chakra.box
+            (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
                     {|
@@ -38,7 +36,7 @@ module AreaSelector =
                             )
                         HintTitle = None
                         Label = str "Area"
-                        Props = fun _ -> ()
+                        Props = fun x -> x.marginBottom <- "5px"
                     |}
                 Menu.Menu
                     {|
@@ -49,7 +47,7 @@ module AreaSelector =
                                     x.``as`` <- Chakra.react.Button
                                     x.rightIcon <- Chakra.Icons.chevronDownIcon (fun _ -> ()) [])
                                 [
-                                    match area.Name |> AreaName.Value with
+                                    match input.Area.Name |> AreaName.Value with
                                     | String.ValidString name -> str name
                                     | _ -> str "Select..."
                                 ]
@@ -63,10 +61,15 @@ module AreaSelector =
                                         x.flexBasis <- 0)
                                     [
                                         Chakra.menuOptionGroup
-                                            (fun x -> x.value <- area)
+                                            (fun x -> x.value <- input.Area)
                                             [
                                                 yield!
-                                                    informationSet
+                                                    (if input.Area.Name
+                                                        |> AreaName.Value
+                                                        |> String.IsNullOrWhiteSpace then
+                                                         informationSet
+                                                     else
+                                                         informationSet |> Set.add (Area input.Area))
                                                     |> Set.toList
                                                     |> List.map
                                                         (function
@@ -78,7 +81,8 @@ module AreaSelector =
                                                                     (fun x ->
                                                                         x.value <- area
 
-                                                                        x.onClick <- fun _ -> promise { setArea area })
+                                                                        x.onClick <-
+                                                                            fun _ -> promise { input.OnSelect area })
                                                                     [
                                                                         str label
                                                                     ]
@@ -128,7 +132,7 @@ module AreaSelector =
                                                         AreaForm.AreaForm
                                                             {|
                                                                 Username = input.Username
-                                                                Area = area
+                                                                Area = input.Area
                                                                 OnSave =
                                                                     fun area ->
                                                                         promise {

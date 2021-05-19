@@ -22,6 +22,11 @@ module InformationSelector =
     let isVisibleInformation informationString information =
         match information with
         | information when
+            information
+            |> Information.Name
+            |> InformationName.Value
+            |> String.IsNullOrWhiteSpace -> false
+        | information when
             information |> Information.isProject
             && informationString = nameof Project -> true
         | information when
@@ -45,44 +50,47 @@ module InformationSelector =
                 (Some (Recoil.AtomFamily (Atoms.Task.information, input.TaskId)))
                 (Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer))
 
-        let radioValue, setRadioValue =
+        let informationName =
+            informationFieldOptions.AtomValue
+            |> Information.Name
+            |> InformationName.Value
+
+        let selected, setSelected =
             React.useState (
-                if informationFieldOptions.AtomValue
-                   |> Information.Name
-                   |> InformationName.Value
-                   |> String.IsNullOrWhiteSpace then
-                    ""
-                else
-                    informationFieldOptions.AtomValue
-                    |> Information.toString
+                informationName
+                |> String.IsNullOrWhiteSpace
+                |> not
             )
 
-        let informationName =
-            if isVisibleInformation radioValue informationFieldOptions.AtomValue then
-                informationFieldOptions.AtomValue
-                |> Information.Name
-                |> InformationName.Value
-            else
-                ""
+        React.useEffect (
+            (fun () -> if not selected && informationName.Length > 0 then setSelected true),
+            [|
+                box selected
+                box informationName
+                box setSelected
+            |]
+        )
+
+        let informationSelected =
+            informationFieldOptions.AtomValue
+            |> Information.toString
 
         let informationSet = Recoil.useValue (Selectors.Session.informationSet input.Username)
 
         let sortedInformationList =
-            match informationName with
-            | String.ValidString _ ->
-                informationSet
-                |> Set.add informationFieldOptions.AtomValue
-            | _ -> informationSet
-            |> Set.filter (isVisibleInformation radioValue)
-            |> Set.toList
-            |> List.sort
-
-        let formParams =
-            match radioValue with
-            | nameof Project -> Some (TextKey (nameof ProjectForm), "Add Project")
-            | nameof Area -> Some (TextKey (nameof AreaForm), "Add Area")
-            | nameof Resource -> Some (TextKey (nameof AreaForm), "Add Resource")
-            | _ -> None
+            React.useMemo (
+                (fun () ->
+                    informationSet
+                    |> Set.add informationFieldOptions.AtomValue
+                    |> Set.filter (isVisibleInformation informationSelected)
+                    |> Set.toList
+                    |> List.sort),
+                [|
+                    box informationSelected
+                    box informationSet
+                    box informationFieldOptions.AtomValue
+                |]
+            )
 
         Chakra.box
             (fun x -> x.display <- "inline")
@@ -112,7 +120,7 @@ module InformationSelector =
                                     x.rightIcon <- Chakra.Icons.chevronDownIcon (fun _ -> ()) [])
                                 [
                                     match informationName with
-                                    | String.ValidString _ -> str $"{radioValue}: {informationName}"
+                                    | String.ValidString _ -> str $"{informationSelected}: {informationName}"
                                     | _ -> str "Select..."
                                 ]
                         Menu =
@@ -124,16 +132,26 @@ module InformationSelector =
                                             x.onChange <-
                                                 fun (radioValueSelected: string) ->
                                                     promise {
-                                                        setRadioValue radioValueSelected
-
                                                         if informationFieldOptions.AtomValue
                                                            |> isVisibleInformation radioValueSelected
                                                            |> not then
-                                                            informationFieldOptions.SetAtomValue
-                                                                Task.Default.Information
+                                                            match radioValueSelected with
+                                                            | nameof Project ->
+                                                                informationFieldOptions.SetAtomValue (
+                                                                    Project Project.Default
+                                                                )
+                                                            | nameof Area ->
+                                                                informationFieldOptions.SetAtomValue (Area Area.Default)
+                                                            | nameof Resource ->
+                                                                informationFieldOptions.SetAtomValue (
+                                                                    Resource Resource.Default
+                                                                )
+                                                            | _ -> ()
+
+                                                        setSelected true
                                                     }
 
-                                            x.value <- radioValue)
+                                            x.value <- if not selected then null else informationSelected)
                                         [
                                             Chakra.stack
                                                 (fun x ->
@@ -182,122 +200,136 @@ module InformationSelector =
                                         ]
                                 | _ -> nothing
 
-                                match formParams with
-                                | Some (formTextKey, addButtonLabel) ->
-                                    Chakra.box
-                                        (fun x ->
-                                            x.marginBottom <- "6px"
-                                            x.marginTop <- "10px"
-                                            x.maxHeight <- "217px"
-                                            x.overflowY <- "auto"
-                                            x.flexBasis <- 0)
-                                        [
-                                            Chakra.menuOptionGroup
-                                                (fun x ->
-                                                    x.value <-
-                                                        sortedInformationList
-                                                        |> List.tryFindIndex ((=) informationFieldOptions.AtomValue)
-                                                        |> Option.defaultValue -1)
-                                                [
-                                                    yield!
-                                                        sortedInformationList
-                                                        |> List.mapi
-                                                            (fun i information ->
-                                                                Chakra.menuItemOption
-                                                                    (fun x ->
-                                                                        x.value <- i
+                                match selected, informationSelected with
+                                | false, _ -> None
+                                | _, nameof Project -> Some (TextKey (nameof ProjectForm))
+                                | _, nameof Area -> Some (TextKey (nameof AreaForm))
+                                | _, nameof Resource -> Some (TextKey (nameof AreaForm))
+                                | _ -> None
+                                |> function
+                                | Some formTextKey ->
+                                    React.fragment [
+                                        Chakra.box
+                                            (fun x ->
+                                                x.marginBottom <- "6px"
+                                                x.marginTop <- "10px"
+                                                x.maxHeight <- "217px"
+                                                x.overflowY <- "auto"
+                                                x.flexBasis <- 0)
+                                            [
+                                                Chakra.menuOptionGroup
+                                                    (fun x ->
+                                                        x.value <-
+                                                            sortedInformationList
+                                                            |> List.tryFindIndex ((=) informationFieldOptions.AtomValue)
+                                                            |> Option.defaultValue -1)
+                                                    [
+                                                        yield!
+                                                            sortedInformationList
+                                                            |> List.mapi
+                                                                (fun i information ->
+                                                                    Chakra.menuItemOption
+                                                                        (fun x ->
+                                                                            x.value <- i
 
-                                                                        x.onClick <-
-                                                                            fun _ ->
-                                                                                promise {
-                                                                                    informationFieldOptions.SetAtomValue
-                                                                                        information
-                                                                                })
-                                                                    [
-                                                                        information
-                                                                        |> Information.Name
-                                                                        |> InformationName.Value
-                                                                        |> str
-                                                                    ])
-                                                ]
-                                        ]
-
-                                    Chakra.box
-                                        (fun x -> x.textAlign <- "center")
-                                        [
-                                            ModalForm.ModalFormTrigger
-                                                {|
-                                                    Username = input.Username
-                                                    Trigger =
-                                                        fun trigger ->
-
-                                                            Button.Button
-                                                                {|
-                                                                    Hint = None
-                                                                    Icon =
-                                                                        Some (
-                                                                            Icons.bs.BsPlus |> Icons.wrap,
-                                                                            Button.IconPosition.Left
-                                                                        )
-                                                                    Props =
-                                                                        fun x ->
-                                                                            x.onClick <- fun _ -> promise { trigger () }
-                                                                    Children =
+                                                                            x.onClick <-
+                                                                                fun _ ->
+                                                                                    promise {
+                                                                                        informationFieldOptions.SetAtomValue
+                                                                                            information
+                                                                                    })
                                                                         [
-                                                                            str addButtonLabel
-                                                                        ]
-                                                                |}
-                                                    TextKey = formTextKey
-                                                    TextKeyValue = input.TaskId |> Option.map TaskId.Value
-                                                |}
+                                                                            information
+                                                                            |> Information.Name
+                                                                            |> InformationName.Value
+                                                                            |> str
+                                                                        ])
+                                                    ]
+                                            ]
 
-                                            ModalForm.ModalForm
-                                                {|
-                                                    Username = input.Username
-                                                    Content =
-                                                        fun (formIdFlag, onHide, _) ->
-                                                            let taskId = formIdFlag |> Option.map TaskId
+                                        Chakra.box
+                                            (fun x -> x.textAlign <- "center")
+                                            [
+                                                ModalForm.ModalFormTrigger
+                                                    {|
+                                                        Username = input.Username
+                                                        Trigger =
+                                                            fun trigger ->
 
-
-                                                            match radioValue with
-                                                            | nameof Project ->
-                                                                ProjectForm.ProjectForm
+                                                                Button.Button
                                                                     {|
-                                                                        Username = input.Username
-                                                                        TaskId = taskId
-                                                                        OnSave =
-                                                                            fun project ->
-                                                                                promise {
-                                                                                    informationFieldOptions.SetAtomValue (
-                                                                                        Project project
-                                                                                    )
-
-                                                                                    onHide ()
-                                                                                }
+                                                                        Hint = None
+                                                                        Icon =
+                                                                            Some (
+                                                                                Icons.bs.BsPlus |> Icons.wrap,
+                                                                                Button.IconPosition.Left
+                                                                            )
+                                                                        Props =
+                                                                            fun x ->
+                                                                                x.onClick <-
+                                                                                    fun _ -> promise { trigger () }
+                                                                        Children =
+                                                                            [
+                                                                                match informationSelected with
+                                                                                | nameof Project -> "Add Project"
+                                                                                | nameof Area -> "Add Area"
+                                                                                | nameof Resource -> "Add Resource"
+                                                                                | _ -> ""
+                                                                                |> str
+                                                                            ]
                                                                     |}
-                                                            | nameof Area ->
-                                                                AreaForm.AreaForm
-                                                                    {|
-                                                                        Username = input.Username
-                                                                        Area =
-                                                                            match informationFieldOptions.AtomValue with
-                                                                            | Area area -> area
-                                                                            | _ -> Area.Default
-                                                                        OnSave =
-                                                                            fun area ->
-                                                                                promise {
-                                                                                    informationFieldOptions.SetAtomValue (
-                                                                                        Area area
-                                                                                    )
+                                                        TextKey = formTextKey
+                                                        TextKeyValue = input.TaskId |> Option.map TaskId.Value
+                                                    |}
 
-                                                                                    onHide ()
-                                                                                }
-                                                                    |}
-                                                            | nameof Resource -> nothing
-                                                            | _ -> nothing
-                                                    TextKey = formTextKey
-                                                |}
-                                        ]
+                                                ModalForm.ModalForm
+                                                    {|
+                                                        Username = input.Username
+                                                        Content =
+                                                            fun (_formIdFlag, onHide, _) ->
+                                                                match informationSelected with
+                                                                | nameof Project ->
+                                                                    ProjectForm.ProjectForm
+                                                                        {|
+                                                                            Username = input.Username
+                                                                            Project =
+                                                                                match informationFieldOptions.AtomValue with
+                                                                                | Project project -> project
+                                                                                | _ -> Project.Default
+                                                                            OnSave =
+                                                                                fun project ->
+                                                                                    promise {
+                                                                                        informationFieldOptions.SetAtomValue (
+                                                                                            Project project
+                                                                                        )
+
+                                                                                        onHide ()
+                                                                                    }
+                                                                        |}
+                                                                | nameof Area ->
+                                                                    AreaForm.AreaForm
+                                                                        {|
+                                                                            Username = input.Username
+                                                                            Area =
+                                                                                match informationFieldOptions.AtomValue with
+                                                                                | Area area -> area
+                                                                                | _ -> Area.Default
+                                                                            OnSave =
+                                                                                fun area ->
+                                                                                    promise {
+                                                                                        informationFieldOptions.SetAtomValue (
+                                                                                            Area area
+                                                                                        )
+
+                                                                                        onHide ()
+                                                                                    }
+                                                                        |}
+                                                                | nameof Resource -> nothing
+                                                                | _ -> nothing
+                                                        TextKey = formTextKey
+                                                    |}
+                                            ]
+                                    ]
                                 | _ -> nothing
                             ]
                         MenuListProps = fun x -> x.padding <- "10px"

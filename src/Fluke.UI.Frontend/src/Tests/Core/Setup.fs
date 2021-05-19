@@ -6,16 +6,14 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend
-open Fluke.Shared.Domain
 open Fluke.UI.Frontend.Tests.Core
 open Fable.React
 open Fluke.UI.Frontend.Hooks
+open Microsoft.FSharp.Core.Operators
+open Fable.Core
 
 
 module Setup =
-    open State
-
     import "jest" "@jest/globals"
 
     let rootWrapper cmp =
@@ -33,7 +31,7 @@ module Setup =
 
     let render (cmp: ReactElement) =
         promise {
-            let mutable peekFn : (CallbackMethods -> Fable.Core.JS.Promise<unit>) -> Fable.Core.JS.Promise<unit> =
+            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
                 fun _ -> failwith "called empty callback"
 
             let cmpWrapper =
@@ -41,7 +39,7 @@ module Setup =
                     (fun () ->
                         peekFn <-
                             Recoil.useCallbackRef
-                                (fun (setter: CallbackMethods) (fn: CallbackMethods -> Fable.Core.JS.Promise<unit>) ->
+                                (fun (setter: CallbackMethods) (fn: CallbackMethods -> JS.Promise<unit>) ->
                                     RTL.waitFor (fn setter |> handlePromise))
 
                         cmp)
@@ -49,4 +47,23 @@ module Setup =
             let subject = RTL.render ((rootWrapper (cmpWrapper ())) ())
             do! RTL.waitFor id
             return subject, peekFn
+        }
+
+    let peekObj peek fn =
+        promise {
+            let mutable obj = None
+
+            do!
+                peek
+                    (fun (setter: CallbackMethods) ->
+                        promise {
+                            let! result = fn setter
+                            obj <- Some result
+                        })
+
+            do!
+                JS.waitFor (fun () -> obj.IsSome)
+                |> Async.StartAsPromise
+
+            return obj.Value
         }

@@ -20,6 +20,9 @@ module HomeScreen =
         =
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
 
+        let showUserActionsOnly, setShowUserActionsOnly =
+            Recoil.useState (Atoms.User.showUserActionsOnly input.Username)
+
         let tabs =
             [
                 {|
@@ -69,8 +72,8 @@ module HomeScreen =
                     (fun x ->
                         x.spacing <- "0"
                         x.flex <- 1
-                        x.marginLeft <- "10px"
-                        x.marginRight <- "10px")
+                        x.marginLeft <- "5px"
+                        x.marginRight <- "5px")
                     [
                         Chakra.tabs
                             (fun x ->
@@ -82,7 +85,10 @@ module HomeScreen =
                                 x.flex <- 1)
                             [
                                 Chakra.tabList
-                                    (fun x -> x.borderColor <- "transparent")
+                                    (fun x ->
+                                        x.borderColor <- "transparent"
+                                        x.borderBottomWidth <- "1px"
+                                        x.borderBottomColor <- "gray.16")
                                     [
                                         yield!
                                             tabs
@@ -112,6 +118,59 @@ module HomeScreen =
                                                                 []
                                                             str tab.Name
                                                         ])
+
+                                        Chakra.spacer (fun _ -> ()) []
+
+                                        Menu.Menu
+                                            {|
+                                                Tooltip = ""
+                                                Trigger =
+                                                    TransparentIconButton.TransparentIconButton
+                                                        {|
+                                                            Props =
+                                                                fun x ->
+                                                                    x.``as`` <- Chakra.react.MenuButton
+                                                                    x.fontSize <- "14px"
+
+                                                                    x.icon <-
+                                                                        Icons.bs.BsThreeDotsVertical |> Icons.render
+
+                                                                    x.alignSelf <- "center"
+                                                        |}
+                                                Menu =
+                                                    [
+                                                        Chakra.menuOptionGroup
+                                                            (fun x ->
+                                                                x.``type`` <- "checkbox"
+
+                                                                x.value <-
+                                                                    [|
+                                                                        if showUserActionsOnly then
+                                                                            yield nameof Atoms.User.showUserActionsOnly
+                                                                    |]
+
+                                                                x.onChange <-
+                                                                    fun (checks: string []) ->
+                                                                        promise {
+                                                                            setShowUserActionsOnly (
+                                                                                checks
+                                                                                |> Array.contains (
+                                                                                    nameof
+                                                                                        Atoms.User.showUserActionsOnly
+                                                                                )
+                                                                            )
+                                                                        })
+                                                            [
+                                                                Chakra.menuItemOption
+                                                                    (fun x ->
+                                                                        x.value <- nameof Atoms.User.showUserActionsOnly)
+                                                                    [
+                                                                        str "Show User Actions Only"
+                                                                    ]
+                                                            ]
+                                                    ]
+                                                MenuListProps = fun _ -> ()
+                                            |}
                                     ]
                                 Chakra.tabPanels
                                     (fun x ->
