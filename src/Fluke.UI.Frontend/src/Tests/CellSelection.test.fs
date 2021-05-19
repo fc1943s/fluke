@@ -50,10 +50,18 @@ module CellSelection =
                                                 subject.queryByTestId
                                                     $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}")
                                 })
-                        |> Promise.all
+                        |> Promise.Parallel
 
                     let cellMap = cellList |> Array.collect id |> Map.ofArray
-                    printfn $"cellMap.Count={cellMap.Count}"
+
+                    printfn
+                        $"cellMap=%A{
+                                            cellMap
+                                            |> Map.keys
+                                            |> Seq.map fst
+                                            |> Seq.distinct
+                        }"
+
                     return cellMap
                 })
 
@@ -213,6 +221,7 @@ module CellSelection =
                 "single cell toggle",
                 promise {
                     let! subject, peek = getApp () |> Setup.render
+
                     let! cellMap = getCellMap subject peek
 
                     do! peek (fun setter -> promise { setter.set (Atoms.ctrlPressed, true) })
@@ -340,7 +349,6 @@ module CellSelection =
 
                     do! peek (fun setter -> promise { setter.set (Atoms.shiftPressed, true) })
 
-                    printfn $"cellMap=%A{cellMap |> Map.keys |> Seq.map fst |> Seq.distinct}"
 
                     do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
                     do! click (getCell (cellMap, TaskName "3", FlukeDate.Create 2020 Month.January 10))

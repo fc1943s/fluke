@@ -83,24 +83,28 @@ module View =
                    InformationStateList: InformationState list // TaskOrderList: TaskOrderEntry list
                    Lanes: (TaskState * (CellAddress * CellStatus) list) list |})
         =
+        let lanes =
+            input.Lanes
+            |> List.sortBy (fun (taskState, _) -> taskState.Task.Name |> TaskName.Value)
+
         match input.View with
         | View.HabitTracker ->
-            input.Lanes
+            lanes
             |> Sorting.sortLanesByFrequency
             |> Sorting.sortLanesByIncomingRecurrency input.DayStart input.Position
             |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position //input.TaskOrderList
         | View.Priority ->
-            input.Lanes
+            lanes
             //                |> Sorting.applyManualOrder input.TaskOrderList
             |> List.sortByDescending
                 (fun (taskState, _) ->
                     taskState.Task.Priority
                     |> Option.map Priority.toTag
                     |> Option.defaultValue -1)
-        | View.BulletJournal -> input.Lanes
+        | View.BulletJournal -> lanes
         | View.Information ->
             let lanes =
-                input.Lanes
+                lanes
                 //                    |> Sorting.applyManualOrder input.TaskOrderList
                 |> List.groupBy (fun (taskState, _) -> taskState.Task.Information)
                 |> Map.ofList

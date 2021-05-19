@@ -15,6 +15,7 @@ open Fable.Core
 
 module Setup =
     import "jest" "@jest/globals"
+    import "snapshot_UNSTABLE" "recoil"
 
     let rootWrapper cmp =
         React.memo
@@ -46,6 +47,7 @@ module Setup =
 
             let subject = RTL.render ((rootWrapper (cmpWrapper ())) ())
             do! RTL.waitFor id
+            do! RTL.waitFor id
             return subject, peekFn
         }
 
@@ -67,3 +69,5 @@ module Setup =
 
             return obj.Value
         }
+
+    let getSnapshot (fn: (MutableSnapshot -> unit) option) : Snapshot = emitJsExpr fn "snapshot_UNSTABLE($0)"

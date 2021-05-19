@@ -1,6 +1,5 @@
 namespace Fluke.Shared
 
-open System
 open Expecto
 open Fluke.Shared
 open Expecto.Flip
@@ -115,15 +114,6 @@ module Tests =
                     match expectedSessions with
                     | [] -> []
                     | expectedSessions ->
-                        let databaseId = DatabaseId Guid.Empty
-
-                        let databaseStateMap =
-                            [
-                                databaseId, databaseState
-                            ]
-                            |> Map.ofList
-
-
                         let sessionData =
                             View.getSessionData
                                 {|
@@ -132,12 +122,10 @@ module Tests =
                                     DateSequence = dateSequence
                                     View = View.View.HabitTracker
                                     Position = Some dslTemplate.Position
-                                    DatabaseStateMap = databaseStateMap
-                                    SelectedDatabaseIdList =
-                                        [
-                                            databaseId
-                                        ]
-                                        |> set
+                                    TaskStateList =
+                                        databaseState.TaskStateMap
+                                        |> Map.values
+                                        |> Seq.toList
                                 |}
 
                         let taskState = sessionData.TaskStateMap.[taskTemplate.Task]
