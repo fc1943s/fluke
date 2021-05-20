@@ -40,7 +40,9 @@ module Content =
                             Chakra.stack
                                 (fun x ->
                                     x.spacing <- "0"
-                                    x.flex <- 1)
+                                    x.flex <- 1
+                                    x.overflow <- "auto"
+                                    x.flexBasis <- 0)
                                 [
                                     TopBar.TopBar ()
                                     HomeScreen.HomeScreen

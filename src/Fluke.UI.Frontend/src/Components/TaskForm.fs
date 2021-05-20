@@ -103,11 +103,11 @@ module TaskForm =
                         TaskId = input.TaskId
                     |}
 
-//                SchedulingSelector.SchedulingSelector
-//                    {|
-//                        Username = input.Username
-//                        TaskId = input.TaskId
-//                    |}
+                SchedulingSelector.SchedulingSelector
+                    {|
+                        Username = input.Username
+                        TaskId = input.TaskId
+                    |}
 
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")

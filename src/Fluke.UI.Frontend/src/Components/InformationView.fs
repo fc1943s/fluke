@@ -17,134 +17,130 @@ module InformationView =
 
         let tasksByInformationKind = Recoil.useValue (Selectors.Session.tasksByInformationKind input.Username)
 
-        Chakra.box
+        Chakra.flex
             (fun _ -> ())
             [
                 Chakra.flex
-                    (fun _ -> ())
+                    (fun x ->
+                        x.direction <- "column"
+                        x.flex <- 1
+                        x.paddingRight <- "10px"
+                        x.maxWidth <- "550px")
                     [
+                        yield!
+                            Chakra.box (fun x -> x.height <- "17px") []
+                            |> List.replicate 3
+
                         Chakra.flex
-                            (fun x -> x.direction <- "column";x.flex <- 1)
-                            [
-                                yield!
-                                    Chakra.box (fun x -> x.height <- "17px") []
-                                    |> List.replicate 3
-
-                                Chakra.flex
-                                    (fun _ -> ())
-                                    [
-                                        yield!
-                                            tasksByInformationKind
-                                            |> List.map
-                                                (fun (informationKindName, groups) ->
-                                                    Chakra.flex
-                                                        (fun x -> x.direction <- "column")
-                                                        [
-                                                            Chakra.box
-                                                                (fun x ->
-                                                                    x.height <- "17px"
-                                                                    x.lineHeight <- "17px"
-                                                                    x.color <- "#444")
-                                                                [
-                                                                    str informationKindName
-                                                                ]
-
-                                                            Chakra.box
-                                                                (fun _ -> ())
-                                                                [
-                                                                    yield!
-                                                                        groups
-                                                                        |> List.map
-                                                                            (fun (information, taskIdList) ->
-                                                                                Chakra.box
-                                                                                    (fun x -> x.paddingLeft <- "17px")
-                                                                                    [
-                                                                                        InformationName.InformationName
-                                                                                            {|
-                                                                                                Information =
-                                                                                                    information
-                                                                                            |}
-
-                                                                                        // Task Name
-                                                                                        Chakra.box
-                                                                                            (fun x ->
-                                                                                                x.flex <- 1)
-                                                                                            [
-                                                                                                yield!
-                                                                                                    taskIdList
-                                                                                                    |> List.map
-                                                                                                        (fun taskId ->
-                                                                                                            Chakra.stack
-                                                                                                                (fun x ->
-                                                                                                                    x.direction <-
-                                                                                                                        "row"
-
-                                                                                                                    x.spacing <-
-                                                                                                                        "10px"
-
-                                                                                                                    x.paddingLeft <-
-                                                                                                                        "17px")
-                                                                                                                [
-                                                                                                                    TaskPriority.TaskPriority
-                                                                                                                        {|
-                                                                                                                            TaskId =
-                                                                                                                                taskId
-                                                                                                                        |}
-                                                                                                                    TaskName.TaskName
-                                                                                                                        {|
-                                                                                                                            TaskId =
-                                                                                                                                taskId
-                                                                                                                        |}
-                                                                                                                ])
-                                                                                            ]
-                                                                                    ])
-                                                                ]
-                                                        ])
-                                    ]
-                            ]
-                        // Column: Grid
-                        Chakra.box
                             (fun _ -> ())
                             [
-                                GridHeader.GridHeader {| Username = input.Username |}
+                                yield!
+                                    tasksByInformationKind
+                                    |> List.map
+                                        (fun (informationKindName, groups) ->
+                                            Chakra.flex
+                                                (fun x -> x.direction <- "column")
+                                                [
+                                                    Chakra.box
+                                                        (fun x ->
+                                                            x.height <- "17px"
+                                                            x.lineHeight <- "17px"
+                                                            x.color <- "#444")
+                                                        [
+                                                            str informationKindName
+                                                        ]
 
-                                Chakra.box
-                                    (fun _ -> ())
-                                    [
-                                        yield!
-                                            tasksByInformationKind
-                                            |> List.map
-                                                (fun (_, groups) ->
                                                     Chakra.box
                                                         (fun _ -> ())
                                                         [
-                                                            Chakra.box
-                                                                (fun x ->
-                                                                    x.position <- "relative"
-                                                                    x.height <- "17px"
-                                                                    x.lineHeight <- "17px")
-                                                                []
                                                             yield!
                                                                 groups
                                                                 |> List.map
-                                                                    (fun (_, taskIdList) ->
+                                                                    (fun (information, taskIdList) ->
                                                                         Chakra.box
-                                                                            (fun _ -> ())
+                                                                            (fun x -> x.paddingLeft <- "17px")
                                                                             [
+                                                                                InformationName.InformationName
+                                                                                    {| Information = information |}
+
+                                                                                // Task Name
                                                                                 Chakra.box
-                                                                                    (fun x ->
-                                                                                        x.position <- "relative"
-                                                                                        x.height <- "17px"
-                                                                                        x.lineHeight <- "17px")
-                                                                                    []
-                                                                                Cells.Cells
-                                                                                    {|
-                                                                                        Username = input.Username
-                                                                                        TaskIdList = taskIdList
-                                                                                    |}
+                                                                                    (fun x -> x.flex <- 1)
+                                                                                    [
+                                                                                        yield!
+                                                                                            taskIdList
+                                                                                            |> List.map
+                                                                                                (fun taskId ->
+                                                                                                    Chakra.stack
+                                                                                                        (fun x ->
+                                                                                                            x.direction <-
+                                                                                                                "row"
+
+                                                                                                            x.spacing <-
+                                                                                                                "10px"
+
+                                                                                                            x.paddingLeft <-
+                                                                                                                "17px")
+                                                                                                        [
+                                                                                                            TaskPriority.TaskPriority
+                                                                                                                {|
+                                                                                                                    TaskId =
+                                                                                                                        taskId
+                                                                                                                |}
+                                                                                                            TaskName.TaskName
+                                                                                                                {|
+                                                                                                                    TaskId =
+                                                                                                                        taskId
+                                                                                                                |}
+                                                                                                        ])
+                                                                                    ]
                                                                             ])
-                                                        ])
-                                    ]
+                                                        ]
+                                                ])
+                            ]
+                    ]
+                // Column: Grid
+                Chakra.box
+                    (fun _ -> ())
+                    [
+                        GridHeader.GridHeader {| Username = input.Username |}
+
+                        Chakra.box
+                            (fun _ -> ())
+                            [
+                                yield!
+                                    tasksByInformationKind
+                                    |> List.map
+                                        (fun (_, groups) ->
+                                            Chakra.box
+                                                (fun _ -> ())
+                                                [
+                                                    Chakra.box
+                                                        (fun x ->
+                                                            x.position <- "relative"
+                                                            x.height <- "17px"
+                                                            x.lineHeight <- "17px")
+                                                        []
+                                                    yield!
+                                                        groups
+                                                        |> List.map
+                                                            (fun (_, taskIdList) ->
+                                                                Chakra.box
+                                                                    (fun _ -> ())
+                                                                    [
+                                                                        Chakra.box
+                                                                            (fun x ->
+                                                                                x.position <- "relative"
+                                                                                x.height <- "17px"
+                                                                                x.lineHeight <- "17px")
+                                                                            []
+                                                                        Cells.Cells
+                                                                            {|
+                                                                                Username = input.Username
+                                                                                TaskIdList = taskIdList
+                                                                            |}
+                                                                    ])
+                                                ])
                             ]
                     ]
             ]

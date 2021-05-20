@@ -75,7 +75,9 @@ module HomeScreen =
                         x.spacing <- "0"
                         x.flex <- 1
                         x.marginLeft <- "5px"
-                        x.marginRight <- "5px")
+                        x.marginRight <- "5px"
+                        x.overflow <- "auto"
+                        x.flexBasis <- 0)
                     [
                         Chakra.tabs
                             (fun x ->
@@ -84,104 +86,112 @@ module HomeScreen =
                                 x.onChange <- handleTabsChange
                                 x.flexDirection <- "column"
                                 x.display <- "flex"
-                                x.flex <- 1)
+                                x.flex <- 1
+                                //                                x.alignSelf <- "start"
+                                )
                             [
-                                Chakra.tabList
-                                    (fun x ->
-                                        x.borderColor <- "transparent"
-                                        x.marginBottom <- "5px"
-                                        x.borderBottomWidth <- "1px"
-                                        x.borderBottomColor <- "gray.16")
+                                Chakra.flex
+                                    (fun _ -> ())
                                     [
-                                        yield!
-                                            tabs
-                                            |> List.map
-                                                (fun tab ->
-                                                    Chakra.tab
-                                                        (fun x ->
-                                                            x.padding <- "12px"
-                                                            x.color <- "gray.45"
-
-                                                            x._hover <-
-                                                                JS.newObj
-                                                                    (fun x ->
-                                                                        x.borderBottomWidth <- "2px"
-                                                                        x.borderBottomColor <- "gray.45")
-
-                                                            x._selected <-
-                                                                JS.newObj
-                                                                    (fun x ->
-                                                                        x.color <- "gray.77"
-                                                                        x.borderColor <- "gray.77"))
-                                                        [
-                                                            Chakra.icon
+                                        Chakra.tabList
+                                            (fun x ->
+                                                x.borderColor <- "transparent"
+                                                x.marginBottom <- "5px"
+                                                x.borderBottomWidth <- "1px"
+                                                x.borderBottomColor <- "gray.16")
+                                            [
+                                                yield!
+                                                    tabs
+                                                    |> List.map
+                                                        (fun tab ->
+                                                            Chakra.tab
                                                                 (fun x ->
-                                                                    x.``as`` <- tab.Icon
-                                                                    x.marginRight <- "6px")
-                                                                []
-                                                            str tab.Name
-                                                        ])
+                                                                    x.padding <- "12px"
+                                                                    x.color <- "gray.45"
 
-                                        Chakra.spacer (fun _ -> ()) []
+                                                                    x._hover <-
+                                                                        JS.newObj
+                                                                            (fun x ->
+                                                                                x.borderBottomWidth <- "2px"
+                                                                                x.borderBottomColor <- "gray.45")
 
-                                        Menu.Menu
-                                            {|
-                                                Tooltip = ""
-                                                Trigger =
-                                                    TransparentIconButton.TransparentIconButton
-                                                        {|
-                                                            Props =
-                                                                fun x ->
-                                                                    x.``as`` <- Chakra.react.MenuButton
-                                                                    x.fontSize <- "14px"
+                                                                    x._selected <-
+                                                                        JS.newObj
+                                                                            (fun x ->
+                                                                                x.color <- "gray.77"
+                                                                                x.borderColor <- "gray.77"))
+                                                                [
+                                                                    Chakra.icon
+                                                                        (fun x ->
+                                                                            x.``as`` <- tab.Icon
+                                                                            x.marginRight <- "6px")
+                                                                        []
+                                                                    str tab.Name
+                                                                ])
 
-                                                                    x.icon <-
-                                                                        Icons.bs.BsThreeDotsVertical |> Icons.render
+                                                Chakra.spacer (fun _ -> ()) []
 
-                                                                    x.alignSelf <- "center"
-                                                        |}
-                                                Menu =
-                                                    [
-                                                        Chakra.menuOptionGroup
-                                                            (fun x ->
-                                                                x.``type`` <- "checkbox"
+                                                Menu.Menu
+                                                    {|
+                                                        Tooltip = ""
+                                                        Trigger =
+                                                            TransparentIconButton.TransparentIconButton
+                                                                {|
+                                                                    Props =
+                                                                        fun x ->
+                                                                            x.``as`` <- Chakra.react.MenuButton
+                                                                            x.fontSize <- "14px"
 
-                                                                x.value <-
-                                                                    [|
-                                                                        if hideSchedulingOverlay then
-                                                                            yield
-                                                                                nameof Atoms.User.hideSchedulingOverlay
-                                                                    |]
+                                                                            x.icon <-
+                                                                                Icons.bs.BsThreeDotsVertical
+                                                                                |> Icons.render
 
-                                                                x.onChange <-
-                                                                    fun (checks: string []) ->
-                                                                        promise {
-                                                                            setHideSchedulingOverlay (
-                                                                                checks
-                                                                                |> Array.contains (
-                                                                                    nameof
-                                                                                        Atoms.User.hideSchedulingOverlay
-                                                                                )
-                                                                            )
-                                                                        })
+                                                                            x.alignSelf <- "center"
+                                                                |}
+                                                        Menu =
                                                             [
-                                                                Chakra.menuItemOption
+                                                                Chakra.menuOptionGroup
                                                                     (fun x ->
+                                                                        x.``type`` <- "checkbox"
+
                                                                         x.value <-
-                                                                            nameof Atoms.User.hideSchedulingOverlay)
+                                                                            [|
+                                                                                if hideSchedulingOverlay then
+                                                                                    yield
+                                                                                        nameof
+                                                                                            Atoms.User.hideSchedulingOverlay
+                                                                            |]
+
+                                                                        x.onChange <-
+                                                                            fun (checks: string []) ->
+                                                                                promise {
+                                                                                    setHideSchedulingOverlay (
+                                                                                        checks
+                                                                                        |> Array.contains (
+                                                                                            nameof
+                                                                                                Atoms.User.hideSchedulingOverlay
+                                                                                        )
+                                                                                    )
+                                                                                })
                                                                     [
-                                                                        str "Hide Recurrency Overlay"
+                                                                        Chakra.menuItemOption
+                                                                            (fun x ->
+                                                                                x.value <-
+                                                                                    nameof
+                                                                                        Atoms.User.hideSchedulingOverlay)
+                                                                            [
+                                                                                str "Hide Recurrency Overlay"
+                                                                            ]
                                                                     ]
                                                             ]
-                                                    ]
-                                                MenuListProps = fun _ -> ()
-                                            |}
+                                                        MenuListProps = fun _ -> ()
+                                                    |}
+                                            ]
                                     ]
                                 Chakra.tabPanels
                                     (fun x ->
                                         x.flex <- 1
-                                        x.overflowY <- "auto"
-                                        x.flexBasis <- 0)
+                                        x.display <- "flex")
                                     [
                                         yield!
                                             tabs
@@ -189,8 +199,11 @@ module HomeScreen =
                                                 (fun tab ->
                                                     Chakra.tabPanel
                                                         (fun x ->
+                                                            x.display <- "flex"
                                                             x.padding <- "0"
-                                                            x.boxShadow <- "none !important")
+                                                            x.boxShadow <- "none !important"
+                                                            //                                                            x.overflow <- "auto"
+                                                            )
                                                         [
                                                             if filteredTaskIdList.IsEmpty then
                                                                 Chakra.box
