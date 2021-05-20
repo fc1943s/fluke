@@ -77,11 +77,11 @@ module Router =
                     do!
                         [|
                             "view"
-                            "HabitTracker"
+                            (string TempUI.defaultView)
                         |]
                         |> expectUrl
 
-                    do! expectView peek View.View.HabitTracker
+                    do! expectView peek TempUI.defaultView
                 }
             )
 

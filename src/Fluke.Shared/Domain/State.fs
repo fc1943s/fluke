@@ -168,7 +168,6 @@ module State =
 
 
     let databaseStateWithInteractions (userInteractionList: UserInteraction list) (databaseState: DatabaseState) =
-
         let newDatabaseState =
             (databaseState, userInteractionList)
             ||> List.fold

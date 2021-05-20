@@ -3,10 +3,10 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Feliz.Recoil
+open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
-open Fluke.Shared
 
 
 module TopBar =
@@ -24,7 +24,7 @@ module TopBar =
                         match username with
                         | Some username ->
                             setter.set (Atoms.User.leftDock username, None)
-                            setter.set (Atoms.User.view username, View.View.HabitTracker)
+                            setter.set (Atoms.User.view username, TempUI.defaultView)
                         | None -> ()
                     })
 

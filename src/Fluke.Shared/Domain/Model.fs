@@ -119,6 +119,16 @@ module Model =
             | Resource { Name = name } -> InformationName.Resource name
             | Archive information -> information |> Information.Name
 
+    and Scheduling with
+        static member Label scheduling =
+            match scheduling with
+            | Manual WithSuggestion -> "Suggested"
+            | Manual WithoutSuggestion -> "None"
+            | Recurrency (Offset (Days n)) -> $"Every {n} days"
+            | Recurrency (Offset (Weeks n)) -> $"Every {n} weeks"
+            | Recurrency (Offset (Months n)) -> $"Every {n} months"
+            | Recurrency (Fixed fixedRecurrencyList) -> "Fixed..."
+
     and InformationName with
         static member Value informationName =
             match informationName with
@@ -150,6 +160,7 @@ module Model =
 
     and ProjectName with
         static member inline Value (ProjectName name) = name
+
     and AreaName with
         static member inline Value (AreaName name) = name
 

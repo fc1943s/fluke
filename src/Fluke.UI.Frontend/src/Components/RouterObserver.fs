@@ -52,12 +52,12 @@ module RouterObserver =
             Recoil.useCallbackRef
                 (fun _ (e: KeyboardEvent) ->
                     match e.ctrlKey, e.shiftKey, e.key with
-                    | false, true, "H" -> setView View.View.HabitTracker
-                    | false, true, "P" -> setView View.View.Priority
-                    | false, true, "B" -> setView View.View.BulletJournal
                     | false, true, "I" ->
                         log "RouterObserver.onKeyDown() View.Information"
                         setView View.View.Information
+                    | false, true, "H" -> setView View.View.HabitTracker
+                    | false, true, "P" -> setView View.View.Priority
+                    | false, true, "B" -> setView View.View.BulletJournal
                     | _ -> ())
 
         React.useListener.onKeyDown onKeyDown
@@ -73,10 +73,10 @@ module RouterObserver =
                 (fun _ segments ->
                     match (segments
                            |> List.skip (if not deviceInfo.IsProduction then 0 else 1)) with
+                    | [ "view"; "Information" ] -> { View = Some View.View.Information }
                     | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
                     | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
                     | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
-                    | [ "view"; "Information" ] -> { View = Some View.View.Information }
                     | _ -> { View = None })
 
         let pathPrefix, parsedSegments =

@@ -64,6 +64,7 @@
         <Compile Include="src\Components\ExternalLink.fs" />
         <Compile Include="src\Components\AreaSelector.fs" />
         <Compile Include="src\Components\ProjectForm.fs" />
+        <Compile Include="src\Components\SchedulingSelector.fs" />
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
         <Compile Include="src\Components\DatabaseForm.fs" />

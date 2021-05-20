@@ -50,8 +50,8 @@
     "@fortawesome/fontawesome-free": "~5.15",
     "typeface-roboto-condensed": "~1.1",
 
-    "react": "0.0.0-experimental-63927e084",
-    "react-dom": "0.0.0-experimental-63927e084",
+    "react": "0.0.0-experimental-3f8f4675d",
+    "react-dom": "0.0.0-experimental-3f8f4675d",
 
     "recoil": "~0.3",
     "recoilize": "~2.0",
@@ -142,8 +142,8 @@
     "concurrently": "~6.1"
   },
   "resolutions": {
-    "react": "0.0.0-experimental-63927e084",
-    "react-dom": "0.0.0-experimental-63927e084"
+    "react": "0.0.0-experimental-3f8f4675d",
+    "react-dom": "0.0.0-experimental-3f8f4675d"
   },
   "browserslist": {
     "production": [

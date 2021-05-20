@@ -12,13 +12,32 @@ module View =
 
     [<RequireQualifiedAccess>]
     type View =
+        | Information
         | HabitTracker
         | Priority
         | BulletJournal
-        | Information
 
     let rec filterTaskStateList view dateRange (taskStateList: TaskState list) =
         match view with
+        | View.Information ->
+            taskStateList
+            |> List.filter
+                (function
+                | {
+                      Task = {
+                                 Scheduling = Manual WithoutSuggestion
+                             }
+                  } -> true
+                | _ -> false)
+    //                |> List.filter (fun task ->
+//                    task.StatusEntries
+//                    |> List.filter (function
+//                        | TaskStatusEntry (date, _) when date.DateTime >==< dateRange -> true
+//                        | _ -> false
+//                    )
+//                    |> List.tryLast
+//                    |> function Some (TaskStatusEntry (_, Dismissed)) -> false | _ -> true
+//                )
         | View.HabitTracker
         | View.BulletJournal ->
             taskStateList
@@ -56,25 +75,6 @@ module View =
                   } when (Priority.toTag priority) + 1 < 5 -> false
                 | { Task = { Scheduling = Manual _ } } -> true
                 | _ -> false)
-        | View.Information ->
-            taskStateList
-            |> List.filter
-                (function
-                | {
-                      Task = {
-                                 Scheduling = Manual WithoutSuggestion
-                             }
-                  } -> true
-                | _ -> false)
-    //                |> List.filter (fun task ->
-//                    task.StatusEntries
-//                    |> List.filter (function
-//                        | TaskStatusEntry (date, _) when date.DateTime >==< dateRange -> true
-//                        | _ -> false
-//                    )
-//                    |> List.tryLast
-//                    |> function Some (TaskStatusEntry (_, Dismissed)) -> false | _ -> true
-//                )
 
     let sortLanes
         (input: {| View: View
@@ -88,20 +88,6 @@ module View =
             |> List.sortBy (fun (taskState, _) -> taskState.Task.Name |> TaskName.Value)
 
         match input.View with
-        | View.HabitTracker ->
-            lanes
-            |> Sorting.sortLanesByFrequency
-            |> Sorting.sortLanesByIncomingRecurrency input.DayStart input.Position
-            |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position //input.TaskOrderList
-        | View.Priority ->
-            lanes
-            //                |> Sorting.applyManualOrder input.TaskOrderList
-            |> List.sortByDescending
-                (fun (taskState, _) ->
-                    taskState.Task.Priority
-                    |> Option.map Priority.toTag
-                    |> Option.defaultValue -1)
-        | View.BulletJournal -> lanes
         | View.Information ->
             let lanes =
                 lanes
@@ -119,6 +105,20 @@ module View =
 
                     informationState.Information, lanes)
             |> List.collect snd
+        | View.HabitTracker ->
+            lanes
+            |> Sorting.sortLanesByFrequency
+            |> Sorting.sortLanesByIncomingRecurrency input.DayStart input.Position
+            |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position //input.TaskOrderList
+        | View.Priority ->
+            lanes
+            //                |> Sorting.applyManualOrder input.TaskOrderList
+            |> List.sortByDescending
+                (fun (taskState, _) ->
+                    taskState.Task.Priority
+                    |> Option.map Priority.toTag
+                    |> Option.defaultValue -1)
+        | View.BulletJournal -> lanes
 
     let getSessionData
         (input: {| Username: Username

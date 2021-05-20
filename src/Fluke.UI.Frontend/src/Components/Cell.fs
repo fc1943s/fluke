@@ -24,7 +24,9 @@ module Cell =
         Profiling.addCount "CellComponent.render"
 
         let isTesting = Recoil.useValue Atoms.isTesting
-        let status = Recoil.useValue (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
+        let databaseId = Recoil.useValue (Atoms.Task.databaseId input.TaskId)
+        let access = Recoil.useValue (Selectors.Database.access databaseId)
+        let status, setStatus = Recoil.useState (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
         let showUser = Recoil.useValue (Selectors.Task.showUser input.TaskId)
@@ -51,7 +53,7 @@ module Cell =
 
                             if isCurrentCellMenuOpened then
                                 setCellMenuOpened None
-                            else
+                            elif access = Some Access.ReadWrite then
                                 setCellMenuOpened (Some (input.TaskId, input.DateId))
 
                     //                gun.get("test").get("test2").put(1)
@@ -77,7 +79,6 @@ module Cell =
                 x.width <- "17px"
                 x.height <- "17px"
                 x.lineHeight <- "17px"
-                x.cursor <- "pointer"
 
                 x.backgroundColor <-
                     (TempUI.cellStatusColor status)
@@ -89,7 +90,10 @@ module Cell =
                 x.textAlign <- "center"
                 x.borderColor <- if selected then "#ffffffAA" else "transparent"
                 x.borderWidth <- "1px"
-                x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
+
+                if access = Some Access.ReadWrite then
+                    x.cursor <- "pointer"
+                    x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
             [
                 if isCurrentCellMenuOpened then
                     Chakra.stack
@@ -170,12 +174,23 @@ overriding any other behavior.
                                                 Tooltip.wrap
                                                     tooltipLabel
                                                     [
-                                                        Chakra.box
+                                                        Chakra.iconButton
                                                             (fun x ->
-                                                                x.height <- "15px"
-                                                                x.width <- "15px"
+                                                                x._hover <- JS.newObj (fun x -> x.opacity <- 0.8)
+                                                                x.variant <- "outline"
                                                                 x.backgroundColor <- color
-                                                                x.cursor <- "pointer")
+                                                                x.border <- "0"
+                                                                x.minWidth <- "15px"
+                                                                x.height <- "15px"
+                                                                x.borderRadius <- "0"
+
+                                                                x.onClick <-
+                                                                    fun _ ->
+                                                                        promise {
+                                                                            setStatus (
+                                                                                UserStatus (input.Username, status)
+                                                                            )
+                                                                        })
                                                             []
                                                     ])
                                 ]
@@ -194,7 +209,7 @@ overriding any other behavior.
                                                 x.width <- "30px"
                                                 x.height <- "15px"
                                                 x.borderRadius <- "0"
-                                                x.onClick <- fun _ -> promise { () })
+                                                x.onClick <- fun _ -> promise { setStatus Disabled })
                                             []
                                     ]
                             | _ -> ()

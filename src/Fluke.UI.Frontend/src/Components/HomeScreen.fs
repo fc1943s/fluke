@@ -20,11 +20,19 @@ module HomeScreen =
         =
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
 
-        let showUserActionsOnly, setShowUserActionsOnly =
-            Recoil.useState (Atoms.User.showUserActionsOnly input.Username)
+        let hideSchedulingOverlay, setHideSchedulingOverlay =
+            Recoil.useState (Atoms.User.hideSchedulingOverlay input.Username)
+
+        let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
 
         let tabs =
             [
+                {|
+                    View = View.View.Information
+                    Name = "Information View"
+                    Icon = Icons.ti.TiFlowChildren
+                    Content = fun () -> InformationView.InformationView {| Username = input.Username |}
+                |}
                 {|
                     View = View.View.HabitTracker
                     Name = "Habit Tracker View"
@@ -42,12 +50,6 @@ module HomeScreen =
                     Name = "Bullet Journal View"
                     Icon = Icons.bs.BsListCheck
                     Content = fun () -> BulletJournalView.BulletJournalView {| Username = input.Username |}
-                |}
-                {|
-                    View = View.View.Information
-                    Name = "Information View"
-                    Icon = Icons.ti.TiFlowChildren
-                    Content = fun () -> InformationView.InformationView {| Username = input.Username |}
                 |}
             ]
 
@@ -87,6 +89,7 @@ module HomeScreen =
                                 Chakra.tabList
                                     (fun x ->
                                         x.borderColor <- "transparent"
+                                        x.marginBottom <- "5px"
                                         x.borderBottomWidth <- "1px"
                                         x.borderBottomColor <- "gray.16")
                                     [
@@ -145,27 +148,29 @@ module HomeScreen =
 
                                                                 x.value <-
                                                                     [|
-                                                                        if showUserActionsOnly then
-                                                                            yield nameof Atoms.User.showUserActionsOnly
+                                                                        if hideSchedulingOverlay then
+                                                                            yield
+                                                                                nameof Atoms.User.hideSchedulingOverlay
                                                                     |]
 
                                                                 x.onChange <-
                                                                     fun (checks: string []) ->
                                                                         promise {
-                                                                            setShowUserActionsOnly (
+                                                                            setHideSchedulingOverlay (
                                                                                 checks
                                                                                 |> Array.contains (
                                                                                     nameof
-                                                                                        Atoms.User.showUserActionsOnly
+                                                                                        Atoms.User.hideSchedulingOverlay
                                                                                 )
                                                                             )
                                                                         })
                                                             [
                                                                 Chakra.menuItemOption
                                                                     (fun x ->
-                                                                        x.value <- nameof Atoms.User.showUserActionsOnly)
+                                                                        x.value <-
+                                                                            nameof Atoms.User.hideSchedulingOverlay)
                                                                     [
-                                                                        str "Show User Actions Only"
+                                                                        str "Hide Recurrency Overlay"
                                                                     ]
                                                             ]
                                                     ]
@@ -187,7 +192,15 @@ module HomeScreen =
                                                             x.padding <- "0"
                                                             x.boxShadow <- "none !important")
                                                         [
-                                                            tab.Content ()
+                                                            if filteredTaskIdList.IsEmpty then
+                                                                Chakra.box
+                                                                    (fun x -> x.padding <- "7px")
+                                                                    [
+                                                                        str
+                                                                            "No tasks found. Add tasks in the Databases panel."
+                                                                    ]
+                                                            else
+                                                                tab.Content ()
                                                         ])
                                     ]
                             ]

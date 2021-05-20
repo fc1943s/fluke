@@ -26,7 +26,7 @@ module TempUI =
     let colorCornerBlue = "#005688"
     let colorCornerPink = "#a91c77"
 
-    let defaultView = View.View.HabitTracker
+    let defaultView = View.View.Information
 
     let rec informationColor =
         function

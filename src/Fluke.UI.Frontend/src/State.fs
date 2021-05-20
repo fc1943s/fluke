@@ -243,13 +243,13 @@ module State =
                         ])
                 )
 
-            let rec showUserActionsOnly =
+            let rec hideSchedulingOverlay =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof showUserActionsOnly}",
+                    $"{nameof atomFamily}/{nameof User}/{nameof hideSchedulingOverlay}",
                     (fun (_username: Username) -> false),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (showUserActionsOnly, username)) []
+                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (hideSchedulingOverlay, username)) []
                         ])
                 )
 
@@ -686,6 +686,23 @@ module State =
                         })
                 )
 
+            let rec access =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Database}/{nameof access}",
+                    (fun (databaseId: DatabaseId) getter ->
+                        let username = getter.get Atoms.username
+
+                        match username with
+                        | Some username ->
+                            let database = getter.get (database databaseId)
+
+                            if database.Owner = Templates.templatesUser.Username then
+                                None
+                            else
+                                getAccess database username
+                        | None -> None)
+                )
+
 
         module rec Task =
             let rec task =
@@ -1020,9 +1037,9 @@ module State =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Cell}/{nameof status}",
                     (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
-                        let showUserActionsOnly = getter.get (Atoms.User.showUserActionsOnly username)
+                        let hideSchedulingOverlay = getter.get (Atoms.User.hideSchedulingOverlay username)
 
-                        if showUserActionsOnly then
+                        if hideSchedulingOverlay then
                             getter.get (Atoms.Cell.status (taskId, dateId))
                         else
                             let sessionData = getter.get (Session.sessionData username)
