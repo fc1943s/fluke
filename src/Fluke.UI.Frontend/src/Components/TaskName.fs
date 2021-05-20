@@ -23,7 +23,7 @@ module TaskName =
 
         Chakra.box
             (fun x ->
-                x.flex <- 1
+                x.flex <- "1"
                 x.ref <- ref
                 x.position <- "relative"
                 x.height <- "17px"

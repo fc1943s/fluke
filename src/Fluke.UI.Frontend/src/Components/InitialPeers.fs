@@ -28,7 +28,7 @@ module InitialPeers =
         let skipClick _ = promise { setInitialPeerSkipped true }
 
         Chakra.center
-            (fun x -> x.flex <- 1)
+            (fun x -> x.flex <- "1")
             [
                 Chakra.stack
                     (fun x -> x.minWidth <- "200px")
@@ -64,7 +64,7 @@ module InitialPeers =
                                         Hint = None
                                         Props =
                                             fun x ->
-                                                x.flex <- 1
+                                                x.flex <- "1"
                                                 x.autoFocus <- true
                                                 x.onClick <- skipClick
                                                 x.color <- "gray"
@@ -80,7 +80,7 @@ module InitialPeers =
                                         Hint = None
                                         Props =
                                             fun x ->
-                                                x.flex <- 1
+                                                x.flex <- "1"
                                                 x.onClick <- nextClick
                                                 x.color <- "gray"
                                                 x.disabled <- gunPeer.Length = 0

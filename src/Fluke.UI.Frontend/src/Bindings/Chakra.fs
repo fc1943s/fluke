@@ -46,7 +46,7 @@ module Chakra =
         abstract direction : string with get, set
         abstract disabled : bool with get, set
         abstract display : string with get, set
-        abstract flex : int with get, set
+        abstract flex : string with get, set
         abstract flexBasis : int with get, set
         abstract flexDirection : string with get, set
         abstract flip : bool with get, set

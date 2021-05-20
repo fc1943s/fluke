@@ -80,6 +80,7 @@ module Theme =
                                         color = "#ddd"
                                         userSelect = "none"
                                         touchAction = "pan-x pan-y"
+                                        overflow = "hidden"
                                     |}
                                 ``input::-ms-reveal`` =
                                     {|
@@ -110,6 +111,7 @@ module Theme =
                                         backgroundClip = "content-box"
                                         borderLeft = "3px solid transparent"
                                     |}
+                                ``#root`` = {| display = "flex" |}
                                 ``.rct-collapse-btn:focus`` = {| boxShadow = "none !important" |}
                                 ``.rct-disabled .rct-checkbox svg`` = {| opacity = "0" |}
                                 ``.rct-node label:hover, .rct-node label:active`` = {| background = "none" |}

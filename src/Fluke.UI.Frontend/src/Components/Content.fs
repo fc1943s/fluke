@@ -20,6 +20,7 @@ module Content =
 
         Chakra.flex
             (fun x ->
+                x.flex <- "1"
                 x.minHeight <- "100vh"
                 x.height <- if deviceInfo.IsExtension then "590px" else null
                 x.width <- if deviceInfo.IsExtension then "790px" else null)
@@ -40,16 +41,11 @@ module Content =
                             Chakra.stack
                                 (fun x ->
                                     x.spacing <- "0"
-                                    x.flex <- 1
-                                    x.overflow <- "auto"
-                                    x.flexBasis <- 0)
+                                    x.flex <- "1"
+                                    x.maxWidth <- "100vw")
                                 [
                                     TopBar.TopBar ()
-                                    HomeScreen.HomeScreen
-                                        {|
-                                            Username = username
-                                            Props = fun x -> x.flex <- 1
-                                        |}
+                                    HomeScreen.HomeScreen {| Username = username |}
                                     StatusBar.StatusBar {| Username = username |}
                                 ]
 

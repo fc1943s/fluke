@@ -39,7 +39,7 @@ module LoginScreen =
             }
 
         Chakra.center
-            (fun x -> x.flex <- 1)
+            (fun x -> x.flex <- "1")
             [
                 Chakra.stack
                     (fun _ -> ())
@@ -68,7 +68,7 @@ module LoginScreen =
                                         Hint = None
                                         Props =
                                             fun x ->
-                                                x.flex <- 1
+                                                x.flex <- "1"
                                                 x.onClick <- signInClick
                                                 x.color <- "gray"
                                         Children =
@@ -82,7 +82,7 @@ module LoginScreen =
                                         Hint = None
                                         Props =
                                             fun x ->
-                                                x.flex <- 1
+                                                x.flex <- "1"
                                                 x.onClick <- signUpClick
                                                 x.color <- "gray"
                                         Children =

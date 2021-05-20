@@ -26,7 +26,7 @@ module DockPanel =
         Chakra.stack
             (fun x ->
                 x.spacing <- "0"
-                x.flex <- 1)
+                x.flex <- "1")
             [
                 Chakra.flex
                     (fun x ->
@@ -88,7 +88,7 @@ module DockPanel =
                         x.paddingLeft <- "8px"
                         x.paddingRight <- "8px"
                         x.paddingBottom <- "8px"
-                        x.flex <- 1)
+                        x.flex <- "1")
                     [
                         yield! input.children
                     ]

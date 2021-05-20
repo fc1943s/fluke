@@ -33,7 +33,7 @@ module LeftDock =
                                     Username = input.Username
                                     Props =
                                         fun x ->
-                                            x.flex <- 1
+                                            x.flex <- "1"
                                             x.overflowY <- "auto"
                                             x.flexBasis <- 0
                                 |}
@@ -51,7 +51,7 @@ module LeftDock =
                                     Username = input.Username
                                     Props =
                                         fun x ->
-                                            x.flex <- 1
+                                            x.flex <- "1"
                                             x.overflowY <- "auto"
                                             x.flexBasis <- 0
                                 |}
@@ -186,7 +186,7 @@ module LeftDock =
                                         x.height <- "100%"
                                         x.borderRightWidth <- "1px"
                                         x.borderRightColor <- "gray.16"
-                                        x.flex <- 1)
+                                        x.flex <- "1")
                                     [
                                         DockPanel.DockPanel
                                             {|

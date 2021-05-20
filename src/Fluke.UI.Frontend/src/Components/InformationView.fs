@@ -18,14 +18,14 @@ module InformationView =
         let tasksByInformationKind = Recoil.useValue (Selectors.Session.tasksByInformationKind input.Username)
 
         Chakra.flex
-            (fun _ -> ())
+            (fun x -> x.flex <- "1")
             [
                 Chakra.flex
                     (fun x ->
                         x.direction <- "column"
-                        x.flex <- 1
+                        x.flex <- "1"
                         x.paddingRight <- "10px"
-                        x.maxWidth <- "550px")
+                        x.maxWidth <- "400px")
                     [
                         yield!
                             Chakra.box (fun x -> x.height <- "17px") []
@@ -65,7 +65,7 @@ module InformationView =
 
                                                                                 // Task Name
                                                                                 Chakra.box
-                                                                                    (fun x -> x.flex <- 1)
+                                                                                    (fun x -> x.flex <- "1")
                                                                                     [
                                                                                         yield!
                                                                                             taskIdList
