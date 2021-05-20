@@ -16,13 +16,17 @@ module PriorityView =
         let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
 
         Chakra.flex
-            (fun _ -> ())
+            (fun x -> x.flex <- "1")
             [
-                Chakra.box
-                    (fun _ -> ())
+                Chakra.flex
+                    (fun x ->
+                        x.direction <- "column"
+                        x.flex <- "1"
+                        x.paddingRight <- "10px"
+                        x.maxWidth <- "400px")
                     [
                         yield!
-                            Chakra.box (fun x -> x.height <- "17px") []
+                            Chakra.box (fun x -> x.minHeight <- "17px") []
                             |> List.replicate 3
 
                         Chakra.flex

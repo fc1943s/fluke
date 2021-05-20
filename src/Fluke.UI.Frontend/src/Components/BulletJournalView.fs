@@ -4,6 +4,7 @@ open Fable.React
 open Feliz
 open Feliz.Recoil
 open Fable.DateFunctions
+open Fluke.Shared.Domain
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
@@ -17,7 +18,7 @@ module BulletJournalView =
         let weekCellsMap = Recoil.useValue (Selectors.BulletJournalView.weekCellsMap input.Username)
 
         Chakra.box
-            (fun _ -> ())
+            (fun x -> x.flex <- "1")
             [
                 yield!
                     weekCellsMap
@@ -25,6 +26,7 @@ module BulletJournalView =
                         (fun week ->
                             Chakra.flex
                                 (fun x ->
+                                    x.flex <- "1"
                                     x.marginTop <- "15px"
                                     x.marginBottom <- "15px")
                                 [
@@ -37,17 +39,33 @@ module BulletJournalView =
                                                 | DateId referenceDay as dateId ->
                                                     let cells = week.[dateId]
 
+                                                    let visibleCells =
+                                                        cells
+                                                        |> List.filter
+                                                            (fun cell ->
+                                                                not cell.Sessions.IsEmpty
+                                                                || not cell.Attachments.IsEmpty
+                                                                || cell.Status <> State.Disabled)
+
                                                     Chakra.box
                                                         (fun x ->
+                                                            x.flex <- "1"
                                                             x.paddingLeft <- "10px"
                                                             x.paddingRight <- "10px")
                                                         [
                                                             Chakra.box
                                                                 (fun x ->
+                                                                    x.visibility <-
+                                                                        if visibleCells.IsEmpty then
+                                                                            "hidden"
+                                                                        else
+                                                                            "visible"
+
                                                                     x.marginBottom <- "3px"
                                                                     x.borderBottomWidth <- "1px"
                                                                     x.borderBottomColor <- "#333"
                                                                     x.fontSize <- "14px"
+                                                                    x.lineHeight <- "14px"
 
                                                                     x.color <-
                                                                         if cells |> List.forall (fun x -> x.IsToday) then
@@ -63,7 +81,7 @@ module BulletJournalView =
 
 
                                                             yield!
-                                                                cells
+                                                                visibleCells
                                                                 |> List.map
                                                                     (fun cell ->
                                                                         Chakra.flex

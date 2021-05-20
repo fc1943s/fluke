@@ -350,7 +350,7 @@ module Databases =
                             [
                                 Chakra.box
                                     (fun x ->
-                                        x.fontSize <- "12px"
+                                        x.fontSize <- "main"
                                         x.paddingTop <- "1px"
                                         x.paddingBottom <- "1px"
                                         x.marginLeft <- if input.Database.IsNone then "2px" else null
@@ -366,7 +366,6 @@ module Databases =
                                     Chakra.box
                                         (fun x ->
                                             x.display <- "inline"
-                                            x.fontSize <- "initial"
 
                                             x.visibility <-
                                                 if database.Id = Database.Default.Id then "hidden" else "visible"
@@ -374,7 +373,14 @@ module Databases =
                                             x.whiteSpace <- "nowrap")
                                         [
                                             match labelText with
-                                            | Some label -> str (label |> Seq.item 2)
+                                            | Some label ->
+                                                Chakra.box
+                                                    (fun x ->
+                                                        x.display <- "inline"
+                                                        x.fontSize <- "main")
+                                                    [
+                                                        str (label |> Seq.item 2)
+                                                    ]
                                             | None -> ()
 
                                             NodeMenu

@@ -1165,18 +1165,18 @@ module State =
                                 |> List.map
                                     (fun weekOffset ->
                                         let dateIdSequence =
-                                            let rec getStartDate (date: DateTime) =
+                                            let rec getWeekStart (date: DateTime) =
                                                 if date.DayOfWeek = weekStart then
                                                     date
                                                 else
-                                                    getStartDate (date.AddDays -1)
+                                                    getWeekStart (date.AddDays -1)
 
                                             let startDate =
                                                 dateId dayStart position
                                                 |> fun (DateId referenceDay) ->
                                                     (referenceDay |> FlukeDate.DateTime)
                                                         .AddDays (7 * weekOffset)
-                                                |> getStartDate
+                                                |> getWeekStart
 
                                             [
                                                 0 .. 6
@@ -1212,22 +1212,14 @@ module State =
                                                                 let isToday =
                                                                     getter.get (FlukeDate.isToday referenceDay)
 
-                                                                match status, sessions, attachments with
-                                                                | (Disabled
-                                                                  | Suggested),
-                                                                  [],
-                                                                  [] -> None
-                                                                | _ ->
-                                                                    {|
-                                                                        DateId = dateId
-                                                                        TaskId = taskId
-                                                                        Status = status
-                                                                        Sessions = sessions
-                                                                        IsToday = isToday
-                                                                        Attachments = attachments
-                                                                    |}
-                                                                    |> Some)
-                                                    |> List.choose id)
+                                                                {|
+                                                                    DateId = dateId
+                                                                    TaskId = taskId
+                                                                    Status = status
+                                                                    Sessions = sessions
+                                                                    IsToday = isToday
+                                                                    Attachments = attachments
+                                                                |}))
                                             |> List.groupBy (fun x -> x.DateId)
                                             |> List.map
                                                 (fun (dateId, cellsMetadata) ->

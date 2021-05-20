@@ -181,7 +181,9 @@ module HomeScreen =
                         Chakra.tabPanels
                             (fun x ->
                                 x.flex <- "1"
-                                x.display <- "flex")
+                                x.display <- "flex"
+                                x.overflowX <- "hidden"
+                                x.flexBasis <- 0)
                             [
                                 yield!
                                     tabs
@@ -192,11 +194,14 @@ module HomeScreen =
                                                     x.display <- "flex"
                                                     x.padding <- "0"
                                                     x.boxShadow <- "none !important"
-                                                    x.flex <- "1")
+                                                    x.flex <- "1"
+                                                    x.overflow <- "auto")
                                                 [
                                                     if filteredTaskIdList.IsEmpty then
                                                         Chakra.box
-                                                            (fun x -> x.padding <- "7px")
+                                                            (fun x ->
+                                                                x.padding <- "7px"
+                                                                x.whiteSpace <- "nowrap")
                                                             [
                                                                 str "No tasks found. Add tasks in the Databases panel."
                                                             ]

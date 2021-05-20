@@ -28,7 +28,7 @@ module InformationView =
                         x.maxWidth <- "400px")
                     [
                         yield!
-                            Chakra.box (fun x -> x.height <- "17px") []
+                            Chakra.box (fun x -> x.minHeight <- "17px") []
                             |> List.replicate 3
 
                         Chakra.flex

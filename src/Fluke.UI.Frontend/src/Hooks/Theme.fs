@@ -52,6 +52,7 @@ module Theme =
                     black = 900
                 |}
             fontSizes = {| main = "12px" |}
+            lineHeights = {| main = "12px" |}
             styles =
                 {|
                     ``global`` =
@@ -70,13 +71,13 @@ module Theme =
                                         backgroundColor = if props.colorMode = "dark" then "gray.13" else "gray.77"
                                         fontWeight = "light"
                                         letterSpacing = 0
-                                        lineHeight = "12px"
+                                        lineHeight = "main"
                                         fontFeatureSettings = "pnum"
                                         fontVariantNumeric = "proportional-nums"
                                         margin = 0
                                         padding = 0
                                         boxSizing = "border-box"
-                                        fontSize = "12px"
+                                        fontSize = "main"
                                         color = "#ddd"
                                         userSelect = "none"
                                         touchAction = "pan-x pan-y"
