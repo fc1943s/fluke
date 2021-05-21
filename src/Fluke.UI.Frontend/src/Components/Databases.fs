@@ -366,6 +366,7 @@ module Databases =
                                     Chakra.box
                                         (fun x ->
                                             x.display <- "inline"
+                                            x.fontSize <- "main"
 
                                             x.visibility <-
                                                 if database.Id = Database.Default.Id then "hidden" else "visible"
@@ -375,9 +376,7 @@ module Databases =
                                             match labelText with
                                             | Some label ->
                                                 Chakra.box
-                                                    (fun x ->
-                                                        x.display <- "inline"
-                                                        x.fontSize <- "main")
+                                                    (fun x -> x.display <- "inline")
                                                     [
                                                         str (label |> Seq.item 2)
                                                     ]

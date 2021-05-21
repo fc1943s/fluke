@@ -122,8 +122,8 @@ module Model =
     and Scheduling with
         static member Label scheduling =
             match scheduling with
+            | Manual WithoutSuggestion -> "Manual"
             | Manual WithSuggestion -> "Suggested"
-            | Manual WithoutSuggestion -> "None"
             | Recurrency (Offset (Days n)) -> $"Every {n} days"
             | Recurrency (Offset (Weeks n)) -> $"Every {n} weeks"
             | Recurrency (Offset (Months n)) -> $"Every {n} months"

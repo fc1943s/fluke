@@ -31,7 +31,7 @@ module TopBar =
         Chakra.flex
             (fun x ->
                 x.height <- "31px"
-                x.align <- "center"
+                x.alignItems <- "center"
                 x.backgroundColor <- "gray.10"
                 x.padding <- "7px")
             [
@@ -39,7 +39,7 @@ module TopBar =
                 Chakra.flex
                     (fun x ->
                         x.cursor <- "pointer"
-                        x.align <- "center"
+                        x.alignItems <- "center"
                         x.onClick <- onLogoClick)
                     [
                         Logo.Logo ()

@@ -34,13 +34,16 @@ module Button =
                             x.icon <- icon ()
                             input.Props x)
                         []
-                | _, children ->
-                    let icon =
-                        Chakra.icon
-                            (fun x ->
-                                x.``as`` <- icon
-                                x.fontSize <- "21px")
-                            []
+                | icon, children ->
+                    let icon () =
+                        match icon with
+                        | Some icon ->
+                            Chakra.box
+                                (fun x -> x.transform <- Chakra.transformShiftBy None (Some 1))
+                                [
+                                    icon ()
+                                ]
+                        | None -> nothing
 
                     Chakra.button
                         (fun x ->
@@ -54,7 +57,7 @@ module Button =
                                     x.direction <- "row"
                                     x.spacing <- "7px")
                                 [
-                                    if iconPosition = Some IconPosition.Left then icon
+                                    if iconPosition = Some IconPosition.Left then icon ()
 
                                     Chakra.box
                                         (fun _ -> ())
@@ -62,7 +65,7 @@ module Button =
                                             yield! children
                                         ]
 
-                                    if iconPosition = Some IconPosition.Right then icon
+                                    if iconPosition = Some IconPosition.Right then icon ()
                                 ]
                         ]
             ]

@@ -56,7 +56,7 @@ module InitialPeers =
                                 x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value }))
 
                         Chakra.hStack
-                            (fun x -> x.align <- "stretch")
+                            (fun x -> x.alignItems <- "stretch")
                             [
                                 Button.Button
                                     {|

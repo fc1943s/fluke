@@ -60,7 +60,7 @@ module LoginScreen =
                                 x.onEnterPress <- Some signInClick)
 
                         Chakra.hStack
-                            (fun x -> x.align <- "stretch")
+                            (fun x -> x.alignItems <- "stretch")
                             [
                                 Button.Button
                                     {|

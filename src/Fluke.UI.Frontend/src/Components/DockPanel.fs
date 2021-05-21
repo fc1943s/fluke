@@ -34,7 +34,7 @@ module DockPanel =
                         x.marginLeft <- "1px"
                         x.borderBottomWidth <- "1px"
                         x.borderBottomColor <- "gray.16"
-                        x.align <- "center")
+                        x.alignItems <- "center")
                     [
                         Chakra.icon
                             (fun x ->

@@ -114,15 +114,18 @@ module InformationSelector =
                     {|
                         Tooltip = ""
                         Trigger =
-                            Chakra.menuButton
-                                (fun x ->
-                                    x.``as`` <- Chakra.react.Button
-                                    x.rightIcon <- Chakra.Icons.chevronDownIcon (fun _ -> ()) [])
-                                [
-                                    match informationName with
-                                    | String.ValidString _ -> str $"{informationSelected}: {informationName}"
-                                    | _ -> str "Select..."
-                                ]
+                            Button.Button
+                                {|
+                                    Hint = None
+                                    Icon = Some (Icons.fi.FiChevronDown |> Icons.wrap, Button.IconPosition.Right)
+                                    Props = fun x -> x.``as`` <- Chakra.react.MenuButton
+                                    Children =
+                                        [
+                                            match informationName with
+                                            | String.ValidString _ -> str $"{informationSelected}: {informationName}"
+                                            | _ -> str "Select..."
+                                        ]
+                                |}
                         Menu =
                             [
                                 match input.SelectionType with

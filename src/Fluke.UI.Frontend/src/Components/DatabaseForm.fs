@@ -29,7 +29,7 @@ module DatabaseForm =
                         (fun x ->
                             x.direction <- "row"
                             x.spacing <- "4px"
-                            x.align <- "center")
+                            x.alignItems <- "center")
                         [
                             Chakra.circle
                                 (fun x ->
@@ -193,7 +193,7 @@ module DatabaseForm =
                         Chakra.stack
                             (fun x ->
                                 x.direction <- "row"
-                                x.align <- "center")
+                                x.alignItems <- "center")
                             [
                                 Chakra.box
                                     (fun _ -> ())

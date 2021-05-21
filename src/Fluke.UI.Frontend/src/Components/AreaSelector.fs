@@ -38,6 +38,7 @@ module AreaSelector =
                         Label = str "Area"
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
+
                 Menu.Menu
                     {|
                         Tooltip = ""
@@ -45,7 +46,7 @@ module AreaSelector =
                             Chakra.menuButton
                                 (fun x ->
                                     x.``as`` <- Chakra.react.Button
-                                    x.rightIcon <- Chakra.Icons.chevronDownIcon (fun _ -> ()) [])
+                                    x.rightIcon <- Icons.fi.FiChevronDown |> Icons.render)
                                 [
                                     match input.Area.Name |> AreaName.Value with
                                     | String.ValidString name -> str name

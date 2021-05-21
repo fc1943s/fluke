@@ -169,7 +169,7 @@ module HomeScreen =
                                                                         x.value <-
                                                                             nameof Atoms.User.hideSchedulingOverlay)
                                                                     [
-                                                                        str "Hide Recurrency Overlay"
+                                                                        str "Hide Scheduling Overlay"
                                                                     ]
                                                             ]
                                                     ]

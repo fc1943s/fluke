@@ -25,7 +25,7 @@ module StatusBar =
             (fun x ->
                 x.height <- "30px"
                 x.padding <- "7px"
-                x.align <- "center")
+                x.alignItems <- "center")
             [
                 Chakra.flex
                     (fun _ -> ())

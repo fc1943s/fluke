@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Bindings
 
 open Browser.Types
+open System
 open Fable.Core
 open Feliz
 
@@ -14,7 +15,7 @@ module Chakra =
         abstract _hover : IChakraProps with get, set
         abstract _selected : IChakraProps with get, set
         abstract ``as`` : obj with get, set
-        abstract align : string with get, set
+        abstract alignItems : string with get, set
         abstract alignSelf : string with get, set
         abstract allowMultiple : bool with get, set
         abstract autoFocus : bool with get, set
@@ -181,16 +182,13 @@ module Chakra =
     let themeTools : {| mode: string * string -> obj -> obj |} = jsNative
 
     [<ImportAll "@chakra-ui/icons">]
-    let icons : {| ChevronDownIcon: obj
-                   ExternalLinkIcon: obj |} =
-        jsNative
+    let icons : {| ExternalLinkIcon: obj |} = jsNative
 
     let composeChakraComponent cmp (props: IChakraProps -> unit) = composeComponent cmp (JS.newObj props)
 
     type ChakraInput<'T> = 'T -> unit
 
     module Icons =
-        let chevronDownIcon<'T> = composeChakraComponent icons.ChevronDownIcon
         let externalLinkIcon<'T> = composeChakraComponent icons.ExternalLinkIcon
 
     let accordion<'T> = composeChakraComponent react.Accordion
@@ -270,3 +268,16 @@ module Chakra =
                         x.isClosable <- true
                         props x)
             )
+
+    let trySetProp fn value =
+        match value |> Option.ofObj with
+        | Some value when
+            value <> null
+            && value
+               |> string
+               |> String.IsNullOrWhiteSpace
+               |> not -> fn value
+        | _ -> ()
+
+    let transformShiftBy x y =
+        $"translate({x |> Option.defaultValue 0}px, {y |> Option.defaultValue 0}px)"

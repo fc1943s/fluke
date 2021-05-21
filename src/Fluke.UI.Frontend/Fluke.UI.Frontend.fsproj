@@ -32,6 +32,7 @@
         <Compile Include="src\Components\Empty.fs" />
         <Compile Include="src\Components\Tooltip.fs" />
         <Compile Include="src\Components\InputLabelIconButton.fs" />
+        <Compile Include="src\Components\Popover.fs" />
         <Compile Include="src\Components\Hint.fs" />
         <Compile Include="src\Components\InputLabel.fs" />
         <Compile Include="src\Components\Button.fs" />

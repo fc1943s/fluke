@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open System
 open Browser.Types
 open Fable.React
 open Feliz
@@ -18,7 +19,6 @@ module Input =
         | Email
         | Password
         | Number
-
 
     type IProps<'TValue, 'TKey> =
         inherit Chakra.IChakraProps
@@ -44,7 +44,7 @@ module Input =
 
         let mounted, setMounted = React.useState false
 
-        let _currentValue, currentValueString =
+        let currentValue, currentValueString =
             React.useMemo (
                 (fun () ->
                     let value =
@@ -121,7 +121,7 @@ module Input =
                             let validValue =
                                 match props.onValidate with
                                 | Some onValidate ->
-                                    let validValue = onValidate (e.Value, Some atomFieldOptions.AtomValue)
+                                    let validValue = onValidate (e.Value, currentValue)
                                     validValue
                                 | None -> Some (box e.Value :?> 'TValue)
 
@@ -161,11 +161,18 @@ module Input =
                     [
                         Chakra.input
                             (fun x ->
+
                                 x.onChange <- onChange
                                 x.ref <- inputRef
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
+
                                 x.autoFocus <- props.autoFocus
-                                x.placeholder <- props.placeholder
+
+                                props.placeholder
+                                |> Chakra.trySetProp (fun value -> x.placeholder <- value)
+
+                                props.width
+                                |> Chakra.trySetProp (fun value -> x.width <- value)
 
                                 x.onKeyDown <-
                                     fun (e: KeyboardEvent) ->
@@ -208,6 +215,17 @@ module Input =
                                     x.borderLeftColor <- "#484848"
                                     x.spacing <- "0")
                                 [
+                                    let numberButtonClick (value: string) (op: float -> float) =
+                                        match Double.TryParse value with
+                                        | true, value ->
+                                            match props.onValidate with
+                                            | Some onValidate ->
+                                                match onValidate (string (op value), currentValue) with
+                                                | Some value -> inputRef.current.valueAsNumber <- unbox value
+                                                | None -> ()
+                                            | None -> inputRef.current.valueAsNumber <- op value
+                                        | _ -> ()
+
                                     Button.Button
                                         {|
                                             Hint = None
@@ -222,9 +240,7 @@ module Input =
                                                     x.onClick <-
                                                         (fun _ ->
                                                             promise {
-                                                                inputRef.current.valueAsNumber <-
-                                                                    inputRef.current.valueAsNumber + 1.
-
+                                                                numberButtonClick inputRef.current.value ((+) 1.)
                                                                 fireChange ()
                                                             })
                                             Children = []
@@ -244,8 +260,9 @@ module Input =
                                                     x.onClick <-
                                                         (fun _ ->
                                                             promise {
-                                                                inputRef.current.valueAsNumber <-
-                                                                    inputRef.current.valueAsNumber - 1.
+                                                                numberButtonClick
+                                                                    inputRef.current.value
+                                                                    (fun n -> n - 1.)
 
                                                                 fireChange ()
                                                             })
