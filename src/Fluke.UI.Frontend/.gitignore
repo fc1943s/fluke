@@ -1,2 +1,8 @@
 cypress-examples/
 cypress/videos/
+
+www/
+
+# Cordova
+/plugins/
+/platforms/
