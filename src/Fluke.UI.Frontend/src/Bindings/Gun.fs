@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Bindings
 
+open Fable.Core
 open Fable.Core.JsInterop
 open Feliz.Recoil
 
@@ -19,21 +20,21 @@ module rec Gun =
             epriv: string
         }
 
+    type UserResult =
+        {
+            err: string option
+            ok: int option
+            pub: string option
+        }
+
     type IGunUser =
-        abstract create :
-            alias: string
-            * pass: string
-            * cb: ({| err: string option
-                      pub: string option |} -> unit) ->
-            unit
-
-        abstract auth :
-            alias: string
-            * pass: string
-            * cb: ({| err: string option
-                      pub: string option |} -> unit) ->
-            unit
-
+        abstract create : alias: string * pass: string * cb: (UserResult -> unit) -> unit
+        abstract auth : alias: string * pass: string * cb: (UserResult -> unit) -> unit
+//        abstract ``_`` : {| sea: GunKeys |}
+        [<Emit("$0._")>]
+        abstract _underscore_ : {| sea: GunKeys |}
+        abstract get : string -> IGunChainReference
+        abstract leave : unit -> unit
         abstract recall :
             {| sessionStorage: bool |}
             * System.Func<{| put: {| alias: string |} option
@@ -44,9 +45,6 @@ module rec Gun =
             {| alias: string option
                pub: string option |}
 
-        abstract ``_`` : {| sea: GunKeys |}
-        abstract get : string -> IGunChainReference
-        abstract leave : unit -> unit
 
     type IGunChainReference =
         abstract get : string -> IGunChainReference

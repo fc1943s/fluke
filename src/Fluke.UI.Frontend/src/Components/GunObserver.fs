@@ -102,7 +102,7 @@ module GunObserver =
                             match gunNamespace.ref.is.alias with
                             | Some username ->
                                 printfn $"GunObserver.render: .on(auth) effect. setUsername. username={username}"
-                                setGunKeys gunNamespace.ref.``_``.sea
+                                setGunKeys gunNamespace.ref._underscore_.sea
 
                             //                                gunState.put ({| username = username |} |> toPlainJsObj)
 //                                |> Promise.start

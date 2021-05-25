@@ -2,6 +2,9 @@ namespace Fluke.UI.Frontend.Bindings
 
 open Fable.Core
 open Fable.Core.JsInterop
+open Feliz.Recoil
+open Fluke.Shared
+open Fable.Extras
 
 
 [<AutoOpen>]
@@ -13,7 +16,27 @@ module Operators =
     let (<+) _o1 _o2 : unit = jsNative
 
 module JS =
-    let isProduction = Browser.Dom.window.location.host.EndsWith "github.io"
+
+    let deviceInfo =
+        let userAgent =
+            if Browser.Dom.window?navigator = null then
+                ""
+            else
+                Browser.Dom.window?navigator?userAgent
+
+        let deviceInfo =
+            {|
+                IsEdge = (JSe.RegExp @"Edg\/").Test userAgent
+                IsMobile =
+                    JSe
+                        .RegExp("Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop", JSe.RegExpFlag().i)
+                        .Test userAgent
+                IsExtension = Browser.Dom.window.location.protocol = "chrome-extension:"
+                GitHubPages = Browser.Dom.window.location.host.EndsWith "github.io"
+            |}
+
+        printfn $"userAgent={userAgent} deviceInfo={deviceInfo}"
+        deviceInfo
 
     [<Emit "process.env.JEST_WORKER_ID">]
     let jestWorkerId : bool = jsNative
@@ -21,7 +44,9 @@ module JS =
     let isTesting = jestWorkerId || Browser.Dom.window?Cypress <> null
 
     let inline log fn =
-        if not isProduction && not isTesting then
+        if not deviceInfo.GitHubPages
+           && not deviceInfo.IsMobile
+           && not isTesting then
             printfn $"[log] {fn ()}"
         else
             ()

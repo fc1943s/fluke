@@ -37,6 +37,7 @@ module TaskForm =
                     promise {
                         let! taskName = setter.snapshot.getReadWritePromise Atoms.Task.name input.TaskId
                         let! taskInformation = setter.snapshot.getReadWritePromise Atoms.Task.information input.TaskId
+                        let! taskScheduling = setter.snapshot.getReadWritePromise Atoms.Task.scheduling input.TaskId
 
 
                         match taskName |> TaskName.Value,
@@ -59,6 +60,7 @@ module TaskForm =
                                         Id = TaskId.NewId ()
                                         Name = taskName
                                         Information = taskInformation
+                                        Scheduling = taskScheduling
                                     }
                                     |> Promise.lift
                                 else
@@ -69,6 +71,7 @@ module TaskForm =
                                             { task with
                                                 Name = taskName
                                                 Information = taskInformation
+                                                Scheduling = taskScheduling
                                             }
                                     }
 
@@ -76,6 +79,7 @@ module TaskForm =
 
                             do! setter.readWriteReset Atoms.Task.name input.TaskId
                             do! setter.readWriteReset Atoms.Task.information input.TaskId
+                            do! setter.readWriteReset Atoms.Task.scheduling input.TaskId
 
                             do! input.OnSave task
                     })

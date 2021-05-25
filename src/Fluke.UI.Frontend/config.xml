@@ -3,7 +3,8 @@
     <name>Fluke</name>
     <description>
     </description>
-    <author href="http://cordova.io">
+    <icon src="public/icons/128x128.png" />
+    <author>
         fc1943s
     </author>
     <content src="index.html" />

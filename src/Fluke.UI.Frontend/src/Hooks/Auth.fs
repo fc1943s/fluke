@@ -36,7 +36,7 @@ module Auth =
             (fun _setter username ->
                 promise {
                     setUsername (Some username)
-                    setGunKeys gunNamespace.ref.``_``.sea
+                    setGunKeys gunNamespace.ref._underscore_.sea
                 })
 
     let useSignIn () =
@@ -116,34 +116,39 @@ module Auth =
 
                         return!
                             promise {
-                                match ack.err with
-                                | None ->
+                                match ack with
+                                | {
+                                      err = None
+                                      ok = Some 0
+                                      pub = Some _
+                                  } ->
                                     match! signIn username password with
                                     | Ok () ->
                                         do! hydrateTemplates ()
 
                                         //                                        gunNamespace
-//                                            .ref
-//                                            .get("fluke")
-//                                            .put {| username = username |}
-//                                        |> ignore
+                                        //                                            .ref
+                                        //                                            .get("fluke")
+                                        //                                            .put {| username = username |}
+                                        //                                        |> ignore
 
                                         return Ok ()
                                     | Error error -> return Error error
                                 //                                    do! postSignIn (UserInteraction.Username username)
 
                                 //                                    gunNamespace
-//                                        .get("fluke")
-//                                        .put {| username = username |}
-//                                    |> ignore
+                                //                                        .get("fluke")
+                                //                                        .put {| username = username |}
+                                //                                    |> ignore
                                 //                                let usernamePut =
-//                                    gunNamespace
-//                                        .ref
-//                                        .get("fluke")
-//                                        .put {| username = username |}
-//
-//                                printfn $"sign up username put = {JS.JSON.stringify usernamePut}"
+                                //                                    gunNamespace
+                                //                                        .ref
+                                //                                        .get("fluke")
+                                //                                        .put {| username = username |}
+                                //
+                                //                                printfn $"sign up username put = {JS.JSON.stringify usernamePut}"
 
-                                | Some error -> return Error error
+                                | { err = Some err } -> return Error err
+                                | _ -> return Error $"Invalid ack: {ack}"
                             }
                 })

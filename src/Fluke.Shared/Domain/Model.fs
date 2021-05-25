@@ -83,7 +83,7 @@ module Model =
         | Monthly of day: Day
         | Yearly of day: Day * month: Month
 
-    and Day = Day of int
+    and Day = Day of day: int
 
     and Month =
         | January = 1
@@ -157,6 +157,9 @@ module Model =
     and TaskId with
         static member inline NewId () = TaskId (Guid.NewGuid ())
         static member inline Value (TaskId guid) = guid
+
+    and Day with
+        static member inline Value (Day day) = day
 
     and ProjectName with
         static member inline Value (ProjectName name) = name

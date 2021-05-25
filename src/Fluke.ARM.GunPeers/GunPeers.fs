@@ -121,7 +121,7 @@ module GunPeers =
                 gunstorage1 fileShareId
                 //                deploymentScript1 shareName
                 gunPeer (ContainerId (Environment.GetEnvironmentVariable "FLUKE_GUN_PEER_CONTAINER_ID_1")) fileShareId
-                gunPeer (ContainerId (Environment.GetEnvironmentVariable "FLUKE_GUN_PEER_CONTAINER_ID_2")) fileShareId
-                gunPeer (ContainerId "flukegunpeer-test") fileShareId
+//                gunPeer (ContainerId (Environment.GetEnvironmentVariable "FLUKE_GUN_PEER_CONTAINER_ID_2")) fileShareId
+//                gunPeer (ContainerId "flukegunpeer-test") fileShareId
             ]
         }

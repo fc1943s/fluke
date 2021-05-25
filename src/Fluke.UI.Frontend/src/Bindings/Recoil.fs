@@ -333,13 +333,15 @@ module Recoil =
                 (async {
                     let! atomPath, gunAtomNode = getGunAtomNodeParent username atom
 
-                    printfn $"@@@- [gunKeyEffect] atomPath={atomPath}"
+                    JS.log (fun () -> $"@@@- [gunKeyEffect] atomPath={atomPath}")
 
                     match gunAtomNode with
                     | Some gunAtomNode ->
                         gunAtomNode
                             .map()
                             .on (fun _v k ->
+                                JS.log (fun () -> $"ON atomPath={atomPath} k={k}")
+
                                 match onValidate k with
                                 | Some v -> e.setSelf (fun oldValue -> oldValue |> Set.add v)
                                 | None -> ())

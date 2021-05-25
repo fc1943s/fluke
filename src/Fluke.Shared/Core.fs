@@ -58,6 +58,9 @@ module Map =
 
     let mapValues f (x: Map<'Key, 'T>) = Map.map (fun _ -> f) x
 
+module Set =
+    let toggle value (set: Set<'T>) =
+        if set.Contains value then set.Remove value else set.Add value
 
 
 
@@ -91,3 +94,8 @@ module String =
         | WhitespaceString
         | NullString -> Some InvalidString
         | _ -> None
+
+module Enum =
+    let inline ToList<'T> () =
+        (Enum.GetValues typeof<'T> :?> 'T [])
+        |> Array.toList

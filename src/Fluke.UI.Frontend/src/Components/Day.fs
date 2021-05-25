@@ -45,5 +45,5 @@ module Day =
                 x.lineHeight <- "17px"
                 x.textAlign <- "center")
             [
-                str <| String.toLower input.Label
+                str (String.toLower input.Label)
             ]

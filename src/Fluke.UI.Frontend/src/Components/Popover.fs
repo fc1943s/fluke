@@ -23,7 +23,7 @@ module Popover =
                             ]
                     ]
                 Chakra.popoverContent
-                    (fun _ -> ())
+                    (fun x -> x.width <- "auto")
                     [
                         Chakra.popoverArrow (fun _ -> ()) []
                         Chakra.popoverCloseButton (fun _ -> ()) []

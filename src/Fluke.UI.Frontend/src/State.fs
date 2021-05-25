@@ -12,7 +12,6 @@ open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core.JsInterop
 open Fable.Core
-open Fable.Extras
 
 
 module State =
@@ -527,7 +526,7 @@ module State =
                         [
                             Recoil.gunKeyEffect
                                 None
-                                (Recoil.AtomFamily (Database.owner, Database.Default.Id))
+                                (Recoil.AtomFamily (Database.name, Database.Default.Id))
                                 (Recoil.filterEmptyGuid DatabaseId)
                         ])
                 )
@@ -617,40 +616,8 @@ module State =
                     | _ -> [])
             )
 
-
-        type DeviceInfo =
-            {
-                IsEdge: bool
-                IsMobile: bool
-                IsExtension: bool
-                IsProduction: bool
-            }
-
         let rec deviceInfo =
-            Recoil.selectorWithProfiling (
-                $"{nameof selector}/{nameof deviceInfo}",
-                (fun _getter ->
-                    let userAgent =
-                        if Browser.Dom.window?navigator = null then
-                            ""
-                        else
-                            Browser.Dom.window?navigator?userAgent
-
-                    let deviceInfo =
-                        {
-                            IsEdge = (JSe.RegExp @"Edg\/").Test userAgent
-                            IsMobile =
-                                JSe
-                                    .RegExp("Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop",
-                                            JSe.RegExpFlag().i)
-                                    .Test userAgent
-                            IsExtension = Browser.Dom.window.location.protocol = "chrome-extension:"
-                            IsProduction = JS.isProduction
-                        }
-
-                    printfn $"userAgent: {userAgent} deviceInfo: {deviceInfo}"
-                    deviceInfo)
-            )
+            Recoil.selectorWithProfiling ($"{nameof selector}/{nameof deviceInfo}", (fun _getter -> JS.deviceInfo))
 
 
         module rec FlukeDate =

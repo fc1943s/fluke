@@ -72,7 +72,7 @@ module RouterObserver =
             Recoil.useCallbackRef
                 (fun _ segments ->
                     match (segments
-                           |> List.skip (if not deviceInfo.IsProduction then 0 else 1)) with
+                           |> List.skip (if deviceInfo.GitHubPages then 1 else 0)) with
                     | [ "view"; "Information" ] -> { View = Some View.View.Information }
                     | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
                     | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
@@ -83,7 +83,7 @@ module RouterObserver =
             React.useMemo (
                 (fun () ->
                     let pathPrefix =
-                        if deviceInfo.IsProduction then
+                        if deviceInfo.GitHubPages then
                             [|
                                 initialSegments.[0]
                             |]

@@ -75,12 +75,17 @@ module DebugOverlay =
                     x.overflow <- if debug then "scroll" else "initial")
                 [
                     Checkbox.Checkbox
-                        (fun x ->
-                            x.isChecked <- debug
-                            x.onChange <- fun _ -> promise { setDebug (not debug) })
-                        [
-                            str (if debug then "Debug" else "")
-                        ]
+                        {|
+                            Props =
+                                fun x ->
+                                    x.isChecked <- debug
+                                    x.onChange <- fun _ -> promise { setDebug (not debug) }
+
+                                    x.children <-
+                                        [
+                                            str (if debug then "Debug" else "")
+                                        ]
+                        |}
 
                     if debug then
                         Html.pre [
