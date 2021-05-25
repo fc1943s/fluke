@@ -1,6 +1,7 @@
 namespace Fluke.Shared.Domain
 
 open System
+open Fluke.Shared
 
 
 module Model =
@@ -124,10 +125,20 @@ module Model =
             match scheduling with
             | Manual WithoutSuggestion -> "Manual"
             | Manual WithSuggestion -> "Suggested"
-            | Recurrency (Offset (Days n)) -> $"Every {n} days"
-            | Recurrency (Offset (Weeks n)) -> $"Every {n} weeks"
-            | Recurrency (Offset (Months n)) -> $"Every {n} months"
-            | Recurrency (Fixed fixedRecurrencyList) -> "Fixed..."
+            | Recurrency (Offset (Days n)) -> $"""Every {if n > 1 then $"{n} " else ""}day{if n > 1 then "s" else ""}"""
+            | Recurrency (Offset (Weeks n)) ->
+                $"""Every {if n > 1 then $"{n} " else ""}week{if n > 1 then "s" else ""}"""
+            | Recurrency (Offset (Months n)) ->
+                $"""Every {if n > 1 then $"{n} " else ""}month{if n > 1 then "s" else ""}"""
+            | Recurrency (Fixed fixedRecurrencyList) ->
+                fixedRecurrencyList
+                |> List.sort
+                |> List.map
+                    (function
+                    | Weekly x -> $"Every {Enum.name x}"
+                    | Monthly (Day dayNumber) -> $"Every {dayNumber}"
+                    | Yearly (Day dayNumber, month) -> $"Every {Enum.name month} {dayNumber}")
+                |> String.concat ", "
 
     and InformationName with
         static member Value informationName =

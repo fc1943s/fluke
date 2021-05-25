@@ -21,10 +21,12 @@ module StatusBar =
         let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
         let activeSessions = Recoil.useValue (Selectors.Session.activeSessions input.Username)
 
-        Chakra.flex
+        Chakra.simpleGrid
             (fun x ->
-                x.height <- "30px"
+                x.minChildWidth <- "140px"
                 x.padding <- "7px"
+                x.spacing <- "20px"
+                x.justifyItems <- "center"
                 x.alignItems <- "center")
             [
                 Chakra.flex
@@ -39,8 +41,6 @@ module StatusBar =
                         let (Username username) = input.Username
                         str $"User: {username}"
                     ]
-
-                Chakra.spacer (fun _ -> ()) []
 
                 Chakra.flex
                     (fun _ -> ())
@@ -83,21 +83,21 @@ module StatusBar =
 
                     ]
 
-                Chakra.spacer (fun _ -> ()) []
+                Chakra.flex
+                    (fun _ -> ())
+                    [
+                        Chakra.icon
+                            (fun x ->
+                                x.``as`` <- Icons.bi.BiTask
+                                x.marginRight <- "4px")
+                            []
 
-                Chakra.icon
-                    (fun x ->
-                        x.``as`` <- Icons.bi.BiTask
-                        x.marginRight <- "4px")
-                    []
-
-                str $"{filteredTaskIdList.Length} of {selectedTaskIdSet.Count} tasks visible"
+                        str $"{filteredTaskIdList.Length} of {selectedTaskIdSet.Count} tasks visible"
+                    ]
 
                 match position with
                 | Some position ->
                     React.fragment [
-                        Chakra.spacer (fun _ -> ()) []
-
                         Chakra.flex
                             (fun _ -> ())
                             [

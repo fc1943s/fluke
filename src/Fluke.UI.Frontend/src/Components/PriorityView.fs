@@ -53,7 +53,7 @@ module PriorityView =
                                     ]
                                 // Column: Task Name
                                 Chakra.box
-                                    (fun x -> x.width <- "200px")
+                                    (fun x -> x.flex <- "1")
                                     [
                                         yield!
                                             filteredTaskIdList

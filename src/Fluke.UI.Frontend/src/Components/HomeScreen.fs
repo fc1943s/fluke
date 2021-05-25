@@ -73,15 +73,15 @@ module HomeScreen =
                         x.index <- tabIndex
                         x.onChange <- handleTabsChange
 
-                        x.marginLeft <- "5px"
-                        x.marginRight <- "5px"
+                        x.marginLeft <- "4px"
+                        x.marginRight <- "4px"
                         x.flexDirection <- "column"
                         x.display <- "flex"
                         x.flex <- "1"
                         x.overflow <- "auto")
                     [
                         Chakra.flex
-                            (fun _ -> ())
+                            (fun x -> x.margin <- "1px")
                             [
                                 Chakra.tabList
                                     (fun x ->

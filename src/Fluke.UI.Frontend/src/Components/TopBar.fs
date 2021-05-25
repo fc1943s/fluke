@@ -30,10 +30,11 @@ module TopBar =
 
         Chakra.flex
             (fun x ->
-                x.height <- "31px"
+                x.height <- "29px"
                 x.alignItems <- "center"
                 x.backgroundColor <- "gray.10"
-                x.padding <- "7px")
+                x.padding <- "7px"
+                x.paddingBottom <- "9px")
             [
 
                 Chakra.flex
@@ -56,6 +57,7 @@ module TopBar =
                 Chakra.stack
                     (fun x ->
                         x.spacing <- "10px"
+                        x.alignItems <- "center"
                         x.direction <- "row")
                     [
                         Tooltip.wrap
@@ -74,6 +76,7 @@ module TopBar =
                                                 Props =
                                                     fun x ->
                                                         x.icon <- Icons.ai.AiOutlineGithub |> Icons.render
+                                                        x.height <- "26px"
                                                         x.fontSize <- "17px"
                                             |}
                                     ]
@@ -87,6 +90,7 @@ module TopBar =
                                         Props =
                                             fun x ->
                                                 x.icon <- Icons.fi.FiLogOut |> Icons.render
+                                                x.height <- "26px"
                                                 x.fontSize <- "17px"
                                                 x.onClick <- logout
                                     |}

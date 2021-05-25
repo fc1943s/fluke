@@ -66,6 +66,7 @@ module Chakra =
         abstract isExternal : bool with get, set
         abstract isLazy : bool with get, set
         abstract isOpen : bool with get, set
+        abstract justifyItems : string with get, set
         abstract label : ReactElement with get, set
         abstract left : string with get, set
         abstract lineHeight : string with get, set
@@ -76,6 +77,7 @@ module Chakra =
         abstract marginTop : string with get, set
         abstract maxHeight : string with get, set
         abstract maxWidth : string with get, set
+        abstract minChildWidth : string with get, set
         abstract minHeight : string with get, set
         abstract minWidth : string with get, set
         abstract onChange : (_ -> JS.Promise<unit>) with get, set

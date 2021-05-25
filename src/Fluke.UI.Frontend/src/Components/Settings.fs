@@ -14,6 +14,8 @@ module Settings =
         (input: {| Username: UserInteraction.Username
                    Props: Chakra.IChakraProps -> unit |})
         =
+        let debug, setDebug = Recoil.useState Atoms.debug
+
         Accordion.Accordion
             {|
                 Props = input.Props
@@ -35,6 +37,19 @@ module Settings =
                                         x.label <- str "Days After"
                                         x.atom <- Some (Recoil.Atom (Atoms.User.daysAfter input.Username))
                                         x.inputFormat <- Some Input.InputFormat.Number)
+
+                                Checkbox.Checkbox
+                                    {|
+                                        Props =
+                                            fun x ->
+                                                x.isChecked <- debug
+                                                x.onChange <- fun _ -> promise { setDebug (not debug) }
+
+                                                x.children <-
+                                                    [
+                                                        str "Show Debug Information"
+                                                    ]
+                                    |}
                             ])
 
                         "Connection",

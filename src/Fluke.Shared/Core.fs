@@ -99,3 +99,5 @@ module Enum =
     let inline ToList<'T> () =
         (Enum.GetValues typeof<'T> :?> 'T [])
         |> Array.toList
+
+    let inline name<'T> (value: 'T) = Enum.GetName (typeof<'T>, value)

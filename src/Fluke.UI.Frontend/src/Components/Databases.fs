@@ -155,28 +155,28 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronDown
-                        x.marginLeft <- "-10px"
+                        x.transform <- Chakra.transformShiftBy (Some -10) None
                         x.color <- "white")
                     []
             expandClose =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronRight
-                        x.marginLeft <- "-10px"
+                        x.transform <- Chakra.transformShiftBy (Some -10) None
                         x.color <- "white")
                     []
             parentClose =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
-                        x.marginLeft <- "-3px"
+                        x.marginLeft <- "-13px"
                         x.color <- "white")
                     []
             parentOpen =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
-                        x.marginLeft <- "-3px"
+                        x.marginLeft <- "-13px"
                         x.color <- "white")
                     []
         |}

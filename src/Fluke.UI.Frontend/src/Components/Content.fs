@@ -42,6 +42,8 @@ module Content =
                                 (fun x ->
                                     x.spacing <- "0"
                                     x.flex <- "1"
+                                    x.borderWidth <- "1px"
+                                    x.borderColor <- "gray.10"
                                     x.maxWidth <- "100vw")
                                 [
                                     TopBar.TopBar ()

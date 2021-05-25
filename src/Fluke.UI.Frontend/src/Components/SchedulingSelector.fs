@@ -34,7 +34,7 @@ module SchedulingSelector =
                     Some
                         (fun (value, _) ->
                             match Int32.TryParse value with
-                            | true, value when value >= 0 -> Some value
+                            | true, value when value > 0 -> Some value
                             | _ -> None)
 
                 x.inputFormat <- Some Input.InputFormat.Number)
@@ -123,7 +123,7 @@ module SchedulingSelector =
                         numberInput
                             (match value with
                              | Recurrency (Offset (Days n)) -> Some n
-                             | _ -> Some 0)
+                             | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Days value))))
                         Chakra.box
                             (fun _ -> ())
@@ -153,7 +153,7 @@ module SchedulingSelector =
                         numberInput
                             (match value with
                              | Recurrency (Offset (Weeks n)) -> Some n
-                             | _ -> Some 0)
+                             | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Weeks value))))
                         Chakra.box
                             (fun _ -> ())
@@ -183,7 +183,7 @@ module SchedulingSelector =
                         numberInput
                             (match value with
                              | Recurrency (Offset (Months n)) -> Some n
-                             | _ -> Some 0)
+                             | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Months value))))
                         Chakra.box
                             (fun _ -> ())
@@ -264,7 +264,7 @@ module SchedulingSelector =
                                     Chakra.box
                                         (fun _ -> ())
                                         [
-                                            str (Enum.GetName (typeof<DayOfWeek>, dayOfWeek))
+                                            str (Enum.name dayOfWeek)
                                         ]
                                 ])
             ]
@@ -549,12 +549,7 @@ module SchedulingSelector =
                                                                             Chakra.box
                                                                                 (fun x -> x.marginLeft <- "-6px")
                                                                                 [
-                                                                                    str (
-                                                                                        Enum.GetName (
-                                                                                            typeof<Month>,
-                                                                                            month
-                                                                                        )
-                                                                                    )
+                                                                                    str (Enum.name month)
                                                                                 ]
                                                                         ])
                                                     ]
@@ -639,7 +634,7 @@ module SchedulingSelector =
                                 {|
                                     Hint = None
                                     Icon = Some (Icons.fi.FiChevronDown |> Icons.wrap, Button.IconPosition.Right)
-                                    Props = fun _ -> ()
+                                    Props = fun x -> x.whiteSpace <- "normal"
                                     Children =
                                         [
                                             schedulingFieldOptions.AtomValue

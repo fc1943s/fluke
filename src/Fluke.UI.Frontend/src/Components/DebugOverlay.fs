@@ -16,7 +16,7 @@ module DebugOverlay =
     let DebugOverlay () =
         let text, setText = React.useState ""
         let oldJson, setOldJson = React.useState ""
-        let debug, setDebug = Recoil.useState Atoms.debug
+        let debug = Recoil.useValue Atoms.debug
 
         Scheduling.useScheduling
             Scheduling.Interval
@@ -74,19 +74,6 @@ module DebugOverlay =
                     x.zIndex <- 1
                     x.overflow <- if debug then "scroll" else "initial")
                 [
-                    Checkbox.Checkbox
-                        {|
-                            Props =
-                                fun x ->
-                                    x.isChecked <- debug
-                                    x.onChange <- fun _ -> promise { setDebug (not debug) }
-
-                                    x.children <-
-                                        [
-                                            str (if debug then "Debug" else "")
-                                        ]
-                        |}
-
                     if debug then
                         Html.pre [
                             prop.id "diag"
