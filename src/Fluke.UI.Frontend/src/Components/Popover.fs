@@ -8,31 +8,44 @@ module Popover =
     [<ReactComponent>]
     let Popover
         (input: {| Trigger: ReactElement
-                   Body: seq<ReactElement> |})
+                   Body: Chakra.Disclosure -> ReactElement list |})
         =
-        Chakra.popover
-            (fun x -> x.isLazy <- true)
+        let disclosure = Chakra.react.useDisclosure ()
+
+        Chakra.box
+            (fun _ -> ())
             [
-                Chakra.popoverTrigger
-                    (fun _ -> ())
+                Chakra.popover
+                    (fun x ->
+                        x.isLazy <- true
+                        x.closeOnBlur <- true
+                        x.isOpen <- disclosure.isOpen
+                        x.onOpen <- disclosure.onOpen
+                        x.onClose <- fun x -> promise { disclosure.onClose x })
                     [
-                        Chakra.box
+                        Chakra.popoverTrigger
                             (fun _ -> ())
                             [
-                                input.Trigger
+                                Chakra.box
+                                    (fun _ -> ())
+                                    [
+                                        input.Trigger
+                                    ]
                             ]
-                    ]
-                Chakra.popoverContent
-                    (fun x -> x.width <- "auto")
-                    [
-                        Chakra.popoverArrow (fun _ -> ()) []
-                        Chakra.popoverCloseButton (fun _ -> ()) []
-                        Chakra.popoverBody
-                            (fun x ->
-                                x.padding <- "10px"
-                                x.backgroundColor <- "gray.13")
+                        Chakra.popoverContent
+                            (fun x -> x.width <- "auto")
                             [
-                                yield! input.Body
+                                Chakra.popoverArrow (fun _ -> ()) []
+                                Chakra.popoverCloseButton (fun _ -> ()) []
+                                Chakra.popoverBody
+                                    (fun x ->
+                                        x.padding <- "10px"
+                                        x.backgroundColor <- "gray.13"
+                                        x.maxWidth <- "100vw"
+                                        x.overflow <- "auto")
+                                    [
+                                        yield! input.Body disclosure
+                                    ]
                             ]
                     ]
             ]

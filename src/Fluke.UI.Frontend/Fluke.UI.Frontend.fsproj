@@ -66,6 +66,7 @@
         <Compile Include="src\Components\AreaSelector.fs" />
         <Compile Include="src\Components\ProjectForm.fs" />
         <Compile Include="src\Components\SchedulingSelector.fs" />
+        <Compile Include="src\Components\DeleteUserButton.fs" />
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
         <Compile Include="src\Components\DatabaseForm.fs" />
@@ -74,6 +75,7 @@
         <Compile Include="src\Components\Databases.fs" />
         <Compile Include="src\Components\InputList.fs" />
         <Compile Include="src\Components\Accordion.fs" />
+        <Compile Include="src\Components\ChangeUserPasswordButton.fs" />
         <Compile Include="src\Components\Settings.fs" />
         <Compile Include="src\Components\DockButton.fs" />
         <Compile Include="src\Components\DockPanel.fs" />

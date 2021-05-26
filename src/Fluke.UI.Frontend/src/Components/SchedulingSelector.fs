@@ -643,46 +643,49 @@ module SchedulingSelector =
                                         ]
                                 |}
                         Body =
-                            [
-                                Chakra.radioGroup
-                                    (fun x ->
-                                        x.onChange <-
-                                            fun (radioValueSelected: string) ->
-                                                promise {
-                                                    schedulingFieldOptions.SetAtomValue (
-                                                        radioValueSelected |> Gun.jsonDecode
-                                                    )
-                                                }
+                            fun _disclosure ->
+                                [
+                                    Chakra.radioGroup
+                                        (fun x ->
+                                            x.onChange <-
+                                                fun (radioValueSelected: string) ->
+                                                    promise {
+                                                        schedulingFieldOptions.SetAtomValue (
+                                                            radioValueSelected |> Gun.jsonDecode
+                                                        )
+                                                    }
 
-                                        x.value <- schedulingFieldOptions.AtomValue |> Gun.jsonEncode)
-                                    [
-                                        Chakra.stack
-                                            (fun x -> x.spacing <- "25px")
-                                            [
-                                                manualRadio schedulingFieldOptions.AtomValue
-                                                suggestedRadio schedulingFieldOptions.AtomValue
-                                                offsetDaysRadio
-                                                    schedulingFieldOptions.AtomValue
-                                                    schedulingFieldOptions.SetAtomValue
-                                                offsetWeeksRadio
-                                                    schedulingFieldOptions.AtomValue
-                                                    schedulingFieldOptions.SetAtomValue
-                                                offsetMonthsRadio
-                                                    schedulingFieldOptions.AtomValue
-                                                    schedulingFieldOptions.SetAtomValue
-                                                fixedWeeklyRadio
-                                                    schedulingFieldOptions.AtomValue
-                                                    schedulingFieldOptions.SetAtomValue
-                                                    weekStart
-                                                fixedMonthlyRadio
-                                                    schedulingFieldOptions.AtomValue
-                                                    schedulingFieldOptions.SetAtomValue
-                                                fixedYearlyRadio
-                                                    schedulingFieldOptions.AtomValue
-                                                    schedulingFieldOptions.SetAtomValue
+                                            x.value <- schedulingFieldOptions.AtomValue |> Gun.jsonEncode)
+                                        [
+                                            Chakra.stack
+                                                (fun x ->
+                                                    x.spacing <- "25px"
+                                                    x.padding <- "5px")
+                                                [
+                                                    manualRadio schedulingFieldOptions.AtomValue
+                                                    suggestedRadio schedulingFieldOptions.AtomValue
+                                                    offsetDaysRadio
+                                                        schedulingFieldOptions.AtomValue
+                                                        schedulingFieldOptions.SetAtomValue
+                                                    offsetWeeksRadio
+                                                        schedulingFieldOptions.AtomValue
+                                                        schedulingFieldOptions.SetAtomValue
+                                                    offsetMonthsRadio
+                                                        schedulingFieldOptions.AtomValue
+                                                        schedulingFieldOptions.SetAtomValue
+                                                    fixedWeeklyRadio
+                                                        schedulingFieldOptions.AtomValue
+                                                        schedulingFieldOptions.SetAtomValue
+                                                        weekStart
+                                                    fixedMonthlyRadio
+                                                        schedulingFieldOptions.AtomValue
+                                                        schedulingFieldOptions.SetAtomValue
+                                                    fixedYearlyRadio
+                                                        schedulingFieldOptions.AtomValue
+                                                        schedulingFieldOptions.SetAtomValue
 
-                                            ]
-                                    ]
-                            ]
+                                                ]
+                                        ]
+                                ]
                     |}
             ]

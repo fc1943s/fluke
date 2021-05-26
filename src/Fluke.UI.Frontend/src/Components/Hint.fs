@@ -25,25 +25,26 @@ module Hint =
                                     x.marginTop <- "-5px")
                         |}
                 Body =
-                    [
-                        match props.hintTitle with
-                        | Some hintTitle ->
-                            Chakra.box
-                                (fun x ->
-                                    x.paddingBottom <- "12px"
-                                    x.fontSize <- "15px")
-                                [
-                                    Chakra.icon
-                                        (fun x ->
-                                            x.``as`` <- Icons.bs.BsQuestionCircle
-                                            x.marginTop <- "-3px"
-                                            x.marginRight <- "5px"
-                                            x.color <- "heliotrope")
-                                        []
+                    fun _disclosure ->
+                        [
+                            match props.hintTitle with
+                            | Some hintTitle ->
+                                Chakra.box
+                                    (fun x ->
+                                        x.paddingBottom <- "12px"
+                                        x.fontSize <- "15px")
+                                    [
+                                        Chakra.icon
+                                            (fun x ->
+                                                x.``as`` <- Icons.bs.BsQuestionCircle
+                                                x.marginTop <- "-3px"
+                                                x.marginRight <- "5px"
+                                                x.color <- "heliotrope")
+                                            []
 
-                                    hintTitle
-                                ]
-                        | None -> ()
-                        props.hint
-                    ]
+                                        hintTitle
+                                    ]
+                            | None -> ()
+                            props.hint
+                        ]
             |}

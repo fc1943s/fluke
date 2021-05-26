@@ -58,6 +58,53 @@ module Auth =
                         }
                 })
 
+    let useChangePassword () =
+        let username = Recoil.useValue Atoms.username
+        let gunNamespace = Recoil.useValue Selectors.gunNamespace
+
+        Recoil.useCallbackRef
+            (fun _setter password newPassword ->
+                promise {
+                    match username with
+                    | Some (Username username) ->
+                        let! ack = Gun.changeUserPassword gunNamespace.ref username password newPassword
+
+                        return!
+                            promise {
+                                match ack with
+                                | { ok = Some 1; err = None } ->
+                                    return Ok ()
+                                | { err = Some error } -> return Error error
+                                | _ -> return Error $"invalid ack {JS.JSON.stringify ack}"
+                            }
+                    | _ -> return Error "Invalid username"
+                })
+
+    let useDeleteUser () =
+        let username = Recoil.useValue Atoms.username
+        let gunNamespace = Recoil.useValue Selectors.gunNamespace
+        let logout = useLogout ()
+
+        Recoil.useCallbackRef
+            (fun _setter password ->
+                promise {
+                    match username with
+                    | Some (Username username) ->
+                        let! ack = Gun.deleteUser gunNamespace.ref username password
+                        printfn $"ack={JS.JSON.stringify ack}"
+
+                        return!
+                            promise {
+                                match ack with
+                                | { ok = Some 0; err = None } ->
+                                    do! logout ()
+                                    return Ok ()
+                                | { err = Some error } -> return Error error
+                                | _ -> return Error $"invalid ack {JS.JSON.stringify ack}"
+                            }
+                    | _ -> return Error "Invalid username"
+                })
+
 
     let useHydrateTemplates () =
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
@@ -149,6 +196,6 @@ module Auth =
                                 //                                printfn $"sign up username put = {JS.JSON.stringify usernamePut}"
 
                                 | { err = Some err } -> return Error err
-                                | _ -> return Error $"Invalid ack: {ack}"
+                                | _ -> return Error $"Invalid ack: {JS.JSON.stringify ack}"
                             }
                 })

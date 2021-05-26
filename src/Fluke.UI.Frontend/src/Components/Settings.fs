@@ -22,6 +22,16 @@ module Settings =
                 Atom = Atoms.User.accordionFlag (input.Username, TextKey (nameof Settings))
                 Items =
                     [
+                        "User",
+                        (Chakra.stack
+                            (fun x ->
+                                x.spacing <- "10px"
+                                x.alignItems <- "flex-start")
+                            [
+                                ChangeUserPasswordButton.ChangeUserPasswordButton ()
+                                DeleteUserButton.DeleteUserButton ()
+                            ])
+
                         "View",
                         (Chakra.stack
                             (fun x -> x.spacing <- "10px")

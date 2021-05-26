@@ -37,6 +37,7 @@ module Chakra =
         abstract children : seq<ReactElement> with get, set
         abstract className : string with get, set
         abstract closeOnSelect : bool with get, set
+        abstract closeOnBlur : bool with get, set
         abstract color : string with get, set
         abstract colorScheme : string with get, set
         abstract columns : int with get, set
@@ -84,6 +85,7 @@ module Chakra =
         abstract onClick : (MouseEvent -> JS.Promise<unit>) with get, set
         abstract onClose : (unit -> JS.Promise<unit>) with get, set
         abstract onKeyDown : (KeyboardEvent -> JS.Promise<unit>) with get, set
+        abstract onOpen : (unit -> JS.Promise<unit>) with get, set
         abstract opacity : float with get, set
         abstract overflow : string with get, set
         abstract overflowX : string with get, set
@@ -118,6 +120,13 @@ module Chakra =
         abstract width : string with get, set
         abstract whiteSpace : string with get, set
         abstract zIndex : int with get, set
+
+    type Disclosure =
+        {
+            isOpen: bool
+            onOpen: unit -> JS.Promise<unit>
+            onClose: unit -> unit
+        }
 
     [<ImportAll "@chakra-ui/react">]
     let react : {| Accordion: obj
@@ -177,6 +186,7 @@ module Chakra =
                    Tab: obj
                    Tabs: obj
                    Tooltip: obj
+                   useDisclosure: unit -> Disclosure
                    useToast: unit -> System.Func<obj, unit> |} =
         jsNative
 

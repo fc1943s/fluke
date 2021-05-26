@@ -14,9 +14,9 @@ module LoginScreen =
     let LoginScreen () =
         let usernameField, setUsernameField = React.useState ""
         let passwordField, setPasswordField = React.useState ""
+        let password2Field, setPassword2Field = React.useState ""
         let signIn = Auth.useSignIn ()
         let signUp = Auth.useSignUp ()
-
         let toast = Chakra.useToast ()
 
         let signInClick _ =
@@ -28,14 +28,17 @@ module LoginScreen =
 
         let signUpClick _ =
             promise {
-                match! signUp usernameField passwordField with
-                | Ok () ->
-                    toast
-                        (fun x ->
-                            x.title <- "Success"
-                            x.status <- "success"
-                            x.description <- "User registered successfully")
-                | Error error -> toast (fun x -> x.description <- error)
+                if passwordField <> password2Field then
+                    toast (fun x -> x.description <- "Passwords don't match")
+                else
+                    match! signUp usernameField passwordField with
+                    | Ok () ->
+                        toast
+                            (fun x ->
+                                x.title <- "Success"
+                                x.status <- "success"
+                                x.description <- "User registered successfully")
+                    | Error error -> toast (fun x -> x.description <- error)
             }
 
         Chakra.center
@@ -76,19 +79,69 @@ module LoginScreen =
                                                 str "Login"
                                             ]
                                     |}
-                                Button.Button
+
+                                Popover.Popover
                                     {|
-                                        Icon = None
-                                        Hint = None
-                                        Props =
-                                            fun x ->
-                                                x.flex <- "1"
-                                                x.onClick <- signUpClick
-                                                x.color <- "gray"
-                                        Children =
-                                            [
-                                                str "Register"
-                                            ]
+                                        Trigger =
+                                            Button.Button
+                                                {|
+                                                    Icon = None
+                                                    Hint = None
+                                                    Props =
+                                                        fun x ->
+                                                            x.flex <- "1"
+                                                            x.color <- "gray"
+                                                    Children =
+                                                        [
+                                                            str "Register"
+                                                        ]
+                                                |}
+                                        Body =
+                                            fun _disclosure ->
+                                                [
+                                                    Chakra.stack
+                                                        (fun x -> x.spacing <- "10px")
+                                                        [
+                                                            Chakra.box
+                                                                (fun x ->
+                                                                    x.paddingBottom <- "5px"
+                                                                    x.fontSize <- "15px")
+                                                                [
+                                                                    str "Register"
+                                                                ]
+
+                                                            Input.Input
+                                                                (fun x ->
+                                                                    x.value <- Some password2Field
+                                                                    x.placeholder <- "Confirm Password"
+                                                                    x.inputFormat <- Some Input.InputFormat.Password
+
+                                                                    x.onChange <-
+                                                                        (fun (e: KeyboardEvent) ->
+                                                                            promise { setPassword2Field e.Value })
+
+                                                                    x.onEnterPress <- Some signUpClick)
+
+                                                            Chakra.box
+                                                                (fun _ -> ())
+                                                                [
+                                                                    Button.Button
+                                                                        {|
+                                                                            Hint = None
+                                                                            Icon =
+                                                                                Some (
+                                                                                    Icons.fi.FiKey |> Icons.wrap,
+                                                                                    Button.IconPosition.Left
+                                                                                )
+                                                                            Props = fun x -> x.onClick <- signUpClick
+                                                                            Children =
+                                                                                [
+                                                                                    str "Confirm"
+                                                                                ]
+                                                                        |}
+                                                                ]
+                                                        ]
+                                                ]
                                     |}
                             ]
                     ]

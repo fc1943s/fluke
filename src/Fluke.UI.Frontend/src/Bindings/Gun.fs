@@ -29,12 +29,15 @@ module rec Gun =
 
     type IGunUser =
         abstract create : alias: string * pass: string * cb: (UserResult -> unit) -> unit
-        abstract auth : alias: string * pass: string * cb: (UserResult -> unit) -> unit
-//        abstract ``_`` : {| sea: GunKeys |}
+        abstract delete : alias: string * pass: string * cb: (UserResult -> unit) -> unit
+        abstract auth : alias: string * pass: string * cb: (UserResult -> unit) * ?opt: {| change: string |} -> unit
+
         [<Emit("$0._")>]
         abstract _underscore_ : {| sea: GunKeys |}
+
         abstract get : string -> IGunChainReference
         abstract leave : unit -> unit
+
         abstract recall :
             {| sessionStorage: bool |}
             * System.Func<{| put: {| alias: string |} option
@@ -82,6 +85,24 @@ module rec Gun =
                     user.auth (username, password, res)
                 with ex ->
                     printfn "authUser error: {ex}"
+                    err ex)
+
+    let changeUserPassword (user: IGunUser) username password newPassword =
+        Promise.create
+            (fun res err ->
+                try
+                    user.auth (username, password, res, {| change = newPassword |})
+                with ex ->
+                    printfn "changeUserPassword error: {ex}"
+                    err ex)
+
+    let deleteUser (user: IGunUser) username password =
+        Promise.create
+            (fun res err ->
+                try
+                    user.delete (username, password, res)
+                with ex ->
+                    printfn "deleteUser error: {ex}"
                     err ex)
 
     let getAtomNode (gun: IGunChainReference option) (atomPath: string) =
