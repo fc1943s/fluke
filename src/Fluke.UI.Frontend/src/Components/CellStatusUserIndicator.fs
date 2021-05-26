@@ -13,11 +13,12 @@ module CellStatusUserIndicator =
     [<ReactComponent>]
     let CellStatusUserIndicator (input: {| Username: Username |}) =
         let color = Recoil.useValue (Atoms.User.color input.Username)
+        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.box
             (fun x ->
-                x.height <- "17px"
-                x.lineHeight <- "17px"
+                x.height <- $"{cellSize}px"
+                x.lineHeight <- $"{cellSize}px"
                 x.position <- "absolute"
                 x.top <- "0"
                 x.width <- "100%"

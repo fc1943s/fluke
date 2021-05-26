@@ -16,6 +16,7 @@ module InformationView =
         let groupIndentationLength = 20
 
         let tasksByInformationKind = Recoil.useValue (Selectors.Session.tasksByInformationKind input.Username)
+        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.flex
             (fun x -> x.flex <- "1")
@@ -28,7 +29,7 @@ module InformationView =
                         x.maxWidth <- "400px")
                     [
                         yield!
-                            Chakra.box (fun x -> x.minHeight <- "17px") []
+                            Chakra.box (fun x -> x.minHeight <- $"{cellSize}px") []
                             |> List.replicate 3
 
                         Chakra.flex
@@ -43,8 +44,8 @@ module InformationView =
                                                 [
                                                     Chakra.box
                                                         (fun x ->
-                                                            x.height <- "17px"
-                                                            x.lineHeight <- "17px"
+                                                            x.height <- $"{cellSize}px"
+                                                            x.lineHeight <- $"{cellSize}px"
                                                             x.color <- "#444")
                                                         [
                                                             str informationKindName
@@ -58,10 +59,13 @@ module InformationView =
                                                                 |> List.map
                                                                     (fun (information, taskIdList) ->
                                                                         Chakra.box
-                                                                            (fun x -> x.paddingLeft <- "17px")
+                                                                            (fun x -> x.paddingLeft <- $"{cellSize}px")
                                                                             [
                                                                                 InformationName.InformationName
-                                                                                    {| Information = information |}
+                                                                                    {|
+                                                                                        Username = input.Username
+                                                                                        Information = information
+                                                                                    |}
 
                                                                                 // Task Name
                                                                                 Chakra.box
@@ -80,15 +84,21 @@ module InformationView =
                                                                                                                 "10px"
 
                                                                                                             x.paddingLeft <-
-                                                                                                                "17px")
+                                                                                                                $"{
+                                                                                                                    cellSize
+                                                                                                                }px")
                                                                                                         [
                                                                                                             TaskPriority.TaskPriority
                                                                                                                 {|
+                                                                                                                    Username =
+                                                                                                                        input.Username
                                                                                                                     TaskId =
                                                                                                                         taskId
                                                                                                                 |}
                                                                                                             TaskName.TaskName
                                                                                                                 {|
+                                                                                                                    Username =
+                                                                                                                        input.Username
                                                                                                                     TaskId =
                                                                                                                         taskId
                                                                                                                 |}
@@ -118,8 +128,8 @@ module InformationView =
                                                     Chakra.box
                                                         (fun x ->
                                                             x.position <- "relative"
-                                                            x.height <- "17px"
-                                                            x.lineHeight <- "17px")
+                                                            x.height <- $"{cellSize}px"
+                                                            x.lineHeight <- $"{cellSize}px")
                                                         []
                                                     yield!
                                                         groups
@@ -131,8 +141,8 @@ module InformationView =
                                                                         Chakra.box
                                                                             (fun x ->
                                                                                 x.position <- "relative"
-                                                                                x.height <- "17px"
-                                                                                x.lineHeight <- "17px")
+                                                                                x.height <- $"{cellSize}px"
+                                                                                x.lineHeight <- $"{cellSize}px")
                                                                             []
                                                                         Cells.Cells
                                                                             {|

@@ -215,7 +215,7 @@ module State =
             let rec cellSize =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof cellSize}",
-                    (fun (_username: Username) -> 17),
+                    (fun (_username: Username) -> 23),
                     (fun (username: Username) ->
                         [
                             Recoil.gunEffect (Some username) (Recoil.AtomFamily (cellSize, username)) []

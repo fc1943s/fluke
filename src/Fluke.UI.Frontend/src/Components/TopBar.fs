@@ -34,7 +34,7 @@ module TopBar =
                 x.alignItems <- "center"
                 x.backgroundColor <- "gray.10"
                 x.padding <- "7px"
-                x.paddingBottom <- "9px")
+                x.paddingBottom <- "8px")
             [
 
                 Chakra.flex
@@ -76,7 +76,7 @@ module TopBar =
                                                 Props =
                                                     fun x ->
                                                         x.icon <- Icons.ai.AiOutlineGithub |> Icons.render
-                                                        x.height <- "26px"
+                                                        x.height <- "27px"
                                                         x.fontSize <- "17px"
                                             |}
                                     ]
@@ -90,7 +90,7 @@ module TopBar =
                                         Props =
                                             fun x ->
                                                 x.icon <- Icons.fi.FiLogOut |> Icons.render
-                                                x.height <- "26px"
+                                                x.height <- "27px"
                                                 x.fontSize <- "17px"
                                                 x.onClick <- logout
                                     |}

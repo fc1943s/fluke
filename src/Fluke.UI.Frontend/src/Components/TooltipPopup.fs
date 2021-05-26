@@ -6,6 +6,8 @@ open Feliz.UseListener
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Feliz.Recoil
+open Fluke.UI.Frontend.State
 
 
 module TooltipPopup =
@@ -13,13 +15,18 @@ module TooltipPopup =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let TooltipPopup (attachments: Attachment list) =
+    let TooltipPopup
+        (input: {| Username: Username
+                   Attachments: Attachment list |})
+        =
+        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+
         let tooltipContainerRef = React.useElementRef ()
 
         let hovered = Listener.useElementHover tooltipContainerRef
 
         let comments =
-            attachments
+            input.Attachments
             |> List.choose
                 (fun x ->
                     match x with
@@ -32,8 +39,8 @@ module TooltipPopup =
             Chakra.box
                 (fun x ->
                     x.ref <- tooltipContainerRef
-                    x.height <- "17px"
-                    x.lineHeight <- "17px"
+                    x.height <- $"{cellSize}px"
+                    x.lineHeight <- $"{cellSize}px"
                     x.position <- "absolute"
                     x.top <- "0"
                     x.width <- "100%"

@@ -98,7 +98,11 @@ module BulletJournalView =
                                                                                     (fun x -> x.paddingLeft <- "4px")
                                                                                     [
                                                                                         TaskName.TaskName
-                                                                                            {| TaskId = cell.TaskId |}
+                                                                                            {|
+                                                                                                Username =
+                                                                                                    input.Username
+                                                                                                TaskId = cell.TaskId
+                                                                                            |}
                                                                                     ]
                                                                             ])
                                                         ])

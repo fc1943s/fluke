@@ -48,6 +48,12 @@ module Settings =
                                         x.atom <- Some (Recoil.Atom (Atoms.User.daysAfter input.Username))
                                         x.inputFormat <- Some Input.InputFormat.Number)
 
+                                Input.Input
+                                    (fun x ->
+                                        x.label <- str "Cell Size"
+                                        x.atom <- Some (Recoil.Atom (Atoms.User.cellSize input.Username))
+                                        x.inputFormat <- Some Input.InputFormat.Number)
+
                                 Checkbox.Checkbox
                                     {|
                                         Props =

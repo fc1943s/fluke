@@ -4,6 +4,7 @@ open Fable.React
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
@@ -14,20 +15,21 @@ module TaskName =
     open Domain.Model
 
     [<ReactComponent>]
-    let TaskName (input: {| TaskId: TaskId |}) =
+    let TaskName (input: {| Username: Username; TaskId: TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
         let hasSelection = Recoil.useValue (Selectors.Task.hasSelection input.TaskId)
         let (TaskName taskName) = Recoil.useValue (Atoms.Task.name input.TaskId)
         let attachments = Recoil.useValue (Atoms.Task.attachments input.TaskId)
+        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.box
             (fun x ->
                 x.flex <- "1"
                 x.ref <- ref
                 x.position <- "relative"
-                x.height <- "17px"
-                x.lineHeight <- "17px"
+                x.height <- $"{cellSize}px"
+                x.lineHeight <- $"{cellSize}px"
                 x.zIndex <- if hovered then 1 else 0)
             [
                 Chakra.box
@@ -41,5 +43,9 @@ module TaskName =
                         str taskName
                     ]
 
-                TooltipPopup.TooltipPopup attachments
+                TooltipPopup.TooltipPopup
+                    {|
+                        Username = input.Username
+                        Attachments = attachments
+                    |}
             ]

@@ -23,6 +23,7 @@ module Cell =
         =
         Profiling.addCount "CellComponent.render"
 
+        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
         let isTesting = Recoil.useValue Atoms.isTesting
         let databaseId = Recoil.useValue (Atoms.Task.databaseId input.TaskId)
         let access = Recoil.useValue (Selectors.Database.access databaseId)
@@ -76,9 +77,9 @@ module Cell =
                     }"
 
                 x.onClick <- onCellClick
-                x.width <- "17px"
-                x.height <- "17px"
-                x.lineHeight <- "17px"
+                x.width <- $"{cellSize}px"
+                x.height <- $"{cellSize}px"
+                x.lineHeight <- $"{cellSize}px"
 
                 x.backgroundColor <-
                     (TempUI.cellStatusColor status)
@@ -231,5 +232,9 @@ overriding any other behavior.
                         CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
                     | _ -> ()
 
-                TooltipPopup.TooltipPopup attachments
+                TooltipPopup.TooltipPopup
+                    {|
+                        Username = input.Username
+                        Attachments = attachments
+                    |}
             ]

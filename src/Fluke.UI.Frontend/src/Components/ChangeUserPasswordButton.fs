@@ -51,7 +51,7 @@ module ChangeUserPasswordButton =
                                 ]
                         |}
                 Body =
-                    fun (disclosure, _initialFocusRef) ->
+                    fun (disclosure, initialFocusRef) ->
                         [
                             Chakra.stack
                                 (fun x -> x.spacing <- "10px")
@@ -66,6 +66,7 @@ module ChangeUserPasswordButton =
 
                                     Input.Input
                                         (fun x ->
+                                            x.ref <- initialFocusRef
                                             x.value <- Some passwordField
                                             x.placeholder <- "Password"
                                             x.inputFormat <- Some Input.InputFormat.Password

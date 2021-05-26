@@ -43,7 +43,7 @@ module Content =
                                     x.spacing <- "0"
                                     x.flex <- "1"
                                     x.borderWidth <- "1px"
-                                    x.borderColor <- "gray.10"
+                                    x.borderColor <- "whiteAlpha.300"
                                     x.maxWidth <- "100vw")
                                 [
                                     TopBar.TopBar ()

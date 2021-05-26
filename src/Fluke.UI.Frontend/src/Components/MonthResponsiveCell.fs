@@ -19,13 +19,15 @@ module MonthResponsiveCell =
                    Props: Chakra.IChakraProps -> unit |})
         =
         let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
+        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+
         let month = (input.Date |> FlukeDate.DateTime).Format "MMM"
 
         Chakra.box
             (fun x ->
                 x.textAlign <- "center"
-                x.height <- "17px"
-                x.lineHeight <- "17px"
+                x.height <- $"{cellSize}px"
+                x.lineHeight <- $"{cellSize}px"
 
                 x.borderLeftWidth <-
                     match (weekStart, input.Date) with

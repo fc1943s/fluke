@@ -20,6 +20,7 @@ module Day =
         let isToday = Recoil.useValue (Selectors.FlukeDate.isToday input.Date)
         let hasCellSelection = Recoil.useValue (Selectors.Session.hasCellSelection input.Date)
         let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
+        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.box
             (fun x ->
@@ -40,9 +41,9 @@ module Day =
                     | StartOfWeek -> "#222"
                     | _ -> null
 
-                x.height <- "17px"
-                x.width <- "17px"
-                x.lineHeight <- "17px"
+                x.height <- $"{cellSize}px"
+                x.width <- $"{cellSize}px"
+                x.lineHeight <- $"{cellSize}px"
                 x.textAlign <- "center")
             [
                 str (String.toLower input.Label)
