@@ -643,7 +643,7 @@ module SchedulingSelector =
                                         ]
                                 |}
                         Body =
-                            fun _disclosure ->
+                            fun (_disclosure, _initialFocusRef) ->
                                 [
                                     Chakra.radioGroup
                                         (fun x ->

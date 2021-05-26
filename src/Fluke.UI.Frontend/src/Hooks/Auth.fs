@@ -22,7 +22,7 @@ module Auth =
             (fun _setter _ ->
                 promise {
                     printfn "before leave"
-                    gunNamespace.ref.leave ()
+                    gunNamespace.``#``.leave ()
                     setUsername None
                     resetGunKeys ()
                 })
@@ -36,7 +36,7 @@ module Auth =
             (fun _setter username ->
                 promise {
                     setUsername (Some username)
-                    setGunKeys gunNamespace.ref._underscore_.sea
+                    setGunKeys gunNamespace.``#``._underscore_.sea
                 })
 
     let useSignIn () =
@@ -46,7 +46,7 @@ module Auth =
         Recoil.useCallbackRef
             (fun _setter username password ->
                 promise {
-                    let! ack = Gun.authUser gunNamespace.ref username password
+                    let! ack = Gun.authUser gunNamespace.``#`` username password
 
                     return!
                         promise {
@@ -67,13 +67,12 @@ module Auth =
                 promise {
                     match username with
                     | Some (Username username) ->
-                        let! ack = Gun.changeUserPassword gunNamespace.ref username password newPassword
+                        let! ack = Gun.changeUserPassword gunNamespace.``#`` username password newPassword
 
                         return!
                             promise {
                                 match ack with
-                                | { ok = Some 1; err = None } ->
-                                    return Ok ()
+                                | { ok = Some 1; err = None } -> return Ok ()
                                 | { err = Some error } -> return Error error
                                 | _ -> return Error $"invalid ack {JS.JSON.stringify ack}"
                             }
@@ -90,7 +89,7 @@ module Auth =
                 promise {
                     match username with
                     | Some (Username username) ->
-                        let! ack = Gun.deleteUser gunNamespace.ref username password
+                        let! ack = Gun.deleteUser gunNamespace.``#`` username password
                         printfn $"ack={JS.JSON.stringify ack}"
 
                         return!
@@ -154,9 +153,9 @@ module Auth =
                     elif username = (Templates.templatesUser.Username |> Username.Value) then
                         return Error "Invalid username"
                     else
-                        printfn $"Auth.useSignUp. gun.user() result: {JS.JSON.stringify gunNamespace.ref}"
+                        printfn $"Auth.useSignUp. gun.user() result: {JS.JSON.stringify gunNamespace.``#``}"
 
-                        let! ack = Gun.createUser gunNamespace.ref username password
+                        let! ack = Gun.createUser gunNamespace.``#`` username password
                         printfn "Auth.useSignUp. Gun.createUser signUpAck:"
                         Browser.Dom.console.log ack
                         Browser.Dom.window?signUpAck <- ack

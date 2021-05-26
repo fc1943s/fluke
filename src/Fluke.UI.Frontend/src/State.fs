@@ -576,7 +576,7 @@ module State =
 
                     printfn $"gun selector. peers={gunPeers}. returning gun..."
 
-                    {| ref = gun |})
+                    {| ``#`` = gun |})
             )
 
         let rec gunNamespace =
@@ -586,13 +586,13 @@ module State =
                     let gun = getter.get gun
                     let username = getter.get Atoms.username
                     let gunKeys = getter.get Atoms.gunKeys
-                    let user = gun.ref.user ()
+                    let user = gun.``#``.user ()
                     Browser.Dom.window?gunNamespace <- user
 
                     printfn
                         $"gun selector. username={username} gunKeys={JS.JSON.stringify gunKeys}. returning gun namespace..."
 
-                    {| ref = user |})
+                    {| ``#`` = user |})
             )
 
         let rec dateSequence =

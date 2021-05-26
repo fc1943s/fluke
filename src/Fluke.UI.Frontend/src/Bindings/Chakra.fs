@@ -61,6 +61,7 @@ module Chakra =
         abstract icon : obj with get, set
         abstract id : string with get, set
         abstract index : obj with get, set
+        abstract initialFocusRef : IRefValue<unit> with get, set
         abstract isCentered : bool with get, set
         abstract isChecked : bool with get, set
         abstract isDisabled : bool with get, set
@@ -106,6 +107,7 @@ module Chakra =
         abstract scrollBehavior : string with get, set
         abstract size : string with get, set
         abstract spacing : string with get, set
+        abstract tabIndex : int with get, set
         abstract textAlign : string with get, set
         abstract textOverflow : string with get, set
         abstract textShadow : string with get, set
@@ -281,15 +283,15 @@ module Chakra =
                         props x)
             )
 
-    let trySetProp fn value =
-        match value |> Option.ofObj with
+    let mapIfSet fn value =
+        match unbox value |> Option.ofObj with
         | Some value when
-            value <> null
+            unbox value <> null
             && value
                |> string
                |> String.IsNullOrWhiteSpace
-               |> not -> fn value
-        | _ -> ()
+               |> not -> fn (unbox value)
+        | _ -> unbox null
 
     let transformShiftBy x y =
         $"translate({x |> Option.defaultValue 0}px, {y |> Option.defaultValue 0}px)"

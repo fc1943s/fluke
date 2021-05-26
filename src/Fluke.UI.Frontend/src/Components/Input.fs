@@ -40,7 +40,13 @@ module Input =
 
         let atomFieldOptions = Recoil.useAtomFieldOptions<'TValue, 'TKey> props.atom props.inputScope
 
-        let inputRef = React.useRef<HTMLInputElement> null
+        let inputFallbackRef = React.useRef<HTMLInputElement> null
+
+        let inputRef =
+            (box props.ref)
+            |> Option.ofObj
+            |> Option.defaultValue (box inputFallbackRef)
+            :?> IRefValue<HTMLInputElement>
 
         let mounted, setMounted = React.useState false
 
@@ -169,10 +175,10 @@ module Input =
                                 x.autoFocus <- props.autoFocus
 
                                 props.placeholder
-                                |> Chakra.trySetProp (fun value -> x.placeholder <- value)
+                                |> Chakra.mapIfSet (fun value -> x.placeholder <- value)
 
                                 props.width
-                                |> Chakra.trySetProp (fun value -> x.width <- value)
+                                |> Chakra.mapIfSet (fun value -> x.width <- value)
 
                                 x.onKeyDown <-
                                     fun (e: KeyboardEvent) ->

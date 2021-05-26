@@ -29,7 +29,7 @@ module Settings =
                                 x.alignItems <- "flex-start")
                             [
                                 ChangeUserPasswordButton.ChangeUserPasswordButton ()
-                                DeleteUserButton.DeleteUserButton ()
+//                                DeleteUserButton.DeleteUserButton ()
                             ])
 
                         "View",

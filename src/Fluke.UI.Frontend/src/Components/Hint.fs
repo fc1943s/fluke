@@ -25,7 +25,7 @@ module Hint =
                                     x.marginTop <- "-5px")
                         |}
                 Body =
-                    fun _disclosure ->
+                    fun (_disclosure, _initialFocusRef) ->
                         [
                             match props.hintTitle with
                             | Some hintTitle ->

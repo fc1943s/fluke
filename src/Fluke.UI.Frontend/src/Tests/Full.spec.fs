@@ -9,7 +9,7 @@ module Full =
 
     module Cy2 =
         let typeText<'T> (text: string) =
-            Cy.focused().should "have.value" "" null
+            Cy.focused().clear () |> ignore
 
             text
             |> Seq.iter
@@ -74,7 +74,15 @@ module Full =
                     Cy2.waitFor "Wrong user or password" None
 
                     Cy.wait 250
+
                     Cy2.clickText "Register"
+
+                    Cy
+                        .get("input[placeholder='Confirm Password']")
+                        .focus ()
+
+                    Cy2.typeText password
+                    Cy2.clickText "Confirm"
                     Cy2.waitFor "User registered successfully" None
 
                     Cy2.clickText (nameof Databases)
@@ -121,4 +129,13 @@ module Full =
                     Cy2.clickText "Bullet Journal View"
                     Cy2.waitFor "0 of 1 tasks visible" None
 
-                    ))
+                    (Cy.contains dbName None)
+                        .find(".chakra-button")
+                        .click ()
+                    |> ignore
+
+                    Cy2.clickText "Edit Database"
+
+                    Cy2.waitFocus "input[placeholder^=new-database-]" None
+                    Cy2.typeText $"{dbName}_edit"
+                    Cy2.clickText "Save"))

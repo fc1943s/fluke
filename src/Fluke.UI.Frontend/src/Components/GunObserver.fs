@@ -86,34 +86,34 @@ module GunObserver =
 
                 printfn "after newRecall"),
             [|
-                box gunNamespace.ref
+                box gunNamespace.``#``
                 box gunKeys
             |]
         )
 
         React.useDisposableEffect (
             (fun disposed ->
-                gun.ref.on (
+                gun.``#``.on (
                     "auth",
                     (fun () ->
                         match disposed.current with
                         | false ->
 
-                            match gunNamespace.ref.is.alias with
+                            match gunNamespace.``#``.is.alias with
                             | Some username ->
                                 printfn $"GunObserver.render: .on(auth) effect. setUsername. username={username}"
-                                setGunKeys gunNamespace.ref._underscore_.sea
+                                setGunKeys gunNamespace.``#``._underscore_.sea
 
                             //                                gunState.put ({| username = username |} |> toPlainJsObj)
 //                                |> Promise.start
                             //                                setUsername (Some (UserInteraction.Username username))
                             | None ->
-                                printfn $"GunObserver.render: Auth occurred without username: {gunNamespace.ref.is}"
+                                printfn $"GunObserver.render: Auth occurred without username: {gunNamespace.``#``.is}"
                         | true -> ())
                 )),
             [|
-                box gun.ref
-                box gunNamespace.ref
+                box gun.``#``
+                box gunNamespace.``#``
             |]
         )
 

@@ -51,14 +51,14 @@ module rec Gun =
 
     type IGunChainReference =
         abstract get : string -> IGunChainReference
-        abstract set : string -> IGunChainReference
-        abstract put : string -> IGunChainReference
-        abstract user : unit -> IGunUser
-        abstract on : ('T -> string -> unit) -> unit
-        abstract on : event: string * (unit -> unit) -> unit
         abstract map : unit -> IGunChainReference
         abstract off : unit -> IGunChainReference
-        abstract once : (string -> unit) -> unit
+        abstract on : ('T -> string -> unit) -> unit
+        abstract on : event: string * (unit -> unit) -> unit
+        abstract put : string -> IGunChainReference
+        abstract user : unit -> IGunUser
+//        abstract once : (string -> unit) -> unit
+//        abstract set : string -> IGunChainReference
 
     type GunProps =
         {

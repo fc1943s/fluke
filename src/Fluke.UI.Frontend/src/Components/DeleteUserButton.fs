@@ -44,7 +44,7 @@ module DeleteUserButton =
                                 ]
                         |}
                 Body =
-                    fun disclosure ->
+                    fun (disclosure, _initialFocusRef) ->
                         [
                             Chakra.stack
                                 (fun x -> x.spacing <- "10px")

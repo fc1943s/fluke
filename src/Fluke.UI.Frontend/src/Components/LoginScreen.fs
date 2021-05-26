@@ -19,6 +19,7 @@ module LoginScreen =
         let signUp = Auth.useSignUp ()
         let toast = Chakra.useToast ()
 
+
         let signInClick _ =
             promise {
                 match! signIn usernameField passwordField with
@@ -97,7 +98,7 @@ module LoginScreen =
                                                         ]
                                                 |}
                                         Body =
-                                            fun _disclosure ->
+                                            fun (_disclosure, initialFocusRef) ->
                                                 [
                                                     Chakra.stack
                                                         (fun x -> x.spacing <- "10px")
@@ -112,6 +113,7 @@ module LoginScreen =
 
                                                             Input.Input
                                                                 (fun x ->
+                                                                    x.ref <- initialFocusRef
                                                                     x.value <- Some password2Field
                                                                     x.placeholder <- "Confirm Password"
                                                                     x.inputFormat <- Some Input.InputFormat.Password
