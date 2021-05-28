@@ -19,7 +19,7 @@ module TaskName =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
         let hasSelection = Recoil.useValue (Selectors.Task.hasSelection input.TaskId)
-        let (TaskName taskName) = Recoil.useValue (Atoms.Task.name input.TaskId)
+        let (TaskName taskName) = Recoil.useValue (Atoms.Task.name (input.Username, input.TaskId))
         let attachments = Recoil.useValue (Atoms.Task.attachments input.TaskId)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 

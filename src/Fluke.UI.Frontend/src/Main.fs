@@ -6,8 +6,7 @@ open Fluke.UI.Frontend.Bindings
 
 
 module Main =
-
-    importAll "typeface-roboto-condensed"
+    importSideEffects "@fontsource/roboto-condensed/300"
 
     importAll "../public/index.tsx"
     importAll "../public/index.ts"

@@ -1,4 +1,5 @@
 cypress-examples/
+.parcel-cache/
 cypress/videos/
 
 www/

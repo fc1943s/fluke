@@ -99,15 +99,21 @@ module GunObserver =
                         match disposed.current with
                         | false ->
 
-                            match gunNamespace.``#``.is.alias with
-                            | Some username ->
+                            match gunNamespace.``#``.is with
+                            | Some { alias = Some username } ->
                                 printfn $"GunObserver.render: .on(auth) effect. setUsername. username={username}"
-                                setGunKeys gunNamespace.``#``._underscore_.sea
+
+                                let user = gunNamespace.``#``
+                                let keys = user.__.sea
+
+                                match keys with
+                                | Some keys -> setGunKeys keys
+                                | None -> failwith $"No keys found for user {user.is}"
 
                             //                                gunState.put ({| username = username |} |> toPlainJsObj)
 //                                |> Promise.start
                             //                                setUsername (Some (UserInteraction.Username username))
-                            | None ->
+                            | _ ->
                                 printfn $"GunObserver.render: Auth occurred without username: {gunNamespace.``#``.is}"
                         | true -> ())
                 )),

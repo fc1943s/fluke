@@ -25,6 +25,13 @@ module rec Gun =
             err: string option
             ok: int option
             pub: string option
+            wait: bool
+        }
+
+    type IGunUserPub =
+        {
+            alias: string option
+            pub: string option
         }
 
     type IGunUser =
@@ -33,7 +40,7 @@ module rec Gun =
         abstract auth : alias: string * pass: string * cb: (UserResult -> unit) * ?opt: {| change: string |} -> unit
 
         [<Emit("$0._")>]
-        abstract _underscore_ : {| sea: GunKeys |}
+        abstract __ : {| sea: GunKeys option |}
 
         abstract get : string -> IGunChainReference
         abstract leave : unit -> unit
@@ -44,9 +51,7 @@ module rec Gun =
                              sea: GunKeys |}, unit> ->
             unit
 
-        abstract is :
-            {| alias: string option
-               pub: string option |}
+        abstract is : IGunUserPub option
 
 
     type IGunChainReference =
@@ -57,8 +62,16 @@ module rec Gun =
         abstract on : event: string * (unit -> unit) -> unit
         abstract put : string -> IGunChainReference
         abstract user : unit -> IGunUser
-//        abstract once : (string -> unit) -> unit
+    //        abstract once : (string -> unit) -> unit
 //        abstract set : string -> IGunChainReference
+
+
+    type ISEA =
+        abstract encrypt : data: string -> keys: GunKeys -> JS.Promise<string>
+        abstract sign : data: string -> keys: GunKeys -> JS.Promise<string>
+        abstract verify : data: string -> pub: string -> JS.Promise<obj>
+        abstract decrypt : data: obj -> keys: GunKeys -> JS.Promise<string>
+    //        abstract work : data:string -> keys:GunKeys -> JS.Promise<string>
 
     type GunProps =
         {
@@ -68,6 +81,17 @@ module rec Gun =
         }
 
     let gun : GunProps -> IGunChainReference = importDefault "gun/gun"
+
+    let gunTest =
+        Gun.gun
+            {
+                Gun.GunProps.peers = None
+                Gun.GunProps.radisk = None
+                Gun.GunProps.localStorage = None
+            }
+
+    [<Emit "Gun.SEA">]
+    let sea : ISEA = jsNative
 
     let createUser (user: IGunUser) username password =
         Promise.create
@@ -104,14 +128,6 @@ module rec Gun =
                 with ex ->
                     printfn "deleteUser error: {ex}"
                     err ex)
-
-    let getAtomNode (gun: IGunChainReference option) (atomPath: string) =
-        (gun, atomPath.Split "/" |> Array.toList)
-        ||> List.fold
-                (fun result node ->
-                    result
-                    |> Option.map (fun result -> result.get node))
-
 
     let inline jsonEncode<'T> obj =
         Thoth.Json.Encode.Auto.toString<'T> (0, obj)

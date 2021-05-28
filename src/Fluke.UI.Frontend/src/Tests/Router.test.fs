@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Tests
 
 open Fable.ReactTestingLibrary
+open Fable.React
 open Fable.Jester
 open Feliz.Recoil
 open Feliz.Router
@@ -10,9 +11,13 @@ open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Tests.Core
 open Fluke.UI.Frontend.State
 open Fluke.Shared
+open Feliz
+open Fluke.Shared.Domain.UserInteraction
+open Microsoft.FSharp.Core.Operators
 
 
 module Router =
+//let a () =
 
     Jest.describe (
         "router",
@@ -21,27 +26,42 @@ module Router =
                 promise { setter.set (Atoms.username, Some Templates.templatesUser.Username) }
 
             let getComponent () =
-                Chakra.box
-                    (fun _ -> ())
-                    [
-                        RouterObserver.RouterObserver ()
-                    ]
+                React.fragment [
+                    (React.memo
+                        (fun () ->
+                            //                            React.useEffect (
+//                                (fun () ->
+//                                    promise {
+//                                        let! gun = Recoil.getGun2 () |> Async.StartAsPromise
+//                                        let user = gun.user ()
+//                                        let username = Templates.templatesUser.Username |> Username.Value
+//                                        let! _ = Gun.createUser user username username
+//                                        let! _ = Gun.authUser user username username
+//                                        ()
+//                                    }
+//                                    |> Promise.start),
+//                                [||]
+//                            )
 
-            let initialize peek = promise { do! peek initialSetter }
+                            nothing)
+                        ())
+                    Chakra.box
+                        (fun _ -> ())
+                        [
+                            RouterObserver.RouterObserver ()
+                        ]
+                ]
 
-            let setView peek (view: View.View) =
-                peek
-                    (fun (setter: CallbackMethods) ->
-                        promise { setter.set (Atoms.User.view Templates.templatesUser.Username, view) })
 
-            let expectView peek (expected: View.View) =
-                peek
-                    (fun (setter: CallbackMethods) ->
-                        promise {
-                            let! view = setter.snapshot.getPromise (Atoms.User.view Templates.templatesUser.Username)
+            let setView (setter: CallbackMethods) (view: View.View) =
+                promise { setter.set (Atoms.User.view Templates.templatesUser.Username, view) }
 
-                            Jest.expect(string view).toEqual (string expected)
-                        })
+            let expectView (setter: CallbackMethods) (expected: View.View) =
+                promise {
+                    let! view = setter.snapshot.getPromise (Atoms.User.view Templates.templatesUser.Username)
+
+                    Jest.expect(string view).toEqual (string expected)
+                }
 
             let expectUrl (expected: string []) =
                 promise {
@@ -71,8 +91,8 @@ module Router =
                 promise {
                     do! [||] |> expectUrl
 
-                    let! _subject, peek = getComponent () |> Setup.render
-                    do! initialize peek
+                    let! _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter ())
 
                     do!
                         [|
@@ -81,17 +101,17 @@ module Router =
                         |]
                         |> expectUrl
 
-                    do! expectView peek TempUI.defaultView
+                    do! expectView (setter ()) TempUI.defaultView
                 }
             )
 
             Jest.test (
                 "navigating from state",
                 promise {
-                    let! _subject, peek = getComponent () |> Setup.render
-                    do! initialize peek
+                    let! _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter ())
 
-                    do! setView peek View.View.BulletJournal
+                    do! setView (setter ()) View.View.BulletJournal
 
                     do!
                         [|
@@ -100,15 +120,15 @@ module Router =
                         |]
                         |> expectUrl
 
-                    do! expectView peek View.View.BulletJournal
+                    do! expectView (setter ()) View.View.BulletJournal
                 }
             )
 
             Jest.test (
                 "navigating from url (logged in)",
                 promise {
-                    let! _subject, peek = getComponent () |> Setup.render
-                    do! initialize peek
+                    let! _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter ())
 
                     [|
                         "view"
@@ -116,16 +136,16 @@ module Router =
                     |]
                     |> navigate
 
-                    do! expectView peek View.View.Information
+                    do! expectView (setter ()) View.View.Information
                 }
             )
 
             Jest.test (
                 "navigating from url (not logged in)",
                 promise {
-                    let! _subject, peek = getComponent () |> Setup.render
-                    do! initialize peek
-                    do! peek (fun setter -> promise { setter.set (Atoms.username, None) })
+                    let! _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter ())
+                    setter().set (Atoms.username, None)
 
                     [|
                         "view"
@@ -151,8 +171,8 @@ module Router =
                     |]
                     |> navigate
 
-                    let! _subject, peek = getComponent () |> Setup.render
-                    do! initialize peek
+                    let! _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter ())
 
                     do!
                         [|
@@ -161,7 +181,7 @@ module Router =
                         |]
                         |> expectUrl
 
-                    do! expectView peek View.View.Information
+                    do! expectView (setter ()) View.View.Information
 
                 }
             )
@@ -175,9 +195,9 @@ module Router =
                     |]
                     |> navigate
 
-                    let! _subject, peek = getComponent () |> Setup.render
-                    do! initialize peek
-                    do! peek (fun setter -> promise { setter.set (Atoms.username, None) })
+                    let! _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter ())
+                    (setter ()).set (Atoms.username, None)
 
                     do!
                         [|

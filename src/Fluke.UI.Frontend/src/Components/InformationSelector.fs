@@ -47,7 +47,7 @@ module InformationSelector =
 
         let informationFieldOptions =
             Recoil.useAtomFieldOptions
-                (Some (Recoil.AtomFamily (Atoms.Task.information, input.TaskId)))
+                (Some (Recoil.AtomFamily (input.Username, Atoms.Task.information, (input.Username, input.TaskId))))
                 (Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer))
 
         let informationName =

@@ -164,41 +164,49 @@ module LeftDock =
                     match itemsMap |> Map.tryFind leftDock with
                     | None -> nothing
                     | Some item ->
-                        Resizable.resizable
-                            {|
-                                defaultSize = {| width = "300px" |}
-                                minWidth = "300px"
-                                enable =
-                                    {|
-                                        top = false
-                                        right = true
-                                        bottom = false
-                                        left = false
-                                        topRight = false
-                                        bottomRight = false
-                                        bottomLeft = false
-                                        topLeft = false
-                                    |}
-                            |}
+                        //                        Resizable.resizable
+//                            {|
+//                                defaultSize = {| width = "300px" |}
+//                                minWidth = "300px"
+//                                enable =
+//                                    {|
+//                                        top = false
+//                                        right = true
+//                                        bottom = false
+//                                        left = false
+//                                        topRight = false
+//                                        bottomRight = false
+//                                        bottomLeft = false
+//                                        topLeft = false
+//                                    |}
+//                            |}
+//                            [
+                        Chakra.flex
+                            (fun x ->
+                                x.width <-
+                                    unbox (
+                                        JS.newObj
+                                            (fun (x: Chakra.IBreakpoints<string>) ->
+                                                x.``base`` <- "calc(100vw - 24px)"
+                                                x.md <- "300px")
+                                    )
+
+                                x.height <- "100%"
+                                x.borderRightWidth <- "1px"
+                                x.borderRightColor <- "gray.16"
+                                x.flex <- "1")
                             [
-                                Chakra.flex
-                                    (fun x ->
-                                        x.height <- "100%"
-                                        x.borderRightWidth <- "1px"
-                                        x.borderRightColor <- "gray.16"
-                                        x.flex <- "1")
-                                    [
-                                        DockPanel.DockPanel
-                                            {|
-                                                Name = item.Name
-                                                Icon = item.Icon
-                                                RightIcons = item.RightIcons
-                                                Atom = Atoms.User.leftDock input.Username
-                                                children =
-                                                    [
-                                                        item.Content ()
-                                                    ]
-                                            |}
-                                    ]
+                                DockPanel.DockPanel
+                                    {|
+                                        Name = item.Name
+                                        Icon = item.Icon
+                                        RightIcons = item.RightIcons
+                                        Atom = Atoms.User.leftDock input.Username
+                                        children =
+                                            [
+                                                item.Content ()
+                                            ]
+                                    |}
                             ]
+            //                            ]
             ]

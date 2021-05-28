@@ -36,7 +36,13 @@ module Auth =
             (fun _setter username ->
                 promise {
                     setUsername (Some username)
-                    setGunKeys gunNamespace.``#``._underscore_.sea
+
+                    let user = gunNamespace.``#``
+                    let keys = user.__.sea
+
+                    match keys with
+                    | Some keys -> setGunKeys keys
+                    | None -> failwith $"No keys found for user {user.is}"
                 })
 
     let useSignIn () =
@@ -50,11 +56,11 @@ module Auth =
 
                     return!
                         promise {
-                            match ack.err with
-                            | None ->
+                            match ack with
+                            | { err = None } ->
                                 do! postSignIn (Username username)
                                 return Ok ()
-                            | Some error -> return Error error
+                            | { err = Some error } -> return Error error
                         }
                 })
 
@@ -110,24 +116,31 @@ module Auth =
         let hydrateTask = Hydrate.useHydrateTask ()
 
         Recoil.useCallbackRef
-            (fun setter ->
+            (fun setter username ->
                 promise {
                     TestUser.fetchTemplatesDatabaseStateMap ()
                     |> Map.values
                     |> Seq.iter
                         (fun databaseState ->
-                            hydrateDatabase Recoil.AtomScope.ReadOnly databaseState.Database
+                            hydrateDatabase username Recoil.AtomScope.ReadOnly databaseState.Database
 
                             databaseState.TaskStateMap
                             |> Map.values
                             |> Seq.iter
                                 (fun taskState ->
-                                    hydrateTask Recoil.AtomScope.ReadOnly databaseState.Database.Id taskState.Task
+                                    hydrateTask
+                                        username
+                                        Recoil.AtomScope.ReadOnly
+                                        databaseState.Database.Id
+                                        taskState.Task
 
                                     taskState.CellStateMap
                                     |> Map.iter
                                         (fun dateId cellState ->
-                                            setter.set (Atoms.Cell.status (taskState.Task.Id, dateId), cellState.Status)
+                                            setter.set (
+                                                Atoms.Cell.status (username, taskState.Task.Id, dateId),
+                                                cellState.Status
+                                            )
 
                                             setter.set (
                                                 Atoms.Cell.attachments (taskState.Task.Id, dateId),
@@ -170,7 +183,7 @@ module Auth =
                                   } ->
                                     match! signIn username password with
                                     | Ok () ->
-                                        do! hydrateTemplates ()
+                                        do! hydrateTemplates (Username username)
 
                                         //                                        gunNamespace
                                         //                                            .ref

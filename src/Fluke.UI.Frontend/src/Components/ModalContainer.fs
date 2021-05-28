@@ -35,7 +35,7 @@ module ModalContainer =
                                     OnSave =
                                         fun database ->
                                             promise {
-                                                hydrateDatabase Recoil.AtomScope.ReadOnly database
+                                                hydrateDatabase input.Username Recoil.AtomScope.ReadOnly database
                                                 onHide ()
                                             }
                                 |}
@@ -61,9 +61,12 @@ module ModalContainer =
                                             promise {
                                                 let! databaseId =
                                                     setter()
-                                                        .snapshot.getPromise (Atoms.Task.databaseId taskId)
+                                                        .snapshot
+                                                        .getPromise (
+                                                            Atoms.Task.databaseId (input.Username, taskId)
+                                                        )
 
-                                                hydrateTask Recoil.AtomScope.ReadOnly databaseId task
+                                                hydrateTask input.Username Recoil.AtomScope.ReadOnly databaseId task
                                                 onHide ()
                                             }
                                 |}

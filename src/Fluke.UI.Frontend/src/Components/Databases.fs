@@ -228,7 +228,10 @@ module Databases =
                                                             promise {
                                                                 setter()
                                                                     .set (
-                                                                        Atoms.Task.databaseId Task.Default.Id,
+                                                                        Atoms.Task.databaseId (
+                                                                            input.Username,
+                                                                            Task.Default.Id
+                                                                        ),
                                                                         input.Database.Id
                                                                     )
 
@@ -460,9 +463,6 @@ module Databases =
         let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
         let hideTemplatesCache = React.useRef<bool option> None
 
-        let expandedDatabaseIdList, setExpandedDatabaseIdList =
-            Recoil.useState (Atoms.User.expandedDatabaseIdList input.Username)
-
         let selectedDatabaseIdList, setSelectedDatabaseIdList =
             Recoil.useState (Atoms.User.selectedDatabaseIdList input.Username)
 
@@ -471,7 +471,7 @@ module Databases =
         let availableDatabases =
             databaseIdSet
             |> Set.toList
-            |> List.map Selectors.Database.database
+            |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
             |> Recoil.waitForAll
             |> Recoil.useValue
 
@@ -611,28 +611,27 @@ module Databases =
                 |]
             )
 
+        let expandedDatabaseIdList, setExpandedDatabaseIdList =
+            Recoil.useState (Atoms.User.expandedDatabaseIdList input.Username)
+
+        let newExpandedDatabaseIdList =
+            match expandedDatabaseIdList with
+            | [] ->
+                nodes
+                |> Array.map (fun node -> node.value |> Guid |> DatabaseId)
+                |> Array.toList
+            | _ -> expandedDatabaseIdList
+
         React.useEffect (
             (fun () ->
-                let newExpandedDatabaseIdList =
-                    match hideTemplates, hideTemplatesCache.current with
-                    | true,
-                      (None
-                      | Some false) -> []
-                    | _ -> expandedDatabaseIdList
+                match hideTemplates, hideTemplatesCache.current with
+                | true,
+                  (None
+                  | Some false) -> setExpandedDatabaseIdList []
+                | _ -> ()
 
-                hideTemplatesCache.current <- Some hideTemplates
-
-                match newExpandedDatabaseIdList with
-                | [] ->
-                    setExpandedDatabaseIdList (
-                        nodes
-                        |> Array.map (fun node -> node.value |> Guid |> DatabaseId)
-                        |> Array.toList
-                    )
-                | _ -> ()),
+                hideTemplatesCache.current <- Some hideTemplates),
             [|
-                box nodes
-                box expandedDatabaseIdList
                 box setExpandedDatabaseIdList
                 box hideTemplates
                 box hideTemplatesCache
@@ -654,7 +653,7 @@ module Databases =
                                     |> List.map DatabaseId.Value
                                     |> List.toArray
                                 expanded =
-                                    expandedDatabaseIdList
+                                    newExpandedDatabaseIdList
                                     |> List.map DatabaseId.Value
                                     |> List.toArray
                                 onCheck =

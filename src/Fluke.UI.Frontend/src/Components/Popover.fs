@@ -44,7 +44,7 @@ module Popover =
                                     (fun x ->
                                         x.padding <- "10px"
                                         x.backgroundColor <- "gray.13"
-                                        x.maxWidth <- "100vw"
+                                        x.maxWidth <- "95vw"
                                         x.overflow <- "auto")
                                     [
                                         yield! input.Body (disclosure, initialFocusRef)

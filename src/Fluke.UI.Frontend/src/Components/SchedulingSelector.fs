@@ -384,7 +384,8 @@ module SchedulingSelector =
             | _ -> []
             |> function
             | rows when rows |> List.choose fst |> List.isEmpty ->
-                [
+                rows
+                @ [
                     Some None, None
                 ]
             | rows -> rows
@@ -508,7 +509,7 @@ module SchedulingSelector =
                                                                 | _, Some fixedRecurrency -> Some fixedRecurrency
                                                                 | _ -> None)
 
-                                                        let fixedRecurrencyList =
+                                                        let newFixedRecurrencyList =
                                                             match i with
                                                             | -1 ->
                                                                 fixedRecurrencyList
@@ -517,7 +518,7 @@ module SchedulingSelector =
                                                                 ]
                                                             | _ -> fixedRecurrencyList
 
-                                                        setValue (Recurrency (Fixed fixedRecurrencyList))
+                                                        setValue (Recurrency (Fixed newFixedRecurrencyList))
                                                     | _ -> ()
                                                 }
 
@@ -614,7 +615,7 @@ module SchedulingSelector =
 
         let schedulingFieldOptions =
             Recoil.useAtomFieldOptions
-                (Some (Recoil.AtomFamily (Atoms.Task.scheduling, input.TaskId)))
+                (Some (Recoil.AtomFamily (input.Username, Atoms.Task.scheduling, (input.Username, input.TaskId))))
                 (Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer))
 
         Chakra.box

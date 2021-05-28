@@ -1,11 +1,11 @@
 module.exports = {
-  testEnvironment: 'jest-environment-jsdom',
+  testEnvironment: 'jsdom',
   // preset: 'ts-jest/presets/js-with-babel',
   verbose: true,
   testMatch: ["**/*.test.fs.js"],
-  restoreMocks: true,
-  clearMocks: true,
-  resetMocks: true,
+  transform: {
+    '\\.js$': ['babel-jest', { configFile: './_babel.config.json' }]
+  },
   moduleNameMapper: {
     "\\.(css|less|scss|sss|styl)$": "<rootDir>/node_modules/jest-css-modules"
   }

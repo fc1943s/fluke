@@ -21,8 +21,8 @@ module TaskForm =
                    TaskId: TaskId
                    OnSave: Task -> JS.Promise<unit> |})
         =
-        let databaseId = Recoil.useValue (Atoms.Task.databaseId input.TaskId)
-        let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name databaseId)
+        let databaseId = Recoil.useValue (Atoms.Task.databaseId (input.Username, input.TaskId))
+        let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name (input.Username, databaseId))
 
         let toast = Chakra.useToast ()
 
@@ -35,9 +35,23 @@ module TaskForm =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) _ ->
                     promise {
-                        let! taskName = setter.snapshot.getReadWritePromise Atoms.Task.name input.TaskId
-                        let! taskInformation = setter.snapshot.getReadWritePromise Atoms.Task.information input.TaskId
-                        let! taskScheduling = setter.snapshot.getReadWritePromise Atoms.Task.scheduling input.TaskId
+                        let! taskName =
+                            setter.snapshot.getReadWritePromise
+                                input.Username
+                                Atoms.Task.name
+                                (input.Username, input.TaskId)
+
+                        let! taskInformation =
+                            setter.snapshot.getReadWritePromise
+                                input.Username
+                                Atoms.Task.information
+                                (input.Username, input.TaskId)
+
+                        let! taskScheduling =
+                            setter.snapshot.getReadWritePromise
+                                input.Username
+                                Atoms.Task.scheduling
+                                (input.Username, input.TaskId)
 
 
                         match taskName |> TaskName.Value,
@@ -65,7 +79,10 @@ module TaskForm =
                                     |> Promise.lift
                                 else
                                     promise {
-                                        let! task = setter.snapshot.getPromise (Selectors.Task.task input.TaskId)
+                                        let! task =
+                                            setter.snapshot.getPromise (
+                                                Selectors.Task.task (input.Username, input.TaskId)
+                                            )
 
                                         return
                                             { task with
@@ -75,11 +92,21 @@ module TaskForm =
                                             }
                                     }
 
-                            setter.set (Atoms.Task.databaseId task.Id, databaseId)
+                            setter.set (Atoms.Task.databaseId (input.Username, task.Id), databaseId)
 
-                            do! setter.readWriteReset Atoms.Task.name input.TaskId
-                            do! setter.readWriteReset Atoms.Task.information input.TaskId
-                            do! setter.readWriteReset Atoms.Task.scheduling input.TaskId
+                            do! setter.readWriteReset input.Username Atoms.Task.name (input.Username, input.TaskId)
+
+                            do!
+                                setter.readWriteReset
+                                    input.Username
+                                    Atoms.Task.information
+                                    (input.Username, input.TaskId)
+
+                            do!
+                                setter.readWriteReset
+                                    input.Username
+                                    Atoms.Task.scheduling
+                                    (input.Username, input.TaskId)
 
                             do! input.OnSave task
                     })
@@ -122,7 +149,16 @@ module TaskForm =
                                 x.autoFocus <- true
                                 x.label <- str "Name"
                                 x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
-                                x.atom <- Some (Recoil.AtomFamily (Atoms.Task.name, input.TaskId))
+
+                                x.atom <-
+                                    Some (
+                                        Recoil.AtomFamily (
+                                            input.Username,
+                                            Atoms.Task.name,
+                                            (input.Username, input.TaskId)
+                                        )
+                                    )
+
                                 x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
                                 x.onFormat <- Some (fun (TaskName name) -> name)
                                 x.onEnterPress <- Some onSave

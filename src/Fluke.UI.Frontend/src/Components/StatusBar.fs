@@ -23,11 +23,21 @@ module StatusBar =
 
         Chakra.simpleGrid
             (fun x ->
-                x.minChildWidth <- "140px"
-                x.padding <- "7px"
-                x.spacing <- "20px"
+                x.display <-
+                    unbox (
+                        JS.newObj
+                            (fun (x: Chakra.IBreakpoints<string>) ->
+                                x.``base`` <- "grid"
+                                x.md <- "flex")
+                    )
+
+                x.borderTopWidth <- "1px"
+                x.borderTopColor <- "gray.16"
+                x.minChildWidth <- "150px"
+                x.justifyContent <- "space-between"
                 x.justifyItems <- "center"
-                x.alignItems <- "center")
+                x.padding <- "7px"
+                x.spacing <- "6px")
             [
                 Chakra.flex
                     (fun _ -> ())

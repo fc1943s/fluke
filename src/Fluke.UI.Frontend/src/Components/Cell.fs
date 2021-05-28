@@ -25,12 +25,12 @@ module Cell =
 
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
         let isTesting = Recoil.useValue Atoms.isTesting
-        let databaseId = Recoil.useValue (Atoms.Task.databaseId input.TaskId)
+        let databaseId = Recoil.useValue (Atoms.Task.databaseId (input.Username, input.TaskId))
         let access = Recoil.useValue (Selectors.Database.access databaseId)
         let status, setStatus = Recoil.useState (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
-        let showUser = Recoil.useValue (Selectors.Task.showUser input.TaskId)
+        let showUser = Recoil.useValue (Selectors.Task.showUser (input.Username, input.TaskId))
         let isToday = Recoil.useValue (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value))
         let cellMenuOpened, setCellMenuOpened = Recoil.useState (Atoms.User.cellMenuOpened input.Username)
         let isCurrentCellMenuOpened = cellMenuOpened = Some (input.TaskId, input.DateId)

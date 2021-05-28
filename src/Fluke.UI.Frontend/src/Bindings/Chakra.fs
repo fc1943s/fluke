@@ -9,6 +9,13 @@ open Feliz
 module Chakra =
     open React
 
+    type IBreakpoints<'T> =
+        abstract ``base`` : 'T with get, set
+        abstract sm : 'T with get, set
+        abstract md : 'T with get, set
+        abstract lg : 'T with get, set
+        abstract xl : 'T with get, set
+
     type IChakraProps =
         abstract _after : IChakraProps with get, set
         abstract _focus : IChakraProps with get, set
@@ -68,6 +75,7 @@ module Chakra =
         abstract isExternal : bool with get, set
         abstract isLazy : bool with get, set
         abstract isOpen : bool with get, set
+        abstract justifyContent : string with get, set
         abstract justifyItems : string with get, set
         abstract label : ReactElement with get, set
         abstract left : string with get, set
@@ -122,6 +130,10 @@ module Chakra =
         abstract width : string with get, set
         abstract whiteSpace : string with get, set
         abstract zIndex : int with get, set
+
+    type IBreakpointsChakraProps =
+        inherit IChakraProps
+        abstract width : IBreakpoints<string> with get, set
 
     type Disclosure =
         {

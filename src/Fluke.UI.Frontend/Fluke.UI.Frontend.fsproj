@@ -111,12 +111,13 @@
         <Content Include="public\index.js" />
         <Content Include="public\manifest.json" />
         <Content Include="package.json" />
-        <Content Include="babel.config.js" />
+        <Content Include="_babel.config.json" />
         <Content Include="craco.config.js" />
         <Content Include="config-overrides.js" />
         <Content Include=".tsconfig" />
         <Content Include=".eslintignore" />
         <Content Include=".eslintrc.js" />
+        <Content Include="_.parcelrc" />
         <Content Include="paket.references" />
         <Content Include="tsconfig.json" />
         <Content Include="jest.config.js" />

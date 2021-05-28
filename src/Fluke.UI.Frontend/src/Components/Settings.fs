@@ -29,7 +29,6 @@ module Settings =
                                 x.alignItems <- "flex-start")
                             [
                                 ChangeUserPasswordButton.ChangeUserPasswordButton ()
-//                                DeleteUserButton.DeleteUserButton ()
                             ])
 
                         "View",
@@ -39,19 +38,28 @@ module Settings =
                                 Input.Input
                                     (fun x ->
                                         x.label <- str "Days Before"
-                                        x.atom <- Some (Recoil.Atom (Atoms.User.daysBefore input.Username))
+
+                                        x.atom <-
+                                            Some (Recoil.Atom (input.Username, Atoms.User.daysBefore input.Username))
+
                                         x.inputFormat <- Some Input.InputFormat.Number)
 
                                 Input.Input
                                     (fun x ->
                                         x.label <- str "Days After"
-                                        x.atom <- Some (Recoil.Atom (Atoms.User.daysAfter input.Username))
+
+                                        x.atom <-
+                                            Some (Recoil.Atom (input.Username, Atoms.User.daysAfter input.Username))
+
                                         x.inputFormat <- Some Input.InputFormat.Number)
 
                                 Input.Input
                                     (fun x ->
                                         x.label <- str "Cell Size"
-                                        x.atom <- Some (Recoil.Atom (Atoms.User.cellSize input.Username))
+
+                                        x.atom <-
+                                            Some (Recoil.Atom (input.Username, Atoms.User.cellSize input.Username))
+
                                         x.inputFormat <- Some Input.InputFormat.Number)
 
                                 Checkbox.Checkbox
@@ -75,7 +83,7 @@ module Settings =
                                 InputList.InputList
                                     (fun x ->
                                         x.label <- str "Gun peers"
-                                        x.atom <- Some (Recoil.Atom Atoms.gunPeers))
+                                        x.atom <- Some (Recoil.Atom (input.Username, Atoms.gunPeers)))
                             ])
                     ]
             |}

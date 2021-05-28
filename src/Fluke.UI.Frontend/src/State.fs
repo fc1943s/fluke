@@ -98,7 +98,7 @@ module State =
                     (fun (_username: Username) -> []: DatabaseId list),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (expandedDatabaseIdList, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, expandedDatabaseIdList, username)) []
                         ])
                 )
 
@@ -108,7 +108,7 @@ module State =
                     (fun (_username: Username) -> []: DatabaseId list),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (selectedDatabaseIdList, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, selectedDatabaseIdList, username)) []
                         ])
                 )
 
@@ -118,7 +118,7 @@ module State =
                     (fun (_username: Username) -> TempUI.defaultView),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (view, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, view, username)) []
                         ])
                 )
 
@@ -128,7 +128,7 @@ module State =
                     (fun (_username: Username) -> Language.English),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (language, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, language, username)) []
                         ])
                 )
 
@@ -138,7 +138,7 @@ module State =
                     (fun (_username: Username) -> UserColor.Black),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (color, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, color, username)) []
                         ])
                 )
 
@@ -148,7 +148,7 @@ module State =
                     (fun (_username: Username) -> DayOfWeek.Sunday),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (weekStart, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, weekStart, username)) []
                         ])
                 )
 
@@ -158,7 +158,7 @@ module State =
                     (fun (_username: Username) -> FlukeTime.Create 0 0),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (dayStart, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, dayStart, username)) []
                         ])
                 )
 
@@ -168,7 +168,7 @@ module State =
                     (fun (_username: Username) -> Minute 25.),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (sessionLength, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, sessionLength, username)) []
                         ])
                 )
 
@@ -178,7 +178,7 @@ module State =
                     (fun (_username: Username) -> Minute 5.),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (sessionBreakLength, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, sessionBreakLength, username)) []
                         ])
                 )
 
@@ -188,7 +188,7 @@ module State =
                     (fun (_username: Username) -> 7),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (daysBefore, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, daysBefore, username)) []
                         ])
                 )
 
@@ -198,7 +198,7 @@ module State =
                     (fun (_username: Username) -> 7),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (daysAfter, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, daysAfter, username)) []
                         ])
                 )
 
@@ -208,7 +208,7 @@ module State =
                     (fun (_username: Username) -> None: (TaskId * DateId) option),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (cellMenuOpened, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, cellMenuOpened, username)) []
                         ])
                 )
 
@@ -218,7 +218,7 @@ module State =
                     (fun (_username: Username) -> 23),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (cellSize, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, cellSize, username)) []
                         ])
                 )
 
@@ -228,7 +228,7 @@ module State =
                     (fun (_username: Username) -> None: TempUI.DockType option),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (leftDock, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, leftDock, username)) []
                         ])
                 )
 
@@ -238,7 +238,7 @@ module State =
                     (fun (_username: Username) -> false),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (hideTemplates, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, hideTemplates, username)) []
                         ])
                 )
 
@@ -248,7 +248,7 @@ module State =
                     (fun (_username: Username) -> false),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Some username) (Recoil.AtomFamily (hideSchedulingOverlay, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, hideSchedulingOverlay, username)) []
                         ])
                 )
 
@@ -259,8 +259,7 @@ module State =
                     (fun (username: Username, key: TextKey) ->
                         [
                             Recoil.gunEffect
-                                (Some username)
-                                (Recoil.AtomFamily (formIdFlag, (username, key)))
+                                (Recoil.AtomFamily (username, formIdFlag, (username, key)))
                                 (key |> TextKey.Value |> List.singleton)
                         ])
                 )
@@ -272,8 +271,7 @@ module State =
                     (fun (username: Username, key: TextKey) ->
                         [
                             Recoil.gunEffect
-                                (Some username)
-                                (Recoil.AtomFamily (formVisibleFlag, (username, key)))
+                                (Recoil.AtomFamily (username, formVisibleFlag, (username, key)))
                                 (key |> TextKey.Value |> List.singleton)
                         ])
                 )
@@ -285,8 +283,7 @@ module State =
                     (fun (username: Username, key: TextKey) ->
                         [
                             Recoil.gunEffect
-                                (Some username)
-                                (Recoil.AtomFamily (accordionFlag, (username, key)))
+                                (Recoil.AtomFamily (username, accordionFlag, (username, key)))
                                 (key |> TextKey.Value |> List.singleton)
                         ])
                 )
@@ -302,12 +299,11 @@ module State =
             let rec name =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof name}",
-                    (fun (_databaseId: DatabaseId) -> Database.Default.Name),
-                    (fun (databaseId: DatabaseId) ->
+                    (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.Name),
+                    (fun (username: Username, databaseId: DatabaseId) ->
                         [
                             Recoil.gunEffect
-                                None
-                                (Recoil.AtomFamily (name, databaseId))
+                                (Recoil.AtomFamily (username, name, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
@@ -315,12 +311,11 @@ module State =
             let rec owner =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof owner}",
-                    (fun (_databaseId: DatabaseId) -> Database.Default.Owner),
-                    (fun (databaseId: DatabaseId) ->
+                    (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.Owner),
+                    (fun (username: Username, databaseId: DatabaseId) ->
                         [
                             Recoil.gunEffect
-                                None
-                                (Recoil.AtomFamily (owner, databaseId))
+                                (Recoil.AtomFamily (username, owner, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
@@ -328,12 +323,11 @@ module State =
             let rec sharedWith =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof sharedWith}",
-                    (fun (_databaseId: DatabaseId) -> Database.Default.SharedWith),
-                    (fun (databaseId: DatabaseId) ->
+                    (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.SharedWith),
+                    (fun (username: Username, databaseId: DatabaseId) ->
                         [
                             Recoil.gunEffect
-                                None
-                                (Recoil.AtomFamily (sharedWith, databaseId))
+                                (Recoil.AtomFamily (username, sharedWith, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
@@ -341,12 +335,11 @@ module State =
             let rec dayStart =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof dayStart}",
-                    (fun (_databaseId: DatabaseId) -> Database.Default.DayStart),
-                    (fun (databaseId: DatabaseId) ->
+                    (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.DayStart),
+                    (fun (username: Username, databaseId: DatabaseId) ->
                         [
                             Recoil.gunEffect
-                                None
-                                (Recoil.AtomFamily (dayStart, databaseId))
+                                (Recoil.AtomFamily (username, dayStart, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
@@ -354,12 +347,11 @@ module State =
             let rec position =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof position}",
-                    (fun (_databaseId: DatabaseId) -> Database.Default.Position),
-                    (fun (databaseId: DatabaseId) ->
+                    (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.Position),
+                    (fun (username: Username, databaseId: DatabaseId) ->
                         [
                             Recoil.gunEffect
-                                None
-                                (Recoil.AtomFamily (position, databaseId))
+                                (Recoil.AtomFamily (username, position, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
@@ -386,80 +378,96 @@ module State =
             let rec databaseId =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof databaseId}",
-                    (fun (_taskId: TaskId) -> Database.Default.Id),
-                    (fun (taskId: TaskId) ->
+                    (fun (_username: Username, _taskId: TaskId) -> Database.Default.Id),
+                    (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect None (Recoil.AtomFamily (databaseId, taskId)) (taskIdIdentifier taskId)
+                            Recoil.gunEffect
+                                (Recoil.AtomFamily (username, databaseId, (username, taskId)))
+                                (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec information =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof information}",
-                    (fun (_taskId: TaskId) -> Task.Default.Information),
-                    (fun (taskId: TaskId) ->
+                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Information),
+                    (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect None (Recoil.AtomFamily (information, taskId)) (taskIdIdentifier taskId)
+                            Recoil.gunEffect
+                                (Recoil.AtomFamily (username, information, (username, taskId)))
+                                (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec name =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof name}",
-                    (fun (_taskId: TaskId) -> Task.Default.Name),
-                    (fun (taskId: TaskId) ->
+                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Name),
+                    (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect None (Recoil.AtomFamily (name, taskId)) (taskIdIdentifier taskId)
+                            Recoil.gunEffect
+                                (Recoil.AtomFamily (username, name, (username, taskId)))
+                                (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec scheduling =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof scheduling}",
-                    (fun (_taskId: TaskId) -> Task.Default.Scheduling),
-                    (fun (taskId: TaskId) ->
+                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Scheduling),
+                    (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect None (Recoil.AtomFamily (scheduling, taskId)) (taskIdIdentifier taskId)
+                            Recoil.gunEffect
+                                (Recoil.AtomFamily (username, scheduling, (username, taskId)))
+                                (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec pendingAfter =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof pendingAfter}",
-                    (fun (_taskId: TaskId) -> Task.Default.PendingAfter),
-                    (fun (taskId: TaskId) ->
+                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.PendingAfter),
+                    (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect None (Recoil.AtomFamily (pendingAfter, taskId)) (taskIdIdentifier taskId)
+                            Recoil.gunEffect
+                                (Recoil.AtomFamily (username, pendingAfter, (username, taskId)))
+                                (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec missedAfter =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof missedAfter}",
-                    (fun (_taskId: TaskId) -> Task.Default.MissedAfter),
-                    (fun (taskId: TaskId) ->
+                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.MissedAfter),
+                    (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect None (Recoil.AtomFamily (missedAfter, taskId)) (taskIdIdentifier taskId)
+                            Recoil.gunEffect
+                                (Recoil.AtomFamily (username, missedAfter, (username, taskId)))
+                                (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec priority =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof priority}",
-                    (fun (_taskId: TaskId) -> Task.Default.Priority),
-                    (fun (taskId: TaskId) ->
+                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Priority),
+                    (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect None (Recoil.AtomFamily (priority, taskId)) (taskIdIdentifier taskId)
+                            Recoil.gunEffect
+                                (Recoil.AtomFamily (username, priority, (username, taskId)))
+                                (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec duration =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof duration}",
-                    (fun (_taskId: TaskId) -> Task.Default.Duration),
-                    (fun (taskId: TaskId) ->
+                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Duration),
+                    (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect None (Recoil.AtomFamily (duration, taskId)) (taskIdIdentifier taskId)
+                            Recoil.gunEffect
+                                (Recoil.AtomFamily (username, duration, (username, taskId)))
+                                (taskIdIdentifier taskId)
                         ])
                 )
 
@@ -480,12 +488,11 @@ module State =
             let rec status =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Cell}/{nameof status}",
-                    (fun (_taskId: TaskId, _dateId: DateId) -> Disabled),
-                    (fun (taskId: TaskId, dateId: DateId) ->
+                    (fun (_username: Username, _taskId: TaskId, _dateId: DateId) -> Disabled),
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) ->
                         [
                             Recoil.gunEffect
-                                None
-                                (Recoil.AtomFamily (status, (taskId, dateId)))
+                                (Recoil.AtomFamily (username, status, (username, taskId, dateId)))
                                 (cellIdentifier taskId dateId)
                         ])
                 )
@@ -509,8 +516,7 @@ module State =
                     (fun (username: Username, taskId: TaskId, dateId: DateId) ->
                         [
                             Recoil.gunEffect
-                                (Some username)
-                                (Recoil.AtomFamily (selected, (username, taskId, dateId)))
+                                (Recoil.AtomFamily (username, selected, (username, taskId, dateId)))
                                 (cellIdentifier taskId dateId)
                         ])
                 )
@@ -522,12 +528,11 @@ module State =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Session}/{nameof databaseIdSet}",
                     (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
-                    (fun (_username: Username) ->
+                    (fun (username: Username) ->
                         [
                             Recoil.gunKeyEffect
-                                None
-                                (Recoil.AtomFamily (Database.name, Database.Default.Id))
-                                (Recoil.filterEmptyGuid DatabaseId)
+                                (Recoil.AtomFamily (username, Database.name, (username, Database.Default.Id)))
+                                (Recoil.parseValidGuid DatabaseId)
                         ])
                 )
 
@@ -535,12 +540,11 @@ module State =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Session}/{nameof taskIdSet}",
                     (fun (_username: Username) -> Set.empty: Set<TaskId>),
-                    (fun (_username: Username) ->
+                    (fun (username: Username) ->
                         [
                             Recoil.gunKeyEffect
-                                None
-                                (Recoil.AtomFamily (Task.databaseId, Task.Default.Id))
-                                (Recoil.filterEmptyGuid TaskId)
+                                (Recoil.AtomFamily (username, Task.name, (username, Task.Default.Id)))
+                                (Recoil.parseValidGuid TaskId)
                         ])
                 )
 
@@ -557,6 +561,7 @@ module State =
                     |> List.filter (String.IsNullOrWhiteSpace >> not))
             )
 
+
         let rec gun =
             Recoil.selectorWithProfiling (
                 $"{nameof selector}/{nameof gun}",
@@ -565,12 +570,15 @@ module State =
                     let gunPeers = getter.get gunPeers
 
                     let gun =
-                        Gun.gun
-                            {
-                                Gun.GunProps.peers = if isTesting then None else Some (gunPeers |> List.toArray)
-                                Gun.GunProps.radisk = if isTesting then None else Some false
-                                Gun.GunProps.localStorage = if isTesting then None else Some true
-                            }
+                        if isTesting then
+                            Gun.gunTest
+                        else
+                            Gun.gun
+                                {
+                                    Gun.GunProps.peers = Some (gunPeers |> List.toArray)
+                                    Gun.GunProps.radisk = Some false
+                                    Gun.GunProps.localStorage = Some true
+                                }
 
                     Browser.Dom.window?lastGun <- gun
 
@@ -584,13 +592,13 @@ module State =
                 $"{nameof selector}/{nameof gunNamespace}",
                 (fun getter ->
                     let gun = getter.get gun
-                    let username = getter.get Atoms.username
-                    let gunKeys = getter.get Atoms.gunKeys
+                    //                    let username = getter.get Atoms.username
+//                    let gunKeys = getter.get Atoms.gunKeys
                     let user = gun.``#``.user ()
+
                     Browser.Dom.window?gunNamespace <- user
 
-                    printfn
-                        $"gun selector. username={username} gunKeys={JS.JSON.stringify gunKeys}. returning gun namespace..."
+                    printfn $"gunNamespace selector. user.is={JS.JSON.stringify user.is} keys={user.__.sea}..."
 
                     {| ``#`` = user |})
             )
@@ -642,14 +650,14 @@ module State =
             let rec database =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Database}/{nameof database}",
-                    (fun (databaseId: DatabaseId) getter ->
+                    (fun (username: Username, databaseId: DatabaseId) getter ->
                         {
                             Id = databaseId
-                            Name = getter.get (Atoms.Database.name databaseId)
-                            Owner = getter.get (Atoms.Database.owner databaseId)
-                            SharedWith = getter.get (Atoms.Database.sharedWith databaseId)
-                            Position = getter.get (Atoms.Database.position databaseId)
-                            DayStart = getter.get (Atoms.Database.dayStart databaseId)
+                            Name = getter.get (Atoms.Database.name (username, databaseId))
+                            Owner = getter.get (Atoms.Database.owner (username, databaseId))
+                            SharedWith = getter.get (Atoms.Database.sharedWith (username, databaseId))
+                            Position = getter.get (Atoms.Database.position (username, databaseId))
+                            DayStart = getter.get (Atoms.Database.dayStart (username, databaseId))
                         })
                 )
 
@@ -661,7 +669,7 @@ module State =
 
                         match username with
                         | Some username ->
-                            let database = getter.get (database databaseId)
+                            let database = getter.get (database (username, databaseId))
 
                             if database.Owner = Templates.templatesUser.Username then
                                 None
@@ -675,16 +683,16 @@ module State =
             let rec task =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof task}",
-                    (fun (taskId: TaskId) getter ->
+                    (fun (username: Username, taskId: TaskId) getter ->
                         {
                             Id = taskId
-                            Name = getter.get (Atoms.Task.name taskId)
-                            Information = getter.get (Atoms.Task.information taskId)
-                            PendingAfter = getter.get (Atoms.Task.pendingAfter taskId)
-                            MissedAfter = getter.get (Atoms.Task.missedAfter taskId)
-                            Scheduling = getter.get (Atoms.Task.scheduling taskId)
-                            Priority = getter.get (Atoms.Task.priority taskId)
-                            Duration = getter.get (Atoms.Task.duration taskId)
+                            Name = getter.get (Atoms.Task.name (username, taskId))
+                            Information = getter.get (Atoms.Task.information (username, taskId))
+                            PendingAfter = getter.get (Atoms.Task.pendingAfter (username, taskId))
+                            MissedAfter = getter.get (Atoms.Task.missedAfter (username, taskId))
+                            Scheduling = getter.get (Atoms.Task.scheduling (username, taskId))
+                            Priority = getter.get (Atoms.Task.priority (username, taskId))
+                            Duration = getter.get (Atoms.Task.duration (username, taskId))
                         })
                 )
 
@@ -734,7 +742,7 @@ module State =
             let rec showUser =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof showUser}",
-                    (fun (taskId: TaskId) getter ->
+                    (fun (username: Username, taskId: TaskId) getter ->
                         //                            let username = getter.get Atoms.username
 //                            match username with
 //                            | Some username ->
@@ -743,7 +751,7 @@ module State =
 
                         let statusList =
                             dateSequence
-                            |> List.map (fun date -> Atoms.Cell.status (taskId, DateId date))
+                            |> List.map (fun date -> Atoms.Cell.status (username, taskId, DateId date))
                             |> List.map getter.get
 
                         let usersCount =
@@ -784,7 +792,7 @@ module State =
                         let taskIdSet = getter.get (Atoms.Session.taskIdSet username)
 
                         taskIdSet
-                        |> Set.map (fun taskId -> getter.get (Atoms.Task.information taskId))
+                        |> Set.map (fun taskId -> getter.get (Atoms.Task.information (username, taskId)))
                         |> Set.filter
                             (fun information ->
                                 information
@@ -802,8 +810,12 @@ module State =
                         let selectedDatabaseIdList = getter.get (Atoms.User.selectedDatabaseIdList username)
                         let selectedDatabaseIdListSet = selectedDatabaseIdList |> Set.ofList
 
+                        printfn $"taskIdSet={taskIdSet}
+                        selectedDatabaseIdList={selectedDatabaseIdList}
+                        "
+
                         taskIdSet
-                        |> Set.map (fun taskId -> taskId, getter.get (Atoms.Task.databaseId taskId))
+                        |> Set.map (fun taskId -> taskId, getter.get (Atoms.Task.databaseId (username, taskId)))
                         |> Set.filter (fun (_, databaseId) -> selectedDatabaseIdListSet.Contains databaseId)
                         |> Set.map fst)
                 )
@@ -821,7 +833,7 @@ module State =
                         |> Set.toList
                         |> List.map
                             (fun taskId ->
-                                let (TaskName taskName) = getter.get (Atoms.Task.name taskId)
+                                let (TaskName taskName) = getter.get (Atoms.Task.name (username, taskId))
 
                                 let duration = getter.get (Task.activeSession taskId)
 
@@ -849,7 +861,7 @@ module State =
 
                         let taskList =
                             selectedTaskIdSet
-                            |> Seq.map (Task.task >> getter.get)
+                            |> Seq.map (fun taskId -> getter.get (Task.task (username, taskId)))
                             |> Seq.toList
 
                         let taskStateList =
@@ -866,7 +878,10 @@ module State =
 
                                                     let cellState =
                                                         {
-                                                            Status = getter.get (Atoms.Cell.status (task.Id, dateId))
+                                                            Status =
+                                                                getter.get (
+                                                                    Atoms.Cell.status (username, task.Id, dateId)
+                                                                )
                                                             Sessions =
                                                                 getter.get (Atoms.Cell.sessions (task.Id, dateId))
                                                             Attachments =
@@ -906,7 +921,7 @@ module State =
 
                         let informationMap =
                             filteredTaskIdList
-                            |> List.map (fun taskId -> taskId, getter.get (Atoms.Task.information taskId))
+                            |> List.map (fun taskId -> taskId, getter.get (Atoms.Task.information (username, taskId)))
                             |> Map.ofList
 
                         filteredTaskIdList
@@ -1007,7 +1022,7 @@ module State =
                         let hideSchedulingOverlay = getter.get (Atoms.User.hideSchedulingOverlay username)
 
                         if hideSchedulingOverlay then
-                            getter.get (Atoms.Cell.status (taskId, dateId))
+                            getter.get (Atoms.Cell.status (username, taskId, dateId))
                         else
                             let sessionData = getter.get (Session.sessionData username)
 
@@ -1019,9 +1034,9 @@ module State =
                                     |> Map.tryFind dateId
                                     |> Option.map (fun cellState -> cellState.Status)
                                     |> Option.defaultValue Disabled)
-                            |> Option.defaultWith (fun () -> getter.get (Atoms.Cell.status (taskId, dateId)))),
-                    (fun (_username: Username, taskId: TaskId, dateId: DateId) setter (newValue: CellStatus) ->
-                        setter.set (Atoms.Cell.status (taskId, dateId), newValue))
+                            |> Option.defaultWith (fun () -> getter.get (Atoms.Cell.status (username, taskId, dateId)))),
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) setter (newValue: CellStatus) ->
+                        setter.set (Atoms.Cell.status (username, taskId, dateId), newValue))
                 )
 
             let rec selected =

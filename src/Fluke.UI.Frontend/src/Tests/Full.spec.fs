@@ -9,18 +9,20 @@ module Full =
 
     module Cy2 =
         let typeText<'T> (text: string) =
+            Cy.wait 50
             Cy.focused().clear () |> ignore
 
             text
             |> Seq.iter
                 (fun letter ->
                     let letter = string letter
-                    Cy.wait 20
+                    Cy.wait 50
                     Cy.focused().``type`` letter |> ignore)
 
             Cy.focused().should "have.value" text null
 
         let waitFocus selector wait =
+            Cy.wait 50
             Cy.get(selector).should "have.focus" |> ignore
 
             match wait with
@@ -86,7 +88,7 @@ module Full =
                     Cy2.waitFor "User registered successfully" None
 
                     Cy2.clickText (nameof Databases)
-                    Cy2.waitFor "Templates/Unit Tests" (Some {| timeout = timeout |})
+                    Cy2.waitFor "Lane Rendering" (Some {| timeout = timeout |})
 
                     Cy2.clickSelector "[data-testid='Add Database']"
                     Cy2.waitFocus "input[placeholder^=new-database-]" None
@@ -120,14 +122,6 @@ module Full =
                     Cy2.clickTextWithinSelector "[data-testid='TextKey AreaForm']" "Save"
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Save"
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Save"
-                    Cy2.waitFor "1 of 1 tasks visible" None
-                    Cy2.waitFor taskName None
-                    Cy2.clickText "Habit Tracker View"
-                    Cy2.waitFor "0 of 1 tasks visible" None
-                    Cy2.clickText "Priority View"
-                    Cy2.waitFor "1 of 1 tasks visible" None
-                    Cy2.clickText "Bullet Journal View"
-                    Cy2.waitFor "0 of 1 tasks visible" None
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
@@ -138,4 +132,15 @@ module Full =
 
                     Cy2.waitFocus "input[placeholder^=new-database-]" None
                     Cy2.typeText $"{dbName}_edit"
-                    Cy2.clickText "Save"))
+                    Cy2.clickText "Save"
+
+                    Cy2.waitFor "1 of 1 tasks visible" None
+                    Cy2.waitFor taskName None
+                    Cy2.clickText "Habit Tracker View"
+                    Cy2.waitFor "0 of 1 tasks visible" None
+                    Cy2.clickText "Priority View"
+                    Cy2.waitFor "1 of 1 tasks visible" None
+                    Cy2.clickText "Bullet Journal View"
+                    Cy2.waitFor "0 of 1 tasks visible" None
+
+                    Cy.visit homeUrl))

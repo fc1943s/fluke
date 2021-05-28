@@ -46,7 +46,8 @@ module JS =
     let inline log fn =
         if not deviceInfo.GitHubPages
            && not deviceInfo.IsMobile
-           && not isTesting then
+        //           && not isTesting
+        then
             printfn $"[log] {fn ()}"
         else
             ()
@@ -69,14 +70,14 @@ module JS =
             if ok then
                 return ()
             else
-                log (fun () -> "waitForObject: null. waiting...")
+                log (fun () -> "waitFor: false. waiting...")
                 do! Async.Sleep 100
                 return! waitFor fn
         }
 
     let rec waitForObject fn =
         async {
-            let obj = fn ()
+            let! obj = fn ()
 
             if box obj <> null then
                 return obj
@@ -84,6 +85,18 @@ module JS =
                 log (fun () -> "waitForObject: null. waiting...")
                 do! Async.Sleep 100
                 return! waitForObject fn
+        }
+
+    let rec waitForSome fn =
+        async {
+            let! obj = fn ()
+
+            match obj with
+            | Some obj -> return obj
+            | None ->
+                log (fun () -> "waitForSome: none. waiting...")
+                do! Async.Sleep 100
+                return! waitForSome fn
         }
 
     let ofObjDefault def obj =

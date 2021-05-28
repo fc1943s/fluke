@@ -68,7 +68,11 @@ module DatabaseForm =
             Recoil.useCallbackRef
                 (fun (setter: CallbackMethods) _ ->
                     promise {
-                        let! databaseName = setter.snapshot.getReadWritePromise Atoms.Database.name input.DatabaseId
+                        let! databaseName =
+                            setter.snapshot.getReadWritePromise
+                                input.Username
+                                Atoms.Database.name
+                                (input.Username, input.DatabaseId)
 
                         match databaseName with
                         | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
@@ -82,7 +86,7 @@ module DatabaseForm =
                                     (fun databaseId ->
                                         input.DatabaseId <> Database.Default.Id
                                         || input.DatabaseId <> databaseId)
-                                |> List.map Atoms.Database.name
+                                |> List.map (fun databaseId -> Atoms.Database.name (input.Username, databaseId))
                                 |> Recoil.waitForAll
                                 |> setter.snapshot.getPromise
 
@@ -90,7 +94,10 @@ module DatabaseForm =
                                 toast (fun x -> x.description <- "Database with this name already exists")
                             else
                                 let! dayStart =
-                                    setter.snapshot.getReadWritePromise Atoms.Database.dayStart input.DatabaseId
+                                    setter.snapshot.getReadWritePromise
+                                        input.Username
+                                        Atoms.Database.dayStart
+                                        (input.Username, input.DatabaseId)
 
                                 let! database =
                                     if input.DatabaseId = Database.Default.Id then
@@ -107,7 +114,7 @@ module DatabaseForm =
                                         promise {
                                             let! database =
                                                 setter.snapshot.getPromise (
-                                                    Selectors.Database.database input.DatabaseId
+                                                    Selectors.Database.database (input.Username, input.DatabaseId)
                                                 )
 
                                             return
@@ -122,9 +129,17 @@ module DatabaseForm =
 //                                setter.set (Atoms.Events.events eventId, event)
 //                                printfn $"event {event}"
 
-                                do! setter.readWriteReset Atoms.Database.name input.DatabaseId
+                                do!
+                                    setter.readWriteReset
+                                        input.Username
+                                        Atoms.Database.name
+                                        (input.Username, input.DatabaseId)
 
-                                do! setter.readWriteReset Atoms.Database.dayStart input.DatabaseId
+                                do!
+                                    setter.readWriteReset
+                                        input.Username
+                                        Atoms.Database.dayStart
+                                        (input.Username, input.DatabaseId)
 
                                 do! input.OnSave database
                     })
@@ -156,7 +171,16 @@ module DatabaseForm =
                                     )
 
                                 x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
-                                x.atom <- Some (Recoil.AtomFamily (Atoms.Database.name, input.DatabaseId))
+
+                                x.atom <-
+                                    Some (
+                                        Recoil.AtomFamily (
+                                            input.Username,
+                                            Atoms.Database.name,
+                                            (input.Username, input.DatabaseId)
+                                        )
+                                    )
+
                                 x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
                                 x.onFormat <- Some (fun (DatabaseName name) -> name)
                                 x.onValidate <- Some (fst >> DatabaseName >> Some)
@@ -177,7 +201,15 @@ module DatabaseForm =
 
                                 x.placeholder <- "00:00"
 
-                                x.atom <- Some (Recoil.AtomFamily (Atoms.Database.dayStart, input.DatabaseId))
+                                x.atom <-
+                                    Some (
+                                        Recoil.AtomFamily (
+                                            input.Username,
+                                            Atoms.Database.dayStart,
+                                            (input.Username, input.DatabaseId)
+                                        )
+                                    )
+
                                 x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
                                 x.inputFormat <- Some Input.InputFormat.Time
                                 x.onFormat <- Some FlukeTime.Stringify

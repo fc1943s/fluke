@@ -19,7 +19,7 @@ module PositionUpdater =
 
         let selectedDatabasePositions =
             selectedDatabaseIdList
-            |> List.map Atoms.Database.position
+            |> List.map (fun databaseId -> Atoms.Database.position (input.Username, databaseId))
             |> Recoil.waitForAll
             |> Recoil.useValue
 

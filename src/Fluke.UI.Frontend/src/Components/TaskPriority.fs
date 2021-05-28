@@ -14,7 +14,7 @@ module TaskPriority =
 
     [<ReactComponent>]
     let TaskPriority (input: {| Username: Username; TaskId: TaskId |}) =
-        let priority = Recoil.useValue (Atoms.Task.priority input.TaskId)
+        let priority = Recoil.useValue (Atoms.Task.priority (input.Username, input.TaskId))
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         let priorityText =
