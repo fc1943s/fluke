@@ -25,8 +25,13 @@ module State =
     and TextKey with
         static member inline Value (TextKey key) = key
 
+    [<RequireQualifiedAccess>]
+    type Join =
+        | Database of DatabaseId
+        | Task of DatabaseId * TaskId
+
     module Atoms =
-        let rec isTesting = Recoil.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.isTesting)
+        let rec isTesting = Recoil.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.deviceInfo.IsTesting)
 
         let rec debug =
             Recoil.atomWithProfiling (
@@ -92,6 +97,16 @@ module State =
 
 
         module rec User =
+            let rec joinSet =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof joinSet}",
+                    (fun (_username: Username) -> Set.empty: Set<Join>),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Recoil.AtomFamily (username, joinSet, username)) []
+                        ])
+                )
+
             let rec expandedDatabaseIdList =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof expandedDatabaseIdList}",
@@ -375,17 +390,17 @@ module State =
                     (fun (_taskId: TaskId) -> Task.Default)
                 )
 
-            let rec databaseId =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof databaseId}",
-                    (fun (_username: Username, _taskId: TaskId) -> Database.Default.Id),
-                    (fun (username: Username, taskId: TaskId) ->
-                        [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, databaseId, (username, taskId)))
-                                (taskIdIdentifier taskId)
-                        ])
-                )
+            //            let rec databaseId =
+//                Recoil.atomFamilyWithProfiling (
+//                    $"{nameof atomFamily}/{nameof Task}/{nameof databaseId}",
+//                    (fun (_username: Username, _taskId: TaskId) -> Database.Default.Id),
+//                    (fun (username: Username, taskId: TaskId) ->
+//                        [
+//                            Recoil.gunEffect
+//                                (Recoil.AtomFamily (username, databaseId, (username, taskId)))
+//                                (taskIdIdentifier taskId)
+//                        ])
+//                )
 
             let rec information =
                 Recoil.atomFamilyWithProfiling (
@@ -521,32 +536,30 @@ module State =
                         ])
                 )
 
-
-
-        module rec Session =
-            let rec databaseIdSet =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Session}/{nameof databaseIdSet}",
-                    (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
-                    (fun (username: Username) ->
-                        [
-                            Recoil.gunKeyEffect
-                                (Recoil.AtomFamily (username, Database.name, (username, Database.Default.Id)))
-                                (Recoil.parseValidGuid DatabaseId)
-                        ])
-                )
-
-            let rec taskIdSet =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Session}/{nameof taskIdSet}",
-                    (fun (_username: Username) -> Set.empty: Set<TaskId>),
-                    (fun (username: Username) ->
-                        [
-                            Recoil.gunKeyEffect
-                                (Recoil.AtomFamily (username, Task.name, (username, Task.Default.Id)))
-                                (Recoil.parseValidGuid TaskId)
-                        ])
-                )
+    //        module rec Session =
+//            let rec databaseIdSet =
+//                Recoil.atomFamilyWithProfiling (
+//                    $"{nameof atomFamily}/{nameof Session}/{nameof databaseIdSet}",
+//                    (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
+//                    (fun (username: Username) ->
+//                        [
+//                            Recoil.gunKeyEffect
+//                                (Recoil.AtomFamily (username, Database.name, (username, Database.Default.Id)))
+//                                (Recoil.parseValidGuid DatabaseId)
+//                        ])
+//                )
+//
+//            let rec taskIdSet =
+//                Recoil.atomFamilyWithProfiling (
+//                    $"{nameof atomFamily}/{nameof Session}/{nameof taskIdSet}",
+//                    (fun (_username: Username) -> Set.empty: Set<TaskId>),
+//                    (fun (username: Username) ->
+//                        [
+//                            Recoil.gunKeyEffect
+//                                (Recoil.AtomFamily (username, Task.name, (username, Task.Default.Id)))
+//                                (Recoil.parseValidGuid TaskId)
+//                        ])
+//                )
 
 
     module Selectors =
@@ -578,9 +591,12 @@ module State =
                                     Gun.GunProps.peers = Some (gunPeers |> List.toArray)
                                     Gun.GunProps.radisk = Some false
                                     Gun.GunProps.localStorage = Some true
+                                    Gun.GunProps.multicast = None
                                 }
 
-                    Browser.Dom.window?lastGun <- gun
+                    match JS.window id with
+                    | Some window -> window?lastGun <- gun
+                    | None -> ()
 
                     printfn $"gun selector. peers={gunPeers}. returning gun..."
 
@@ -596,7 +612,9 @@ module State =
 //                    let gunKeys = getter.get Atoms.gunKeys
                     let user = gun.``#``.user ()
 
-                    Browser.Dom.window?gunNamespace <- user
+                    match JS.window id with
+                    | Some window -> window?gunNamespace <- gun
+                    | None -> ()
 
                     printfn $"gunNamespace selector. user.is={JS.JSON.stringify user.is} keys={user.__.sea}..."
 
@@ -785,39 +803,64 @@ module State =
 
 
         module rec Session =
+            let rec databaseIdSet =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Session}/{nameof databaseIdSet}",
+                    (fun (username: Username) getter ->
+                        let joinSet = getter.get (Atoms.User.joinSet username)
+
+                        joinSet
+                        |> Set.choose
+                            (function
+                            | Join.Database databaseId -> Some databaseId
+                            | _ -> None))
+                )
+
+            let rec taskMetadata =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Session}/{nameof taskMetadata}",
+                    (fun (username: Username) getter ->
+                        let joinSet = getter.get (Atoms.User.joinSet username)
+
+                        joinSet
+                        |> Set.choose
+                            (function
+                            | Join.Task (databaseId, taskId) -> Some (taskId, {| DatabaseId = databaseId |})
+                            | _ -> None)
+                        |> Map.ofSeq)
+                )
+
             let rec informationSet =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof informationSet}",
                     (fun (username: Username) getter ->
-                        let taskIdSet = getter.get (Atoms.Session.taskIdSet username)
+                        let taskMetadata = getter.get (taskMetadata username)
 
-                        taskIdSet
-                        |> Set.map (fun taskId -> getter.get (Atoms.Task.information (username, taskId)))
-                        |> Set.filter
+                        taskMetadata
+                        |> Map.keys
+                        |> Seq.map (fun taskId -> getter.get (Atoms.Task.information (username, taskId)))
+                        |> Seq.filter
                             (fun information ->
                                 information
                                 |> Information.Name
                                 |> InformationName.Value
                                 |> String.IsNullOrWhiteSpace
-                                |> not))
+                                |> not)
+                        |> Set.ofSeq)
                 )
 
             let rec selectedTaskIdSet =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof selectedTaskIdSet}",
                     (fun (username: Username) getter ->
-                        let taskIdSet = getter.get (Atoms.Session.taskIdSet username)
+                        let taskMetadata = getter.get (taskMetadata username)
                         let selectedDatabaseIdList = getter.get (Atoms.User.selectedDatabaseIdList username)
                         let selectedDatabaseIdListSet = selectedDatabaseIdList |> Set.ofList
 
-                        printfn $"taskIdSet={taskIdSet}
-                        selectedDatabaseIdList={selectedDatabaseIdList}
-                        "
-
-                        taskIdSet
-                        |> Set.map (fun taskId -> taskId, getter.get (Atoms.Task.databaseId (username, taskId)))
-                        |> Set.filter (fun (_, databaseId) -> selectedDatabaseIdListSet.Contains databaseId)
-                        |> Set.map fst)
+                        taskMetadata
+                        |> Map.filter (fun _ taskMetadata -> selectedDatabaseIdListSet.Contains taskMetadata.DatabaseId)
+                        |> Map.keys
+                        |> Set.ofSeq)
                 )
 
             let rec activeSessions =

@@ -21,15 +21,20 @@ module TaskForm =
                    TaskId: TaskId
                    OnSave: Task -> JS.Promise<unit> |})
         =
-        let databaseId = Recoil.useValue (Atoms.Task.databaseId (input.Username, input.TaskId))
-        let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name (input.Username, databaseId))
+        let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
+
+        let (DatabaseName databaseName) =
+            Recoil.useValue (
+                Atoms.Database.name (
+                    input.Username,
+                    taskMetadata
+                    |> Map.tryFind input.TaskId
+                    |> Option.map (fun x -> x.DatabaseId)
+                    |> Option.defaultValue Database.Default.Id
+                )
+            )
 
         let toast = Chakra.useToast ()
-
-
-        //        printfn
-//            $"TaskForm databaseId={databaseId} databaseName={databaseName}
-//        input.TaskId={input.TaskId} informationFieldOptions={informationFieldOptions}"
 
         let onSave =
             Recoil.useCallbackRef
@@ -91,8 +96,6 @@ module TaskForm =
                                                 Scheduling = taskScheduling
                                             }
                                     }
-
-                            setter.set (Atoms.Task.databaseId (input.Username, task.Id), databaseId)
 
                             do! setter.readWriteReset input.Username Atoms.Task.name (input.Username, input.TaskId)
 

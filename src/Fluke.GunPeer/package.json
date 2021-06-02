@@ -10,7 +10,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "gun": "amark/gun.git#master"
+    "gun": "amark/gun.git#manhattan"
   },
   "devDependencies": {}
 }

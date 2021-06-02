@@ -1,8 +1,10 @@
 cypress-examples/
 .parcel-cache/
+.cache/
 cypress/videos/
 
 www/
+public/
 
 # Cordova
 /plugins/

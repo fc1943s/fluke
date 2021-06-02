@@ -58,11 +58,12 @@ module LeftDock =
                     RightIcons =
                         [
                             DockPanel.DockPanelIcon.Component (
-                                ModalForm.ModalFormTrigger
+                                DatabaseFormTrigger.DatabaseFormTrigger
                                     {|
                                         Username = input.Username
+                                        DatabaseId = None
                                         Trigger =
-                                            fun trigger _ ->
+                                            fun trigger _setter ->
                                                 Tooltip.wrap
                                                     (str "Add Database")
                                                     [
@@ -75,20 +76,9 @@ module LeftDock =
 
                                                                         x.icon <- Icons.fi.FiPlus |> Icons.render
                                                                         x.fontSize <- "17px"
-
-                                                                        x.onClick <-
-                                                                            fun _ ->
-                                                                                promise {
-                                                                                    trigger ()
-                                                                                    //                                                                                let! setter = (trigger ())()
-//                                                                                let! value = setter.snapshot.getPromise (Selectors.Database.database None)
-//                                                                                hydrateDatabase Recoil.AtomScope.ReadWrite value
-                                                                                    ()
-                                                                                }
+                                                                        x.onClick <- fun _ -> promise { trigger () }
                                                             |}
                                                     ]
-                                        TextKey = TextKey (nameof DatabaseForm)
-                                        TextKeyValue = None
                                     |}
                             )
 

@@ -20,6 +20,7 @@ module Popover =
                 Chakra.popover
                     (fun x ->
                         x.isLazy <- true
+                        x.placement <- "top"
                         x.closeOnBlur <- true
                         x.isOpen <- disclosure.isOpen
                         x.onOpen <- disclosure.onOpen

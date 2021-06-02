@@ -9,23 +9,26 @@ open Fluke.UI.Frontend.Bindings
 
 
 module Hydrate =
-    let hydrateDatabase (setter: CallbackMethods) username atomScope (data: Database) =
-        setter.scopedSet username atomScope (Atoms.Database.name, (username, data.Id), data.Name)
-        setter.scopedSet username atomScope (Atoms.Database.owner, (username, data.Id), data.Owner)
-        setter.scopedSet username atomScope (Atoms.Database.sharedWith, (username, data.Id), data.SharedWith)
-        setter.scopedSet username atomScope (Atoms.Database.dayStart, (username, data.Id), data.DayStart)
-        setter.scopedSet username atomScope (Atoms.Database.position, (username, data.Id), data.Position)
+    let hydrateDatabase (setter: CallbackMethods) username atomScope (database: Database) =
+        setter.set (Atoms.User.joinSet username, Set.add (Join.Database database.Id))
+
+        setter.scopedSet username atomScope (Atoms.Database.name, (username, database.Id), database.Name)
+        setter.scopedSet username atomScope (Atoms.Database.owner, (username, database.Id), database.Owner)
+        setter.scopedSet username atomScope (Atoms.Database.sharedWith, (username, database.Id), database.SharedWith)
+        setter.scopedSet username atomScope (Atoms.Database.dayStart, (username, database.Id), database.DayStart)
+        setter.scopedSet username atomScope (Atoms.Database.position, (username, database.Id), database.Position)
 
     let useHydrateDatabase () = Recoil.useCallbackRef hydrateDatabase
 
-    let hydrateTask (setter: CallbackMethods) username atomScope databaseId (data: Task) =
-        setter.scopedSet username atomScope (Atoms.Task.name, (username, data.Id), data.Name)
-        setter.scopedSet username atomScope (Atoms.Task.databaseId, (username, data.Id), databaseId)
-        setter.scopedSet username atomScope (Atoms.Task.information, (username, data.Id), data.Information)
-        setter.scopedSet username atomScope (Atoms.Task.duration, (username, data.Id), data.Duration)
-        setter.scopedSet username atomScope (Atoms.Task.pendingAfter, (username, data.Id), data.PendingAfter)
-        setter.scopedSet username atomScope (Atoms.Task.missedAfter, (username, data.Id), data.MissedAfter)
-        setter.scopedSet username atomScope (Atoms.Task.scheduling, (username, data.Id), data.Scheduling)
-        setter.scopedSet username atomScope (Atoms.Task.priority, (username, data.Id), data.Priority)
+    let hydrateTask (setter: CallbackMethods) username atomScope databaseId (task: Task) =
+        setter.set (Atoms.User.joinSet username, Set.add (Join.Task (databaseId, task.Id)))
+
+        setter.scopedSet username atomScope (Atoms.Task.name, (username, task.Id), task.Name)
+        setter.scopedSet username atomScope (Atoms.Task.information, (username, task.Id), task.Information)
+        setter.scopedSet username atomScope (Atoms.Task.duration, (username, task.Id), task.Duration)
+        setter.scopedSet username atomScope (Atoms.Task.pendingAfter, (username, task.Id), task.PendingAfter)
+        setter.scopedSet username atomScope (Atoms.Task.missedAfter, (username, task.Id), task.MissedAfter)
+        setter.scopedSet username atomScope (Atoms.Task.scheduling, (username, task.Id), task.Scheduling)
+        setter.scopedSet username atomScope (Atoms.Task.priority, (username, task.Id), task.Priority)
 
     let useHydrateTask () = Recoil.useCallbackRef hydrateTask

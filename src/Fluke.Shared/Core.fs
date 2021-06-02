@@ -3,6 +3,17 @@ namespace Fluke.Shared
 open System.IO
 open System
 
+module Option =
+    let inline ofObjUnbox<'T> (value: 'T) =
+        Option.ofObj (unbox value)
+        |> Option.map (fun x -> box x :?> 'T)
+
+    let choose fn set =
+        set
+        |> Set.map fn
+        |> Set.filter Option.isSome
+        |> Set.map Option.get
+
 module Seq =
     let intersperse sep list =
         seq {
@@ -59,6 +70,12 @@ module Map =
     let mapValues f (x: Map<'Key, 'T>) = Map.map (fun _ -> f) x
 
 module Set =
+    let choose fn set =
+        set
+        |> Set.map fn
+        |> Set.filter Option.isSome
+        |> Set.map Option.get
+
     let toggle value (set: Set<'T>) =
         if set.Contains value then set.Remove value else set.Add value
 
@@ -78,7 +95,11 @@ module Operators =
 
 
 module String =
-    let take count (source: string) = source.[..count - 1]
+    let inline split (separator: string) (str: string) = str.Split separator
+
+    let inline trim (str: string) = str.Trim ()
+
+    let inline take count (source: string) = source.[..count - 1]
 
     let toLower (source: string) =
         if isNull source then source else source.ToLowerInvariant ()

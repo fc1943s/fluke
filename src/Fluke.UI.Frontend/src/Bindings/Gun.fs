@@ -6,12 +6,6 @@ open Feliz.Recoil
 
 
 module rec Gun =
-    importAll "gun/sea"
-    importAll "gun/lib/promise"
-
-    //    if JS.isTesting then
-//        importAll "gun/lib/radix"
-//
     type GunKeys =
         {
             pub: string
@@ -59,6 +53,7 @@ module rec Gun =
         abstract map : unit -> IGunChainReference
         abstract off : unit -> IGunChainReference
         abstract on : ('T -> string -> unit) -> unit
+        abstract once : ('T -> string -> unit) -> unit
         abstract on : event: string * (unit -> unit) -> unit
         abstract put : string -> IGunChainReference
         abstract user : unit -> IGunUser
@@ -78,16 +73,27 @@ module rec Gun =
             peers: string [] option
             radisk: bool option
             localStorage: bool option
+            multicast: bool option
         }
 
-    let gun : GunProps -> IGunChainReference = importDefault "gun/gun"
+//    match JS.window id with
+//    | Some _ -> ()
+//    | None -> importAll "gun"
 
+    let gun : GunProps -> IGunChainReference = importDefault "gun/gun"
+    importAll "gun/sea"
+    importAll "gun/lib/promise"
+
+    //    if JS.isTesting then
+//        importAll "gun/lib/radix"
+//
     let gunTest =
         Gun.gun
             {
                 Gun.GunProps.peers = None
                 Gun.GunProps.radisk = None
                 Gun.GunProps.localStorage = None
+                Gun.GunProps.multicast = None
             }
 
     [<Emit "Gun.SEA">]

@@ -17,8 +17,6 @@ open Microsoft.FSharp.Core.Operators
 
 
 module Router =
-//let a () =
-
     Jest.describe (
         "router",
         (fun () ->
@@ -91,8 +89,8 @@ module Router =
                 promise {
                     do! [||] |> expectUrl
 
-                    let! _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter ())
+                    let _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter.current ())
 
                     do!
                         [|
@@ -101,17 +99,17 @@ module Router =
                         |]
                         |> expectUrl
 
-                    do! expectView (setter ()) TempUI.defaultView
+                    do! expectView (setter.current ()) TempUI.defaultView
                 }
             )
 
             Jest.test (
                 "navigating from state",
                 promise {
-                    let! _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter ())
+                    let _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter.current ())
 
-                    do! setView (setter ()) View.View.BulletJournal
+                    do! setView (setter.current ()) View.View.BulletJournal
 
                     do!
                         [|
@@ -120,15 +118,15 @@ module Router =
                         |]
                         |> expectUrl
 
-                    do! expectView (setter ()) View.View.BulletJournal
+                    do! expectView (setter.current ()) View.View.BulletJournal
                 }
             )
 
             Jest.test (
                 "navigating from url (logged in)",
                 promise {
-                    let! _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter ())
+                    let _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter.current ())
 
                     [|
                         "view"
@@ -136,16 +134,16 @@ module Router =
                     |]
                     |> navigate
 
-                    do! expectView (setter ()) View.View.Information
+                    do! expectView (setter.current ()) View.View.Information
                 }
             )
 
             Jest.test (
                 "navigating from url (not logged in)",
                 promise {
-                    let! _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter ())
-                    setter().set (Atoms.username, None)
+                    let _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter.current ())
+                    setter.current().set (Atoms.username, None)
 
                     [|
                         "view"
@@ -171,8 +169,8 @@ module Router =
                     |]
                     |> navigate
 
-                    let! _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter ())
+                    let _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter.current ())
 
                     do!
                         [|
@@ -181,7 +179,7 @@ module Router =
                         |]
                         |> expectUrl
 
-                    do! expectView (setter ()) View.View.Information
+                    do! expectView (setter.current ()) View.View.Information
 
                 }
             )
@@ -195,9 +193,9 @@ module Router =
                     |]
                     |> navigate
 
-                    let! _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter ())
-                    (setter ()).set (Atoms.username, None)
+                    let _subject, setter = getComponent () |> Setup.render
+                    do! initialSetter (setter.current ())
+                    (setter.current ()).set (Atoms.username, None)
 
                     do!
                         [|

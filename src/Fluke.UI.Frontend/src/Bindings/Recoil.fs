@@ -226,14 +226,32 @@ module Recoil =
         | _ -> None
 
     let atomPathFromRawAtomKey (rawAtomKey: string) =
-        match (rawAtomKey.Split "__" |> Seq.head).Trim () with
-        | String.ValidString atomPath when atomPath |> Seq.last = '/' -> atomPath |> String.take (atomPath.Length - 1)
-        | String.ValidString atomPath -> atomPath
-        | _ -> failwith $"Invalid rawAtomKey: {rawAtomKey}"
+        let initial =
+            match rawAtomKey
+                  |> String.split "__"
+                  |> Seq.head
+                  |> String.trim with
+            | String.ValidString atomPath when atomPath |> Seq.last = '/' ->
+                atomPath
+                |> String.take (atomPath.Length - 1)
+                |> Some
+            | String.ValidString atomPath -> Some atomPath
+            | _ -> None
+
+        initial
+        |> Option.bind
+            (fun result ->
+                match result |> String.split "/" |> Array.toList with
+                | head :: tail ->
+                    match head with
+                    | nameof atomFamily -> Some tail
+                    | _ -> None
+                | [] -> None)
+        |> Option.map (String.concat "/")
 
 
     let wrapAtomPath (atomPath: string) =
-        let header = $"{nameof Gun}{nameof Recoil}/"
+        let header = $"{nameof Fluke}/"
         let header = if atomPath.StartsWith header then "" else header
         let result = $"{header}{atomPath}"
 
@@ -247,41 +265,52 @@ module Recoil =
         | AtomPath of Username * atomPath: string
 
 
-    let getAtomPath (rawAtomKey: string) (keyIdentifier: string list) =
+    let getInternalAtomPath (rawAtomKey: string) (keyIdentifier: string list) =
         let atomPath = atomPathFromRawAtomKey rawAtomKey
 
-        let newAtomPath =
-            match keyIdentifier with
-            | [] -> atomPath
-            | keyIdentifier when keyIdentifier |> List.head |> Guid.TryParse |> fst ->
-                let nodes = atomPath.Split "/"
+        match atomPath with
+        | Some atomPath ->
+            let newAtomPath =
+                match keyIdentifier with
+                | [] -> atomPath
+                | keyIdentifier when keyIdentifier |> List.head |> Guid.TryParse |> fst ->
+                    let nodes = atomPath |> String.split "/"
 
-                [
-                    yield! nodes |> Array.take (nodes.Length - 2)
+                    [
+                        yield! nodes |> Array.take (nodes.Length - 2)
 
-                    let secondLast = nodes.[nodes.Length - 2]
+                        let secondLast = nodes.[nodes.Length - 2]
 
-                    if secondLast |> Guid.TryParse |> fst then
-                        yield! keyIdentifier
-                        yield secondLast
-                    else
-                        yield secondLast
-                        yield! keyIdentifier
+                        if secondLast |> Guid.TryParse |> fst then
+                            yield! keyIdentifier
+                            yield secondLast
+                        else
+                            yield secondLast
+                            yield! keyIdentifier
 
-                    yield nodes.[nodes.Length - 1]
-                ]
-                |> String.concat "/"
-            | keyIdentifier ->
-                ([
-                    atomPath
-                 ]
-                 @ keyIdentifier)
-                |> String.concat "/"
+                        yield nodes.[nodes.Length - 1]
+                    ]
+                    |> String.concat "/"
+                | keyIdentifier ->
+                    ([
+                        atomPath
+                     ]
+                     @ keyIdentifier)
+                    |> String.concat "/"
 
-        wrapAtomPath newAtomPath
+            wrapAtomPath newAtomPath
+        | None -> failwith $"Invalid rawAtomKey: {rawAtomKey}"
+
 
     let getGun () =
-        JS.waitForObject (fun () -> async { return box Browser.Dom.window?lastGun :?> Gun.IGunChainReference })
+        JS.waitForObject
+            (fun () ->
+                async {
+                    return
+                        match JS.window id with
+                        | Some window -> box window?lastGun :?> Gun.IGunChainReference
+                        | None -> unbox null
+                })
 
     //    let getUsername () =
 //        async {
@@ -304,12 +333,10 @@ module Recoil =
                 match user.is with
                 | Some { alias = Some username' } when username' = username ->
                     async {
-                        let nodes = atomPath.Split "/" |> Array.toList
-                        let head = nodes.[0]
-                        let tail = nodes |> List.skip 1
+                        let nodes = atomPath |> String.split "/" |> Array.toList
 
                         return
-                            (Some (user.get head), tail)
+                            (Some (user.get nodes.Head), nodes.Tail)
                             ||> List.fold
                                     (fun result node ->
                                         result
@@ -317,25 +344,29 @@ module Recoil =
                     }
                 | _ ->
                     async {
-                        if JS.isTesting then
+                        if JS.deviceInfo.IsTesting then
                             //                            if not Browser.Dom.window?creatingUser then
 //                                Browser.Dom.window?creatingUser <- true
 //                                let username = Templates.templatesUser.Username |> Username.Value
 //
 //                                printfn $"1# {JS.JSON.stringify user.is}"
-////                                let! ack1 = Gun.createUser user username username
+//                                let! ack1 = Gun.createUser user username username |> Async.AwaitPromise
 //                                Gun.createUser user username username |> Promise.start
-//                                do! Async.Sleep 300 |> Async.StartAsPromise
-//                                do! Async.Sleep 1000 |> Async.StartAsPromise
-//                                printfn "2#"
-//                                let! ack2 = Gun.authUser user username username
+//                                do! Async.Sleep 1000// |> Async.StartAsPromise
+//                                do! Async.Sleep 1000// |> Async.StartAsPromise
+
+                            //                                printfn $"2# {ack1}"
+
+                            //                                let! ack2 = Gun.authUser user username username |> Async.AwaitPromise
 //                                printfn $"# ack2={JS.JSON.stringify ack2}"
 //                                if ack2.wait then
-//                                    do! Async.Sleep 1 |> Async.StartAsPromise
-//                                    let! ack3 = Gun.authUser user username username
+//                                    do! Async.Sleep 1// |> Async.StartAsPromise
+//                                    let! ack3 = Gun.authUser user username username |> Async.AwaitPromise
 //                                    printfn $"# ack3={JS.JSON.stringify ack3}"
 //                                    ()
-////                                printfn $"# ack1={JS.JSON.stringify ack1} ack2={JS.JSON.stringify ack2}"
+
+
+                            ///                                printfn $"# ack1={JS.JSON.stringify ack1} ack2={JS.JSON.stringify ack2}"
 
                             do! Async.Sleep 100
 
@@ -349,35 +380,34 @@ module Recoil =
                     }
         }
 
+    let getAtomPath (atom: InputAtom<_, _>) (keyIdentifier: string list) =
+        let username, rawAtomKey, atomPath =
+            match atom with
+            | Atom (username, atom) -> username, Some atom.key, None
+            | AtomFamily (username, atomFamily, atomKey) -> username, Some (atomFamily atomKey).key, None
+            | AtomPath (username, atomPath) -> username, None, Some atomPath
+
+        let newAtomPath =
+            atomPath
+            |> Option.defaultValue (
+                match rawAtomKey with
+                | Some rawAtomKey -> getInternalAtomPath rawAtomKey keyIdentifier
+                | None -> failwith $"Invalid rawAtomKey: {rawAtomKey}"
+            )
+
+        username, newAtomPath
+
     let inline getGunAtomNode (atom: InputAtom<_, _>) (keyIdentifier: string list) =
         async {
-            let username, atomPath =
-                match atom with
-                | Atom (username, atom) -> username, getAtomPath atom.key keyIdentifier
-                | AtomFamily (username, atomFamily, atomKey) ->
-                    username, getAtomPath (atomFamily atomKey).key keyIdentifier
-                | AtomPath (username, atomPath) -> username, atomPath
-
+            let username, atomPath = getAtomPath atom keyIdentifier
             let! gunAtomNode = getInternalGunAtomNode username atomPath
             return username, atomPath, gunAtomNode
         }
 
     let getGunAtomNodeParent (atom: InputAtom<_, _>) =
         async {
-            let username, atomPath =
-                match atom with
-                | Atom (username, atom) -> username, wrapAtomPath (atomPathFromRawAtomKey atom.key)
-                | AtomFamily (username, atomFamily, atomKey) ->
-                    username, wrapAtomPath (atomPathFromRawAtomKey (atomFamily atomKey).key)
-                | AtomPath (username, atomPath) -> username, atomPath
-
-            let nodes = atomPath.Split "/"
-
-            let atomPath =
-                nodes
-                |> Array.take (nodes.Length - 1)
-                |> String.concat "/"
-
+            let username, atomPath = getAtomPath atom []
+            let atomPath = atomPath.Substring (0, (atomPath.LastIndexOf "/") - 1)
             let! gunAtomNode = getInternalGunAtomNode username atomPath
             return username, atomPath, gunAtomNode
         }
@@ -392,11 +422,13 @@ module Recoil =
                 (async {
                     let! _, atomPath, gunAtomNode = getGunAtomNodeParent atom
 
-                    JS.log (fun () -> $"@@@- [gunKeyEffect] atomPath={atomPath}")
+                    //                    JS.log (fun () ->
+                    printfn $"@@@- [gunKeyEffect] atomPath={atomPath}"
+                    //                        )
 
                     match gunAtomNode with
                     | Some gunAtomNode ->
-                        printfn $"AA atomPath={atomPath} gunAtomNode={gunAtomNode}"
+                        printfn $"gunKeyEffect atomPath={atomPath} gunAtomNode={gunAtomNode}"
 
                         gunAtomNode.on
                             (fun v _k ->
@@ -404,6 +436,7 @@ module Recoil =
                                     JS.Constructors.Object.keys v
                                     |> Seq.choose onValidate
                                     |> Set.ofSeq
+
                                 JS.log (fun () -> $"-ON atomPath={atomPath} keys={keys}")
                                 e.setSelf (fun _ -> keys)
 
@@ -412,7 +445,7 @@ module Recoil =
 //                                | None -> ()
                                 )
 
-//                        gunAtomNode
+                    //                        gunAtomNode
 //                            .map()
 //                            .on (fun _v k ->
 //                                JS.log (fun () -> $"ON MAP atomPath={atomPath} k={k}")
@@ -452,8 +485,8 @@ module Recoil =
                 let user = gun.user ()
                 let keys = user.__.sea
 
-                match keys with
-                | Some keys ->
+                match keys |> Option.ofObjUnbox with
+                | Some (Some keys) ->
                     let! verified = Gun.sea.verify data keys.pub |> Async.AwaitPromise
 
                     let! decrypted =
@@ -468,7 +501,7 @@ module Recoil =
                     //            printfn $"userDecode data={data} decrypted={decrypted} verified={JS.JSON.stringify verified} typeof decrypted={jsTypeof decrypted} typeof verified={jsTypeof verified}"
 
                     return decoded
-                | None -> return failwith $"No keys found for user {user.is}"
+                | _ -> return failwith $"No keys found for user {user.is}"
             with ex ->
                 Browser.Dom.console.error ("[exception5]", ex)
                 return raise ex
@@ -486,7 +519,7 @@ module Recoil =
                     let json = Gun.jsonEncode<'TValue> value
                     let! encrypted = Gun.sea.encrypt json keys |> Async.AwaitPromise
                     let! signed = Gun.sea.sign encrypted keys |> Async.AwaitPromise
-                    printfn $"userEncode. keys={keys} json={json} encrypted={encrypted} signed={signed}"
+                    //                    JS.log (fun () -> $"userEncode. json={json} encrypted={encrypted} signed={signed}")
                     return signed
                 | None -> return failwith $"No keys found for user {user.is}"
             with ex ->
@@ -536,26 +569,26 @@ module Recoil =
                 (fun value oldValue ->
                     (async {
                         try
-                            let! _, tempId, _ = getGunAtomNode atom keyIdentifier
+                            //                            let! _, tempId, _ = getGunAtomNode atom keyIdentifier
 
-                            JS.log
-                                (fun () ->
-                                    $"[gunEffect.onRecoilSet1()] tempIdAtomPath={tempId} typeof value={jsTypeof value} typeof oldValue={
-                                                                                                                                            jsTypeof
-                                                                                                                                                oldValue
-                                    }; oldValue={oldValue}; oldValue.stringify={JS.JSON.stringify oldValue}; typeof value={
-                                                                                                                               jsTypeof
-                                                                                                                                   value
-                                    }; value={value}; value.stringify={JS.JSON.stringify value};")
+                            //                            JS.log
+//                                (fun () ->
+//                                    $"[gunEffect.onRecoilSet1()] tempIdAtomPath={tempId} typeof value={jsTypeof value} typeof oldValue={
+//                                                                                                                                            jsTypeof
+//                                                                                                                                                oldValue
+//                                    }; oldValue={oldValue}; oldValue.stringify={JS.JSON.stringify oldValue}; typeof value={
+//                                                                                                                               jsTypeof
+//                                                                                                                                   value
+//                                    }; value={value}; value.stringify={JS.JSON.stringify value};")
 
                             let! newValueJson =
-                                if (JS.ofObjDefault null (box value)) = null then
+                                if value |> JS.ofNonEmptyObj |> Option.isNone then
                                     null |> Async.lift
                                 else
                                     userEncode<'TValue3> value
 
                             let! oldValueJson =
-                                if (JS.ofObjDefault null (box oldValue)) = null then
+                                if oldValue |> JS.ofNonEmptyObj |> Option.isNone then
                                     null |> Async.lift
                                 else
                                     userEncode<'TValue3> oldValue
@@ -569,18 +602,17 @@ module Recoil =
 
                                     JS.log
                                         (fun () ->
-                                            $"[gunEffect.onRecoilSet2()] atomPath={atomPath} oldValue={oldValue}; newValueJson={
-                                                                                                                                    newValueJson
+                                            $"[gunEffect.onRecoilSet2()] atomPath={atomPath} oldValue={oldValue}; value={
+                                                                                                                             value
                                             } jsTypeof-value={jsTypeof value}")
                                 | None ->
                                     Browser.Dom.console.error $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
-                            else
-                                if (JS.ofObjDefault null (box oldValue)) <> null then
-                                    JS.log
-                                        (fun () ->
-                                            $"[gunEffect.onRecoilSet()]. newValue==oldValue. skipping. value={value} oldValueJson={
-                                                                                                                                       oldValueJson
-                                            } newValueJson={newValueJson}")
+                            else if oldValue |> JS.ofNonEmptyObj |> Option.isSome then
+                                JS.log
+                                    (fun () ->
+                                        $"[gunEffect.onRecoilSet()]. newValue==oldValue. skipping. value={value} oldValueJson={
+                                                                                                                                   oldValueJson
+                                        } newValueJson={newValueJson}")
                         with ex -> Browser.Dom.console.error ("[exception2]", ex)
                      })
                     |> Async.StartAsPromise

@@ -99,9 +99,11 @@ module AreaSelector =
                                 Chakra.box
                                     (fun x -> x.textAlign <- "center")
                                     [
-                                        ModalForm.ModalFormTrigger
+                                        AreaFormTrigger.AreaFormTrigger
                                             {|
                                                 Username = input.Username
+                                                Area = input.Area
+                                                OnSelect = input.OnSelect
                                                 Trigger =
                                                     fun trigger _ ->
 
@@ -121,27 +123,6 @@ module AreaSelector =
                                                                         str "Add Area"
                                                                     ]
                                                             |}
-                                                TextKey = TextKey (nameof AreaForm)
-                                                TextKeyValue = None
-                                            |}
-
-                                        ModalForm.ModalForm
-                                            {|
-                                                Username = input.Username
-                                                Content =
-                                                    fun (_, onHide, _) ->
-                                                        AreaForm.AreaForm
-                                                            {|
-                                                                Username = input.Username
-                                                                Area = input.Area
-                                                                OnSave =
-                                                                    fun area ->
-                                                                        promise {
-                                                                            input.OnSelect area
-                                                                            onHide ()
-                                                                        }
-                                                            |}
-                                                TextKey = TextKey (nameof AreaForm)
                                             |}
                                     ]
                             ]

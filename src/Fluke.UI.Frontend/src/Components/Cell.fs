@@ -25,8 +25,8 @@ module Cell =
 
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
         let isTesting = Recoil.useValue Atoms.isTesting
-        let databaseId = Recoil.useValue (Atoms.Task.databaseId (input.Username, input.TaskId))
-        let access = Recoil.useValue (Selectors.Database.access databaseId)
+        let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
+        let access = Recoil.useValue (Selectors.Database.access taskMetadata.[input.TaskId].DatabaseId)
         let status, setStatus = Recoil.useState (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
@@ -103,15 +103,15 @@ module Cell =
                             x.borderWidth <- "1px"
                             x.borderColor <- TempUI.cellStatusColor Disabled
                             x.position <- "absolute"
-                            x.top <- "10px"
-                            x.left <- "10px"
+                            x.top <- $"{int (float cellSize * 0.7)}px"
+                            x.left <- $"{int (float cellSize * 0.7)}px"
                             x.zIndex <- 1
                             x.boxShadow <- "0px 0px 2px 1px #262626")
                         [
                             Chakra.simpleGrid
                                 (fun x ->
                                     x.columns <- 2
-                                    x.width <- "30px")
+                                    x.width <- $"{cellSize * 2}px")
                                 [
                                     yield!
                                         selectableStatusList
@@ -181,8 +181,8 @@ overriding any other behavior.
                                                                 x.variant <- "outline"
                                                                 x.backgroundColor <- color
                                                                 x.border <- "0"
-                                                                x.minWidth <- "15px"
-                                                                x.height <- "15px"
+                                                                x.minWidth <- $"{cellSize}px"
+                                                                x.height <- $"{cellSize}px"
                                                                 x.borderRadius <- "0"
 
                                                                 x.onClick <-
@@ -207,8 +207,8 @@ overriding any other behavior.
                                                 x._hover <- JS.newObj (fun x -> x.opacity <- 0.8)
                                                 x.variant <- "outline"
                                                 x.border <- "0"
-                                                x.width <- "30px"
-                                                x.height <- "15px"
+                                                x.width <- $"{cellSize * 2}px"
+                                                x.height <- $"{cellSize}px"
                                                 x.borderRadius <- "0"
                                                 x.onClick <- fun _ -> promise { setStatus Disabled })
                                             []

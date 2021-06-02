@@ -171,7 +171,10 @@ module Auth =
                         let! ack = Gun.createUser gunNamespace.``#`` username password
                         printfn "Auth.useSignUp. Gun.createUser signUpAck:"
                         Browser.Dom.console.log ack
-                        Browser.Dom.window?signUpAck <- ack
+
+                        match JS.window id with
+                        | Some window -> window?signUpAck <- ack
+                        | None -> ()
 
                         return!
                             promise {

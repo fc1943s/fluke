@@ -1,7 +1,7 @@
 namespace Fluke.UI.Frontend.Tests.Core
 
-open Fable.Core.JsInterop
 open Fable.ReactTestingLibrary
+open Fable.Core.JsInterop
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
@@ -10,7 +10,14 @@ open Fluke.UI.Frontend.Tests.Core
 open Fable.React
 open Fluke.UI.Frontend.Hooks
 open Microsoft.FSharp.Core.Operators
+//open Fable.Jester
 
+//module RTL =
+//    let inline sleep ms =
+//        promise {
+//            for _ in 0 .. ms / 500 do
+//                do! RTL.waitFor (Promise.sleep 500)
+//        }
 
 module Setup =
     import "jest" "@jest/globals"
@@ -31,12 +38,11 @@ module Setup =
             ()
 
     let render (cmp: ReactElement) =
-        promise {
-            //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
+        //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
 //                fun _ -> failwith "called empty callback"
 //
-            let mutable setterFn : unit -> CallbackMethods = fun _ -> failwith "called empty callback"
-            //
+        let mutable setterRef : IRefValue<unit -> CallbackMethods> = unbox null
+        //
 //            let cmpWrapper =
 //                React.memo
 //                    (fun () ->
@@ -47,35 +53,39 @@ module Setup =
 //
 //                        cmp)
 
-            let subject =
-                RTL.render (
-                    rootWrapper (
-                        React.fragment [
-                            (React.memo
-                                (fun () ->
-                                    let setter = Recoil.useCallbackRef id
+        let subject =
+            RTL.render (
+                rootWrapper (
+                    React.fragment [
+                        (React.memo
+                            (fun () ->
+                                let setter = Recoil.useCallbackRef id
+                                let internalSetterRef = React.useRef setter
 
-                                    React.useEffect (
-                                        (fun () ->
-                                            setterFn <- setter
-                                            ()),
-                                        [|
-                                            box setter
-                                        |]
-                                    )
+                                React.useEffect (
+                                    (fun () ->
+                                        internalSetterRef.current <- setter
+                                        setterRef <- internalSetterRef
+                                        ()),
+                                    [|
+                                        box internalSetterRef
+                                        box setter
+                                    |]
+                                )
 
-                                    nothing)
-                                ())
-                            cmp
-                        ]
-                    )
+                                nothing)
+                            ())
+                        cmp
+                    ]
                 )
+            )
 
+        //            RTL.act (fun () -> Jest.runAllTimers())
+
+        //            do! RTL.waitFor id
 //            do! RTL.waitFor id
-//            do! RTL.waitFor id
-            //            return subject, peekFn
-            return subject, setterFn
-        }
+        //            return subject, peekFn
+        subject, setterRef
 
     //    let waitForObj setter fn =
 //        promise {

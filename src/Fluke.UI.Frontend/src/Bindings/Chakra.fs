@@ -1,8 +1,8 @@
 namespace Fluke.UI.Frontend.Bindings
 
 open Browser.Types
-open System
 open Fable.Core
+open Fluke.Shared
 open Feliz
 
 
@@ -296,14 +296,16 @@ module Chakra =
             )
 
     let mapIfSet fn value =
-        match unbox value |> Option.ofObj with
-        | Some value when
-            unbox value <> null
-            && value
-               |> string
-               |> String.IsNullOrWhiteSpace
-               |> not -> fn (unbox value)
-        | _ -> unbox null
+        value
+        |> Option.ofObjUnbox
+        |> Option.bind Option.ofObjUnbox
+        |> Option.filter (
+            string
+            >> function
+            | String.ValidString _ -> true
+            | _ -> false
+        )
+        |> Option.map fn
 
     let transformShiftBy x y =
         $"translate({x |> Option.defaultValue 0}px, {y |> Option.defaultValue 0}px)"

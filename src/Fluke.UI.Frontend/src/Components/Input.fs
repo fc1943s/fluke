@@ -7,6 +7,7 @@ open Feliz
 open Fluke.UI.Frontend.Bindings
 open Feliz.Recoil
 open Fable.Core
+open Fluke.Shared
 
 
 module Input =
@@ -43,10 +44,9 @@ module Input =
         let inputFallbackRef = React.useRef<HTMLInputElement> null
 
         let inputRef =
-            (box props.ref)
-            |> Option.ofObj
-            |> Option.defaultValue (box inputFallbackRef)
-            :?> IRefValue<HTMLInputElement>
+            props.ref
+            |> Option.ofObjUnbox
+            |> Option.defaultValue inputFallbackRef
 
         let mounted, setMounted = React.useState false
 
@@ -176,9 +176,11 @@ module Input =
 
                                 props.placeholder
                                 |> Chakra.mapIfSet (fun value -> x.placeholder <- value)
+                                |> ignore
 
                                 props.width
                                 |> Chakra.mapIfSet (fun value -> x.width <- value)
+                                |> ignore
 
                                 x.onKeyDown <-
                                     fun (e: KeyboardEvent) ->

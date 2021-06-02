@@ -5,7 +5,6 @@ open Fable.Core.JsInterop
 open Fable.Core
 open Fable.Extras
 open Fluke.Shared
-open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Feliz
@@ -209,11 +208,13 @@ module Databases =
                 Menu =
                     [
                         if isReadWrite then
-                            ModalForm.ModalFormTrigger
+                            TaskFormTrigger.TaskFormTrigger
                                 {|
                                     Username = input.Username
+                                    DatabaseId = input.Database.Id
+                                    TaskId = None
                                     Trigger =
-                                        fun trigger setter ->
+                                        fun trigger _setter ->
                                             Chakra.menuItem
                                                 (fun x ->
                                                     x.icon <-
@@ -223,32 +224,18 @@ module Databases =
                                                                 x.fontSize <- "13px"
                                                                 x.marginTop <- "-1px")
 
-                                                    x.onClick <-
-                                                        fun _ ->
-                                                            promise {
-                                                                setter()
-                                                                    .set (
-                                                                        Atoms.Task.databaseId (
-                                                                            input.Username,
-                                                                            Task.Default.Id
-                                                                        ),
-                                                                        input.Database.Id
-                                                                    )
-
-                                                                trigger ()
-                                                            })
+                                                    x.onClick <- fun _ -> promise { trigger () })
                                                 [
                                                     str "Add Task"
                                                 ]
-                                    TextKey = TextKey (nameof TaskForm)
-                                    TextKeyValue = None
                                 |}
 
-                            ModalForm.ModalFormTrigger
+                            DatabaseFormTrigger.DatabaseFormTrigger
                                 {|
                                     Username = input.Username
+                                    DatabaseId = Some input.Database.Id
                                     Trigger =
-                                        fun trigger _ ->
+                                        fun trigger _setter ->
                                             Chakra.menuItem
                                                 (fun x ->
                                                     x.icon <-
@@ -261,16 +248,12 @@ module Databases =
                                                     x.onClick <-
                                                         fun _ ->
                                                             promise {
-                                                                //                                                                                hydrateDatabase Recoil.AtomScope.ReadWrite input.Database
                                                                 trigger ()
-                                                                //                                                                                let! setter = (trigger ())()
                                                                 ()
                                                             })
                                                 [
                                                     str "Edit Database"
                                                 ]
-                                    TextKey = TextKey (nameof DatabaseForm)
-                                    TextKeyValue = input.Database.Id |> DatabaseId.Value |> Some
                                 |}
 
                             Chakra.menuItem
@@ -459,14 +442,13 @@ module Databases =
                    Props: Chakra.IChakraProps -> unit |})
         =
         let isTesting = Recoil.useValue Atoms.isTesting
-        //        let availableDatabaseIds = Recoil.useValue (Atoms.Session.availableDatabaseIds input.Username)
         let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
         let hideTemplatesCache = React.useRef<bool option> None
 
         let selectedDatabaseIdList, setSelectedDatabaseIdList =
             Recoil.useState (Atoms.User.selectedDatabaseIdList input.Username)
 
-        let databaseIdSet = Recoil.useValue (Atoms.Session.databaseIdSet input.Username)
+        let databaseIdSet = Recoil.useValue (Selectors.Session.databaseIdSet input.Username)
 
         let availableDatabases =
             databaseIdSet
@@ -638,7 +620,9 @@ module Databases =
             |]
         )
 
-        Browser.Dom.window?nodes <- nodes
+        match JS.window id with
+        | Some window -> window?nodes <- nodes
+        | None -> ()
 
         Chakra.stack
             input.Props

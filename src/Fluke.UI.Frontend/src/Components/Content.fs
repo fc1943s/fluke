@@ -50,7 +50,5 @@ module Content =
                                     HomeScreen.HomeScreen {| Username = username |}
                                     StatusBar.StatusBar {| Username = username |}
                                 ]
-
-                            ModalContainer.ModalContainer {| Username = username |}
                         ]
             ]

@@ -7,7 +7,10 @@ open Fable.Core
 
 module Dom =
     let private domRefs = Dictionary<string, obj> ()
-    Browser.Dom.window?fluke <- domRefs
+
+    if jsTypeof Browser.Dom.window <> "undefined" then
+        Browser.Dom.window?domRefs <- domRefs
+
     let set key value = domRefs.[key] <- value
 
     [<Emit "new Event($0, $1)">]

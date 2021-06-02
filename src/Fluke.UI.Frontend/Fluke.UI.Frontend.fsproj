@@ -62,14 +62,17 @@
         <Compile Include="src\Components\Menu.fs" />
         <Compile Include="src\Components\AreaForm.fs" />
         <Compile Include="src\Components\ModalForm.fs" />
+        <Compile Include="src\Components\DatabaseForm.fs" />
+        <Compile Include="src\Components\SchedulingSelector.fs" />
         <Compile Include="src\Components\ExternalLink.fs" />
+        <Compile Include="src\Components\AreaFormTrigger.fs" />
         <Compile Include="src\Components\AreaSelector.fs" />
         <Compile Include="src\Components\ProjectForm.fs" />
-        <Compile Include="src\Components\SchedulingSelector.fs" />
-        <Compile Include="src\Components\DeleteUserButton.fs" />
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
-        <Compile Include="src\Components\DatabaseForm.fs" />
+        <Compile Include="src\Components\DatabaseFormTrigger.fs" />
+        <Compile Include="src\Components\TaskFormTrigger.fs" />
+        <Compile Include="src\Components\DeleteUserButton.fs" />
         <Compile Include="src\Components\TransparentIconButton.fs" />
         <Compile Include="src\Components\TopBar.fs" />
         <Compile Include="src\Components\Databases.fs" />
@@ -92,7 +95,6 @@
         <Compile Include="src\Components\CtrlListener.fs" />
         <Compile Include="src\Components\ShiftListener.fs" />
         <Compile Include="src\Components\GunObserver.fs" />
-        <Compile Include="src\Components\ModalContainer.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\Components\RootWrapper.fs" />
         <Compile Include="src\App.fs" />
@@ -103,14 +105,8 @@
         <Compile Include="src\Tests\CellSelection.test.fs" />
         <Compile Include="src\Tests\Router.test.fs" />
         <Compile Include="src\Tests\Full.spec.fs" />
-        <Content Include="public\index.html" />
-        <Content Include="public\index.tsx" />
-        <Content Include="public\404.html" />
-        <Content Include="public\index.ts" />
-        <Content Include="public\index.jsx" />
-        <Content Include="public\index.js" />
-        <Content Include="public\manifest.json" />
         <Content Include="package.json" />
+        <Content Include="gatsby-config.js" />
         <Content Include="_babel.config.json" />
         <Content Include="craco.config.js" />
         <Content Include="config-overrides.js" />
@@ -122,6 +118,20 @@
         <Content Include="tsconfig.json" />
         <Content Include="jest.config.js" />
         <Content Include="cypress.json" />
+        <Content Include="static\sounds\tick.wav" />
+        <Content Include="static\sounds\ding.wav" />
+        <Content Include="static\icons\48x48.png" />
+        <Content Include="static\icons\32x32.png" />
+        <Content Include="static\icons\16x16.png" />
+        <Content Include="static\icons\128x128.png" />
+        <Content Include="static\manifest.json" />
+        <Content Include="static\index.tsx" />
+        <Content Include="static\index.ts" />
+        <Content Include="static\index.jsx" />
+        <Content Include="static\index.js" />
+        <Content Include="static\index.html" />
+        <Content Include="static\favicon.ico" />
+        <Content Include="static\404.html" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />

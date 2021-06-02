@@ -16,38 +16,58 @@ module Operators =
     let (<+) _o1 _o2 : unit = jsNative
 
 module JS =
+    [<Emit "process.env.JEST_WORKER_ID">]
+    let private jestWorkerId : bool = jsNative
+
+    let window fn =
+        if jsTypeof Browser.Dom.window <> "undefined" then
+            Some (fn Browser.Dom.window)
+        else
+            printfn "No window found"
+            None
 
     let deviceInfo =
-        let userAgent =
-            if Browser.Dom.window?navigator = null then
-                ""
-            else
-                Browser.Dom.window?navigator?userAgent
-
-        let deviceInfo =
+        match window id with
+        | None ->
             {|
-                IsEdge = (JSe.RegExp @"Edg\/").Test userAgent
-                IsMobile =
-                    JSe
-                        .RegExp("Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop", JSe.RegExpFlag().i)
-                        .Test userAgent
-                IsExtension = Browser.Dom.window.location.protocol = "chrome-extension:"
-                GitHubPages = Browser.Dom.window.location.host.EndsWith "github.io"
+                UserAgent = "window==null"
+                IsEdge = false
+                IsMobile = false
+                IsExtension = false
+                GitHubPages = false
+                IsTesting = false
             |}
+        | Some window ->
+            let userAgent = if window?navigator = None then "" else window?navigator?userAgent
 
-        printfn $"userAgent={userAgent} deviceInfo={deviceInfo}"
-        deviceInfo
+            let isEdge = (JSe.RegExp @"Edg\/").Test userAgent
 
-    [<Emit "process.env.JEST_WORKER_ID">]
-    let jestWorkerId : bool = jsNative
+            let isMobile =
+                JSe
+                    .RegExp("Android|BlackBerry|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop", JSe.RegExpFlag().i)
+                    .Test userAgent
 
-    let isTesting = jestWorkerId || Browser.Dom.window?Cypress <> null
+            let isExtension = window.location.protocol = "chrome-extension:"
+            let gitHubPages = window.location.host.EndsWith "github.io"
+            let isTesting = jestWorkerId || window?Cypress <> null
+
+            let deviceInfo =
+                {|
+                    UserAgent = userAgent
+                    IsEdge = isEdge
+                    IsMobile = isMobile
+                    IsExtension = isExtension
+                    GitHubPages = gitHubPages
+                    IsTesting = isTesting
+                |}
+
+            printfn $"deviceInfo={JS.JSON.stringify deviceInfo}"
+            deviceInfo
 
     let inline log fn =
         if not deviceInfo.GitHubPages
-           && not deviceInfo.IsMobile
-        //           && not isTesting
-        then
+           && not deviceInfo.IsTesting
+           && not deviceInfo.IsMobile then
             printfn $"[log] {fn ()}"
         else
             ()
@@ -63,6 +83,9 @@ module JS =
     let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
     let toJsArray a = a |> Array.toList |> List.toArray
 
+    let inline sleep (ms: int) = Async.Sleep ms
+    //        Async.FromContinuations (fun (res, _, _) -> JS.setTimeout res ms |> ignore)
+
     let rec waitFor fn =
         async {
             let ok = fn ()
@@ -70,8 +93,8 @@ module JS =
             if ok then
                 return ()
             else
-                log (fun () -> "waitFor: false. waiting...")
-                do! Async.Sleep 100
+                printfn "waitFor: false. waiting..."
+                do! sleep 100
                 return! waitFor fn
         }
 
@@ -82,8 +105,8 @@ module JS =
             if box obj <> null then
                 return obj
             else
-                log (fun () -> "waitForObject: null. waiting...")
-                do! Async.Sleep 100
+                printfn "waitForObject: null. waiting..."
+                do! sleep 100
                 return! waitForObject fn
         }
 
@@ -94,15 +117,18 @@ module JS =
             match obj with
             | Some obj -> return obj
             | None ->
-                log (fun () -> "waitForSome: none. waiting...")
-                do! Async.Sleep 100
+                printfn "waitForSome: none. waiting..."
+                do! sleep 10
                 return! waitForSome fn
         }
 
-    let ofObjDefault def obj =
-        if obj = null
-           || (jsTypeof obj = "object"
-               && (JS.Constructors.Object.keys obj).Count = 0) then
-            def
-        else
-            obj
+    let ofNonEmptyObj obj =
+        obj
+        |> Option.ofObjUnbox
+        |> Option.bind
+            (fun obj ->
+                if (jsTypeof obj = "object"
+                    && (JS.Constructors.Object.keys obj).Count = 0) then
+                    None
+                else
+                    Some obj)
