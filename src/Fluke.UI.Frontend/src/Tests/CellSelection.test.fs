@@ -143,6 +143,8 @@ module CellSelection =
 
             let initialSetter (setter: CallbackMethods) =
                 promise {
+                    printfn "initialSetter init"
+
                     let databaseId = DatabaseId.NewId ()
 
                     let databaseState =
@@ -182,6 +184,8 @@ module CellSelection =
                             databaseId
                         ]
                     )
+
+                    printfn "initialSetter end"
                 }
 
             let getApp () =
@@ -291,14 +295,14 @@ module CellSelection =
                 promise {
                     let subject, setter = getApp () |> Setup.render
 
-                    do!
-                        RTL.waitFor (
-                            promise {
-                                printfn "INSIDE0!!!!"
-                                do! Promise.sleep 700
-                            }
-                        )
-
+//                    do!
+//                        RTL.waitFor (
+//                            promise {
+//                                printfn "INSIDE0!!!!"
+//                                do! Promise.sleep 700
+//                            }
+//                        )
+//
 
                     let! username =
                         JS.waitForSome
@@ -316,13 +320,13 @@ module CellSelection =
 
                     printfn $"! username={username}"
 
-                    do!
-                        RTL.waitFor (
-                            promise {
-                                printfn "INSIDE1!!!!"
-                                do! Promise.sleep 700
-                            }
-                        )
+//                    do!
+//                        RTL.waitFor (
+//                            promise {
+//                                printfn "INSIDE1!!!!"
+//                                do! Promise.sleep 700
+//                            }
+//                        )
 
                     //                    printfn "BEFORE ACT!!!!"
 //                    RTL.act
@@ -355,10 +359,26 @@ module CellSelection =
 //                        |> Async.StartAsPromise
 //
 //                    printfn $"after sleep keys={JS.JSON.stringify keys}"
+                    printfn "before initialSetter"
 
                     do! RTL.waitFor (initialSetter (setter.current ()))
                     //                    do! initialSetter (setter ())
                     printfn "after initial"
+
+                    do!
+                        RTL.waitFor (
+                            promise {
+                                printfn "INSIDE1!!!!"
+                                do! Promise.sleep 500
+                            }
+                        )
+                    do!
+                        RTL.waitFor (
+                            promise {
+                                printfn "INSIDE2!!!!"
+                                do! Promise.sleep 500
+                            }
+                        )
 
                     //                    do! RTL.waitFor id
                     printfn "after initial2"
@@ -474,7 +494,7 @@ module CellSelection =
                         )
                 //                                do! Promise.sleep 700
                 }
-            )
+            , 30000)
 
             Jest.test (
                 "ctrl pressed",
