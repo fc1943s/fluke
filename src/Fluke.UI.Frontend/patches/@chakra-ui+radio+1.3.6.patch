@@ -1,0 +1,34 @@
+diff --git a/node_modules/@chakra-ui/radio/dist/cjs/use-radio.js b/node_modules/@chakra-ui/radio/dist/cjs/use-radio.js
+index 70ca147..d083750 100644
+--- a/node_modules/@chakra-ui/radio/dist/cjs/use-radio.js
++++ b/node_modules/@chakra-ui/radio/dist/cjs/use-radio.js
+@@ -148,11 +148,7 @@ function useRadio(props) {
+      *
+      * Remove once it's fixed.
+      */
+-    var focus = function focus() {
+-      (0, _utils.scheduleMicrotask)(function () {
+-        setFocused.on();
+-      });
+-    };
++    var focus = setFocused.on;
+ 
+     var trulyDisabled = isDisabled && !isFocusable;
+     return _extends({}, props, {
+diff --git a/node_modules/@chakra-ui/radio/dist/esm/use-radio.js b/node_modules/@chakra-ui/radio/dist/esm/use-radio.js
+index c1a9bd4..ac84234 100644
+--- a/node_modules/@chakra-ui/radio/dist/esm/use-radio.js
++++ b/node_modules/@chakra-ui/radio/dist/esm/use-radio.js
+@@ -123,11 +123,7 @@ export function useRadio(props) {
+      *
+      * Remove once it's fixed.
+      */
+-    var focus = () => {
+-      scheduleMicrotask(() => {
+-        setFocused.on();
+-      });
+-    };
++    var focus = setFocused.on;
+ 
+     var trulyDisabled = isDisabled && !isFocusable;
+     return _extends({}, props, {

@@ -1,0 +1,17 @@
+diff --git a/node_modules/@peculiar/asn1-schema/build/cjs/parser.js b/node_modules/@peculiar/asn1-schema/build/cjs/parser.js
+index be59c4f..3fd9de3 100644
+--- a/node_modules/@peculiar/asn1-schema/build/cjs/parser.js
++++ b/node_modules/@peculiar/asn1-schema/build/cjs/parser.js
+@@ -22,6 +22,12 @@ class AsnParser {
+         else {
+             throw new TypeError("Wrong type of 'data' argument");
+         }
++
++        const pvutils = require('pvutils');
++        buf = buf instanceof ArrayBuffer
++          ? buf
++          : pvutils.stringToArrayBuffer(pvutils.arrayBufferToString(buf));
++
+         const asn1Parsed = asn1.fromBER(buf);
+         if (asn1Parsed.result.error) {
+             throw new Error(asn1Parsed.result.error);

@@ -11,13 +11,13 @@ module Full =
         let typeText<'T> (text: string) =
             Cy.wait 50
             Cy.focused().clear () |> ignore
+            Cy.focused().should "have.value" "" null
 
             text
             |> Seq.iter
                 (fun letter ->
-                    let letter = string letter
-                    Cy.wait 50
-                    Cy.focused().``type`` letter |> ignore)
+                    Cy.wait 200
+                    Cy.focused().``type`` (string letter) |> ignore)
 
             Cy.focused().should "have.value" text null
 
@@ -30,12 +30,16 @@ module Full =
             | None -> ()
 
         let clickTextWithinSelector selector text =
-            Cy.get(selector).contains(text).click () |> ignore
+            Cy
+                .get(selector)
+                .contains(text)
+                .click (Some {| force = true |})
+            |> ignore
 
         let clickText text =
-            (Cy.contains text None).click () |> ignore
+            (Cy.contains text None).click None |> ignore
 
-        let clickSelector selector = (Cy.get selector).click () |> ignore
+        let clickSelector selector = (Cy.get selector).click None |> ignore
 
         let waitFor text options =
             (Cy.contains text options).should "be.visible"
@@ -64,7 +68,7 @@ module Full =
                     Cy2.expectLocation $"{homeUrl}/login"
                     Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"
 
-                    Cy.focused().click () |> ignore
+                    Cy.focused().click None |> ignore
 
                     Cy2.waitFocus "input[placeholder=Username]" None
                     Cy2.typeText username
@@ -99,7 +103,7 @@ module Full =
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
-                        .click ()
+                        .click None
                     |> ignore
 
                     Cy2.clickText "Add Task"
@@ -125,14 +129,14 @@ module Full =
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
-                        .click ()
+                        .click None
                     |> ignore
 
                     Cy2.clickText "Edit Database"
 
                     Cy2.waitFocus "input[placeholder^=new-database-]" None
                     Cy2.typeText $"{dbName}_edit"
-                    Cy2.clickText "Save"
+                    Cy2.clickTextWithinSelector "[data-testid='TextKey DatabaseForm']" "Save"
 
                     Cy2.waitFor "1 of 1 tasks visible" None
                     Cy2.waitFor taskName None

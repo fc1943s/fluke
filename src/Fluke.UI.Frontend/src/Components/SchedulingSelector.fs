@@ -486,7 +486,7 @@ module SchedulingSelector =
                                                                             }
                                                         |}
                                                 ]
-                                        | _ -> ()
+                                        | _ -> nothing
                                     ]
 
                                 Chakra.radioGroup

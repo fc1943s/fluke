@@ -14,7 +14,7 @@
   "scripts": {
     "build:fable": "dotnet tool restore && dotnet paket install && dotnet fable",
     "old-build:react": "cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build",
-    "build:react": "parcel build static/parcel_index.html --detailed-report && cp -r static/manifest.json static/404.html static/sounds dist",
+    "build:react": "parcel build static/parcel_index.html --detailed-report && cp -r static/manifest.json static/404.html static/sounds static/icons dist && mv dist/parceL_index.html dist/index.html",
     "watch:frontend-build": "dotnet fable watch",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
     "old-watch": "concurrently \"yarn:watch:*\"",
@@ -25,7 +25,7 @@
     "gatsby-build": "cross-env NODE_ENV=production gatsby build",
     "gatsby-develop": "cross-env NODE_ENV=development gatsby develop",
     "ts2fable-react-icons": "ts2fable node_modules/react-icons/all.d.ts src/Bindings/Vendor/ReactIcons.fs -e react-icons",
-    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --rootDir . --runInBand --testNamePattern=\"single cell toggle\"",
+    "test": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --rootDir . --runInBand --testNamePattern=",
     "cypress-install": "cypress install --force",
     "cypress": "cypress open",
     "cypress-watch": "concurrently \"yarn:watch\" \"yarn:cypress\"",
@@ -33,7 +33,7 @@
     "frontend-serve": "cross-env PORT=33922 serve build",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
-    "postinstall": "node -e \"if (true || process.env.GITHUB_JOB) { console.log('CI Build'); } else { require('child_process').spawn('patch-package', { shell: true, stdio: 'inherit' }); }\"",
+    "postinstall": "patch-package",
 
     "dev": "electron-webpack dev",
     "compile": "electron-webpack",
@@ -47,8 +47,8 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "experimental",
-    "react-dom": "experimental",
+    "react": "0.0.0-experimental-28625c6f4",
+    "react-dom": "0.0.0-experimental-28625c6f4",
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
@@ -75,7 +75,7 @@
 
     "react-markdown": "~6.0",
     "re-resizable": "~6.9",
-    "date-fns": "~2.21",
+    "date-fns": "~2.22",
     "jssha": "~3.2"
   },
   "devDependencies": {
@@ -84,31 +84,32 @@
 
     "typescript": "~4.3",
     "ts-node": "~10.0",
-    "@types/node" : "~15.6",
+    "@types/node" : "~15.9",
     "ts2fable" : "~0.8.0-build.615",
 
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "electron": "~14.0.0-beta.1",
+    "electron": "~14.0.0-beta.2",
     "electron-webpack": "~2.8",
     "electron-builder": "~22.10",
 
-    "@typescript-eslint/eslint-plugin": "~4.25",
-    "@typescript-eslint/parser": "~4.25",
+    "@typescript-eslint/eslint-plugin": "~4.26",
+    "@typescript-eslint/parser": "~4.26",
     "eslint": "~7.27",
-    "eslint-plugin-react": "~7.23",
+    "eslint-plugin-react": "~7.24",
     "eslint-plugin-import": "~2.23",
     "eslint-plugin-jsx-a11y": "~6.4",
     "eslint-plugin-react-hooks": "~4.2",
     "eslint-plugin-jest-dom": "~3.9",
 
-    "gatsby": "~3.7.0-next.0",
+    "gatsby": "~3.6.2",
     "@chakra-ui/gatsby-plugin": "~2.0",
     "postcss": "~8.3",
 
-    "jest": "~26.6",
-    "ts-jest": "~26.5",
+    "jest": "~27.0",
+    "jest-environment-jsdom": "~27.0",
+    "ts-jest": "~27.0",
     "jest-css-modules": "~2.1",
     "@testing-library/react": "~11.2",
     "@testing-library/user-event": "~13.1",
@@ -120,7 +121,7 @@
     "@babel/preset-react": "~7.13",
     "babel-loader": "~8.2",
     "file-loader": "~6.2",
-    "babel-jest": "~26.6",
+    "babel-jest": "~27.0",
 
     "cypress": "~7.4",
     "cypress-terminal-report": "~3.2",
@@ -139,14 +140,14 @@
     "@dealmore/craco-plugin-babel-include": "~1.0",
     "cra-build-watch": "~4.0.0-beta.1",
 
-    "parcel": "~2.0.0-nightly.688",
+    "parcel": "2.0.0-nightly.688",
 
     "react-refresh": "~0.10",
 
     "concurrently": "~6.2",
 
     "cordova": "~10.0",
-    "cordova-android": "~10.0.0-nightly.2021.5.21.6d803e2f",
+    "cordova-android": "~10.0.0-nightly.2021.6.3.6d803e2f",
     "cordova-ios": "~6.2",
     "cordova-plugin-whitelist": "~1.3"
   },

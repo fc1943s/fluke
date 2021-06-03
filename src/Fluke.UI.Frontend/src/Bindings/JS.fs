@@ -102,12 +102,12 @@ module JS =
         async {
             let! obj = fn ()
 
-            if box obj <> null then
-                return obj
-            else
+            match box obj with
+            | null ->
                 printfn "waitForObject: null. waiting..."
                 do! sleep 100
                 return! waitForObject fn
+            | _ -> return obj
         }
 
     let rec waitForSome fn =
@@ -117,8 +117,8 @@ module JS =
             match obj with
             | Some obj -> return obj
             | None ->
-                printfn "waitForSome: none. waiting..."
-                do! sleep 10
+                Browser.Dom.console.log ("waitForSome: none. waiting...", fn.ToString())
+                do! sleep 100
                 return! waitForSome fn
         }
 

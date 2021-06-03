@@ -96,7 +96,9 @@ module Cell =
                     x.cursor <- "pointer"
                     x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
             [
-                if isCurrentCellMenuOpened then
+                if not isCurrentCellMenuOpened then
+                    nothing
+                else
                     Chakra.stack
                         (fun x ->
                             x.spacing <- "0"
@@ -213,24 +215,28 @@ overriding any other behavior.
                                                 x.onClick <- fun _ -> promise { setStatus Disabled })
                                             []
                                     ]
-                            | _ -> ()
+                            | _ -> nothing
                         ]
+
                 CellSessionIndicator.CellSessionIndicator
                     {|
                         Status = status
                         Sessions = sessions
                     |}
-                if not selected then
+
+                if selected then
+                    nothing
+                else
                     CellBorder.CellBorder
                         {|
                             Username = input.Username
                             Date = input.DateId |> DateId.Value
                         |}
-                if showUser then
-                    match status with
-                    | UserStatus (username, _manualCellStatus) ->
-                        CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
-                    | _ -> ()
+
+                match showUser, status with
+                | true, UserStatus (username, _manualCellStatus) ->
+                    CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
+                | _ -> nothing
 
                 TooltipPopup.TooltipPopup
                     {|

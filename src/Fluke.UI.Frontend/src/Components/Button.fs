@@ -57,7 +57,9 @@ module Button =
                                     x.direction <- "row"
                                     x.spacing <- "7px")
                                 [
-                                    if iconPosition = Some IconPosition.Left then icon ()
+                                    match iconPosition with
+                                    | Some IconPosition.Left -> icon ()
+                                    | _ -> nothing
 
                                     Chakra.box
                                         (fun _ -> ())
@@ -65,7 +67,9 @@ module Button =
                                             yield! children
                                         ]
 
-                                    if iconPosition = Some IconPosition.Right then icon ()
+                                    match iconPosition with
+                                    | Some IconPosition.Right -> icon ()
+                                    | _ -> nothing
                                 ]
                         ]
             ]

@@ -120,5 +120,5 @@ module StatusBar =
                                 str $"Position: {position |> FlukeDateTime.Stringify}"
                             ]
                     ]
-                | None -> ()
+                | None -> nothing
             ]

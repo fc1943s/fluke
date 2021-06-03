@@ -20,9 +20,6 @@ module Router =
     Jest.describe (
         "router",
         (fun () ->
-            let initialSetter (setter: CallbackMethods) =
-                promise { setter.set (Atoms.username, Some Templates.templatesUser.Username) }
-
             let getComponent () =
                 React.fragment [
                     (React.memo
@@ -50,9 +47,19 @@ module Router =
                         ]
                 ]
 
+            let initialSetter (setter: CallbackMethods) =
+                promise { setter.set (Atoms.username, Some Templates.templatesUser.Username) }
+
+            let initialize () =
+                promise {
+                    let subject, setter = getComponent () |> Setup.render
+                    do! RTL.waitFor (initialSetter (setter.current ()))
+                    return subject, setter
+                }
 
             let setView (setter: CallbackMethods) (view: View.View) =
-                promise { setter.set (Atoms.User.view Templates.templatesUser.Username, view) }
+                RTL.act (fun () -> setter.set (Atoms.User.view Templates.templatesUser.Username, view))
+                RTL.waitFor id
 
             let expectView (setter: CallbackMethods) (expected: View.View) =
                 promise {
@@ -89,8 +96,7 @@ module Router =
                 promise {
                     do! [||] |> expectUrl
 
-                    let _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter.current ())
+                    let! _subject, setter = initialize ()
 
                     do!
                         [|
@@ -106,8 +112,7 @@ module Router =
             Jest.test (
                 "navigating from state",
                 promise {
-                    let _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter.current ())
+                    let! _subject, setter = initialize ()
 
                     do! setView (setter.current ()) View.View.BulletJournal
 
@@ -125,8 +130,7 @@ module Router =
             Jest.test (
                 "navigating from url (logged in)",
                 promise {
-                    let _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter.current ())
+                    let! _subject, setter = initialize ()
 
                     [|
                         "view"
@@ -141,9 +145,10 @@ module Router =
             Jest.test (
                 "navigating from url (not logged in)",
                 promise {
-                    let _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter.current ())
-                    setter.current().set (Atoms.username, None)
+                    let! _subject, setter = initialize ()
+
+                    RTL.act (fun () -> (setter.current ()).set (Atoms.username, None))
+                    do! RTL.waitFor id
 
                     [|
                         "view"
@@ -169,8 +174,7 @@ module Router =
                     |]
                     |> navigate
 
-                    let _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter.current ())
+                    let! _subject, setter = initialize ()
 
                     do!
                         [|
@@ -193,9 +197,10 @@ module Router =
                     |]
                     |> navigate
 
-                    let _subject, setter = getComponent () |> Setup.render
-                    do! initialSetter (setter.current ())
-                    (setter.current ()).set (Atoms.username, None)
+                    let! _subject, setter = initialize ()
+
+                    RTL.act (fun () -> (setter.current ()).set (Atoms.username, None))
+                    do! RTL.waitFor id
 
                     do!
                         [|

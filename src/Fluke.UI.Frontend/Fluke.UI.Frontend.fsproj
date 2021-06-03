@@ -102,7 +102,12 @@
         <Content Include="src\index.ts" />
         <Compile Include="src\Tests\Core\ReactErrorBoundary.fs" />
         <Compile Include="src\Tests\Core\Setup.fs" />
-        <Compile Include="src\Tests\CellSelection.test.fs" />
+        <Compile Include="src\Tests\CellSelection\CellSelectionSetup.fs" />
+        <Compile Include="src\Tests\CellSelection\SingleCellToggle.test.fs" />
+        <Compile Include="src\Tests\CellSelection\CtrlPressed.test.fs" />
+        <Compile Include="src\Tests\CellSelection\HorizontalShiftPressed.test.fs" />
+        <Compile Include="src\Tests\CellSelection\VerticalShiftPressed.test.fs" />
+        <Compile Include="src\Tests\CellSelection\BoxSelection.test.fs" />
         <Compile Include="src\Tests\Router.test.fs" />
         <Compile Include="src\Tests\Full.spec.fs" />
         <Content Include="package.json" />
@@ -117,6 +122,7 @@
         <Content Include="paket.references" />
         <Content Include="tsconfig.json" />
         <Content Include="jest.config.js" />
+        <Content Include="jest-setup.ts" />
         <Content Include="cypress.json" />
         <Content Include="static\sounds\tick.wav" />
         <Content Include="static\sounds\ding.wav" />

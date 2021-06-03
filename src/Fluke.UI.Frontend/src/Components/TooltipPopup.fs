@@ -26,12 +26,18 @@ module TooltipPopup =
         let hovered = Listener.useElementHover tooltipContainerRef
 
         let comments =
-            input.Attachments
-            |> List.choose
-                (fun x ->
-                    match x with
-                    | Attachment.Comment (user, comment) -> Some (user, comment)
-                    | _ -> None)
+            React.useMemo (
+                (fun () ->
+                    input.Attachments
+                    |> List.choose
+                        (fun x ->
+                            match x with
+                            | Attachment.Comment (user, comment) -> Some (user, comment)
+                            | _ -> None)),
+                [|
+                    box input.Attachments
+                |]
+            )
 
         match comments with
         | [] -> nothing
@@ -58,7 +64,9 @@ module TooltipPopup =
                                 x.right <- "0"))
 
                 [
-                    if hovered then
+                    if not hovered then
+                        nothing
+                    else
                         Chakra.stack
                             (fun x ->
                                 x.className <- "markdown-container"

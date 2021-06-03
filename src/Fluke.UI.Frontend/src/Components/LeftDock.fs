@@ -21,100 +21,113 @@ module LeftDock =
         let hideTemplates, setHideTemplates = Recoil.useState (Atoms.User.hideTemplates input.Username)
 
         let items =
-            [
-                TempUI.DockType.Settings,
-                {|
-                    Name = "Settings"
-                    Icon = Icons.md.MdSettings
-                    Content =
-                        fun () ->
-                            Settings.Settings
-                                {|
-                                    Username = input.Username
-                                    Props =
-                                        fun x ->
-                                            x.flex <- "1"
-                                            x.overflowY <- "auto"
-                                            x.flexBasis <- 0
-                                |}
-                    RightIcons = []
-                |}
+            React.useMemo (
+                (fun () ->
+                    [
+                        TempUI.DockType.Settings,
+                        {|
+                            Name = "Settings"
+                            Icon = Icons.md.MdSettings
+                            Content =
+                                fun () ->
+                                    Settings.Settings
+                                        {|
+                                            Username = input.Username
+                                            Props =
+                                                fun x ->
+                                                    x.flex <- "1"
+                                                    x.overflowY <- "auto"
+                                                    x.flexBasis <- 0
+                                        |}
+                            RightIcons = []
+                        |}
 
-                TempUI.DockType.Databases,
-                {|
-                    Name = "Databases"
-                    Icon = Icons.fi.FiDatabase
-                    Content =
-                        fun () ->
-                            Databases.Databases
-                                {|
-                                    Username = input.Username
-                                    Props =
-                                        fun x ->
-                                            x.flex <- "1"
-                                            x.overflowY <- "auto"
-                                            x.flexBasis <- 0
-                                |}
-                    RightIcons =
-                        [
-                            DockPanel.DockPanelIcon.Component (
-                                DatabaseFormTrigger.DatabaseFormTrigger
-                                    {|
-                                        Username = input.Username
-                                        DatabaseId = None
-                                        Trigger =
-                                            fun trigger _setter ->
-                                                Tooltip.wrap
-                                                    (str "Add Database")
-                                                    [
-                                                        TransparentIconButton.TransparentIconButton
-                                                            {|
-                                                                Props =
-                                                                    fun x ->
-                                                                        if isTesting then
-                                                                            x?``data-testid`` <- "Add Database"
-
-                                                                        x.icon <- Icons.fi.FiPlus |> Icons.render
-                                                                        x.fontSize <- "17px"
-                                                                        x.onClick <- fun _ -> promise { trigger () }
-                                                            |}
-                                                    ]
-                                    |}
-                            )
-
-                            DockPanel.DockPanelIcon.Menu (
-                                "Options",
-                                Icons.bs.BsThreeDotsVertical |> Icons.render,
+                        TempUI.DockType.Databases,
+                        {|
+                            Name = "Databases"
+                            Icon = Icons.fi.FiDatabase
+                            Content =
+                                fun () ->
+                                    Databases.Databases
+                                        {|
+                                            Username = input.Username
+                                            Props =
+                                                fun x ->
+                                                    x.flex <- "1"
+                                                    x.overflowY <- "auto"
+                                                    x.flexBasis <- 0
+                                        |}
+                            RightIcons =
                                 [
-                                    Chakra.menuOptionGroup
-                                        (fun x ->
-                                            x.``type`` <- "checkbox"
+                                    DockPanel.DockPanelIcon.Component (
+                                        DatabaseFormTrigger.DatabaseFormTrigger
+                                            {|
+                                                Username = input.Username
+                                                DatabaseId = None
+                                                Trigger =
+                                                    fun trigger _setter ->
+                                                        Tooltip.wrap
+                                                            (str "Add Database")
+                                                            [
+                                                                TransparentIconButton.TransparentIconButton
+                                                                    {|
+                                                                        Props =
+                                                                            fun x ->
+                                                                                if isTesting then
+                                                                                    x?``data-testid`` <- "Add Database"
 
-                                            x.value <-
-                                                [|
-                                                    if hideTemplates then yield nameof Atoms.User.hideTemplates
-                                                |]
+                                                                                x.icon <-
+                                                                                    Icons.fi.FiPlus |> Icons.render
 
-                                            x.onChange <-
-                                                fun (checks: string []) ->
-                                                    promise {
-                                                        setHideTemplates (
-                                                            checks
-                                                            |> Array.contains (nameof Atoms.User.hideTemplates)
-                                                        )
-                                                    })
+                                                                                x.fontSize <- "17px"
+
+                                                                                x.onClick <-
+                                                                                    fun _ -> promise { trigger () }
+                                                                    |}
+                                                            ]
+                                            |}
+                                    )
+
+                                    DockPanel.DockPanelIcon.Menu (
+                                        "Options",
+                                        Icons.bs.BsThreeDotsVertical |> Icons.render,
                                         [
-                                            Chakra.menuItemOption
-                                                (fun x -> x.value <- nameof Atoms.User.hideTemplates)
+                                            Chakra.menuOptionGroup
+                                                (fun x ->
+                                                    x.``type`` <- "checkbox"
+
+                                                    x.value <-
+                                                        [|
+                                                            if hideTemplates then yield nameof Atoms.User.hideTemplates
+                                                        |]
+
+                                                    x.onChange <-
+                                                        fun (checks: string []) ->
+                                                            promise {
+                                                                setHideTemplates (
+                                                                    checks
+                                                                    |> Array.contains (nameof Atoms.User.hideTemplates)
+                                                                )
+                                                            })
                                                 [
-                                                    str "Hide Templates"
+                                                    Chakra.menuItemOption
+                                                        (fun x -> x.value <- nameof Atoms.User.hideTemplates)
+                                                        [
+                                                            str "Hide Templates"
+                                                        ]
                                                 ]
                                         ]
+                                    )
                                 ]
-                            )
-                        ]
-                |}
-            ]
+                        |}
+                    ]),
+                [|
+                    box input.Username
+                    box isTesting
+                    box hideTemplates
+                    box setHideTemplates
+                |]
+            )
 
         let itemsMap = items |> Map.ofList
 

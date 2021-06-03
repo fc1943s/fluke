@@ -96,14 +96,15 @@ module Input =
 
         React.useEffect (
             (fun () ->
-                if inputRef.current <> null then
+                match inputRef.current with
+                | null -> ()
+                | _ ->
                     inputRef.current.value <- currentValueString
 
                     if not mounted then
                         if props.atom.IsSome then fireChange ()
 
                         setMounted true
-
                 ),
             [|
                 box fireChange
@@ -277,6 +278,6 @@ module Input =
                                             Children = []
                                         |}
                                 ]
-                        | _ -> ()
+                        | _ -> nothing
                     ]
             ]

@@ -301,7 +301,6 @@ module Recoil =
             wrapAtomPath newAtomPath
         | None -> failwith $"Invalid rawAtomKey: {rawAtomKey}"
 
-
     let getGun () =
         JS.waitForObject
             (fun () ->
@@ -517,6 +516,8 @@ module Recoil =
                 match keys with
                 | Some keys ->
                     let json = Gun.jsonEncode<'TValue> value
+                    //                    printfn $"userEncode json={json} keys={keys}"
+
                     let! encrypted = Gun.sea.encrypt json keys |> Async.AwaitPromise
                     let! signed = Gun.sea.sign encrypted keys |> Async.AwaitPromise
                     //                    JS.log (fun () -> $"userEncode. json={json} encrypted={encrypted} signed={signed}")
@@ -541,10 +542,9 @@ module Recoil =
                                 async {
                                     try
                                         let! decoded =
-                                            if box data = null then
-                                                unbox null |> Async.lift
-                                            else
-                                                userDecode<'TValue3> data
+                                            match box data with
+                                            | null -> unbox null |> Async.lift
+                                            | _ -> userDecode<'TValue3> data
 
                                         //                                        JS.log
 //                                            (fun () ->
@@ -664,9 +664,9 @@ module Recoil =
                     (fun (username: Username, atomKey: string) getter ->
                         let value = getter.get (Atoms.Form.readWriteValue (username, Crypto.getTextGuidHash atomKey))
 
-                        if value = null then
-                            null
-                        else
+                        match value with
+                        | null -> null
+                        | _ ->
                             match Gun.jsonDecode<ReadWriteValue> value with
                             | { Value = Some value } -> value
                             | _ -> null),
@@ -754,20 +754,18 @@ module Recoil =
                 let defaultJsonEncode, defaultJsonDecode = unbox Gun.defaultSerializer
 
                 let newReadWriteValue =
-                    match readWriteValue |> Option.defaultValue null with
-                    | readWriteValue when readWriteValue <> null ->
-                        match inputScope with
-                        | Some (InputScope.ReadWrite (_, jsonDecode)) -> jsonDecode readWriteValue
-                        | _ -> defaultJsonDecode readWriteValue
-                    | _ -> readOnlyValue |> Option.defaultValue (unbox null)
+                    match inputScope, readWriteValue |> Option.defaultValue null with
+                    | _, null -> readOnlyValue |> Option.defaultValue (unbox null)
+                    | Some (InputScope.ReadWrite (_, jsonDecode)), readWriteValue -> jsonDecode readWriteValue
+                    | _ -> defaultJsonDecode readWriteValue
 
                 let setReadWriteValue =
                     if atom.IsSome then
                         (fun newValue ->
                             setReadWriteValue (
-                                if box newValue = null then
-                                    null
-                                else
+                                match box newValue with
+                                | null -> null
+                                | _ ->
                                     match inputScope with
                                     | Some (InputScope.ReadWrite (jsonEncode, _)) -> jsonEncode newValue
                                     | _ -> defaultJsonEncode newValue
@@ -858,8 +856,8 @@ module RecoilGetterExtensions =
                     let! value = this.getPromise readWriteAtom
 
                     match value with
-                    | value when value <> null -> return Gun.jsonDecode<'TValue11> value
-                    | _ -> return! this.getPromise (atom key)
+                    | null -> return! this.getPromise (atom key)
+                    | _ -> return Gun.jsonDecode<'TValue11> value
                 | _ -> return! this.getPromise (atom key)
             }
 
