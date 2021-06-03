@@ -166,10 +166,10 @@ module Auth =
                     elif username = (Templates.templatesUser.Username |> Username.Value) then
                         return Error "Invalid username"
                     else
-                        printfn $"Auth.useSignUp. gun.user() result: {JS.JSON.stringify gunNamespace.``#``}"
+                        printfn $"Auth.useSignUp. gunNamespace={JS.JSON.stringify gunNamespace}"
 
                         let! ack = Gun.createUser gunNamespace.``#`` username password
-                        printfn "Auth.useSignUp. Gun.createUser signUpAck:"
+                        printfn $"Auth.useSignUp. Gun.createUser signUpAck={JS.JSON.stringify ack}"
                         Browser.Dom.console.log ack
 
                         match JS.window id with

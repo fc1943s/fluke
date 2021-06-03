@@ -117,7 +117,7 @@ module JS =
             match obj with
             | Some obj -> return obj
             | None ->
-                Browser.Dom.console.log ("waitForSome: none. waiting...", fn.ToString())
+                Browser.Dom.console.log ("waitForSome: none. waiting...", fn.ToString ())
                 do! sleep 100
                 return! waitForSome fn
         }
@@ -132,3 +132,28 @@ module JS =
                     None
                 else
                     Some obj)
+
+    let download content fileName contentType =
+        let a = Browser.Dom.document.createElement "a"
+
+        let file =
+            Browser.Blob.Blob.Create (
+                [|
+                    content
+                |],
+                { new Browser.Types.BlobPropertyBag with
+                    member _.``type`` = contentType
+                    member _.endings = Browser.Types.BlobEndings.Transparent
+
+                    member _.``type``
+                        with set value = ()
+
+                    member _.endings
+                        with set value = ()
+                }
+            )
+
+        a?href <- Browser.Url.URL.createObjectURL file
+        a?download <- fileName
+        a.click ()
+        a.remove ()

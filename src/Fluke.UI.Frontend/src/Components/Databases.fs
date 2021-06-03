@@ -191,6 +191,66 @@ module Databases =
             <> Templates.templatesUser.Username
             && (getAccess input.Database input.Username) = Some Access.ReadWrite
 
+        let exportDatabase =
+            Recoil.useCallbackRef
+                (fun setter ->
+                    promise {
+                        let! database =
+                            setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.Database.Id))
+
+                        let! taskMetadata = setter.snapshot.getPromise (Selectors.Session.taskMetadata input.Username)
+
+                        let databaseMap =
+                            taskMetadata
+                            |> Seq.map (fun (KeyValue (taskId, metadata)) -> metadata.DatabaseId, taskId)
+                            |> Seq.groupBy fst
+                            |> Map.ofSeq
+                            |> Map.mapValues (Seq.map snd >> Seq.toList)
+
+                        let! taskList =
+                            databaseMap.[database.Id]
+                            |> List.map (fun taskId -> Selectors.Task.task (input.Username, taskId))
+                            |> Recoil.waitForAll
+                            |> setter.snapshot.getPromise
+
+                        let databaseState =
+                            {
+                                Database = database
+                                InformationStateMap =
+                                    taskList
+                                    |> List.map
+                                        (fun task ->
+                                            task.Information,
+                                            {
+                                                Information = task.Information
+                                                Attachments = []
+                                                SortList = []
+                                            })
+                                    |> Map.ofList
+                                TaskStateMap =
+                                    taskList
+                                    |> List.map
+                                        (fun task ->
+                                            task,
+                                            {
+                                                Task = task
+                                                Sessions = []
+                                                Attachments = []
+                                                SortList = []
+                                                CellStateMap = Map.empty
+                                            })
+                                    |> Map.ofList
+                            }
+
+                        let json = databaseState |> Gun.jsonEncode
+
+                        let timestamp =
+                            (FlukeDateTime.FromDateTime DateTime.Now)
+                            |> FlukeDateTime.Stringify
+
+                        JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
+                    })
+
         Menu.Menu
             {|
                 Tooltip = ""
@@ -256,20 +316,6 @@ module Databases =
                                                 ]
                                 |}
 
-                            Chakra.menuItem
-                                (fun x ->
-                                    x.icon <-
-                                        Icons.bs.BsTrash
-                                        |> Icons.renderChakra
-                                            (fun x ->
-                                                x.fontSize <- "13px"
-                                                x.marginTop <- "-1px")
-
-                                    x.onClick <- fun e -> promise { e.preventDefault () })
-                                [
-                                    str "Delete Database"
-                                ]
-
                         Chakra.menuItem
                             (fun x ->
                                 x.icon <-
@@ -283,6 +329,34 @@ module Databases =
                                 x.onClick <- fun e -> promise { e.preventDefault () })
                             [
                                 str "Clone Database"
+                            ]
+
+                        Chakra.menuItem
+                            (fun x ->
+                                x.icon <-
+                                    Icons.bi.BiExport
+                                    |> Icons.renderChakra
+                                        (fun x ->
+                                            x.fontSize <- "13px"
+                                            x.marginTop <- "-1px")
+
+                                x.onClick <- fun _ -> exportDatabase ())
+                            [
+                                str "Export Database"
+                            ]
+
+                        Chakra.menuItem
+                            (fun x ->
+                                x.icon <-
+                                    Icons.bs.BsTrash
+                                    |> Icons.renderChakra
+                                        (fun x ->
+                                            x.fontSize <- "13px"
+                                            x.marginTop <- "-1px")
+
+                                x.onClick <- fun e -> promise { e.preventDefault () })
+                            [
+                                str "Delete Database"
                             ]
                     ]
                 MenuListProps = fun _ -> ()

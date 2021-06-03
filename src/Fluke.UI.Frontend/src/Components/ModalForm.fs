@@ -27,7 +27,18 @@ module ModalForm =
 
         let setter = Recoil.useCallbackRef id
 
-        input.Trigger (fun () -> JS.setTimeout onTrigger 0 |> ignore) setter
+        let content =
+            React.useMemo (
+                (fun () -> input.Trigger (fun () -> JS.setTimeout onTrigger 0 |> ignore) setter),
+                [|
+                    box input
+                    box onTrigger
+                    box setter
+                |]
+            )
+
+        content
+
 
     [<ReactComponent>]
     let ModalForm
@@ -42,6 +53,17 @@ module ModalForm =
             Recoil.useState (Atoms.User.formVisibleFlag (input.Username, input.TextKey))
 
         let setter = Recoil.useCallbackRef id
+
+        let content =
+            React.useMemo (
+                (fun () -> input.Content (formIdFlag, (fun () -> setFormVisibleFlag false), setter)),
+                [|
+                    box formIdFlag
+                    box input
+                    box setFormVisibleFlag
+                    box setter
+                |]
+            )
 
         Modal.Modal
             {|
@@ -62,7 +84,7 @@ module ModalForm =
                                     Chakra.box
                                         (fun x -> if isTesting then x?``data-testid`` <- input.TextKey)
                                         [
-                                            input.Content (formIdFlag, (fun () -> setFormVisibleFlag false), setter)
+                                            content
                                         ]
                                 ])
             |}

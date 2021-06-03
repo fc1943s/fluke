@@ -390,18 +390,6 @@ module State =
                     (fun (_taskId: TaskId) -> Task.Default)
                 )
 
-            //            let rec databaseId =
-//                Recoil.atomFamilyWithProfiling (
-//                    $"{nameof atomFamily}/{nameof Task}/{nameof databaseId}",
-//                    (fun (_username: Username, _taskId: TaskId) -> Database.Default.Id),
-//                    (fun (username: Username, taskId: TaskId) ->
-//                        [
-//                            Recoil.gunEffect
-//                                (Recoil.AtomFamily (username, databaseId, (username, taskId)))
-//                                (taskIdIdentifier taskId)
-//                        ])
-//                )
-
             let rec information =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof information}",
@@ -535,31 +523,6 @@ module State =
                                 (cellIdentifier taskId dateId)
                         ])
                 )
-
-    //        module rec Session =
-//            let rec databaseIdSet =
-//                Recoil.atomFamilyWithProfiling (
-//                    $"{nameof atomFamily}/{nameof Session}/{nameof databaseIdSet}",
-//                    (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
-//                    (fun (username: Username) ->
-//                        [
-//                            Recoil.gunKeyEffect
-//                                (Recoil.AtomFamily (username, Database.name, (username, Database.Default.Id)))
-//                                (Recoil.parseValidGuid DatabaseId)
-//                        ])
-//                )
-//
-//            let rec taskIdSet =
-//                Recoil.atomFamilyWithProfiling (
-//                    $"{nameof atomFamily}/{nameof Session}/{nameof taskIdSet}",
-//                    (fun (_username: Username) -> Set.empty: Set<TaskId>),
-//                    (fun (username: Username) ->
-//                        [
-//                            Recoil.gunKeyEffect
-//                                (Recoil.AtomFamily (username, Task.name, (username, Task.Default.Id)))
-//                                (Recoil.parseValidGuid TaskId)
-//                        ])
-//                )
 
 
     module Selectors =
@@ -1224,7 +1187,6 @@ module State =
                                                         (fun dateId ->
                                                             match dateId with
                                                             | DateId referenceDay as dateId ->
-                                                                //                                                    let taskId = getter.get task.Id
                                                                 let status =
                                                                     getter.get (Cell.status (username, taskId, dateId))
 

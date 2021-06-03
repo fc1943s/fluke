@@ -14,13 +14,25 @@ module Popover =
 
         let initialFocusRef = React.useRef ()
 
+        let content =
+            React.useMemo (
+                (fun () ->
+                    React.fragment [
+                        yield! input.Body (disclosure, initialFocusRef)
+                    ]),
+                [|
+                    box disclosure
+                    box input
+                    box initialFocusRef
+                |]
+            )
+
         Chakra.box
             (fun _ -> ())
             [
                 Chakra.popover
                     (fun x ->
                         x.isLazy <- true
-                        x.placement <- "top"
                         x.closeOnBlur <- true
                         x.isOpen <- disclosure.isOpen
                         x.onOpen <- disclosure.onOpen
@@ -46,9 +58,10 @@ module Popover =
                                         x.padding <- "10px"
                                         x.backgroundColor <- "gray.13"
                                         x.maxWidth <- "95vw"
+                                        x.maxHeight <- "95vh"
                                         x.overflow <- "auto")
                                     [
-                                        yield! input.Body (disclosure, initialFocusRef)
+                                        content
                                     ]
                             ]
                     ]

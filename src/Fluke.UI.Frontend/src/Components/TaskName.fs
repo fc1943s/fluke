@@ -30,6 +30,8 @@ module TaskName =
                 x.position <- "relative"
                 x.height <- $"{cellSize}px"
                 x.lineHeight <- $"{cellSize}px"
+                x.paddingLeft <- "5px"
+                x.paddingRight <- "5px"
                 x.zIndex <- if hovered then 1 else 0)
             [
                 Chakra.box
