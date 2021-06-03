@@ -9,10 +9,10 @@ open Fluke.UI.Frontend.Bindings
 module Main =
     importSideEffects "@fontsource/roboto-condensed/300.css"
 
-    importAll "../static/index.tsx"
-    importAll "../static/index.ts"
-    importAll "../static/index.jsx"
-    importAll "../static/index.js"
+    importAll "../public/index.tsx"
+    importAll "../public/index.ts"
+    importAll "../public/index.jsx"
+    importAll "../public/index.js"
 
     exportDefault (
         let cmp = React.strictMode [ App.App true ]

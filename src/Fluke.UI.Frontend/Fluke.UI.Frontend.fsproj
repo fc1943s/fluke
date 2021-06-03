@@ -110,6 +110,20 @@
         <Compile Include="src\Tests\CellSelection\BoxSelection.test.fs" />
         <Compile Include="src\Tests\Router.test.fs" />
         <Compile Include="src\Tests\Full.spec.fs" />
+        <Content Include="public\sounds\tick.wav" />
+        <Content Include="public\sounds\ding.wav" />
+        <Content Include="public\icons\48x48.png" />
+        <Content Include="public\icons\32x32.png" />
+        <Content Include="public\icons\16x16.png" />
+        <Content Include="public\icons\128x128.png" />
+        <Content Include="public\manifest.json" />
+        <Content Include="public\index.tsx" />
+        <Content Include="public\index.ts" />
+        <Content Include="public\index.jsx" />
+        <Content Include="public\index.js" />
+        <Content Include="public\index.html" />
+        <Content Include="public\favicon.ico" />
+        <Content Include="public\404.html" />
         <Content Include="package.json" />
         <Content Include="gatsby-config.js" />
         <Content Include="_babel.config.json" />
@@ -124,20 +138,6 @@
         <Content Include="jest.config.js" />
         <Content Include="jest-setup.ts" />
         <Content Include="cypress.json" />
-        <Content Include="static\sounds\tick.wav" />
-        <Content Include="static\sounds\ding.wav" />
-        <Content Include="static\icons\48x48.png" />
-        <Content Include="static\icons\32x32.png" />
-        <Content Include="static\icons\16x16.png" />
-        <Content Include="static\icons\128x128.png" />
-        <Content Include="static\manifest.json" />
-        <Content Include="static\index.tsx" />
-        <Content Include="static\index.ts" />
-        <Content Include="static\index.jsx" />
-        <Content Include="static\index.js" />
-        <Content Include="static\index.html" />
-        <Content Include="static\favicon.ico" />
-        <Content Include="static\404.html" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />

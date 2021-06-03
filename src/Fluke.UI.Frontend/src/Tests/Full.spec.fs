@@ -9,7 +9,7 @@ module Full =
 
     module Cy2 =
         let typeText<'T> (text: string) =
-            Cy.wait 50
+            Cy.wait 200
             Cy.focused().clear () |> ignore
             Cy.focused().should "have.value" "" null
 

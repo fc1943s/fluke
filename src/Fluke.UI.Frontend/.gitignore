@@ -4,7 +4,6 @@ cypress-examples/
 cypress/videos/
 
 www/
-public/
 
 # Cordova
 /plugins/
