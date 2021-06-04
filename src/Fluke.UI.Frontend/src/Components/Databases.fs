@@ -195,6 +195,7 @@ module Databases =
                         let! database =
                             setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.Database.Id))
 
+                        let! dateSequence = setter.snapshot.getPromise Selectors.dateSequence
                         let! taskMetadata = setter.snapshot.getPromise (Selectors.Session.taskMetadata input.Username)
 
                         let databaseMap =
@@ -203,6 +204,40 @@ module Databases =
                             |> Seq.groupBy fst
                             |> Map.ofSeq
                             |> Map.mapValues (Seq.map snd >> Seq.toList)
+
+                        let dateTaskPairs =
+                            dateSequence
+                            |> List.map DateId
+                            |> List.collect
+                                (fun dateId ->
+                                    databaseMap.[database.Id]
+                                    |> List.map (fun taskId -> dateId, taskId))
+
+                        let! statusList =
+                            dateTaskPairs
+                            |> List.map (fun (dateId, taskId) -> Selectors.Cell.status (input.Username, taskId, dateId))
+                            |> Recoil.waitForAll
+                            |> setter.snapshot.getPromise
+
+                        let taskCellStateMap =
+                            dateTaskPairs
+                            |> List.zip statusList
+                            |> List.filter
+                                (function
+                                | UserStatus _, _ -> true
+                                | _ -> false)
+                            |> List.map
+                                (fun (status, (dateId, taskId)) ->
+                                    taskId,
+                                    (dateId,
+                                     {
+                                         Status = status
+                                         Attachments = []
+                                         Sessions = []
+                                     }))
+                            |> List.groupBy fst
+                            |> Map.ofList
+                            |> Map.mapValues (List.map snd >> Map.ofList)
 
                         let! taskList =
                             databaseMap.[database.Id]
@@ -234,7 +269,10 @@ module Databases =
                                                 Sessions = []
                                                 Attachments = []
                                                 SortList = []
-                                                CellStateMap = Map.empty
+                                                CellStateMap =
+                                                    taskCellStateMap
+                                                    |> Map.tryFind task.Id
+                                                    |> Option.defaultValue Map.empty
                                             })
                                     |> Map.ofList
                             }
