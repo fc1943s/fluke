@@ -77,7 +77,7 @@ module GunPeers =
             add_instances [
                 containerInstance {
                     name (nameof containerInstance)
-                    image "node:15.11-alpine"
+                    image "node:16.2-alpine"
 
                     env_vars [
                         "GUN_FILE", $"/data/{fileShareId}/{containerId}-radata"
@@ -90,6 +90,8 @@ module GunPeers =
                         let (Port port) = serverPort
                         uint16 port
                     ]
+                    cpu_cores 1
+                    memory 0.5<Gb>
                     // It needs a couple cores or the world may lag with a few players
                     //                    cpu_cores 2
                     // Give it enough memory for the JVM

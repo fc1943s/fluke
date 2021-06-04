@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Feliz.Recoil
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
@@ -10,17 +11,38 @@ open Fluke.Shared
 
 
 module HomeScreen =
+    let menuOptionGroup atom label =
+        let value, setValue = Recoil.useState atom
 
-    open Domain.UserInteraction
+        Chakra.menuOptionGroup
+            (fun x ->
+                x.``type`` <- "checkbox"
+
+                x.value <-
+                    [|
+                        if value then yield atom.key
+                    |]
+
+                x.onChange <- fun (checks: string []) -> promise { setValue (checks |> Array.contains atom.key) })
+            [
+                Chakra.menuItemOption
+                    (fun x ->
+                        x.value <- atom.key
+                        x.marginTop <- "2px"
+                        x.marginBottom <- "2px")
+                    [
+                        str label
+                    ]
+            ]
+
 
     [<ReactComponent>]
     let HomeScreen (input: {| Username: Username |}) =
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
 
-        let hideSchedulingOverlay, setHideSchedulingOverlay =
-            Recoil.useState (Atoms.User.hideSchedulingOverlay input.Username)
-
         let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
+
+        let showTaskSearch = Recoil.useValue (Atoms.User.showTaskSearch input.Username)
 
         let tabs =
             [
@@ -141,42 +163,25 @@ module HomeScreen =
                                                         |}
                                                 Menu =
                                                     [
-                                                        Chakra.menuOptionGroup
-                                                            (fun x ->
-                                                                x.``type`` <- "checkbox"
-
-                                                                x.value <-
-                                                                    [|
-                                                                        if hideSchedulingOverlay then
-                                                                            yield
-                                                                                nameof Atoms.User.hideSchedulingOverlay
-                                                                    |]
-
-                                                                x.onChange <-
-                                                                    fun (checks: string []) ->
-                                                                        promise {
-                                                                            setHideSchedulingOverlay (
-                                                                                checks
-                                                                                |> Array.contains (
-                                                                                    nameof
-                                                                                        Atoms.User.hideSchedulingOverlay
-                                                                                )
-                                                                            )
-                                                                        })
-                                                            [
-                                                                Chakra.menuItemOption
-                                                                    (fun x ->
-                                                                        x.value <-
-                                                                            nameof Atoms.User.hideSchedulingOverlay)
-                                                                    [
-                                                                        str "Hide Scheduling Overlay"
-                                                                    ]
-                                                            ]
+                                                        menuOptionGroup
+                                                            (Atoms.User.hideSchedulingOverlay input.Username)
+                                                            "Hide Scheduling Overlay"
+                                                        menuOptionGroup
+                                                            (Atoms.User.showTaskSearch input.Username)
+                                                            "Show Task Search"
                                                     ]
                                                 MenuListProps = fun _ -> ()
                                             |}
                                     ]
                             ]
+
+                        if showTaskSearch then
+                            Input.LeftIconInput
+                                (Icons.bs.BsSearch |> Icons.render)
+                                (fun x ->
+                                    x.atom <- Some (Recoil.Atom (input.Username, Atoms.User.taskSearch input.Username)))
+                        else
+                            nothing
 
                         Chakra.tabPanels
                             (fun x ->

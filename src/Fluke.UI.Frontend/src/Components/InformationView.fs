@@ -40,7 +40,9 @@ module InformationView =
                                     |> List.map
                                         (fun (informationKindName, groups) ->
                                             Chakra.flex
-                                                (fun x -> x.direction <- "column")
+                                                (fun x ->
+                                                    x.direction <- "column"
+                                                    x.flex <- "1")
                                                 [
                                                     Chakra.box
                                                         (fun x ->

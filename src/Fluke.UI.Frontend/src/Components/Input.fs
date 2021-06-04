@@ -104,8 +104,7 @@ module Input =
                     if not mounted then
                         if props.atom.IsSome then fireChange ()
 
-                        setMounted true
-                ),
+                        setMounted true),
             [|
                 box fireChange
                 box props
@@ -150,7 +149,9 @@ module Input =
                     })
 
         Chakra.stack
-            (fun x -> x.spacing <- "5px")
+            (fun x ->
+                x.spacing <- "5px"
+                x.flex <- "1")
             [
                 match props.label with
                 | null -> nothing
@@ -164,7 +165,9 @@ module Input =
                         |}
 
                 Chakra.box
-                    (fun x -> x.position <- "relative")
+                    (fun x ->
+                        x.position <- "relative"
+                        x.flex <- "1")
                     [
                         Chakra.input
                             (fun x ->
@@ -181,6 +184,10 @@ module Input =
 
                                 props.width
                                 |> Chakra.mapIfSet (fun value -> x.width <- value)
+                                |> ignore
+
+                                props.paddingLeft
+                                |> Chakra.mapIfSet (fun value -> x.paddingLeft <- value)
                                 |> ignore
 
                                 x.onKeyDown <-
@@ -280,4 +287,22 @@ module Input =
                                 ]
                         | _ -> nothing
                     ]
+            ]
+
+    let inline LeftIconInput icon props =
+        Chakra.inputGroup
+            (fun x -> x.display <- "flex")
+            [
+                Chakra.inputLeftElement
+                    (fun _ -> ())
+                    [
+                        icon
+                    ]
+
+                Input
+                    (fun x ->
+                        x.paddingLeft <- "25px"
+
+                        props x)
+
             ]

@@ -186,10 +186,7 @@ module Databases =
                    Database: Database
                    Disabled: bool |})
         =
-        let isReadWrite =
-            input.Database.Owner
-            <> Templates.templatesUser.Username
-            && (getAccess input.Database input.Username) = Some Access.ReadWrite
+        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite input.Database.Id)
 
         let exportDatabase =
             Recoil.useCallbackRef

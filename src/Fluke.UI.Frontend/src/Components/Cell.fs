@@ -26,7 +26,7 @@ module Cell =
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
         let isTesting = Recoil.useValue Atoms.isTesting
         let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
-        let access = Recoil.useValue (Selectors.Database.access taskMetadata.[input.TaskId].DatabaseId)
+        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite taskMetadata.[input.TaskId].DatabaseId)
         let status, setStatus = Recoil.useState (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
@@ -54,7 +54,7 @@ module Cell =
 
                             if isCurrentCellMenuOpened then
                                 setCellMenuOpened None
-                            elif access = Some Access.ReadWrite then
+                            elif isReadWrite then
                                 setCellMenuOpened (Some (input.TaskId, input.DateId))
 
                     //                gun.get("test").get("test2").put(1)
@@ -92,7 +92,7 @@ module Cell =
                 x.borderColor <- if selected then "#ffffffAA" else "transparent"
                 x.borderWidth <- "1px"
 
-                if access = Some Access.ReadWrite then
+                if isReadWrite then
                     x.cursor <- "pointer"
                     x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
             [

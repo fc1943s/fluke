@@ -217,6 +217,16 @@ module State =
                         ])
                 )
 
+            let rec taskSearch =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof taskSearch}",
+                    (fun (_username: Username) -> ""),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Recoil.AtomFamily (username, taskSearch, username)) []
+                        ])
+                )
+
             let rec cellMenuOpened =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof cellMenuOpened}",
@@ -264,6 +274,16 @@ module State =
                     (fun (username: Username) ->
                         [
                             Recoil.gunEffect (Recoil.AtomFamily (username, hideSchedulingOverlay, username)) []
+                        ])
+                )
+
+            let rec showTaskSearch =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof showTaskSearch}",
+                    (fun (_username: Username) -> false),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Recoil.AtomFamily (username, showTaskSearch, username)) []
                         ])
                 )
 
@@ -642,21 +662,24 @@ module State =
                         })
                 )
 
-            let rec access =
+            let rec isReadWrite =
                 Recoil.selectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Database}/{nameof access}",
+                    $"{nameof selectorFamily}/{nameof Database}/{nameof isReadWrite}",
                     (fun (databaseId: DatabaseId) getter ->
                         let username = getter.get Atoms.username
 
-                        match username with
-                        | Some username ->
-                            let database = getter.get (database (username, databaseId))
+                        let access =
+                            match username with
+                            | Some username ->
+                                let database = getter.get (database (username, databaseId))
 
-                            if database.Owner = Templates.templatesUser.Username then
-                                None
-                            else
-                                getAccess database username
-                        | None -> None)
+                                if database.Owner = Templates.templatesUser.Username then
+                                    None
+                                else
+                                    getAccess database username
+                            | None -> None
+
+                        access = Some Access.ReadWrite)
                 )
 
 
@@ -863,12 +886,24 @@ module State =
                         let view = getter.get (Atoms.User.view username)
                         let position = getter.get Atoms.position
                         let dayStart = getter.get (Atoms.User.dayStart username)
+                        let taskSearch = getter.get (Atoms.User.taskSearch username)
                         let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
 
                         let taskList =
                             selectedTaskIdSet
                             |> Seq.map (fun taskId -> getter.get (Task.task (username, taskId)))
                             |> Seq.toList
+
+                        let taskList =
+                            if taskSearch = "" then
+                                taskList
+                            else
+                                taskList
+                                |> List.filter
+                                    (fun task ->
+                                        taskSearch = ""
+                                        || (task.Name |> TaskName.Value).IndexOf taskSearch
+                                           >= 0)
 
                         let taskStateList =
                             taskList

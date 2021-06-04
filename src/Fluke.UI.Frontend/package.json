@@ -41,7 +41,8 @@
 
     "cordova-requirements": "cordova requirements",
     "emulate-android": "cordova emulate android",
-    "build-android": "yarn build && rm -rf www && cp -r build www && cordova build android --release",
+    "build-android": "yarn build && rm -rf www && cp -r dist www && cordova build android --prod --release -- --keystore ~/.android/debug.keystore",
+    "deploy-android": "adb install -d -r ./platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk",
     "run-android": "cordova run android --device"
   },
   "dependencies": {

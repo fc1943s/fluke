@@ -163,6 +163,8 @@ module Chakra =
                    Icon: obj
                    IconButton: obj
                    Input: obj
+                   InputGroup: obj
+                   InputLeftElement: obj
                    Link: obj
                    Menu: obj
                    MenuButton: obj
@@ -235,6 +237,8 @@ module Chakra =
     let icon<'T> = composeChakraComponent react.Icon
     let iconButton<'T> = composeChakraComponent react.IconButton
     let input<'T> = composeChakraComponent react.Input
+    let inputGroup<'T> = composeChakraComponent react.InputGroup
+    let inputLeftElement<'T> = composeChakraComponent react.InputLeftElement
     let link<'T> = composeChakraComponent react.Link
     let menu<'T> = composeChakraComponent react.Menu
     let menuButton<'T> = composeChakraComponent react.MenuButton
