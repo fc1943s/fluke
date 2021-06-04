@@ -65,9 +65,16 @@ module JS =
             deviceInfo
 
     let inline log fn =
-        if not deviceInfo.GitHubPages
-           && not deviceInfo.IsTesting
-           && not deviceInfo.IsMobile then
+        let debug =
+            match window id with
+            | None -> false
+            | Some window -> window?debug
+
+        if debug
+           || (not deviceInfo.GitHubPages
+               && not deviceInfo.IsTesting
+               && not deviceInfo.IsExtension
+               && not deviceInfo.IsMobile) then
             printfn $"[log] {fn ()}"
         else
             ()

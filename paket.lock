@@ -1,5 +1,5 @@
 STORAGE: NONE
-RESTRICTION: == net5.0
+RESTRICTION: == net6.0
 NUGET
   remote: https://api.nuget.org/v3/index.json
     altcover (8.2.821)
@@ -208,7 +208,7 @@ NUGET
     Fantomas (4.4)
       FSharp.Compiler.Service (>= 38.0.2)
       FSharp.Core (>= 5.0)
-    Farmer (1.5.2)
+    Farmer (1.5.3)
       FSharp.Core (>= 5.0)
     Feliz (1.45)
       Fable.Core (>= 3.1.5)

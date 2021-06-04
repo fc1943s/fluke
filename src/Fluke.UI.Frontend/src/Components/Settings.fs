@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 
+open Fable.Core.JsInterop
 open Fable.React
 open Feliz
 open System
@@ -91,7 +92,16 @@ module Settings =
                                         Props =
                                             fun x ->
                                                 x.isChecked <- debug
-                                                x.onChange <- fun _ -> promise { setDebug (not debug) }
+
+                                                x.onChange <-
+                                                    fun _ ->
+                                                        promise {
+                                                            setDebug (not debug)
+
+                                                            match JS.window id with
+                                                            | Some window -> window?debug <- not debug
+                                                            | None -> ()
+                                                        }
 
                                                 x.children <-
                                                     [

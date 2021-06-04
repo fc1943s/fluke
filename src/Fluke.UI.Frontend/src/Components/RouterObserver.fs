@@ -25,8 +25,8 @@ module RouterObserver =
     type ParsedSegments = { View: View.View option }
 
     let useLog () =
-        let isTesting = true // Recoil.useValue Atoms.isTesting
-        Recoil.useCallbackRef (fun _ (str: string) -> if isTesting then printfn $"{str}")
+        let debug = Recoil.useValue Atoms.debug
+        Recoil.useCallbackRef (fun _ (str: string) -> if debug then printfn $"{str}")
 
     [<ReactComponent>]
     let RouterObserver () =
