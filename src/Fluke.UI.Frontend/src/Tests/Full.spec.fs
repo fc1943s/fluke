@@ -11,7 +11,7 @@ module Full =
         let typeText<'T> (text: string) =
             Cy.wait 200
             Cy.focused().clear () |> ignore
-            Cy.focused().should "have.value" "" null
+            Cy.focused().should "be.empty" null null
 
             text
             |> Seq.iter

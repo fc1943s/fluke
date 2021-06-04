@@ -18094,10 +18094,9 @@ readdirp@~3.5.0:
   dependencies:
     picomatch "^2.2.1"
 
-recoil@~0.3:
+recoil@facebookexperimental/Recoil.git#nightly:
   version "0.3.1"
-  resolved "https://registry.yarnpkg.com/recoil/-/recoil-0.3.1.tgz#40ef544160d19d76e25de8929d7e512eace13b90"
-  integrity sha512-KNA3DRqgxX4rRC8E7fc6uIw7BACmMPuraIYy+ejhE8tsw7w32CetMm8w7AMZa34wzanKKkev3vl3H7Z4s0QSiA==
+  resolved "https://codeload.github.com/facebookexperimental/Recoil/tar.gz/8ae2f956bbfbc7ae89a973872916d3db4e9f176b"
   dependencies:
     hamt_plus "1.0.2"
 

@@ -53,7 +53,7 @@
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
-    "recoil": "~0.3",
+    "recoil": "facebookexperimental/Recoil.git#nightly",
     "recoilize": "~2.0",
 
     "gun": "amark/gun.git#manhattan",
