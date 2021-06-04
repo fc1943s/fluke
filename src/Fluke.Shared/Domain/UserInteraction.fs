@@ -158,22 +158,21 @@ module UserInteraction =
             (this |> FlukeDateTime.DateTime)
             >= (dateToCompare |> FlukeDateTime.DateTime)
 
-        static member inline FromDateTime (date: DateTime) : FlukeDateTime =
-            {
-                Date = FlukeDate.FromDateTime date
-                Time = FlukeTime.FromDateTime date
-            }
-
-        static member inline Create year month day hour minute : FlukeDateTime =
+        static member inline Create (year, month, day, hour, minute) : FlukeDateTime =
             {
                 Date = FlukeDate.Create year month day
                 Time = FlukeTime.Create hour minute
             }
 
+        static member inline Create (date, time) : FlukeDateTime = { Date = date; Time = time }
+
+        static member inline FromDateTime (date: DateTime) : FlukeDateTime =
+            FlukeDateTime.Create (FlukeDate.FromDateTime date, FlukeTime.FromDateTime date)
+
 
     let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position: FlukeDateTime, DateId referenceDay) =
         let dateStart =
-            { Date = referenceDay; Time = dayStart }
+            FlukeDateTime.Create (referenceDay, dayStart)
             |> FlukeDateTime.DateTime
 
         let dateEnd = dateStart.AddDays 1.

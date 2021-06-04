@@ -1,14 +1,12 @@
 namespace Fluke.Shared
 
 open System
+open Domain.Model
+open Domain.UserInteraction
+open Fluke.Shared.Domain.State
 
 
 module Rendering =
-    open Domain.Model
-    open Domain.UserInteraction
-    open Domain.State
-
-
     let getDateSequence (paddingLeft, paddingRight) (cellDates: FlukeDate list) =
 
         let rec dateLoop (date: DateTime) (maxDate: DateTime) =
@@ -50,48 +48,35 @@ module Rendering =
         | StatusCell of CellStatus
         | TodayCell
 
+    let stretchDateSequence position task dateSequence =
+        match dateSequence with
+        | [] -> []
+        | _ ->
+            let firstDate =
+                match position, task.Scheduling with
+                | Some position, Recurrency (Offset offset) ->
+                    let days = RecurrencyOffset.DayCount offset
+
+                    let minDate =
+                        (position |> FlukeDateTime.DateTime)
+                            .AddDays ((-float days) * 2.5)
+                        |> FlukeDate.FromDateTime
+
+                    min (dateSequence |> List.head) minDate
+                | _ -> dateSequence |> List.head
+
+            let lastDate = dateSequence |> List.last
+
+            getDateSequence
+                (0, 0)
+                [
+                    firstDate
+                    lastDate
+                ]
 
     let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) (taskState: TaskState) =
-        //        let convertManualCellStatus cellStatusChange =
-//            match cellStatusChange with
-//            | CellStatusChange.Complete -> Completed
-//            | CellStatusChange.Dismiss -> Dismissed
-//            | CellStatusChange.Postpone until -> Postponed until
-//            | CellStatusChange.Schedule -> ManualPending
-
-        //        let dateId = dateId dayStart position
-//        let cellStatus =
-//            taskState.CellStateMap
-//            |> Map.tryFind dateId
-
-        //        let cellStatusEventsByDateId =
-//            taskUserInteractions
-//            |> List.choose (fun (UserInteraction (user, moment, interaction)) ->
-//                match interaction with
-//                | Cell ({ DateId = (DateId referenceDay) }, CellStatusChange statusChange) ->
-//                    Some (dateId dayStart moment, (user, moment, convertManualCellStatus statusChange))
-//                | _ -> None)
-//            |> Map.ofList
-
-        let firstDateRange, lastDateRange =
-            //            let x x =
-//                let rec loop x = function
-//                    | () -> ()
-//                loop x
-//            let a = x dateSequence
-//            a |> ignore
-
-            let firstDateRange =
-                dateSequence
-                |> List.head
-                |> fun date -> { Date = date; Time = dayStart }
-
-            let lastDateRange =
-                dateSequence
-                |> List.last
-                |> fun date -> { Date = date; Time = dayStart }
-
-            firstDateRange, lastDateRange
+        let firstDateRange = FlukeDateTime.Create (dateSequence.Head, dayStart)
+        let lastDateRange = FlukeDateTime.Create (dateSequence |> List.last, dayStart)
 
         let dateSequenceWithEntries =
             let dates =
@@ -104,19 +89,25 @@ module Rendering =
             match dates with
             | [||] -> dateSequence
             | dates ->
-                [
+                let firstDate =
                     dates
                     |> Array.head
                     |> min (firstDateRange |> FlukeDateTime.DateTime)
+                    |> FlukeDate.FromDateTime
 
+                let lastDate =
                     dates
                     |> Array.last
                     |> max (lastDateRange |> FlukeDateTime.DateTime)
-                ]
-                |> List.map FlukeDate.FromDateTime
-                |> getDateSequence (0, 0)
-            |> List.map (fun date -> { Date = date; Time = dayStart })
+                    |> FlukeDate.FromDateTime
 
+                getDateSequence
+                    (0, 0)
+                    [
+                        firstDate
+                        lastDate
+                    ]
+            |> List.map (fun date -> FlukeDateTime.Create (date, dayStart))
 
         let rec loop renderState =
             function
@@ -168,11 +159,7 @@ module Rendering =
 
                         match taskState.Task.Scheduling with
                         | Recurrency (Offset offset) ->
-                            let days =
-                                match offset with
-                                | Days days -> days
-                                | Weeks weeks -> weeks * 7
-                                | Months months -> months * 28
+                            let days = RecurrencyOffset.DayCount offset
 
                             let renderState =
                                 match renderState with

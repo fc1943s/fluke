@@ -219,3 +219,10 @@ module Model =
             this.Hour > time.Hour
             || this.Hour = time.Hour
                && this.Minute >= time.Minute
+
+    and RecurrencyOffset with
+        static member inline DayCount =
+            function
+            | Days days -> days
+            | Weeks weeks -> weeks * 7
+            | Months months -> months * 28

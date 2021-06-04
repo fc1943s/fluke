@@ -913,6 +913,7 @@ module State =
                                         Task = task
                                         CellStateMap =
                                             dateSequence
+                                            |> Rendering.stretchDateSequence position task
                                             |> List.map
                                                 (fun date ->
                                                     let dateId = DateId date
@@ -1272,7 +1273,7 @@ module State =
                                                                     ])
                                                             |> Sorting.sortLanesByTimeOfDay
                                                                 dayStart
-                                                                { Date = referenceDay; Time = dayStart }
+                                                                (FlukeDateTime.Create (referenceDay, dayStart))
                                                             |> List.indexed
                                                             |> List.map
                                                                 (fun (i, (taskState, _)) -> taskState.Task.Id, i)

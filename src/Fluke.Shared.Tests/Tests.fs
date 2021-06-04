@@ -192,22 +192,20 @@ module Tests =
                     "Lane Sorting"
                     [
 
-                        let (|NoSorting|Frequency|IncomingRecurrency|TimeOfDay|All|) =
+                        let (|NoSorting|IncomingRecurrency|TimeOfDay|All|) =
                             function
-                            | Choice1Of5 _ -> NoSorting
-                            | Choice2Of5 _ -> Frequency
-                            | Choice3Of5 _ -> IncomingRecurrency
-                            | Choice4Of5 _ -> TimeOfDay
-                            | Choice5Of5 _ -> All
+                            | Choice1Of4 _ -> NoSorting
+                            | Choice2Of4 _ -> IncomingRecurrency
+                            | Choice3Of4 _ -> TimeOfDay
+                            | Choice4Of4 _ -> All
 
-                        let noSorting = Choice1Of5 ()
-                        let sortByFrequency = Choice2Of5 ()
-                        let sortByIncomingRecurrency = Choice3Of5 ()
-                        let sortByTimeOfDay = Choice4Of5 ()
-                        let sortByAll = Choice5Of5 ()
+                        let noSorting = Choice1Of4 ()
+                        let sortByIncomingRecurrency = Choice2Of4 ()
+                        let sortByTimeOfDay = Choice3Of4 ()
+                        let sortByAll = Choice4Of4 ()
 
                         let testWithLaneSortingData
-                            (props: {| Sort: Choice<_, _, _, _, _>
+                            (props: {| Sort: Choice<_, _, _, _>
                                        Data: (Task * DslTask list) list
                                        Expected: string list
                                        Position: FlukeDateTime |})
@@ -229,32 +227,42 @@ module Tests =
                                 )
                                 |> mergeDslDataIntoDatabaseState dslData
 
-                            let dateSequence =
+                            let newDateSequence padding =
                                 databaseState.TaskStateMap
                                 |> Map.values
                                 |> Seq.collect (fun taskState -> taskState.CellStateMap |> Map.keys)
                                 |> Seq.toList
                                 |> List.map (fun (DateId referenceDay) -> referenceDay)
-                                |> Rendering.getDateSequence (35, 35)
+                                |> Rendering.getDateSequence padding
 
-                            databaseState.TaskStateMap
-                            |> Map.values
-                            |> Seq.map (Rendering.renderLane templatesUser.DayStart props.Position dateSequence)
-                            |> Seq.toList
-                            |> fun lanes ->
-                                match props.Sort with
-                                | NoSorting -> lanes
-                                | Frequency -> Sorting.sortLanesByFrequency lanes
-                                | IncomingRecurrency ->
-                                    Sorting.sortLanesByIncomingRecurrency templatesUser.DayStart props.Position lanes
-                                | TimeOfDay -> Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position lanes
-                                | All ->
-                                    lanes
-                                    |> Sorting.sortLanesByFrequency
-                                    |> Sorting.sortLanesByIncomingRecurrency templatesUser.DayStart props.Position
-                                    |> Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position //input.TaskOrderList
-                            |> List.map (fun ({ Task = { Name = TaskName name } }, _) -> name)
-                            |> Expect.equal "" props.Expected
+                            let expect dateSequence =
+                                databaseState.TaskStateMap
+                                |> Map.values
+                                |> Seq.map (Rendering.renderLane templatesUser.DayStart props.Position dateSequence)
+                                |> Seq.toList
+                                |> fun lanes ->
+                                    match props.Sort with
+                                    | NoSorting -> lanes
+                                    | IncomingRecurrency ->
+                                        Sorting.sortLanesByIncomingRecurrency
+                                            templatesUser.DayStart
+                                            props.Position
+                                            lanes
+                                    | TimeOfDay ->
+                                        Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position lanes
+                                    | All ->
+                                        lanes
+                                        |> Sorting.sortLanesByFrequency
+                                        |> Sorting.sortLanesByIncomingRecurrency templatesUser.DayStart props.Position
+                                        |> Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position //input.TaskOrderList
+                                |> List.map (fun ({ Task = { Name = TaskName name } }, _) -> name)
+                                |> Expect.equal "" props.Expected
+
+                            let dateSequence1 = newDateSequence (35, 35)
+                            let dateSequence2 = newDateSequence (14, 14)
+
+                            expect dateSequence1
+                            expect dateSequence2
 
                         let databaseMap = getDatabaseMap templatesUser
 
@@ -266,10 +274,10 @@ module Tests =
                                 {|
                                     Sort = noSorting
                                     Position =
-                                        {
-                                            Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 0
-                                        }
+                                        FlukeDateTime.Create (
+                                            FlukeDate.Create 2020 Month.March 10,
+                                            FlukeTime.Create 14 0
+                                        )
                                     Data =
                                         dslTemplate.Tasks
                                         |> List.map (fun templateTask -> templateTask.Task, templateTask.Events)
@@ -293,42 +301,6 @@ module Tests =
                                             "16"
                                             "17"
                                             "18"
-                                        ]
-                                |}
-                        }
-
-                        test "All task types mixed: Sort by Frequency" {
-                            testWithLaneSortingData
-                                {|
-                                    Sort = sortByFrequency
-                                    Position =
-                                        {
-                                            Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 0
-                                        }
-                                    Data =
-                                        dslTemplate.Tasks
-                                        |> List.map (fun templateTask -> templateTask.Task, templateTask.Events)
-                                    Expected =
-                                        [
-                                            "11"
-                                            "16"
-                                            "17"
-                                            "18"
-                                            "04"
-                                            "08"
-                                            "09"
-                                            "10"
-                                            "07"
-                                            "15"
-                                            "13"
-                                            "14"
-                                            "02"
-                                            "06"
-                                            "03"
-                                            "05"
-                                            "01"
-                                            "12"
                                         ]
                                 |}
                         }
@@ -338,10 +310,10 @@ module Tests =
                                 {|
                                     Sort = sortByIncomingRecurrency
                                     Position =
-                                        {
-                                            Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 0
-                                        }
+                                        FlukeDateTime.Create (
+                                            FlukeDate.Create 2020 Month.March 10,
+                                            FlukeTime.Create 14 0
+                                        )
                                     Data =
                                         dslTemplate.Tasks
                                         |> List.map (fun templateTask -> templateTask.Task, templateTask.Events)
@@ -374,10 +346,10 @@ module Tests =
                                 {|
                                     Sort = sortByTimeOfDay
                                     Position =
-                                        {
-                                            Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 0
-                                        }
+                                        FlukeDateTime.Create (
+                                            FlukeDate.Create 2020 Month.March 10,
+                                            FlukeTime.Create 14 0
+                                        )
                                     Data =
                                         dslTemplate.Tasks
                                         |> List.map (fun templateTask -> templateTask.Task, templateTask.Events)
@@ -410,10 +382,10 @@ module Tests =
                                 {|
                                     Sort = sortByAll
                                     Position =
-                                        {
-                                            Date = FlukeDate.Create 2020 Month.March 10
-                                            Time = FlukeTime.Create 14 0
-                                        }
+                                        FlukeDateTime.Create (
+                                            FlukeDate.Create 2020 Month.March 10,
+                                            FlukeTime.Create 14 0
+                                        )
                                     Data =
                                         dslTemplate.Tasks
                                         |> List.map (fun templateTask -> templateTask.Task, templateTask.Events)

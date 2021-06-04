@@ -2,7 +2,7 @@
   <configuration default="false" name="Fluke.Shared.Tests - dotnet test AltCover" type="RunNativeExe" factoryName="Native Executable">
     <option name="EXE_PATH" value="$PROJECT_DIR$/../../../../Program Files/dotnet/dotnet.exe" />
     <option name="PROGRAM_PARAMETERS" value="test /p:AltCover=true -- --opencover --linecover" />
-    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/test/Fluke.Shared.Tests" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/Fluke.Shared.Tests" />
     <option name="PASS_PARENT_ENVS" value="1" />
     <option name="USE_EXTERNAL_CONSOLE" value="0" />
     <method v="2" />
