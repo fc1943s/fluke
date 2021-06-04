@@ -1,17 +1,21 @@
 namespace Fluke.UI.Frontend.Components
 
-open Feliz
+
 open Fable.React
+open Feliz
+open System
 open Feliz.Recoil
 open Fluke.Shared.Domain
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
+open Fluke.Shared.Domain.Model
 
 
 module Settings =
     [<ReactComponent>]
     let rec Settings
-        (input: {| Username: UserInteraction.Username
+        (input: {| Username: Username
                    Props: Chakra.IChakraProps -> unit |})
         =
         let debug, setDebug = Recoil.useState Atoms.debug
@@ -24,11 +28,31 @@ module Settings =
                     [
                         "User",
                         (Chakra.stack
-                            (fun x ->
-                                x.spacing <- "10px"
-                                x.alignItems <- "flex-start")
+                            (fun x -> x.spacing <- "10px")
                             [
                                 ChangeUserPasswordButton.ChangeUserPasswordButton ()
+
+                                Input.Input
+                                    (fun x ->
+                                        x.label <- str "Day Start"
+                                        x.alignSelf <- "flex-start"
+                                        x.placeholder <- "00:00"
+
+                                        x.atom <-
+                                            Some (
+                                                Recoil.AtomFamily (input.Username, Atoms.User.dayStart, input.Username)
+                                            )
+
+                                        x.inputFormat <- Some Input.InputFormat.Time
+                                        x.onFormat <- Some FlukeTime.Stringify
+
+                                        x.onValidate <-
+                                            Some (
+                                                fst
+                                                >> DateTime.Parse
+                                                >> FlukeTime.FromDateTime
+                                                >> Some
+                                            ))
                             ])
 
                         "View",

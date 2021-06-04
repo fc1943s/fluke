@@ -34,7 +34,6 @@ module TaskName =
                 x.ref <- ref
                 x.position <- "relative"
                 x.height <- $"{cellSize}px"
-                x.lineHeight <- $"{cellSize}px"
                 x.zIndex <- if hovered then 1 else 0)
             [
                 Chakra.box
@@ -43,6 +42,7 @@ module TaskName =
                         x.overflow <- "hidden"
                         x.paddingLeft <- "5px"
                         x.paddingRight <- "5px"
+                        x.lineHeight <- $"{cellSize}px"
                         x.backgroundColor <- if hovered then "#333" else null
                         x.whiteSpace <- if not hovered then "nowrap" else null
                         x.textOverflow <- if not hovered then "ellipsis" else null)
@@ -72,26 +72,26 @@ module TaskName =
                             Menu =
                                 [
                                     TaskFormTrigger.TaskFormTrigger
-                                            {|
-                                                Username = input.Username
-                                                DatabaseId = databaseId
-                                                TaskId = Some input.TaskId
-                                                Trigger =
-                                                    fun trigger _setter ->
-                                                        Chakra.menuItem
-                                                            (fun x ->
-                                                                x.icon <-
-                                                                    Icons.bs.BsPen
-                                                                    |> Icons.renderChakra
-                                                                        (fun x ->
-                                                                            x.fontSize <- "13px"
-                                                                            x.marginTop <- "-1px")
+                                        {|
+                                            Username = input.Username
+                                            DatabaseId = databaseId
+                                            TaskId = Some input.TaskId
+                                            Trigger =
+                                                fun trigger _setter ->
+                                                    Chakra.menuItem
+                                                        (fun x ->
+                                                            x.icon <-
+                                                                Icons.bs.BsPen
+                                                                |> Icons.renderChakra
+                                                                    (fun x ->
+                                                                        x.fontSize <- "13px"
+                                                                        x.marginTop <- "-1px")
 
-                                                                x.onClick <- fun _ -> promise { trigger () })
-                                                            [
-                                                                str "Edit Task"
-                                                            ]
-                                            |}
+                                                            x.onClick <- fun _ -> promise { trigger () })
+                                                        [
+                                                            str "Edit Task"
+                                                        ]
+                                        |}
 
                                     Chakra.menuItem
                                         (fun x ->

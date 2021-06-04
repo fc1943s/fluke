@@ -25,7 +25,7 @@ module RouterObserver =
     type ParsedSegments = { View: View.View option }
 
     let useLog () =
-        let isTesting = false // Recoil.useValue Atoms.isTesting
+        let isTesting = true // Recoil.useValue Atoms.isTesting
         Recoil.useCallbackRef (fun _ (str: string) -> if isTesting then printfn $"{str}")
 
     [<ReactComponent>]
@@ -67,8 +67,15 @@ module RouterObserver =
 
         let step, setStep = React.useState Steps.Start
 
-        let currentSegments, setCurrentSegments = React.useState (Router.currentPath ())
+        let currentSegments, setCurrentSegments =
+            React.useState (
+                match Router.currentPath () with
+                | [ path ] when path.Contains ".htm" -> []
+                | path -> path
+            )
+
         let initialSegments, _ = React.useState currentSegments
+
         let restoringInitialSegments, setRestoringInitialSegments = React.useState false
 
         let parseSegments =

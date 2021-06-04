@@ -161,16 +161,6 @@ module DatabaseForm =
                             (fun x ->
                                 x.autoFocus <- true
                                 x.label <- str "Name"
-
-                                x.hint <-
-                                    Some (
-                                        Chakra.box
-                                            (fun _ -> ())
-                                            [
-                                                str "Documentation"
-                                            ]
-                                    )
-
                                 x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
 
                                 x.atom <-
@@ -189,17 +179,7 @@ module DatabaseForm =
 
                         Input.Input
                             (fun x ->
-                                x.label <- str "Day starts at"
-
-                                x.hint <-
-                                    Some (
-                                        Chakra.box
-                                            (fun _ -> ())
-                                            [
-                                                str "Documentation"
-                                            ]
-                                    )
-
+                                x.label <- str "Day Start"
                                 x.placeholder <- "00:00"
 
                                 x.atom <-
