@@ -8,18 +8,18 @@ module Full =
     open Fluke.UI.Frontend.Components
 
     module Cy2 =
-        let typeText<'T> (text: string) =
-            Cy.wait 250
-            Cy.focused().clear () |> ignore
-            Cy.focused().should "be.empty" null null
+        let typeText (fn: unit -> Cy.Chainable2<_>) (text: string) =
+            Cy.wait 200
+            fn().clear () |> ignore
+            fn().should "be.empty" null null
 
             text
             |> Seq.iter
                 (fun letter ->
                     Cy.wait 200
-                    Cy.focused().``type`` (string letter) |> ignore)
+                    fn().``type`` (string letter) |> ignore)
 
-            Cy.focused().should "have.value" text null
+            fn().should "have.value" text null
 
         let waitFocus selector wait =
             Cy.wait 50
@@ -28,6 +28,14 @@ module Full =
             match wait with
             | Some ms -> Cy.wait ms
             | None -> ()
+
+        let selectorTypeText selector text wait =
+            waitFocus selector wait
+            typeText (fun () -> Cy.get selector) text
+
+        let selectorFocusTypeText selector text =
+                    Cy.get(selector).focus ()
+                    typeText (fun () -> Cy.get selector) text
 
         let clickTextWithinSelector selector text =
             Cy
@@ -70,24 +78,15 @@ module Full =
 
                     Cy.focused().click None |> ignore
 
-                    Cy2.waitFocus "input[placeholder=Username]" None
-                    Cy2.typeText username
-
-                    Cy.get("input[placeholder=Password]").focus ()
-                    Cy2.typeText password
-
+                    Cy2.selectorTypeText "input[placeholder=Username]" username None
+                    Cy2.selectorFocusTypeText "input[placeholder=Password]" password
                     Cy2.clickText "Login"
                     Cy2.waitFor "Wrong user or password" None
 
                     Cy.wait 250
 
                     Cy2.clickText "Register"
-
-                    Cy
-                        .get("input[placeholder='Confirm Password']")
-                        .focus ()
-
-                    Cy2.typeText password
+                    Cy2.selectorFocusTypeText "input[placeholder='Confirm Password']" password
                     Cy2.clickText "Confirm"
                     Cy2.waitFor "User registered successfully" None
 
@@ -95,8 +94,7 @@ module Full =
                     Cy2.waitFor "Lane Rendering" (Some {| timeout = timeout |})
 
                     Cy2.clickSelector "[data-testid='Add Database']"
-                    Cy2.waitFocus "input[placeholder^=new-database-]" None
-                    Cy2.typeText dbName
+                    Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
                     Cy2.clickText dbName
@@ -112,21 +110,17 @@ module Full =
                     Cy2.clickText "Project"
                     Cy2.clickText "Add Project"
 
-                    Cy2.waitFocus "input[placeholder^='e.g.']" (Some 250)
-                    Cy2.typeText "p1"
+                    Cy2.selectorTypeText "input[placeholder^='e.g. home renovation']" "p1" (Some 250)
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Select..."
                     Cy2.clickText "Add Area"
 
-                    Cy2.waitFocus "input[placeholder^='e.g.']" None
-                    Cy2.typeText "a1"
+                    Cy2.selectorTypeText "input[placeholder^='e.g. chores']" "a1" None
                     Cy2.clickTextWithinSelector "[data-testid='TextKey AreaForm']" "Save"
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Save"
 
                     Cy.wait 800
-                    Cy.get("input[placeholder^=new-task-]").focus ()
-                    Cy2.typeText taskName
-
+                    Cy2.selectorFocusTypeText "input[placeholder^=new-task-]" taskName
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Save"
 
                     (Cy.contains dbName None)
@@ -136,8 +130,7 @@ module Full =
 
                     Cy2.clickText "Edit Database"
 
-                    Cy2.waitFocus "input[placeholder^=new-database-]" None
-                    Cy2.typeText $"{dbName}_edit"
+                    Cy2.selectorTypeText "input[placeholder^=new-database-]" $"{dbName}_edit" None
                     Cy2.clickTextWithinSelector "[data-testid='TextKey DatabaseForm']" "Save"
 
                     Cy2.waitFor "1 of 1 tasks visible" None

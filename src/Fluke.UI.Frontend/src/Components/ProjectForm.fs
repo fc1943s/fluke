@@ -57,7 +57,7 @@ module ProjectForm =
                             (fun x ->
                                 x.autoFocus <- true
                                 x.label <- str "Name"
-                                x.placeholder <- "e.g. home-renovation"
+                                x.placeholder <- "e.g. home renovation"
 
                                 x.value <- projectName |> ProjectName.Value |> Some
                                 x.onChange <- fun (e: KeyboardEvent) -> promise { setProjectName (ProjectName e.Value) }
