@@ -71,8 +71,15 @@ module ViewTabs =
             ]
 
         let tabIndex =
-            tabs
-            |> List.findIndex (fun tab -> tab.View = view)
+            React.useMemo (
+                (fun () ->
+                    tabs
+                    |> List.findIndex (fun tab -> tab.View = view)),
+                [|
+                    box tabs
+                    box view
+                |]
+            )
 
         printfn $"ViewTabs.render. current view: {view}. tabIndex: {tabIndex}"
 
@@ -80,14 +87,7 @@ module ViewTabs =
             (fun x ->
                 x.isLazy <- true
                 x.index <- tabIndex
-
-                x.onChange <-
-                    fun e ->
-                        promise {
-                            let index = e |> box |> unbox
-                            setView tabs.[index].View
-                        }
-
+                x.onChange <- fun e -> promise { setView tabs.[e].View }
                 x.marginLeft <- "4px"
                 x.marginRight <- "4px"
                 x.flexDirection <- "column"
