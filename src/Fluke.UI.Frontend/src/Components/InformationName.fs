@@ -36,6 +36,9 @@ module InformationName =
                             input.Information
                             |> Information.Name
                             |> InformationName.Value
+                            |> function
+                            | "" -> "???"
+                            | x -> x
                         )
                     ]
 

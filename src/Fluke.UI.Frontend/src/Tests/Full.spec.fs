@@ -10,16 +10,17 @@ module Full =
     module Cy2 =
         let typeText<'T> (text: string) =
             Cy.wait 200
-            Cy.focused().clear () |> ignore
-            Cy.focused().should "be.empty" null null
+            let el = Cy.focused ()
+            el.clear () |> ignore
+            el.should "be.empty" null null
 
             text
             |> Seq.iter
                 (fun letter ->
                     Cy.wait 200
-                    Cy.focused().``type`` (string letter) |> ignore)
+                    el.``type`` (string letter) |> ignore)
 
-            Cy.focused().should "have.value" text null
+            el.should "have.value" text null
 
         let waitFocus selector wait =
             Cy.wait 50

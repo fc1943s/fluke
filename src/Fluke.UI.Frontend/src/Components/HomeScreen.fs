@@ -38,11 +38,9 @@ module HomeScreen =
 
     [<ReactComponent>]
     let HomeScreen (input: {| Username: Username |}) =
-        let view, setView = Recoil.useState (Atoms.User.view input.Username)
-
-        let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
-
         let showTaskSearch = Recoil.useValue (Atoms.User.showTaskSearch input.Username)
+        let view, setView = Recoil.useState (Atoms.User.view input.Username)
+        let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
 
         let tabs =
             [

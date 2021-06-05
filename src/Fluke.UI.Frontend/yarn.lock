@@ -3637,10 +3637,10 @@
     lz-string "^1.4.4"
     pretty-format "^26.6.2"
 
-"@testing-library/jest-dom@~5.12":
-  version "5.12.0"
-  resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-5.12.0.tgz#6a5d340b092c44b7bce17a4791b47d9bc2c61443"
-  integrity sha512-N9Y82b2Z3j6wzIoAqajlKVF1Zt7sOH0pPee0sUHXHc5cv2Fdn23r+vpWm0MBBoGJtPOly5+Bdx1lnc3CD+A+ow==
+"@testing-library/jest-dom@~5.13":
+  version "5.13.0"
+  resolved "https://registry.yarnpkg.com/@testing-library/jest-dom/-/jest-dom-5.13.0.tgz#0a365684e2c1159f857f5915be50089fc5657df0"
+  integrity sha512-+jXXTn8GjRnZkJfzG/tqK/2Q7dGlBInR412WE7Aml7CT3wdSpx5dMQC0HOwVQoZ3cNTmQUy8fCVGUV/Zhoyvcw==
   dependencies:
     "@babel/runtime" "^7.9.2"
     "@types/testing-library__jest-dom" "^5.9.1"
@@ -3996,10 +3996,10 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.10.66.tgz#dd035d409df322acc83dff62a602f12a5783bbb3"
   integrity sha512-tktOkFUA4kXx2hhhrB8bIFb5TbwzS4uOhKEmwiD+NoiL0qtP2OQ9mFldbgD4dV1djrlBYP6eBuQZiWjuHUpqFw==
 
-"@types/node@~15.9":
-  version "15.9.0"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-15.9.0.tgz#0b7f6c33ca5618fe329a9d832b478b4964d325a8"
-  integrity sha512-AR1Vq1Ei1GaA5FjKL5PBqblTZsL5M+monvGSZwe6sSIdGiuu7Xr/pNwWJY+0ZQuN8AapD/XMB5IzBAyYRFbocA==
+"@types/node@~15.12":
+  version "15.12.1"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-15.12.1.tgz#9b60797dee1895383a725f828a869c86c6caa5c2"
+  integrity sha512-zyxJM8I1c9q5sRMtVF+zdd13Jt6RU4r4qfhTd7lQubyThvLfx6yYekWSQjGCGV2Tkecgxnlpl/DNlb6Hg+dmEw==
 
 "@types/normalize-package-data@^2.4.0":
   version "2.4.0"
@@ -6962,13 +6962,13 @@ copyfiles@^2.3.0:
     untildify "^4.0.0"
     yargs "^16.1.0"
 
-cordova-android@~10.0.0-nightly.2021.6.3.6d803e2f:
-  version "10.0.0-nightly.2021.6.3.6d803e2f"
-  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-10.0.0-nightly.2021.6.3.6d803e2f.tgz#35604a01bee9a7d374ce8f0014140475680927fa"
-  integrity sha512-HYfnUbTvn1akbeoVbvdQk76LdMouWxDlfqHnUNkU8yJqybQV/tsJHW23juuTHBQid9gkOkx5qFPrhzv85rCP4Q==
+cordova-android@~10.0.0-nightly.2021.6.4.6d803e2f:
+  version "10.0.0-nightly.2021.6.4.6d803e2f"
+  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-10.0.0-nightly.2021.6.4.6d803e2f.tgz#5699798ad2875ef92a2789601fff69aa850bfe8e"
+  integrity sha512-tFlKwoqpFiYJ3T/m/+cYfYjbT9FbqSaVZWDSOd/nPikb3gGBPjJIB8f/R645izQGKUJQrPpTMJq9abkbI7ysaQ==
   dependencies:
     android-versions "^1.6.0"
-    cordova-common "4.0.3-nightly.2021.6.3.5ad1bdbe"
+    cordova-common "4.0.3-nightly.2021.6.4.5ad1bdbe"
     execa "^5.0.0"
     fast-glob "^3.2.5"
     fs-extra "^9.1.0"
@@ -6983,10 +6983,10 @@ cordova-app-hello-world@^5.0.0:
   resolved "https://registry.yarnpkg.com/cordova-app-hello-world/-/cordova-app-hello-world-5.0.0.tgz#4a80460bf666c21a0fb0391d62ae9510f1ed86e9"
   integrity sha512-5My01wsYoeYwS0f/t5Ck52xPm0+2zYJ0SlvxG9vUsndDGtgiP6t/G8upPgWcyDRRz7Rs/50yZuOntmHqmJxccQ==
 
-cordova-common@4.0.3-nightly.2021.6.3.5ad1bdbe:
-  version "4.0.3-nightly.2021.6.3.5ad1bdbe"
-  resolved "https://registry.yarnpkg.com/cordova-common/-/cordova-common-4.0.3-nightly.2021.6.3.5ad1bdbe.tgz#be41d886e49006e6e6e9bc0cef286beb53389d0f"
-  integrity sha512-jezSMmfKbDe1M6zKWXrTi4uRbitG0S9wRFeEJ9E7soVA6z8m7FFh03EbQGPNaVwNXk77HYqzSgFPYLKK33t7ug==
+cordova-common@4.0.3-nightly.2021.6.4.5ad1bdbe:
+  version "4.0.3-nightly.2021.6.4.5ad1bdbe"
+  resolved "https://registry.yarnpkg.com/cordova-common/-/cordova-common-4.0.3-nightly.2021.6.4.5ad1bdbe.tgz#815c8ac674234ecabb943b44ff6e73d670b8930a"
+  integrity sha512-IHLu1bWFGmuBWr5VQFwk0UftpgL03zK4g9tHyhuMYzU69tAY8EEoJrxiy6leq0+Qja3E6bMDptdYLTtbUjlD4w==
   dependencies:
     "@netflix/nerror" "^1.1.3"
     ansi "^0.3.1"
@@ -8606,10 +8606,10 @@ electron-window-state@~5.0:
     jsonfile "^4.0.0"
     mkdirp "^0.5.1"
 
-electron@~14.0.0-beta.2:
-  version "14.0.0-beta.2"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-14.0.0-beta.2.tgz#fdc812e512f4d3f6c937233c630ce7e89fad90e5"
-  integrity sha512-7ufYEeK6lVnxTU6koqrxex8K8BWysQwW2pvYizH4CN+sTq9ZU9WrqdLy3rW/3sUNGbqmbw3Bk5HBvFswN0Q6kg==
+electron@~14.0.0-beta.3:
+  version "14.0.0-beta.3"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-14.0.0-beta.3.tgz#09678dab8a092bc8979df99f968c11192bd8d9c5"
+  integrity sha512-flttm8TT7sX9CyDbSgeWm6H/XjZGbKdZibdZwMdTp/xHzd01GLkmP7CnxGK39sfqCc2IMnHARbXmZRoW6us9rQ==
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^14.6.2"
@@ -18094,9 +18094,10 @@ readdirp@~3.5.0:
   dependencies:
     picomatch "^2.2.1"
 
-recoil@facebookexperimental/Recoil.git#nightly:
+recoil@~0.3:
   version "0.3.1"
-  resolved "https://codeload.github.com/facebookexperimental/Recoil/tar.gz/8ae2f956bbfbc7ae89a973872916d3db4e9f176b"
+  resolved "https://registry.yarnpkg.com/recoil/-/recoil-0.3.1.tgz#40ef544160d19d76e25de8929d7e512eace13b90"
+  integrity sha512-KNA3DRqgxX4rRC8E7fc6uIw7BACmMPuraIYy+ejhE8tsw7w32CetMm8w7AMZa34wzanKKkev3vl3H7Z4s0QSiA==
   dependencies:
     hamt_plus "1.0.2"
 

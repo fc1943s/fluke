@@ -21,7 +21,7 @@ module DebugOverlay =
         Scheduling.useScheduling
             Scheduling.Interval
             1000
-            (fun () ->
+            (fun _ ->
                 promise {
                     if not debug then
                         ()

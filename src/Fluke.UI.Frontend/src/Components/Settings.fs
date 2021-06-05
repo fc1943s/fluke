@@ -96,11 +96,11 @@ module Settings =
                                                 x.onChange <-
                                                     fun _ ->
                                                         promise {
-                                                            setDebug (not debug)
-
                                                             match JS.window id with
-                                                            | Some window -> window?debug <- not debug
+                                                            | Some window -> window?Debug <- not debug
                                                             | None -> ()
+
+                                                            setDebug (not debug)
                                                         }
 
                                                 x.children <-

@@ -924,10 +924,13 @@ module State =
                                                                 getter.get (
                                                                     Atoms.Cell.status (username, task.Id, dateId)
                                                                 )
-                                                            Sessions =
-                                                                getter.get (Atoms.Cell.sessions (task.Id, dateId))
-                                                            Attachments =
-                                                                getter.get (Atoms.Cell.attachments (task.Id, dateId))
+                                                            Sessions = []
+                                                            Attachments = []
+                                                        //
+//                                                                Sessions =
+//                                                                    getter.get (Atoms.Cell.sessions (task.Id, dateId))
+//                                                                Attachments =
+//                                                                    getter.get (Atoms.Cell.attachments (task.Id, dateId))
                                                         }
 
                                                     dateId, cellState)

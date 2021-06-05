@@ -68,7 +68,7 @@ module JS =
         let debug =
             match window id with
             | None -> false
-            | Some window -> window?debug
+            | Some window -> window?Debug
 
         if debug
            || (not deviceInfo.GitHubPages

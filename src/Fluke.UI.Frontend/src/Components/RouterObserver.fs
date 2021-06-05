@@ -9,6 +9,7 @@ open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.Shared
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
@@ -49,6 +50,7 @@ module RouterObserver =
         let sessionRestored, setSessionRestored = Recoil.useState Atoms.sessionRestored
         let username = Recoil.useValue Atoms.username
         let deviceInfo = Recoil.useValue Selectors.deviceInfo
+
         let view, setView = Recoil.useStateKeyDefault Atoms.User.view username TempUI.defaultView
 
         let onKeyDown =
@@ -120,7 +122,7 @@ module RouterObserver =
 
                         match (initialSegments |> parseSegments).View with
                         | Some view -> setView view
-                        | None -> ()
+                        | _ -> ()
 
                         Router.navigatePath (initialSegments |> List.toArray)
                     else
@@ -175,6 +177,7 @@ module RouterObserver =
                     | Steps.Start, { View = Some pathView } ->
                         setStep Steps.Processing
                         setView pathView
+
                         log "RouterObserver. #3"
 
                     | Steps.AwaitingChange, { View = Some pathView } when view <> pathView ->
@@ -188,6 +191,7 @@ module RouterObserver =
                     | Steps.PathChanged, { View = Some pathView } ->
                         setStep Steps.Processing
                         setView pathView
+
                         log "RouterObserver. #6"
 
                     | _ ->
@@ -201,6 +205,8 @@ module RouterObserver =
                     JS.setTimeout (fun () -> setSessionRestored true) 0
                     |> ignore),
             [|
+                box setView
+                box view
                 box pathPrefix
                 box parseSegments
                 box log
@@ -211,8 +217,6 @@ module RouterObserver =
                 box setSessionRestored
                 box currentSegments
                 box username
-                box view
-                box setView
                 box step
                 box setStep
                 box parsedSegments
@@ -229,8 +233,8 @@ module RouterObserver =
                                                                  {|
                                                                      username = username
                                                                      step = step
-                                                                     view = view
                                                                      currentSegments = currentSegments
+                                                                     view = view
                                                                      newSegments = newSegments
                                                                      initialSegments = initialSegments
                                                                      parsedSegments = parsedSegments

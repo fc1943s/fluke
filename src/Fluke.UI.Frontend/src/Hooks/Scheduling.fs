@@ -15,7 +15,7 @@ module Scheduling =
         | Timeout -> JS.setTimeout, JS.clearTimeout
         | Interval -> JS.setInterval, JS.clearInterval
 
-    let useScheduling schedulingType duration (fn: unit -> JS.Promise<unit>) =
+    let useScheduling schedulingType duration (fn: CallbackMethods -> JS.Promise<unit>) =
         let savedCallback = React.useRef fn
 
         React.useEffect (
@@ -26,19 +26,26 @@ module Scheduling =
             |]
         )
 
-        let fn = Recoil.useCallbackRef (fun _ -> promise { do! savedCallback.current () })
+        let mounted, setMounted = React.useState true
+
+        let fn = Recoil.useCallbackRef (fun setter -> promise { if mounted then do! savedCallback.current setter })
 
         React.useEffect (
             (fun () ->
-                let set, clear = schedulingFn schedulingType
+                let setFn, clearFn = schedulingFn schedulingType
 
-                let id = set (fn >> Promise.start) duration
+                let id = setFn (fn >> Promise.start) duration
+
+                setMounted true
 
                 { new IDisposable with
-                    member _.Dispose () = clear id
+                    member _.Dispose () =
+                        setMounted false
+                        clearFn id
                 }),
             [|
                 box fn
+                box setMounted
                 box schedulingType
                 box savedCallback
                 box duration

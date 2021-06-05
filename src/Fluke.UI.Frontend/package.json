@@ -53,7 +53,7 @@
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
-    "recoil": "facebookexperimental/Recoil.git#nightly",
+    "recoil": "~0.3",
     "recoilize": "~2.0",
 
     "gun": "amark/gun.git#manhattan",
@@ -85,13 +85,13 @@
 
     "typescript": "~4.3",
     "ts-node": "~10.0",
-    "@types/node" : "~15.9",
+    "@types/node" : "~15.12",
     "ts2fable" : "~0.8.0-build.615",
 
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "electron": "~14.0.0-beta.2",
+    "electron": "~14.0.0-beta.3",
     "electron-webpack": "~2.8",
     "electron-builder": "~22.10",
 
@@ -114,7 +114,7 @@
     "jest-css-modules": "~2.1",
     "@testing-library/react": "~11.2",
     "@testing-library/user-event": "~13.1",
-    "@testing-library/jest-dom": "~5.12",
+    "@testing-library/jest-dom": "~5.13",
 
     "@babel/core": "~7.14",
     "@babel/preset-env": "~7.14",
@@ -148,7 +148,7 @@
     "concurrently": "~6.2",
 
     "cordova": "~10.0",
-    "cordova-android": "~10.0.0-nightly.2021.6.3.6d803e2f",
+    "cordova-android": "~10.0.0-nightly.2021.6.4.6d803e2f",
     "cordova-ios": "~6.2",
     "cordova-plugin-whitelist": "~1.3"
   },
