@@ -14,6 +14,7 @@ module PositionUpdater =
 
     [<ReactComponent>]
     let PositionUpdater (input: {| Username: Username |}) =
+        let isTesting = Recoil.useValue Atoms.isTesting
         let position, setPosition = Recoil.useState Atoms.position
         let selectedDatabaseIdList = Recoil.useValue (Atoms.User.selectedDatabaseIdList input.Username)
 
@@ -32,14 +33,17 @@ module PositionUpdater =
             Recoil.useCallbackRef
                 (fun _ ->
                     promise {
-                        if not selectedDatabasePositions.IsEmpty then
-                            if pausedPosition.IsNone then
-                                let newPosition = FlukeDateTime.FromDateTime DateTime.Now
+                        match selectedDatabasePositions, pausedPosition with
+                        | [], _ -> if position <> None then setPosition None
+                        | _, None ->
+                            let newPosition = FlukeDateTime.FromDateTime DateTime.Now
 
-                                if Some newPosition <> position then
-                                    printfn $"Updating position newPosition={newPosition |> FlukeDateTime.Stringify}"
-                                    setPosition (Some newPosition)
-                            else if position <> pausedPosition then
+                            if (not isTesting || position.IsNone)
+                               && Some newPosition <> position then
+                                printfn $"Updating position newPosition={newPosition |> FlukeDateTime.Stringify}"
+                                setPosition (Some newPosition)
+                        | _, Some _ ->
+                            if position <> pausedPosition then
                                 printfn
                                     $"Updating position selectedDatabasePositions.[0]={
                                                                                            pausedPosition
@@ -48,8 +52,6 @@ module PositionUpdater =
                                     }"
 
                                 setPosition pausedPosition
-                        elif position <> None then
-                            setPosition None
                     })
 
         React.useEffect (
