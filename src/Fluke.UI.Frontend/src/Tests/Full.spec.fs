@@ -130,6 +130,8 @@ module Full =
                         "a1"
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey AreaForm']" "Save"
+                    Cy.wait 800
+
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Save"
 
                     Cy.wait 800
