@@ -718,6 +718,36 @@ module State =
                                 |> List.tryHead))
                 )
 
+            let rec cellStateMap =
+                Recoil.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Task}/{nameof cellStateMap}",
+                    (fun (username: Username, taskId: TaskId) getter ->
+                        let position = getter.get Atoms.position
+                        let dateSequence = getter.get dateSequence
+                        let scheduling = getter.get (Atoms.Task.scheduling (username, taskId))
+
+                        dateSequence
+                        |> Rendering.stretchDateSequence position scheduling
+                        |> List.map
+                            (fun date ->
+                                let dateId = DateId date
+
+                                let cellState =
+                                    {
+                                        Status = getter.get (Atoms.Cell.status (username, taskId, dateId))
+                                        Sessions = []
+                                        Attachments = []
+                                    //
+//                                                                Sessions =
+//                                                                    getter.get (Atoms.Cell.sessions (task.Id, dateId))
+//                                                                Attachments =
+//                                                                    getter.get (Atoms.Cell.attachments (task.Id, dateId))
+                                    }
+
+                                dateId, cellState)
+                        |> Map.ofList)
+                )
+
             let rec activeSession =
                 Recoil.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof activeSession}",
@@ -911,30 +941,7 @@ module State =
                                 (fun task ->
                                     { TaskState.Default with
                                         Task = task
-                                        CellStateMap =
-                                            dateSequence
-                                            |> Rendering.stretchDateSequence position task
-                                            |> List.map
-                                                (fun date ->
-                                                    let dateId = DateId date
-
-                                                    let cellState =
-                                                        {
-                                                            Status =
-                                                                getter.get (
-                                                                    Atoms.Cell.status (username, task.Id, dateId)
-                                                                )
-                                                            Sessions = []
-                                                            Attachments = []
-                                                        //
-//                                                                Sessions =
-//                                                                    getter.get (Atoms.Cell.sessions (task.Id, dateId))
-//                                                                Attachments =
-//                                                                    getter.get (Atoms.Cell.attachments (task.Id, dateId))
-                                                        }
-
-                                                    dateId, cellState)
-                                            |> Map.ofList
+                                        CellStateMap = getter.get (Task.cellStateMap (username, task.Id))
                                     })
 
                         getSessionData

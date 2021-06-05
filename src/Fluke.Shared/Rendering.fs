@@ -48,12 +48,12 @@ module Rendering =
         | StatusCell of CellStatus
         | TodayCell
 
-    let stretchDateSequence position task dateSequence =
+    let stretchDateSequence position scheduling dateSequence =
         match dateSequence with
         | [] -> []
         | _ ->
             let firstDate =
-                match position, task.Scheduling with
+                match position, scheduling with
                 | Some position, Recurrency (Offset offset) ->
                     let days = RecurrencyOffset.DayCount offset
 
