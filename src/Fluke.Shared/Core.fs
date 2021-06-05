@@ -79,6 +79,9 @@ module Set =
     let toggle value (set: Set<'T>) =
         if set.Contains value then set.Remove value else set.Add value
 
+    let addIf item condition set =
+        if not condition then set else set |> Set.add item
+
 
 
 [<AutoOpen>]

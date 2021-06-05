@@ -5,10 +5,10 @@ open Fable.React
 open Fluke.UI.Frontend.Bindings
 
 
-module LoadingScreen =
+module LoadingSpinner =
 
     [<ReactComponent>]
-    let LoadingScreen () =
+    let LoadingSpinner () =
         Chakra.center
             (fun x -> x.flex <- "1")
             [

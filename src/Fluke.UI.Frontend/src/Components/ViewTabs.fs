@@ -40,7 +40,7 @@ module ViewTabs =
     let ViewTabs (input: {| Username: Username |}) =
         let showTaskSearch = Recoil.useValue (Atoms.User.showTaskSearch input.Username)
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
-        let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
+        let filteredTaskIdList = Recoil.useValueLoadable (Selectors.Session.filteredTaskIdList input.Username)
 
         let tabs, tabIndex =
             React.useMemo (
@@ -197,7 +197,8 @@ module ViewTabs =
                                             x.flex <- "1"
                                             x.overflow <- "auto")
                                         [
-                                            if filteredTaskIdList.IsEmpty then
+                                            match filteredTaskIdList.state () with
+                                            | HasValue [] ->
                                                 Chakra.box
                                                     (fun x ->
                                                         x.padding <- "7px"
@@ -205,8 +206,8 @@ module ViewTabs =
                                                     [
                                                         str "No tasks found. Add tasks in the Databases panel."
                                                     ]
-                                            else
-                                                tab.Content ()
+                                            | HasValue _ -> tab.Content ()
+                                            | _ -> LoadingSpinner.LoadingSpinner ()
                                         ])
                     ]
             ]

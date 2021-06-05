@@ -217,8 +217,49 @@ module RecoilExtensions =
                         | None -> ())
             }
 
+        static member inline asyncSelectorFamilyWithProfiling
+            (
+                atomKey: string,
+                getFn: 'a -> SelectorGetter -> JS.Promise<'T>,
+                ?setFn,
+                ?_cacheImplementation,
+                ?_paramCacheImplementation,
+                ?_dangerouslyAllowMutability
+            ) =
+            selectorFamily {
+                key atomKey
+
+                get
+                    (fun x (getter: SelectorGetter) ->
+                        promise {
+                            let! result = getFn x getter
+                            Profiling.addCount atomKey
+                            return result
+                        })
+
+                set
+                    (fun x y z ->
+                        match setFn with
+                        | Some setFn ->
+                            setFn x y z
+                            Profiling.addCount $"{atomKey} (SET)"
+                        | None -> ())
+            }
+
 
 module Recoil =
+
+    let loadableDefault def (loadable: Loadable<_>) =
+        loadable.valueMaybe () |> Option.defaultValue def
+
+    let useValueLoadableDefault atom def =
+        let value = Recoil.useValueLoadable atom
+        loadableDefault def value
+
+    let useStateLoadableDefault atom def =
+        let value, setValue = Recoil.useStateLoadable atom
+        loadableDefault def value, setValue
+
     let parseValidGuid fn (text: string) =
         match Guid.TryParse text with
         | true, guid when guid = Guid.Empty -> None

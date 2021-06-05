@@ -6,7 +6,6 @@ open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.Tests.Core
 open Fable.React
 open Fluke.UI.Frontend.Hooks
 open Microsoft.FSharp.Core.Operators
@@ -26,16 +25,18 @@ module Setup =
     let handlePromise promise = promise
     //        |> Promise.catch (fun ex -> Fable.Core.JS.console.error (box ex))
 
-    let rootWrapper cmp =
-        React.memo
-            (fun () ->
-                React.strictMode [
-                    Recoil.root [ root.children [ cmp ] ]
+    [<ReactComponent>]
+    let RootWrapper cmp =
+        React.strictMode [
+            Recoil.root [
+                root.children [
+                    React.ReactErrorBoundary.renderCatchFn
+                        (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
+                        (str "error")
+                        cmp
                 ]
-                |> ReactErrorBoundary.renderCatchFn
-                    (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
-                    (str "error"))
-            ()
+            ]
+        ]
 
     let render (cmp: ReactElement) =
         //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
@@ -55,7 +56,7 @@ module Setup =
 
         let subject =
             RTL.render (
-                rootWrapper (
+                RootWrapper (
                     React.fragment [
                         (React.memo
                             (fun () ->

@@ -18,14 +18,14 @@ module TaskName =
     let TaskName (input: {| Username: Username; TaskId: TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
-        let hasSelection = Recoil.useValue (Selectors.Task.hasSelection input.TaskId)
+        let hasSelection = Recoil.useValueLoadableDefault (Selectors.Task.hasSelection input.TaskId) false
         let (TaskName taskName) = Recoil.useValue (Atoms.Task.name (input.Username, input.TaskId))
         let attachments = Recoil.useValue (Atoms.Task.attachments input.TaskId)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let taskMetadata = Recoil.useValueLoadableDefault (Selectors.Session.taskMetadata input.Username) Map.empty
 
-        let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
-        let databaseId = taskMetadata.[input.TaskId].DatabaseId
-        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite databaseId)
+        let isReadWrite =
+            Recoil.useValueLoadableDefault (Selectors.Database.isReadWrite taskMetadata.[input.TaskId].DatabaseId) false
 
         Chakra.flex
             (fun x ->
@@ -74,7 +74,7 @@ module TaskName =
                                     TaskFormTrigger.TaskFormTrigger
                                         {|
                                             Username = input.Username
-                                            DatabaseId = databaseId
+                                            DatabaseId = taskMetadata.[input.TaskId].DatabaseId
                                             TaskId = Some input.TaskId
                                             Trigger =
                                                 fun trigger _setter ->

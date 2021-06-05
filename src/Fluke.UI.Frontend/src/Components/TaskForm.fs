@@ -21,7 +21,7 @@ module TaskForm =
                    TaskId: TaskId
                    OnSave: Task -> JS.Promise<unit> |})
         =
-        let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
+        let taskMetadata = Recoil.useValueLoadableDefault (Selectors.Session.taskMetadata input.Username) Map.empty
 
         let (DatabaseName databaseName) =
             Recoil.useValue (

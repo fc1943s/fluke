@@ -31,27 +31,33 @@ module RootWrapper =
 
         nothing
 
-    let rootWrapper children =
-        React.memo
-            (fun () ->
-                let theme = Theme.useTheme ()
+    [<ReactComponent>]
+    let RootWrapper children =
+        let theme = Theme.useTheme ()
 
-                Recoil.root [
-                    root.init (fun _ -> ())
-                    root.children [
-                        //                        Recoilize.recoilizeDebugger
+        React.strictMode [
+            Recoil.root [
+                root.children [
+
+                    //                        Recoilize.recoilizeDebugger
 //                            {|
 //                                root = Browser.Dom.document.getElementById "root"
 //                            |}
 //                            []
-                        Chakra.provider
+                    React.ReactErrorBoundary.renderCatchFn
+                        (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
+                        (Html.div [
+                            prop.style [ style.color "white" ]
+                            prop.children [ str "error" ]
+                         ])
+                        (Chakra.provider
                             (fun x -> x.theme <- theme)
                             [
                                 PersistenceObserver ()
                                 React.router [
                                     router.children [ yield! children ]
                                 ]
-                            ]
-                    ]
-                ])
-        |> React.bindComponent {|  |} children
+                            ])
+                ]
+            ]
+        ]

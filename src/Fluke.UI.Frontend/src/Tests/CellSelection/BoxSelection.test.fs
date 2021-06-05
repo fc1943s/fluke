@@ -109,5 +109,5 @@ module BoxSelection =
                 |> Map.ofList
                 |> expectSelection setter
         },
-        15000
+        20000
     )

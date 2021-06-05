@@ -193,7 +193,7 @@ module CellSelectionSetup =
                                     let username = Templates.templatesUser.Username |> Username.Value
                                     let! _ = Gun.createUser user username username
                                     let! _ = Gun.authUser gunNamespace.``#`` username username
-                                    RTL.act (fun () -> setUsername (Some Templates.templatesUser.Username))
+                                    do! RTL.waitFor (fun () -> setUsername (Some Templates.templatesUser.Username))
                             }
                             |> Promise.start),
                         [|
@@ -238,6 +238,28 @@ module CellSelectionSetup =
             printfn $"! username={username}"
 
             do! RTL.waitFor (initialSetter (setter.current ()))
+
+            do!
+                RTL.waitFor (
+                    promise {
+                        printfn "wait 2"
+                        do! Promise.sleep 400
+                    }
+                )
+            do!
+                RTL.waitFor (
+                    promise {
+                        printfn "wait 3"
+                        do! Promise.sleep 400
+                    }
+                )
+            do!
+                RTL.waitFor (
+                    promise {
+                        printfn "wait 4"
+                        do! Promise.sleep 400
+                    }
+                )
 
             let! taskMetadata =
                 JS.waitForSome

@@ -110,6 +110,8 @@ module Full =
                         .click None
                     |> ignore
 
+                    Cy.wait 200
+
                     Cy2.clickText "Add Task"
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Select..."

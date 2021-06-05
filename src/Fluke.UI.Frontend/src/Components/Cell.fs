@@ -6,6 +6,7 @@ open Fable.React
 open Fable.Core.JsInterop
 open Feliz
 open Feliz.Recoil
+open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
@@ -25,7 +26,9 @@ module Cell =
         =
 
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+
         let status, setStatus = Recoil.useState (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
+
         let dayStart = Recoil.useValue (Atoms.User.dayStart input.Username)
 
         let postponedUntil =
@@ -212,6 +215,141 @@ overriding any other behavior.
                     ]
             ]
 
+    let useSetCellSelectionMap () =
+        Recoil.useCallbackRef
+            (fun setter (username, newSelection) ->
+                promise {
+                    let! filteredTaskIdList = setter.snapshot.getPromise (Selectors.Session.filteredTaskIdList username)
+                    let! cellSelectionMap = setter.snapshot.getPromise (Selectors.Session.cellSelectionMap username)
+
+                    let operations =
+                        filteredTaskIdList
+                        |> List.collect
+                            (fun taskId ->
+                                let dates =
+                                    cellSelectionMap
+                                    |> Map.tryFind taskId
+                                    |> Option.defaultValue Set.empty
+
+                                let newDates =
+                                    newSelection
+                                    |> Map.tryFind taskId
+                                    |> Option.defaultValue Set.empty
+
+                                let deselect =
+                                    newDates
+                                    |> Set.difference dates
+                                    |> Set.toList
+                                    |> List.map (fun date -> taskId, date, false)
+
+                                let select =
+                                    dates
+                                    |> Set.difference newDates
+                                    |> Set.toList
+                                    |> List.map (fun date -> taskId, date, true)
+
+                                deselect @ select)
+
+                    operations
+                    |> List.iter
+                        (fun (taskId, date, selected) ->
+                            setter.set (Atoms.Cell.selected (username, taskId, DateId date), selected))
+                })
+
+    let useSetSelected () =
+        let setCellSelectionMap = useSetCellSelectionMap ()
+
+        Recoil.useCallbackRef
+            (fun setter (username, taskId, dateId, newValue) ->
+                promise {
+                    let! ctrlPressed = setter.snapshot.getPromise Atoms.ctrlPressed
+                    let! shiftPressed = setter.snapshot.getPromise Atoms.shiftPressed
+
+                    let! newCellSelectionMap =
+                        match shiftPressed, ctrlPressed with
+                        | false, false ->
+                            let newTaskSelection =
+                                if newValue then Set.singleton (dateId |> DateId.Value) else Set.empty
+
+                            [
+                                taskId, newTaskSelection
+                            ]
+                            |> Map.ofList
+                            |> Promise.lift
+                        | false, true ->
+                            promise {
+                                let swapSelection oldSelection taskId date =
+                                    let oldSet =
+                                        oldSelection
+                                        |> Map.tryFind taskId
+                                        |> Option.defaultValue Set.empty
+
+                                    let newSet =
+                                        let fn = if newValue then Set.add else Set.remove
+
+                                        fn date oldSet
+
+                                    oldSelection |> Map.add taskId newSet
+
+                                let! oldSelection =
+                                    setter.snapshot.getPromise (Selectors.Session.cellSelectionMap username)
+
+                                return swapSelection oldSelection taskId (dateId |> DateId.Value)
+                            }
+                        | true, _ ->
+                            promise {
+                                let! filteredTaskIdList =
+                                    setter.snapshot.getPromise (Selectors.Session.filteredTaskIdList username)
+
+                                let! oldCellSelectionMap =
+                                    setter.snapshot.getPromise (Selectors.Session.cellSelectionMap username)
+
+                                let initialTaskIdSet =
+                                    oldCellSelectionMap
+                                    |> Map.toSeq
+                                    |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
+                                    |> Seq.map fst
+                                    |> Set.ofSeq
+                                    |> Set.add taskId
+
+                                let newTaskIdList =
+                                    filteredTaskIdList
+                                    |> List.skipWhile (initialTaskIdSet.Contains >> not)
+                                    |> List.rev
+                                    |> List.skipWhile (initialTaskIdSet.Contains >> not)
+                                    |> List.rev
+
+                                let initialDateList =
+                                    oldCellSelectionMap
+                                    |> Map.values
+                                    |> Set.unionMany
+                                    |> Set.add (dateId |> DateId.Value)
+                                    |> Set.toList
+                                    |> List.sort
+
+                                let dateSet =
+                                    match initialDateList with
+                                    | [] -> []
+                                    | dateList ->
+                                        [
+                                            dateList.Head
+                                            dateList |> List.last
+                                        ]
+                                        |> Rendering.getDateSequence (0, 0)
+                                    |> Set.ofList
+
+                                let newMap =
+                                    newTaskIdList
+                                    |> List.map (fun taskId -> taskId, dateSet)
+                                    |> Map.ofList
+
+                                return newMap
+                            }
+
+
+                    do! setCellSelectionMap (username, newCellSelectionMap)
+                })
+
     [<ReactComponent>]
     let Cell
         (input: {| Username: Username
@@ -223,16 +361,22 @@ overriding any other behavior.
 
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
         let isTesting = Recoil.useValue Atoms.isTesting
-        let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
-        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite taskMetadata.[input.TaskId].DatabaseId)
-        let status = Recoil.useValue (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
+        let taskMetadata = Recoil.useValueLoadableDefault (Selectors.Session.taskMetadata input.Username) Map.empty
+
+        let currentTaskMetadata = taskMetadata |> Map.find input.TaskId
+
+        let isReadWrite =
+            Recoil.useValueLoadableDefault (Selectors.Database.isReadWrite currentTaskMetadata.DatabaseId) false
+
+        let status = Recoil.useValueLoadable (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
-        let showUser = Recoil.useValue (Selectors.Task.showUser (input.Username, input.TaskId))
-        let isToday = Recoil.useValue (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value))
+        let showUser = Recoil.useValueLoadableDefault (Selectors.Task.showUser (input.Username, input.TaskId)) false
+        let isToday = Recoil.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false
 
-        let selected, setSelected =
-            Recoil.useState (Selectors.Cell.selected (input.Username, input.TaskId, input.DateId))
+        let selected = Recoil.useValue (Atoms.Cell.selected (input.Username, input.TaskId, input.DateId))
+
+        let setSelected = useSetSelected ()
 
         let onCellClick =
             Recoil.useCallbackRef
@@ -242,82 +386,89 @@ overriding any other behavior.
                         let! shiftPressed = setter.snapshot.getPromise Atoms.shiftPressed
 
                         if ctrlPressed || shiftPressed then
-                            setSelected (not selected)
+                            do! setSelected (input.Username, input.TaskId, input.DateId, not selected)
                         else
-                            setSelected false
+                            do! setSelected (input.Username, input.TaskId, input.DateId, false)
                     })
 
+        match status.valueMaybe () with
+        | None -> nothing
+        | Some status ->
+            Popover.CustomPopover
+                {|
+                    CloseButton = false
+                    Padding = "3px"
+                    Trigger =
+                        Chakra.center
+                            (fun x ->
+                                if isTesting then
+                                    x?``data-testid`` <- $"cell-{input.TaskId}-{
+                                                                                    (input.DateId
+                                                                                     |> DateId.Value
+                                                                                     |> FlukeDate.DateTime)
+                                                                                        .ToShortDateString ()
+                                    }"
 
-        Popover.CustomPopover
-            {|
-                CloseButton = false
-                Padding = "3px"
-                Trigger =
-                    Chakra.center
-                        (fun x ->
-                            if isTesting then
-                                x?``data-testid`` <- $"cell-{input.TaskId}-{
-                                                                                (input.DateId
-                                                                                 |> DateId.Value
-                                                                                 |> FlukeDate.DateTime)
-                                                                                    .ToShortDateString ()
-                                }"
+                                if isReadWrite then x.onClick <- onCellClick
+                                x.width <- $"{cellSize}px"
+                                x.height <- $"{cellSize}px"
+                                x.lineHeight <- $"{cellSize}px"
 
-                            x.onClick <- onCellClick
-                            x.width <- $"{cellSize}px"
-                            x.height <- $"{cellSize}px"
-                            x.lineHeight <- $"{cellSize}px"
+                                x.backgroundColor <-
+                                    (TempUI.cellStatusColor status)
+                                    + (if isToday then "aa"
+                                       elif input.SemiTransparent then "d9"
+                                       else "")
 
-                            x.backgroundColor <-
-                                (TempUI.cellStatusColor status)
-                                + (if isToday then "aa"
-                                   elif input.SemiTransparent then "d9"
-                                   else "")
+                                x.textAlign <- "center"
 
-                            x.textAlign <- "center"
-                            x.borderColor <- if selected then "#ffffffAA" else "transparent"
-                            x.borderWidth <- "1px"
+                                x.borderColor <- if selected then "#ffffffAA" else "transparent"
 
-                            if isReadWrite then
-                                x.cursor <- "pointer"
-                                x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
-                        [
+                                x.borderWidth <- "1px"
 
-                            CellSessionIndicator.CellSessionIndicator
-                                {|
-                                    Status = status
-                                    Sessions = sessions
-                                |}
+                                if isReadWrite then
+                                    x.cursor <- "pointer"
+                                    x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
+                            [
 
-                            if selected then
-                                nothing
-                            else
-                                CellBorder.CellBorder
+                                CellSessionIndicator.CellSessionIndicator
                                     {|
-                                        Username = input.Username
-                                        Date = input.DateId |> DateId.Value
+                                        Status = status
+                                        Sessions = sessions
                                     |}
 
-                            match showUser, status with
-                            | true, UserStatus (username, _manualCellStatus) ->
-                                CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
-                            | _ -> nothing
+                                if selected then
+                                    nothing
+                                else
+                                    CellBorder.CellBorder
+                                        {|
+                                            Username = input.Username
+                                            Date = input.DateId |> DateId.Value
+                                        |}
 
-                            TooltipPopup.TooltipPopup
-                                {|
-                                    Username = input.Username
-                                    Attachments = attachments
-                                |}
-                        ]
-                Body =
-                    fun (disclosure, _initialFocusRef) ->
-                        [
-                            CellMenu
-                                {|
-                                    Username = input.Username
-                                    TaskId = input.TaskId
-                                    DateId = input.DateId
-                                    OnClose = disclosure.onClose
-                                |}
-                        ]
-            |}
+                                match showUser, status with
+                                | true, UserStatus (username, _manualCellStatus) ->
+                                    CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
+                                | _ -> nothing
+
+                                TooltipPopup.TooltipPopup
+                                    {|
+                                        Username = input.Username
+                                        Attachments = attachments
+                                    |}
+                            ]
+                    Body =
+                        fun (disclosure, _initialFocusRef) ->
+                            [
+                                if isReadWrite then
+                                    CellMenu
+                                        {|
+                                            Username = input.Username
+                                            TaskId = input.TaskId
+                                            DateId = input.DateId
+                                            OnClose = disclosure.onClose
+                                        |}
+                                else
+                                    nothing
+                            ]
+                |}

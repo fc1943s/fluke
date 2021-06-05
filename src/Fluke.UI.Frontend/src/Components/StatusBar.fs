@@ -17,9 +17,12 @@ module StatusBar =
     [<ReactComponent>]
     let StatusBar (input: {| Username: Username |}) =
         let position = Recoil.useValue Atoms.position
-        let selectedTaskIdSet = Recoil.useValue (Selectors.Session.selectedTaskIdSet input.Username)
-        let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
-        let activeSessions = Recoil.useValue (Selectors.Session.activeSessions input.Username)
+
+        let selectedTaskIdSet =
+            Recoil.useValueLoadableDefault (Selectors.Session.selectedTaskIdSet input.Username) Set.empty
+
+        let filteredTaskIdList = Recoil.useValueLoadableDefault (Selectors.Session.filteredTaskIdList input.Username) []
+        let activeSessions = Recoil.useValueLoadableDefault (Selectors.Session.activeSessions input.Username) []
 
         Chakra.simpleGrid
             (fun x ->

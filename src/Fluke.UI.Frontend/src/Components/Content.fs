@@ -26,7 +26,7 @@ module Content =
                 x.width <- if deviceInfo.IsExtension then "790px" else null)
             [
                 match sessionRestored with
-                | false -> LoadingScreen.LoadingScreen ()
+                | false -> LoadingSpinner.LoadingSpinner ()
                 | true ->
                     match username with
                     | None ->
@@ -34,28 +34,32 @@ module Content =
                         | [], false -> InitialPeers.InitialPeers ()
                         | _ -> LoginScreen.LoginScreen ()
                     | Some username ->
-                        React.fragment [
-                            PositionUpdater.PositionUpdater {| Username = username |}
-                            SoundPlayer.SoundPlayer {| Username = username |}
+                        React.suspense (
+                            [
+                                PositionUpdater.PositionUpdater {| Username = username |}
 
-                            Chakra.stack
-                                (fun x ->
-                                    x.spacing <- "0"
-                                    x.flex <- "1"
-                                    x.borderWidth <- "1px"
-                                    x.borderColor <- "whiteAlpha.300"
-                                    x.maxWidth <- "100vw")
-                                [
-                                    TopBar.TopBar ()
+                                Chakra.stack
+                                    (fun x ->
+                                        x.spacing <- "0"
+                                        x.flex <- "1"
+                                        x.borderWidth <- "1px"
+                                        x.borderColor <- "whiteAlpha.300"
+                                        x.maxWidth <- "100vw")
+                                    [
+                                        TopBar.TopBar ()
 
-                                    Chakra.flex
-                                        (fun x -> x.flex <- "1")
-                                        [
-                                            LeftDock.LeftDock {| Username = username |}
-                                            ViewTabs.ViewTabs {| Username = username |}
-                                        ]
+                                        Chakra.flex
+                                            (fun x -> x.flex <- "1")
+                                            [
+                                                LeftDock.LeftDock {| Username = username |}
+                                                ViewTabs.ViewTabs {| Username = username |}
+                                            ]
 
-                                    StatusBar.StatusBar {| Username = username |}
-                                ]
-                        ]
+                                        StatusBar.StatusBar {| Username = username |}
+                                    ]
+
+                                SoundPlayer.SoundPlayer {| Username = username |}
+                            ],
+                            LoadingSpinner.LoadingSpinner ()
+                        )
             ]

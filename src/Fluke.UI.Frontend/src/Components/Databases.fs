@@ -18,22 +18,26 @@ open Fluke.UI.Frontend.State
 module Databases =
 
     [<ReactComponent>]
-    let LeafIcon (username: Username) (database: Database) =
-        let sharedWith =
-            if database.Owner = Templates.templatesUser.Username then
+    let LeafIcon (username: Username) (databaseId: DatabaseId) =
+        let owner = Recoil.useValue (Atoms.Database.owner (username, databaseId))
+        let sharedWith = Recoil.useValue (Atoms.Database.sharedWith (username, databaseId))
+        let position = Recoil.useValue (Atoms.Database.position (username, databaseId))
+
+        let newSharedWith =
+            if owner = Templates.templatesUser.Username then
                 [
                     username
                 ]
             else
-                match database.SharedWith with
+                match sharedWith with
                 | DatabaseAccess.Public -> []
                 | DatabaseAccess.Private accessList -> accessList |> List.map fst
 
         let isPrivate =
-            match database.SharedWith with
+            match sharedWith with
             | DatabaseAccess.Public -> false
             | _ ->
-                sharedWith
+                newSharedWith
                 |> List.exists (fun share -> share <> username)
                 |> not
 
@@ -50,12 +54,12 @@ module Databases =
                         (Chakra.box
                             (fun _ -> ())
                             [
-                                str $"Owner: {database.Owner |> Username.Value}"
+                                str $"Owner: {owner |> Username.Value}"
                                 br []
-                                if not sharedWith.IsEmpty then
+                                if not newSharedWith.IsEmpty then
                                     str
                                         $"""Shared with: {
-                                                              sharedWith
+                                                              newSharedWith
                                                               |> List.map Username.Value
                                                               |> String.concat ", "
                                         }"""
@@ -88,7 +92,7 @@ module Databases =
                                 ]
                         ]
 
-                match database.Position with
+                match position with
                 | Some position ->
                     Tooltip.wrap
                         (str $"Database paused at position {position |> FlukeDateTime.Stringify}")
@@ -183,17 +187,17 @@ module Databases =
     [<ReactComponent>]
     let NodeMenu
         (input: {| Username: Username
-                   Database: Database
+                   DatabaseId: DatabaseId
                    Disabled: bool |})
         =
-        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite input.Database.Id)
+        let isReadWrite = Recoil.useValueLoadableDefault (Selectors.Database.isReadWrite input.DatabaseId) false
 
         let exportDatabase =
             Recoil.useCallbackRef
                 (fun setter ->
                     promise {
                         let! database =
-                            setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.Database.Id))
+                            setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
 
                         let! dateSequence = setter.snapshot.getPromise Selectors.dateSequence
                         let! taskMetadata = setter.snapshot.getPromise (Selectors.Session.taskMetadata input.Username)
@@ -306,7 +310,7 @@ module Databases =
                             TaskFormTrigger.TaskFormTrigger
                                 {|
                                     Username = input.Username
-                                    DatabaseId = input.Database.Id
+                                    DatabaseId = input.DatabaseId
                                     TaskId = None
                                     Trigger =
                                         fun trigger _setter ->
@@ -328,7 +332,7 @@ module Databases =
                             DatabaseFormTrigger.DatabaseFormTrigger
                                 {|
                                     Username = input.Username
-                                    DatabaseId = Some input.Database.Id
+                                    DatabaseId = Some input.DatabaseId
                                     Trigger =
                                         fun trigger _setter ->
                                             Chakra.menuItem
@@ -408,7 +412,7 @@ module Databases =
 
     let node
         (input: {| Username: Username
-                   Database: Database option
+                   DatabaseId: DatabaseId option
                    Disabled: bool
                    IsTesting: bool
                    Value: string
@@ -430,7 +434,11 @@ module Databases =
             value = input.Value
             disabled = isEmptyNode || disabled
             children = Some input.Children
-            icon = if isEmptyNode then box (Chakra.box (fun _ -> ()) []) else input.Icon
+            icon =
+                if isEmptyNode then
+                    box (Chakra.box (fun x -> x.height <- "10px") [])
+                else
+                    input.Icon
             label =
                 Tooltip.wrap
                     (if input.Disabled then
@@ -448,7 +456,7 @@ module Databases =
                                         x.fontSize <- "main"
                                         x.paddingTop <- "1px"
                                         x.paddingBottom <- "1px"
-                                        x.marginLeft <- if input.Database.IsNone then "2px" else null
+                                        x.marginLeft <- if input.DatabaseId.IsNone then "2px" else null
                                         x.display <- "inline")
                                     [
                                         match labelText with
@@ -456,15 +464,15 @@ module Databases =
                                         | _ -> str input.Label
                                     ]
 
-                                match input.Database with
-                                | Some database ->
+                                match input.DatabaseId with
+                                | Some databaseId ->
                                     Chakra.box
                                         (fun x ->
                                             x.display <- "inline"
                                             x.fontSize <- "main"
 
                                             x.visibility <-
-                                                if database.Id = Database.Default.Id then "hidden" else "visible"
+                                                if databaseId = Database.Default.Id then "hidden" else "visible"
 
                                             x.whiteSpace <- "nowrap")
                                         [
@@ -480,14 +488,16 @@ module Databases =
                                             NodeMenu
                                                 {|
                                                     Username = input.Username
-                                                    Database = database
+                                                    DatabaseId = databaseId
                                                     Disabled = disabled
                                                 |}
                                         ]
-
-                                    Chakra.box (fun x -> x.height <- "14px") []
                                 | _ -> nothing
 
+                                match isEmptyNode, input.DatabaseId with
+                                | _, Some _
+                                | true, _ -> Chakra.box (fun x -> x.height <- "14px") []
+                                | _ -> nothing
                             ]
                     ]
         }
@@ -557,29 +567,45 @@ module Databases =
         let selectedDatabaseIdList, setSelectedDatabaseIdList =
             Recoil.useState (Atoms.User.selectedDatabaseIdList input.Username)
 
-        let databaseIdSet = Recoil.useValue (Selectors.Session.databaseIdSet input.Username)
+        let databaseIdSet = Recoil.useValueLoadable (Selectors.Session.databaseIdSet input.Username)
 
-        let availableDatabases =
+        let databaseIdList =
             databaseIdSet
+            |> Recoil.loadableDefault Set.empty
             |> Set.toList
-            |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
+
+        let databaseNameList =
+            databaseIdList
+            |> List.map (fun databaseId -> Atoms.Database.name (input.Username, databaseId))
+            |> Recoil.waitForAll
+            |> Recoil.useValue
+
+        let databaseOwnerList =
+            databaseIdList
+            |> List.map (fun databaseId -> Atoms.Database.owner (input.Username, databaseId))
+            |> Recoil.waitForAll
+            |> Recoil.useValue
+
+        let databasePositionList =
+            databaseIdList
+            |> List.map (fun databaseId -> Atoms.Database.position (input.Username, databaseId))
             |> Recoil.waitForAll
             |> Recoil.useValue
 
         let nodes =
             React.useMemo (
                 (fun () ->
-                    let tasksNodeTypeMap =
-                        availableDatabases
-                        |> List.map
-                            (fun database ->
+                    let databaseIndexMap =
+                        databaseOwnerList
+                        |> List.mapi
+                            (fun i owner ->
                                 let nodeType =
-                                    match database.Owner with
+                                    match owner with
                                     | owner when owner = Templates.templatesUser.Username -> NodeType.Template
                                     | owner when owner = input.Username -> NodeType.Owned
                                     | _ -> NodeType.Shared
 
-                                nodeType, database)
+                                nodeType, i)
                         |> List.filter (fun (nodeType, _) -> nodeType <> NodeType.Template || not hideTemplates)
                         |> List.groupBy fst
                         |> Map.ofList
@@ -593,13 +619,12 @@ module Databases =
                         ]
                         |> List.collect
                             (fun nodeType ->
-                                let databases =
-                                    tasksNodeTypeMap
+                                let newDatabaseNameList =
+                                    databaseIndexMap
                                     |> Map.tryFind nodeType
+                                    |> Option.map (List.map (fun i -> Some i, databaseNameList.[i]))
                                     |> Option.defaultValue [
-                                        { Database.Default with
-                                            Name = DatabaseName "None"
-                                        }
+                                        None, DatabaseName "None"
                                        ]
 
                                 let prefix =
@@ -608,25 +633,35 @@ module Databases =
                                     | NodeType.Owned -> "Created by me"
                                     | NodeType.Shared -> "Shared with me"
 
-                                databases
+                                newDatabaseNameList
                                 |> List.map
-                                    (fun database -> database, $"{prefix}/{database.Name |> DatabaseName.Value}")
+                                    (fun (i, databaseName) -> i, $"{prefix}/{databaseName |> DatabaseName.Value}")
                                 |> List.sortBy snd)
 
-                    let databases = nodeData |> List.map fst
+                    let databaseIndexList = nodeData |> List.map fst
+
+                    let databaseIdFromIndex databaseIndex =
+                        match databaseIndex with
+                        | Some i -> databaseIdList.[i]
+                        | None -> Database.Default.Id
+
+                    let databasePositionFromIndex databaseIndex =
+                        match databaseIndex with
+                        | Some i -> databasePositionList.[i]
+                        | _ -> Database.Default.Position
 
                     let nodes =
                         let ids =
                             nodeData
                             |> List.map fst
-                            |> List.map (fun database -> database.Id |> DatabaseId.Value)
+                            |> List.map (databaseIdFromIndex >> DatabaseId.Value)
 
                         let paths = nodeData |> List.map snd
                         buildNodesFromPath ids paths
 
-                    let availableDatabasesMap =
-                        databases
-                        |> List.map (fun database -> database.Id, database)
+                    let databaseIndexMap =
+                        databaseIndexList
+                        |> List.map (fun databaseIndex -> databaseIdFromIndex databaseIndex, databaseIndex)
                         |> Map.ofList
 
                     let rec loop nodes =
@@ -637,50 +672,57 @@ module Databases =
                                 | [] -> unbox JS.undefined
                                 | _ -> loop children |> List.toArray
 
-                            let database =
+                            let nodeIndex =
                                 match index with
-                                | Some index -> Some databases.[index]
+                                | Some index -> nodeData.[index] |> fst
+                                | _ -> None
+
+                            let databaseId =
+                                match nodeIndex with
+                                | Some nodeIndex -> databaseIdList |> List.tryItem nodeIndex
                                 | _ -> None
 
                             let icon =
-                                match database with
-                                | Some database -> LeafIcon input.Username database
+                                match databaseId with
+                                | Some databaseId -> LeafIcon input.Username databaseId
                                 | _ -> JS.undefined
 
                             let disabled =
-                                match database with
-                                | Some database ->
-                                    let validSelectedDatabases =
+                                match nodeIndex with
+                                | Some nodeIndex ->
+                                    let validSelectedDatabaseIndexes =
                                         selectedDatabaseIdList
-                                        |> List.map (fun databaseId -> availableDatabasesMap |> Map.tryFind databaseId)
+                                        |> List.map (fun databaseId -> databaseIndexMap |> Map.tryFind databaseId)
 
-                                    match database.Position with
+                                    match databasePositionList.[nodeIndex] with
                                     | Some position ->
-                                        validSelectedDatabases
+                                        validSelectedDatabaseIndexes
                                         |> List.exists
                                             (function
-                                            | Some database ->
-                                                database.Position.IsNone
-                                                || database.Position <> (Some position)
+                                            | Some databaseIndex ->
+                                                let newPosition = databasePositionFromIndex databaseIndex
+
+                                                newPosition.IsNone
+                                                || newPosition <> (Some position)
                                             | None -> false)
                                     | None ->
-                                        validSelectedDatabases
+                                        validSelectedDatabaseIndexes
                                         |> List.exists
                                             (function
-                                            | Some { Position = Some _ } -> true
-                                            | _ -> false)
+                                            | Some databaseIndex -> (databasePositionFromIndex databaseIndex).IsSome
+                                            | None -> false)
                                 | _ -> false
 
                             let newValue =
-                                match database with
-                                | Some database -> database.Id |> DatabaseId.Value |> string
+                                match databaseId with
+                                | Some databaseId -> databaseId |> DatabaseId.Value |> string
                                 | None -> value
 
                             let newNode =
                                 node
                                     {|
                                         Username = input.Username
-                                        Database = database
+                                        DatabaseId = databaseId
                                         Disabled = disabled
                                         IsTesting = isTesting
                                         Value = newValue
@@ -694,11 +736,14 @@ module Databases =
 
                     loop nodes |> List.toArray),
                 [|
+                    box databaseIdList
+                    box databaseNameList
+                    box databaseOwnerList
+                    box databasePositionList
                     box input.Username
                     box hideTemplates
                     box selectedDatabaseIdList
                     box isTesting
-                    box availableDatabases
                 |]
             )
 
@@ -736,35 +781,41 @@ module Databases =
         Chakra.stack
             input.Props
             [
-                Chakra.box
-                    (fun x -> x.marginLeft <- "6px")
+                Chakra.flex
+                    (fun x ->
+                        x.marginLeft <- "6px"
+                        x.flex <- "1")
                     [
-                        CheckboxTree.render
-                            {|
-                                ``checked`` =
-                                    selectedDatabaseIdList
-                                    |> List.map DatabaseId.Value
-                                    |> List.toArray
-                                expanded =
-                                    newExpandedDatabaseIdList
-                                    |> List.map DatabaseId.Value
-                                    |> List.toArray
-                                onCheck =
-                                    (fun (x: string []) ->
-                                        x
-                                        |> Array.map (Guid >> DatabaseId)
-                                        |> Array.toList
-                                        |> setSelectedDatabaseIdList)
-                                onExpand =
-                                    (fun (x: string []) ->
-                                        x
-                                        |> Array.map (Guid >> DatabaseId)
-                                        |> Array.toList
-                                        |> setExpandedDatabaseIdList)
-                                expandOnClick = true
-                                onlyLeafCheckboxes = true
-                                nodes = nodes
-                                icons = icons
-                            |}
+                        match databaseIdSet.state () with
+                        | HasValue _ ->
+                            CheckboxTree.render
+                                {|
+                                    ``checked`` =
+                                        selectedDatabaseIdList
+                                        |> List.map DatabaseId.Value
+                                        |> List.toArray
+                                    expanded =
+                                        newExpandedDatabaseIdList
+                                        |> List.map DatabaseId.Value
+                                        |> List.toArray
+                                    onCheck =
+                                        (fun (x: string []) ->
+                                            x
+                                            |> Array.map (Guid >> DatabaseId)
+                                            |> Array.toList
+                                            |> setSelectedDatabaseIdList)
+                                    onExpand =
+                                        (fun (x: string []) ->
+                                            x
+                                            |> Array.map (Guid >> DatabaseId)
+                                            |> Array.toList
+                                            |> setExpandedDatabaseIdList)
+                                    expandOnClick = true
+                                    onlyLeafCheckboxes = true
+                                    nodes = nodes
+                                    icons = icons
+                                |}
+
+                        | _ -> LoadingSpinner.LoadingSpinner ()
                     ]
             ]

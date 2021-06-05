@@ -6,19 +6,31 @@ open Feliz
 open Fluke.Shared.Domain
 open Feliz.Recoil
 open Fluke.Shared.Domain.Model
+open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared
 
 
 module AreaSelector =
+
     [<ReactComponent>]
     let AreaSelector
         (input: {| Username: UserInteraction.Username
                    Area: Area
                    OnSelect: Area -> unit |})
         =
-        let informationSet = Recoil.useValue (Selectors.Session.informationSet input.Username)
+        let informationSet = Recoil.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
+
+        let informationList =
+            informationSet
+            |> Set.addIf
+                (Area input.Area)
+                (input.Area.Name
+                 |> AreaName.Value
+                 |> String.IsNullOrWhiteSpace
+                 |> not)
+            |> Set.toList
 
         Chakra.box
             (fun x -> x.display <- "inline")
@@ -65,13 +77,7 @@ module AreaSelector =
                                             (fun x -> x.value <- input.Area)
                                             [
                                                 yield!
-                                                    (if input.Area.Name
-                                                        |> AreaName.Value
-                                                        |> String.IsNullOrWhiteSpace then
-                                                         informationSet
-                                                     else
-                                                         informationSet |> Set.add (Area input.Area))
-                                                    |> Set.toList
+                                                    informationList
                                                     |> List.map
                                                         (function
                                                         | Area area ->

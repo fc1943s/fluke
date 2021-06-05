@@ -48,5 +48,5 @@ module SingleCellToggle =
                 |> Map.ofList
                 |> expectSelection setter
         },
-        10000
+        15000
     )

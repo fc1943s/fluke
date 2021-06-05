@@ -75,6 +75,7 @@
         <Compile Include="src\Components\DeleteUserButton.fs" />
         <Compile Include="src\Components\TransparentIconButton.fs" />
         <Compile Include="src\Components\TopBar.fs" />
+        <Compile Include="src\Components\LoadingSpinner.fs" />
         <Compile Include="src\Components\Databases.fs" />
         <Compile Include="src\Components\InputList.fs" />
         <Compile Include="src\Components\Accordion.fs" />
@@ -87,7 +88,6 @@
         <Compile Include="src\Components\ViewTabs.fs" />
         <Compile Include="src\Components\LoginScreen.fs" />
         <Compile Include="src\Components\InitialPeers.fs" />
-        <Compile Include="src\Components\LoadingScreen.fs" />
         <Compile Include="src\Components\SoundPlayer.fs" />
         <Compile Include="src\Components\PositionUpdater.fs" />
         <Compile Include="src\Components\RouterObserver.fs" />
@@ -100,7 +100,6 @@
         <Compile Include="src\App.fs" />
         <Compile Include="src\Main.fs" />
         <Content Include="src\index.ts" />
-        <Compile Include="src\Tests\Core\ReactErrorBoundary.fs" />
         <Compile Include="src\Tests\Core\Setup.fs" />
         <Compile Include="src\Tests\CellSelection\CellSelectionSetup.fs" />
         <Compile Include="src\Tests\CellSelection\SingleCellToggle.test.fs" />

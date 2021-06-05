@@ -11,16 +11,16 @@ module App =
     let App wrap =
         Profiling.addTimestamp "appMain.render"
 
-        (if wrap then RootWrapper.rootWrapper else React.fragment)
+        (if wrap then RootWrapper.RootWrapper else React.fragment)
             [
-                CtrlListener.CtrlListener ()
-                ShiftListener.ShiftListener ()
-                SelectionListener.SelectionListener ()
-
                 RouterObserver.RouterObserver ()
                 //                GunObserver.GunObserver ()
 
                 Content.Content ()
+
+                CtrlListener.CtrlListener ()
+                ShiftListener.ShiftListener ()
+                SelectionListener.SelectionListener ()
 
                 DebugOverlay.DebugOverlay ()
             ]
