@@ -10,14 +10,14 @@ module Full =
     module Cy2 =
         let typeText (fn: unit -> Cy.Chainable2<_>) (text: string) =
             Cy.wait 200
-            fn().clear () |> ignore
+            fn().clear {| force = true |} |> ignore
             fn().should "be.empty" null null
 
             text
             |> Seq.iter
                 (fun letter ->
                     Cy.wait 200
-                    fn().``type`` (string letter) |> ignore)
+                    fn().``type`` (string letter) {| force = true |} |> ignore)
 
             fn().should "have.value" text null
 
@@ -130,7 +130,8 @@ module Full =
 
                     Cy2.clickText "Edit Database"
 
-                    Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
+                    Cy.wait 200
+                    Cy2.selectorFocusTypeText "input[placeholder^=new-database-]:first" $"{dbName}_edit"
                     Cy2.clickTextWithinSelector "[data-testid='TextKey DatabaseForm']" "Save"
 
                     Cy2.waitFor "1 of 1 tasks visible" None
