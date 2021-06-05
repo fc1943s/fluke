@@ -35,6 +35,7 @@ module Cypress =
             abstract clear : {| force: bool |} -> Chainable2<'T>
             abstract eq : int -> Chainable2<'T>
             abstract focus : unit -> unit
+            abstract first : unit -> Chainable2<'T>
             abstract ``then`` : (Chainable2<'T> -> unit) -> unit
             abstract ``type`` : string -> {| force: bool |} -> Chainable2<'T>
             abstract scrollTo : string -> {| ensureScrollable: bool |} -> unit

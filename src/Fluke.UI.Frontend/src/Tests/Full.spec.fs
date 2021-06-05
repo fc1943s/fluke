@@ -17,7 +17,9 @@ module Full =
             |> Seq.iter
                 (fun letter ->
                     Cy.wait 200
-                    fn().``type`` (string letter) {| force = true |} |> ignore)
+
+                    fn().first().``type`` (string letter) {| force = true |}
+                    |> ignore)
 
             fn().should "have.value" text null
 
@@ -34,8 +36,12 @@ module Full =
             typeText (fun () -> Cy.get selector) text
 
         let selectorFocusTypeText selector text =
-            Cy.get(selector).focus ()
+            Cy.get(selector).first().focus ()
             typeText (fun () -> Cy.get selector) text
+
+        let selectorFocusTypeTextWithinSelector parent selector text =
+            Cy.get(parent).get(selector).first().focus ()
+            typeText (fun () -> Cy.get(parent).get selector) text
 
         let clickTextWithinSelector selector text =
             Cy
@@ -110,17 +116,29 @@ module Full =
                     Cy2.clickText "Project"
                     Cy2.clickText "Add Project"
 
-                    Cy2.selectorTypeText "input[placeholder^='e.g. home renovation']" "p1" (Some 250)
+                    Cy2.selectorFocusTypeTextWithinSelector
+                        "[data-testid='TextKey ProjectForm']"
+                        "input[placeholder^='e.g. home renovation']"
+                        "p1"
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Select..."
                     Cy2.clickText "Add Area"
 
-                    Cy2.selectorTypeText "input[placeholder^='e.g. chores']" "a1" None
+                    Cy2.selectorFocusTypeTextWithinSelector
+                        "[data-testid='TextKey AreaForm']"
+                        "input[placeholder^='e.g. chores']"
+                        "a1"
+
                     Cy2.clickTextWithinSelector "[data-testid='TextKey AreaForm']" "Save"
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Save"
 
                     Cy.wait 800
-                    Cy2.selectorFocusTypeText "input[placeholder^=new-task-]" taskName
+
+                    Cy2.selectorFocusTypeTextWithinSelector
+                        "[data-testid='TextKey TaskForm']"
+                        "input[placeholder^=new-task-]"
+                        taskName
+
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Save"
 
                     (Cy.contains dbName None)
@@ -131,7 +149,12 @@ module Full =
                     Cy2.clickText "Edit Database"
 
                     Cy.wait 200
-                    Cy2.selectorFocusTypeText "input[placeholder^=new-database-]:first" $"{dbName}_edit"
+
+                    Cy2.selectorFocusTypeTextWithinSelector
+                        "[data-testid='TextKey DatabaseForm']"
+                        "input[placeholder^=new-database-]"
+                        $"{dbName}_edit"
+
                     Cy2.clickTextWithinSelector "[data-testid='TextKey DatabaseForm']" "Save"
 
                     Cy2.waitFor "1 of 1 tasks visible" None
