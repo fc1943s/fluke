@@ -23,34 +23,42 @@ module PositionUpdater =
             |> Recoil.waitForAll
             |> Recoil.useValue
 
-        Scheduling.useScheduling
-            Scheduling.Interval
-            1000
-            (fun _ ->
-                promise {
-                    let pausedPosition =
-                        selectedDatabasePositions
-                        |> List.choose id
-                        |> List.tryHead
+        let pausedPosition =
+            selectedDatabasePositions
+            |> List.choose id
+            |> List.tryHead
 
-                    if selectedDatabasePositions.Length > 0 then
-                        if pausedPosition.IsNone then
-                            let newPosition = FlukeDateTime.FromDateTime DateTime.Now
+        let run =
+            Recoil.useCallbackRef
+                (fun _ ->
+                    promise {
+                        if not selectedDatabasePositions.IsEmpty then
+                            if pausedPosition.IsNone then
+                                let newPosition = FlukeDateTime.FromDateTime DateTime.Now
 
-                            if Some newPosition <> position then
-                                printfn $"Updating position newPosition={newPosition |> FlukeDateTime.Stringify}"
-                                setPosition (Some newPosition)
-                        else if position <> pausedPosition then
-                            printfn
-                                $"Updating position selectedDatabasePositions.[0]={
-                                                                                       pausedPosition
-                                                                                       |> Option.map
-                                                                                           FlukeDateTime.Stringify
-                                }"
+                                if Some newPosition <> position then
+                                    printfn $"Updating position newPosition={newPosition |> FlukeDateTime.Stringify}"
+                                    setPosition (Some newPosition)
+                            else if position <> pausedPosition then
+                                printfn
+                                    $"Updating position selectedDatabasePositions.[0]={
+                                                                                           pausedPosition
+                                                                                           |> Option.map
+                                                                                               FlukeDateTime.Stringify
+                                    }"
 
-                            setPosition pausedPosition
-                    elif position <> None then
-                        setPosition None
-                })
+                                setPosition pausedPosition
+                        elif position <> None then
+                            setPosition None
+                    })
+
+        React.useEffect (
+            (fun () -> run () |> Promise.start),
+            [|
+                box run
+            |]
+        )
+
+        Scheduling.useScheduling Scheduling.Interval 1000 (fun _ -> run ())
 
         nothing
