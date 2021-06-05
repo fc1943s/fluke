@@ -34,5 +34,6 @@ module HorizontalShiftPressed =
                 ]
                 |> Map.ofList
                 |> expectSelection setter
-        }
+        },
+        10000
     )

@@ -33,5 +33,6 @@ module CtrlPressed =
                 ]
                 |> Map.ofList
                 |> expectSelection setter
-        }
+        },
+        10000
     )

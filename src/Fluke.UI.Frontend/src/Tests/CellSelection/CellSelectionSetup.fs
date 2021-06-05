@@ -101,8 +101,8 @@ module CellSelectionSetup =
         }
 
     let inline click el =
-        RTL.act (fun () -> RTL.fireEvent.click el)
-        RTL.waitFor id
+        //        RTL.act (fun () -> RTL.fireEvent.click el)
+        RTL.waitFor (fun () -> RTL.fireEvent.click el)
 
     let getCell (cellMap, taskName, date) =
         cellMap
@@ -116,10 +116,7 @@ module CellSelectionSetup =
         let dslTemplate =
             {
                 Templates.Position =
-                    FlukeDateTime.Create (
-                        FlukeDate.Create 2020 Month.January 10,
-                        Templates.templatesUser.DayStart
-                    )
+                    FlukeDateTime.Create (FlukeDate.Create 2020 Month.January 10, Templates.templatesUser.DayStart)
                 Templates.Tasks =
                     [
                         1 .. 4
