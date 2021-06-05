@@ -108,9 +108,6 @@ module Full =
 
                     Cy2.clickText "Add Task"
 
-                    Cy2.waitFocus "input[placeholder^=new-task-]" (Some 250)
-                    Cy2.typeText taskName
-
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Select..."
                     Cy2.clickText "Project"
                     Cy2.clickText "Add Project"
@@ -125,6 +122,11 @@ module Full =
                     Cy2.typeText "a1"
                     Cy2.clickTextWithinSelector "[data-testid='TextKey AreaForm']" "Save"
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Save"
+
+                    Cy.wait 500
+                    Cy.get("input[placeholder^=new-task-]").focus ()
+                    Cy2.typeText taskName
+
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Save"
 
                     (Cy.contains dbName None)
