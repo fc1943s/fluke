@@ -124,6 +124,8 @@ module Full =
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Select..."
                     Cy2.clickText "Add Area"
 
+                    Cy.wait 800
+
                     Cy2.selectorFocusTypeTextWithinSelector
                         "[data-testid='TextKey AreaForm']"
                         "input[placeholder^='e.g. chores']"

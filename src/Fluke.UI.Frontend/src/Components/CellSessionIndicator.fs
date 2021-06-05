@@ -28,5 +28,5 @@ module CellSessionIndicator =
             [
                 match input.Sessions.Length with
                 | x when x > 0 -> str (string x)
-                | _ -> ()
+                | _ -> nothing
             ]

@@ -475,7 +475,7 @@ module Databases =
                                                     [
                                                         str (label |> Seq.item 2)
                                                     ]
-                                            | None -> ()
+                                            | None -> nothing
 
                                             NodeMenu
                                                 {|
@@ -486,7 +486,7 @@ module Databases =
                                         ]
 
                                     Chakra.box (fun x -> x.height <- "14px") []
-                                | _ -> ()
+                                | _ -> nothing
 
                             ]
                     ]
