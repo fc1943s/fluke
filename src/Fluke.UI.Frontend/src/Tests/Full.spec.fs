@@ -123,7 +123,7 @@ module Full =
                     Cy2.clickTextWithinSelector "[data-testid='TextKey AreaForm']" "Save"
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Save"
 
-                    Cy.wait 500
+                    Cy.wait 800
                     Cy.get("input[placeholder^=new-task-]").focus ()
                     Cy2.typeText taskName
 

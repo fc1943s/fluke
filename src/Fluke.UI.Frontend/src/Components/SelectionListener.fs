@@ -26,8 +26,6 @@ module SelectionListener =
                             if not cellSelectionMap.IsEmpty then
                                 setter.set (Selectors.Session.cellSelectionMap username, Map.empty)
 
-                            setter.set (Atoms.User.cellMenuOpened username, None)
-
                         if e.key = "R" && e.``type`` = "keydown" then
                             if not cellSelectionMap.IsEmpty then
                                 let newMap =

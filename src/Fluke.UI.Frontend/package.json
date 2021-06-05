@@ -48,8 +48,8 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "0.0.0-experimental-cc4d24ab0",
-    "react-dom": "0.0.0-experimental-cc4d24ab0",
+    "react": "0.0.0-experimental-28625c6f4",
+    "react-dom": "0.0.0-experimental-28625c6f4",
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 

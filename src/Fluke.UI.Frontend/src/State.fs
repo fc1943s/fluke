@@ -227,16 +227,6 @@ module State =
                         ])
                 )
 
-            let rec cellMenuOpened =
-                Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof cellMenuOpened}",
-                    (fun (_username: Username) -> None: (TaskId * DateId) option),
-                    (fun (username: Username) ->
-                        [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, cellMenuOpened, username)) []
-                        ])
-                )
-
             let rec cellSize =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof cellSize}",

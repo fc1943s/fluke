@@ -1,13 +1,16 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.React
 open Feliz
 open Fluke.UI.Frontend.Bindings
 
 
 module Popover =
     [<ReactComponent>]
-    let Popover
+    let CustomPopover
         (input: {| Trigger: ReactElement
+                   CloseButton: bool
+                   Padding: string
                    Body: Chakra.Disclosure * IRefValue<unit> -> ReactElement list |})
         =
         let disclosure = Chakra.react.useDisclosure ()
@@ -52,10 +55,15 @@ module Popover =
                             (fun x -> x.width <- "auto")
                             [
                                 Chakra.popoverArrow (fun _ -> ()) []
-                                Chakra.popoverCloseButton (fun _ -> ()) []
+
+                                if not input.CloseButton then
+                                    nothing
+                                else
+                                    Chakra.popoverCloseButton (fun _ -> ()) []
+
                                 Chakra.popoverBody
                                     (fun x ->
-                                        x.padding <- "10px"
+                                        x.padding <- input.Padding
                                         x.backgroundColor <- "gray.13"
                                         x.maxWidth <- "95vw"
                                         x.maxHeight <- "95vh"
@@ -66,3 +74,14 @@ module Popover =
                             ]
                     ]
             ]
+
+    [<ReactComponent>]
+    let Popover
+        (input: {| Trigger: ReactElement
+                   Body: Chakra.Disclosure * IRefValue<unit> -> ReactElement list |})
+        =
+        CustomPopover
+            {| input with
+                CloseButton = true
+                Padding = "10px"
+            |}
