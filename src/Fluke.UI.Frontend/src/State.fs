@@ -705,7 +705,8 @@ module State =
                                 sessions
                                 |> List.sortByDescending
                                     (fun (TaskSession (start, _, _)) -> start |> FlukeDateTime.DateTime)
-                                |> List.tryHead))
+                                |> List.tryHead)
+                            )
                 )
 
             let rec cellStateMap =
@@ -716,15 +717,26 @@ module State =
                         let dateSequence = getter.get dateSequence
                         let scheduling = getter.get (Atoms.Task.scheduling (username, taskId))
 
-                        dateSequence
-                        |> Rendering.stretchDateSequence position scheduling
-                        |> List.map
-                            (fun date ->
+                        let newDateSequence =
+                            dateSequence
+                            |> Rendering.stretchDateSequence position scheduling
+
+                        printfn "#1 A"
+                        let cellStatusList =
+                            newDateSequence
+                            |> List.map (fun date -> Atoms.Cell.status (username, taskId, DateId date))
+                            |> Recoil.waitForAll
+                            |> getter.get
+                        printfn "#1 B"
+
+                        newDateSequence
+                        |> List.mapi
+                            (fun i date ->
                                 let dateId = DateId date
 
                                 let cellState =
                                     {
-                                        Status = getter.get (Atoms.Cell.status (username, taskId, dateId))
+                                        Status = cellStatusList.[i]
                                         Sessions = []
                                         Attachments = []
                                     //
@@ -773,10 +785,13 @@ module State =
                         let dateSequence = getter.get dateSequence
                         //                                let taskIdSet = getter.get (Atoms.Session.taskIdSet username)
 
+                        printfn "#2 A"
                         let statusList =
                             dateSequence
                             |> List.map (fun date -> Atoms.Cell.status (username, taskId, DateId date))
-                            |> List.map getter.get
+                            |> Recoil.waitForAll
+                            |> getter.get
+                        printfn "#2 B"
 
                         let usersCount =
                             statusList
@@ -801,9 +816,15 @@ module State =
 
                         match username with
                         | Some username ->
-                            dateSequence
-                            |> List.exists
-                                (fun date -> getter.get (Atoms.Cell.selected (username, taskId, DateId date)))
+                            printfn "#3 A"
+                            let selectedList =
+                                dateSequence
+                                |> List.map (fun date -> Atoms.Cell.selected (username, taskId, DateId date))
+                                |> Recoil.waitForAll
+                                |> getter.get
+                            printfn "#3 B"
+
+                            selectedList |> List.exists id
                         | None -> false)
                 )
 
@@ -842,17 +863,25 @@ module State =
                     (fun (username: Username) getter ->
                         let taskMetadata = getter.get (taskMetadata username)
 
-                        taskMetadata
-                        |> Map.keys
-                        |> Seq.map (fun taskId -> getter.get (Atoms.Task.information (username, taskId)))
-                        |> Seq.filter
+                        printfn "#4 A"
+                        let informationList =
+                            taskMetadata
+                            |> Map.keys
+                            |> Seq.map (fun taskId -> Atoms.Task.information (username, taskId))
+                            |> Seq.toList
+                            |> Recoil.waitForAll
+                            |> getter.get
+                        printfn "#4 B"
+
+                        informationList
+                        |> List.filter
                             (fun information ->
                                 information
                                 |> Information.Name
                                 |> InformationName.Value
                                 |> String.IsNullOrWhiteSpace
                                 |> not)
-                        |> Set.ofSeq)
+                        |> Set.ofList)
                 )
 
             let rec selectedTaskIdSet =
@@ -878,19 +907,25 @@ module State =
                         let sessionLength = getter.get (Atoms.User.sessionLength username)
                         let sessionBreakLength = getter.get (Atoms.User.sessionBreakLength username)
 
-                        selectedTaskIdSet
-                        |> Set.toList
-                        |> List.map
-                            (fun taskId ->
-                                let (TaskName taskName) = getter.get (Atoms.Task.name (username, taskId))
+                        let selectedTaskIdList = selectedTaskIdSet |> Set.toList
 
-                                let duration = getter.get (Task.activeSession taskId)
+                        printfn "#5 A"
+                        let activeSessionDurationList =
+                            selectedTaskIdList
+                            |> List.map Task.activeSession
+                            |> Recoil.waitForAll
+                            |> getter.get
+                        printfn "#5 B"
 
-                                duration
+                        activeSessionDurationList
+                        |> List.mapi
+                            (fun i activeSessionDuration ->
+                                activeSessionDuration
                                 |> Option.map
                                     (fun duration ->
                                         TempUI.ActiveSession (
-                                            taskName,
+                                            getter.get (Atoms.Task.name (username, selectedTaskIdList.[i]))
+                                            |> TaskName.Value,
                                             Minute duration,
                                             sessionLength,
                                             sessionBreakLength
@@ -909,10 +944,14 @@ module State =
                         let taskSearch = getter.get (Atoms.User.taskSearch username)
                         let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
 
+                        printfn "#6 A"
                         let taskList =
                             selectedTaskIdSet
-                            |> Seq.map (fun taskId -> getter.get (Task.task (username, taskId)))
+                            |> Seq.map (fun taskId -> Task.task (username, taskId))
                             |> Seq.toList
+                            |> Recoil.waitForAll
+                            |> getter.get
+                        printfn "#6 B"
 
                         let taskList =
                             if taskSearch = "" then
@@ -925,24 +964,37 @@ module State =
                                         || (task.Name |> TaskName.Value).IndexOf taskSearch
                                            >= 0)
 
+                        printfn "#7 A"
+                        let cellStateMapList =
+                            taskList
+                            |> List.map (fun task -> Task.cellStateMap (username, task.Id))
+                            |> Recoil.waitForAll
+                            |> getter.get
+                        printfn "#7 B"
+
                         let taskStateList =
                             taskList
-                            |> List.map
-                                (fun task ->
+                            |> List.mapi
+                                (fun i task ->
                                     { TaskState.Default with
                                         Task = task
-                                        CellStateMap = getter.get (Task.cellStateMap (username, task.Id))
+                                        CellStateMap = cellStateMapList.[i]
                                     })
+                        printfn "#7 C"
 
-                        getSessionData
-                            {|
-                                Username = username
-                                DayStart = dayStart
-                                DateSequence = dateSequence
-                                View = view
-                                Position = position
-                                TaskStateList = taskStateList
-                            |})
+                        let result =
+                            getSessionData
+                                {|
+                                    Username = username
+                                    DayStart = dayStart
+                                    DateSequence = dateSequence
+                                    View = view
+                                    Position = position
+                                    TaskStateList = taskStateList
+                                |}
+                        printfn "#7 D"
+                        result
+                            )
                 )
 
             let rec filteredTaskIdList =
@@ -961,9 +1013,17 @@ module State =
                     (fun (username: Username) getter ->
                         let filteredTaskIdList = getter.get (filteredTaskIdList username)
 
+                        printfn "#8 A"
+                        let informationList =
+                            filteredTaskIdList
+                            |> List.map (fun taskId -> Atoms.Task.information (username, taskId))
+                            |> Recoil.waitForAll
+                            |> getter.get
+                        printfn "#8 B"
+
                         let informationMap =
                             filteredTaskIdList
-                            |> List.map (fun taskId -> taskId, getter.get (Atoms.Task.information (username, taskId)))
+                            |> List.mapi (fun i taskId -> taskId, informationList.[i])
                             |> Map.ofList
 
                         filteredTaskIdList
@@ -980,14 +1040,23 @@ module State =
                         let filteredTaskIdList = getter.get (filteredTaskIdList username)
                         let dateSequence = getter.get dateSequence
 
+                        printfn "#9 A"
+                        let selectedList =
+                            filteredTaskIdList
+                            |> List.map
+                                (fun taskId ->
+                                    dateSequence
+                                    |> List.map (fun date -> Atoms.Cell.selected (username, taskId, DateId date))
+                                    |> Recoil.waitForAll
+                                    |> getter.get)
+                        printfn "#9 B"
+
                         filteredTaskIdList
-                        |> List.map
-                            (fun taskId ->
+                        |> List.mapi
+                            (fun i taskId ->
                                 let dates =
                                     dateSequence
-                                    |> List.map
-                                        (fun date ->
-                                            date, getter.get (Atoms.Cell.selected (username, taskId, DateId date)))
+                                    |> List.mapi (fun j date -> date, selectedList.[i].[j])
                                     |> List.filter snd
                                     |> List.map fst
                                     |> Set.ofList
