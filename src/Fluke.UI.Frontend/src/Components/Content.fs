@@ -47,7 +47,14 @@ module Content =
                                     x.maxWidth <- "100vw")
                                 [
                                     TopBar.TopBar ()
-                                    HomeScreen.HomeScreen {| Username = username |}
+
+                                    Chakra.flex
+                                        (fun x -> x.flex <- "1")
+                                        [
+                                            LeftDock.LeftDock {| Username = username |}
+                                            ViewTabs.ViewTabs {| Username = username |}
+                                        ]
+
                                     StatusBar.StatusBar {| Username = username |}
                                 ]
                         ]

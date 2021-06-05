@@ -84,7 +84,7 @@
         <Compile Include="src\Components\DockPanel.fs" />
         <Compile Include="src\Components\LeftDock.fs" />
         <Compile Include="src\Components\StatusBar.fs" />
-        <Compile Include="src\Components\HomeScreen.fs" />
+        <Compile Include="src\Components\ViewTabs.fs" />
         <Compile Include="src\Components\LoginScreen.fs" />
         <Compile Include="src\Components\InitialPeers.fs" />
         <Compile Include="src\Components\LoadingScreen.fs" />
