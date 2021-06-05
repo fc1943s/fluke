@@ -145,6 +145,8 @@ module Full =
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Save"
 
+                    Cy.wait 800
+
                     (Cy.contains dbName None)
                         .find(".chakra-button")
                         .click None
