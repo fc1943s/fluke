@@ -48,12 +48,12 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "0.0.0-experimental-28625c6f4",
-    "react-dom": "0.0.0-experimental-28625c6f4",
+    "react": "0.0.0-experimental-cc4d24ab0",
+    "react-dom": "0.0.0-experimental-cc4d24ab0",
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
-    "recoil": "~0.3",
+    "recoil": "facebookexperimental/Recoil.git#nightly",
     "recoilize": "~2.0",
 
     "gun": "amark/gun.git#manhattan",
@@ -97,7 +97,7 @@
 
     "@typescript-eslint/eslint-plugin": "~4.26",
     "@typescript-eslint/parser": "~4.26",
-    "eslint": "~7.27",
+    "eslint": "~7.28",
     "eslint-plugin-react": "~7.24",
     "eslint-plugin-import": "~2.23",
     "eslint-plugin-jsx-a11y": "~6.4",
@@ -108,7 +108,7 @@
     "@chakra-ui/gatsby-plugin": "~2.0",
     "postcss": "~8.3",
 
-    "jest": "~27.0",
+    "jest": "~27.0.4",
     "jest-environment-jsdom": "~27.0",
     "ts-jest": "~27.0",
     "jest-css-modules": "~2.1",
@@ -148,7 +148,7 @@
     "concurrently": "~6.2",
 
     "cordova": "~10.0",
-    "cordova-android": "~10.0.0-nightly.2021.6.4.6d803e2f",
+    "cordova-android": "~10.0.0-nightly.2021.6.5.6d803e2f",
     "cordova-ios": "~6.2",
     "cordova-plugin-whitelist": "~1.3"
   },
