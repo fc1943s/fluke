@@ -124,7 +124,7 @@ module Full =
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Select..."
                     Cy2.clickText "Add Area"
 
-                    Cy.wait 800
+                    Cy.wait 200
 
                     Cy2.selectorFocusTypeTextWithinSelector
                         "[data-testid='TextKey AreaForm']"
@@ -132,11 +132,11 @@ module Full =
                         "a1"
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey AreaForm']" "Save"
-                    Cy.wait 800
+                    Cy.wait 200
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Save"
 
-                    Cy.wait 800
+                    Cy.wait 200
 
                     Cy2.selectorFocusTypeTextWithinSelector
                         "[data-testid='TextKey TaskForm']"
@@ -145,7 +145,7 @@ module Full =
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Save"
 
-                    Cy.wait 800
+                    Cy.wait 200
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
