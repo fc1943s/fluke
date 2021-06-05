@@ -34,8 +34,8 @@ module Full =
             typeText (fun () -> Cy.get selector) text
 
         let selectorFocusTypeText selector text =
-                    Cy.get(selector).focus ()
-                    typeText (fun () -> Cy.get selector) text
+            Cy.get(selector).focus ()
+            typeText (fun () -> Cy.get selector) text
 
         let clickTextWithinSelector selector text =
             Cy
@@ -130,7 +130,7 @@ module Full =
 
                     Cy2.clickText "Edit Database"
 
-                    Cy2.selectorTypeText "input[placeholder^=new-database-]" $"{dbName}_edit" None
+                    Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
                     Cy2.clickTextWithinSelector "[data-testid='TextKey DatabaseForm']" "Save"
 
                     Cy2.waitFor "1 of 1 tasks visible" None
