@@ -42,42 +42,46 @@ module ViewTabs =
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
         let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
 
-        let tabs =
-            [
-                {|
-                    View = View.View.Information
-                    Name = "Information View"
-                    Icon = Icons.ti.TiFlowChildren
-                    Content = fun () -> InformationView.InformationView {| Username = input.Username |}
-                |}
-                {|
-                    View = View.View.HabitTracker
-                    Name = "Habit Tracker View"
-                    Icon = Icons.bs.BsGrid
-                    Content = fun () -> HabitTrackerView.HabitTrackerView {| Username = input.Username |}
-                |}
-                {|
-                    View = View.View.Priority
-                    Name = "Priority View"
-                    Icon = Icons.fa.FaSortNumericDownAlt
-                    Content = fun () -> PriorityView.PriorityView {| Username = input.Username |}
-                |}
-                {|
-                    View = View.View.BulletJournal
-                    Name = "Bullet Journal View"
-                    Icon = Icons.bs.BsListCheck
-                    Content = fun () -> BulletJournalView.BulletJournalView {| Username = input.Username |}
-                |}
-            ]
-
-        let tabIndex =
+        let tabs, tabIndex =
             React.useMemo (
                 (fun () ->
-                    tabs
-                    |> List.findIndex (fun tab -> tab.View = view)),
+
+                    let tabs =
+                        [
+                            {|
+                                View = View.View.Information
+                                Name = "Information View"
+                                Icon = Icons.ti.TiFlowChildren
+                                Content = fun () -> InformationView.InformationView {| Username = input.Username |}
+                            |}
+                            {|
+                                View = View.View.HabitTracker
+                                Name = "Habit Tracker View"
+                                Icon = Icons.bs.BsGrid
+                                Content = fun () -> HabitTrackerView.HabitTrackerView {| Username = input.Username |}
+                            |}
+                            {|
+                                View = View.View.Priority
+                                Name = "Priority View"
+                                Icon = Icons.fa.FaSortNumericDownAlt
+                                Content = fun () -> PriorityView.PriorityView {| Username = input.Username |}
+                            |}
+                            {|
+                                View = View.View.BulletJournal
+                                Name = "Bullet Journal View"
+                                Icon = Icons.bs.BsListCheck
+                                Content = fun () -> BulletJournalView.BulletJournalView {| Username = input.Username |}
+                            |}
+                        ]
+
+                    let tabIndex =
+                        tabs
+                        |> List.findIndex (fun tab -> tab.View = view)
+
+                    tabs, tabIndex),
                 [|
-                    box tabs
                     box view
+                    box input.Username
                 |]
             )
 
