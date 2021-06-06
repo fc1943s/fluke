@@ -28,6 +28,8 @@ module Cell =
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         let status, setStatus = Recoil.useState (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
+        let cellSelectionMap = Recoil.useValue (Selectors.Session.cellSelectionMap input.Username)
+        let setter = Recoil.useCallbackRef id
 
         let dayStart = Recoil.useValue (Atoms.User.dayStart input.Username)
 
@@ -49,7 +51,7 @@ module Cell =
                         x.columns <- 1
                         x.width <- $"{cellSize (* * 2*) }px")
                     [
-                        let wrapButton icon color onClickStatus =
+                        let wrapButton icon color (onClickStatus: CellStatus option) =
                             Chakra.iconButton
                                 (fun x ->
                                     x.icon <- icon
@@ -66,6 +68,23 @@ module Cell =
                                         x.onClick <-
                                             fun _ ->
                                                 promise {
+                                                    let setter = setter ()
+
+                                                    cellSelectionMap
+                                                    |> Map.iter
+                                                        (fun taskId dates ->
+                                                            dates
+                                                            |> Set.iter
+                                                                (fun date ->
+                                                                    setter.set (
+                                                                        Selectors.Cell.status (
+                                                                            input.Username,
+                                                                            taskId,
+                                                                            DateId date
+                                                                        ),
+                                                                        onClickStatus
+                                                                    )))
+
                                                     setStatus onClickStatus
                                                     input.OnClose ()
                                                 }
