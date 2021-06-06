@@ -246,6 +246,7 @@ module CellSelectionSetup =
                         do! Promise.sleep 400
                     }
                 )
+
             do!
                 RTL.waitFor (
                     promise {
@@ -253,10 +254,19 @@ module CellSelectionSetup =
                         do! Promise.sleep 400
                     }
                 )
+
             do!
                 RTL.waitFor (
                     promise {
                         printfn "wait 4"
+                        do! Promise.sleep 400
+                    }
+                )
+
+            do!
+                RTL.waitFor (
+                    promise {
+                        printfn "wait 5"
                         do! Promise.sleep 400
                     }
                 )
