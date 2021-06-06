@@ -9,7 +9,7 @@ module Full =
 
     module Cy2 =
         let typeText (fn: unit -> Cy.Chainable2<_>) (text: string) =
-//            Cy.wait 200
+            //            Cy.wait 200
             fn().clear {| force = true |} |> ignore
             fn().should "be.empty" null null
 
@@ -18,13 +18,15 @@ module Full =
                 (fun letter ->
                     Cy.wait 250
 
+                    fn().first().click None |> ignore
+
                     fn().first().``type`` (string letter) {| force = true |}
                     |> ignore)
 
             fn().should "have.value" text null
 
         let waitFocus selector wait =
-//            Cy.wait 50
+            //            Cy.wait 50
             Cy.get(selector).should "have.focus" |> ignore
 
             match wait with
@@ -89,7 +91,7 @@ module Full =
                     Cy2.clickText "Login"
                     Cy2.waitFor "Wrong user or password" None
 
-//                    Cy.wait 250
+                    //                    Cy.wait 250
 
                     Cy2.clickText "Register"
                     Cy2.selectorFocusTypeText "input[placeholder='Confirm Password']" password
@@ -109,7 +111,7 @@ module Full =
                         .click None
                     |> ignore
 
-//                    Cy.wait 400
+                    //                    Cy.wait 400
 
                     Cy2.clickText "Add Task"
 
@@ -125,7 +127,7 @@ module Full =
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Select..."
                     Cy2.clickText "Add Area"
 
-//                    Cy.wait 200
+                    //                    Cy.wait 200
 
                     Cy2.selectorFocusTypeTextWithinSelector
                         "[data-testid='TextKey AreaForm']"
@@ -133,11 +135,11 @@ module Full =
                         "a1"
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey AreaForm']" "Save"
-//                    Cy.wait 200
+                    //                    Cy.wait 200
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Save"
 
-//                    Cy.wait 200
+                    //                    Cy.wait 200
 
                     Cy2.selectorFocusTypeTextWithinSelector
                         "[data-testid='TextKey TaskForm']"
@@ -146,7 +148,7 @@ module Full =
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Save"
 
-//                    Cy.wait 200
+                    //                    Cy.wait 200
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
@@ -155,7 +157,7 @@ module Full =
 
                     Cy2.clickText "Edit Database"
 
-//                    Cy.wait 200
+                    //                    Cy.wait 200
 
                     Cy2.selectorFocusTypeTextWithinSelector
                         "[data-testid='TextKey DatabaseForm']"
