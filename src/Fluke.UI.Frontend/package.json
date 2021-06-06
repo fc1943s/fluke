@@ -48,8 +48,8 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "0.0.0-experimental-28625c6f4",
-    "react-dom": "0.0.0-experimental-28625c6f4",
+    "react": "0.0.0-experimental-cc4d24ab0",
+    "react-dom": "0.0.0-experimental-cc4d24ab0",
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
@@ -108,7 +108,7 @@
     "@chakra-ui/gatsby-plugin": "~2.0",
     "postcss": "~8.3",
 
-    "jest": "~27.0.4",
+    "jest": "~27.0.3",
     "jest-environment-jsdom": "~27.0",
     "ts-jest": "~27.0",
     "jest-css-modules": "~2.1",
