@@ -18,7 +18,8 @@ module Full =
                 (fun letter ->
                     Cy.wait 250
 
-                    fn().first().click None |> ignore
+                    fn().first().click (Some {| force = true |})
+                    |> ignore
 
                     fn().first().``type`` (string letter) {| force = true |}
                     |> ignore)
