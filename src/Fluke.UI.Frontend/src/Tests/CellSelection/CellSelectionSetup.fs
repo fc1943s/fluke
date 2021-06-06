@@ -22,6 +22,7 @@ open State
 
 
 module CellSelectionSetup =
+    let maxTimeout = 5 * 60 * 1000
     let getCellMap (subject: Bindings.render<_, _>) (setter: IRefValue<unit -> CallbackMethods>) =
         promise {
             let! dateSequence =

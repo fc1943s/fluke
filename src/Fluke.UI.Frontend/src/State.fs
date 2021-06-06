@@ -36,7 +36,7 @@ module State =
         let rec debug =
             Recoil.atomWithProfiling (
                 $"{nameof atom}/{nameof debug}",
-                false,
+                JS.isDebug,
                 effects =
                     [
                         AtomEffect Storage.local

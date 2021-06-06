@@ -34,5 +34,5 @@ module CtrlPressed =
                 |> Map.ofList
                 |> expectSelection setter
         },
-        20000
+        maxTimeout
     )

@@ -64,20 +64,18 @@ module JS =
             printfn $"deviceInfo={JS.JSON.stringify deviceInfo}"
             deviceInfo
 
+    let isDebug =
+        not deviceInfo.GitHubPages
+        && not deviceInfo.IsExtension
+        && not deviceInfo.IsMobile
+
     let inline log fn =
         let debug =
             match window id with
             | None -> false
             | Some window -> window?Debug
 
-        if debug
-           || (not deviceInfo.GitHubPages
-               && not deviceInfo.IsTesting
-               && not deviceInfo.IsExtension
-               && not deviceInfo.IsMobile) then
-            printfn $"[log] {fn ()}"
-        else
-            ()
+        if debug || isDebug then printfn $"[log] {fn ()}" else ()
 
     [<Emit "(w => $0 instanceof w[$1])(window)">]
     let instanceof (_obj: obj, _typeName: string) : bool = jsNative

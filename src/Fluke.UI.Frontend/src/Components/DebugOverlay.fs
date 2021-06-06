@@ -17,13 +17,14 @@ module DebugOverlay =
         let text, setText = React.useState ""
         let oldJson, setOldJson = React.useState ""
         let debug = Recoil.useValue Atoms.debug
+        let isTesting = Recoil.useValue Atoms.isTesting
 
         Scheduling.useScheduling
             Scheduling.Interval
             1000
             (fun _ ->
                 promise {
-                    if not debug then
+                    if isTesting || not debug then
                         ()
                     else
                         let json =
