@@ -16,7 +16,7 @@ module Full =
             text
             |> Seq.iter
                 (fun letter ->
-                    Cy.wait 200
+                    Cy.wait 250
 
                     fn().first().``type`` (string letter) {| force = true |}
                     |> ignore)

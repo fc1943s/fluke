@@ -23,6 +23,7 @@ open State
 
 module CellSelectionSetup =
     let maxTimeout = 5 * 60 * 1000
+
     let getCellMap (subject: Bindings.render<_, _>) (setter: IRefValue<unit -> CallbackMethods>) =
         promise {
             let! dateSequence =
@@ -194,7 +195,9 @@ module CellSelectionSetup =
                                     let username = Templates.templatesUser.Username |> Username.Value
                                     let! _ = Gun.createUser user username username
                                     let! _ = Gun.authUser gunNamespace.``#`` username username
-                                    do! RTL.waitFor (fun () -> setUsername (Some Templates.templatesUser.Username))
+
+                                    RTL.waitFor (fun () -> setUsername (Some Templates.templatesUser.Username))
+                                    |> ignore
                             }
                             |> Promise.start),
                         [|
