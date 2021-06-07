@@ -40,7 +40,6 @@ module GridHeader =
 
                                     let cellWidth = cellSize * dates.Length
 
-
                                     MonthResponsiveCell.MonthResponsiveCell
                                         {|
                                             Username = input.Username
@@ -48,7 +47,6 @@ module GridHeader =
                                             Props = (fun x -> x.width <- $"{cellWidth}px")
                                         |})
                     ]
-
 
                 // Day of Week row
                 Chakra.flex
@@ -65,7 +63,6 @@ module GridHeader =
                                             Username = input.Username
                                         |})
                     ]
-
 
                 // Day row
                 Chakra.flex

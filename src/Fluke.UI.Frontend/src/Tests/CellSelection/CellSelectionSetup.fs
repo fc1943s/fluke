@@ -102,17 +102,34 @@ module CellSelectionSetup =
                 .toEqual (toString expected)
         }
 
-    let inline click el =
-        //        RTL.act (fun () -> RTL.fireEvent.click el)
-        RTL.waitFor (fun () -> RTL.fireEvent.click el)
+    let inline click elGetter =
+        promise {
+            do! RTL.waitFor id
+            let! el = elGetter ()
+            do! RTL.waitFor (fun () -> RTL.fireEvent.click el)
+        }
 
-    let getCell (cellMap, taskName, date) =
-        cellMap
-        |> Map.pick (fun ((_, taskName'), date') el -> if taskName = taskName' && date = date' then Some el else None)
+    let getCell (cellMapGetter, taskName, date) =
+        fun () ->
+            promise {
+                let! cellMap = cellMapGetter ()
 
-    let taskIdByName cellMap taskName =
-        cellMap
-        |> Map.pick (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
+                return
+                    cellMap
+                    |> Map.pick
+                        (fun ((_, taskName'), date') el ->
+                            if taskName = taskName' && date = date' then Some el else None)
+            }
+
+    let taskIdByName cellMapGetter taskName =
+        promise {
+            let! cellMap = cellMapGetter ()
+
+            return
+                cellMap
+                |> Map.pick
+                    (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
+        }
 
     let initialSetter (setter: CallbackMethods) =
         let dslTemplate =
@@ -275,22 +292,25 @@ module CellSelectionSetup =
                     }
                 )
 
-            let! taskMetadata =
+            let! filteredTaskIdList =
                 JS.waitForSome
                     (fun () ->
                         async {
-                            let! taskMetadata =
+                            let! filteredTaskIdList =
                                 setter
                                     .current()
-                                    .snapshot.getAsync (Selectors.Session.taskMetadata Templates.templatesUser.Username)
+                                    .snapshot
+                                    .getAsync (
+                                        Selectors.Session.filteredTaskIdList Templates.templatesUser.Username
+                                    )
 
-                            return if taskMetadata.IsEmpty then None else Some taskMetadata
+                            return if filteredTaskIdList.IsEmpty then None else Some filteredTaskIdList
                         })
                 |> Async.StartAsPromise
 
-            printfn $"! taskMetadata={taskMetadata}"
+            printfn $"! filteredTaskIdList={filteredTaskIdList}"
 
-            let! cellMap = getCellMap subject setter
+            let cellMapGetter = fun () -> getCellMap subject setter
 
-            return cellMap, setter
+            return cellMapGetter, setter
         }

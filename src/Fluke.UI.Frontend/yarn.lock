@@ -6977,13 +6977,13 @@ copyfiles@^2.3.0:
     untildify "^4.0.0"
     yargs "^16.1.0"
 
-cordova-android@~10.0.0-nightly.2021.6.5.6d803e2f:
-  version "10.0.0-nightly.2021.6.5.6d803e2f"
-  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-10.0.0-nightly.2021.6.5.6d803e2f.tgz#8f09a341be8cf8e87ec5d8698d83786053ee6545"
-  integrity sha512-zEc4oCXuOaucwuBmQgZrHxrOD/15bcmrXPK/l5+jpFJWgANXzpdB1gXvj0fllxOee4+HHqw5XpLB5ZoBzF5puQ==
+cordova-android@~10.0.0-nightly.2021.6.6.6d803e2f:
+  version "10.0.0-nightly.2021.6.6.6d803e2f"
+  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-10.0.0-nightly.2021.6.6.6d803e2f.tgz#e1690a8bebb6284ddb14408205d52d62d195b7fd"
+  integrity sha512-o8+KoXPzAOXQVsiefikZfQw2B6C1dnj5AZjUsUuqNoVtP/eAROurbY3OsATMCNC40un0l0DfUFNn7I1LKiRTog==
   dependencies:
     android-versions "^1.6.0"
-    cordova-common "4.0.3-nightly.2021.6.5.5ad1bdbe"
+    cordova-common "4.0.3-nightly.2021.6.6.5ad1bdbe"
     execa "^5.0.0"
     fast-glob "^3.2.5"
     fs-extra "^9.1.0"
@@ -6998,10 +6998,10 @@ cordova-app-hello-world@^5.0.0:
   resolved "https://registry.yarnpkg.com/cordova-app-hello-world/-/cordova-app-hello-world-5.0.0.tgz#4a80460bf666c21a0fb0391d62ae9510f1ed86e9"
   integrity sha512-5My01wsYoeYwS0f/t5Ck52xPm0+2zYJ0SlvxG9vUsndDGtgiP6t/G8upPgWcyDRRz7Rs/50yZuOntmHqmJxccQ==
 
-cordova-common@4.0.3-nightly.2021.6.5.5ad1bdbe:
-  version "4.0.3-nightly.2021.6.5.5ad1bdbe"
-  resolved "https://registry.yarnpkg.com/cordova-common/-/cordova-common-4.0.3-nightly.2021.6.5.5ad1bdbe.tgz#78c17bfea70827066b41f73f2a29c436734fa71c"
-  integrity sha512-t9LnhcCSAF4CdyCILxCKChcaP7W5vt/DbAJCwTlkVsbb9mNeglcQdvu01LyTlu4aVspdsnDd0y/uOrW/6YJw9w==
+cordova-common@4.0.3-nightly.2021.6.6.5ad1bdbe:
+  version "4.0.3-nightly.2021.6.6.5ad1bdbe"
+  resolved "https://registry.yarnpkg.com/cordova-common/-/cordova-common-4.0.3-nightly.2021.6.6.5ad1bdbe.tgz#de7e4ff9436097763f5c8b0c1a6312e632dc7d9d"
+  integrity sha512-CPwtCUP0uHf18p5uSe0jnxWwa+ySoOqn8a+xEaitbG1ZJRyWXNARTs6pTnKLyr5qBOSLeYbOprZV4iR5DwViZQ==
   dependencies:
     "@netflix/nerror" "^1.1.3"
     ansi "^0.3.1"
@@ -18158,7 +18158,7 @@ readdirp@~3.5.0:
 
 recoil@facebookexperimental/Recoil.git#nightly:
   version "0.3.1"
-  resolved "https://codeload.github.com/facebookexperimental/Recoil/tar.gz/8ae2f956bbfbc7ae89a973872916d3db4e9f176b"
+  resolved "https://codeload.github.com/facebookexperimental/Recoil/tar.gz/3afe4d55f08752cd0f3aa87e5912a1760524de36"
   dependencies:
     hamt_plus "1.0.2"
 

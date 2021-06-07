@@ -79,7 +79,6 @@ module BulletJournalView =
                                                                     |> str
                                                                 ]
 
-
                                                             yield!
                                                                 visibleCells
                                                                 |> List.map

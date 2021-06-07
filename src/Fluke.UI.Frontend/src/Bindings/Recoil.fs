@@ -256,6 +256,18 @@ module Recoil =
         let value = Recoil.useValueLoadable atom
         loadableDefault def value
 
+    let useEffect (fn, deps) =
+        let setter = Recoil.useCallbackRef id
+
+        React.useEffect (
+            (fun () -> promise { do! fn (setter ()) } |> Promise.start),
+            [|
+                box setter
+                box fn
+                box deps
+            |]
+        )
+
     let useStateLoadableDefault atom def =
         let value, setValue = Recoil.useStateLoadable atom
         loadableDefault def value, setValue

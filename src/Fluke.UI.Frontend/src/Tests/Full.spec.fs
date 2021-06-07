@@ -54,7 +54,9 @@ module Full =
             |> ignore
 
         let clickText text =
-            (Cy.contains text None).click None |> ignore
+            (Cy.contains text None)
+                .click (Some {| force = true |})
+            |> ignore
 
         let clickSelector selector = (Cy.get selector).click None |> ignore
 
@@ -100,16 +102,20 @@ module Full =
                     Cy2.waitFor "User registered successfully" None
 
                     Cy2.clickText (nameof Databases)
-                    Cy2.waitFor "Lane Rendering" (Some {| timeout = timeout |})
+                    Cy2.waitFor "Lane Rendering" None
+
+                    Cy.wait 200
 
                     Cy2.clickSelector "[data-testid='Add Database']"
+
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
+//                    Cy.wait 500
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
-                        .click None
+                        .click (Some {| force = true |})
                     |> ignore
 
                     //                    Cy.wait 400
@@ -153,12 +159,12 @@ module Full =
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
-                        .click None
+                        .click (Some {| force = true |})
                     |> ignore
 
                     Cy2.clickText "Edit Database"
 
-                    //                    Cy.wait 200
+                    Cy.wait 200
 
                     Cy2.selectorFocusTypeTextWithinSelector
                         "[data-testid='TextKey DatabaseForm']"
@@ -172,10 +178,10 @@ module Full =
                     Cy2.waitFor "1 of 1 tasks visible" None
                     Cy2.waitFor taskName None
                     Cy2.clickText "Habit Tracker View"
-                    Cy2.waitFor "0 of 1 tasks visible" None
+                    Cy2.waitFor "0 of 1 tasks visible" (Some {| timeout = timeout |})
                     Cy2.clickText "Priority View"
-                    Cy2.waitFor "1 of 1 tasks visible" None
+                    Cy2.waitFor "1 of 1 tasks visible" (Some {| timeout = timeout |})
                     Cy2.clickText "Bullet Journal View"
-                    Cy2.waitFor "0 of 1 tasks visible" None
+                    Cy2.waitFor "0 of 1 tasks visible" (Some {| timeout = timeout |})
 
                     Cy.visit homeUrl))

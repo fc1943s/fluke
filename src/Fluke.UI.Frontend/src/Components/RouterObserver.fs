@@ -27,7 +27,7 @@ module RouterObserver =
 
     let useLog () =
         let debug = Recoil.useValue Atoms.debug
-        Recoil.useCallbackRef (fun _ (str: string) -> if debug then printfn $"{str}")
+        Recoil.useCallbackRef (fun _ (str: string) -> if debug then printfn $"[router log] {str}")
 
     [<ReactComponent>]
     let RouterObserver () =
@@ -114,6 +114,8 @@ module RouterObserver =
 
         React.useEffect (
             (fun () ->
+                log "RouterObserver effect. #00"
+
                 if restoringInitialSegments then
                     log "RouterObserver. #10"
 
@@ -202,8 +204,7 @@ module RouterObserver =
                 else
                     log "RouterObserver. #8"
 
-                    JS.setTimeout (fun () -> setSessionRestored true) 0
-                    |> ignore),
+                    setSessionRestored true),
             [|
                 box setView
                 box view

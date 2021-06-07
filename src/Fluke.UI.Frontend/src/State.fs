@@ -97,6 +97,16 @@ module State =
 
 
         module rec User =
+            let rec databaseIdSet =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof databaseIdSet}",
+                    (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Recoil.AtomFamily (username, databaseIdSet, username)) []
+                        ])
+                )
+
             let rec joinSet =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof joinSet}",
@@ -321,6 +331,18 @@ module State =
                 |> string
                 |> List.singleton
 
+            let rec taskIdSet =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Database}/{nameof taskIdSet}",
+                    (fun (_username: Username, _databaseId: DatabaseId) -> Set.empty: Set<TaskId>),
+                    (fun (username: Username, databaseId: DatabaseId) ->
+                        [
+                            Recoil.gunEffect
+                                (Recoil.AtomFamily (username, taskIdSet, (username, databaseId)))
+                                (databaseIdIdentifier databaseId)
+                        ])
+                )
+
             let rec name =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof name}",
@@ -490,6 +512,18 @@ module State =
                     (fun (_taskId: TaskId) -> []: Attachment list) // TODO: move from here?
                 )
 
+        module rec Session =
+            let rec sessionData =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof sessionData}",
+                    (fun (_username: Username) ->
+                        {
+                            TaskList = []
+                            InformationStateMap = Map.empty
+                            TaskStateMap = Map.empty
+                            UnfilteredTaskCount = 0
+                        })
+                )
 
         module rec Cell =
             let cellIdentifier (taskId: TaskId) (dateId: DateId) =
@@ -845,6 +879,7 @@ module State =
                     (fun (username: Username) getter ->
                         promise {
                             let joinSet = getter.get (Atoms.User.joinSet username)
+                            let databaseIdSet = getter.get (Atoms.User.databaseIdSet username)
 
                             return
                                 joinSet
@@ -852,6 +887,7 @@ module State =
                                     (function
                                     | Join.Database databaseId -> Some databaseId
                                     | _ -> None)
+                                |> Set.union databaseIdSet
                         })
                 )
 
@@ -861,13 +897,24 @@ module State =
                     (fun (username: Username) getter ->
                         promise {
                             let joinSet = getter.get (Atoms.User.joinSet username)
+                            let databaseIdSet = getter.get (Atoms.User.databaseIdSet username)
 
-                            return
+                            let databaseIdSet =
                                 joinSet
                                 |> Set.choose
                                     (function
-                                    | Join.Task (databaseId, taskId) -> Some (taskId, {| DatabaseId = databaseId |})
+                                    | Join.Database databaseId -> Some databaseId
                                     | _ -> None)
+                                |> Set.union databaseIdSet
+
+                            return
+                                databaseIdSet
+                                |> Seq.collect
+                                    (fun databaseId ->
+                                        let taskIdSet = getter.get (Atoms.Database.taskIdSet (username, databaseId))
+
+                                        taskIdSet
+                                        |> Set.map (fun taskId -> taskId, {| DatabaseId = databaseId |}))
                                 |> Map.ofSeq
                         })
                 )
@@ -1016,7 +1063,7 @@ module State =
                     $"{nameof selectorFamily}/{nameof Session}/{nameof filteredTaskIdList}",
                     (fun (username: Username) getter ->
                         promise {
-                            let sessionData = getter.get (Session.sessionData username)
+                            let sessionData = getter.get (Atoms.Session.sessionData username)
 
                             return
                                 sessionData.TaskList
@@ -1105,7 +1152,7 @@ module State =
                             if hideSchedulingOverlay then
                                 return getter.get (Atoms.Cell.status (username, taskId, dateId))
                             else
-                                let sessionData = getter.get (Session.sessionData username)
+                                let sessionData = getter.get (Atoms.Session.sessionData username)
 
                                 return
                                     sessionData.TaskStateMap

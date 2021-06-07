@@ -11,6 +11,7 @@ open Fluke.UI.Frontend.Bindings
 module Hydrate =
     let hydrateDatabase (setter: CallbackMethods) username atomScope (database: Database) =
         setter.set (Atoms.User.joinSet username, Set.add (Join.Database database.Id))
+        setter.set (Atoms.User.databaseIdSet username, Set.add database.Id)
 
         setter.scopedSet username atomScope (Atoms.Database.name, (username, database.Id), database.Name)
         setter.scopedSet username atomScope (Atoms.Database.owner, (username, database.Id), database.Owner)
@@ -22,6 +23,7 @@ module Hydrate =
 
     let hydrateTask (setter: CallbackMethods) username atomScope databaseId (task: Task) =
         setter.set (Atoms.User.joinSet username, Set.add (Join.Task (databaseId, task.Id)))
+        setter.set (Atoms.Database.taskIdSet (username, databaseId), Set.add task.Id)
 
         setter.scopedSet username atomScope (Atoms.Task.name, (username, task.Id), task.Name)
         setter.scopedSet username atomScope (Atoms.Task.information, (username, task.Id), task.Information)

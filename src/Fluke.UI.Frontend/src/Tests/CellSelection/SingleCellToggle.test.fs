@@ -16,15 +16,17 @@ module SingleCellToggle =
     Jest.test (
         "single cell toggle",
         promise {
-            let! cellMap, setter = initialize ()
+            let! cellMapGetter, setter = initialize ()
 
             RTL.act (fun () -> setter.current().set (Atoms.ctrlPressed, true))
 
-            do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
+            do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
+
+            let! taskId_2 = taskIdByName cellMapGetter "2"
 
             do!
                 [
-                    taskIdByName cellMap "2",
+                    taskId_2,
                     set [
                         FlukeDate.Create 2020 Month.January 9
                     ]
@@ -32,15 +34,15 @@ module SingleCellToggle =
                 |> Map.ofList
                 |> expectSelection setter
 
-            do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
+            do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 
             do! [] |> Map.ofList |> expectSelection setter
 
-            do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 11))
+            do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 11))
 
             do!
                 [
-                    taskIdByName cellMap "2",
+                    taskId_2,
                     set [
                         FlukeDate.Create 2020 Month.January 11
                     ]

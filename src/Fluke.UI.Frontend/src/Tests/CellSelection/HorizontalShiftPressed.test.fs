@@ -16,16 +16,18 @@ module HorizontalShiftPressed =
     Jest.test (
         "cell selection - horizontal shift pressed",
         promise {
-            let! cellMap, setter = initialize ()
+            let! cellMapGetter, setter = initialize ()
 
             RTL.act (fun () -> setter.current().set (Atoms.shiftPressed, true))
 
-            do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
-            do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 11))
+            do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
+            do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 11))
+
+            let! taskId_2 = taskIdByName cellMapGetter "2"
 
             do!
                 [
-                    taskIdByName cellMap "2",
+                    taskId_2,
                     set [
                         FlukeDate.Create 2020 Month.January 9
                         FlukeDate.Create 2020 Month.January 10

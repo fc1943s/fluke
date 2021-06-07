@@ -16,23 +16,27 @@ module BoxSelection =
     Jest.test (
         "box selection",
         promise {
-            let! cellMap, setter = initialize ()
+            let! cellMapGetter, setter = initialize ()
 
             RTL.act (fun () -> setter.current().set (Atoms.shiftPressed, true))
 
+            do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
+            do! click (getCell (cellMapGetter, TaskName "3", FlukeDate.Create 2020 Month.January 10))
 
-            do! click (getCell (cellMap, TaskName "2", FlukeDate.Create 2020 Month.January 9))
-            do! click (getCell (cellMap, TaskName "3", FlukeDate.Create 2020 Month.January 10))
+            let! taskId_1 = taskIdByName cellMapGetter "1"
+            let! taskId_2 = taskIdByName cellMapGetter "2"
+            let! taskId_3 = taskIdByName cellMapGetter "3"
+            let! taskId_4 = taskIdByName cellMapGetter "4"
 
             do!
                 [
-                    taskIdByName cellMap "2",
+                    taskId_2,
                     set [
                         FlukeDate.Create 2020 Month.January 9
                         FlukeDate.Create 2020 Month.January 10
                     ]
 
-                    taskIdByName cellMap "3",
+                    taskId_3,
                     set [
                         FlukeDate.Create 2020 Month.January 9
                         FlukeDate.Create 2020 Month.January 10
@@ -42,25 +46,25 @@ module BoxSelection =
                 |> expectSelection setter
 
 
-            do! click (getCell (cellMap, TaskName "4", FlukeDate.Create 2020 Month.January 11))
+            do! click (getCell (cellMapGetter, TaskName "4", FlukeDate.Create 2020 Month.January 11))
 
             do!
                 [
-                    taskIdByName cellMap "2",
+                    taskId_2,
                     set [
                         FlukeDate.Create 2020 Month.January 9
                         FlukeDate.Create 2020 Month.January 10
                         FlukeDate.Create 2020 Month.January 11
                     ]
 
-                    taskIdByName cellMap "3",
+                    taskId_3,
                     set [
                         FlukeDate.Create 2020 Month.January 9
                         FlukeDate.Create 2020 Month.January 10
                         FlukeDate.Create 2020 Month.January 11
                     ]
 
-                    taskIdByName cellMap "4",
+                    taskId_4,
                     set [
                         FlukeDate.Create 2020 Month.January 9
                         FlukeDate.Create 2020 Month.January 10
@@ -70,11 +74,11 @@ module BoxSelection =
                 |> Map.ofList
                 |> expectSelection setter
 
-            do! click (getCell (cellMap, TaskName "1", FlukeDate.Create 2020 Month.January 8))
+            do! click (getCell (cellMapGetter, TaskName "1", FlukeDate.Create 2020 Month.January 8))
 
             do!
                 [
-                    taskIdByName cellMap "1",
+                    taskId_1,
                     set [
                         FlukeDate.Create 2020 Month.January 8
                         FlukeDate.Create 2020 Month.January 9
@@ -82,7 +86,7 @@ module BoxSelection =
                         FlukeDate.Create 2020 Month.January 11
                     ]
 
-                    taskIdByName cellMap "2",
+                    taskId_2,
                     set [
                         FlukeDate.Create 2020 Month.January 8
                         FlukeDate.Create 2020 Month.January 9
@@ -90,7 +94,7 @@ module BoxSelection =
                         FlukeDate.Create 2020 Month.January 11
                     ]
 
-                    taskIdByName cellMap "3",
+                    taskId_3,
                     set [
                         FlukeDate.Create 2020 Month.January 8
                         FlukeDate.Create 2020 Month.January 9
@@ -98,7 +102,7 @@ module BoxSelection =
                         FlukeDate.Create 2020 Month.January 11
                     ]
 
-                    taskIdByName cellMap "4",
+                    taskId_4,
                     set [
                         FlukeDate.Create 2020 Month.January 8
                         FlukeDate.Create 2020 Month.January 9

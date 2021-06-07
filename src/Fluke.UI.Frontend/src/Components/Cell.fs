@@ -29,7 +29,6 @@ module Cell =
 
         let status, setStatus = Recoil.useState (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
         let cellSelectionMap = Recoil.useValue (Selectors.Session.cellSelectionMap input.Username)
-        let setter = Recoil.useCallbackRef id
 
         let dayStart = Recoil.useValue (Atoms.User.dayStart input.Username)
 
@@ -37,6 +36,25 @@ module Cell =
             match status with
             | UserStatus (_, Postponed (Some until)) -> Some until
             | _ -> None
+
+        let onClick =
+            Recoil.useCallbackRef
+                (fun setter (onClickStatus: CellStatus) ->
+                    promise {
+                        cellSelectionMap
+                        |> Map.iter
+                            (fun taskId dates ->
+                                dates
+                                |> Set.iter
+                                    (fun date ->
+                                        setter.set (
+                                            Selectors.Cell.status (input.Username, taskId, DateId date),
+                                            onClickStatus
+                                        )))
+
+                        setStatus onClickStatus
+                        input.OnClose ()
+                    })
 
         Chakra.stack
             (fun x ->
@@ -51,7 +69,7 @@ module Cell =
                         x.columns <- 1
                         x.width <- $"{cellSize (* * 2*) }px")
                     [
-                        let wrapButton icon color (onClickStatus: CellStatus option) =
+                        let wrapButton icon color onClickStatus =
                             Chakra.iconButton
                                 (fun x ->
                                     x.icon <- icon
@@ -64,30 +82,7 @@ module Cell =
                                     x.borderRadius <- "0"
 
                                     match onClickStatus with
-                                    | Some onClickStatus ->
-                                        x.onClick <-
-                                            fun _ ->
-                                                promise {
-                                                    let setter = setter ()
-
-                                                    cellSelectionMap
-                                                    |> Map.iter
-                                                        (fun taskId dates ->
-                                                            dates
-                                                            |> Set.iter
-                                                                (fun date ->
-                                                                    setter.set (
-                                                                        Selectors.Cell.status (
-                                                                            input.Username,
-                                                                            taskId,
-                                                                            DateId date
-                                                                        ),
-                                                                        onClickStatus
-                                                                    )))
-
-                                                    setStatus onClickStatus
-                                                    input.OnClose ()
-                                                }
+                                    | Some onClickStatus -> x.onClick <- fun _ -> onClick onClickStatus
                                     | None -> ())
                                 []
 
@@ -381,8 +376,16 @@ overriding any other behavior.
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
         let isTesting = Recoil.useValue Atoms.isTesting
         let taskMetadata = Recoil.useValueLoadableDefault (Selectors.Session.taskMetadata input.Username) Map.empty
+        let showUser = Recoil.useValueLoadableDefault (Selectors.Task.showUser (input.Username, input.TaskId)) false
 
-        let currentTaskMetadata = taskMetadata |> Map.find input.TaskId
+        let currentTaskMetadata =
+            React.useMemo (
+                (fun () -> taskMetadata |> Map.find input.TaskId),
+                [|
+                    box taskMetadata
+                    box input.TaskId
+                |]
+            )
 
         let isReadWrite =
             Recoil.useValueLoadableDefault (Selectors.Database.isReadWrite currentTaskMetadata.DatabaseId) false
@@ -390,7 +393,6 @@ overriding any other behavior.
         let status = Recoil.useValueLoadable (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
-        let showUser = Recoil.useValueLoadableDefault (Selectors.Task.showUser (input.Username, input.TaskId)) false
         let isToday = Recoil.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false
 
         let selected = Recoil.useValue (Atoms.Cell.selected (input.Username, input.TaskId, input.DateId))

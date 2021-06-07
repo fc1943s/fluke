@@ -85,6 +85,7 @@ module JS =
 
     let newObj fn = jsOptions<_> fn
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"
+    let debounce<'T, 'U> (_: 'T -> 'U) (_: int): 'T -> 'U = importDefault "lodash.debounce"
     let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
     let toJsArray a = a |> Array.toList |> List.toArray
 

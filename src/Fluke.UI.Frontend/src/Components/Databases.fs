@@ -199,52 +199,19 @@ module Databases =
                         let! database =
                             setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
 
-                        let! dateSequence = setter.snapshot.getPromise Selectors.dateSequence
-                        let! taskMetadata = setter.snapshot.getPromise (Selectors.Session.taskMetadata input.Username)
+                        let! taskIdSet =
+                            setter.snapshot.getPromise (Atoms.Database.taskIdSet (input.Username, input.DatabaseId))
 
-                        let databaseMap =
-                            taskMetadata
-                            |> Seq.map (fun (KeyValue (taskId, metadata)) -> metadata.DatabaseId, taskId)
-                            |> Seq.groupBy fst
-                            |> Map.ofSeq
-                            |> Map.mapValues (Seq.map snd >> Seq.toList)
+                        let taskIdList = taskIdSet |> Set.toList
 
-                        let dateTaskPairs =
-                            dateSequence
-                            |> List.map DateId
-                            |> List.collect
-                                (fun dateId ->
-                                    databaseMap.[database.Id]
-                                    |> List.map (fun taskId -> dateId, taskId))
-
-                        let! statusList =
-                            dateTaskPairs
-                            |> List.map (fun (dateId, taskId) -> Selectors.Cell.status (input.Username, taskId, dateId))
+                        let! cellStateMapList =
+                            taskIdList
+                            |> List.map (fun taskId -> Selectors.Task.cellStateMap (input.Username, taskId))
                             |> Recoil.waitForAll
                             |> setter.snapshot.getPromise
 
-                        let taskCellStateMap =
-                            dateTaskPairs
-                            |> List.zip statusList
-                            |> List.filter
-                                (function
-                                | UserStatus _, _ -> true
-                                | _ -> false)
-                            |> List.map
-                                (fun (status, (dateId, taskId)) ->
-                                    taskId,
-                                    (dateId,
-                                     {
-                                         Status = status
-                                         Attachments = []
-                                         Sessions = []
-                                     }))
-                            |> List.groupBy fst
-                            |> Map.ofList
-                            |> Map.mapValues (List.map snd >> Map.ofList)
-
                         let! taskList =
-                            databaseMap.[database.Id]
+                            taskIdList
                             |> List.map (fun taskId -> Selectors.Task.task (input.Username, taskId))
                             |> Recoil.waitForAll
                             |> setter.snapshot.getPromise
@@ -265,18 +232,15 @@ module Databases =
                                     |> Map.ofList
                                 TaskStateMap =
                                     taskList
-                                    |> List.map
-                                        (fun task ->
+                                    |> List.mapi
+                                        (fun i task ->
                                             task,
                                             {
                                                 Task = task
                                                 Sessions = []
                                                 Attachments = []
                                                 SortList = []
-                                                CellStateMap =
-                                                    taskCellStateMap
-                                                    |> Map.tryFind task.Id
-                                                    |> Option.defaultValue Map.empty
+                                                CellStateMap = cellStateMapList.[i]
                                             })
                                     |> Map.ofList
                             }

@@ -25,6 +25,7 @@ module MonthResponsiveCell =
 
         Chakra.box
             (fun x ->
+                x.whiteSpace <- "nowrap"
                 x.textAlign <- "center"
                 x.height <- $"{cellSize}px"
                 x.lineHeight <- $"{cellSize}px"
