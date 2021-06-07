@@ -175,8 +175,8 @@ module Full =
 
                     Cy2.clickText dbName
 
-                    Cy2.waitFor "1 of 1 tasks visible" None
-                    Cy2.waitFor taskName None
+                    Cy2.waitFor "1 of 1 tasks visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor taskName (Some {| timeout = timeout |})
                     Cy2.clickText "Habit Tracker View"
                     Cy2.waitFor "0 of 1 tasks visible" (Some {| timeout = timeout |})
                     Cy2.clickText "Priority View"
