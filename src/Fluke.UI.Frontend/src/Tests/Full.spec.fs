@@ -177,11 +177,17 @@ module Full =
 
                     Cy2.waitFor "1 of 1 tasks visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})
+
                     Cy2.clickText "Habit Tracker View"
+                    Cy.wait 200
                     Cy2.waitFor "0 of 1 tasks visible" (Some {| timeout = timeout |})
+
                     Cy2.clickText "Priority View"
+                    Cy.wait 200
                     Cy2.waitFor "1 of 1 tasks visible" (Some {| timeout = timeout |})
+
                     Cy2.clickText "Bullet Journal View"
+                    Cy.wait 200
                     Cy2.waitFor "0 of 1 tasks visible" (Some {| timeout = timeout |})
 
                     Cy.visit homeUrl))
