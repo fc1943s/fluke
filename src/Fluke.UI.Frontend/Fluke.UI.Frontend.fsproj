@@ -54,6 +54,7 @@
         <Compile Include="src\Components\Cell.fs" />
         <Compile Include="src\Components\Cells.fs" />
         <Compile Include="src\Components\Checkbox.fs" />
+        <Compile Include="src\Components\CheckboxInput.fs" />
         <Compile Include="src\Components\DebugOverlay.fs" />
         <Compile Include="src\Components\Logo.fs" />
         <Compile Include="src\Components\AreaForm.fs" />

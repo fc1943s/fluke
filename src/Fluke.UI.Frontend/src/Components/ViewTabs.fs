@@ -41,7 +41,6 @@ module ViewTabs =
         let showViewOptions = Recoil.useValue (Atoms.User.showViewOptions input.Username)
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
         let filteredTaskIdList = Recoil.useValueLoadable (Selectors.Session.filteredTaskIdList input.Username)
-        let filterTasksByView, setFilterTasksByView = Recoil.useState (Atoms.User.filterTasksByView input.Username)
 
         let tabs, tabIndex =
             React.useMemo (
@@ -176,19 +175,15 @@ module ViewTabs =
                     Chakra.stack
                         (fun _ -> ())
                         [
-                            Checkbox.Checkbox
+                            CheckboxInput.CheckboxInput
                                 {|
+                                    Atom = Atoms.User.filterTasksByView input.Username
                                     Props =
-                                        fun x ->
-                                            x.isChecked <- filterTasksByView
-
-                                            x.onChange <-
-                                                fun _ -> promise { setFilterTasksByView (not filterTasksByView) }
-
+                                        (fun x ->
                                             x.children <-
                                                 [
                                                     str "Filter tasks by view"
-                                                ]
+                                                ])
                                 |}
 
                             Input.LeftIconInput

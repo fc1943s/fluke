@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 
-open Fable.Core.JsInterop
 open Fable.React
 open Feliz
 open System
@@ -19,8 +18,6 @@ module Settings =
         (input: {| Username: Username
                    Props: Chakra.IChakraProps -> unit |})
         =
-        let debug, setDebug = Recoil.useState Atoms.debug
-
         Accordion.Accordion
             {|
                 Props = input.Props
@@ -87,22 +84,11 @@ module Settings =
 
                                         x.inputFormat <- Some Input.InputFormat.Number)
 
-                                Checkbox.Checkbox
+                                CheckboxInput.CheckboxInput
                                     {|
+                                        Atom = Atoms.debug
                                         Props =
                                             fun x ->
-                                                x.isChecked <- debug
-
-                                                x.onChange <-
-                                                    fun _ ->
-                                                        promise {
-                                                            match JS.window id with
-                                                            | Some window -> window?Debug <- not debug
-                                                            | None -> ()
-
-                                                            setDebug (not debug)
-                                                        }
-
                                                 x.children <-
                                                     [
                                                         str "Show Debug Information"
