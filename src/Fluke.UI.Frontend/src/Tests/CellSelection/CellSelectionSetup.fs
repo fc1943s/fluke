@@ -39,15 +39,15 @@ module CellSelectionSetup =
             match username with
             | Some username ->
 
-                let! filteredTaskIdList =
+                let! sortedTaskIdList =
                     setter
                         .current()
-                        .snapshot.getPromise (Selectors.Session.filteredTaskIdList username)
+                        .snapshot.getPromise (Selectors.Session.sortedTaskIdList username)
 
-                printfn $"filteredTaskIdList={filteredTaskIdList}"
+                printfn $"sortedTaskIdList ={sortedTaskIdList}"
 
                 let! cellList =
-                    filteredTaskIdList
+                    sortedTaskIdList
                     |> List.map
                         (fun taskId ->
                             promise {
@@ -176,22 +176,12 @@ module CellSelectionSetup =
                 databaseState.Database
 
             databaseState.TaskStateMap
-            |> Map.keys
-            |> Seq.iter
-                (fun task ->
-                    Hydrate.hydrateTask
-                        setter
-                        Templates.templatesUser.Username
-                        Recoil.AtomScope.ReadOnly
-                        databaseId
-                        { task with Id = TaskId.NewId () })
+            |> Map.iter
+                (fun taskId taskState ->
+                    Hydrate.hydrateTask setter Templates.templatesUser.Username Recoil.AtomScope.ReadOnly taskState.Task
+                    setter.set (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId), Set.add taskId))
 
-            setter.set (
-                Atoms.User.selectedDatabaseIdList Templates.templatesUser.Username,
-                [
-                    databaseId
-                ]
-            )
+            setter.set (Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username, set [ databaseId ])
         }
 
     let getApp () =
@@ -292,23 +282,23 @@ module CellSelectionSetup =
                     }
                 )
 
-            let! filteredTaskIdList =
+            let! sortedTaskIdList =
                 JS.waitForSome
                     (fun () ->
                         async {
-                            let! filteredTaskIdList =
+                            let! sortedTaskIdList =
                                 setter
                                     .current()
                                     .snapshot
                                     .getAsync (
-                                        Selectors.Session.filteredTaskIdList Templates.templatesUser.Username
+                                        Selectors.Session.sortedTaskIdList Templates.templatesUser.Username
                                     )
 
-                            return if filteredTaskIdList.IsEmpty then None else Some filteredTaskIdList
+                            return if sortedTaskIdList.IsEmpty then None else Some sortedTaskIdList
                         })
                 |> Async.StartAsPromise
 
-            printfn $"! filteredTaskIdList={filteredTaskIdList}"
+            printfn $"! sortedTaskIdList={sortedTaskIdList}"
 
             let cellMapGetter = fun () -> getCellMap subject setter
 

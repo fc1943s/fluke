@@ -82,6 +82,7 @@ module Set =
     let addIf item condition set =
         if not condition then set else set |> Set.add item
 
+    let collect fn set = set |> Set.map fn |> Set.unionMany
 
 
 [<AutoOpen>]

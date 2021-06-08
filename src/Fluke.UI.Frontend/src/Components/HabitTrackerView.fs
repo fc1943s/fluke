@@ -12,7 +12,7 @@ module HabitTrackerView =
 
     [<ReactComponent>]
     let HabitTrackerView (input: {| Username: Username |}) =
-        let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
+        let sortedTaskIdList = Recoil.useValue (Selectors.Session.sortedTaskIdList input.Username)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.flex
@@ -36,7 +36,7 @@ module HabitTrackerView =
                                     (fun x -> x.paddingRight <- "10px")
                                     [
                                         yield!
-                                            filteredTaskIdList
+                                            sortedTaskIdList
                                             |> List.map
                                                 (fun taskId ->
                                                     TaskInformationName.TaskInformationName
@@ -52,7 +52,7 @@ module HabitTrackerView =
                                         x.textAlign <- "center")
                                     [
                                         yield!
-                                            filteredTaskIdList
+                                            sortedTaskIdList
                                             |> List.map
                                                 (fun taskId ->
                                                     TaskPriority.TaskPriority
@@ -66,7 +66,7 @@ module HabitTrackerView =
                                     (fun x -> x.flex <- "1")
                                     [
                                         yield!
-                                            filteredTaskIdList
+                                            sortedTaskIdList
                                             |> List.map
                                                 (fun taskId ->
                                                     TaskName.TaskName
@@ -84,7 +84,7 @@ module HabitTrackerView =
                         Cells.Cells
                             {|
                                 Username = input.Username
-                                TaskIdList = filteredTaskIdList
+                                TaskIdList = sortedTaskIdList
                             |}
                     ]
             ]

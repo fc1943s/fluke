@@ -1607,7 +1607,7 @@ module Templates =
                                 name, newDslTemplate)))
         |> Map.ofList
 
-    let createCellStatusChangeInteraction (user: User) task date manualCellStatus =
+    let createCellStatusChangeInteraction (user: User) (task: Task) date manualCellStatus =
         let cellStatusChange =
             match manualCellStatus with
             | ManualCellStatus.Completed -> CellStatusChange.Complete
@@ -1617,13 +1617,17 @@ module Templates =
 
         let cellInteraction = CellInteraction.StatusChange cellStatusChange
         let dateId = DateId date
-        let cellAddress = { Task = task; DateId = dateId }
-        let interaction = Interaction.Cell (cellAddress, cellInteraction)
+        let interaction = Interaction.Cell (task.Id, dateId, cellInteraction)
         let moment = FlukeDateTime.Create (date, user.DayStart)
         let userInteraction = UserInteraction (moment, user.Username, interaction)
         userInteraction
 
-    let createTaskState moment task (sortTaskMap: Map<TaskName, Task> option) (dslTasks: (DslTask * User) list) =
+    let createTaskState
+        moment
+        (task: Task)
+        (sortTaskMap: Map<TaskName, Task> option)
+        (dslTasks: (DslTask * User) list)
+        =
         let taskState, userInteractions =
             (({ TaskState.Default with Task = task }, []), dslTasks)
             ||> List.fold
@@ -1632,7 +1636,7 @@ module Templates =
                         | DslTaskComment comment ->
                             let interaction =
                                 Interaction.Task (
-                                    task,
+                                    task.Id,
                                     TaskInteraction.Attachment (
                                         Attachment.Comment (user.Username, Comment.Comment comment)
                                     )
@@ -1650,7 +1654,8 @@ module Templates =
                         | DslCellComment (date, comment) ->
                             let interaction =
                                 Interaction.Cell (
-                                    { Task = task; DateId = DateId date },
+                                    task.Id,
+                                    DateId date,
                                     CellInteraction.Attachment (
                                         Attachment.Comment (user.Username, Comment.Comment comment)
                                     )
@@ -1669,7 +1674,7 @@ module Templates =
                             let taskSession = TaskSession (start, user.SessionLength, user.SessionBreakLength)
 
                             let taskInteraction = TaskInteraction.Session taskSession
-                            let interaction = Interaction.Task (task, taskInteraction)
+                            let interaction = Interaction.Task (task.Id, taskInteraction)
 
                             let userInteraction = UserInteraction (moment, user.Username, interaction)
 
@@ -1699,7 +1704,7 @@ module Templates =
                                                         }")
 
                                     let interaction =
-                                        Interaction.Task (task, TaskInteraction.Sort (getTask top, getTask bottom))
+                                        Interaction.Task (task.Id, TaskInteraction.Sort (getTask top, getTask bottom))
 
                                     let userInteraction = UserInteraction (moment, user.Username, interaction)
 
@@ -1815,7 +1820,7 @@ module Templates =
                     (fun taskStateMap taskState ->
                         let oldTaskState =
                             newDatabaseState.TaskStateMap
-                            |> Map.tryFind taskState.Task
+                            |> Map.tryFind taskState.Task.Id
 
                         let newTaskState =
                             match oldTaskState with
@@ -1823,7 +1828,7 @@ module Templates =
                             | None -> taskState
 
                         taskStateMap
-                        |> Map.add taskState.Task newTaskState)
+                        |> Map.add taskState.Task.Id newTaskState)
 
         let result =
             { newDatabaseState with

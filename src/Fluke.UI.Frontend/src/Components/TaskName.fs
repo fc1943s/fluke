@@ -22,8 +22,8 @@ module TaskName =
         let (TaskName taskName) = Recoil.useValue (Atoms.Task.name (input.Username, input.TaskId))
         let attachments = Recoil.useValue (Atoms.Task.attachments input.TaskId)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
-        let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
-        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite taskMetadata.[input.TaskId].DatabaseId)
+        let isReadWrite = Recoil.useValue (Selectors.Task.isReadWrite (input.Username, input.TaskId))
+        let databaseId = Recoil.useValue (Selectors.Task.databaseId (input.Username, input.TaskId))
 
         Chakra.flex
             (fun x ->
@@ -72,7 +72,7 @@ module TaskName =
                                     TaskFormTrigger.TaskFormTrigger
                                         {|
                                             Username = input.Username
-                                            DatabaseId = taskMetadata.[input.TaskId].DatabaseId
+                                            DatabaseId = databaseId
                                             TaskId = Some input.TaskId
                                             Trigger =
                                                 fun trigger _setter ->

@@ -128,11 +128,7 @@ module Auth =
                             |> Map.values
                             |> Seq.iter
                                 (fun taskState ->
-                                    hydrateTask
-                                        username
-                                        Recoil.AtomScope.ReadOnly
-                                        databaseState.Database.Id
-                                        taskState.Task
+                                    hydrateTask username Recoil.AtomScope.ReadOnly taskState.Task
 
                                     taskState.CellStateMap
                                     |> Map.iter
@@ -150,7 +146,12 @@ module Auth =
                                             setter.set (
                                                 Atoms.Cell.sessions (taskState.Task.Id, dateId),
                                                 cellState.Sessions
-                                            ))))
+                                            ))
+
+                                    setter.set (
+                                        Atoms.Database.taskIdSet (username, databaseState.Database.Id),
+                                        Set.add taskState.Task.Id
+                                    )))
                 })
 
     let useSignUp () =

@@ -49,8 +49,16 @@ module TaskFormTrigger =
                                                                 hydrateTask
                                                                     input.Username
                                                                     Recoil.AtomScope.ReadOnly
-                                                                    input.DatabaseId
                                                                     task
+
+                                                                setter()
+                                                                    .set (
+                                                                        Atoms.Database.taskIdSet (
+                                                                            input.Username,
+                                                                            input.DatabaseId
+                                                                        ),
+                                                                        Set.add task.Id
+                                                                    )
 
                                                                 onHide ()
                                                             }

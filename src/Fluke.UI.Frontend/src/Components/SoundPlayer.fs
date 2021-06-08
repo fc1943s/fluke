@@ -19,7 +19,7 @@ module SoundPlayer =
         let oldActiveSessions = React.useRef []
         let (Minute sessionLength) = Recoil.useValue (Atoms.User.sessionLength input.Username)
         let (Minute sessionBreakLength) = Recoil.useValue (Atoms.User.sessionBreakLength input.Username)
-        let activeSessions = Recoil.useValueLoadableDefault (Selectors.Session.activeSessions input.Username) []
+        let activeSessions = Recoil.useValue (Selectors.Session.activeSessions input.Username)
 
         React.useEffect (
             (fun () ->

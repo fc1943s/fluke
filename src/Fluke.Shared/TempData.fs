@@ -110,21 +110,14 @@ module TempData =
 
         userInteraction
 
-    let createCellCommentInteraction dayStart task moment user comment =
+    let createCellCommentInteraction dayStart (task: Task) moment user comment =
         let cellInteraction =
             Attachment.Comment (user, comment)
             |> CellInteraction.Attachment
 
-        let cellAddress =
-            {
-                Task = task
-                DateId = dateId dayStart moment
-            }
-
-        let interaction = Interaction.Cell (cellAddress, cellInteraction)
-
+        let dateId = dateId dayStart moment
+        let interaction = Interaction.Cell (task.Id, dateId, cellInteraction)
         let userInteraction = UserInteraction (moment, user, interaction)
-
         userInteraction
 
 

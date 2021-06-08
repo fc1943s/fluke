@@ -40,7 +40,7 @@ module ViewTabs =
     let ViewTabs (input: {| Username: Username |}) =
         let showViewOptions = Recoil.useValue (Atoms.User.showViewOptions input.Username)
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
-        let filteredTaskIdList = Recoil.useValueLoadable (Selectors.Session.filteredTaskIdList input.Username)
+        let sortedTaskIdList = Recoil.useValueLoadable (Selectors.Session.sortedTaskIdList input.Username)
 
         let tabs, tabIndex =
             React.useMemo (
@@ -214,7 +214,7 @@ module ViewTabs =
                                             x.flex <- "1"
                                             x.overflow <- "auto")
                                         [
-                                            match filteredTaskIdList.state () with
+                                            match sortedTaskIdList.state () with
                                             | HasValue [] ->
                                                 Chakra.box
                                                     (fun x ->

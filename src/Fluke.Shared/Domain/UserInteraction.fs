@@ -21,8 +21,8 @@ module UserInteraction =
 
     and [<RequireQualifiedAccess>] Interaction =
         | Information of information: Information * interaction: InformationInteraction
-        | Task of task: Task * interaction: TaskInteraction
-        | Cell of cellAddress: CellAddress * interaction: CellInteraction
+        | Task of task: TaskId * interaction: TaskInteraction
+        | Cell of taskId: TaskId * dateId: DateId * interaction: CellInteraction
 
     and [<RequireQualifiedAccess>] InformationInteraction =
         | Attachment of attachment: Attachment
@@ -66,8 +66,6 @@ module UserInteraction =
         | Sort of top: Task option * bottom: Task option
 
     and TaskSession = TaskSession of start: FlukeDateTime * duration: Minute * breakDuration: Minute
-
-    and CellAddress = { Task: Task; DateId: DateId }
 
     and DateId = DateId of referenceDay: FlukeDate
 
@@ -142,9 +140,9 @@ module UserInteraction =
             =
             DateTime (year, int month, day, int hour, int minute, 0)
 
-        member inline this.GreaterEqualThan (dayStart: FlukeTime) (DateId (referenceDay: FlukeDate)) time =
+        static member inline GreaterEqualThan (dayStart: FlukeTime) (DateId (referenceDay: FlukeDate)) time position =
             let testingAfterMidnight = dayStart.GreaterEqualThan time
-            let currentlyBeforeMidnight = this.Time.GreaterEqualThan dayStart
+            let currentlyBeforeMidnight = position.Time.GreaterEqualThan dayStart
 
             let newDate =
                 if testingAfterMidnight && currentlyBeforeMidnight then
@@ -155,7 +153,7 @@ module UserInteraction =
 
             let dateToCompare : FlukeDateTime = { Date = newDate; Time = time }
 
-            (this |> FlukeDateTime.DateTime)
+            (position |> FlukeDateTime.DateTime)
             >= (dateToCompare |> FlukeDateTime.DateTime)
 
         static member inline Create (year, month, day, hour, minute) : FlukeDateTime =

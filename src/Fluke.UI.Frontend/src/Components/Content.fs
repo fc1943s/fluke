@@ -115,8 +115,6 @@ module Content =
                                     ]
 
                                 SoundPlayer.SoundPlayer {| Username = username |}
-
-                                PositionUpdater.SessionDataUpdater {| Username = username |}
                             ],
                             LoadingSpinner.LoadingSpinner ()
                         )

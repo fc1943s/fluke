@@ -13,7 +13,7 @@ module PriorityView =
 
     [<ReactComponent>]
     let PriorityView (input: {| Username: Username |}) =
-        let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
+        let sortedTaskIdList = Recoil.useValue (Selectors.Session.sortedTaskIdList input.Username)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.flex
@@ -37,7 +37,7 @@ module PriorityView =
                                     (fun x -> x.paddingRight <- "10px")
                                     [
                                         yield!
-                                            filteredTaskIdList
+                                            sortedTaskIdList
                                             |> List.map
                                                 (fun taskId ->
                                                     TaskInformationName.TaskInformationName
@@ -53,7 +53,7 @@ module PriorityView =
                                         x.textAlign <- "center")
                                     [
                                         yield!
-                                            filteredTaskIdList
+                                            sortedTaskIdList
                                             |> List.map
                                                 (fun taskId ->
                                                     TaskPriority.TaskPriority
@@ -67,7 +67,7 @@ module PriorityView =
                                     (fun x -> x.flex <- "1")
                                     [
                                         yield!
-                                            filteredTaskIdList
+                                            sortedTaskIdList
                                             |> List.map
                                                 (fun taskId ->
                                                     TaskName.TaskName
@@ -86,7 +86,7 @@ module PriorityView =
                         Cells.Cells
                             {|
                                 Username = input.Username
-                                TaskIdList = filteredTaskIdList
+                                TaskIdList = sortedTaskIdList
                             |}
                     ]
             ]

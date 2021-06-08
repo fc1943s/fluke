@@ -18,9 +18,9 @@ module StatusBar =
     let StatusBar (input: {| Username: Username |}) =
         let position = Recoil.useValue Atoms.position
 
-        let selectedTaskIdSet = Recoil.useValueLoadable (Selectors.Session.selectedTaskIdSet input.Username)
-        let filteredTaskIdList = Recoil.useValueLoadable (Selectors.Session.filteredTaskIdList input.Username)
-        let activeSessions = Recoil.useValueLoadable (Selectors.Session.activeSessions input.Username)
+        let selectedTaskIdSet = Recoil.useValue (Selectors.Session.selectedTaskIdSet input.Username)
+        let sortedTaskIdList = Recoil.useValueLoadable (Selectors.Session.sortedTaskIdList input.Username)
+        let activeSessions = Recoil.useValue (Selectors.Session.activeSessions input.Username)
 
         Chakra.simpleGrid
             (fun x ->
@@ -63,40 +63,34 @@ module StatusBar =
                             []
 
                         yield!
-                            match activeSessions.state () with
-                            | HasValue activeSessions ->
-                                activeSessions
-                                |> List.map
-                                    (fun (TempUI.ActiveSession (taskName,
-                                                                Minute duration,
-                                                                Minute totalDuration,
-                                                                Minute totalBreakDuration)) ->
-                                        let sessionType, color, duration, left =
-                                            let left = totalDuration - duration
+                            activeSessions
+                            |> List.map
+                                (fun (TempUI.ActiveSession (taskName,
+                                                            Minute duration,
+                                                            Minute totalDuration,
+                                                            Minute totalBreakDuration)) ->
+                                    let sessionType, color, duration, left =
+                                        let left = totalDuration - duration
 
-                                            match duration < totalDuration with
-                                            | true -> "Session", "#7cca7c", duration, left
-                                            | false -> "Break", "#ca7c7c", -left, totalBreakDuration + left
+                                        match duration < totalDuration with
+                                        | true -> "Session", "#7cca7c", duration, left
+                                        | false -> "Break", "#ca7c7c", -left, totalBreakDuration + left
 
-                                        Chakra.box
-                                            (fun x -> x.color <- color)
-                                            [
-                                                str
-                                                    $"{sessionType}: Task[ {taskName} ]; Duration[ %.1f{duration} ]; Left[ %.1f{
-                                                                                                                                    left
-                                                    } ]"
-                                            ])
-                                |> List.intersperse (br [])
-                                |> function
-                                | [] ->
-                                    [
-                                        str "No active session"
-                                    ]
-                                | list -> list
-                            | _ ->
+                                    Chakra.box
+                                        (fun x -> x.color <- color)
+                                        [
+                                            str
+                                                $"{sessionType}: Task[ {taskName} ]; Duration[ %.1f{duration} ]; Left[ %.1f{
+                                                                                                                                left
+                                                } ]"
+                                        ])
+                            |> List.intersperse (br [])
+                            |> function
+                            | [] ->
                                 [
-                                    str "Loading sessions"
+                                    str "No active session"
                                 ]
+                            | list -> list
 
                     ]
 
@@ -109,9 +103,9 @@ module StatusBar =
                                 x.marginRight <- "4px")
                             []
 
-                        match filteredTaskIdList.state (), selectedTaskIdSet.state () with
-                        | HasValue filteredTaskIdList, HasValue selectedTaskIdSet ->
-                            str $"{filteredTaskIdList.Length} of {selectedTaskIdSet.Count} tasks visible"
+                        match sortedTaskIdList.state () with
+                        | HasValue sortedTaskIdList ->
+                            str $"{sortedTaskIdList.Length} of {selectedTaskIdSet.Count} tasks visible"
                         | _ -> str "Loading tasks"
                     ]
 

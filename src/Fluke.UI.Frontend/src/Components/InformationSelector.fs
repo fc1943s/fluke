@@ -80,7 +80,7 @@ module InformationSelector =
             |]
         )
 
-        let informationSet = Recoil.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
+        let informationSet = Recoil.useValue (Selectors.Session.informationSet input.Username)
 
         let sortedInformationList =
             React.useMemo (

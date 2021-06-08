@@ -190,7 +190,7 @@ module Databases =
                    DatabaseId: DatabaseId
                    Disabled: bool |})
         =
-        let isReadWrite = Recoil.useValueLoadableDefault (Selectors.Database.isReadWrite input.DatabaseId) false
+        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite input.DatabaseId)
 
         let exportDatabase =
             Recoil.useCallbackRef
@@ -199,49 +199,21 @@ module Databases =
                         let! database =
                             setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
 
-                        let! taskIdSet =
-                            setter.snapshot.getPromise (Atoms.Database.taskIdSet (input.Username, input.DatabaseId))
+                        let! taskStateList = setter.snapshot.getPromise (Selectors.Session.taskStateList input.Username)
 
-                        let taskIdList = taskIdSet |> Set.toList
-
-                        let! cellStateMapList =
-                            taskIdList
-                            |> List.map (fun taskId -> Selectors.Task.cellStateMap (input.Username, taskId))
-                            |> Recoil.waitForAll
-                            |> setter.snapshot.getPromise
-
-                        let! taskList =
-                            taskIdList
-                            |> List.map (fun taskId -> Selectors.Task.task (input.Username, taskId))
-                            |> Recoil.waitForAll
-                            |> setter.snapshot.getPromise
+                        let! informationStateList =
+                            setter.snapshot.getPromise (Selectors.Session.informationStateList input.Username)
 
                         let databaseState =
                             {
                                 Database = database
                                 InformationStateMap =
-                                    taskList
-                                    |> List.map
-                                        (fun task ->
-                                            task.Information,
-                                            {
-                                                Information = task.Information
-                                                Attachments = []
-                                                SortList = []
-                                            })
+                                    informationStateList
+                                    |> List.map (fun informationState -> informationState.Information, informationState)
                                     |> Map.ofList
                                 TaskStateMap =
-                                    taskList
-                                    |> List.mapi
-                                        (fun i task ->
-                                            task,
-                                            {
-                                                Task = task
-                                                Sessions = []
-                                                Attachments = []
-                                                SortList = []
-                                                CellStateMap = cellStateMapList.[i]
-                                            })
+                                    taskStateList
+                                    |> List.map (fun taskState -> taskState.Task.Id, taskState)
                                     |> Map.ofList
                             }
 
@@ -528,15 +500,18 @@ module Databases =
         let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
         let hideTemplatesCache = React.useRef<bool option> None
 
-        let selectedDatabaseIdList, setSelectedDatabaseIdList =
-            Recoil.useState (Atoms.User.selectedDatabaseIdList input.Username)
+        let selectedDatabaseIdSet, setSelectedDatabaseIdSet =
+            Recoil.useState (Atoms.User.selectedDatabaseIdSet input.Username)
 
-        let databaseIdSet = Recoil.useValueLoadable (Selectors.Session.databaseIdSet input.Username)
+        let databaseIdSet = Recoil.useValue (Atoms.User.databaseIdSet input.Username)
 
         let databaseIdList =
-            databaseIdSet
-            |> Recoil.useLoadableDefault Set.empty
-            |> Set.toList
+            React.useMemo (
+                (fun () -> databaseIdSet |> Set.toList),
+                [|
+                    box databaseIdSet
+                |]
+            )
 
         let databaseNameList =
             databaseIdList
@@ -655,13 +630,13 @@ module Databases =
                                 match nodeIndex with
                                 | Some nodeIndex ->
                                     let validSelectedDatabaseIndexes =
-                                        selectedDatabaseIdList
-                                        |> List.map (fun databaseId -> databaseIndexMap |> Map.tryFind databaseId)
+                                        selectedDatabaseIdSet
+                                        |> Set.map (fun databaseId -> databaseIndexMap |> Map.tryFind databaseId)
 
                                     match databasePositionList.[nodeIndex] with
                                     | Some position ->
                                         validSelectedDatabaseIndexes
-                                        |> List.exists
+                                        |> Set.exists
                                             (function
                                             | Some databaseIndex ->
                                                 let newPosition = databasePositionFromIndex databaseIndex
@@ -671,7 +646,7 @@ module Databases =
                                             | None -> false)
                                     | None ->
                                         validSelectedDatabaseIndexes
-                                        |> List.exists
+                                        |> Set.exists
                                             (function
                                             | Some databaseIndex -> (databasePositionFromIndex databaseIndex).IsSome
                                             | None -> false)
@@ -706,33 +681,33 @@ module Databases =
                     box databasePositionList
                     box input.Username
                     box hideTemplates
-                    box selectedDatabaseIdList
+                    box selectedDatabaseIdSet
                     box isTesting
                 |]
             )
 
-        let expandedDatabaseIdList, setExpandedDatabaseIdList =
-            Recoil.useState (Atoms.User.expandedDatabaseIdList input.Username)
+        let expandedDatabaseIdSet, setExpandedDatabaseIdSet =
+            Recoil.useState (Atoms.User.expandedDatabaseIdSet input.Username)
 
-        let newExpandedDatabaseIdList =
-            match expandedDatabaseIdList with
-            | [] ->
+        let newExpandedDatabaseIdSet =
+            if expandedDatabaseIdSet.IsEmpty then
                 nodes
                 |> Array.map (fun node -> node.value |> Guid |> DatabaseId)
-                |> Array.toList
-            | _ -> expandedDatabaseIdList
+                |> Set.ofArray
+            else
+                expandedDatabaseIdSet
 
         React.useEffect (
             (fun () ->
                 match hideTemplates, hideTemplatesCache.current with
                 | true,
                   (None
-                  | Some false) -> setExpandedDatabaseIdList []
+                  | Some false) -> setExpandedDatabaseIdSet Set.empty
                 | _ -> ()
 
                 hideTemplatesCache.current <- Some hideTemplates),
             [|
-                box setExpandedDatabaseIdList
+                box setExpandedDatabaseIdSet
                 box hideTemplates
                 box hideTemplatesCache
             |]
@@ -750,44 +725,32 @@ module Databases =
                         x.marginLeft <- "6px"
                         x.flex <- "1")
                     [
-                        Chakra.flex
-                            (fun x ->
-                                x.flex <- "1"
-
-                                match databaseIdSet.state () with
-                                | HasValue _ -> ()
-                                | _ -> x.display <- "none")
-                            [
-                                CheckboxTree.render
-                                    {|
-                                        ``checked`` =
-                                            selectedDatabaseIdList
-                                            |> List.map DatabaseId.Value
-                                            |> List.toArray
-                                        expanded =
-                                            newExpandedDatabaseIdList
-                                            |> List.map DatabaseId.Value
-                                            |> List.toArray
-                                        onCheck =
-                                            (fun (x: string []) ->
-                                                x
-                                                |> Array.map (Guid >> DatabaseId)
-                                                |> Array.toList
-                                                |> setSelectedDatabaseIdList)
-                                        onExpand =
-                                            (fun (x: string []) ->
-                                                x
-                                                |> Array.map (Guid >> DatabaseId)
-                                                |> Array.toList
-                                                |> setExpandedDatabaseIdList)
-                                        expandOnClick = true
-                                        onlyLeafCheckboxes = true
-                                        nodes = nodes
-                                        icons = icons
-                                    |}
-                            ]
-                        match databaseIdSet.state () with
-                        | HasValue _ -> ()
-                        | _ -> LoadingSpinner.LoadingSpinner ()
+                        CheckboxTree.render
+                            {|
+                                ``checked`` =
+                                    selectedDatabaseIdSet
+                                    |> Set.toArray
+                                    |> Array.map DatabaseId.Value
+                                expanded =
+                                    newExpandedDatabaseIdSet
+                                    |> Set.toArray
+                                    |> Array.map DatabaseId.Value
+                                onCheck =
+                                    (fun (x: string []) ->
+                                        x
+                                        |> Array.map (Guid >> DatabaseId)
+                                        |> Set.ofArray
+                                        |> setSelectedDatabaseIdSet)
+                                onExpand =
+                                    (fun (x: string []) ->
+                                        x
+                                        |> Array.map (Guid >> DatabaseId)
+                                        |> Set.ofArray
+                                        |> setExpandedDatabaseIdSet)
+                                expandOnClick = true
+                                onlyLeafCheckboxes = true
+                                nodes = nodes
+                                icons = icons
+                            |}
                     ]
             ]

@@ -41,7 +41,7 @@ module State =
         {
             Database: Database
             InformationStateMap: Map<Information, InformationState>
-            TaskStateMap: Map<Task, TaskState>
+            TaskStateMap: Map<TaskId, TaskState>
         }
 
     and [<RequireQualifiedAccess>] DatabaseAccess =
@@ -207,11 +207,14 @@ module State =
                                 InformationStateMap = newInformationStateMap
                             }
 
-                        | Interaction.Task (task, taskInteraction) ->
+                        | Interaction.Task (taskId, taskInteraction) ->
                             let taskState =
                                 databaseState.TaskStateMap
-                                |> Map.tryFind task
-                                |> Option.defaultValue { TaskState.Default with Task = task }
+                                |> Map.tryFind taskId
+                                |> Option.defaultValue
+                                    { TaskState.Default with
+                                        Task = { Task.Default with Id = taskId }
+                                    }
 
                             let newTaskState =
                                 match taskInteraction with
@@ -258,16 +261,19 @@ module State =
 
                             let newTaskStateMap =
                                 databaseState.TaskStateMap
-                                |> Map.add task newTaskState
+                                |> Map.add taskId newTaskState
 
                             { databaseState with
                                 TaskStateMap = newTaskStateMap
                             }
-                        | Interaction.Cell ({ Task = task; DateId = dateId } as _cellAddress, cellInteraction) ->
+                        | Interaction.Cell (taskId, dateId, cellInteraction) ->
                             let taskState =
                                 databaseState.TaskStateMap
-                                |> Map.tryFind task
-                                |> Option.defaultValue { TaskState.Default with Task = task }
+                                |> Map.tryFind taskId
+                                |> Option.defaultValue
+                                    { TaskState.Default with
+                                        Task = { Task.Default with Id = taskId }
+                                    }
 
                             let cellState =
                                 taskState.CellStateMap
@@ -315,7 +321,7 @@ module State =
 
                             let newTaskStateMap =
                                 databaseState.TaskStateMap
-                                |> Map.add task newTaskState
+                                |> Map.add taskId newTaskState
 
                             { databaseState with
                                 TaskStateMap = newTaskStateMap
@@ -349,5 +355,5 @@ module State =
             CellStateMap = mergeCellStateMap oldValue.CellStateMap newValue.CellStateMap
         }
 
-    let mergeTaskStateMap (oldMap: Map<Task, TaskState>) (newMap: Map<Task, TaskState>) =
+    let mergeTaskStateMap (oldMap: Map<TaskId, TaskState>) (newMap: Map<TaskId, TaskState>) =
         Map.unionWith mergeTaskState oldMap newMap

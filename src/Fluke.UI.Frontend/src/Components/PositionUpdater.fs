@@ -16,10 +16,11 @@ module PositionUpdater =
     let PositionUpdater (input: {| Username: Username |}) =
         let isTesting = Recoil.useValue Atoms.isTesting
         let position, setPosition = Recoil.useState Atoms.position
-        let selectedDatabaseIdList = Recoil.useValue (Atoms.User.selectedDatabaseIdList input.Username)
+        let selectedDatabaseIdSet = Recoil.useValue (Atoms.User.selectedDatabaseIdSet input.Username)
 
         let selectedDatabasePositions =
-            selectedDatabaseIdList
+            selectedDatabaseIdSet
+            |> Set.toList
             |> List.map (fun databaseId -> Atoms.Database.position (input.Username, databaseId))
             |> Recoil.waitForAll
             |> Recoil.useValue
@@ -62,31 +63,5 @@ module PositionUpdater =
         )
 
         Scheduling.useScheduling Scheduling.Interval 1000 (fun _setter -> run ())
-
-        nothing
-
-    [<ReactComponent>]
-    let SessionDataUpdater (input: {| Username: Username |}) =
-        let setSessionData = Recoil.useSetState (Atoms.Session.sessionData input.Username)
-
-        let debouncedSetSessionData =
-            React
-                .useRef(
-                    JS.debounce setSessionData 2000
-                )
-                .current
-
-        let sessionData = Recoil.useValueLoadable (Selectors.Session.sessionData input.Username)
-
-        React.useEffect (
-            (fun () ->
-                match sessionData.state () with
-                | HasValue sessionData -> debouncedSetSessionData sessionData
-                | _ -> ()),
-            [|
-                box sessionData
-                box debouncedSetSessionData
-            |]
-        )
 
         nothing

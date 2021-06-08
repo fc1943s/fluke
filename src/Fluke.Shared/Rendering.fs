@@ -74,8 +74,8 @@ module Rendering =
                     lastDate
                 ]
 
-    let renderLane dayStart (position: FlukeDateTime) (dateSequence: FlukeDate list) (taskState: TaskState) =
-        let firstDateRange = FlukeDateTime.Create (dateSequence.Head, dayStart)
+    let renderTaskStatusMap dayStart position dateSequence taskState =
+        let firstDateRange = FlukeDateTime.Create (dateSequence |> List.head, dayStart)
         let lastDateRange = FlukeDateTime.Create (dateSequence |> List.last, dayStart)
 
         let dateSequenceWithEntries =
@@ -134,8 +134,9 @@ module Rendering =
 
                         let cellStatus =
                             match manualCellStatus, group with
-                            | Postponed (Some until), Today when position.GreaterEqualThan dayStart dateId until ->
-                                Pending
+                            | Postponed (Some until), Today when
+                                position
+                                |> FlukeDateTime.GreaterEqualThan dayStart dateId until -> Pending
                             | _ -> userStatus
 
                         StatusCell cellStatus, renderState
@@ -210,23 +211,19 @@ module Rendering =
                     | StatusCell status -> status
                     | TodayCell ->
                         match taskState.Task.MissedAfter, taskState.Task.PendingAfter with
-                        | Some missedAfter, _ when position.GreaterEqualThan dayStart dateId missedAfter -> MissedToday
-                        | _, Some pendingAfter when position.GreaterEqualThan dayStart dateId pendingAfter -> Pending
+                        | Some missedAfter, _ when
+                            position
+                            |> FlukeDateTime.GreaterEqualThan dayStart dateId missedAfter -> MissedToday
+                        | _, Some pendingAfter when
+                            position
+                            |> FlukeDateTime.GreaterEqualThan dayStart dateId pendingAfter -> Pending
                         | _, None -> Pending
                         | _ -> Suggested
 
                 (moment, status) :: loop renderState tail
             | [] -> []
 
-        let cells =
-            loop WaitingFirstEvent dateSequenceWithEntries
-            |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
-            |> List.map
-                (fun (moment, cellStatus) ->
-                    {
-                        DateId = dateId dayStart moment
-                        Task = taskState.Task
-                    },
-                    cellStatus)
-
-        taskState, cells
+        loop WaitingFirstEvent dateSequenceWithEntries
+        |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
+        |> List.map (fun (moment, cellStatus) -> dateId dayStart moment, cellStatus)
+        |> Map.ofList

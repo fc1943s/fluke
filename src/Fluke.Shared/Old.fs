@@ -41,7 +41,7 @@ module Old2 =
 
 
 
-    type OldLane = OldLane of task: TaskState * cells: (CellAddress * CellStatus) list
+    type OldLane = OldLane of task: TaskState * cells: (DateId * CellStatus) list
 
     //    type DatabaseData =
 //        {

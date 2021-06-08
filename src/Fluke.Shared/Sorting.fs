@@ -10,16 +10,16 @@ module Sorting =
     let sortLanesByFrequency lanes =
         lanes
         |> List.sortBy
-            (fun (taskState, cells) ->
+            (fun (taskState, statusMap) ->
                 let disabledCellsCount =
-                    cells
-                    |> List.filter
+                    statusMap
+                    |> Map.values
+                    |> Seq.filter
                         (function
-                        | _,
-                          (CellStatus.Disabled
-                          | CellStatus.Suggested) -> true
+                        | CellStatus.Disabled
+                        | CellStatus.Suggested -> true
                         | _ -> false)
-                    |> List.length
+                    |> Seq.length
 
                 let taskSessionsCount =
                     taskState.CellStateMap
@@ -32,12 +32,12 @@ module Sorting =
     let sortLanesByIncomingRecurrency dayStart position lanes =
         lanes
         |> List.sortBy
-            (fun (_, cells) ->
+            (fun (_, statusMap) ->
                 let lowPriority =
-                    cells
-                    |> List.exists
-                        (fun (address, status) ->
-                            let today = isToday dayStart position address.DateId
+                    statusMap
+                    |> Map.exists
+                        (fun dateId status ->
+                            let today = isToday dayStart position dateId
 
                             match today, status with
                             | true,
@@ -46,17 +46,17 @@ module Sorting =
                             | _ -> false)
 
                 if not lowPriority then
-                    cells.Length
+                    statusMap.Count
                 else
-                    cells
-                    |> List.tryFindIndex
+                    statusMap
+                    |> Seq.tryFindIndex
                         (function
-                        | { DateId = DateId referenceDay },
-                          (CellStatus.Pending
-                          | CellStatus.UserStatus (_, ManualCellStatus.Scheduled)) when
+                        | KeyValue (DateId referenceDay,
+                                    (CellStatus.Pending
+                                    | CellStatus.UserStatus (_, ManualCellStatus.Scheduled))) when
                             (referenceDay |> FlukeDate.DateTime) > (position.Date |> FlukeDate.DateTime) -> true
                         | _ -> false)
-                    |> Option.defaultValue cells.Length)
+                    |> Option.defaultValue statusMap.Count)
 
     type LaneSortType =
         | TaskOrderList
@@ -65,12 +65,13 @@ module Sorting =
     let sortLanesByTimeOfDay dayStart (position: FlukeDateTime) lanes =
         let currentDateId = dateId dayStart position
 
-        let getGroup taskState (address: CellAddress, status) =
+        let getGroup taskState (dateId, status) =
             let (|PostponedUntil|Postponed|WasPostponed|NotPostponed|) =
                 function
                 | ManualCellStatus.Postponed None -> Postponed
-                | ManualCellStatus.Postponed (Some until) when position.GreaterEqualThan dayStart address.DateId until ->
-                    WasPostponed
+                | ManualCellStatus.Postponed (Some until) when
+                    position
+                    |> FlukeDateTime.GreaterEqualThan dayStart dateId until -> WasPostponed
                 | ManualCellStatus.Postponed _ -> PostponedUntil
                 | _ -> NotPostponed
 
@@ -149,11 +150,11 @@ module Sorting =
         lanes
         |> List.indexed
         |> List.groupBy
-            (fun (_, (taskState, cells)) ->
-                cells
-                |> List.filter (fun (address, _) -> isToday dayStart position address.DateId)
-                |> List.map (getGroup taskState)
-                |> List.minBy fst)
+            (fun (_, (taskState, stateMap)) ->
+                stateMap
+                |> Map.filter (fun dateId _ -> isToday dayStart position dateId)
+                |> Seq.map (fun (KeyValue (dateId, status)) -> getGroup taskState (dateId, status))
+                |> Seq.minBy fst)
         |> List.collect
             (fun ((groupIndex, _sortType), indexedLanes) ->
                 //            match sortType with
