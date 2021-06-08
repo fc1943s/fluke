@@ -187,7 +187,7 @@ module ViewTabs =
 
                                             x.children <-
                                                 [
-                                                    str "Filter Tasks by View"
+                                                    str "Filter tasks by view"
                                                 ]
                                 |}
 

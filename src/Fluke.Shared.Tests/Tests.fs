@@ -121,6 +121,7 @@ module Tests =
                                     DayStart = templatesUser.DayStart
                                     DateSequence = dateSequence
                                     View = View.View.HabitTracker
+                                    FilterTasksByView = true
                                     Position = Some dslTemplate.Position
                                     TaskStateList =
                                         databaseState.TaskStateMap
