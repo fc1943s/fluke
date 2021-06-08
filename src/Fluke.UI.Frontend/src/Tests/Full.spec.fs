@@ -130,9 +130,12 @@ module Full =
 
                     Cy2.clickText "Project"
 
-                    Cy.wait 1200
+                    Cy.wait 4000
 
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Information"
+
+                    Cy.wait 200
+
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Select..."
 
                     Cy2.clickText "Add Project"
