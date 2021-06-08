@@ -342,8 +342,8 @@ module SchedulingSelector =
                                                                                     let newList =
                                                                                         otherRecurrencies
                                                                                         @ (newSet
-                                                                                           |> Set.map Monthly
-                                                                                           |> Set.toList)
+                                                                                           |> Set.toList
+                                                                                           |> List.map Monthly)
 
                                                                                     match newList with
                                                                                     | [] -> Manual WithoutSuggestion

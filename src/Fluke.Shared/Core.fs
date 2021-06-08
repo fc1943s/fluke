@@ -8,12 +8,6 @@ module Option =
         Option.ofObj (unbox value)
         |> Option.map (fun x -> box x :?> 'T)
 
-    let choose fn set =
-        set
-        |> Set.map fn
-        |> Set.filter Option.isSome
-        |> Set.map Option.get
-
 module Seq =
     let intersperse sep list =
         seq {
@@ -72,9 +66,11 @@ module Map =
 module Set =
     let choose fn set =
         set
-        |> Set.map fn
-        |> Set.filter Option.isSome
-        |> Set.map Option.get
+        |> Set.toSeq
+        |> Seq.map fn
+        |> Seq.filter Option.isSome
+        |> Seq.map Option.get
+        |> Set.ofSeq
 
     let toggle value (set: Set<'T>) =
         if set.Contains value then set.Remove value else set.Add value
@@ -82,7 +78,12 @@ module Set =
     let addIf item condition set =
         if not condition then set else set |> Set.add item
 
-    let collect fn set = set |> Set.map fn |> Set.unionMany
+    let collect fn set =
+        set
+        |> Set.toSeq
+        |> Seq.map fn
+        |> Seq.collect id
+        |> Set.ofSeq
 
 
 [<AutoOpen>]

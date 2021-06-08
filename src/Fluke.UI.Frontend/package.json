@@ -48,15 +48,15 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "0.0.0-experimental-0eea57724",
-    "react-dom": "0.0.0-experimental-0eea57724",
+    "react": "~18.0.0-alpha-e6be2d531",
+    "react-dom": "~18.0.0-alpha-e6be2d531",
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
     "recoil": "facebookexperimental/Recoil.git#nightly",
     "recoilize": "~2.0",
 
-    "gun": "amark/gun.git#manhattan",
+    "gun": "amark/gun.git#master",
 
     "@chakra-ui/react": "~1.6",
     "@chakra-ui/system": "~1.6",
@@ -104,7 +104,7 @@
     "eslint-plugin-react-hooks": "~4.2",
     "eslint-plugin-jest-dom": "~3.9",
 
-    "gatsby": "~3.6",
+    "gatsby": "~3.7",
     "@chakra-ui/gatsby-plugin": "~2.0",
     "postcss": "~8.3",
 

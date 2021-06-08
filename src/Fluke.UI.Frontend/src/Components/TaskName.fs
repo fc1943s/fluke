@@ -18,12 +18,15 @@ module TaskName =
     let TaskName (input: {| Username: Username; TaskId: TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
-        let hasSelection = Recoil.useValue (Selectors.Task.hasSelection input.TaskId)
+        let hasSelection = Recoil.useValueLoadableDefault (Selectors.Task.hasSelection input.TaskId) false
         let (TaskName taskName) = Recoil.useValue (Atoms.Task.name (input.Username, input.TaskId))
         let attachments = Recoil.useValue (Atoms.Task.attachments input.TaskId)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
-        let isReadWrite = Recoil.useValue (Selectors.Task.isReadWrite (input.Username, input.TaskId))
-        let databaseId = Recoil.useValue (Selectors.Task.databaseId (input.Username, input.TaskId))
+
+        let isReadWrite =
+            Recoil.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
+
+        let databaseId = Recoil.useValueLoadable (Selectors.Task.databaseId (input.Username, input.TaskId))
 
         Chakra.flex
             (fun x ->
@@ -48,9 +51,8 @@ module TaskName =
                         str taskName
                     ]
 
-                if not isReadWrite then
-                    nothing
-                else
+                match isReadWrite, databaseId.state () with
+                | true, HasValue databaseId ->
                     Menu.Menu
                         {|
                             Tooltip = ""
@@ -107,6 +109,7 @@ module TaskName =
                                 ]
                             MenuListProps = fun _ -> ()
                         |}
+                | _ -> nothing
 
                 TooltipPopup.TooltipPopup
                     {|

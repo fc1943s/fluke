@@ -21,8 +21,13 @@ module TaskForm =
                    TaskId: TaskId
                    OnSave: Task -> JS.Promise<unit> |})
         =
-        let databaseId = Recoil.useValue (Selectors.Task.databaseId (input.Username, input.TaskId))
+        let databaseId =
+            Recoil.useValueLoadableDefault
+                (Selectors.Task.databaseId (input.Username, input.TaskId))
+                Database.Default.Id
+
         let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name (input.Username, databaseId))
+
         let toast = Chakra.useToast ()
 
         let onSave =

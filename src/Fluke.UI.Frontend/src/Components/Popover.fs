@@ -17,6 +17,8 @@ module Popover =
 
         let initialFocusRef = React.useRef ()
 
+        let content = input.Body (disclosure, initialFocusRef)
+
         Chakra.box
             (fun _ -> ())
             [
@@ -29,8 +31,6 @@ module Popover =
                         x.initialFocusRef <- initialFocusRef
                         x.onClose <- fun x -> promise { disclosure.onClose x })
                     [
-                        let content = input.Body (disclosure, initialFocusRef)
-
                         Chakra.popoverTrigger
                             (fun _ -> ())
                             [
@@ -68,8 +68,7 @@ module Popover =
                     ]
             ]
 
-    [<ReactComponent>]
-    let Popover
+    let inline Popover
         (input: {| Trigger: ReactElement
                    Body: Chakra.Disclosure * IRefValue<unit> -> ReactElement list |})
         =

@@ -124,6 +124,8 @@ module Auth =
                         (fun databaseState ->
                             hydrateDatabase username Recoil.AtomScope.ReadOnly databaseState.Database
 
+                            setter.set (Atoms.User.databaseIdSet username, Set.add databaseState.Database.Id)
+
                             databaseState.TaskStateMap
                             |> Map.values
                             |> Seq.iter

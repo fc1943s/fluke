@@ -6,7 +6,6 @@ open Feliz
 open Fluke.Shared.Domain
 open Feliz.Recoil
 open Fluke.Shared.Domain.Model
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared
@@ -20,17 +19,24 @@ module AreaSelector =
                    Area: Area
                    OnSelect: Area -> unit |})
         =
-        let informationSet = Recoil.useValue (Selectors.Session.informationSet input.Username)
+        let informationSet = Recoil.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
 
         let informationList =
-            informationSet
-            |> Set.addIf
-                (Area input.Area)
-                (input.Area.Name
-                 |> AreaName.Value
-                 |> String.IsNullOrWhiteSpace
-                 |> not)
-            |> Set.toList
+            React.useMemo (
+                (fun () ->
+                    informationSet
+                    |> Set.addIf
+                        (Area input.Area)
+                        (input.Area.Name
+                         |> AreaName.Value
+                         |> String.IsNullOrWhiteSpace
+                         |> not)
+                    |> Set.toList),
+                [|
+                    box informationSet
+                    box input.Area
+                |]
+            )
 
         Chakra.box
             (fun x -> x.display <- "inline")

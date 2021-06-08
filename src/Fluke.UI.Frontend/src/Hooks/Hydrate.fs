@@ -10,8 +10,6 @@ open Fluke.UI.Frontend.Bindings
 
 module Hydrate =
     let hydrateDatabase (setter: CallbackMethods) username atomScope (database: Database) =
-        setter.set (Atoms.User.databaseIdSet username, Set.add database.Id)
-
         setter.scopedSet username atomScope (Atoms.Database.name, (username, database.Id), database.Name)
         setter.scopedSet username atomScope (Atoms.Database.owner, (username, database.Id), database.Owner)
         setter.scopedSet username atomScope (Atoms.Database.sharedWith, (username, database.Id), database.SharedWith)

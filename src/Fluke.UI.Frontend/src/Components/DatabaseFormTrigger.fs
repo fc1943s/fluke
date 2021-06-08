@@ -20,7 +20,7 @@ module DatabaseFormTrigger =
         =
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
-        ModalForm.ModalFormTrigger
+        ModalFormTrigger.ModalFormTrigger
             {|
                 Username = input.Username
                 Trigger =
@@ -32,7 +32,7 @@ module DatabaseFormTrigger =
                                 {|
                                     Username = input.Username
                                     Content =
-                                        fun (formIdFlag, onHide, _) ->
+                                        fun (formIdFlag, onHide, setter) ->
                                             let databaseId =
                                                 formIdFlag
                                                 |> Option.map DatabaseId
@@ -49,6 +49,12 @@ module DatabaseFormTrigger =
                                                                     input.Username
                                                                     Recoil.AtomScope.ReadOnly
                                                                     database
+
+                                                                setter()
+                                                                    .set (
+                                                                        Atoms.User.databaseIdSet input.Username,
+                                                                        Set.add database.Id
+                                                                    )
 
                                                                 onHide ()
                                                             }

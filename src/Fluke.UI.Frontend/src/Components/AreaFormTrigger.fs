@@ -18,7 +18,7 @@ module AreaFormTrigger =
                    OnSelect: Area -> unit
                    Trigger: (unit -> unit) -> (unit -> CallbackMethods) -> ReactElement |})
         =
-        ModalForm.ModalFormTrigger
+        ModalFormTrigger.ModalFormTrigger
             {|
                 Username = input.Username
                 Trigger =
@@ -48,4 +48,3 @@ module AreaFormTrigger =
                 TextKey = TextKey (nameof AreaForm)
                 TextKeyValue = None
             |}
-

@@ -21,7 +21,7 @@ module TaskFormTrigger =
         =
         let hydrateTask = Hydrate.useHydrateTask ()
 
-        ModalForm.ModalFormTrigger
+        ModalFormTrigger.ModalFormTrigger
             {|
                 Username = input.Username
                 Trigger =
@@ -33,7 +33,7 @@ module TaskFormTrigger =
                                 {|
                                     Username = input.Username
                                     Content =
-                                        fun (formIdFlag, onHide, _setter) ->
+                                        fun (formIdFlag, onHide, setter) ->
                                             let taskId =
                                                 formIdFlag
                                                 |> Option.map TaskId

@@ -17,45 +17,6 @@ module DatabaseForm =
     open State
     open Model
 
-    module DatabaseAccessIndicator =
-        [<ReactComponent>]
-        let DatabaseAccessIndicator () =
-            Chakra.stack
-                (fun x ->
-                    x.direction <- "row"
-                    x.spacing <- "15px")
-                [
-                    Chakra.stack
-                        (fun x ->
-                            x.direction <- "row"
-                            x.spacing <- "4px"
-                            x.alignItems <- "center")
-                        [
-                            Chakra.circle
-                                (fun x ->
-                                    x.width <- "10px"
-                                    x.height <- "10px"
-                                    x.backgroundColor <- "#0f0")
-                                []
-
-                            Chakra.box
-                                (fun _ -> ())
-                                [
-                                    str "Private"
-                                ]
-
-                        ]
-                    Chakra.iconButton
-                        (fun x ->
-                            x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                            x.disabled <- true
-                            x.width <- "22px"
-                            x.height <- "15px"
-                            x.onClick <- fun _ -> promise { () })
-                        []
-
-                ]
-
     [<ReactComponent>]
     let DatabaseForm
         (input: {| Username: Username
@@ -87,10 +48,10 @@ module DatabaseForm =
                                         input.DatabaseId <> Database.Default.Id
                                         || input.DatabaseId <> databaseId)
                                 |> List.map (fun databaseId -> Atoms.Database.name (input.Username, databaseId))
-                                |> Recoil.waitForAll
-                                |> setter.snapshot.getPromise
+                                |> List.map setter.snapshot.getPromise
+                                |> Promise.Parallel
 
-                            if databaseNames |> List.contains databaseName then
+                            if databaseNames |> Array.contains databaseName then
                                 toast (fun x -> x.description <- "Database with this name already exists")
                             else
                                 let! dayStart =

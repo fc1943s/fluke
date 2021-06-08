@@ -175,6 +175,8 @@ module CellSelectionSetup =
                 Recoil.AtomScope.ReadOnly
                 databaseState.Database
 
+            setter.set (Atoms.User.databaseIdSet Templates.templatesUser.Username, Set.add databaseId)
+
             databaseState.TaskStateMap
             |> Map.iter
                 (fun taskId taskState ->

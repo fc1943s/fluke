@@ -18,24 +18,24 @@ module PositionUpdater =
         let position, setPosition = Recoil.useState Atoms.position
         let selectedDatabaseIdSet = Recoil.useValue (Atoms.User.selectedDatabaseIdSet input.Username)
 
-        let selectedDatabasePositions =
-            selectedDatabaseIdSet
-            |> Set.toList
-            |> List.map (fun databaseId -> Atoms.Database.position (input.Username, databaseId))
-            |> Recoil.waitForAll
-            |> Recoil.useValue
-
         let run =
             Recoil.useCallbackRef
-                (fun _ ->
+                (fun setter ->
                     promise {
+                        let! selectedDatabasePositions =
+                            selectedDatabaseIdSet
+                            |> Set.toList
+                            |> List.map (fun databaseId -> Atoms.Database.position (input.Username, databaseId))
+                            |> List.map setter.snapshot.getPromise
+                            |> Promise.Parallel
+
                         let pausedPosition =
                             selectedDatabasePositions
-                            |> List.choose id
-                            |> List.tryHead
+                            |> Array.choose id
+                            |> Array.tryHead
 
                         match selectedDatabasePositions, pausedPosition with
-                        | [], _ -> if position <> None then setPosition None
+                        | [||], _ -> if position <> None then setPosition None
                         | _, None ->
                             let newPosition = FlukeDateTime.FromDateTime DateTime.Now
 

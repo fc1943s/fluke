@@ -7,39 +7,9 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fable.React
-open Fable.Core.JsInterop
 
 
 module ModalForm =
-
-    [<ReactComponent>]
-    let ModalFormTrigger
-        (input: {| Username: Username
-                   TextKeyValue: System.Guid option
-                   TextKey: TextKey
-                   Trigger: (unit -> unit) -> (unit -> CallbackMethods) -> ReactElement |})
-        =
-        let onTrigger =
-            Recoil.useCallbackRef
-                (fun setter ->
-                    setter.set (Atoms.User.formIdFlag (input.Username, input.TextKey), input.TextKeyValue)
-                    setter.set (Atoms.User.formVisibleFlag (input.Username, input.TextKey), true))
-
-        let setter = Recoil.useCallbackRef id
-
-        let content =
-            React.useMemo (
-                (fun () -> input.Trigger (fun () -> JS.setTimeout onTrigger 0 |> ignore) setter),
-                [|
-                    box input
-                    box onTrigger
-                    box setter
-                |]
-            )
-
-        content
-
-
     [<ReactComponent>]
     let ModalForm
         (input: {| Username: Username
@@ -54,9 +24,15 @@ module ModalForm =
 
         let setter = Recoil.useCallbackRef id
 
+        let hide =
+            Recoil.useCallbackRef
+                (fun _ ->
+                    setFormIdFlag None
+                    setFormVisibleFlag false)
+
         let content =
             React.useMemo (
-                (fun () -> input.Content (formIdFlag, (fun () -> setFormVisibleFlag false), setter)),
+                (fun () -> input.Content (formIdFlag, hide, setter)),
                 [|
                     box formIdFlag
                     box input
@@ -72,17 +48,14 @@ module ModalForm =
                         (fun x ->
                             x.isOpen <- formVisibleFlag
 
-                            x.onClose <-
-                                fun () ->
-                                    promise {
-                                        setFormIdFlag None
-                                        setFormVisibleFlag false
-                                    }
+                            x.onClose <- fun () -> promise { hide () }
 
                             x.children <-
                                 [
                                     Chakra.box
-                                        (fun x -> if isTesting then x?``data-testid`` <- input.TextKey)
+                                        (fun x ->
+                                            if isTesting then
+                                                (JsInterop.op_Dynamic x "data-testid") <- input.TextKey)
                                         [
                                             content
                                         ]

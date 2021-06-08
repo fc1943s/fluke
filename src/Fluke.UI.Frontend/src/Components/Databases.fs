@@ -16,115 +16,6 @@ open Fluke.UI.Frontend.State
 
 
 module Databases =
-
-    [<ReactComponent>]
-    let LeafIcon (username: Username) (databaseId: DatabaseId) =
-        let owner = Recoil.useValue (Atoms.Database.owner (username, databaseId))
-        let sharedWith = Recoil.useValue (Atoms.Database.sharedWith (username, databaseId))
-        let position = Recoil.useValue (Atoms.Database.position (username, databaseId))
-
-        let newSharedWith =
-            if owner = Templates.templatesUser.Username then
-                [
-                    username
-                ]
-            else
-                match sharedWith with
-                | DatabaseAccess.Public -> []
-                | DatabaseAccess.Private accessList -> accessList |> List.map fst
-
-        let isPrivate =
-            match sharedWith with
-            | DatabaseAccess.Public -> false
-            | _ ->
-                newSharedWith
-                |> List.exists (fun share -> share <> username)
-                |> not
-
-        Chakra.stack
-            (fun x ->
-                x.display <- "inline"
-                x.spacing <- "4px"
-                x.direction <- "row")
-            [
-
-                match isPrivate with
-                | false ->
-                    Tooltip.wrap
-                        (Chakra.box
-                            (fun _ -> ())
-                            [
-                                str $"Owner: {owner |> Username.Value}"
-                                br []
-                                if not newSharedWith.IsEmpty then
-                                    str
-                                        $"""Shared with: {
-                                                              newSharedWith
-                                                              |> List.map Username.Value
-                                                              |> String.concat ", "
-                                        }"""
-                            ])
-                        [
-                            Chakra.box
-                                (fun _ -> ())
-                                [
-                                    Chakra.icon
-                                        (fun x ->
-                                            x.``as`` <- Icons.hi.HiUsers
-                                            x.color <- "#ffb836"
-                                            x.marginLeft <- "-3px")
-                                        []
-                                ]
-                        ]
-                | _ ->
-                    Tooltip.wrap
-                        (str "Private")
-                        [
-                            Chakra.box
-                                (fun _ -> ())
-                                [
-                                    Chakra.icon
-                                        (fun x ->
-                                            x.``as`` <- Icons.fa.FaUserShield
-                                            x.color <- "#a4ff8d"
-                                            x.marginLeft <- "-3px")
-                                        []
-                                ]
-                        ]
-
-                match position with
-                | Some position ->
-                    Tooltip.wrap
-                        (str $"Database paused at position {position |> FlukeDateTime.Stringify}")
-                        [
-                            Chakra.box
-                                (fun _ -> ())
-                                [
-                                    Chakra.icon
-                                        (fun x ->
-                                            x.``as`` <- Icons.bs.BsPauseFill
-                                            x.color <- "#ffb836"
-                                            x.marginLeft <- "-3px")
-                                        []
-                                ]
-                        ]
-                | None ->
-                    Tooltip.wrap
-                        (str "Live Database")
-                        [
-                            Chakra.box
-                                (fun _ -> ())
-                                [
-                                    Chakra.icon
-                                        (fun x ->
-                                            x.``as`` <- Icons.bs.BsPlayFill
-                                            x.color <- "#a4ff8d"
-                                            x.marginLeft <- "-3px")
-                                        []
-                                ]
-                        ]
-            ]
-
     let icons =
         {|
             check =
@@ -183,159 +74,6 @@ module Databases =
                         x.color <- "white")
                     []
         |}
-
-    [<ReactComponent>]
-    let NodeMenu
-        (input: {| Username: Username
-                   DatabaseId: DatabaseId
-                   Disabled: bool |})
-        =
-        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite input.DatabaseId)
-
-        let exportDatabase =
-            Recoil.useCallbackRef
-                (fun setter ->
-                    promise {
-                        let! database =
-                            setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
-
-                        let! taskStateList = setter.snapshot.getPromise (Selectors.Session.taskStateList input.Username)
-
-                        let! informationStateList =
-                            setter.snapshot.getPromise (Selectors.Session.informationStateList input.Username)
-
-                        let databaseState =
-                            {
-                                Database = database
-                                InformationStateMap =
-                                    informationStateList
-                                    |> List.map (fun informationState -> informationState.Information, informationState)
-                                    |> Map.ofList
-                                TaskStateMap =
-                                    taskStateList
-                                    |> List.map (fun taskState -> taskState.Task.Id, taskState)
-                                    |> Map.ofList
-                            }
-
-                        let json = databaseState |> Gun.jsonEncode
-
-                        let timestamp =
-                            (FlukeDateTime.FromDateTime DateTime.Now)
-                            |> FlukeDateTime.Stringify
-
-                        JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
-                    })
-
-        Menu.Menu
-            {|
-                Tooltip = ""
-                Trigger =
-                    InputLabelIconButton.InputLabelIconButton
-                        {|
-                            Props =
-                                fun x ->
-                                    x.``as`` <- Chakra.react.MenuButton
-                                    x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                    x.fontSize <- "11px"
-                                    x.disabled <- input.Disabled
-                                    x.marginLeft <- "6px"
-                        |}
-                Menu =
-                    [
-                        if isReadWrite then
-                            TaskFormTrigger.TaskFormTrigger
-                                {|
-                                    Username = input.Username
-                                    DatabaseId = input.DatabaseId
-                                    TaskId = None
-                                    Trigger =
-                                        fun trigger _setter ->
-                                            Chakra.menuItem
-                                                (fun x ->
-                                                    x.icon <-
-                                                        Icons.bs.BsPlus
-                                                        |> Icons.renderChakra
-                                                            (fun x ->
-                                                                x.fontSize <- "13px"
-                                                                x.marginTop <- "-1px")
-
-                                                    x.onClick <- fun _ -> promise { trigger () })
-                                                [
-                                                    str "Add Task"
-                                                ]
-                                |}
-
-                            DatabaseFormTrigger.DatabaseFormTrigger
-                                {|
-                                    Username = input.Username
-                                    DatabaseId = Some input.DatabaseId
-                                    Trigger =
-                                        fun trigger _setter ->
-                                            Chakra.menuItem
-                                                (fun x ->
-                                                    x.icon <-
-                                                        Icons.bs.BsPen
-                                                        |> Icons.renderChakra
-                                                            (fun x ->
-                                                                x.fontSize <- "13px"
-                                                                x.marginTop <- "-1px")
-
-                                                    x.onClick <-
-                                                        fun _ ->
-                                                            promise {
-                                                                trigger ()
-                                                                ()
-                                                            })
-                                                [
-                                                    str "Edit Database"
-                                                ]
-                                |}
-
-                        Chakra.menuItem
-                            (fun x ->
-                                x.icon <-
-                                    Icons.fi.FiCopy
-                                    |> Icons.renderChakra
-                                        (fun x ->
-                                            x.fontSize <- "13px"
-                                            x.marginTop <- "-1px")
-
-                                x.isDisabled <- true
-                                x.onClick <- fun e -> promise { e.preventDefault () })
-                            [
-                                str "Clone Database"
-                            ]
-
-                        Chakra.menuItem
-                            (fun x ->
-                                x.icon <-
-                                    Icons.bi.BiExport
-                                    |> Icons.renderChakra
-                                        (fun x ->
-                                            x.fontSize <- "13px"
-                                            x.marginTop <- "-1px")
-
-                                x.onClick <- fun _ -> exportDatabase ())
-                            [
-                                str "Export Database"
-                            ]
-
-                        Chakra.menuItem
-                            (fun x ->
-                                x.icon <-
-                                    Icons.bs.BsTrash
-                                    |> Icons.renderChakra
-                                        (fun x ->
-                                            x.fontSize <- "13px"
-                                            x.marginTop <- "-1px")
-
-                                x.onClick <- fun e -> promise { e.preventDefault () })
-                            [
-                                str "Delete Database"
-                            ]
-                    ]
-                MenuListProps = fun _ -> ()
-            |}
 
     type CheckboxTreeNode =
         {
@@ -421,7 +159,7 @@ module Databases =
                                                     ]
                                             | None -> nothing
 
-                                            NodeMenu
+                                            DatabaseNodeMenu.DatabaseNodeMenu
                                                 {|
                                                     Username = input.Username
                                                     DatabaseId = databaseId
@@ -513,21 +251,9 @@ module Databases =
                 |]
             )
 
-        let databaseNameList =
+        let databaseList =
             databaseIdList
-            |> List.map (fun databaseId -> Atoms.Database.name (input.Username, databaseId))
-            |> Recoil.waitForAll
-            |> Recoil.useValue
-
-        let databaseOwnerList =
-            databaseIdList
-            |> List.map (fun databaseId -> Atoms.Database.owner (input.Username, databaseId))
-            |> Recoil.waitForAll
-            |> Recoil.useValue
-
-        let databasePositionList =
-            databaseIdList
-            |> List.map (fun databaseId -> Atoms.Database.position (input.Username, databaseId))
+            |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
             |> Recoil.waitForAll
             |> Recoil.useValue
 
@@ -535,11 +261,11 @@ module Databases =
             React.useMemo (
                 (fun () ->
                     let databaseIndexMap =
-                        databaseOwnerList
+                        databaseList
                         |> List.mapi
-                            (fun i owner ->
+                            (fun i database ->
                                 let nodeType =
-                                    match owner with
+                                    match database.Owner with
                                     | owner when owner = Templates.templatesUser.Username -> NodeType.Template
                                     | owner when owner = input.Username -> NodeType.Owned
                                     | _ -> NodeType.Shared
@@ -561,7 +287,7 @@ module Databases =
                                 let newDatabaseNameList =
                                     databaseIndexMap
                                     |> Map.tryFind nodeType
-                                    |> Option.map (List.map (fun i -> Some i, databaseNameList.[i]))
+                                    |> Option.map (List.map (fun i -> Some i, databaseList.[i].Name))
                                     |> Option.defaultValue [
                                         None, DatabaseName "None"
                                        ]
@@ -586,7 +312,7 @@ module Databases =
 
                     let databasePositionFromIndex databaseIndex =
                         match databaseIndex with
-                        | Some i -> databasePositionList.[i]
+                        | Some i -> databaseList.[i].Position
                         | _ -> Database.Default.Position
 
                     let nodes =
@@ -623,7 +349,7 @@ module Databases =
 
                             let icon =
                                 match databaseId with
-                                | Some databaseId -> LeafIcon input.Username databaseId
+                                | Some databaseId -> DatabaseLeafIcon.DatabaseLeafIcon input.Username databaseId
                                 | _ -> JS.undefined
 
                             let disabled =
@@ -633,7 +359,7 @@ module Databases =
                                         selectedDatabaseIdSet
                                         |> Set.map (fun databaseId -> databaseIndexMap |> Map.tryFind databaseId)
 
-                                    match databasePositionList.[nodeIndex] with
+                                    match databaseList.[nodeIndex].Position with
                                     | Some position ->
                                         validSelectedDatabaseIndexes
                                         |> Set.exists
@@ -676,9 +402,7 @@ module Databases =
                     loop nodes |> List.toArray),
                 [|
                     box databaseIdList
-                    box databaseNameList
-                    box databaseOwnerList
-                    box databasePositionList
+                    box databaseList
                     box input.Username
                     box hideTemplates
                     box selectedDatabaseIdSet

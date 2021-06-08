@@ -28,6 +28,7 @@
         <Compile Include="src\Hooks\Theme.fs" />
         <Compile Include="src\Hooks\React.fs" />
         <Compile Include="src\Hooks\Hydrate.fs" />
+        <Compile Include="src\Hooks\Setters.fs" />
         <Compile Include="src\Hooks\Auth.fs" />
         <Compile Include="src\Components\Empty.fs" />
         <Compile Include="src\Components\Tooltip.fs" />
@@ -44,6 +45,7 @@
         <Compile Include="src\Components\TooltipPopup.fs" />
         <Compile Include="src\Components\Menu.fs" />
         <Compile Include="src\Components\Modal.fs" />
+        <Compile Include="src\Components\ModalFormTrigger.fs" />
         <Compile Include="src\Components\ModalForm.fs" />
         <Compile Include="src\Components\InformationName.fs" />
         <Compile Include="src\Components\TaskInformationName.fs" />
@@ -51,13 +53,16 @@
         <Compile Include="src\Components\CellStatusUserIndicator.fs" />
         <Compile Include="src\Components\CellBorder.fs" />
         <Compile Include="src\Components\CellSessionIndicator.fs" />
+        <Compile Include="src\Components\CellMenu.fs" />
         <Compile Include="src\Components\Cell.fs" />
+        <Compile Include="src\Components\TaskCells.fs" />
         <Compile Include="src\Components\Cells.fs" />
         <Compile Include="src\Components\Checkbox.fs" />
         <Compile Include="src\Components\CheckboxInput.fs" />
         <Compile Include="src\Components\DebugOverlay.fs" />
         <Compile Include="src\Components\Logo.fs" />
         <Compile Include="src\Components\AreaForm.fs" />
+        <Compile Include="src\Components\DatabaseAccessIndicator.fs" />
         <Compile Include="src\Components\DatabaseForm.fs" />
         <Compile Include="src\Components\SchedulingSelector.fs" />
         <Compile Include="src\Components\ExternalLink.fs" />
@@ -77,6 +82,8 @@
         <Compile Include="src\Components\TransparentIconButton.fs" />
         <Compile Include="src\Components\TopBar.fs" />
         <Compile Include="src\Components\LoadingSpinner.fs" />
+        <Compile Include="src\Components\DatabaseLeafIcon.fs" />
+        <Compile Include="src\Components\DatabaseNodeMenu.fs" />
         <Compile Include="src\Components\Databases.fs" />
         <Compile Include="src\Components\InputList.fs" />
         <Compile Include="src\Components\Accordion.fs" />
@@ -96,6 +103,7 @@
         <Compile Include="src\Components\CtrlListener.fs" />
         <Compile Include="src\Components\ShiftListener.fs" />
         <Compile Include="src\Components\GunObserver.fs" />
+        <Compile Include="src\Components\Migrations.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\Components\RootWrapper.fs" />
         <Compile Include="src\App.fs" />

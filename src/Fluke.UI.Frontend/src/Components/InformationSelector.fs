@@ -80,7 +80,7 @@ module InformationSelector =
             |]
         )
 
-        let informationSet = Recoil.useValue (Selectors.Session.informationSet input.Username)
+        let informationSet = Recoil.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
 
         let sortedInformationList =
             React.useMemo (
@@ -258,7 +258,7 @@ module InformationSelector =
                                         Chakra.box
                                             (fun x -> x.textAlign <- "center")
                                             [
-                                                ModalForm.ModalFormTrigger
+                                                ModalFormTrigger.ModalFormTrigger
                                                     {|
                                                         Username = input.Username
                                                         Trigger =

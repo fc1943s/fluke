@@ -18,9 +18,9 @@ module Rendering =
 
         let dates =
             cellDates
-            |> Seq.map FlukeDate.DateTime
-            |> Seq.sort
-            |> Seq.toArray
+            |> List.map FlukeDate.DateTime
+            |> List.sort
+            |> List.toArray
 
         let minDate =
             dates

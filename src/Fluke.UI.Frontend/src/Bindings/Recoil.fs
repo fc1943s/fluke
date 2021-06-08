@@ -266,7 +266,7 @@ module Recoil =
         let setter = Recoil.useCallbackRef id
 
         React.useEffect (
-            (fun () -> promise { do! fn (setter ()) } |> Promise.start),
+            (fun () -> promise { do! fn setter } |> Promise.start),
             [|
                 box setter
                 box fn
@@ -596,6 +596,7 @@ module Recoil =
 
                     match gunAtomNode with
                     | Some gunAtomNode ->
+                        JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath} ")
                         gunAtomNode.on
                             (fun data _key ->
                                 async {

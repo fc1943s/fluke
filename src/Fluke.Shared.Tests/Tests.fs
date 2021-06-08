@@ -46,7 +46,7 @@ module Tests =
             (fun taskTemplate ->
                 let dateSequence = taskTemplate.Expected |> List.map fst
 
-                let taskState = databaseState.TaskStateMap.[taskTemplate.Task]
+                let taskState = databaseState.TaskStateMap.[taskTemplate.Task.Id]
 
                 let expectedCellMetadataList =
                     taskTemplate.Expected
@@ -91,11 +91,11 @@ module Tests =
                     | [] -> []
                     | expectedStatus ->
                         let laneStatusMap =
-                            Rendering.renderLane templatesUser.DayStart dslTemplate.Position dateSequence taskState
-                            |> fun (_taskState, cells) ->
-                                cells
-                                |> List.map (fun ({ DateId = DateId referenceDay }, status) -> referenceDay, status)
-                                |> Map.ofList
+                            Rendering.renderTaskStatusMap
+                                templatesUser.DayStart
+                                dslTemplate.Position
+                                dateSequence
+                                taskState
 
                         expectedStatus
                         |> List.map
@@ -104,7 +104,7 @@ module Tests =
                                 | date, _ as expected ->
                                     let actual =
                                         laneStatusMap
-                                        |> Map.tryFind date
+                                        |> Map.tryFind (DateId date)
                                         |> Option.defaultValue Disabled
                                         |> fun cellStatus -> date, cellStatus
 
@@ -114,34 +114,36 @@ module Tests =
                     match expectedSessions with
                     | [] -> []
                     | expectedSessions ->
-                        let sessionData =
-                            View.getSessionData
-                                {|
-                                    Username = templatesUser.Username
-                                    DayStart = templatesUser.DayStart
-                                    DateSequence = dateSequence
-                                    View = View.View.HabitTracker
-                                    FilterTasksByView = true
-                                    Position = Some dslTemplate.Position
-                                    TaskStateList =
-                                        databaseState.TaskStateMap
-                                        |> Map.values
-                                        |> Seq.toList
-                                |}
+                        //                        let sessionData =
+//                            View.getSessionData
+//                                {|
+//                                    Username = templatesUser.Username
+//                                    DayStart = templatesUser.DayStart
+//                                    DateSequence = dateSequence
+//                                    View = View.View.HabitTracker
+//                                    FilterTasksByView = true
+//                                    Position = Some dslTemplate.Position
+//                                    TaskStateList =
+//                                        databaseState.TaskStateMap
+//                                        |> Map.values
+//                                        |> Seq.toList
+//                                |}
+//
+//                        let taskState = sessionData.TaskStateMap.[taskTemplate.Task.Id]
+//
+//                        expectedSessions
+//                        |> List.map
+//                            (fun (date, count) ->
+//                                let sessionCount =
+//                                    taskState.Sessions
+//                                    |> List.filter
+//                                        (fun (TaskSession (start, _, _)) ->
+//                                            isToday templatesUser.DayStart start (DateId date))
+//                                    |> List.length
+//
+//                                count, sessionCount)
+                        []
 
-                        let taskState = sessionData.TaskStateMap.[taskTemplate.Task]
-
-                        expectedSessions
-                        |> List.map
-                            (fun (date, count) ->
-                                let sessionCount =
-                                    taskState.Sessions
-                                    |> List.filter
-                                        (fun (TaskSession (start, _, _)) ->
-                                            isToday templatesUser.DayStart start (DateId date))
-                                    |> List.length
-
-                                count, sessionCount)
 
 
                 statusAssertList
@@ -238,8 +240,14 @@ module Tests =
 
                             let expect dateSequence =
                                 databaseState.TaskStateMap
-                                |> Map.values
-                                |> Seq.map (Rendering.renderLane templatesUser.DayStart props.Position dateSequence)
+                                |> Seq.map
+                                    (fun (KeyValue (_, taskState)) ->
+                                        taskState,
+                                        Rendering.renderTaskStatusMap
+                                            templatesUser.DayStart
+                                            props.Position
+                                            dateSequence
+                                            taskState)
                                 |> Seq.toList
                                 |> fun lanes ->
                                     match props.Sort with

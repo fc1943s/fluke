@@ -241,8 +241,8 @@ module TempData =
                                                 | FirstPass -> None
                                                 | SecondPass ->
                                                     taskMap
-                                                    |> Map.toSeq
-                                                    |> Seq.map (fun (taskName, task) -> TaskName taskName, task)
+                                                    |> Seq.map
+                                                        (fun (KeyValue (taskName, task)) -> TaskName taskName, task)
                                                     |> Map.ofSeq
                                                     |> Some
 
