@@ -23,9 +23,7 @@ module TaskName =
         let attachments = Recoil.useValue (Atoms.Task.attachments input.TaskId)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
         let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
-
-        let isReadWrite =
-            Recoil.useValue (Selectors.Database.isReadWrite taskMetadata.[input.TaskId].DatabaseId)
+        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite taskMetadata.[input.TaskId].DatabaseId)
 
         Chakra.flex
             (fun x ->

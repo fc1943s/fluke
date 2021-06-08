@@ -188,13 +188,23 @@ module View =
                         CellStateMap = mergeCellStateMap taskState.CellStateMap newCellStateMap
                     })
 
+        let dateSequence =
+            match input.View, input.Position with
+            | (View.Information
+              | View.Priority),
+              Some position ->
+                [
+                    position.Date
+                ]
+            | _ -> input.DateSequence
+
         let head =
-            input.DateSequence
+            dateSequence
             |> List.tryHead
             |> Option.map FlukeDate.DateTime
 
         let last =
-            input.DateSequence
+            dateSequence
             |> List.tryLast
             |> Option.map FlukeDate.DateTime
 
@@ -211,7 +221,7 @@ module View =
 
                 let filteredLanes =
                     filteredTaskStateList
-                    |> List.map (Rendering.renderLane input.DayStart position input.DateSequence)
+                    |> List.map (Rendering.renderLane input.DayStart position dateSequence)
 
                 //            let taskOrderList = RootPrivateData.databaseData.TaskOrderList // @ RootPrivateData.taskOrderList
                 //            let taskOrderList = [] // @ RootPrivateData.taskOrderList
