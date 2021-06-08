@@ -29,7 +29,7 @@ module View =
                              }
                   } -> true
                 | _ -> false)
-    //                |> List.filter (fun task ->
+        //                |> List.filter (fun task ->
 //                    task.StatusEntries
 //                    |> List.filter (function
 //                        | TaskStatusEntry (date, _) when date.DateTime >==< dateRange -> true
@@ -124,6 +124,7 @@ module View =
         (input: {| Username: Username
                    DayStart: FlukeTime
                    DateSequence: FlukeDate list
+                   FilterTasksByView: bool
                    View: View
                    Position: FlukeDateTime option
                    TaskStateList: TaskState list |})
@@ -201,7 +202,12 @@ module View =
             match input.Position, head, last with
             | Some position, Some head, Some last ->
                 let dateRange = head, last
-                let filteredTaskStateList = filterTaskStateList input.View dateRange taskStateList
+
+                let filteredTaskStateList =
+                    if input.FilterTasksByView then
+                        filterTaskStateList input.View dateRange taskStateList
+                    else
+                        taskStateList
 
                 let filteredLanes =
                     filteredTaskStateList

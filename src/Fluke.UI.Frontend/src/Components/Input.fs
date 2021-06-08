@@ -289,7 +289,7 @@ module Input =
                     ]
             ]
 
-    let inline LeftIconInput icon props =
+    let inline LeftIconInput icon placeholder props =
         Chakra.inputGroup
             (fun x -> x.display <- "flex")
             [
@@ -302,6 +302,7 @@ module Input =
                 Input
                     (fun x ->
                         x.paddingLeft <- "25px"
+                        x.placeholder <- placeholder
 
                         props x)
 

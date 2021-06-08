@@ -38,9 +38,10 @@ module ViewTabs =
 
     [<ReactComponent>]
     let ViewTabs (input: {| Username: Username |}) =
-        let showTaskSearch = Recoil.useValue (Atoms.User.showTaskSearch input.Username)
+        let showViewOptions = Recoil.useValue (Atoms.User.showViewOptions input.Username)
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
         let filteredTaskIdList = Recoil.useValueLoadable (Selectors.Session.filteredTaskIdList input.Username)
+        let filterTasksByView, setFilterTasksByView = Recoil.useState (Atoms.User.filterTasksByView input.Username)
 
         let tabs, tabIndex =
             React.useMemo (
@@ -163,18 +164,39 @@ module ViewTabs =
                                                     (Atoms.User.hideSchedulingOverlay input.Username)
                                                     "Hide Scheduling Overlay"
                                                 menuOptionGroup
-                                                    (Atoms.User.showTaskSearch input.Username)
-                                                    "Show Task Search"
+                                                    (Atoms.User.showViewOptions input.Username)
+                                                    "Show View Options"
                                             ]
                                         MenuListProps = fun _ -> ()
                                     |}
                             ]
                     ]
 
-                if showTaskSearch then
-                    Input.LeftIconInput
-                        (Icons.bs.BsSearch |> Icons.render)
-                        (fun x -> x.atom <- Some (Recoil.Atom (input.Username, Atoms.User.taskSearch input.Username)))
+                if showViewOptions then
+                    Chakra.stack
+                        (fun _ -> ())
+                        [
+                            Checkbox.Checkbox
+                                {|
+                                    Props =
+                                        fun x ->
+                                            x.isChecked <- filterTasksByView
+
+                                            x.onChange <-
+                                                fun _ -> promise { setFilterTasksByView (not filterTasksByView) }
+
+                                            x.children <-
+                                                [
+                                                    str "Filter Tasks by View"
+                                                ]
+                                |}
+
+                            Input.LeftIconInput
+                                (Icons.bs.BsSearch |> Icons.render)
+                                "Search task or information"
+                                (fun x ->
+                                    x.atom <- Some (Recoil.Atom (input.Username, Atoms.User.searchText input.Username)))
+                        ]
                 else
                     nothing
 

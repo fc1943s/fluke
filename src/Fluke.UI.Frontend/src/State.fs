@@ -227,13 +227,13 @@ module State =
                         ])
                 )
 
-            let rec taskSearch =
+            let rec searchText =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof taskSearch}",
+                    $"{nameof atomFamily}/{nameof User}/{nameof searchText}",
                     (fun (_username: Username) -> ""),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, taskSearch, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, searchText, username)) []
                         ])
                 )
 
@@ -277,13 +277,23 @@ module State =
                         ])
                 )
 
-            let rec showTaskSearch =
+            let rec showViewOptions =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof showTaskSearch}",
+                    $"{nameof atomFamily}/{nameof User}/{nameof showViewOptions}",
                     (fun (_username: Username) -> false),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, showTaskSearch, username)) []
+                            Recoil.gunEffect (Recoil.AtomFamily (username, showViewOptions, username)) []
+                        ])
+                )
+
+            let rec filterTasksByView =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof filterTasksByView}",
+                    (fun (_username: Username) -> true),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Recoil.AtomFamily (username, filterTasksByView, username)) []
                         ])
                 )
 
@@ -1000,7 +1010,8 @@ module State =
                             let view = getter.get (Atoms.User.view username)
                             let position = getter.get Atoms.position
                             let dayStart = getter.get (Atoms.User.dayStart username)
-                            let taskSearch = getter.get (Atoms.User.taskSearch username)
+                            let searchText = getter.get (Atoms.User.searchText username)
+                            let filterTasksByView = getter.get (Atoms.User.filterTasksByView username)
                             let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
 
                             let taskList =
@@ -1009,15 +1020,20 @@ module State =
                                 |> Seq.toList
 
                             let taskList =
-                                if taskSearch = "" then
-                                    taskList
-                                else
+
+                                match searchText with
+                                | "" -> taskList
+                                | _ ->
                                     taskList
                                     |> List.filter
                                         (fun task ->
-                                            taskSearch = ""
-                                            || (task.Name |> TaskName.Value).IndexOf taskSearch
-                                               >= 0)
+                                            let check (text: string) = text.IndexOf searchText >= 0
+
+                                            (task.Name |> TaskName.Value |> check)
+                                            || (task.Information
+                                                |> Information.Name
+                                                |> InformationName.Value
+                                                |> check))
 
                             printfn "#7 A"
 
@@ -1049,6 +1065,7 @@ module State =
                                         DayStart = dayStart
                                         DateSequence = dateSequence
                                         View = view
+                                        FilterTasksByView = filterTasksByView
                                         Position = position
                                         TaskStateList = taskStateList
                                     |}

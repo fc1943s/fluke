@@ -375,8 +375,8 @@ overriding any other behavior.
 
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
         let isTesting = Recoil.useValue Atoms.isTesting
-        let taskMetadata = Recoil.useValueLoadableDefault (Selectors.Session.taskMetadata input.Username) Map.empty
-        let showUser = Recoil.useValueLoadableDefault (Selectors.Task.showUser (input.Username, input.TaskId)) false
+        let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
+        let showUser = Recoil.useValue (Selectors.Task.showUser (input.Username, input.TaskId))
 
         let currentTaskMetadata =
             React.useMemo (
@@ -387,14 +387,11 @@ overriding any other behavior.
                 |]
             )
 
-        let isReadWrite =
-            Recoil.useValueLoadableDefault (Selectors.Database.isReadWrite currentTaskMetadata.DatabaseId) false
-
+        let isReadWrite = Recoil.useValue (Selectors.Database.isReadWrite currentTaskMetadata.DatabaseId)
         let status = Recoil.useValueLoadable (Selectors.Cell.status (input.Username, input.TaskId, input.DateId))
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
-        let isToday = Recoil.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false
-
+        let isToday = Recoil.useValue (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value))
         let selected = Recoil.useValue (Atoms.Cell.selected (input.Username, input.TaskId, input.DateId))
 
         let setSelected = useSetSelected ()
