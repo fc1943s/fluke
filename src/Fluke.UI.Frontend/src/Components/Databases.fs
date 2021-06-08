@@ -535,7 +535,7 @@ module Databases =
 
         let databaseIdList =
             databaseIdSet
-            |> Recoil.loadableDefault Set.empty
+            |> Recoil.useLoadableDefault Set.empty
             |> Set.toList
 
         let databaseNameList =

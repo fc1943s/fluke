@@ -21,18 +21,22 @@ module TaskForm =
                    TaskId: TaskId
                    OnSave: Task -> JS.Promise<unit> |})
         =
-        let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
+        let taskMetadata = Recoil.useValueLoadableDefault (Selectors.Session.taskMetadata input.Username) Map.empty
 
-        let (DatabaseName databaseName) =
-            Recoil.useValue (
-                Atoms.Database.name (
-                    input.Username,
+        let databaseId =
+            React.useMemo (
+                (fun () ->
                     taskMetadata
                     |> Map.tryFind input.TaskId
                     |> Option.map (fun x -> x.DatabaseId)
-                    |> Option.defaultValue Database.Default.Id
-                )
+                    |> Option.defaultValue Database.Default.Id),
+                [|
+                    box taskMetadata
+                    box input.TaskId
+                |]
             )
+
+        let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name (input.Username, databaseId))
 
         let toast = Chakra.useToast ()
 

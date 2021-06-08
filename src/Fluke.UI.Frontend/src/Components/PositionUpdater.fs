@@ -76,15 +76,13 @@ module PositionUpdater =
                 )
                 .current
 
-        let sessionData = Recoil.useValue (Selectors.Session.sessionData input.Username)
+        let sessionData = Recoil.useValueLoadable (Selectors.Session.sessionData input.Username)
 
         React.useEffect (
             (fun () ->
-//                match sessionData.state () with
-//                | HasValue sessionData ->
-                        debouncedSetSessionData sessionData
-//                | _ -> ()
-                ),
+                match sessionData.state () with
+                | HasValue sessionData -> debouncedSetSessionData sessionData
+                | _ -> ()),
             [|
                 box sessionData
                 box debouncedSetSessionData

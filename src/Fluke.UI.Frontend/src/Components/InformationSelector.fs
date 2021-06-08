@@ -50,10 +50,19 @@ module InformationSelector =
                 (Some (Recoil.AtomFamily (input.Username, Atoms.Task.information, (input.Username, input.TaskId))))
                 (Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer))
 
-        let informationName =
-            informationFieldOptions.AtomValue
-            |> Information.Name
-            |> InformationName.Value
+        let informationName, informationSelected =
+            React.useMemo (
+                (fun () ->
+                    informationFieldOptions.AtomValue
+                    |> Information.Name
+                    |> InformationName.Value,
+
+                    informationFieldOptions.AtomValue
+                    |> Information.toString),
+                [|
+                    box informationFieldOptions.AtomValue
+                |]
+            )
 
         let selected, setSelected =
             React.useState (
@@ -71,11 +80,7 @@ module InformationSelector =
             |]
         )
 
-        let informationSelected =
-            informationFieldOptions.AtomValue
-            |> Information.toString
-
-        let informationSet = Recoil.useValue (Selectors.Session.informationSet input.Username)
+        let informationSet = Recoil.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
 
         let sortedInformationList =
             React.useMemo (

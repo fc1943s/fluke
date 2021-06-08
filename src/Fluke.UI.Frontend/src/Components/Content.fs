@@ -93,7 +93,6 @@ module Content =
                             [
                                 Migrations {| Username = username |}
                                 PositionUpdater.PositionUpdater {| Username = username |}
-                                PositionUpdater.SessionDataUpdater {| Username = username |}
 
                                 Chakra.stack
                                     (fun x ->
@@ -116,6 +115,8 @@ module Content =
                                     ]
 
                                 SoundPlayer.SoundPlayer {| Username = username |}
+
+                                PositionUpdater.SessionDataUpdater {| Username = username |}
                             ],
                             LoadingSpinner.LoadingSpinner ()
                         )

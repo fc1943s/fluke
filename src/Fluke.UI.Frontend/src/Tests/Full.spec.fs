@@ -101,6 +101,8 @@ module Full =
                     Cy2.clickText "Confirm"
                     Cy2.waitFor "User registered successfully" None
 
+                    Cy.wait 1000
+
                     Cy2.clickText (nameof Databases)
                     Cy2.waitFor "Lane Rendering" None
 
@@ -111,19 +113,23 @@ module Full =
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
-//                    Cy.wait 500
-
                     (Cy.contains dbName None)
                         .find(".chakra-button")
                         .click (Some {| force = true |})
                     |> ignore
 
-                    //                    Cy.wait 400
+                    Cy.wait 400
 
                     Cy2.clickText "Add Task"
 
+                    Cy.wait 400
+
                     Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Select..."
+
                     Cy2.clickText "Project"
+
+                    Cy.wait 1200
+
                     Cy2.clickText "Add Project"
 
                     Cy2.selectorFocusTypeTextWithinSelector

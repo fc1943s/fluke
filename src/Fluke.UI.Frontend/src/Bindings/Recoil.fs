@@ -249,12 +249,18 @@ module RecoilExtensions =
 
 module Recoil =
 
-    let loadableDefault def (loadable: Loadable<_>) =
-        loadable.valueMaybe () |> Option.defaultValue def
+    let useLoadableDefault def (loadable: Loadable<_>) =
+        React.useMemo (
+            (fun () -> loadable.valueMaybe () |> Option.defaultValue def),
+            [|
+                box loadable
+                box def
+            |]
+        )
 
     let useValueLoadableDefault atom def =
         let value = Recoil.useValueLoadable atom
-        loadableDefault def value
+        useLoadableDefault def value
 
     let useEffect (fn, deps) =
         let setter = Recoil.useCallbackRef id
@@ -270,7 +276,7 @@ module Recoil =
 
     let useStateLoadableDefault atom def =
         let value, setValue = Recoil.useStateLoadable atom
-        loadableDefault def value, setValue
+        useLoadableDefault def value, setValue
 
     let parseValidGuid fn (text: string) =
         match Guid.TryParse text with
