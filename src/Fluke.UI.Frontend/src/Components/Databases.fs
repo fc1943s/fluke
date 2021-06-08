@@ -750,36 +750,44 @@ module Databases =
                         x.marginLeft <- "6px"
                         x.flex <- "1")
                     [
-                        match databaseIdSet.state () with
-                        | HasValue _ ->
-                            CheckboxTree.render
-                                {|
-                                    ``checked`` =
-                                        selectedDatabaseIdList
-                                        |> List.map DatabaseId.Value
-                                        |> List.toArray
-                                    expanded =
-                                        newExpandedDatabaseIdList
-                                        |> List.map DatabaseId.Value
-                                        |> List.toArray
-                                    onCheck =
-                                        (fun (x: string []) ->
-                                            x
-                                            |> Array.map (Guid >> DatabaseId)
-                                            |> Array.toList
-                                            |> setSelectedDatabaseIdList)
-                                    onExpand =
-                                        (fun (x: string []) ->
-                                            x
-                                            |> Array.map (Guid >> DatabaseId)
-                                            |> Array.toList
-                                            |> setExpandedDatabaseIdList)
-                                    expandOnClick = true
-                                    onlyLeafCheckboxes = true
-                                    nodes = nodes
-                                    icons = icons
-                                |}
+                        Chakra.flex
+                            (fun x ->
+                                x.flex <- "1"
 
+                                match databaseIdSet.state () with
+                                | HasValue _ -> ()
+                                | _ -> x.display <- "none")
+                            [
+                                CheckboxTree.render
+                                    {|
+                                        ``checked`` =
+                                            selectedDatabaseIdList
+                                            |> List.map DatabaseId.Value
+                                            |> List.toArray
+                                        expanded =
+                                            newExpandedDatabaseIdList
+                                            |> List.map DatabaseId.Value
+                                            |> List.toArray
+                                        onCheck =
+                                            (fun (x: string []) ->
+                                                x
+                                                |> Array.map (Guid >> DatabaseId)
+                                                |> Array.toList
+                                                |> setSelectedDatabaseIdList)
+                                        onExpand =
+                                            (fun (x: string []) ->
+                                                x
+                                                |> Array.map (Guid >> DatabaseId)
+                                                |> Array.toList
+                                                |> setExpandedDatabaseIdList)
+                                        expandOnClick = true
+                                        onlyLeafCheckboxes = true
+                                        nodes = nodes
+                                        icons = icons
+                                    |}
+                            ]
+                        match databaseIdSet.state () with
+                        | HasValue _ -> ()
                         | _ -> LoadingSpinner.LoadingSpinner ()
                     ]
             ]
