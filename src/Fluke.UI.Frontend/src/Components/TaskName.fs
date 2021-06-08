@@ -18,14 +18,14 @@ module TaskName =
     let TaskName (input: {| Username: Username; TaskId: TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
-        let hasSelection = Recoil.useValueLoadableDefault (Selectors.Task.hasSelection input.TaskId) false
+        let hasSelection = Recoil.useValue (Selectors.Task.hasSelection input.TaskId)
         let (TaskName taskName) = Recoil.useValue (Atoms.Task.name (input.Username, input.TaskId))
         let attachments = Recoil.useValue (Atoms.Task.attachments input.TaskId)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
-        let taskMetadata = Recoil.useValueLoadableDefault (Selectors.Session.taskMetadata input.Username) Map.empty
+        let taskMetadata = Recoil.useValue (Selectors.Session.taskMetadata input.Username)
 
         let isReadWrite =
-            Recoil.useValueLoadableDefault (Selectors.Database.isReadWrite taskMetadata.[input.TaskId].DatabaseId) false
+            Recoil.useValue (Selectors.Database.isReadWrite taskMetadata.[input.TaskId].DatabaseId)
 
         Chakra.flex
             (fun x ->

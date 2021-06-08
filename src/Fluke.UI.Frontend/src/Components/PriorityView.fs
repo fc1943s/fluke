@@ -13,7 +13,7 @@ module PriorityView =
 
     [<ReactComponent>]
     let PriorityView (input: {| Username: Username |}) =
-        let filteredTaskIdList = Recoil.useValueLoadableDefault (Selectors.Session.filteredTaskIdList input.Username) []
+        let filteredTaskIdList = Recoil.useValue (Selectors.Session.filteredTaskIdList input.Username)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.flex

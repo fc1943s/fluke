@@ -48,8 +48,8 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "0.0.0-experimental-cc4d24ab0",
-    "react-dom": "0.0.0-experimental-cc4d24ab0",
+    "react": "0.0.0-experimental-0eea57724",
+    "react-dom": "0.0.0-experimental-0eea57724",
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
@@ -104,11 +104,11 @@
     "eslint-plugin-react-hooks": "~4.2",
     "eslint-plugin-jest-dom": "~3.9",
 
-    "gatsby": "~3.6.2",
+    "gatsby": "~3.6",
     "@chakra-ui/gatsby-plugin": "~2.0",
     "postcss": "~8.3",
 
-    "jest": "~27.0.3",
+    "jest": "~27.0",
     "jest-environment-jsdom": "~27.0",
     "ts-jest": "~27.0",
     "jest-css-modules": "~2.1",
@@ -124,7 +124,7 @@
     "file-loader": "~6.2",
     "babel-jest": "~27.0",
 
-    "cypress": "~7.4",
+    "cypress": "~7.5",
     "cypress-terminal-report": "~3.2",
 
     "https-localhost": "~4.6",

@@ -15,9 +15,7 @@ module InformationView =
     let InformationView (input: {| Username: Username |}) =
         let groupIndentationLength = 20
 
-        let tasksByInformationKind =
-            Recoil.useValueLoadableDefault (Selectors.Session.tasksByInformationKind input.Username) []
-
+        let tasksByInformationKind = Recoil.useValue (Selectors.Session.tasksByInformationKind input.Username)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.flex

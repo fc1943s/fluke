@@ -17,8 +17,8 @@ module Day =
                    Date: FlukeDate
                    Label: string |})
         =
-        let isToday = Recoil.useValueLoadableDefault (Selectors.FlukeDate.isToday input.Date) false
-        let hasCellSelection = Recoil.useValueLoadableDefault (Selectors.Session.hasCellSelection input.Date) false
+        let isToday = Recoil.useValue (Selectors.FlukeDate.isToday input.Date)
+        let hasCellSelection = Recoil.useValue (Selectors.Session.hasCellSelection input.Date)
         let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
