@@ -56,7 +56,7 @@
     "recoil": "facebookexperimental/Recoil.git#nightly",
     "recoilize": "~2.0",
 
-    "gun": "amark/gun.git#master",
+    "gun": "amark/gun.git#manhattan",
 
     "@chakra-ui/react": "~1.6",
     "@chakra-ui/system": "~1.6",
@@ -72,7 +72,7 @@
     "electron-devtools-installer": "~3.2",
     "devtron": "~1.4",
 
-    "react-checkbox-tree": "~1.6",
+    "react-checkbox-tree": "~1.7",
 
     "react-markdown": "~6.0",
     "re-resizable": "~6.9",

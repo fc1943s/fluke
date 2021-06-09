@@ -90,6 +90,7 @@ module Databases =
                    Disabled: bool
                    IsTesting: bool
                    Value: string
+                   IsEmptyNode: bool
                    Label: string
                    Children: CheckboxTreeNode []
                    Icon: obj |})
@@ -102,14 +103,12 @@ module Databases =
             else
                 None
 
-        let isEmptyNode = input.Value = (Database.Default.Id |> DatabaseId.Value |> string)
-
         {
             value = input.Value
-            disabled = isEmptyNode || disabled
+            disabled = input.IsEmptyNode || disabled
             children = Some input.Children
             icon =
-                if isEmptyNode then
+                if input.IsEmptyNode then
                     box (Chakra.box (fun x -> x.height <- "10px") [])
                 else
                     input.Icon
@@ -168,7 +167,7 @@ module Databases =
                                         ]
                                 | _ -> nothing
 
-                                match isEmptyNode, input.DatabaseId with
+                                match input.IsEmptyNode, input.DatabaseId with
                                 | _, Some _
                                 | true, _ -> Chakra.box (fun x -> x.height <- "14px") []
                                 | _ -> nothing
@@ -176,9 +175,15 @@ module Databases =
                     ]
         }
 
-    type Node = Node of value: string * label: string * children: Node list * index: int option
+    [<RequireQualifiedAccess>]
+    type NodeValue =
+        | Empty
+        | Parent of Guid
+        | Leaf of Guid
 
-    let buildNodesFromPath (ids: Guid list) (paths: string list) =
+    type Node = Node of value: NodeValue * label: string * children: Node list * index: int option
+
+    let buildNodesFromPath (ids: Guid option list) (paths: string list) =
         let rec groupNodes nodes =
             nodes
             |> List.groupBy (fun (Node (_, label, _, _)) -> label)
@@ -205,20 +210,26 @@ module Databases =
             (fun i nodes ->
                 let rec loop depth list =
                     match list with
-                    | [ head ] -> Node (ids.[i] |> string, head, [], Some i)
+                    | [ head ] ->
+                        let id =
+                            match ids |> List.tryItem i with
+                            | Some (Some id) -> NodeValue.Leaf id
+                            | _ -> NodeValue.Empty
+
+                        Node (id, head, [], Some i)
                     | head :: tail ->
                         let fullPath = nodes |> List.take depth |> String.concat "/"
-                        let nodeId = fullPath |> Crypto.getTextGuidHash |> string
+                        let nodeId = fullPath |> Crypto.getTextGuidHash
 
                         Node (
-                            nodeId,
+                            NodeValue.Parent nodeId,
                             head,
                             [
                                 loop (depth + 1) tail
                             ],
                             None
                         )
-                    | [] -> Node ("", "", [], None)
+                    | [] -> Node (NodeValue.Empty, "", [], None)
 
                 loop 1 nodes)
         |> groupNodes
@@ -307,19 +318,19 @@ module Databases =
 
                     let databaseIdFromIndex databaseIndex =
                         match databaseIndex with
-                        | Some i -> databaseIdList.[i]
-                        | None -> Database.Default.Id
+                        | Some i -> Some databaseIdList.[i]
+                        | None -> None
 
                     let databasePositionFromIndex databaseIndex =
                         match databaseIndex with
                         | Some i -> databaseList.[i].Position
-                        | _ -> Database.Default.Position
+                        | _ -> None
 
                     let nodes =
                         let ids =
                             nodeData
                             |> List.map fst
-                            |> List.map (databaseIdFromIndex >> DatabaseId.Value)
+                            |> List.map (databaseIdFromIndex >> Option.map DatabaseId.Value)
 
                         let paths = nodeData |> List.map snd
                         buildNodesFromPath ids paths
@@ -327,6 +338,10 @@ module Databases =
                     let databaseIndexMap =
                         databaseIndexList
                         |> List.map (fun databaseIndex -> databaseIdFromIndex databaseIndex, databaseIndex)
+                        |> List.choose
+                            (function
+                            | Some databaseId, index -> Some (databaseId, index)
+                            | _ -> None)
                         |> Map.ofList
 
                     let rec loop nodes =
@@ -378,10 +393,24 @@ module Databases =
                                             | None -> false)
                                 | _ -> false
 
+                            printfn $"value={value} databaseId={databaseId}"
+
                             let newValue =
-                                match databaseId with
-                                | Some databaseId -> databaseId |> DatabaseId.Value |> string
-                                | None -> value
+                                databaseId
+                                |> Option.map DatabaseId.Value
+                                |> Option.defaultWith
+                                    (fun () ->
+                                        match value with
+                                        | NodeValue.Empty -> None
+                                        | NodeValue.Parent guid -> Some guid
+                                        | NodeValue.Leaf guid -> Some guid
+                                        |> Option.defaultWith (DatabaseId.NewId >> DatabaseId.Value))
+                                |> string
+
+                            let isEmptyNode =
+                                match value with
+                                | NodeValue.Empty _ -> true
+                                | _ -> false
 
                             let newNode =
                                 node
@@ -391,6 +420,7 @@ module Databases =
                                         Disabled = disabled
                                         IsTesting = isTesting
                                         Value = newValue
+                                        IsEmptyNode = isEmptyNode
                                         Label = label
                                         Children = nodeChildren
                                         Icon = icon

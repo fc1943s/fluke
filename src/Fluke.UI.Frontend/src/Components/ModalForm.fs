@@ -34,9 +34,9 @@ module ModalForm =
             React.useMemo (
                 (fun () -> input.Content (formIdFlag, hide, setter)),
                 [|
+                    box hide
                     box formIdFlag
                     box input
-                    box setFormVisibleFlag
                     box setter
                 |]
             )
