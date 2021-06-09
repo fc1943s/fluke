@@ -7,6 +7,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fable.React
+open Fable.Core.JsInterop
 
 
 module ModalForm =
@@ -53,9 +54,7 @@ module ModalForm =
                             x.children <-
                                 [
                                     Chakra.box
-                                        (fun x ->
-                                            if isTesting then
-                                                (JsInterop.op_Dynamic x "data-testid") <- input.TextKey)
+                                        (fun x -> if isTesting then x?``data-testid`` <- input.TextKey)
                                         [
                                             content
                                         ]

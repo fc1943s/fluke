@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
@@ -50,11 +51,15 @@ module DatabaseFormTrigger =
                                                                     Recoil.AtomScope.ReadOnly
                                                                     database
 
-                                                                setter()
-                                                                    .set (
-                                                                        Atoms.User.databaseIdSet input.Username,
-                                                                        Set.add database.Id
-                                                                    )
+                                                                JS.setTimeout
+                                                                    (fun () ->
+                                                                        setter()
+                                                                            .set (
+                                                                                Atoms.User.databaseIdSet input.Username,
+                                                                                Set.add database.Id
+                                                                            ))
+                                                                    0
+                                                                |> ignore
 
                                                                 onHide ()
                                                             }

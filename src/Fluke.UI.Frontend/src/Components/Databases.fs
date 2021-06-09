@@ -393,8 +393,6 @@ module Databases =
                                             | None -> false)
                                 | _ -> false
 
-                            printfn $"value={value} databaseId={databaseId}"
-
                             let newValue =
                                 databaseId
                                 |> Option.map DatabaseId.Value

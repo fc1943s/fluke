@@ -23,7 +23,7 @@ module Cell =
                    DateId: DateId
                    SemiTransparent: bool |})
         =
-        Profiling.addCount "CellComponent.render"
+        Profiling.addCount "- CellComponent.render"
 
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
         let isTesting = Recoil.useValue Atoms.isTesting
@@ -32,7 +32,11 @@ module Cell =
         let isReadWrite =
             Recoil.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
 
-        let sessionStatus = Recoil.useValue (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
+        let sessionStatus =
+            Recoil.useValueLoadableDefault
+                (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
+                Disabled
+
         let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
         let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
         let isToday = Recoil.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false

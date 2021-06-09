@@ -1812,14 +1812,13 @@ module Templates =
 
         let taskStateList, userInteractionsBundle = dslData.TaskStateList |> List.unzip
         let userInteractions = userInteractionsBundle |> List.collect id
-        let newDatabaseState = databaseStateWithInteractions userInteractions databaseState
 
         let newTaskStateMap =
-            (newDatabaseState.TaskStateMap, taskStateList)
+            (databaseState.TaskStateMap, taskStateList)
             ||> List.fold
                     (fun taskStateMap taskState ->
                         let oldTaskState =
-                            newDatabaseState.TaskStateMap
+                            databaseState.TaskStateMap
                             |> Map.tryFind taskState.Task.Id
 
                         let newTaskState =
@@ -1830,13 +1829,11 @@ module Templates =
                         taskStateMap
                         |> Map.add taskState.Task.Id newTaskState)
 
-        let result =
-            { newDatabaseState with
-                InformationStateMap = newInformationStateMap
-                TaskStateMap = newTaskStateMap
-            }
-
-        result
+        { databaseState with
+            InformationStateMap = newInformationStateMap
+            TaskStateMap = newTaskStateMap
+        }
+        |> databaseStateWithInteractions userInteractions
 
     let databaseStateFromDslTemplate user databaseId templateName dslTemplate =
         let dslDataList =

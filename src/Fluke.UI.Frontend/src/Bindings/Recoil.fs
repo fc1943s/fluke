@@ -596,10 +596,11 @@ module Recoil =
 
                     match gunAtomNode with
                     | Some gunAtomNode ->
-                        JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath} ")
+                        Profiling.addCount $"[gunEffect.on()] atomPath={atomPath}"
                         gunAtomNode.on
                             (fun data _key ->
                                 async {
+                                    Profiling.addCount $"[gunEffect.on() value] atomPath={atomPath}"
                                     try
                                         let! decoded =
                                             match box data with

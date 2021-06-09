@@ -26,7 +26,10 @@ module CellMenu =
 
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
-        let sessionStatus = Recoil.useValue (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
+        let sessionStatus =
+            Recoil.useValueLoadableDefault
+                (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
+                Disabled
 
         let cellSelectionMap =
             Recoil.useValueLoadableDefault (Selectors.Session.cellSelectionMap input.Username) Map.empty

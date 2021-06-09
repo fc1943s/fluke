@@ -208,13 +208,7 @@ module State =
                             }
 
                         | Interaction.Task (taskId, taskInteraction) ->
-                            let taskState =
-                                databaseState.TaskStateMap
-                                |> Map.tryFind taskId
-                                |> Option.defaultValue
-                                    { TaskState.Default with
-                                        Task = { Task.Default with Id = taskId }
-                                    }
+                            let taskState = databaseState.TaskStateMap.[taskId]
 
                             let newTaskState =
                                 match taskInteraction with
@@ -267,13 +261,7 @@ module State =
                                 TaskStateMap = newTaskStateMap
                             }
                         | Interaction.Cell (taskId, dateId, cellInteraction) ->
-                            let taskState =
-                                databaseState.TaskStateMap
-                                |> Map.tryFind taskId
-                                |> Option.defaultValue
-                                    { TaskState.Default with
-                                        Task = { Task.Default with Id = taskId }
-                                    }
+                            let taskState = databaseState.TaskStateMap.[taskId]
 
                             let cellState =
                                 taskState.CellStateMap

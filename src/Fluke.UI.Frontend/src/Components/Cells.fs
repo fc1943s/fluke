@@ -12,8 +12,6 @@ module Cells =
         (input: {| Username: Username
                    TaskIdList: TaskId list |})
         =
-        Profiling.addTimestamp "cells.render"
-
         Chakra.box
             (fun _ -> ())
             [

@@ -3,7 +3,7 @@ framework: net6.0
 storage: none
 source https://api.nuget.org/v3/index.json
 
-nuget FSharp.Core ~> 5.0 prerelease
+nuget FSharp.Core ~> 5.0
 
 // group Fluke.Shared
 nuget Myriad.Core ~> 0.5
@@ -16,7 +16,7 @@ nuget Fable.DateFunctions ~> 3.6
 nuget Fable.Jester ~> 0.31
 nuget Fable.ReactTestingLibrary ~> 0.31
 nuget Fable.SimpleJson ~> 3.20
-nuget Feliz ~> 1.45
+nuget Feliz ~> 1.46
 nuget Feliz.Recoil ~> 0.19
 nuget Feliz.Router ~> 3.8
 nuget Feliz.UseListener ~> 0.6

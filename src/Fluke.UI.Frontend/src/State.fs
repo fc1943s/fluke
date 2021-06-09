@@ -816,10 +816,11 @@ module State =
 
                                                 dateId, cellState)
                                         |> List.filter
-                                            (fun (_, cellState) ->
-                                                cellState.Status <> Disabled
-                                                || not cellState.Sessions.IsEmpty
-                                                || not cellState.Attachments.IsEmpty)
+                                            (function
+                                            | _, { Status = UserStatus _ } -> true
+                                            | _, { Sessions = _ :: _ } -> true
+                                            | _, { Attachments = _ :: _ } -> true
+                                            | _ -> false)
                                         |> Map.ofList
                                 }
                         })
@@ -1046,13 +1047,15 @@ module State =
                                 |> Set.toList
                                 |> List.choose
                                     (fun taskId ->
-                                        let (TaskName taskName) = getter.get (Atoms.Task.name (username, taskId))
 
                                         let duration = getter.get (Task.activeSession taskId)
 
                                         duration
                                         |> Option.map
                                             (fun duration ->
+                                                let (TaskName taskName) =
+                                                    getter.get (Atoms.Task.name (username, taskId))
+
                                                 TempUI.ActiveSession (
                                                     taskName,
                                                     Minute duration,
@@ -1109,7 +1112,11 @@ module State =
                                 else
                                     taskStateSearch
 
-                            printfn $"filteredTaskStateList.Length={filteredTaskStateList.Length} taskStateSearch.Length={taskStateSearch.Length}"
+                            JS.log
+                                (fun () ->
+                                    $"filteredTaskStateList.Length={filteredTaskStateList.Length} taskStateSearch.Length={
+                                                                                                                              taskStateSearch.Length
+                                    }")
 
                             return
                                 filteredTaskStateList
@@ -1135,13 +1142,17 @@ module State =
 
                                     let informationStateList = getter.get (Session.informationStateList username)
 
+                                    JS.log
+                                        (fun () ->
+                                            $"sortedTaskIdList. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
+
                                     let lanes =
                                         filteredTaskIdSet
                                         |> Set.toList
                                         |> List.map
                                             (fun taskId ->
-                                                let taskState = getter.get (Task.taskState (username, taskId))
                                                 let statusMap = getter.get (Task.statusMap (username, taskId))
+                                                let taskState = getter.get (Task.taskState (username, taskId))
                                                 taskState, statusMap)
 
                                     let result =
@@ -1153,6 +1164,8 @@ module State =
                                                 InformationStateList = informationStateList
                                                 Lanes = lanes
                                             |}
+
+                                    JS.log (fun () -> $"sortedTaskIdList. result.Length={result.Length}")
 
                                     result
                                     |> List.map (fun (taskState, _) -> taskState.Task.Id)

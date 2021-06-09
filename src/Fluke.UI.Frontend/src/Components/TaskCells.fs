@@ -15,8 +15,6 @@ module TaskCells =
                    TaskId: TaskId
                    Index: int |})
         =
-        Profiling.addTimestamp "cells.render"
-
         let dateSequence = Recoil.useValue Selectors.dateSequence
 
         Chakra.flex

@@ -44,8 +44,6 @@ module Tests =
         dslTemplate.Tasks
         |> List.iter
             (fun taskTemplate ->
-                let dateSequence = taskTemplate.Expected |> List.map fst
-
                 let taskState = databaseState.TaskStateMap.[taskTemplate.Task.Id]
 
                 let expectedCellMetadataList =
@@ -90,6 +88,11 @@ module Tests =
                     match expectedStatus with
                     | [] -> []
                     | expectedStatus ->
+                        let dateSequence =
+                            taskTemplate.Expected
+                            |> List.map fst
+                            |> Rendering.stretchDateSequence databaseState.Database.Position taskState.Task.Scheduling
+
                         let laneStatusMap =
                             Rendering.renderTaskStatusMap
                                 templatesUser.DayStart
@@ -173,14 +176,129 @@ module Tests =
                                                 list
                                                 |> List.map
                                                     (fun (name3, dslTemplate: DslTemplate) ->
-                                                        test name3 { testWithTemplateData dslTemplate })
+
+                                                        let newDslTemplate =
+                                                            { dslTemplate with
+                                                                Tasks =
+                                                                    dslTemplate.Tasks
+                                                                    |> List.map
+                                                                        (fun taskTemplate ->
+                                                                            { taskTemplate with
+                                                                                Task =
+                                                                                    { taskTemplate.Task with
+                                                                                        Id = TaskId.NewId ()
+                                                                                    }
+                                                                            })
+                                                            }
+
+                                                        test name3 { testWithTemplateData newDslTemplate })
                                         ])
                     ])
 
-    let getDatabaseTests () =
+    let databaseTests =
         let database = getDatabase templatesUser
-        let tests = createTests database
-        tests
+        createTests database
+
+    let databaseMap = getDatabaseMap templatesUser
+
+    let laneSortingDslTemplate = databaseMap.["Lane Sorting/Default/All task types mixed"]
+
+    let dslTemplate =
+        { laneSortingDslTemplate with
+            Tasks =
+                laneSortingDslTemplate.Tasks
+                |> List.map
+                    (fun templateTask ->
+                        { templateTask with
+                            Task =
+                                { templateTask.Task with
+                                    Id = TaskId.NewId ()
+                                }
+                        })
+        }
+
+
+
+    let (|NoSorting|IncomingRecurrency|TimeOfDay|All|) =
+        function
+        | Choice1Of4 _ -> NoSorting
+        | Choice2Of4 _ -> IncomingRecurrency
+        | Choice3Of4 _ -> TimeOfDay
+        | Choice4Of4 _ -> All
+
+    let noSorting = Choice1Of4 ()
+    let sortByIncomingRecurrency = Choice2Of4 ()
+    let sortByTimeOfDay = Choice3Of4 ()
+    let sortByAll = Choice4Of4 ()
+
+    let testWithLaneSortingData
+        (props: {| Sort: Choice<_, _, _, _>
+                   Data: (Task * DslTask list) list
+                   Expected: string list
+                   Position: FlukeDateTime |})
+        =
+        let databaseState =
+            let dslData =
+                Testing.createLaneSortingDslData
+                    {|
+                        User = templatesUser
+                        Position = props.Position
+                        Expected = props.Expected
+                        Data = props.Data
+                    |}
+
+            DatabaseState.Create (
+                name = DatabaseName "Test",
+                owner = templatesUser.Username,
+                dayStart = templatesUser.DayStart
+            )
+            |> mergeDslDataIntoDatabaseState dslData
+
+        let newDateSequence padding =
+            databaseState.TaskStateMap
+            |> Map.values
+            |> Seq.collect (fun taskState -> taskState.CellStateMap |> Map.keys)
+            |> Seq.toList
+            |> List.map (fun (DateId referenceDay) -> referenceDay)
+            |> Rendering.getDateSequence padding
+
+        let expect dateSequence =
+
+            let lanes =
+                databaseState.TaskStateMap
+                |> Seq.map
+                    (fun (KeyValue (_, taskState)) ->
+                        let newDateSequence =
+                            dateSequence
+                            |> Rendering.stretchDateSequence databaseState.Database.Position taskState.Task.Scheduling
+
+                        let taskStatusMap =
+                            Rendering.renderTaskStatusMap
+                                templatesUser.DayStart
+                                props.Position
+                                newDateSequence
+                                taskState
+
+                        taskState, taskStatusMap)
+                |> Seq.toList
+
+            match props.Sort with
+            | NoSorting -> lanes
+            | IncomingRecurrency -> Sorting.sortLanesByIncomingRecurrency templatesUser.DayStart props.Position lanes
+            | TimeOfDay -> Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position lanes
+            | All ->
+                lanes
+                |> Sorting.sortLanesByFrequency
+                |> Sorting.sortLanesByIncomingRecurrency templatesUser.DayStart props.Position
+                |> Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position //input.TaskOrderList
+            |> List.map (fun ({ Task = { Name = TaskName name } }, _) -> name)
+            |> Expect.equal "" props.Expected
+
+        let dateSequence1 = newDateSequence (35, 35)
+        let dateSequence2 = newDateSequence (14, 14)
+
+        expect dateSequence1
+        expect dateSequence2
 
 
 
@@ -189,95 +307,11 @@ module Tests =
         testList
             "Tests"
             [
-                yield! getDatabaseTests ()
+                yield! databaseTests
 
                 testList
                     "Lane Sorting"
                     [
-
-                        let (|NoSorting|IncomingRecurrency|TimeOfDay|All|) =
-                            function
-                            | Choice1Of4 _ -> NoSorting
-                            | Choice2Of4 _ -> IncomingRecurrency
-                            | Choice3Of4 _ -> TimeOfDay
-                            | Choice4Of4 _ -> All
-
-                        let noSorting = Choice1Of4 ()
-                        let sortByIncomingRecurrency = Choice2Of4 ()
-                        let sortByTimeOfDay = Choice3Of4 ()
-                        let sortByAll = Choice4Of4 ()
-
-                        let testWithLaneSortingData
-                            (props: {| Sort: Choice<_, _, _, _>
-                                       Data: (Task * DslTask list) list
-                                       Expected: string list
-                                       Position: FlukeDateTime |})
-                            =
-                            let databaseState =
-                                let dslData =
-                                    Testing.createLaneSortingDslData
-                                        {|
-                                            User = templatesUser
-                                            Position = props.Position
-                                            Expected = props.Expected
-                                            Data = props.Data
-                                        |}
-
-                                DatabaseState.Create (
-                                    name = DatabaseName "Test",
-                                    owner = templatesUser.Username,
-                                    dayStart = templatesUser.DayStart
-                                )
-                                |> mergeDslDataIntoDatabaseState dslData
-
-                            let newDateSequence padding =
-                                databaseState.TaskStateMap
-                                |> Map.values
-                                |> Seq.collect (fun taskState -> taskState.CellStateMap |> Map.keys)
-                                |> Seq.toList
-                                |> List.map (fun (DateId referenceDay) -> referenceDay)
-                                |> Rendering.getDateSequence padding
-
-                            let expect dateSequence =
-                                databaseState.TaskStateMap
-                                |> Seq.map
-                                    (fun (KeyValue (_, taskState)) ->
-                                        taskState,
-                                        Rendering.renderTaskStatusMap
-                                            templatesUser.DayStart
-                                            props.Position
-                                            dateSequence
-                                            taskState)
-                                |> Seq.toList
-                                |> fun lanes ->
-                                    match props.Sort with
-                                    | NoSorting -> lanes
-                                    | IncomingRecurrency ->
-                                        Sorting.sortLanesByIncomingRecurrency
-                                            templatesUser.DayStart
-                                            props.Position
-                                            lanes
-                                    | TimeOfDay ->
-                                        Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position lanes
-                                    | All ->
-                                        lanes
-                                        |> Sorting.sortLanesByFrequency
-                                        |> Sorting.sortLanesByIncomingRecurrency templatesUser.DayStart props.Position
-                                        |> Sorting.sortLanesByTimeOfDay templatesUser.DayStart props.Position //input.TaskOrderList
-                                |> List.map (fun ({ Task = { Name = TaskName name } }, _) -> name)
-                                |> Expect.equal "" props.Expected
-
-                            let dateSequence1 = newDateSequence (35, 35)
-                            let dateSequence2 = newDateSequence (14, 14)
-
-                            expect dateSequence1
-                            expect dateSequence2
-
-                        let databaseMap = getDatabaseMap templatesUser
-
-                        let dslTemplate = databaseMap.["Lane Sorting/Default/All task types mixed"]
-
-
                         test "All task types mixed: No Sorting" {
                             testWithLaneSortingData
                                 {|

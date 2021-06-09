@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core
 open Feliz
 open Feliz.Recoil
 open Feliz.UseListener
@@ -51,14 +52,18 @@ module TaskFormTrigger =
                                                                     Recoil.AtomScope.ReadOnly
                                                                     task
 
-                                                                setter()
-                                                                    .set (
-                                                                        Atoms.Database.taskIdSet (
-                                                                            input.Username,
-                                                                            input.DatabaseId
-                                                                        ),
-                                                                        Set.add task.Id
-                                                                    )
+                                                                JS.setTimeout
+                                                                    (fun () ->
+                                                                        setter()
+                                                                            .set (
+                                                                                Atoms.Database.taskIdSet (
+                                                                                    input.Username,
+                                                                                    input.DatabaseId
+                                                                                ),
+                                                                                Set.add task.Id
+                                                                            ))
+                                                                    0
+                                                                |> ignore
 
                                                                 onHide ()
                                                             }
