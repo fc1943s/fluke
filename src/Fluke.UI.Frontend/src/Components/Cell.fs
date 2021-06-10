@@ -37,11 +37,9 @@ module Cell =
                 (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
                 Disabled
 
-        let sessions = Recoil.useValue (Atoms.Cell.sessions (input.TaskId, input.DateId))
-        let attachments = Recoil.useValue (Atoms.Cell.attachments (input.TaskId, input.DateId))
+        let taskState = Recoil.useValue (Selectors.Task.taskState (input.Username, input.TaskId))
         let isToday = Recoil.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false
-        let selected = Recoil.useValue (Atoms.Cell.selected (input.Username, input.TaskId, input.DateId))
-
+        let selected = Recoil.useValue (Selectors.Cell.selected (input.Username, input.TaskId, input.DateId))
         let setSelected = Setters.useSetSelected ()
 
         let onCellClick =
@@ -51,10 +49,13 @@ module Cell =
                         let! ctrlPressed = setter.snapshot.getPromise Atoms.ctrlPressed
                         let! shiftPressed = setter.snapshot.getPromise Atoms.shiftPressed
 
-                        if ctrlPressed || shiftPressed then
-                            do! setSelected (input.Username, input.TaskId, input.DateId, not selected)
-                        else
-                            do! setSelected (input.Username, input.TaskId, input.DateId, false)
+                        let newSelected =
+                            if ctrlPressed || shiftPressed then
+                                input.Username, input.TaskId, input.DateId, not selected
+                            else
+                                input.Username, input.TaskId, input.DateId, false
+
+                        do! setSelected newSelected
                     })
 
         Popover.CustomPopover
@@ -97,7 +98,7 @@ module Cell =
                             CellSessionIndicator.CellSessionIndicator
                                 {|
                                     Status = sessionStatus
-                                    Sessions = sessions
+                                    Sessions = taskState.Sessions
                                 |}
 
                             if selected then
@@ -117,7 +118,7 @@ module Cell =
                             TooltipPopup.TooltipPopup
                                 {|
                                     Username = input.Username
-                                    Attachments = attachments
+                                    Attachments = taskState.Attachments
                                 |}
                         ]
                 Body =

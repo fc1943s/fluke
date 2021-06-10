@@ -18,7 +18,7 @@ module InformationName =
         (input: {| Username: Username
                    Information: Information |})
         =
-        let attachments = Recoil.useValue (Atoms.Information.attachments input.Information)
+        let attachments = Recoil.useValue (Atoms.Information.attachments (input.Username, input.Information))
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.box

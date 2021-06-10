@@ -25,8 +25,7 @@ module Tests =
                             Events = templateTask.Events
                         |})
 
-        let databaseState =
-            DatabaseState.Create (name = DatabaseName "Test", owner = user.Username, dayStart = user.DayStart)
+        let databaseState = DatabaseState.Create (name = DatabaseName "Test", owner = user.Username)
 
         let newDatabaseState =
             (databaseState, dslDataList)
@@ -91,7 +90,6 @@ module Tests =
                         let dateSequence =
                             taskTemplate.Expected
                             |> List.map fst
-                            |> Rendering.stretchDateSequence databaseState.Database.Position taskState.Task.Scheduling
 
                         let laneStatusMap =
                             Rendering.renderTaskStatusMap
@@ -117,46 +115,23 @@ module Tests =
                     match expectedSessions with
                     | [] -> []
                     | expectedSessions ->
-                        //                        let sessionData =
-//                            View.getSessionData
-//                                {|
-//                                    Username = templatesUser.Username
-//                                    DayStart = templatesUser.DayStart
-//                                    DateSequence = dateSequence
-//                                    View = View.View.HabitTracker
-//                                    FilterTasksByView = true
-//                                    Position = Some dslTemplate.Position
-//                                    TaskStateList =
-//                                        databaseState.TaskStateMap
-//                                        |> Map.values
-//                                        |> Seq.toList
-//                                |}
-//
-//                        let taskState = sessionData.TaskStateMap.[taskTemplate.Task.Id]
-//
-//                        expectedSessions
-//                        |> List.map
-//                            (fun (date, count) ->
-//                                let sessionCount =
-//                                    taskState.Sessions
-//                                    |> List.filter
-//                                        (fun (TaskSession (start, _, _)) ->
-//                                            isToday templatesUser.DayStart start (DateId date))
-//                                    |> List.length
-//
-//                                count, sessionCount)
-                        []
+                        expectedSessions
+                        |> List.map
+                            (fun (date, count) ->
+                                let sessionCount =
+                                    taskState.Sessions
+                                    |> List.filter
+                                        (fun (Session (start, _, _)) ->
+                                            isToday templatesUser.DayStart start (DateId date))
+                                    |> List.length
 
-
+                                count, sessionCount)
 
                 statusAssertList
                 |> List.iter (fun (expected, actual) -> Expect.equal "" expected actual)
 
                 sessionsAssertList
                 |> List.iter (fun (expected, actual) -> Expect.equal "" expected actual))
-
-
-
 
     let createTests testDatabase =
         testDatabase
@@ -247,11 +222,7 @@ module Tests =
                         Data = props.Data
                     |}
 
-            DatabaseState.Create (
-                name = DatabaseName "Test",
-                owner = templatesUser.Username,
-                dayStart = templatesUser.DayStart
-            )
+            DatabaseState.Create (name = DatabaseName "Test", owner = templatesUser.Username)
             |> mergeDslDataIntoDatabaseState dslData
 
         let newDateSequence padding =
@@ -268,15 +239,11 @@ module Tests =
                 databaseState.TaskStateMap
                 |> Seq.map
                     (fun (KeyValue (_, taskState)) ->
-                        let newDateSequence =
-                            dateSequence
-                            |> Rendering.stretchDateSequence databaseState.Database.Position taskState.Task.Scheduling
-
                         let taskStatusMap =
                             Rendering.renderTaskStatusMap
                                 templatesUser.DayStart
                                 props.Position
-                                newDateSequence
+                                dateSequence
                                 taskState
 
                         taskState, taskStatusMap)

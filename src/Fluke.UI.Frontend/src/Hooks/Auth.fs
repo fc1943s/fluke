@@ -4,6 +4,7 @@ open Feliz
 open Fable.Core
 open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
+open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -13,6 +14,7 @@ open Fluke.Shared
 
 
 module Auth =
+
     let useLogout () =
         let gunNamespace = Recoil.useValue Selectors.gunNamespace
         let setUsername = Recoil.useSetState Atoms.username
@@ -132,23 +134,23 @@ module Auth =
                                 (fun taskState ->
                                     hydrateTask username Recoil.AtomScope.ReadOnly taskState.Task
 
-                                    taskState.CellStateMap
-                                    |> Map.iter
-                                        (fun dateId cellState ->
-                                            setter.set (
-                                                Atoms.Cell.status (username, taskState.Task.Id, dateId),
-                                                cellState.Status
-                                            )
+                                    setter.set (
+                                        Atoms.Task.statusMap (username, taskState.Task.Id),
+                                        (taskState.CellStateMap
+                                         |> Seq.choose
+                                             (function
+                                             | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
+                                                 Some (dateId, userStatus)
+                                             | _ -> None)
+                                         |> Map.ofSeq)
+                                    )
 
-                                            setter.set (
-                                                Atoms.Cell.attachments (taskState.Task.Id, dateId),
-                                                cellState.Attachments
-                                            )
+                                    setter.set (
+                                        Atoms.Task.attachments (username, taskState.Task.Id),
+                                        taskState.Attachments
+                                    )
 
-                                            setter.set (
-                                                Atoms.Cell.sessions (taskState.Task.Id, dateId),
-                                                cellState.Sessions
-                                            ))
+                                    setter.set (Atoms.Task.sessions (username, taskState.Task.Id), taskState.Sessions)
 
                                     setter.set (
                                         Atoms.Database.taskIdSet (username, databaseState.Database.Id),

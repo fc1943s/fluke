@@ -20,7 +20,7 @@ module TaskName =
         let hovered = Listener.useElementHover ref
         let hasSelection = Recoil.useValueLoadableDefault (Selectors.Task.hasSelection input.TaskId) false
         let (TaskName taskName) = Recoil.useValue (Atoms.Task.name (input.Username, input.TaskId))
-        let attachments = Recoil.useValue (Atoms.Task.attachments input.TaskId)
+        let taskState = Recoil.useValue (Selectors.Task.taskState (input.Username, input.TaskId))
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
         let isReadWrite =
@@ -114,6 +114,6 @@ module TaskName =
                 TooltipPopup.TooltipPopup
                     {|
                         Username = input.Username
-                        Attachments = attachments
+                        Attachments = taskState.Attachments
                     |}
             ]

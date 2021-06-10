@@ -30,7 +30,6 @@ module State =
             Owner: Username
             SharedWith: DatabaseAccess
             Position: FlukeDateTime option
-            DayStart: FlukeTime
         }
 
     and DatabaseId = DatabaseId of guid: Guid
@@ -55,15 +54,15 @@ module State =
     and InformationState =
         {
             Information: Information
-            Attachments: Attachment list
+            Attachments: (FlukeDateTime * Attachment) list
             SortList: (Information option * Information option) list
         }
 
     and TaskState =
         {
             Task: Task
-            Sessions: TaskSession list
-            Attachments: Attachment list
+            Sessions: Session list
+            Attachments: (FlukeDateTime * Attachment) list
             SortList: (Task option * Task option) list
             CellStateMap: Map<DateId, CellState>
         }
@@ -72,7 +71,7 @@ module State =
         {
             Status: CellStatus
             Attachments: Attachment list
-            Sessions: TaskSession list
+            Sessions: Session list
         }
 
     and CellStatus =
@@ -105,7 +104,6 @@ module State =
                 Owner = Username ""
                 SharedWith = DatabaseAccess.Private []
                 Position = None
-                DayStart = FlukeTime.Create 7 0
             }
 
     and TaskState with
@@ -119,7 +117,7 @@ module State =
             }
 
     and DatabaseState with
-        static member inline Create (name, owner, dayStart, ?id, ?sharedWith, ?position) =
+        static member inline Create (name, owner, ?id, ?sharedWith, ?position) =
             {
                 Database =
                     {
@@ -128,7 +126,6 @@ module State =
                         Owner = owner
                         SharedWith = defaultArg sharedWith (DatabaseAccess.Private [])
                         Position = position
-                        DayStart = dayStart
                     }
                 InformationStateMap = Map.empty
                 TaskStateMap = Map.empty
@@ -171,7 +168,7 @@ module State =
         let newDatabaseState =
             (databaseState, userInteractionList)
             ||> List.fold
-                    (fun databaseState (UserInteraction (_moment, user, interaction)) ->
+                    (fun databaseState (UserInteraction (moment, user, interaction)) ->
                         match interaction with
                         | Interaction.Information (information, informationInteraction) ->
                             let informationState =
@@ -187,7 +184,9 @@ module State =
                             let newInformationState =
                                 match informationInteraction with
                                 | InformationInteraction.Attachment attachment ->
-                                    let attachments = attachment :: informationState.Attachments
+                                    let attachments =
+                                        (moment, attachment)
+                                        :: informationState.Attachments
 
                                     { informationState with
                                         Attachments = attachments
@@ -213,7 +212,7 @@ module State =
                             let newTaskState =
                                 match taskInteraction with
                                 | TaskInteraction.Attachment attachment ->
-                                    let newAttachments = attachment :: taskState.Attachments
+                                    let newAttachments = (moment, attachment) :: taskState.Attachments
 
                                     { taskState with
                                         Attachments = newAttachments
@@ -225,7 +224,7 @@ module State =
                                     { taskState with
                                         SortList = newSortList
                                     }
-                                | TaskInteraction.Session (TaskSession (_start, _duration, _breakDuration) as session) ->
+                                | TaskInteraction.Session (Session (_start, _duration, _breakDuration) as session) ->
                                     let newSessions = session :: taskState.Sessions
 
                                     { taskState with
@@ -329,7 +328,15 @@ module State =
                         SortList = oldValue.SortList @ newValue.SortList
                     })
 
-    let mergeCellStateMap (oldMap: Map<DateId, CellState>) (newMap: Map<DateId, CellState>) = oldMap |> Map.union newMap
+    let mergeCellStateMap (oldMap: Map<DateId, CellState>) (newMap: Map<DateId, CellState>) =
+        (oldMap, newMap)
+        ||> Map.unionWith
+                (fun oldValue newValue ->
+                    { oldValue with
+                        Sessions = oldValue.Sessions @ newValue.Sessions
+                        Attachments = oldValue.Attachments @ newValue.Attachments
+                        Status = newValue.Status
+                    })
 
     let mergeInformationMap (oldMap: Map<Information, unit>) (newMap: Map<Information, unit>) =
         oldMap |> Map.union newMap

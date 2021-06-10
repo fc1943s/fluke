@@ -93,33 +93,22 @@ module TempData =
 
 
     let createTaskCommentInteraction user moment task comment =
-        let interaction = Interaction.Task (task, TaskInteraction.Attachment (Attachment.Comment (user, comment)))
-
-        let userInteraction = UserInteraction (moment, user, interaction)
-
-        userInteraction
+        let interaction = Interaction.Task (task, TaskInteraction.Attachment (Attachment.Comment comment))
+        UserInteraction (moment, user, interaction)
 
     let createInformationCommentInteraction user moment information comment =
         let interaction =
-            Interaction.Information (
-                information,
-                InformationInteraction.Attachment (Attachment.Comment (user, comment))
-            )
-
-        let userInteraction = UserInteraction (moment, user, interaction)
-
-        userInteraction
+            Interaction.Information (information, InformationInteraction.Attachment (Attachment.Comment comment))
+        UserInteraction (moment, user, interaction)
 
     let createCellCommentInteraction dayStart (task: Task) moment user comment =
         let cellInteraction =
-            Attachment.Comment (user, comment)
+            Attachment.Comment comment
             |> CellInteraction.Attachment
 
         let dateId = dateId dayStart moment
         let interaction = Interaction.Cell (task.Id, dateId, cellInteraction)
-        let userInteraction = UserInteraction (moment, user, interaction)
-        userInteraction
-
+        UserInteraction (moment, user, interaction)
 
     let createCellStatusChangeInteractions user (entries: (FlukeDate * (Task option * ManualCellStatus) list) list) =
         entries
@@ -131,10 +120,6 @@ module TempData =
                         task
                         |> Option.map
                             (fun task -> Templates.createCellStatusChangeInteraction user task date manualCellStatus)))
-
-
-
-
 
     let dslDatabaseWithUser (user: User) (dslDatabase: (Information * (string * Templates.DslTask list) list) list) =
         dslDatabase
@@ -150,50 +135,6 @@ module TempData =
 
                 information, newTasks)
 
-    //        taskDatabase
-//        |> List.map (fun x -> x |> Tuple2.mapItem2 (fun x -> x |> List.map (fun x -> x |> Tuple2.mapItem2 (fun (a,b) -> x |> List.map (fun (event:DslTask) -> event, user)))))
-
-    //    let createDatabaseData dayStart position taskDatabase =
-//        let taskStateList =
-//            taskDatabase
-//            |> List.collect (fun (information, tasks) ->
-//                tasks
-//                |> List.map (fun (taskName, events: (DslTask * User) list) ->
-//                    let task =
-//                        { Task.Default with
-//                            Name = TaskName taskName
-//                            Information = information
-//                        }
-//
-//                    createTaskState dayStart position task events))
-//
-//        let informationList =
-//            taskDatabase |> List.map fst |> List.distinct
-//
-//        let taskOrderList =
-//            taskStateList
-//            |> List.map (fun (taskState, userInteractions) ->
-//                {
-//                    Task = taskState.Task
-//                    Priority = TaskOrderPriority.Last
-//                })
-//
-//        {
-//            TaskStateList = taskStateList
-//            TaskOrderList = taskOrderList
-//            InformationList = informationList
-//            GetLivePosition = getLivePosition
-//        }
-
-    //    type SessionState =
-//        {
-//            User: User option
-//            GetLivePosition: unit -> FlukeDateTime
-//            DatabaseStateMap: Map<DatabaseState, bool>
-//        }
-
-
-
     let mergeDatabaseState (oldValue: DatabaseState) (newValue: DatabaseState) =
         { oldValue with
             InformationStateMap = mergeInformationStateMap oldValue.InformationStateMap newValue.InformationStateMap
@@ -203,14 +144,11 @@ module TempData =
     let mergeDatabaseStateMap (oldMap: Map<DatabaseId, DatabaseState>) (newMap: Map<DatabaseId, DatabaseState>) =
         Map.unionWith mergeDatabaseState oldMap newMap
 
-
-
     let createDslData
         moment
         taskContainerFactory
         (dslDatabase: (Information * (string * (Templates.DslTask * User) list) list) list)
         =
-
         let taskMap, taskStateList =
             let (|FirstPass|SecondPass|) =
                 function
@@ -265,11 +203,6 @@ module TempData =
 
             loop 0 Map.empty
 
-        //        printfn
-//            "taskMap taskStateList ### %A ### ### %A ###"
-//            (taskMap|>Map.tryPick (fun k v -> if k.Contains "week view" then Some v else None))
-//            (taskStateList |> List.filter (fun (taskState, interactions) -> let (TaskName taskName) = taskState.Task.Name in taskName.Contains "week view"))
-
         let informationStateMap =
             dslDatabase
             |> List.map fst
@@ -314,31 +247,7 @@ module TempData =
         dslData, tasks
 
 
-
-
-
     module Testing =
-
-        //        let dslDataToDatabaseState user dslData =
-//            let userInteractions =
-//                dslData.TaskStateList |> List.collect snd
-//
-//            let databaseStateWithoutInteractions: DatabaseState =
-//                {
-//                    Id =
-//                        DatabaseId
-//                        <| Guid "17A1AA3D-95C7-424E-BD6D-7C12B33CED37"
-//                    Name = State.DatabaseName "dslDataToState"
-//                    Owner = user
-//                    SharedWith = []
-//                    Position = None
-//                    InformationStateMap = dslData.InformationStateMap
-//                    TaskStateMap = Map.empty
-//                }
-//
-//            databaseStateWithoutInteractions
-//            |> DatabaseStateWithInteractions userInteractions
-
         let createLaneRenderingDslData
             (input: {| User: User
                        Position: FlukeDateTime

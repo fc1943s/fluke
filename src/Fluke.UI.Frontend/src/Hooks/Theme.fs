@@ -63,7 +63,11 @@ module Theme =
                                         ``--chakra-shadows-outline`` = $"0 0 0 1px {theme.colors.heliotrope} !important"
                                     |}
                                 ``*, *::before, *::after`` = {| wordWrap = "break-word" |}
-                                html = {| fontSize = "main" |}
+                                html =
+                                    {|
+                                        fontSize = "main"
+                                        overflow = "hidden"
+                                    |}
                                 body =
                                     {|
                                         fontFamily = "main"

@@ -17,7 +17,7 @@ module TooltipPopup =
     [<ReactComponent>]
     let TooltipPopup
         (input: {| Username: Username
-                   Attachments: Attachment list |})
+                   Attachments: (FlukeDateTime * Attachment) list |})
         =
         let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
 
@@ -30,10 +30,9 @@ module TooltipPopup =
                 (fun () ->
                     input.Attachments
                     |> List.choose
-                        (fun x ->
-                            match x with
-                            | Attachment.Comment (user, comment) -> Some (user, comment)
-                            | _ -> None)),
+                        (function
+                        | moment, Attachment.Comment comment -> Some (moment, comment)
+                        | _ -> None)),
                 [|
                     box input.Attachments
                 |]
@@ -87,14 +86,14 @@ module TooltipPopup =
                                 yield!
                                     comments
                                     |> List.map
-                                        (fun ((Username username), (Comment.Comment comment)) ->
+                                        (fun (moment, (Comment.Comment comment)) ->
                                             Chakra.box
                                                 (fun _ -> ())
                                                 [
                                                     Chakra.box
                                                         (fun x -> x.fontWeight <- "normal")
                                                         [
-                                                            str $"{username}:"
+                                                            str $"{moment |> FlukeDateTime.Stringify}:"
                                                         ]
                                                     Chakra.box
                                                         (fun _ -> ())

@@ -15,7 +15,6 @@ open Fable.Core
 
 module DatabaseForm =
     open State
-    open Model
 
     [<ReactComponent>]
     let DatabaseForm
@@ -54,12 +53,6 @@ module DatabaseForm =
                             if databaseNames |> Array.contains databaseName then
                                 toast (fun x -> x.description <- "Database with this name already exists")
                             else
-                                let! dayStart =
-                                    setter.snapshot.getReadWritePromise
-                                        input.Username
-                                        Atoms.Database.dayStart
-                                        (input.Username, input.DatabaseId)
-
                                 let! database =
                                     if input.DatabaseId = Database.Default.Id then
                                         {
@@ -68,7 +61,6 @@ module DatabaseForm =
                                             Owner = input.Username
                                             SharedWith = DatabaseAccess.Private []
                                             Position = None
-                                            DayStart = dayStart
                                         }
                                         |> Promise.lift
                                     else
@@ -78,11 +70,7 @@ module DatabaseForm =
                                                     Selectors.Database.database (input.Username, input.DatabaseId)
                                                 )
 
-                                            return
-                                                { database with
-                                                    Name = databaseName
-                                                    DayStart = dayStart
-                                                }
+                                            return { database with Name = databaseName }
                                         }
 
                                 //                                let eventId = Atoms.Events.newEventId ()
@@ -94,12 +82,6 @@ module DatabaseForm =
                                     setter.readWriteReset
                                         input.Username
                                         Atoms.Database.name
-                                        (input.Username, input.DatabaseId)
-
-                                do!
-                                    setter.readWriteReset
-                                        input.Username
-                                        Atoms.Database.dayStart
                                         (input.Username, input.DatabaseId)
 
                                 do! input.OnSave database
@@ -136,32 +118,6 @@ module DatabaseForm =
                                 x.onFormat <- Some (fun (DatabaseName name) -> name)
                                 x.onValidate <- Some (fst >> DatabaseName >> Some)
                                 x.onEnterPress <- Some onSave)
-
-                        Input.Input
-                            (fun x ->
-                                x.label <- str "Day Start"
-                                x.placeholder <- "00:00"
-
-                                x.atom <-
-                                    Some (
-                                        Recoil.AtomFamily (
-                                            input.Username,
-                                            Atoms.Database.dayStart,
-                                            (input.Username, input.DatabaseId)
-                                        )
-                                    )
-
-                                x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
-                                x.inputFormat <- Some Input.InputFormat.Time
-                                x.onFormat <- Some FlukeTime.Stringify
-
-                                x.onValidate <-
-                                    Some (
-                                        fst
-                                        >> DateTime.Parse
-                                        >> FlukeTime.FromDateTime
-                                        >> Some
-                                    ))
 
                         Chakra.stack
                             (fun x ->

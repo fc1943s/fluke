@@ -48,32 +48,6 @@ module Rendering =
         | StatusCell of CellStatus
         | TodayCell
 
-    let stretchDateSequence position scheduling dateSequence =
-        match dateSequence with
-        | [] -> []
-        | _ ->
-            let firstDate =
-                match position, scheduling with
-                | Some position, Recurrency (Offset offset) ->
-                    let days = RecurrencyOffset.DayCount offset
-
-                    let minDate =
-                        (position |> FlukeDateTime.DateTime)
-                            .AddDays ((-float days) * 2.5)
-                        |> FlukeDate.FromDateTime
-
-                    min (dateSequence |> List.head) minDate
-                | _ -> dateSequence |> List.head
-
-            let lastDate = dateSequence |> List.last
-
-            getDateSequence
-                (0, 0)
-                [
-                    firstDate
-                    lastDate
-                ]
-
     let renderTaskStatusMap dayStart position dateSequence taskState =
         let firstDateRange = FlukeDateTime.Create (dateSequence |> List.head, dayStart)
         let lastDateRange = FlukeDateTime.Create (dateSequence |> List.last, dayStart)

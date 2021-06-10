@@ -263,13 +263,12 @@ module Recoil =
         useLoadableDefault def value
 
     let useEffect (fn, deps) =
-        let setter = Recoil.useCallbackRef id
+        let run = Recoil.useCallbackRef (fun setter _deps -> promise { do! fn setter })
 
         React.useEffect (
-            (fun () -> promise { do! fn setter } |> Promise.start),
+            (fun () -> run deps |> Promise.start),
             [|
-                box setter
-                box fn
+                box run
                 box deps
             |]
         )
@@ -596,11 +595,14 @@ module Recoil =
 
                     match gunAtomNode with
                     | Some gunAtomNode ->
-                        Profiling.addCount $"[gunEffect.on()] atomPath={atomPath}"
+                        //                        Profiling.addCount $"[gunEffect.on()] atomPath={atomPath}"
+                        JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath}")
+
                         gunAtomNode.on
                             (fun data _key ->
                                 async {
-                                    Profiling.addCount $"[gunEffect.on() value] atomPath={atomPath}"
+                                    JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
+
                                     try
                                         let! decoded =
                                             match box data with

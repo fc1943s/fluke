@@ -13,7 +13,6 @@ module Hydrate =
         setter.scopedSet username atomScope (Atoms.Database.name, (username, database.Id), database.Name)
         setter.scopedSet username atomScope (Atoms.Database.owner, (username, database.Id), database.Owner)
         setter.scopedSet username atomScope (Atoms.Database.sharedWith, (username, database.Id), database.SharedWith)
-        setter.scopedSet username atomScope (Atoms.Database.dayStart, (username, database.Id), database.DayStart)
         setter.scopedSet username atomScope (Atoms.Database.position, (username, database.Id), database.Position)
 
     let useHydrateDatabase () = Recoil.useCallbackRef hydrateDatabase

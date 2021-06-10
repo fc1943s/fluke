@@ -27,14 +27,15 @@ module UserInteraction =
     and [<RequireQualifiedAccess>] InformationInteraction =
         | Attachment of attachment: Attachment
         | Sort of top: Information option * bottom: Information option
+
     // Link: Auto:[Title, Favicon, Screenshot]
     // Image: Embed
     and [<RequireQualifiedAccess>] Attachment =
-        | Comment of username: Username * comment: Comment
-        | Link
-        | Video
-        | Image
-        | Attachment of attachment: Attachment
+        | Comment of comment: Comment
+        | Link of url: string
+        | Video of url: string
+        | Image of url: string
+        | Attachment of username:Username * Attachment:Attachment
 
     and [<RequireQualifiedAccess>] Comment = Comment of comment: string
 
@@ -62,10 +63,10 @@ module UserInteraction =
     and [<RequireQualifiedAccess>] TaskInteraction =
         | Attachment of attachment: Attachment
         | Archive
-        | Session of session: TaskSession
+        | Session of session: Session
         | Sort of top: Task option * bottom: Task option
 
-    and TaskSession = TaskSession of start: FlukeDateTime * duration: Minute * breakDuration: Minute
+    and Session = Session of start: FlukeDateTime * duration: Minute * breakDuration: Minute
 
     and DateId = DateId of referenceDay: FlukeDate
 
@@ -141,8 +142,11 @@ module UserInteraction =
             DateTime (year, int month, day, int hour, int minute, 0)
 
         static member inline GreaterEqualThan (dayStart: FlukeTime) (DateId (referenceDay: FlukeDate)) time position =
-            let testingAfterMidnight = dayStart.GreaterEqualThan time
-            let currentlyBeforeMidnight = position.Time.GreaterEqualThan dayStart
+            let testingAfterMidnight = dayStart |> FlukeTime.GreaterEqualThan time
+
+            let currentlyBeforeMidnight =
+                position.Time
+                |> FlukeTime.GreaterEqualThan dayStart
 
             let newDate =
                 if testingAfterMidnight && currentlyBeforeMidnight then

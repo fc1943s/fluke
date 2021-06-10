@@ -13,7 +13,7 @@ module CellSessionIndicator =
     [<ReactComponent>]
     let CellSessionIndicator
         (input: {| Status: CellStatus
-                   Sessions: TaskSession list |})
+                   Sessions: Session list |})
         =
         Chakra.box
             (fun x ->

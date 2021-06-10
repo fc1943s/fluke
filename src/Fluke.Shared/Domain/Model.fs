@@ -37,7 +37,7 @@ module Model =
 
     and [<RequireQualifiedAccess>] InformationName =
         | Area of name: AreaName
-        | Project of name: ProjectName
+        | Project of areaName: AreaName * name: ProjectName
         | Resource of name: ResourceName
 
     and Task =
@@ -115,7 +115,10 @@ module Model =
     and Information with
         static member Name information =
             match information with
-            | Project { Name = name } -> InformationName.Project name
+            | Project {
+                          Name = name
+                          Area = { Name = areaName }
+                      } -> InformationName.Project (areaName, name)
             | Area { Name = name } -> InformationName.Area name
             | Resource { Name = name } -> InformationName.Resource name
             | Archive information -> information |> Information.Name
@@ -143,7 +146,7 @@ module Model =
     and InformationName with
         static member Value informationName =
             match informationName with
-            | Project (ProjectName name) -> name
+            | Project (AreaName areaName, ProjectName name) -> $"{areaName}/{name}"
             | Area (AreaName name) -> name
             | Resource (ResourceName name) -> name
 
@@ -215,7 +218,7 @@ module Model =
                 Minute = float date.Minute |> Minute
             }
 
-        member inline this.GreaterEqualThan time =
+        static member inline GreaterEqualThan time this =
             this.Hour > time.Hour
             || this.Hour = time.Hour
                && this.Minute >= time.Minute

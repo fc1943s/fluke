@@ -28,7 +28,15 @@ module DatabaseNodeMenu =
                         let! database =
                             setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
 
-                        let! taskStateList = setter.snapshot.getPromise (Selectors.Session.taskStateList input.Username)
+                        let! taskIdSet =
+                            setter.snapshot.getPromise (Atoms.Database.taskIdSet (input.Username, input.DatabaseId))
+
+                        let! taskStateArray =
+                            taskIdSet
+                            |> Set.toList
+                            |> List.map (fun taskId -> Selectors.Task.taskState (input.Username, taskId))
+                            |> List.map setter.snapshot.getPromise
+                            |> Promise.Parallel
 
                         let! informationStateList =
                             setter.snapshot.getPromise (Selectors.Session.informationStateList input.Username)
@@ -41,9 +49,9 @@ module DatabaseNodeMenu =
                                     |> List.map (fun informationState -> informationState.Information, informationState)
                                     |> Map.ofList
                                 TaskStateMap =
-                                    taskStateList
-                                    |> List.map (fun taskState -> taskState.Task.Id, taskState)
-                                    |> Map.ofList
+                                    taskStateArray
+                                    |> Array.map (fun taskState -> taskState.Task.Id, taskState)
+                                    |> Map.ofArray
                             }
 
                         let json = databaseState |> Gun.jsonEncode

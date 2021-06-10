@@ -1637,9 +1637,7 @@ module Templates =
                             let interaction =
                                 Interaction.Task (
                                     task.Id,
-                                    TaskInteraction.Attachment (
-                                        Attachment.Comment (user.Username, Comment.Comment comment)
-                                    )
+                                    TaskInteraction.Attachment (Attachment.Comment (Comment.Comment comment))
                                 )
 
                             let userInteraction = UserInteraction (moment, user.Username, interaction)
@@ -1656,9 +1654,7 @@ module Templates =
                                 Interaction.Cell (
                                     task.Id,
                                     DateId date,
-                                    CellInteraction.Attachment (
-                                        Attachment.Comment (user.Username, Comment.Comment comment)
-                                    )
+                                    CellInteraction.Attachment (Attachment.Comment (Comment.Comment comment))
                                 )
 
                             let userInteraction = UserInteraction (moment, user.Username, interaction)
@@ -1671,9 +1667,9 @@ module Templates =
 
                             taskState, newUserInteractions
                         | DslSession start ->
-                            let taskSession = TaskSession (start, user.SessionLength, user.SessionBreakLength)
+                            let session = Session (start, user.SessionLength, user.SessionBreakLength)
 
-                            let taskInteraction = TaskInteraction.Session taskSession
+                            let taskInteraction = TaskInteraction.Session session
                             let interaction = Interaction.Task (task.Id, taskInteraction)
 
                             let userInteraction = UserInteraction (moment, user.Username, interaction)
@@ -1852,7 +1848,6 @@ module Templates =
             DatabaseState.Create (
                 id = databaseId,
                 name = DatabaseName templateName,
-                dayStart = user.DayStart,
                 owner = user.Username,
                 position = dslTemplate.Position,
                 sharedWith = DatabaseAccess.Public

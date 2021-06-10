@@ -52,11 +52,11 @@ module CellMenu =
                                 |> Set.iter
                                     (fun date ->
                                         setter.set (
-                                            Atoms.Cell.status (input.Username, taskId, DateId date),
+                                            Selectors.Cell.sessionStatus (input.Username, taskId, DateId date),
                                             onClickStatus
                                         )))
 
-                        setter.set (Atoms.Cell.status (input.Username, input.TaskId, input.DateId), onClickStatus)
+                        setter.set (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId), onClickStatus)
 
                         input.OnClose ()
                     })

@@ -103,7 +103,6 @@
         <Compile Include="src\Components\CtrlListener.fs" />
         <Compile Include="src\Components\ShiftListener.fs" />
         <Compile Include="src\Components\GunObserver.fs" />
-        <Compile Include="src\Components\Migrations.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\Components\RootWrapper.fs" />
         <Compile Include="src\App.fs" />

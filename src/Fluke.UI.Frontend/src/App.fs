@@ -16,11 +16,11 @@ module App =
                 RouterObserver.RouterObserver ()
                 //                GunObserver.GunObserver ()
 
-                Content.Content ()
-
                 CtrlListener.CtrlListener ()
                 ShiftListener.ShiftListener ()
                 SelectionListener.SelectionListener ()
+
+                Content.Content ()
 
                 DebugOverlay.DebugOverlay ()
             ]

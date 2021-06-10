@@ -35,7 +35,6 @@ module Content =
                     | Some username ->
                         React.suspense (
                             [
-                                Migrations.Migrations {| Username = username |}
                                 PositionUpdater.PositionUpdater {| Username = username |}
 
                                 Chakra.stack

@@ -48,8 +48,8 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "~18.0.0-alpha-e6be2d531",
-    "react-dom": "~18.0.0-alpha-e6be2d531",
+    "react": "~18.0.0-alpha-aecb3b6d1",
+    "react-dom": "~18.0.0-alpha-aecb3b6d1",
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
@@ -118,8 +118,8 @@
 
     "@babel/core": "~7.14",
     "@babel/preset-env": "~7.14",
-    "@babel/preset-typescript": "~7.13",
-    "@babel/preset-react": "~7.13",
+    "@babel/preset-react": "~7.14",
+    "@babel/preset-typescript": "~7.14",
     "babel-loader": "~8.2",
     "file-loader": "~6.2",
     "babel-jest": "~27.0",

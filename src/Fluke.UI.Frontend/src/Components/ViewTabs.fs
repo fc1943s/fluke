@@ -76,7 +76,7 @@ module ViewTabs =
 
                     let tabIndex =
                         tabs
-                        |> List.findIndex (fun tab -> tab.View = view)
+                        |> List.tryFindIndex (fun tab -> tab.View = view)
 
                     tabs, tabIndex),
                 [|
@@ -85,12 +85,26 @@ module ViewTabs =
                 |]
             )
 
-        printfn $"ViewTabs.render. current view: {view}. tabIndex: {tabIndex}"
+        let lastTabIndex, setLastTabIndex = React.useState (tabIndex |> Option.defaultValue 0)
+
+
+        React.useEffect (
+            (fun () ->
+                match tabIndex with
+                | Some tabIndex -> setLastTabIndex tabIndex
+                | None -> ()),
+            [|
+                box tabIndex
+                box setLastTabIndex
+            |]
+        )
+
+        printfn $"ViewTabs.render. current view={view}. tabIndex={tabIndex} lastTabIndex={lastTabIndex}"
 
         Chakra.tabs
             (fun x ->
                 x.isLazy <- true
-                x.index <- tabIndex
+                x.index <- lastTabIndex
                 x.onChange <- fun e -> promise { setView tabs.[e].View }
                 x.marginLeft <- "4px"
                 x.marginRight <- "4px"
@@ -175,17 +189,20 @@ module ViewTabs =
                     Chakra.stack
                         (fun _ -> ())
                         [
-                            CheckboxInput.CheckboxInput
-                                {|
-                                    Atom = Atoms.User.filterTasksByView input.Username
-                                    Props =
-                                        (fun x ->
-                                            x.children <-
-                                                [
-                                                    str "Filter tasks by view"
-                                                ])
-                                |}
-
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    CheckboxInput.CheckboxInput
+                                        {|
+                                            Atom = Atoms.User.filterTasksByView input.Username
+                                            Props =
+                                                (fun x ->
+                                                    x.children <-
+                                                        [
+                                                            str "Filter tasks by view"
+                                                        ])
+                                        |}
+                                ]
                             Input.LeftIconInput
                                 (Icons.bs.BsSearch |> Icons.render)
                                 "Search task or information"

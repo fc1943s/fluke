@@ -17,7 +17,7 @@ module View =
         | Priority
         | BulletJournal
 
-    let rec filterTaskStateSeq view dateSequence (taskStateSeq: seq<TaskState>) =
+    let getDateRange dateSequence =
         let dateRangeStart =
             dateSequence
             |> List.tryHead
@@ -28,8 +28,15 @@ module View =
             |> List.tryLast
             |> Option.map FlukeDate.DateTime
 
-        match dateRangeStart, dateRangeEnd, view with
-        | _, _, View.Information ->
+        match dateRangeStart, dateRangeEnd with
+        | Some dateRangeStart, Some dateRangeEnd -> Some (dateRangeStart, dateRangeEnd)
+        | _ -> None
+
+    let rec filterTaskStateSeq view dateSequence (taskStateSeq: seq<TaskState>) =
+        let dateRange = getDateRange dateSequence
+
+        match dateRange, view with
+        | _, View.Information ->
             taskStateSeq
             |> Seq.filter
                 (function
@@ -48,8 +55,7 @@ module View =
 //                    |> List.tryLast
 //                    |> function Some (TaskStatusEntry (_, Dismissed)) -> false | _ -> true
 //                )
-        | Some dateRangeStart,
-          Some dateRangeEnd,
+        | Some (dateRangeStart, dateRangeEnd),
           (View.HabitTracker
           | View.BulletJournal) ->
             taskStateSeq
@@ -64,21 +70,18 @@ module View =
                     |> Map.toSeq
                     |> Seq.exists
                         (fun (dateId, cellState) ->
-                            dateId |> DateId.Value |> FlukeDate.DateTime
-                            >==< (dateRangeStart, dateRangeEnd)
-                            && (cellState.Attachments
-                                |> List.exists
-                                    (function
-                                    | Attachment.Comment _ -> true
-                                    | _ -> false)
-                                || cellState.Status <> Disabled))
-                    || taskState.Sessions
-                       |> List.exists
-                           (fun (TaskSession (start, _, _)) ->
-                               (start.Date |> FlukeDate.DateTime)
-                               >==< (dateRangeStart, dateRangeEnd))
+                            let dateInRange =
+                                dateId |> DateId.Value |> FlukeDate.DateTime
+                                >==< (dateRangeStart, dateRangeEnd)
+
+                            let hasRelevantData =
+                                not cellState.Sessions.IsEmpty
+                                || not cellState.Attachments.IsEmpty
+                                || cellState.Status <> Disabled
+
+                            dateInRange && hasRelevantData)
                 | _ -> true)
-        | _, _, View.Priority ->
+        | _, View.Priority ->
             taskStateSeq
             |> Seq.filter
                 (function

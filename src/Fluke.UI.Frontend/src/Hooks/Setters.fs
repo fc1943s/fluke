@@ -50,7 +50,7 @@ module Setters =
                     operations
                     |> List.iter
                         (fun (taskId, date, selected) ->
-                            setter.set (Atoms.Cell.selected (username, taskId, DateId date), selected))
+                            setter.set (Selectors.Cell.selected (username, taskId, DateId date), selected))
                 })
 
     let useSetSelected () =
