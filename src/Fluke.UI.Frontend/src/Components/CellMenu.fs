@@ -69,7 +69,6 @@ module CellMenu =
                 x.borderColor <- TempUI.cellStatusColor Disabled
                 x.boxShadow <- "0px 0px 2px 1px #262626")
             [
-
                 Chakra.simpleGrid
                     (fun x ->
                         x.columns <- 1

@@ -37,9 +37,12 @@ module Cell =
                 (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
                 Disabled
 
-        let taskState = Recoil.useValue (Selectors.Task.taskState (input.Username, input.TaskId))
+        let taskState = Recoil.useValueLoadable (Selectors.Task.taskState (input.Username, input.TaskId))
         let isToday = Recoil.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false
-        let selected = Recoil.useValue (Selectors.Cell.selected (input.Username, input.TaskId, input.DateId))
+
+        let selected =
+            Recoil.useValueLoadableDefault (Selectors.Cell.selected (input.Username, input.TaskId, input.DateId)) false
+
         let setSelected = Setters.useSetSelected ()
 
         let onCellClick =
@@ -95,11 +98,14 @@ module Cell =
                                 x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
                         [
 
-                            CellSessionIndicator.CellSessionIndicator
-                                {|
-                                    Status = sessionStatus
-                                    Sessions = taskState.Sessions
-                                |}
+                            match taskState.state () with
+                            | HasValue taskState ->
+                                CellSessionIndicator.CellSessionIndicator
+                                    {|
+                                        Status = sessionStatus
+                                        Sessions = taskState.Sessions
+                                    |}
+                            | _ -> nothing
 
                             if selected then
                                 nothing
@@ -115,16 +121,19 @@ module Cell =
                                 CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
                             | _ -> nothing
 
-                            TooltipPopup.TooltipPopup
-                                {|
-                                    Username = input.Username
-                                    Attachments = taskState.Attachments
-                                |}
+                            match taskState.state () with
+                            | HasValue taskState ->
+                                TooltipPopup.TooltipPopup
+                                    {|
+                                        Username = input.Username
+                                        Attachments = taskState.Attachments
+                                    |}
+                            | _ -> nothing
                         ]
                 Body =
                     fun (disclosure, _initialFocusRef) ->
                         [
-                            if isReadWrite then
+                            if isReadWrite && not isTesting then
                                 CellMenu.CellMenu
                                     {|
                                         Username = input.Username

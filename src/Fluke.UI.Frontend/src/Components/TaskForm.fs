@@ -22,7 +22,10 @@ module TaskForm =
                    TaskId: TaskId
                    OnSave: Task -> JS.Promise<unit> |})
         =
-        let databaseId, setDatabaseId = Recoil.useState (Selectors.Task.databaseId (input.Username, input.TaskId))
+        let databaseId, setDatabaseId =
+            Recoil.useStateLoadableDefault
+                (Selectors.Task.databaseId (input.Username, input.TaskId))
+                Database.Default.Id
 
         let (DatabaseName databaseName) = Recoil.useValue (Atoms.Database.name (input.Username, databaseId))
 
