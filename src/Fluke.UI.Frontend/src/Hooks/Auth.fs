@@ -175,7 +175,7 @@ module Auth =
 
                         let! ack = Gun.createUser gunNamespace.``#`` username password
                         printfn $"Auth.useSignUp. Gun.createUser signUpAck={JS.JSON.stringify ack}"
-                        Browser.Dom.console.log ack
+                        JS.consoleLog ("ack", ack)
 
                         match JS.window id with
                         | Some window -> window?signUpAck <- ack

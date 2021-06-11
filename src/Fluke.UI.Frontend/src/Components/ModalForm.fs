@@ -25,7 +25,7 @@ module ModalForm =
 
         let setter = Recoil.useCallbackRef id
 
-        let hide =
+        let onHide =
             Recoil.useCallbackRef
                 (fun _ ->
                     setFormIdFlag None
@@ -33,9 +33,9 @@ module ModalForm =
 
         let content =
             React.useMemo (
-                (fun () -> input.Content (formIdFlag, hide, setter)),
+                (fun () -> input.Content (formIdFlag, onHide, setter)),
                 [|
-                    box hide
+                    box onHide
                     box formIdFlag
                     box input
                     box setter
@@ -49,7 +49,7 @@ module ModalForm =
                         (fun x ->
                             x.isOpen <- formVisibleFlag
 
-                            x.onClose <- fun () -> promise { hide () }
+                            x.onClose <- fun () -> promise { onHide () }
 
                             x.children <-
                                 [

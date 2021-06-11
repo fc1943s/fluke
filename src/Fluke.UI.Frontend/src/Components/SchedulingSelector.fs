@@ -628,26 +628,38 @@ module SchedulingSelector =
                         Label = str "Scheduling"
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
-                Popover.Popover
+                Menu.Drawer
                     {|
+                        Tooltip = ""
                         Trigger =
-                            Button.Button
-                                {|
-                                    Hint = None
-                                    Icon = Some (Icons.fi.FiChevronDown |> Icons.wrap, Button.IconPosition.Right)
-                                    Props = fun x -> x.whiteSpace <- "normal"
-                                    Children =
-                                        [
-                                            schedulingFieldOptions.AtomValue
-                                            |> Scheduling.Label
-                                            |> str
-                                        ]
-                                |}
+                            fun visible setVisible ->
+                                Button.Button
+                                    {|
+                                        Hint = None
+                                        Icon =
+                                            Some (
+                                                (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
+                                                |> Icons.wrap,
+                                                Button.IconPosition.Right
+                                            )
+                                        Props =
+                                            fun x ->
+                                                x.whiteSpace <- "normal"
+                                                x.onClick <- fun _ -> promise { setVisible (not visible) }
+                                        Children =
+                                            [
+                                                schedulingFieldOptions.AtomValue
+                                                |> Scheduling.Label
+                                                |> str
+                                            ]
+                                    |}
                         Body =
-                            fun (_disclosure, _initialFocusRef) ->
+                            fun _onHide ->
                                 [
                                     Chakra.radioGroup
                                         (fun x ->
+                                            x.overflow <- "auto"
+                                            x.maxHeight <- "350px"
                                             x.onChange <-
                                                 fun (radioValueSelected: string) ->
                                                     promise {

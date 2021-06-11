@@ -247,6 +247,16 @@ module State =
                         ])
                 )
 
+            let rec rightDock =
+                Recoil.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof rightDock}",
+                    (fun (_username: Username) -> None: TempUI.DockType option),
+                    (fun (username: Username) ->
+                        [
+                            Recoil.gunEffect (Recoil.AtomFamily (username, rightDock, username)) []
+                        ])
+                )
+
             let rec hideTemplates =
                 Recoil.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof hideTemplates}",
@@ -393,24 +403,24 @@ module State =
 
 
         module rec Information =
-            let informationIdentifier (information: Information) =
-                [
-                    $"{information |> Information.toString}/{
-                                                                 information
-                                                                 |> Information.Name
-                                                                 |> InformationName.Value
-                    }"
-                ]
+//            let informationIdentifier (information: Information) =
+//                [
+//                    $"{information |> Information.toString}/{
+//                                                                 information
+//                                                                 |> Information.Name
+//                                                                 |> InformationName.Value
+//                    }"
+//                ]
 
             let rec attachments =
                 Recoil.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof attachments}",
+                    $"{nameof atomFamily}/{nameof Information}/{nameof attachments}",
                     (fun (_username: Username, _information: Information) -> []: (FlukeDateTime * Attachment) list),
                     (fun (username: Username, information: Information) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, attachments, (username, information)))
-                                (informationIdentifier information)
+//                            Recoil.gunEffect
+//                                (Recoil.AtomFamily (username, attachments, (username, information)))
+//                                (informationIdentifier information)
                         ])
                 )
 
@@ -644,27 +654,6 @@ module State =
             Recoil.selectorWithProfiling ($"{nameof selector}/{nameof deviceInfo}", (fun _getter -> JS.deviceInfo))
 
 
-        module rec FlukeDate =
-            let isToday =
-                Recoil.asyncSelectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof isToday}",
-                    (fun (date: FlukeDate) getter ->
-                        promise {
-                            let username = getter.get Atoms.username
-                            let position = getter.get Atoms.position
-
-                            return
-                                match username, position with
-                                | Some username, Some position ->
-                                    let dayStart = getter.get (Atoms.User.dayStart username)
-
-                                    Domain.UserInteraction.isToday dayStart position (DateId date)
-                                | _ -> false
-                        })
-                )
-
-
-
         module rec Database =
             let rec database =
                 Recoil.asyncSelectorFamilyWithProfiling (
@@ -850,7 +839,16 @@ module State =
                                 | [] -> Database.Default.Id
                                 | [ databaseId ] -> databaseId
                                 | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdSet})"
-                        })
+                        }),
+                    (fun (username: Username, taskId: TaskId) setter newValue ->
+                        let databaseId = setter.get (databaseId (username, taskId))
+                        setter.set (Atoms.Database.taskIdSet (username, databaseId), Set.remove taskId)
+
+                        setter.set (
+                            Atoms.Database.taskIdSet (username, newValue),
+                            Set.remove Task.Default.Id >> Set.add taskId
+                        ))
+
                 )
 
             let rec isReadWrite =
@@ -989,7 +987,7 @@ module State =
 
             let rec selected =
                 Recoil.asyncSelectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Task}/{nameof selected}",
+                    $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}",
                     (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
                         promise {
                             let selectionSet = getter.get (Atoms.Task.selectionSet (username, taskId))
@@ -1060,7 +1058,7 @@ module State =
 
             let rec informationStateList =
                 Recoil.asyncSelectorFamilyWithProfiling (
-                    $"{nameof selectorFamily}/{nameof Information}/{nameof informationStateList}",
+                    $"{nameof selectorFamily}/{nameof Session}/{nameof informationStateList}",
                     (fun (username: Username) getter ->
                         promise {
                             let informationSet = getter.get (informationSet username)
@@ -1162,7 +1160,6 @@ module State =
                         })
                 )
 
-
             let rec sortedTaskIdList =
                 Recoil.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof sortedTaskIdList}",
@@ -1254,6 +1251,25 @@ module State =
                 )
 
 
+        module rec FlukeDate =
+            let isToday =
+                Recoil.asyncSelectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof isToday}",
+                    (fun (date: FlukeDate) getter ->
+                        promise {
+                            let username = getter.get Atoms.username
+                            let position = getter.get Atoms.position
+
+                            return
+                                match username, position with
+                                | Some username, Some position ->
+                                    let dayStart = getter.get (Atoms.User.dayStart username)
+
+                                    Domain.UserInteraction.isToday dayStart position (DateId date)
+                                | _ -> false
+                        })
+                )
+
             let rec hasCellSelection =
                 Recoil.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof hasCellSelection}",
@@ -1264,7 +1280,7 @@ module State =
                             return
                                 match username with
                                 | Some username ->
-                                    let cellSelectionMap = getter.get (cellSelectionMap username)
+                                    let cellSelectionMap = getter.get (Session.cellSelectionMap username)
 
                                     cellSelectionMap
                                     |> Map.values

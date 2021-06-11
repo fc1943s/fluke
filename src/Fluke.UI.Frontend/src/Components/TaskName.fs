@@ -9,6 +9,7 @@ open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Fluke.UI.Frontend.TempUI
 
 
 module TaskName =
@@ -26,7 +27,10 @@ module TaskName =
         let isReadWrite =
             Recoil.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
 
-        let databaseId = Recoil.useValueLoadable (Selectors.Task.databaseId (input.Username, input.TaskId))
+        let deviceInfo = Recoil.useValue Selectors.deviceInfo
+        let setLeftDock = Recoil.useSetState (Atoms.User.leftDock input.Username)
+        let setRightDock = Recoil.useSetState (Atoms.User.rightDock input.Username)
+        let setTaskFormIdFlag = Recoil.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
 
         Chakra.flex
             (fun x ->
@@ -51,8 +55,9 @@ module TaskName =
                         str taskName
                     ]
 
-                match isReadWrite, databaseId.state () with
-                | true, HasValue databaseId ->
+                if not isReadWrite then
+                    nothing
+                else
                     Menu.Menu
                         {|
                             Tooltip = ""
@@ -69,32 +74,35 @@ module TaskName =
                                                 x.display <- if isReadWrite then null else "none"
                                                 x.marginLeft <- "6px"
                                     |}
-                            Menu =
+                            Body =
                                 [
-                                    TaskFormTrigger.TaskFormTrigger
-                                        {|
-                                            Username = input.Username
-                                            DatabaseId = databaseId
-                                            TaskId = Some input.TaskId
-                                            Trigger =
-                                                fun trigger _setter ->
-                                                    Chakra.menuItem
-                                                        (fun x ->
-                                                            x.icon <-
-                                                                Icons.bs.BsPen
-                                                                |> Icons.renderChakra
-                                                                    (fun x ->
-                                                                        x.fontSize <- "13px"
-                                                                        x.marginTop <- "-1px")
+                                    Chakra.menuItem
+                                        (fun x ->
+                                            x.closeOnSelect <- true
 
-                                                            x.onClick <- fun _ -> promise { trigger () })
-                                                        [
-                                                            str "Edit Task"
-                                                        ]
-                                        |}
+                                            x.icon <-
+                                                Icons.bs.BsPen
+                                                |> Icons.renderChakra
+                                                    (fun x ->
+                                                        x.fontSize <- "13px"
+                                                        x.marginTop <- "-1px")
+
+                                            x.onClick <-
+                                                fun _ ->
+                                                    promise {
+                                                        if deviceInfo.IsMobile then setLeftDock None
+
+                                                        setRightDock (Some DockType.Task)
+                                                        setTaskFormIdFlag (input.TaskId |> TaskId.Value |> Some)
+                                                    })
+                                        [
+                                            str "Edit Task"
+                                        ]
 
                                     Chakra.menuItem
                                         (fun x ->
+                                            x.closeOnSelect <- true
+
                                             x.icon <-
                                                 Icons.bs.BsTrash
                                                 |> Icons.renderChakra
@@ -109,7 +117,6 @@ module TaskName =
                                 ]
                             MenuListProps = fun _ -> ()
                         |}
-                | _ -> nothing
 
                 TooltipPopup.TooltipPopup
                     {|

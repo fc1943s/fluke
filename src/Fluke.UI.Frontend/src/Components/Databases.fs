@@ -210,14 +210,14 @@ module Databases =
             (fun i nodes ->
                 let rec loop depth list =
                     match list with
-                    | [ head ] ->
+                    | [ String.ValidString head ] ->
                         let id =
                             match ids |> List.tryItem i with
                             | Some (Some id) -> NodeValue.Leaf id
                             | _ -> NodeValue.Empty
 
                         Node (id, head, [], Some i)
-                    | head :: tail ->
+                    | String.ValidString head :: tail ->
                         let fullPath = nodes |> List.take depth |> String.concat "/"
                         let nodeId = fullPath |> Crypto.getTextGuidHash
 
@@ -229,7 +229,7 @@ module Databases =
                             ],
                             None
                         )
-                    | [] -> Node (NodeValue.Empty, "", [], None)
+                    | _ -> Node (NodeValue.Empty, "", [], None)
 
                 loop 1 nodes)
         |> groupNodes
@@ -254,34 +254,35 @@ module Databases =
 
         let databaseIdSet = Recoil.useValue (Atoms.User.databaseIdSet input.Username)
 
-        let databaseIdList =
-            React.useMemo (
-                (fun () -> databaseIdSet |> Set.toList),
-                [|
-                    box databaseIdSet
-                |]
-            )
-
-        let databaseList =
-            databaseIdList
+        let databaseMap =
+            databaseIdSet
+            |> Set.toList
             |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
-            |> Recoil.waitForAll
+            |> Recoil.waitForAny
             |> Recoil.useValue
+            |> List.choose
+                (fun database ->
+                    match database.state () with
+                    | HasValue database -> Some (database.Id, database)
+                    | _ -> None)
+            |> Map.ofList
 
         let nodes =
             React.useMemo (
                 (fun () ->
-                    let databaseIndexMap =
-                        databaseList
-                        |> List.mapi
-                            (fun i database ->
+                    let filteredDatabaseMap =
+                        databaseMap
+                        |> Map.values
+                        |> Seq.toList
+                        |> List.map
+                            (fun database ->
                                 let nodeType =
                                     match database.Owner with
                                     | owner when owner = Templates.templatesUser.Username -> NodeType.Template
                                     | owner when owner = input.Username -> NodeType.Owned
                                     | _ -> NodeType.Shared
 
-                                nodeType, i)
+                                nodeType, database)
                         |> List.filter (fun (nodeType, _) -> nodeType <> NodeType.Template || not hideTemplates)
                         |> List.groupBy fst
                         |> Map.ofList
@@ -296,9 +297,9 @@ module Databases =
                         |> List.collect
                             (fun nodeType ->
                                 let newDatabaseNameList =
-                                    databaseIndexMap
+                                    filteredDatabaseMap
                                     |> Map.tryFind nodeType
-                                    |> Option.map (List.map (fun i -> Some i, databaseList.[i].Name))
+                                    |> Option.map (List.map (fun database -> Some database, database.Name))
                                     |> Option.defaultValue [
                                         None, DatabaseName "None"
                                        ]
@@ -311,38 +312,18 @@ module Databases =
 
                                 newDatabaseNameList
                                 |> List.map
-                                    (fun (i, databaseName) -> i, $"{prefix}/{databaseName |> DatabaseName.Value}")
+                                    (fun (database, databaseName) ->
+                                        database, $"{prefix}/{databaseName |> DatabaseName.Value}")
                                 |> List.sortBy snd)
-
-                    let databaseIndexList = nodeData |> List.map fst
-
-                    let databaseIdFromIndex databaseIndex =
-                        match databaseIndex with
-                        | Some i -> Some databaseIdList.[i]
-                        | None -> None
-
-                    let databasePositionFromIndex databaseIndex =
-                        match databaseIndex with
-                        | Some i -> databaseList.[i].Position
-                        | _ -> None
 
                     let nodes =
                         let ids =
                             nodeData
                             |> List.map fst
-                            |> List.map (databaseIdFromIndex >> Option.map DatabaseId.Value)
+                            |> List.map (Option.map (fun x -> x.Id |> DatabaseId.Value))
 
                         let paths = nodeData |> List.map snd
                         buildNodesFromPath ids paths
-
-                    let databaseIndexMap =
-                        databaseIndexList
-                        |> List.map (fun databaseIndex -> databaseIdFromIndex databaseIndex, databaseIndex)
-                        |> List.choose
-                            (function
-                            | Some databaseId, index -> Some (databaseId, index)
-                            | _ -> None)
-                        |> Map.ofList
 
                     let rec loop nodes =
                         match nodes with
@@ -352,50 +333,43 @@ module Databases =
                                 | [] -> unbox JS.undefined
                                 | _ -> loop children |> List.toArray
 
-                            let nodeIndex =
+                            let database =
                                 match index with
                                 | Some index -> nodeData.[index] |> fst
                                 | _ -> None
 
-                            let databaseId =
-                                match nodeIndex with
-                                | Some nodeIndex -> databaseIdList |> List.tryItem nodeIndex
-                                | _ -> None
-
                             let icon =
-                                match databaseId with
-                                | Some databaseId -> DatabaseLeafIcon.DatabaseLeafIcon input.Username databaseId
+                                match database with
+                                | Some database -> DatabaseLeafIcon.DatabaseLeafIcon input.Username database.Id
                                 | _ -> JS.undefined
 
                             let disabled =
-                                match nodeIndex with
-                                | Some nodeIndex ->
-                                    let validSelectedDatabaseIndexes =
+                                match database with
+                                | Some database ->
+                                    let validSelectedDatabases =
                                         selectedDatabaseIdSet
-                                        |> Set.map (fun databaseId -> databaseIndexMap |> Map.tryFind databaseId)
+                                        |> Set.map (fun databaseId -> databaseMap |> Map.tryFind databaseId)
 
-                                    match databaseList.[nodeIndex].Position with
+                                    match database.Position with
                                     | Some position ->
-                                        validSelectedDatabaseIndexes
+                                        validSelectedDatabases
                                         |> Set.exists
                                             (function
-                                            | Some databaseIndex ->
-                                                let newPosition = databasePositionFromIndex databaseIndex
-
-                                                newPosition.IsNone
-                                                || newPosition <> (Some position)
+                                            | Some database ->
+                                                database.Position.IsNone
+                                                || database.Position <> (Some position)
                                             | None -> false)
                                     | None ->
-                                        validSelectedDatabaseIndexes
+                                        validSelectedDatabases
                                         |> Set.exists
                                             (function
-                                            | Some databaseIndex -> (databasePositionFromIndex databaseIndex).IsSome
+                                            | Some database -> database.Position.IsSome
                                             | None -> false)
                                 | _ -> false
 
                             let newValue =
-                                databaseId
-                                |> Option.map DatabaseId.Value
+                                database
+                                |> Option.map (fun database -> database.Id |> DatabaseId.Value)
                                 |> Option.defaultWith
                                     (fun () ->
                                         match value with
@@ -414,7 +388,9 @@ module Databases =
                                 node
                                     {|
                                         Username = input.Username
-                                        DatabaseId = databaseId
+                                        DatabaseId =
+                                            database
+                                            |> Option.map (fun database -> database.Id)
                                         Disabled = disabled
                                         IsTesting = isTesting
                                         Value = newValue
@@ -429,8 +405,7 @@ module Databases =
 
                     loop nodes |> List.toArray),
                 [|
-                    box databaseIdList
-                    box databaseList
+                    box databaseMap
                     box input.Username
                     box hideTemplates
                     box selectedDatabaseIdSet

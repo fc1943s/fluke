@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core
 open Fable.React
 open Feliz
 open Feliz.Recoil
@@ -14,6 +15,7 @@ module DockButton =
         (input: {| Name: string
                    Icon: obj
                    Atom: RecoilValue<TempUI.DockType option, ReadWrite>
+                   OnClick: TempUI.DockType option -> JS.Promise<unit>
                    DockType: TempUI.DockType |})
         =
         let atom, setAtom = Recoil.useState input.Atom
@@ -28,7 +30,11 @@ module DockButton =
                 x.fontFamily <- "inherit"
 
                 x.onClick <-
-                    fun _ -> promise { setAtom (if atom = Some input.DockType then None else Some input.DockType) })
+                    fun _ -> promise {
+                        let newAtomValue = if atom = Some input.DockType then None else Some input.DockType
+                        setAtom newAtomValue
+                        do! input.OnClick newAtomValue
+                    })
             [
                 Chakra.icon
                     (fun x ->

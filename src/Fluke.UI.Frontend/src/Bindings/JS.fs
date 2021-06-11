@@ -77,6 +77,8 @@ module JS =
 
         if debug || isDebug then printfn $"[log] {fn ()}" else ()
 
+    let inline consoleLog x = Browser.Dom.console.log x
+
     [<Emit "(w => $0 instanceof w[$1])(window)">]
     let instanceof (_obj: obj, _typeName: string) : bool = jsNative
 
@@ -123,7 +125,7 @@ module JS =
             match obj with
             | Some obj -> return obj
             | None ->
-                Browser.Dom.console.log ("waitForSome: none. waiting...", fn.ToString ())
+                consoleLog ("waitForSome: none. waiting...", fn.ToString ())
                 do! sleep 100
                 return! waitForSome fn
         }

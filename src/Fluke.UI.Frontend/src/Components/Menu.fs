@@ -10,7 +10,7 @@ module Menu =
     let Menu
         (input: {| Tooltip: string
                    Trigger: ReactElement
-                   Menu: seq<ReactElement>
+                   Body: seq<ReactElement>
                    MenuListProps: Chakra.IChakraProps -> unit |})
         =
         Chakra.menu
@@ -28,6 +28,43 @@ module Menu =
                         x.backgroundColor <- "gray.13"
                         input.MenuListProps x)
                     [
-                        yield! input.Menu
+                        yield! input.Body
                     ]
+            ]
+
+    [<ReactComponent>]
+    let Drawer
+        (input: {| Tooltip: string
+                   Trigger: bool -> (bool -> unit) -> ReactElement
+                   Body: (unit -> unit) -> ReactElement list |})
+        =
+        let visible, setVisible = React.useState false
+
+        Chakra.flex
+            (fun x -> x.direction <- "column")
+            [
+                Tooltip.wrap
+                    (str input.Tooltip)
+                    [
+                        input.Trigger visible setVisible
+                    ]
+                if not visible then
+                    nothing
+                else
+                    Chakra.box
+                        (fun x ->
+                            x.flex <- "1"
+                            x.flexDirection <- "column"
+                            x.marginTop <- "-1px"
+                            x.borderLeftWidth <- "1px"
+                            x.borderBottomWidth <- "1px"
+                            x.borderColor <- "whiteAlpha.200"
+
+                            x.background <-
+                                "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.01) 7%, rgba(255,255,255,0.02) 100%);"
+
+                            x.padding <- "17px")
+                        [
+                            yield! input.Body (fun () -> setVisible false)
+                        ]
             ]

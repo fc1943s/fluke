@@ -251,16 +251,20 @@ module Recoil =
 
     let useLoadableDefault def (loadable: Loadable<_>) =
         React.useMemo (
-            (fun () -> loadable.valueMaybe () |> Option.defaultValue def),
+            (fun () -> (loadable.valueMaybe ()) |> Option.defaultValue def),
             [|
-                box loadable
                 box def
+                box loadable
             |]
         )
 
     let useValueLoadableDefault atom def =
         let value = Recoil.useValueLoadable atom
         useLoadableDefault def value
+
+    let useStateLoadableDefault atom def =
+        let value, setValue = Recoil.useStateLoadable atom
+        (useLoadableDefault def value), setValue
 
     let useEffect (fn, deps) =
         let run = Recoil.useCallbackRef (fun setter _deps -> promise { do! fn setter })
@@ -272,10 +276,6 @@ module Recoil =
                 box deps
             |]
         )
-
-    let useStateLoadableDefault atom def =
-        let value, setValue = Recoil.useStateLoadable atom
-        useLoadableDefault def value, setValue
 
     let parseValidGuid fn (text: string) =
         match Guid.TryParse text with
@@ -429,6 +429,17 @@ module Recoil =
 
                             return! getInternalGunAtomNode (Username username) atomPath
                         else
+
+                            match JS.window id with
+                            | Some window ->
+                                JS.setTimeout
+                                    (fun () ->
+                                        window?lastToast (fun (x: Chakra.IToastProps) ->
+                                            x.description <- "Please log in again"))
+                                    0
+                                |> ignore
+                            | None -> ()
+
                             return
                                 failwith
                                     $"Invalid username. username={username} user.is={JS.JSON.stringify user.is} username={
@@ -796,7 +807,14 @@ module Recoil =
         (atom: InputAtom<'TValue7, 'TKey> option)
         (inputScope: InputScope<'TValue7> option)
         =
-        let atomField = getAtomField atom
+        let atomField =
+            React.useMemo (
+                (fun () -> getAtomField atom),
+                [|
+                    box atom
+                |]
+            )
+
         let readOnlyValue, setReadOnlyValue = useStateOption atomField.ReadOnly
         let readWriteValue, setReadWriteValue = useStateOption atomField.ReadWrite
 

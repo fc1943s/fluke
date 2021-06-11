@@ -9,6 +9,7 @@ open Fluke.UI.Frontend.Bindings
 open Fable.Core.JsInterop
 open Fluke.Shared
 open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.TempUI
 
 
 module LeftDock =
@@ -17,14 +18,65 @@ module LeftDock =
     [<ReactComponent>]
     let LeftDock (input: {| Username: Username |}) =
         let isTesting = Recoil.useValue Atoms.isTesting
-        let leftDock = Recoil.useValue (Atoms.User.leftDock input.Username)
+        let leftDock, setLeftDock = Recoil.useState (Atoms.User.leftDock input.Username)
+        let setRightDock = Recoil.useSetState (Atoms.User.rightDock input.Username)
+        let deviceInfo = Recoil.useValue Selectors.deviceInfo
         let hideTemplates, setHideTemplates = Recoil.useState (Atoms.User.hideTemplates input.Username)
+
+        let setDatabaseFormIdFlag =
+            Recoil.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
+
+        let importDatabase =
+            Recoil.useCallbackRef
+                (fun setter (files: string []) ->
+                    promise {
+                        JS.consoleLog ("files", files)
+                        //                        let obj = Gun.jsonDecode<DatabaseState> text
+//
+//                        let! database =
+//                            setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
+//
+//                        let! taskIdSet =
+//                            setter.snapshot.getPromise (Atoms.Database.taskIdSet (input.Username, input.DatabaseId))
+//
+//                        let! taskStateArray =
+//                            taskIdSet
+//                            |> Set.toList
+//                            |> List.map (fun taskId -> Selectors.Task.taskState (input.Username, taskId))
+//                            |> List.map setter.snapshot.getPromise
+//                            |> Promise.Parallel
+//
+//                        let! informationStateList =
+//                            setter.snapshot.getPromise (Selectors.Session.informationStateList input.Username)
+//
+//                        let databaseState =
+//                            {
+//                                Database = database
+//                                InformationStateMap =
+//                                    informationStateList
+//                                    |> List.map (fun informationState -> informationState.Information, informationState)
+//                                    |> Map.ofList
+//                                TaskStateMap =
+//                                    taskStateArray
+//                                    |> Array.map (fun taskState -> taskState.Task.Id, taskState)
+//                                    |> Map.ofArray
+//                            }
+//
+//                        let json = databaseState |> Gun.jsonEncode
+//
+//                        let timestamp =
+//                            (FlukeDateTime.FromDateTime DateTime.Now)
+//                            |> FlukeDateTime.Stringify
+//
+//                        JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
+                        ()
+                    })
 
         let items =
             React.useMemo (
                 (fun () ->
                     [
-                        TempUI.DockType.Settings,
+                        DockType.Settings,
                         {|
                             Name = "Settings"
                             Icon = Icons.md.MdSettings
@@ -36,13 +88,14 @@ module LeftDock =
                                             Props =
                                                 fun x ->
                                                     x.flex <- "1"
+                                                    x.padding <- "14px"
                                                     x.overflowY <- "auto"
                                                     x.flexBasis <- 0
                                         |}
                             RightIcons = []
                         |}
 
-                        TempUI.DockType.Databases,
+                        DockType.Databases,
                         {|
                             Name = "Databases"
                             Icon = Icons.fi.FiDatabase
@@ -54,38 +107,37 @@ module LeftDock =
                                             Props =
                                                 fun x ->
                                                     x.flex <- "1"
+                                                    x.padding <- "10px"
                                                     x.overflowY <- "auto"
                                                     x.flexBasis <- 0
                                         |}
                             RightIcons =
                                 [
                                     DockPanel.DockPanelIcon.Component (
-                                        DatabaseFormTrigger.DatabaseFormTrigger
-                                            {|
-                                                Username = input.Username
-                                                DatabaseId = None
-                                                Trigger =
-                                                    fun trigger _setter ->
-                                                        Tooltip.wrap
-                                                            (str "Add Database")
-                                                            [
-                                                                TransparentIconButton.TransparentIconButton
-                                                                    {|
-                                                                        Props =
-                                                                            fun x ->
-                                                                                if isTesting then
-                                                                                    x?``data-testid`` <- "Add Database"
+                                        Tooltip.wrap
+                                            (str "Add Database")
+                                            [
+                                                TransparentIconButton.TransparentIconButton
+                                                    {|
+                                                        Props =
+                                                            fun x ->
+                                                                if isTesting then x?``data-testid`` <- "Add Database"
 
-                                                                                x.icon <-
-                                                                                    Icons.fi.FiPlus |> Icons.render
+                                                                x.icon <- Icons.fi.FiPlus |> Icons.render
 
-                                                                                x.fontSize <- "17px"
+                                                                x.fontSize <- "17px"
 
-                                                                                x.onClick <-
-                                                                                    fun _ -> promise { trigger () }
-                                                                    |}
-                                                            ]
-                                            |}
+                                                                x.onClick <-
+                                                                    fun _ ->
+                                                                        promise {
+                                                                            if deviceInfo.IsMobile then setLeftDock None
+
+                                                                            setRightDock (Some DockType.Database)
+
+                                                                            setDatabaseFormIdFlag None
+                                                                        }
+                                                    |}
+                                            ]
                                     )
 
                                     DockPanel.DockPanelIcon.Menu (
@@ -116,15 +168,93 @@ module LeftDock =
                                                             str "Hide Templates"
                                                         ]
                                                 ]
+
+                                            Popover.Popover
+                                                {|
+                                                    Trigger =
+                                                        Chakra.menuItem
+                                                            (fun x ->
+                                                                x.icon <-
+                                                                    Icons.bi.BiImport
+                                                                    |> Icons.renderChakra
+                                                                        (fun x ->
+                                                                            x.fontSize <- "13px"
+                                                                            x.marginTop <- "-1px"))
+                                                            [
+                                                                str "Import Database"
+                                                            ]
+                                                    Body =
+                                                        fun (_disclosure, initialFocusRef) ->
+                                                            [
+                                                                Chakra.stack
+                                                                    (fun x -> x.spacing <- "10px")
+                                                                    [
+                                                                        Chakra.box
+                                                                            (fun x ->
+                                                                                x.paddingBottom <- "5px"
+                                                                                x.fontSize <- "15px")
+                                                                            [
+                                                                                str "Import Database"
+                                                                            ]
+
+                                                                        Chakra.input
+                                                                            (fun x ->
+                                                                                x.``type`` <- "file"
+                                                                                x.ref <- initialFocusRef
+
+                                                                                x.onChange <-
+                                                                                    fun x ->
+                                                                                        promise {
+                                                                                            JS.consoleLog (
+                                                                                                "files",
+                                                                                                x?target?files
+                                                                                            )
+                                                                                        })
+                                                                            [
+
+                                                                            ]
+
+                                                                        Chakra.box
+                                                                            (fun _ -> ())
+                                                                            [
+                                                                                Button.Button
+                                                                                    {|
+                                                                                        Hint = None
+                                                                                        Icon =
+                                                                                            Some (
+                                                                                                Icons.bi.BiImport
+                                                                                                |> Icons.wrap,
+                                                                                                Button.IconPosition.Left
+                                                                                            )
+                                                                                        Props =
+                                                                                            fun x ->
+                                                                                                x.onClick <-
+                                                                                                    fun x ->
+                                                                                                        importDatabase
+                                                                                                            x?target?files
+                                                                                        Children =
+                                                                                            [
+                                                                                                str "Confirm"
+                                                                                            ]
+                                                                                    |}
+                                                                            ]
+                                                                    ]
+                                                            ]
+                                                |}
                                         ]
                                     )
                                 ]
                         |}
                     ]),
                 [|
+                    box importDatabase
+                    box setLeftDock
+                    box setRightDock
+                    box deviceInfo
                     box input.Username
                     box isTesting
                     box hideTemplates
+                    box setDatabaseFormIdFlag
                     box setHideTemplates
                 |]
             )
@@ -156,6 +286,9 @@ module LeftDock =
                                                     DockType = dockType
                                                     Name = item.Name
                                                     Icon = item.Icon
+                                                    OnClick =
+                                                        fun _ ->
+                                                            promise { if deviceInfo.IsMobile then setRightDock None }
                                                     Atom = Atoms.User.leftDock input.Username
                                                 |})
                             ]
@@ -207,7 +340,12 @@ module LeftDock =
                                         Atom = Atoms.User.leftDock input.Username
                                         children =
                                             [
-                                                item.Content ()
+                                                React.suspense (
+                                                    [
+                                                        item.Content ()
+                                                    ],
+                                                    LoadingSpinner.LoadingSpinner ()
+                                                )
                                             ]
                                     |}
                             ]

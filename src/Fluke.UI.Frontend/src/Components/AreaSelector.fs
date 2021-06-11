@@ -1,5 +1,6 @@
 namespace rec Fluke.UI.Frontend.Components
 
+open Fable.Core.JsInterop
 open System
 open Fable.React
 open Feliz
@@ -21,7 +22,7 @@ module AreaSelector =
         =
         let informationSet = Recoil.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
 
-        let informationList =
+        let sortedAreaList =
             React.useMemo (
                 (fun () ->
                     informationSet
@@ -31,15 +32,37 @@ module AreaSelector =
                          |> AreaName.Value
                          |> String.IsNullOrWhiteSpace
                          |> not)
-                    |> Set.toList),
+                    |> Set.toList
+                    |> List.choose
+                        (function
+                        | Area area -> Some area
+                        | _ -> None)
+                    |> List.sortBy (fun area -> area.Name |> AreaName.Value)),
                 [|
                     box informationSet
                     box input.Area
                 |]
             )
 
+        let index =
+            React.useMemo (
+                (fun () ->
+                    sortedAreaList
+                    |> List.sort
+                    |> List.tryFindIndex ((=) input.Area)
+                    |> Option.defaultValue -1),
+                [|
+                    box sortedAreaList
+                    box input.Area
+                |]
+            )
+
+        let isTesting = Recoil.useValue Atoms.isTesting
+
         Chakra.box
-            (fun x -> x.display <- "inline")
+            (fun x ->
+                x.display <- "inline"
+                if isTesting then x?``data-testid`` <- nameof AreaSelector)
             [
                 InputLabel.InputLabel
                     {|
@@ -57,87 +80,125 @@ module AreaSelector =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                Menu.Menu
+                Menu.Drawer
                     {|
                         Tooltip = ""
                         Trigger =
-                            Chakra.menuButton
-                                (fun x ->
-                                    x.``as`` <- Chakra.react.Button
-                                    x.rightIcon <- Icons.fi.FiChevronDown |> Icons.render)
-                                [
-                                    match input.Area.Name |> AreaName.Value with
-                                    | String.ValidString name -> str name
-                                    | _ -> str "Select..."
-                                ]
-                        Menu =
-                            [
-                                Chakra.box
-                                    (fun x ->
-                                        x.marginBottom <- "6px"
-                                        x.maxHeight <- "217px"
-                                        x.overflowY <- "auto"
-                                        x.flexBasis <- 0)
-                                    [
-                                        Chakra.menuOptionGroup
-                                            (fun x -> x.value <- input.Area)
+                            fun visible setVisible ->
+                                Button.Button
+                                    {|
+                                        Hint = None
+                                        Icon =
+                                            Some (
+                                                (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
+                                                |> Icons.wrap,
+                                                Button.IconPosition.Right
+                                            )
+                                        Props = fun x -> x.onClick <- fun _ -> promise { setVisible (not visible) }
+                                        Children =
                                             [
-                                                yield!
-                                                    informationList
-                                                    |> List.map
-                                                        (function
-                                                        | Area area ->
-                                                            let label = area.Name |> AreaName.Value
-
-                                                            let cmp =
-                                                                Chakra.menuItemOption
-                                                                    (fun x ->
-                                                                        x.value <- area
-
-                                                                        x.onClick <-
-                                                                            fun _ -> promise { input.OnSelect area })
-                                                                    [
-                                                                        str label
-                                                                    ]
-
-                                                            Some (label, cmp)
-                                                        | _ -> None)
-                                                    |> List.sortBy (Option.map fst)
-                                                    |> List.map (Option.map snd)
-                                                    |> List.map (Option.defaultValue nothing)
+                                                match input.Area.Name |> AreaName.Value with
+                                                | String.ValidString name -> str name
+                                                | _ -> str "Select..."
                                             ]
-                                    ]
-
-                                Chakra.box
-                                    (fun x -> x.textAlign <- "center")
-                                    [
-                                        AreaFormTrigger.AreaFormTrigger
-                                            {|
-                                                Username = input.Username
-                                                Area = input.Area
-                                                OnSelect = input.OnSelect
-                                                Trigger =
-                                                    fun trigger _ ->
+                                    |}
+                        Body =
+                            fun onHide ->
+                                [
+                                    Chakra.stack
+                                        (fun x ->
+                                            x.flex <- "1"
+                                            x.spacing <- "1px"
+                                            x.flexDirection <- "column"
+                                            x.alignItems <- "stretch"
+                                            x.marginBottom <- "6px"
+                                            x.maxHeight <- "217px"
+                                            x.overflowY <- "auto"
+                                            x.flexBasis <- 0)
+                                        [
+                                            yield!
+                                                sortedAreaList
+                                                |> List.mapi
+                                                    (fun i area ->
 
                                                         Button.Button
                                                             {|
                                                                 Hint = None
                                                                 Icon =
                                                                     Some (
-                                                                        Icons.bs.BsPlus |> Icons.wrap,
+                                                                        (if index = i then
+                                                                             Icons.fi.FiCheck |> Icons.wrap
+                                                                         else
+                                                                             fun () ->
+                                                                                 (Chakra.box
+                                                                                     (fun x -> x.width <- "11px")
+                                                                                     [])),
                                                                         Button.IconPosition.Left
                                                                     )
                                                                 Props =
                                                                     fun x ->
-                                                                        x.onClick <- fun _ -> promise { trigger () }
+                                                                        x.onClick <-
+                                                                            fun _ ->
+                                                                                promise {
+                                                                                    input.OnSelect area
+                                                                                    onHide ()
+                                                                                }
+
+                                                                        x.alignSelf <- "stretch"
+
+                                                                        x.backgroundColor <- "whiteAlpha.100"
+
+                                                                        x.borderRadius <- "2px"
                                                                 Children =
                                                                     [
-                                                                        str "Add Area"
+                                                                        area.Name |> AreaName.Value |> str
                                                                     ]
+                                                            |})
+                                        ]
+
+                                    Menu.Drawer
+                                        {|
+                                            Tooltip = ""
+                                            Trigger =
+                                                fun visible setVisible ->
+                                                    Button.Button
+                                                        {|
+                                                            Hint = None
+                                                            Icon =
+                                                                Some (
+                                                                    (if visible then
+                                                                         Icons.fi.FiChevronUp
+                                                                     else
+                                                                         Icons.fi.FiChevronDown)
+                                                                    |> Icons.wrap,
+                                                                    Button.IconPosition.Right
+                                                                )
+                                                            Props =
+                                                                fun x ->
+                                                                    x.onClick <-
+                                                                        fun _ -> promise { setVisible (not visible) }
+                                                            Children =
+                                                                [
+                                                                    str "Add Area"
+                                                                ]
+                                                        |}
+                                            Body =
+                                                fun onHide2 ->
+                                                    [
+                                                        AreaForm.AreaForm
+                                                            {|
+                                                                Username = input.Username
+                                                                Area = input.Area
+                                                                OnSave =
+                                                                    fun area ->
+                                                                        promise {
+                                                                            input.OnSelect area
+                                                                            onHide ()
+                                                                            onHide2 ()
+                                                                        }
                                                             |}
-                                            |}
-                                    ]
-                            ]
-                        MenuListProps = fun x -> x.padding <- "10px"
+                                                    ]
+                                        |}
+                                ]
                     |}
             ]

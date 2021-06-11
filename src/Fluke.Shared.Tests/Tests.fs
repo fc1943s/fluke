@@ -248,6 +248,7 @@ module Tests =
 
                         taskState, taskStatusMap)
                 |> Seq.toList
+                |> List.sortBy (fun (taskState, _) -> taskState.Task.Name |> TaskName.Value)
 
             match props.Sort with
             | NoSorting -> lanes

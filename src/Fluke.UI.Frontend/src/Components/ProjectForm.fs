@@ -38,7 +38,9 @@ module ProjectForm =
             (fun x -> x.spacing <- "25px")
             [
                 Chakra.box
-                    (fun x -> x.fontSize <- "15px")
+                    (fun x ->
+                        x.fontSize <- "15px"
+                        x.textAlign <- "left")
                     [
                         str "Add Project"
                     ]

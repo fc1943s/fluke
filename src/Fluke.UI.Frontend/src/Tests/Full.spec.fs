@@ -106,7 +106,7 @@ module Full =
                     Cy2.clickText (nameof Databases)
                     Cy2.waitFor "Lane Rendering" None
 
-                    Cy.wait 200
+                    //                    Cy.wait 200
 
                     Cy2.clickSelector "[data-testid='Add Database']"
 
@@ -118,58 +118,45 @@ module Full =
                         .click (Some {| force = true |})
                     |> ignore
 
-                    Cy.wait 400
+                    //                    Cy.wait 400
 
                     Cy2.clickText "Add Task"
 
-                    Cy.wait 400
+                    //                    Cy.wait 400
+                    Cy.wait 5000
+                    Cy.wait 5000
+                    Cy.wait 5000
 
-                    Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Select..."
 
-                    Cy.wait 400
+                    Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Select..."
+
+                    //                    Cy.wait 400
 
                     Cy2.clickText "Project"
 
-                    Cy.wait 4000
-
-                    Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Information"
-
-                    Cy.wait 200
-
-                    Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Select..."
+                    //                    Cy.wait 15000
 
                     Cy2.clickText "Add Project"
 
-                    Cy2.selectorFocusTypeTextWithinSelector
-                        "[data-testid='TextKey ProjectForm']"
-                        "input[placeholder^='e.g. home renovation']"
-                        "p1"
+                    Cy2.selectorFocusTypeText "input[placeholder^='e.g. home renovation']" "p1"
 
-                    Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Select..."
+                    Cy2.clickTextWithinSelector "[data-testid=AreaSelector]" "Select..."
                     Cy2.clickText "Add Area"
 
                     //                    Cy.wait 200
 
-                    Cy2.selectorFocusTypeTextWithinSelector
-                        "[data-testid='TextKey AreaForm']"
-                        "input[placeholder^='e.g. chores']"
-                        "a1"
+                    Cy2.selectorFocusTypeText "input[placeholder^='e.g. chores']" "a1"
 
-                    Cy2.clickTextWithinSelector "[data-testid='TextKey AreaForm']" "Save"
+                    Cy2.clickTextWithinSelector "[data-testid=AreaSelector]" "Save"
                     //                    Cy.wait 200
 
-                    Cy2.clickTextWithinSelector "[data-testid='TextKey ProjectForm']" "Save"
+                    Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Save"
 
-                    Cy.wait 2000
+                    Cy2.selectorFocusTypeText "input[placeholder^=new-task-]" taskName
 
-                    Cy2.selectorFocusTypeTextWithinSelector
-                        "[data-testid='TextKey TaskForm']"
-                        "input[placeholder^=new-task-]"
-                        taskName
+                    Cy2.clickText "Save"
 
-                    Cy2.clickTextWithinSelector "[data-testid='TextKey TaskForm']" "Save"
-
-                    //                    Cy.wait 200
+                    Cy.wait 200
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
@@ -178,14 +165,11 @@ module Full =
 
                     Cy2.clickText "Edit Database"
 
-                    Cy.wait 200
+                    Cy.wait 500
 
-                    Cy2.selectorFocusTypeTextWithinSelector
-                        "[data-testid='TextKey DatabaseForm']"
-                        "input[placeholder^=new-database-]"
-                        $"{dbName}_edit"
+                    Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
 
-                    Cy2.clickTextWithinSelector "[data-testid='TextKey DatabaseForm']" "Save"
+                    Cy2.clickText "Save"
 
                     Cy2.clickText dbName
 

@@ -19,6 +19,10 @@ module TempUI =
     type DockType =
         | Databases
         | Settings
+        | Database
+        | Information
+        | Task
+        | Cell
 
     type ActiveSession =
         ActiveSession of taskName: string * duration: Minute * totalDuration: Minute * totalBreakDuration: Minute

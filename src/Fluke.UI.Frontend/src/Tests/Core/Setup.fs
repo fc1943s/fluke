@@ -9,14 +9,17 @@ open Fluke.UI.Frontend.Bindings
 open Fable.React
 open Fluke.UI.Frontend.Hooks
 open Microsoft.FSharp.Core.Operators
-//open Fable.Jester
 
-//module RTL =
-//    let inline sleep ms =
-//        promise {
-//            for _ in 0 .. ms / 500 do
-//                do! RTL.waitFor (Promise.sleep 500)
-//        }
+
+module RTL =
+    let inline sleep ms =
+        promise {
+            printfn $"RTL.sleep({ms})"
+
+            for _ in 0 .. ms / 500 do
+                do! RTL.waitFor (Promise.sleep 500)
+            printfn $"RTL.sleep({ms}) end"
+        }
 
 module Setup =
     import "jest" "@jest/globals"

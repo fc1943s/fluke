@@ -44,7 +44,7 @@ module DeleteUserButton =
                                 ]
                         |}
                 Body =
-                    fun (disclosure, _initialFocusRef) ->
+                    fun (disclosure, initialFocusRef) ->
                         [
                             Chakra.stack
                                 (fun x -> x.spacing <- "10px")
@@ -60,6 +60,7 @@ module DeleteUserButton =
                                     Input.Input
                                         (fun x ->
                                             x.value <- Some passwordField
+                                            x.ref <- initialFocusRef
                                             x.placeholder <- "Password"
                                             x.inputFormat <- Some Input.InputFormat.Password
 

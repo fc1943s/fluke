@@ -40,7 +40,7 @@ module ViewTabs =
     let ViewTabs (input: {| Username: Username |}) =
         let showViewOptions = Recoil.useValue (Atoms.User.showViewOptions input.Username)
         let view, setView = Recoil.useState (Atoms.User.view input.Username)
-        let sortedTaskIdList = Recoil.useValueLoadable (Selectors.Session.sortedTaskIdList input.Username)
+        let sortedTaskIdList = Recoil.useValue (Selectors.Session.sortedTaskIdList input.Username)
 
         let tabs, tabIndex =
             React.useMemo (
@@ -104,7 +104,7 @@ module ViewTabs =
         Chakra.tabs
             (fun x ->
                 x.isLazy <- true
-                x.index <- lastTabIndex
+                x.index <- tabIndex |> Option.defaultValue lastTabIndex
                 x.onChange <- fun e -> promise { setView tabs.[e].View }
                 x.marginLeft <- "4px"
                 x.marginRight <- "4px"
@@ -166,12 +166,10 @@ module ViewTabs =
                                                         fun x ->
                                                             x.``as`` <- Chakra.react.MenuButton
                                                             x.fontSize <- "14px"
-
                                                             x.icon <- Icons.bs.BsThreeDotsVertical |> Icons.render
-
                                                             x.alignSelf <- "center"
                                                 |}
-                                        Menu =
+                                        Body =
                                             [
                                                 menuOptionGroup
                                                     (Atoms.User.hideSchedulingOverlay input.Username)
@@ -190,7 +188,7 @@ module ViewTabs =
                         (fun _ -> ())
                         [
                             Chakra.box
-                                (fun _ -> ())
+                                (fun x -> x.marginLeft <- "2px")
                                 [
                                     CheckboxInput.CheckboxInput
                                         {|
@@ -231,8 +229,8 @@ module ViewTabs =
                                             x.flex <- "1"
                                             x.overflow <- "auto")
                                         [
-                                            match sortedTaskIdList.state () with
-                                            | HasValue [] ->
+                                            match sortedTaskIdList with
+                                            | [] ->
                                                 Chakra.box
                                                     (fun x ->
                                                         x.padding <- "7px"
@@ -240,8 +238,7 @@ module ViewTabs =
                                                     [
                                                         str "No tasks found. Add tasks in the Databases panel."
                                                     ]
-                                            | HasValue _ -> tab.Content ()
-                                            | _ -> LoadingSpinner.LoadingSpinner ()
+                                            | _ -> tab.Content ()
                                         ])
                     ]
             ]

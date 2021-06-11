@@ -146,9 +146,11 @@ module Model =
     and InformationName with
         static member Value informationName =
             match informationName with
-            | Project (AreaName areaName, ProjectName name) -> $"{areaName}/{name}"
+            | Project (AreaName (String.ValidString areaName), ProjectName (String.ValidString name)) ->
+                $"{areaName}/{name}"
             | Area (AreaName name) -> name
             | Resource (ResourceName name) -> name
+            | _ -> ""
 
     and Area with
         static member inline Default = { Name = AreaName "" }

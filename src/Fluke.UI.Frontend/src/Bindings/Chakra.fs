@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Bindings
 
+open Fable.Core.JsInterop
 open Browser.Types
 open Fable.Core
 open Fluke.Shared
@@ -26,6 +27,7 @@ module Chakra =
         abstract alignSelf : string with get, set
         abstract allowMultiple : bool with get, set
         abstract autoFocus : bool with get, set
+        abstract background : string with get, set
         abstract backgroundColor : string with get, set
         abstract border : string with get, set
         abstract borderBottomColor : string with get, set
@@ -287,7 +289,7 @@ module Chakra =
     let useToast () =
         let toast = react.useToast ()
 
-        fun (props: IToastProps -> unit) ->
+        let toastFn (props: IToastProps -> unit) =
             toast.Invoke (
                 JS.newObj
                     (fun (x: IToastProps) ->
@@ -298,6 +300,12 @@ module Chakra =
                         x.isClosable <- true
                         props x)
             )
+
+        match JS.window id with
+        | Some window -> window?lastToast <- toastFn
+        | None -> ()
+
+        toastFn
 
     let mapIfSet fn value =
         value

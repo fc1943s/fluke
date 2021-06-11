@@ -51,7 +51,13 @@ module Content =
                                             (fun x -> x.flex <- "1")
                                             [
                                                 LeftDock.LeftDock {| Username = username |}
-                                                ViewTabs.ViewTabs {| Username = username |}
+                                                React.suspense (
+                                                    [
+                                                        ViewTabs.ViewTabs {| Username = username |}
+                                                    ],
+                                                    LoadingSpinner.LoadingSpinner ()
+                                                )
+                                                RightDock.RightDock {| Username = username |}
                                             ]
 
                                         StatusBar.StatusBar {| Username = username |}

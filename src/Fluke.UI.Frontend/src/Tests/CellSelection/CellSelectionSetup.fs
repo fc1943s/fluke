@@ -145,6 +145,7 @@ module CellSelectionSetup =
                             {
                                 Task =
                                     { Task.Default with
+                                        Id = TaskId.NewId ()
                                         Name = TaskName (string n)
                                     }
                                 Events = []
@@ -154,37 +155,31 @@ module CellSelectionSetup =
 
         let databaseName = "Test"
 
-        promise {
-            printfn "initialSetter init"
+        printfn "initialSetter init"
 
-            let databaseId = DatabaseId.NewId ()
+        let databaseId = DatabaseId.NewId ()
 
-            let databaseState =
-                Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
+        let databaseState =
+            Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
 
-            setter.set (Atoms.username, Some Templates.templatesUser.Username)
-            setter.set (Atoms.User.view Templates.templatesUser.Username, View.View.Priority)
-            setter.set (Atoms.User.daysBefore Templates.templatesUser.Username, 2)
-            setter.set (Atoms.User.daysAfter Templates.templatesUser.Username, 2)
-            setter.set (Atoms.gunHash, Guid.NewGuid().ToString ())
-            setter.set (Atoms.position, Some dslTemplate.Position)
+        setter.set (Atoms.username, Some Templates.templatesUser.Username)
+        setter.set (Atoms.User.view Templates.templatesUser.Username, View.View.Priority)
+        setter.set (Atoms.User.daysBefore Templates.templatesUser.Username, 2)
+        setter.set (Atoms.User.daysAfter Templates.templatesUser.Username, 2)
+        setter.set (Atoms.gunHash, Guid.NewGuid().ToString ())
+        setter.set (Atoms.position, Some dslTemplate.Position)
 
-            Hydrate.hydrateDatabase
-                setter
-                Templates.templatesUser.Username
-                Recoil.AtomScope.ReadOnly
-                databaseState.Database
+        Hydrate.hydrateDatabase setter Templates.templatesUser.Username Recoil.AtomScope.ReadOnly databaseState.Database
 
-            setter.set (Atoms.User.databaseIdSet Templates.templatesUser.Username, Set.add databaseId)
+        setter.set (Atoms.User.databaseIdSet Templates.templatesUser.Username, Set.add databaseId)
 
-            databaseState.TaskStateMap
-            |> Map.iter
-                (fun taskId taskState ->
-                    Hydrate.hydrateTask setter Templates.templatesUser.Username Recoil.AtomScope.ReadOnly taskState.Task
-                    setter.set (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId), Set.add taskId))
+        databaseState.TaskStateMap
+        |> Map.iter
+            (fun taskId taskState ->
+                Hydrate.hydrateTask setter Templates.templatesUser.Username Recoil.AtomScope.ReadOnly taskState.Task
+                setter.set (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId), Set.add taskId))
 
-            setter.set (Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username, set [ databaseId ])
-        }
+        setter.set (Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username, set [ databaseId ])
 
     let getApp () =
         React.fragment [
@@ -230,13 +225,7 @@ module CellSelectionSetup =
         promise {
             let subject, setter = getApp () |> Setup.render
 
-            do!
-                RTL.waitFor (
-                    promise {
-                        printfn "wait 1"
-                        do! Promise.sleep 400
-                    }
-                )
+            do! RTL.sleep 400
 
             let! username =
                 JS.waitForSome
@@ -250,39 +239,25 @@ module CellSelectionSetup =
 
             printfn $"! username={username}"
 
-            do! RTL.waitFor (initialSetter (setter.current ()))
+            RTL.act (fun () -> initialSetter (setter.current ()))
 
-            do!
-                RTL.waitFor (
-                    promise {
-                        printfn "wait 2"
-                        do! Promise.sleep 400
-                    }
-                )
+            //            do!
+//                RTL.waitFor (
+//                    promise {
+//                        printfn "wait 2"
+//                        do! Promise.sleep 400
+//                    }
+//                )
+//
+//            do!
+//                RTL.waitFor (
+//                    promise {
+//                        printfn "wait 3"
+//                        do! Promise.sleep 400
+//                    }
+//                )
 
-            do!
-                RTL.waitFor (
-                    promise {
-                        printfn "wait 3"
-                        do! Promise.sleep 400
-                    }
-                )
-
-            do!
-                RTL.waitFor (
-                    promise {
-                        printfn "wait 4"
-                        do! Promise.sleep 400
-                    }
-                )
-
-            do!
-                RTL.waitFor (
-                    promise {
-                        printfn "wait 5"
-                        do! Promise.sleep 400
-                    }
-                )
+            do! RTL.sleep 1000
 
             let! sortedTaskIdList =
                 JS.waitForSome
@@ -296,7 +271,7 @@ module CellSelectionSetup =
                                         Selectors.Session.sortedTaskIdList Templates.templatesUser.Username
                                     )
 
-                            return if sortedTaskIdList.IsEmpty then None else Some sortedTaskIdList
+                            return if sortedTaskIdList.Length = 4 then Some sortedTaskIdList else None
                         })
                 |> Async.StartAsPromise
 

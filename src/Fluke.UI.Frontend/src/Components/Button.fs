@@ -48,7 +48,9 @@ module Button =
                     Chakra.button
                         (fun x ->
                             x.height <- "auto"
+                            x.alignSelf <- "flex-start"
                             x.paddingTop <- "3px"
+                            x.borderRadius <- "3px"
                             x.paddingBottom <- "3px"
                             input.Props x)
                         [

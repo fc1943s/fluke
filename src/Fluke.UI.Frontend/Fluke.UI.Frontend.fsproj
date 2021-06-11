@@ -66,18 +66,15 @@
         <Compile Include="src\Components\DatabaseForm.fs" />
         <Compile Include="src\Components\SchedulingSelector.fs" />
         <Compile Include="src\Components\ExternalLink.fs" />
-        <Compile Include="src\Components\AreaFormTrigger.fs" />
         <Compile Include="src\Components\AreaSelector.fs" />
         <Compile Include="src\Components\ProjectForm.fs" />
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
-        <Compile Include="src\Components\TaskFormTrigger.fs" />
         <Compile Include="src\Components\TaskName.fs" />
         <Compile Include="src\Components\HabitTrackerView.fs" />
         <Compile Include="src\Components\PriorityView.fs" />
         <Compile Include="src\Components\BulletJournalView.fs" />
         <Compile Include="src\Components\InformationView.fs" />
-        <Compile Include="src\Components\DatabaseFormTrigger.fs" />
         <Compile Include="src\Components\DeleteUserButton.fs" />
         <Compile Include="src\Components\TransparentIconButton.fs" />
         <Compile Include="src\Components\TopBar.fs" />
@@ -91,6 +88,7 @@
         <Compile Include="src\Components\Settings.fs" />
         <Compile Include="src\Components\DockButton.fs" />
         <Compile Include="src\Components\DockPanel.fs" />
+        <Compile Include="src\Components\RightDock.fs" />
         <Compile Include="src\Components\LeftDock.fs" />
         <Compile Include="src\Components\StatusBar.fs" />
         <Compile Include="src\Components\ViewTabs.fs" />

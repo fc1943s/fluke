@@ -294,7 +294,7 @@ module Input =
             (fun x -> x.display <- "flex")
             [
                 Chakra.inputLeftElement
-                    (fun _ -> ())
+                    (fun x -> x.zIndex <- 0)
                     [
                         icon
                     ]

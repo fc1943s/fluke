@@ -26,6 +26,7 @@ module DockPanel =
         Chakra.stack
             (fun x ->
                 x.spacing <- "0"
+                x.overflow <- "hidden"
                 x.flex <- "1")
             [
                 Chakra.flex
@@ -64,7 +65,7 @@ module DockPanel =
                                                                     x.fontSize <- "14px"
                                                                     x.icon <- icon
                                                         |}
-                                                Menu = menu
+                                                Body = menu
                                                 MenuListProps = fun _ -> ()
                                             |})
 
@@ -84,10 +85,6 @@ module DockPanel =
                 Chakra.flex
                     (fun x ->
                         x.direction <- "column"
-                        x.paddingTop <- "8px"
-                        x.paddingLeft <- "8px"
-                        x.paddingRight <- "8px"
-                        x.paddingBottom <- "8px"
                         x.flex <- "1")
                     [
                         yield! input.children
