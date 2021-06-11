@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core.JsInterop
 open Fable.React
 open Feliz
 open System
@@ -87,6 +88,52 @@ module DatabaseForm =
                                 do! input.OnSave database
                     })
 
+        let importDatabase =
+            Recoil.useCallbackRef
+                (fun setter (files: string []) ->
+                    promise {
+                        JS.consoleLog ("files", files)
+                        //                        let obj = Gun.jsonDecode<DatabaseState> text
+//
+//                        let! database =
+//                            setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
+//
+//                        let! taskIdSet =
+//                            setter.snapshot.getPromise (Atoms.Database.taskIdSet (input.Username, input.DatabaseId))
+//
+//                        let! taskStateArray =
+//                            taskIdSet
+//                            |> Set.toList
+//                            |> List.map (fun taskId -> Selectors.Task.taskState (input.Username, taskId))
+//                            |> List.map setter.snapshot.getPromise
+//                            |> Promise.Parallel
+//
+//                        let! informationStateList =
+//                            setter.snapshot.getPromise (Selectors.Session.informationStateList input.Username)
+//
+//                        let databaseState =
+//                            {
+//                                Database = database
+//                                InformationStateMap =
+//                                    informationStateList
+//                                    |> List.map (fun informationState -> informationState.Information, informationState)
+//                                    |> Map.ofList
+//                                TaskStateMap =
+//                                    taskStateArray
+//                                    |> Array.map (fun taskState -> taskState.Task.Id, taskState)
+//                                    |> Map.ofArray
+//                            }
+//
+//                        let json = databaseState |> Gun.jsonEncode
+//
+//                        let timestamp =
+//                            (FlukeDateTime.FromDateTime DateTime.Now)
+//                            |> FlukeDateTime.Stringify
+//
+//                        JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
+                        ()
+                    })
+
         Chakra.stack
             (fun x -> x.spacing <- "25px")
             [
@@ -138,5 +185,40 @@ module DatabaseForm =
                     (fun x -> x.onClick <- onSave)
                     [
                         str "Save"
+                    ]
+
+                Chakra.stack
+                    (fun x -> x.spacing <- "10px")
+                    [
+                        Chakra.box
+                            (fun x ->
+                                x.paddingBottom <- "5px"
+                                x.fontSize <- "15px")
+                            [
+                                str "Import Database"
+                            ]
+
+                        Chakra.input
+                            (fun x ->
+                                x.``type`` <- "file"
+                                x.padding <- "5px"
+                                x.onChange <- fun x -> promise { JS.consoleLog ("files", x?target?files) })
+                            [
+                            ]
+
+                        Chakra.box
+                            (fun _ -> ())
+                            [
+                                Button.Button
+                                    {|
+                                        Hint = None
+                                        Icon = Some (Icons.bi.BiImport |> Icons.wrap, Button.IconPosition.Left)
+                                        Props = fun x -> x.onClick <- fun x -> importDatabase x?target?files
+                                        Children =
+                                            [
+                                                str "Confirm"
+                                            ]
+                                    |}
+                            ]
                     ]
             ]

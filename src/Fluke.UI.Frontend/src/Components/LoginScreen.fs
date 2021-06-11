@@ -79,7 +79,7 @@ module LoginScreen =
                                                         Icon =
                                                             Some (
                                                                 Icons.fi.FiKey |> Icons.wrap,
-                                                                Button.IconPosition.Right
+                                                                Button.IconPosition.Left
                                                             )
                                                         Hint = None
                                                         Props =

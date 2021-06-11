@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Feliz.Recoil
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fable.Core.JsInterop
@@ -25,52 +24,6 @@ module LeftDock =
 
         let setDatabaseFormIdFlag =
             Recoil.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
-
-        let importDatabase =
-            Recoil.useCallbackRef
-                (fun setter (files: string []) ->
-                    promise {
-                        JS.consoleLog ("files", files)
-                        //                        let obj = Gun.jsonDecode<DatabaseState> text
-//
-//                        let! database =
-//                            setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
-//
-//                        let! taskIdSet =
-//                            setter.snapshot.getPromise (Atoms.Database.taskIdSet (input.Username, input.DatabaseId))
-//
-//                        let! taskStateArray =
-//                            taskIdSet
-//                            |> Set.toList
-//                            |> List.map (fun taskId -> Selectors.Task.taskState (input.Username, taskId))
-//                            |> List.map setter.snapshot.getPromise
-//                            |> Promise.Parallel
-//
-//                        let! informationStateList =
-//                            setter.snapshot.getPromise (Selectors.Session.informationStateList input.Username)
-//
-//                        let databaseState =
-//                            {
-//                                Database = database
-//                                InformationStateMap =
-//                                    informationStateList
-//                                    |> List.map (fun informationState -> informationState.Information, informationState)
-//                                    |> Map.ofList
-//                                TaskStateMap =
-//                                    taskStateArray
-//                                    |> Array.map (fun taskState -> taskState.Task.Id, taskState)
-//                                    |> Map.ofArray
-//                            }
-//
-//                        let json = databaseState |> Gun.jsonEncode
-//
-//                        let timestamp =
-//                            (FlukeDateTime.FromDateTime DateTime.Now)
-//                            |> FlukeDateTime.Stringify
-//
-//                        JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
-                        ()
-                    })
 
         let items =
             React.useMemo (
@@ -168,86 +121,12 @@ module LeftDock =
                                                             str "Hide Templates"
                                                         ]
                                                 ]
-
-                                            Popover.Popover
-                                                {|
-                                                    Trigger =
-                                                        Chakra.menuItem
-                                                            (fun x ->
-                                                                x.icon <-
-                                                                    Icons.bi.BiImport
-                                                                    |> Icons.renderChakra
-                                                                        (fun x ->
-                                                                            x.fontSize <- "13px"
-                                                                            x.marginTop <- "-1px"))
-                                                            [
-                                                                str "Import Database"
-                                                            ]
-                                                    Body =
-                                                        fun (_disclosure, initialFocusRef) ->
-                                                            [
-                                                                Chakra.stack
-                                                                    (fun x -> x.spacing <- "10px")
-                                                                    [
-                                                                        Chakra.box
-                                                                            (fun x ->
-                                                                                x.paddingBottom <- "5px"
-                                                                                x.fontSize <- "15px")
-                                                                            [
-                                                                                str "Import Database"
-                                                                            ]
-
-                                                                        Chakra.input
-                                                                            (fun x ->
-                                                                                x.``type`` <- "file"
-                                                                                x.ref <- initialFocusRef
-
-                                                                                x.onChange <-
-                                                                                    fun x ->
-                                                                                        promise {
-                                                                                            JS.consoleLog (
-                                                                                                "files",
-                                                                                                x?target?files
-                                                                                            )
-                                                                                        })
-                                                                            [
-
-                                                                            ]
-
-                                                                        Chakra.box
-                                                                            (fun _ -> ())
-                                                                            [
-                                                                                Button.Button
-                                                                                    {|
-                                                                                        Hint = None
-                                                                                        Icon =
-                                                                                            Some (
-                                                                                                Icons.bi.BiImport
-                                                                                                |> Icons.wrap,
-                                                                                                Button.IconPosition.Left
-                                                                                            )
-                                                                                        Props =
-                                                                                            fun x ->
-                                                                                                x.onClick <-
-                                                                                                    fun x ->
-                                                                                                        importDatabase
-                                                                                                            x?target?files
-                                                                                        Children =
-                                                                                            [
-                                                                                                str "Confirm"
-                                                                                            ]
-                                                                                    |}
-                                                                            ]
-                                                                    ]
-                                                            ]
-                                                |}
                                         ]
                                     )
                                 ]
                         |}
                     ]),
                 [|
-                    box importDatabase
                     box setLeftDock
                     box setRightDock
                     box deviceInfo
