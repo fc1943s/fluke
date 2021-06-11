@@ -63,88 +63,121 @@ module LoginScreen =
                                 x.onChange <- (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
                                 x.onEnterPress <- Some signInClick)
 
-                        Chakra.hStack
-                            (fun x -> x.alignItems <- "stretch")
-                            [
-                                Button.Button
-                                    {|
-                                        Icon = None
-                                        Hint = None
-                                        Props =
-                                            fun x ->
-                                                x.flex <- "1"
-                                                x.onClick <- signInClick
-                                                x.color <- "gray"
-                                        Children =
-                                            [
-                                                str "Login"
-                                            ]
-                                    |}
 
-                                Popover.Popover
-                                    {|
-                                        Trigger =
-                                            Button.Button
-                                                {|
-                                                    Icon = None
-                                                    Hint = None
-                                                    Props =
-                                                        fun x ->
-                                                            x.flex <- "1"
-                                                            x.color <- "gray"
-                                                    Children =
+                        Menu.Drawer
+                            {|
+                                Tooltip = ""
+                                Left = false
+                                Trigger =
+                                    fun visible setVisible ->
+
+                                        Chakra.hStack
+                                            (fun x -> x.alignItems <- "stretch")
+                                            [
+                                                Button.Button
+                                                    {|
+                                                        Icon =
+                                                            Some (
+                                                                Icons.fi.FiKey |> Icons.wrap,
+                                                                Button.IconPosition.Right
+                                                            )
+                                                        Hint = None
+                                                        Props =
+                                                            fun x ->
+                                                                x.flex <- "1"
+                                                                x.onClick <- signInClick
+                                                                x.color <- "gray"
+                                                        Children =
+                                                            [
+                                                                str "Login"
+                                                            ]
+                                                    |}
+                                                Button.Button
+                                                    {|
+                                                        Hint = None
+                                                        Icon =
+                                                            Some (
+                                                                (if visible then
+                                                                     Icons.fi.FiChevronUp
+                                                                 else
+                                                                     Icons.fi.FiChevronDown)
+                                                                |> Icons.wrap,
+                                                                Button.IconPosition.Right
+                                                            )
+                                                        Props =
+                                                            fun x ->
+                                                                x.onClick <-
+                                                                    fun _ -> promise { setVisible (not visible) }
+
+                                                                x.flex <- "1"
+                                                                x.color <- "gray"
+                                                        Children =
+                                                            [
+                                                                str "Register"
+                                                            ]
+                                                    |}
+                                            ]
+                                Body =
+                                    fun onHide ->
+                                        [
+                                            Chakra.stack
+                                                (fun x -> x.spacing <- "10px")
+                                                [
+                                                    Chakra.box
+                                                        (fun x ->
+                                                            x.paddingBottom <- "5px"
+                                                            x.fontSize <- "15px")
                                                         [
                                                             str "Register"
                                                         ]
-                                                |}
-                                        Body =
-                                            fun (_disclosure, initialFocusRef) ->
-                                                [
-                                                    Chakra.stack
-                                                        (fun x -> x.spacing <- "10px")
+
+                                                    Input.Input
+                                                        (fun x ->
+                                                            x.value <- Some password2Field
+                                                            x.placeholder <- "Confirm Password"
+
+                                                            x.inputFormat <- Some Input.InputFormat.Password
+
+                                                            x.onChange <-
+                                                                (fun (e: KeyboardEvent) ->
+                                                                    promise { setPassword2Field e.Value })
+
+                                                            x.onEnterPress <-
+                                                                Some
+                                                                    (fun _ ->
+                                                                        promise {
+                                                                            do! signUpClick ()
+                                                                            onHide ()
+                                                                        }))
+
+                                                    Chakra.box
+                                                        (fun _ -> ())
                                                         [
-                                                            Chakra.box
-                                                                (fun x ->
-                                                                    x.paddingBottom <- "5px"
-                                                                    x.fontSize <- "15px")
-                                                                [
-                                                                    str "Register"
-                                                                ]
+                                                            Button.Button
+                                                                {|
+                                                                    Hint = None
+                                                                    Icon =
+                                                                        Some (
+                                                                            Icons.fi.FiKey |> Icons.wrap,
+                                                                            Button.IconPosition.Left
+                                                                        )
+                                                                    Props =
+                                                                        fun x ->
+                                                                            x.onClick <-
+                                                                                fun _ ->
+                                                                                    promise {
+                                                                                        do! signUpClick ()
 
-                                                            Input.Input
-                                                                (fun x ->
-                                                                    x.ref <- initialFocusRef
-                                                                    x.value <- Some password2Field
-                                                                    x.placeholder <- "Confirm Password"
-                                                                    x.inputFormat <- Some Input.InputFormat.Password
-
-                                                                    x.onChange <-
-                                                                        (fun (e: KeyboardEvent) ->
-                                                                            promise { setPassword2Field e.Value })
-
-                                                                    x.onEnterPress <- Some signUpClick)
-
-                                                            Chakra.box
-                                                                (fun _ -> ())
-                                                                [
-                                                                    Button.Button
-                                                                        {|
-                                                                            Hint = None
-                                                                            Icon =
-                                                                                Some (
-                                                                                    Icons.fi.FiKey |> Icons.wrap,
-                                                                                    Button.IconPosition.Left
-                                                                                )
-                                                                            Props = fun x -> x.onClick <- signUpClick
-                                                                            Children =
-                                                                                [
-                                                                                    str "Confirm"
-                                                                                ]
-                                                                        |}
-                                                                ]
+                                                                                        onHide ()
+                                                                                    }
+                                                                    Children =
+                                                                        [
+                                                                            str "Confirm"
+                                                                        ]
+                                                                |}
                                                         ]
                                                 ]
-                                    |}
-                            ]
+                                        ]
+                            |}
                     ]
             ]

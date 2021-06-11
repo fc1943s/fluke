@@ -83,6 +83,7 @@ module AreaSelector =
                 Menu.Drawer
                     {|
                         Tooltip = ""
+                        Left = true
                         Trigger =
                             fun visible setVisible ->
                                 Button.Button
@@ -160,6 +161,7 @@ module AreaSelector =
                                     Menu.Drawer
                                         {|
                                             Tooltip = ""
+                                            Left = true
                                             Trigger =
                                                 fun visible setVisible ->
                                                     Button.Button

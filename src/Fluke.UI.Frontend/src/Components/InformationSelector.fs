@@ -135,6 +135,7 @@ module InformationSelector =
                 Menu.Drawer
                     {|
                         Tooltip = ""
+                        Left = true
                         Trigger =
                             fun visible setVisible ->
                                 Button.Button
@@ -307,6 +308,7 @@ module InformationSelector =
                                                     Menu.Drawer
                                                         {|
                                                             Tooltip = ""
+                                                            Left = true
                                                             Trigger =
                                                                 fun visible setVisible ->
                                                                     Button.Button

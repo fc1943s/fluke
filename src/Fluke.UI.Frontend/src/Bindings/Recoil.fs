@@ -251,7 +251,11 @@ module Recoil =
 
     let useLoadableDefault def (loadable: Loadable<_>) =
         React.useMemo (
-            (fun () -> (loadable.valueMaybe ()) |> Option.defaultValue def),
+            (fun () ->
+                (match jsTypeof (emitJsExpr loadable "$0.valueMaybe") with
+                 | "function" -> loadable.valueMaybe ()
+                 | _ -> unbox loadable)
+                |> Option.defaultValue def),
             [|
                 box def
                 box loadable

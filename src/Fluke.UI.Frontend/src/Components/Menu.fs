@@ -35,6 +35,7 @@ module Menu =
     [<ReactComponent>]
     let Drawer
         (input: {| Tooltip: string
+                   Left: bool
                    Trigger: bool -> (bool -> unit) -> ReactElement
                    Body: (unit -> unit) -> ReactElement list |})
         =
@@ -56,7 +57,12 @@ module Menu =
                             x.flex <- "1"
                             x.flexDirection <- "column"
                             x.marginTop <- "-1px"
-                            x.borderLeftWidth <- "1px"
+
+                            if input.Left then
+                                x.borderLeftWidth <- "1px"
+                            else
+                                x.borderRightWidth <- "1px"
+
                             x.borderBottomWidth <- "1px"
                             x.borderColor <- "whiteAlpha.200"
 

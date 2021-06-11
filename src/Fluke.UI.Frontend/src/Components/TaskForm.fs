@@ -182,6 +182,7 @@ module TaskForm =
                         Menu.Drawer
                             {|
                                 Tooltip = ""
+                                Left = true
                                 Trigger =
                                     fun visible setVisible ->
                                         Button.Button
@@ -269,6 +270,7 @@ module TaskForm =
                                             Menu.Drawer
                                                 {|
                                                     Tooltip = ""
+                                                    Left = true
                                                     Trigger =
                                                         fun visible setVisible ->
                                                             Button.Button
