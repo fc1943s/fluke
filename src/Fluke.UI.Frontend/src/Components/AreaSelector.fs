@@ -109,6 +109,7 @@ module AreaSelector =
                                         (fun x ->
                                             x.flex <- "1"
                                             x.spacing <- "1px"
+                                            x.padding <- "1px"
                                             x.flexDirection <- "column"
                                             x.alignItems <- "stretch"
                                             x.marginBottom <- "6px"

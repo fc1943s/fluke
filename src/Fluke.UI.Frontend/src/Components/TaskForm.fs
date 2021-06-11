@@ -207,6 +207,7 @@ module TaskForm =
                                                 (fun x ->
                                                     x.flex <- "1"
                                                     x.spacing <- "1px"
+                                                    x.padding <- "1px"
                                                     x.marginBottom <- "6px"
                                                     x.maxHeight <- "217px"
                                                     x.overflowY <- "auto"
