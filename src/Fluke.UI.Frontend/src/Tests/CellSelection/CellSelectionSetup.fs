@@ -257,7 +257,7 @@ module CellSelectionSetup =
 //                    }
 //                )
 
-            do! RTL.sleep 1000
+            do! RTL.sleep 1500
 
             let! sortedTaskIdList =
                 JS.waitForSome

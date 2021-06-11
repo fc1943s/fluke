@@ -114,7 +114,9 @@ module ViewTabs =
                 x.overflow <- "auto")
             [
                 Chakra.flex
-                    (fun x -> x.margin <- "1px")
+                    (fun x ->
+                        x.margin <- "1px"
+                        x.overflowX <- "auto")
                     [
                         Chakra.tabList
                             (fun x ->
@@ -185,7 +187,7 @@ module ViewTabs =
 
                 if showViewOptions then
                     Chakra.stack
-                        (fun _ -> ())
+                        (fun x -> x.marginTop <- "5px")
                         [
                             Chakra.box
                                 (fun x -> x.marginLeft <- "2px")
