@@ -135,17 +135,18 @@ module DatabaseForm =
                     })
 
         Chakra.stack
-            (fun x -> x.spacing <- "18px")
+            (fun x -> x.spacing <- "35px")
             [
-                Chakra.box
-                    (fun x -> x.fontSize <- "15px")
-                    [
-                        str $"""{if input.DatabaseId = Database.Default.Id then "Add" else "Edit"} Database"""
-                    ]
 
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")
                     [
+
+                        Chakra.box
+                            (fun x -> x.fontSize <- "15px")
+                            [
+                                str $"""{if input.DatabaseId = Database.Default.Id then "Add" else "Edit"} Database"""
+                            ]
                         Input.Input
                             (fun x ->
                                 x.autoFocus <- true
@@ -179,27 +180,25 @@ module DatabaseForm =
 
                                 DatabaseAccessIndicator.DatabaseAccessIndicator ()
                             ]
+
+                        Button.Button
+                            {|
+                                Hint = None
+                                Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
+                                Props = fun x -> x.onClick <- onSave
+                                Children =
+                                    [
+                                        str "Save"
+                                    ]
+                            |}
                     ]
 
 
-                Button.Button
-                    {|
-                        Hint = None
-                        Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
-                        Props = fun x -> x.onClick <- onSave
-                        Children =
-                            [
-                                str "Save"
-                            ]
-                    |}
-
                 Chakra.stack
-                    (fun x -> x.spacing <- "10px")
+                    (fun x -> x.spacing <- "15px")
                     [
                         Chakra.box
-                            (fun x ->
-                                x.paddingBottom <- "5px"
-                                x.fontSize <- "15px")
+                            (fun x -> x.fontSize <- "15px")
                             [
                                 str "Import Database"
                             ]
@@ -209,8 +208,7 @@ module DatabaseForm =
                                 x.``type`` <- "file"
                                 x.padding <- "5px"
                                 x.onChange <- fun x -> promise { JS.consoleLog ("files", x?target?files) })
-                            [
-                            ]
+                            []
 
                         Chakra.box
                             (fun _ -> ())
