@@ -106,8 +106,6 @@ module ViewTabs =
                 x.isLazy <- true
                 x.index <- tabIndex |> Option.defaultValue lastTabIndex
                 x.onChange <- fun e -> promise { setView tabs.[e].View }
-                x.marginLeft <- "4px"
-                x.marginRight <- "4px"
                 x.flexDirection <- "column"
                 x.display <- "flex"
                 x.flex <- "1"
@@ -124,6 +122,7 @@ module ViewTabs =
                                 x.display <- "flex"
                                 x.borderColor <- "transparent"
                                 x.marginBottom <- "5px"
+                                x.padding <- "1px"
                                 x.borderBottomWidth <- "1px"
                                 x.borderBottomColor <- "gray.16")
                             [
@@ -187,7 +186,7 @@ module ViewTabs =
 
                 if showViewOptions then
                     Chakra.stack
-                        (fun x -> x.marginTop <- "5px")
+                        (fun x -> x.padding <- "4px")
                         [
                             Chakra.box
                                 (fun x -> x.marginLeft <- "2px")
@@ -217,6 +216,7 @@ module ViewTabs =
                         x.flex <- "1"
                         x.display <- "flex"
                         x.overflowX <- "hidden"
+                        x.padding <- "2px"
                         x.flexBasis <- 0)
                     [
                         yield!

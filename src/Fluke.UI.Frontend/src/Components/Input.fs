@@ -301,7 +301,7 @@ module Input =
 
                 Input
                     (fun x ->
-                        x.paddingLeft <- "25px"
+                        x.paddingLeft <- "18px"
                         x.placeholder <- placeholder
 
                         props x)

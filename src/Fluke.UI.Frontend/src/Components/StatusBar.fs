@@ -92,12 +92,12 @@ module StatusBar =
                                 |> function
                                 | [] ->
                                     [
-                                        str "No active session"
+                                        str "Sessions: No active sessions"
                                     ]
                                 | list -> list
                             | _ ->
                                 [
-                                    str "Loading sessions"
+                                    str "Sessions: Loading sessions"
                                 ]
 
                     ]
@@ -113,8 +113,8 @@ module StatusBar =
 
                         match sortedTaskIdList.state () with
                         | HasValue sortedTaskIdList ->
-                            str $"{sortedTaskIdList.Length} of {selectedTaskIdSet.Count} tasks visible"
-                        | _ -> str "Loading tasks"
+                            str $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdSet.Count} visible"
+                        | _ -> str "Tasks: Loading tasks"
                     ]
 
                 match position with
@@ -132,5 +132,6 @@ module StatusBar =
                                 str $"Position: {position |> FlukeDateTime.Stringify}"
                             ]
                     ]
-                | None -> nothing
+                | None ->
+                                str $"Position: No databases selected"
             ]

@@ -34,7 +34,7 @@ module AreaForm =
                     })
 
         Chakra.stack
-            (fun x -> x.spacing <- "25px")
+            (fun x -> x.spacing <- "18px")
             [
                 Chakra.box
                     (fun x -> x.fontSize <- "15px")
@@ -55,9 +55,15 @@ module AreaForm =
                                 x.onEnterPress <- Some onSave)
                     ]
 
-                Chakra.button
-                    (fun x -> x.onClick <- onSave)
-                    [
-                        str "Save"
-                    ]
+
+                Button.Button
+                    {|
+                        Hint = None
+                        Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
+                        Props = fun x -> x.onClick <- onSave
+                        Children =
+                            [
+                                str "Save"
+                            ]
+                    |}
             ]

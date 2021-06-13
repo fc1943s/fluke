@@ -202,7 +202,7 @@ module LeftDock =
                                     unbox (
                                         JS.newObj
                                             (fun (x: Chakra.IBreakpoints<string>) ->
-                                                x.``base`` <- "calc(100vw - 24px)"
+                                                x.``base`` <- "calc(100vw - 50px)"
                                                 x.md <- "300px")
                                     )
 

@@ -25,6 +25,8 @@ module Menu =
                     ]
                 Chakra.menuList
                     (fun x ->
+                        x.``as`` <- Chakra.react.Stack
+                        x.spacing <- "2px"
                         x.backgroundColor <- "gray.13"
                         input.MenuListProps x)
                     [

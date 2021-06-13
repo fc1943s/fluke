@@ -673,7 +673,7 @@ module SchedulingSelector =
                                         [
                                             Chakra.stack
                                                 (fun x ->
-                                                    x.spacing <- "25px"
+                                                    x.spacing <- "18px"
                                                     x.padding <- "5px")
                                                 [
                                                     manualRadio schedulingFieldOptions.AtomValue
