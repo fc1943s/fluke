@@ -84,9 +84,11 @@ module rec Gun =
     importAll "gun/sea"
     importAll "gun/lib/promise"
 
-    //    if JS.isTesting then
-//        importAll "gun/lib/radix"
-//
+    importAll "gun/lib/radix"
+    importAll "gun/lib/radisk"
+    importAll "gun/lib/store"
+    importAll "gun/lib/rindexed"
+
     let gunTest =
         Gun.gun
             {

@@ -598,7 +598,7 @@ module State =
                                 {
                                     Gun.GunProps.peers = Some (gunPeers |> List.toArray)
                                     Gun.GunProps.radisk = Some false
-                                    Gun.GunProps.localStorage = Some true
+                                    Gun.GunProps.localStorage = Some false
                                     Gun.GunProps.multicast = None
                                 }
 

@@ -150,6 +150,8 @@ module Full =
 
                     Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Save"
 
+                    Cy.wait 200
+
                     Cy2.selectorFocusTypeText "input[placeholder^=new-task-]" taskName
 
                     Cy2.clickText "Save"
