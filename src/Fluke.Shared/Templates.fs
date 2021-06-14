@@ -1700,7 +1700,13 @@ module Templates =
                                                         }")
 
                                     let interaction =
-                                        Interaction.Task (task.Id, TaskInteraction.Sort (getTask top, getTask bottom))
+                                        Interaction.Task (
+                                            task.Id,
+                                            TaskInteraction.Sort (
+                                                getTask top |> Option.map (fun task -> task.Id),
+                                                getTask bottom |> Option.map (fun task -> task.Id)
+                                            )
+                                        )
 
                                     let userInteraction = UserInteraction (moment, user.Username, interaction)
 

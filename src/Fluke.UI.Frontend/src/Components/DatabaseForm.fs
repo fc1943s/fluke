@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Browser.Types
 open Fable.Core.JsInterop
 open Fable.React
 open Feliz
@@ -12,6 +13,7 @@ open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core
+open Fluke.UI.Frontend.Hooks
 
 
 module DatabaseForm =
@@ -88,51 +90,9 @@ module DatabaseForm =
                                 do! input.OnSave database
                     })
 
-        let importDatabase =
-            Recoil.useCallbackRef
-                (fun setter (files: string []) ->
-                    promise {
-                        JS.consoleLog ("files", files)
-                        //                        let obj = Gun.jsonDecode<DatabaseState> text
-//
-//                        let! database =
-//                            setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
-//
-//                        let! taskIdSet =
-//                            setter.snapshot.getPromise (Atoms.Database.taskIdSet (input.Username, input.DatabaseId))
-//
-//                        let! taskStateArray =
-//                            taskIdSet
-//                            |> Set.toList
-//                            |> List.map (fun taskId -> Selectors.Task.taskState (input.Username, taskId))
-//                            |> List.map setter.snapshot.getPromise
-//                            |> Promise.Parallel
-//
-//                        let! informationStateList =
-//                            setter.snapshot.getPromise (Selectors.Session.informationStateList input.Username)
-//
-//                        let databaseState =
-//                            {
-//                                Database = database
-//                                InformationStateMap =
-//                                    informationStateList
-//                                    |> List.map (fun informationState -> informationState.Information, informationState)
-//                                    |> Map.ofList
-//                                TaskStateMap =
-//                                    taskStateArray
-//                                    |> Array.map (fun taskState -> taskState.Task.Id, taskState)
-//                                    |> Map.ofArray
-//                            }
-//
-//                        let json = databaseState |> Gun.jsonEncode
-//
-//                        let timestamp =
-//                            (FlukeDateTime.FromDateTime DateTime.Now)
-//                            |> FlukeDateTime.Stringify
-//
-//                        JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
-                        ()
-                    })
+        let files, setFiles = React.useState (None: FileList option)
+
+        let importDatabase = Hydrate.useImportDatabase ()
 
         Chakra.stack
             (fun x -> x.spacing <- "35px")
@@ -207,7 +167,7 @@ module DatabaseForm =
                             (fun x ->
                                 x.``type`` <- "file"
                                 x.padding <- "5px"
-                                x.onChange <- fun x -> promise { JS.consoleLog ("files", x?target?files) })
+                                x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
                             []
 
                         Chakra.box
@@ -217,7 +177,7 @@ module DatabaseForm =
                                     {|
                                         Hint = None
                                         Icon = Some (Icons.bi.BiImport |> Icons.wrap, Button.IconPosition.Left)
-                                        Props = fun x -> x.onClick <- fun x -> importDatabase x?target?files
+                                        Props = fun x -> x.onClick <- fun _ -> importDatabase input.Username files
                                         Children =
                                             [
                                                 str "Confirm"

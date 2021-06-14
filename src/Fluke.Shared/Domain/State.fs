@@ -63,7 +63,7 @@ module State =
             Task: Task
             Sessions: Session list
             Attachments: (FlukeDateTime * Attachment) list
-            SortList: (Task option * Task option) list
+            SortList: (TaskId option * TaskId option) list
             CellStateMap: Map<DateId, CellState>
         }
 
@@ -117,7 +117,7 @@ module State =
             }
 
     and DatabaseState with
-        static member inline Create (name, owner, ?id, ?sharedWith, ?position) =
+        static member inline Create (name, owner, ?position, ?sharedWith, ?id) =
             {
                 Database =
                     {

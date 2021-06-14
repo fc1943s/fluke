@@ -3,10 +3,13 @@ namespace Fluke.Shared
 open System.IO
 open System
 
-module Option =
-    let inline ofObjUnbox<'T> (value: 'T) =
-        Option.ofObj (unbox value)
-        |> Option.map (fun x -> box x :?> 'T)
+
+module private ListIter =
+    let inline length (target: ^X when ^X: (member length : int)) = (^X: (member length : int) target)
+
+    let inline item (target: ^X when ^X: (member item : int -> ^Y)) (index: int) =
+        (^X: (member item : int -> ^Y) target, index)
+
 
 module Seq =
     let intersperse sep list =
@@ -19,6 +22,20 @@ module Seq =
                 yield element
                 notFirst <- true
         }
+
+
+    let inline ofItems items =
+        seq {
+            for i = 0 to (ListIter.length items) - 1 do
+                yield (ListIter.item items) i
+        }
+
+
+module Option =
+    let inline ofObjUnbox<'T> (value: 'T) =
+        Option.ofObj (unbox value)
+        |> Option.map (fun x -> box x :?> 'T)
+
 
 module List =
     let intersperse element source : list<'T> =

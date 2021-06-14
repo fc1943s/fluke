@@ -64,7 +64,7 @@ module UserInteraction =
         | Attachment of attachment: Attachment
         | Archive
         | Session of session: Session
-        | Sort of top: Task option * bottom: Task option
+        | Sort of top: TaskId option * bottom: TaskId option
 
     and Session = Session of start: FlukeDateTime * duration: Minute * breakDuration: Minute
 

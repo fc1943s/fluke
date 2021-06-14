@@ -10,7 +10,7 @@ module Full =
     module Cy2 =
         let typeText (fn: unit -> Cy.Chainable2<_>) (text: string) =
             //            Cy.wait 200
-            fn().clear {| force = true |} |> ignore
+            fn().clear {| force = false |} |> ignore
             fn().should "be.empty" null null
 
             text
@@ -18,10 +18,10 @@ module Full =
                 (fun letter ->
                     Cy.wait 250
 
-                    fn().first().click (Some {| force = true |})
+                    fn().first().click (Some {| force = false |})
                     |> ignore
 
-                    fn().first().``type`` (string letter) {| force = true |}
+                    fn().first().``type`` (string letter) {| force = false |}
                     |> ignore)
 
             fn().should "have.value" text null
@@ -50,12 +50,12 @@ module Full =
             Cy
                 .get(selector)
                 .contains(text)
-                .click (Some {| force = true |})
+                .click (Some {| force = false |})
             |> ignore
 
         let clickText text =
             (Cy.contains text None)
-                .click (Some {| force = true |})
+                .click (Some {| force = false |})
             |> ignore
 
         let clickSelector selector = (Cy.get selector).click None |> ignore
@@ -115,7 +115,7 @@ module Full =
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
-                        .click (Some {| force = true |})
+                        .click (Some {| force = false |})
                     |> ignore
 
                     //                    Cy.wait 400
@@ -123,9 +123,7 @@ module Full =
                     Cy2.clickText "Add Task"
 
                     //                    Cy.wait 400
-                    Cy.wait 5000
-                    Cy.wait 5000
-                    Cy.wait 5000
+//                    Cy.wait 5000
 
 
                     Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Select..."
@@ -160,7 +158,7 @@ module Full =
 
                     (Cy.contains dbName None)
                         .find(".chakra-button")
-                        .click (Some {| force = true |})
+                        .click (Some {| force = false |})
                     |> ignore
 
                     Cy2.clickText "Edit Database"
@@ -173,19 +171,19 @@ module Full =
 
                     Cy2.clickText dbName
 
-                    Cy2.waitFor "1 of 1 tasks visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})
 
                     Cy2.clickText "Habit Tracker View"
                     Cy.wait 200
-                    Cy2.waitFor "0 of 1 tasks visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "0 of 1 visible" (Some {| timeout = timeout |})
 
                     Cy2.clickText "Priority View"
                     Cy.wait 200
-                    Cy2.waitFor "1 of 1 tasks visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 
                     Cy2.clickText "Bullet Journal View"
                     Cy.wait 200
-                    Cy2.waitFor "0 of 1 tasks visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "0 of 1 visible" (Some {| timeout = timeout |})
 
                     Cy.visit homeUrl))

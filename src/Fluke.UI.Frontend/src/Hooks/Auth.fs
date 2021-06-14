@@ -4,8 +4,6 @@ open Feliz
 open Fable.Core
 open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.Shared.Domain.State
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fable.Core.JsInterop
@@ -112,56 +110,10 @@ module Auth =
                     | _ -> return Error "Invalid username"
                 })
 
-
-    let useHydrateTemplates () =
-        let hydrateDatabase = Hydrate.useHydrateDatabase ()
-        let hydrateTask = Hydrate.useHydrateTask ()
-
-        Recoil.useCallbackRef
-            (fun setter username ->
-                promise {
-                    TestUser.fetchTemplatesDatabaseStateMap ()
-                    |> Map.values
-                    |> Seq.iter
-                        (fun databaseState ->
-                            hydrateDatabase username Recoil.AtomScope.ReadOnly databaseState.Database
-
-                            setter.set (Atoms.User.databaseIdSet username, Set.add databaseState.Database.Id)
-
-                            databaseState.TaskStateMap
-                            |> Map.values
-                            |> Seq.iter
-                                (fun taskState ->
-                                    hydrateTask username Recoil.AtomScope.ReadOnly taskState.Task
-
-                                    setter.set (
-                                        Atoms.Task.statusMap (username, taskState.Task.Id),
-                                        (taskState.CellStateMap
-                                         |> Seq.choose
-                                             (function
-                                             | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
-                                                 Some (dateId, userStatus)
-                                             | _ -> None)
-                                         |> Map.ofSeq)
-                                    )
-
-                                    setter.set (
-                                        Atoms.Task.attachments (username, taskState.Task.Id),
-                                        taskState.Attachments
-                                    )
-
-                                    setter.set (Atoms.Task.sessions (username, taskState.Task.Id), taskState.Sessions)
-
-                                    setter.set (
-                                        Atoms.Database.taskIdSet (username, databaseState.Database.Id),
-                                        Set.add taskState.Task.Id
-                                    )))
-                })
-
     let useSignUp () =
         let signIn = useSignIn ()
         let gunNamespace = Recoil.useValue Selectors.gunNamespace
-        let hydrateTemplates = useHydrateTemplates ()
+        let hydrateTemplates = Hydrate.useHydrateTemplates ()
 
         Recoil.useCallbackRef
             (fun _ username password ->

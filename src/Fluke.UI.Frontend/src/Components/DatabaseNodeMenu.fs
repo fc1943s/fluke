@@ -1,8 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open System
-open Fable.Core
-open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
@@ -10,6 +7,7 @@ open Feliz
 open Fable.React
 open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
 
@@ -33,47 +31,7 @@ module DatabaseNodeMenu =
         let setTaskFormIdFlag = Recoil.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
         let setNewTaskDatabaseId = Recoil.useSetState (Selectors.Task.databaseId (input.Username, Task.Default.Id))
 
-        let exportDatabase =
-            Recoil.useCallbackRef
-                (fun setter ->
-                    promise {
-                        let! database =
-                            setter.snapshot.getPromise (Selectors.Database.database (input.Username, input.DatabaseId))
-
-                        let! taskIdSet =
-                            setter.snapshot.getPromise (Atoms.Database.taskIdSet (input.Username, input.DatabaseId))
-
-                        let! taskStateArray =
-                            taskIdSet
-                            |> Set.toList
-                            |> List.map (fun taskId -> Selectors.Task.taskState (input.Username, taskId))
-                            |> List.map setter.snapshot.getPromise
-                            |> Promise.Parallel
-
-                        let! informationStateList =
-                            setter.snapshot.getPromise (Selectors.Session.informationStateList input.Username)
-
-                        let databaseState =
-                            {
-                                Database = database
-                                InformationStateMap =
-                                    informationStateList
-                                    |> List.map (fun informationState -> informationState.Information, informationState)
-                                    |> Map.ofList
-                                TaskStateMap =
-                                    taskStateArray
-                                    |> Array.map (fun taskState -> taskState.Task.Id, taskState)
-                                    |> Map.ofArray
-                            }
-
-                        let json = databaseState |> Gun.jsonEncode
-
-                        let timestamp =
-                            (FlukeDateTime.FromDateTime DateTime.Now)
-                            |> FlukeDateTime.Stringify
-
-                        JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
-                    })
+        let exportDatabase = Hydrate.useExportDatabase ()
 
         Menu.Menu
             {|
@@ -165,7 +123,7 @@ module DatabaseNodeMenu =
                                             x.fontSize <- "13px"
                                             x.marginTop <- "-1px")
 
-                                x.onClick <- fun _ -> exportDatabase ())
+                                x.onClick <- fun _ -> exportDatabase (input.Username, input.DatabaseId))
                             [
                                 str "Export Database"
                             ]

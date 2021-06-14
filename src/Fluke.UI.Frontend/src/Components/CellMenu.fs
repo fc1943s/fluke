@@ -57,7 +57,10 @@ module CellMenu =
                                             onClickStatus
                                         )))
 
-                        setter.set (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId), onClickStatus)
+                        setter.set (
+                            Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId),
+                            onClickStatus
+                        )
 
                         input.OnClose ()
                     })
@@ -99,6 +102,18 @@ module CellMenu =
                                 [
                                     wrapButton None color (UserStatus (input.Username, status) |> Some)
                                 ]
+
+                        match sessionStatus with
+                        | UserStatus _ ->
+                            Tooltip.wrap
+                                (str "Clear")
+                                [
+                                    wrapButton
+                                        (Icons.md.MdClear |> Icons.render |> Some)
+                                        (TempUI.cellStatusColor Disabled)
+                                        (Some Disabled)
+                                ]
+                        | _ -> nothing
 
                         Chakra.box
                             (fun _ -> ())
@@ -219,17 +234,5 @@ overriding any other behavior.
                                     ]
                             ]
                         |> wrapButtonTooltip Scheduled
-
-                        match sessionStatus with
-                        | UserStatus _ ->
-                            Tooltip.wrap
-                                (str "Clear")
-                                [
-                                    wrapButton
-                                        (Icons.md.MdClear |> Icons.render |> Some)
-                                        (TempUI.cellStatusColor Disabled)
-                                        (Some Disabled)
-                                ]
-                        | _ -> nothing
                     ]
             ]

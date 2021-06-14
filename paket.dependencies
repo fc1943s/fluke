@@ -15,11 +15,12 @@ nuget Fable.Core ~> 3.2
 nuget Fable.DateFunctions ~> 3.6
 nuget Fable.Jester ~> 0.31
 nuget Fable.ReactTestingLibrary ~> 0.31
-nuget Fable.SimpleJson ~> 3.20
-nuget Feliz ~> 1.46
+nuget Fable.SimpleJson ~> 3.21
+nuget Feliz ~> 1.47
 nuget Feliz.Recoil ~> 0.19
 nuget Feliz.Router ~> 3.8
 nuget Feliz.UseListener ~> 0.6
+nuget Sutil ~> 1.0 prerelease
 nuget Thoth.Json ~> 5.1
 
 // Fluke.UI.Electron.Main
@@ -37,4 +38,4 @@ nuget Fake.DotNet.Cli ~> 5.20 prerelease
 nuget Fake.IO.FileSystem ~> 5.20 prerelease
 
 // Deploy
-nuget Farmer ~> 1.5
+nuget Farmer ~> 1.6

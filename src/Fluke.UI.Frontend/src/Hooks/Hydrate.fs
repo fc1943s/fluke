@@ -1,11 +1,18 @@
 namespace Fluke.UI.Frontend.Hooks
 
+open Browser.Types
 open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Feliz
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend
+open Fluke.Shared
+open Fable.SimpleHttp
+open System
+open Fluke.Shared.Domain.UserInteraction
+open Fable.Core
 
 
 module Hydrate =
@@ -27,3 +34,184 @@ module Hydrate =
         setter.scopedSet username atomScope (Atoms.Task.priority, (username, task.Id), task.Priority)
 
     let useHydrateTask () = Recoil.useCallbackRef hydrateTask
+
+    let useHydrateDatabaseState () =
+        let hydrateDatabase = useHydrateDatabase ()
+        let hydrateTask = useHydrateTask ()
+
+        Recoil.useCallbackRef
+            (fun setter (username, databaseState) ->
+                promise {
+                    hydrateDatabase username Recoil.AtomScope.ReadOnly databaseState.Database
+
+                    setter.set (Atoms.User.databaseIdSet username, Set.add databaseState.Database.Id)
+
+                    databaseState.InformationStateMap
+                    |> Map.values
+                    |> Seq.iter (fun informationState -> ())
+
+                    databaseState.TaskStateMap
+                    |> Map.values
+                    |> Seq.iter
+                        (fun taskState ->
+                            hydrateTask username Recoil.AtomScope.ReadOnly taskState.Task
+
+                            setter.set (
+                                Atoms.Task.statusMap (username, taskState.Task.Id),
+                                (taskState.CellStateMap
+                                 |> Seq.choose
+                                     (function
+                                     | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
+                                         Some (dateId, userStatus)
+                                     | _ -> None)
+                                 |> Map.ofSeq)
+                            )
+
+                            setter.set (Atoms.Task.attachments (username, taskState.Task.Id), taskState.Attachments)
+
+                            setter.set (Atoms.Task.sessions (username, taskState.Task.Id), taskState.Sessions)
+
+                            setter.set (
+                                Atoms.Database.taskIdSet (username, databaseState.Database.Id),
+                                Set.add taskState.Task.Id
+                            ))
+                })
+
+    let useHydrateTemplates () =
+        let hydrateDatabaseState = useHydrateDatabaseState ()
+
+        Recoil.useCallbackRef
+            (fun _ username ->
+                promise {
+                    TestUser.fetchTemplatesDatabaseStateMap ()
+                    |> Map.values
+                    |> Seq.iter
+                        (fun databaseState ->
+                            hydrateDatabaseState (username, databaseState)
+                            |> Promise.start)
+                })
+
+    let useExportDatabase () =
+        let toast = Chakra.useToast ()
+
+        Recoil.useCallbackRef
+            (fun setter (username, databaseId) ->
+                promise {
+                    let! database = setter.snapshot.getPromise (Selectors.Database.database (username, databaseId))
+
+                    let! taskIdSet = setter.snapshot.getPromise (Atoms.Database.taskIdSet (username, databaseId))
+
+                    let! taskStateArray =
+                        taskIdSet
+                        |> Set.toList
+                        |> List.map (fun taskId -> Selectors.Task.taskState (username, taskId))
+                        |> List.map setter.snapshot.getPromise
+                        |> Promise.Parallel
+
+                    let! informationStateList =
+                        setter.snapshot.getPromise (Selectors.Session.informationStateList username)
+
+                    let databaseState =
+                        {
+                            Database = database
+                            InformationStateMap =
+                                informationStateList
+                                |> List.map (fun informationState -> informationState.Information, informationState)
+                                |> Map.ofList
+                            TaskStateMap =
+                                taskStateArray
+                                |> Array.map (fun taskState -> taskState.Task.Id, taskState)
+                                |> Map.ofArray
+                        }
+
+                    let json = databaseState |> Gun.jsonEncode
+
+                    let timestamp =
+                        (FlukeDateTime.FromDateTime DateTime.Now)
+                        |> FlukeDateTime.Stringify
+
+                    JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
+
+                    toast
+                        (fun x ->
+                            x.description <- "Database exported successfully"
+                            x.title <- "Success"
+                            x.status <- "success")
+                })
+
+    let useImportDatabase () =
+        let hydrateDatabaseState = useHydrateDatabaseState ()
+        let toast = Chakra.useToast ()
+
+        Recoil.useCallbackRef
+            (fun _setter username files ->
+                promise {
+                    match files with
+                    | Some (files: FileList) ->
+                        let! files =
+                            files
+                            |> Seq.ofItems
+                            |> Seq.map
+                                (fun file ->
+                                    async {
+                                        let! content = FileReader.readFileAsText file
+                                        return content
+                                    })
+                            |> Async.Parallel
+                            |> Async.StartAsPromise
+
+                        try
+                            do!
+                                files
+                                |> Array.map
+                                    (fun content ->
+                                        let databaseState = Gun.jsonDecode<DatabaseState> content
+
+                                        let database =
+                                            let databaseName =
+                                                let databaseName = databaseState.Database.Name |> DatabaseName.Value
+
+                                                let timestamp =
+                                                    DateTime.Now
+                                                    |> FlukeDateTime.FromDateTime
+                                                    |> FlukeDateTime.Stringify
+
+                                                DatabaseName $"{databaseName}_{timestamp}"
+
+                                            {
+                                                Id = DatabaseId.NewId ()
+                                                Name = databaseName
+                                                Owner = username
+                                                SharedWith = DatabaseAccess.Private []
+                                                Position = databaseState.Database.Position
+                                            }
+
+                                        hydrateDatabaseState (
+                                            username,
+                                            { databaseState with
+                                                Database = database
+                                                TaskStateMap =
+                                                    databaseState.TaskStateMap
+                                                    |> Map.toSeq
+                                                    |> Seq.map
+                                                        (fun (_, taskState) ->
+                                                            let taskId = TaskId.NewId ()
+
+                                                            taskId,
+                                                            { taskState with
+                                                                Task = { taskState.Task with Id = taskId }
+                                                            })
+                                                    |> Map.ofSeq
+                                            }
+                                        ))
+                                |> Promise.Parallel
+                                |> Promise.ignore
+
+                            toast
+                                (fun x ->
+                                    x.description <- "Database imported successfully"
+                                    x.title <- "Success"
+                                    x.status <- "success")
+                        with ex -> toast (fun x -> x.description <- $"Error importing database: ${ex.Message}")
+                    | _ -> toast (fun x -> x.description <- "No files selected")
+                })

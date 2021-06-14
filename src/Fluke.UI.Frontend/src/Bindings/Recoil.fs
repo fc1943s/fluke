@@ -631,11 +631,16 @@ module Recoil =
 //                                                                                                                                      data
 //                                                }; decoded={unbox decoded}; typeof decoded={jsTypeof decoded};")
 
-                                        e.setSelf
-                                            (fun oldValue ->
-                                                let encodedOldValue = Gun.jsonEncode oldValue
-                                                let decodedJson = Gun.jsonEncode decoded
-                                                if encodedOldValue <> decodedJson then unbox decoded else oldValue)
+                                        JS.setTimeout
+                                            (fun () ->
+                                                e.setSelf
+                                                    (fun _oldValue ->
+                                                        //let encodedOldValue = Gun.jsonEncode oldValue
+//                                                let decodedJson = Gun.jsonEncode decoded
+//                                                if encodedOldValue <> decodedJson then unbox decoded else oldValue
+                                                        unbox decoded))
+                                            100
+                                        |> ignore
                                     with ex -> Browser.Dom.console.error ("[exception1]", ex)
                                 }
                                 |> Async.StartAsPromise

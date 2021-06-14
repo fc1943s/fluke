@@ -1,10 +1,11 @@
 FSharp.Core
 
 Fable.DateFunctions
-Fable.SimpleJson
 Fable.Jester
 Fable.ReactTestingLibrary
+Fable.SimpleJson
 Feliz.Recoil
-Feliz.UseListener
 Feliz.Router
+Feliz.UseListener
+Sutil
 Thoth.Json

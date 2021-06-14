@@ -742,7 +742,7 @@ module State =
                             let sessions = getter.get (Atoms.Task.sessions (username, taskId))
                             let attachments = getter.get (Atoms.Task.attachments (username, taskId))
 
-                            let disabledCellStateMap =
+                            let cellStateMapWithoutStatus =
                                 dateSequence
                                 |> List.map DateId
                                 |> List.map
@@ -782,7 +782,7 @@ module State =
                                             Attachments = []
                                             Sessions = []
                                         })
-                                |> mergeCellStateMap disabledCellStateMap
+                                |> mergeCellStateMap cellStateMapWithoutStatus
                                 |> Map.filter
                                     (fun _ cellState ->
                                         match cellState with

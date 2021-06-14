@@ -133,6 +133,7 @@ module LoginScreen =
 
                                                     Input.Input
                                                         (fun x ->
+                                                            x.autoFocus <- true
                                                             x.value <- Some password2Field
                                                             x.placeholder <- "Confirm Password"
 
