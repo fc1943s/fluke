@@ -39,7 +39,7 @@ module DatabaseForm =
                         match databaseName with
                         | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let! databaseIdSet = setter.snapshot.getPromise (Atoms.User.databaseIdSet input.Username)
+                            let! databaseIdSet = setter.snapshot.getPromise (Atoms.Session.databaseIdSet input.Username)
 
                             let! databaseNames =
                                 databaseIdSet

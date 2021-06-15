@@ -36,7 +36,7 @@ module RightDock =
                 ))
                 Database.Default.Id
 
-        let setDatabaseIdSet = Store.useSetStatePrev (Atoms.User.databaseIdSet input.Username)
+        let setDatabaseIdSet = Store.useSetStatePrev (Atoms.Session.databaseIdSet input.Username)
         let setTaskIdSet = Store.useSetStatePrev (Atoms.Database.taskIdSet (input.Username, taskDatabaseId))
 
         let items =
@@ -144,6 +144,7 @@ module RightDock =
                                                                     hydrateTaskState (
                                                                         input.Username,
                                                                         Recoil.AtomScope.ReadOnly,
+                                                                        taskDatabaseId,
                                                                         taskState
                                                                     )
 
@@ -183,6 +184,7 @@ module RightDock =
                         |}
                     ]),
                 [|
+                    box taskDatabaseId
                     box databaseFormIdFlag
                     box hydrateDatabase
                     box hydrateTaskState

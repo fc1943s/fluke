@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Tests.CellSelection
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz
-open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
 open Fluke.Shared.Domain
@@ -174,7 +173,7 @@ module CellSelectionSetup =
                     setter
                     (Templates.templatesUser.Username, Recoil.AtomScope.ReadOnly, databaseState.Database)
 
-            setter.set (Atoms.User.databaseIdSet Templates.templatesUser.Username, Set.add databaseId)
+            setter.set (Atoms.Session.databaseIdSet Templates.templatesUser.Username, Set.add databaseId)
 
             do!
                 databaseState.TaskStateMap
@@ -184,7 +183,10 @@ module CellSelectionSetup =
                             do!
                                 Hydrate.hydrateTaskState
                                     setter
-                                    (Templates.templatesUser.Username, Recoil.AtomScope.ReadOnly, taskState)
+                                    (Templates.templatesUser.Username,
+                                     Recoil.AtomScope.ReadOnly,
+                                     databaseState.Database.Id,
+                                     taskState)
 
                             setter.set (
                                 Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId),

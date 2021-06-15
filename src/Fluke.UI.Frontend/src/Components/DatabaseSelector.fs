@@ -25,11 +25,11 @@ module DatabaseSelector =
 
         let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name (input.Username, databaseId))
 
-        let databaseIdSet = Store.useValue (Atoms.User.databaseIdSet input.Username)
+        let databaseIdSet = Store.useValue (Atoms.Session.databaseIdSet input.Username)
 
-        JS.log (fun () -> $"TaskForm.render. databaseIdSet={databaseIdSet}")
+        JS.log (fun () -> $"DatabaseSelector.render. databaseIdSet={databaseIdSet}")
 
-        let setDatabaseIdSet = Store.useSetStatePrev (Atoms.User.databaseIdSet input.Username)
+        let setDatabaseIdSet = Store.useSetStatePrev (Atoms.Session.databaseIdSet input.Username)
 
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
@@ -49,7 +49,7 @@ module DatabaseSelector =
             |> List.mapi
                 (fun i isReadWrite ->
                     match isReadWrite.valueMaybe () with
-//                    match Some isReadWrite with
+                    //                    match Some isReadWrite with
                     | Some true -> Some databaseIdList.[i]
                     | _ -> None)
             |> List.choose id

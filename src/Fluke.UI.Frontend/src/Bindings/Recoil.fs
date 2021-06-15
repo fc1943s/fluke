@@ -207,6 +207,14 @@ module RecoilExtensions =
                         Profiling.addCount atomKey
                         result)
 
+                //                get
+//                    (fun x (getter: SelectorGetter) ->
+//                        promise {
+//                            let result = getFn x getter
+//                            Profiling.addCount atomKey
+//                            return result
+//                        })
+
                 set
                     (fun x y z ->
                         match setFn with
@@ -478,7 +486,7 @@ module Recoil =
     let getGunAtomNodeParent (atom: InputAtom<_, _>) =
         async {
             let username, atomPath = getAtomPath atom []
-            let atomPath = atomPath.Substring (0, (atomPath.LastIndexOf "/") - 1)
+            let atomPath = atomPath.Substring (0, atomPath.LastIndexOf "/")
             let! gunAtomNode = getInternalGunAtomNode username atomPath
             return username, atomPath, gunAtomNode
         }
@@ -508,22 +516,22 @@ module Recoil =
                                     |> Seq.choose onValidate
                                     |> Set.ofSeq
 
-                                JS.log (fun () -> $"-ON atomPath={atomPath} keys={keys}")
+                                //                                JS.log (fun () -> $"-ON atomPath={atomPath} keys={keys}")
                                 e.setSelf (fun _ -> keys)
 
                                 //                                match onValidate k with
-//                                | Some v -> e.setSelf (fun oldValue -> oldValue |> Set.add v)
-//                                | None -> ()
+                                //                                | Some v -> e.setSelf (fun oldValue -> oldValue |> Set.add v)
+                                //                                | None -> ()
                                 )
 
                     //                        gunAtomNode
-//                            .map()
-//                            .on (fun _v k ->
-//                                JS.log (fun () -> $"ON MAP atomPath={atomPath} k={k}")
-//
-//                                match onValidate k with
-//                                | Some v -> e.setSelf (fun oldValue -> oldValue |> Set.add v)
-//                                | None -> ())
+                    //                            .map()
+                    //                            .on (fun _v k ->
+                    //                                JS.log (fun () -> $"ON MAP atomPath={atomPath} k={k}")
+                    //
+                    //                                match onValidate k with
+                    //                                | Some v -> e.setSelf (fun oldValue -> oldValue |> Set.add v)
+                    //                                | None -> ())
 
                     | None -> Browser.Dom.console.error $"[gunSetEffect.effect] Gun node not found: atomPath={atomPath}"
                  })
@@ -563,14 +571,16 @@ module Recoil =
                     let! decrypted =
                         Gun.sea.decrypt verified keys
                         |> Async.AwaitPromise
+                    //
+//                    printfn
+//                        $"userDecode
+//                    decrypted={decrypted}
+//                    typeof decrypted={jsTypeof decrypted}"
 
-                    let decoded =
-                        decrypted
-                        |> Gun.jsonEncode<string>
-                        |> Gun.jsonDecode<'TValue>
+                    let decoded = decrypted |> Gun.jsonDecode<'TValue option>
 
-                    //            printfn $"userDecode data={data} decrypted={decrypted} verified={JS.JSON.stringify verified} typeof decrypted={jsTypeof decrypted} typeof verified={jsTypeof verified}"
-
+                    //                    printfn $"userDecode decoded={decoded}"
+//
                     return decoded
                 | _ -> return failwith $"No keys found for user {user.is}"
             with ex ->
@@ -587,10 +597,15 @@ module Recoil =
 
                 match keys with
                 | Some keys ->
-                    let json = Gun.jsonEncode<'TValue> value
-                    //                    printfn $"userEncode json={json} keys={keys}"
+                    let json =
+                        value
+                        |> Gun.jsonEncode<'TValue>
+                        |> Gun.jsonEncode<string>
 
+                    //                    printfn $"userEncode value={value} json={json}"
+//
                     let! encrypted = Gun.sea.encrypt json keys |> Async.AwaitPromise
+
                     let! signed = Gun.sea.sign encrypted keys |> Async.AwaitPromise
                     //                    JS.log (fun () -> $"userEncode. json={json} encrypted={encrypted} signed={signed}")
                     return signed
@@ -620,27 +635,30 @@ module Recoil =
                                         let! decoded =
                                             match box data with
                                             | null -> unbox null |> Async.lift
-                                            | _ -> userDecode<'TValue3 option> data
+                                            | _ ->
+                                                //                                            printfn $"decoding atomPath={atomPath}"
+                                                userDecode<'TValue3> data
 
                                         //                                        JS.log
-//                                            (fun () ->
-//                                                $"[gunEffect.onGunData()] atomPath={atomPath} data={unbox data}; typeof data={
-//                                                                                                                                  jsTypeof
-//                                                                                                                                      data
-//                                                }; decoded={unbox decoded}; typeof decoded={jsTypeof decoded};")
+                                        //                                            (fun () ->
+                                        //                                                $"[gunEffect.onGunData()] atomPath={atomPath} data={unbox data}; typeof data={
+                                        //                                                                                                                                  jsTypeof
+                                        //                                                                                                                                      data
+                                        //                                                }; decoded={unbox decoded}; typeof decoded={jsTypeof decoded};")
 
-                                        JS.setTimeout
-                                            (fun () ->
-                                                JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
+                                        //                                    JS.setTimeout
+                                        //                                        (fun () ->
+                                        JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
 
-                                                e.setSelf
-                                                    (fun _oldValue ->
-                                                        //let encodedOldValue = Gun.jsonEncode oldValue
-//                                                let decodedJson = Gun.jsonEncode decoded
-//                                                if encodedOldValue <> decodedJson then unbox decoded else oldValue
-                                                        unbox decoded))
-                                            500
-                                        |> ignore
+                                        e.setSelf
+                                            (fun _oldValue ->
+                                                //let encodedOldValue = Gun.jsonEncode oldValue
+                                                //                                                let decodedJson = Gun.jsonEncode decoded
+                                                //                                                if encodedOldValue <> decodedJson then unbox decoded else oldValue
+                                                unbox decoded)
+                                    //                                                )
+                                    //                                        500
+                                    //                                    |> ignore
                                     with ex -> Browser.Dom.console.error ("[exception1]", ex)
                                 }
                                 |> Async.StartAsPromise

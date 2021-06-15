@@ -2,7 +2,7 @@ namespace Fluke.UI.Frontend.Bindings
 
 open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
-open Fable.Core
+
 
 [<AutoOpen>]
 module StoreMagic =
@@ -42,5 +42,8 @@ module Store =
     type AtomEffect<'T, 'U> = Feliz.Recoil.AtomEffect<'T, 'U>
 
     let inline gunEffect<'TValue3, 'TKey> = Recoil.gunEffect<'TValue3, 'TKey>
+
+    let inline gunKeyEffect<'TAtomValue, 'TValue, 'TKey when 'TValue: comparison> =
+        Recoil.gunKeyEffect<'TAtomValue, 'TValue, 'TKey>
 //    let inline gunEffect<'TValue3, 'TKey> (atom: InputAtom<'TValue3, 'TKey>) (keyIdentifier: string list) =
 //        Recoil.gunEffect atom keyIdentifier

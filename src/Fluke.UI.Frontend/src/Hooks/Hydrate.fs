@@ -29,8 +29,9 @@ module Hydrate =
 
     let useHydrateDatabase () = Store.useCallbackRef hydrateDatabase
 
-    let hydrateTask (setter: Store.CallbackMethods) (username, atomScope, task: Task) =
+    let hydrateTask (setter: Store.CallbackMethods) (username, atomScope, databaseId, task: Task) =
         promise {
+            //            setter.scopedSet username atomScope (Atoms.Task.databaseId, (username, task.Id), databaseId)
             setter.scopedSet username atomScope (Atoms.Task.name, (username, task.Id), task.Name)
             setter.scopedSet username atomScope (Atoms.Task.information, (username, task.Id), task.Information)
             setter.scopedSet username atomScope (Atoms.Task.duration, (username, task.Id), task.Duration)
@@ -43,9 +44,9 @@ module Hydrate =
 
     let useHydrateTask () = Store.useCallbackRef hydrateTask
 
-    let hydrateTaskState setter (username, atomScope, taskState) =
+    let hydrateTaskState setter (username, atomScope, databaseId, taskState) =
         promise {
-            do! hydrateTask setter (username, atomScope, taskState.Task)
+            do! hydrateTask setter (username, atomScope, databaseId, taskState.Task)
 
             setter.scopedSet
                 username
@@ -79,7 +80,7 @@ module Hydrate =
                 promise {
                     do! hydrateDatabase (username, atomScope, databaseState.Database)
 
-                    setter.set (Atoms.User.databaseIdSet username, Set.add databaseState.Database.Id)
+                    setter.set (Atoms.Session.databaseIdSet username, Set.add databaseState.Database.Id)
 
                     databaseState.InformationStateMap
                     |> Map.values
@@ -91,7 +92,7 @@ module Hydrate =
                         |> Seq.map
                             (fun taskState ->
                                 promise {
-                                    do! hydrateTaskState (username, atomScope, taskState)
+                                    do! hydrateTaskState (username, atomScope, databaseState.Database.Id, taskState)
 
                                     setter.set (
                                         Atoms.Task.statusMap (username, taskState.Task.Id),
@@ -146,7 +147,7 @@ module Hydrate =
                 promise {
                     let! database = setter.snapshot.getPromise (Selectors.Database.database (username, databaseId))
 
-                    let! taskIdSet = setter.snapshot.getPromise (Atoms.Database.taskIdSet (username, databaseId))
+                    let! taskIdSet = setter.snapshot.getPromise (Selectors.Database.taskIdSet (username, databaseId))
 
                     let! taskStateArray =
                         taskIdSet

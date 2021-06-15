@@ -95,16 +95,6 @@ module State =
 
 
         module rec User =
-            let rec databaseIdSet =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof databaseIdSet}",
-                    (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
-                    (fun (username: Username) ->
-                        [
-                            Store.gunEffect (Store.InputAtom.AtomFamily (username, databaseIdSet, username)) []
-                        ])
-                )
-
             let rec expandedDatabaseIdSet =
                 Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof expandedDatabaseIdSet}",
@@ -454,6 +444,18 @@ module State =
                         ])
                 )
 
+            //            let rec databaseId =
+//                Store.atomFamilyWithProfiling (
+//                    $"{nameof atomFamily}/{nameof Task}/{nameof databaseId}",
+//                    (fun (_username: Username, _taskId: TaskId) -> Database.Default.Id),
+//                    (fun (username: Username, taskId: TaskId) ->
+//                        [
+//                            Store.gunEffect
+//                                (Store.InputAtom.AtomFamily (username, databaseId, (username, taskId)))
+//                                (taskIdIdentifier taskId)
+//                        ])
+//                )
+
             let rec sessions =
                 Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof sessions}",
@@ -575,6 +577,34 @@ module State =
                 )
 
 
+        module rec Session =
+            let rec databaseIdSet =
+                Store.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Session}/{nameof databaseIdSet}",
+                    (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
+                    (fun (username: Username) ->
+                        [
+                            //                            Store.gunKeyEffect
+//                                (Store.InputAtom.AtomFamily (username, Database.name, (username, Database.Default.Id)))
+//                                (Recoil.parseValidGuid DatabaseId)
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, databaseIdSet, username)) []
+                        ])
+                )
+
+        //
+//            let rec taskIdSet =
+//                Store.atomFamilyWithProfiling (
+//                    $"{nameof atomFamily}/{nameof Session}/{nameof taskIdSet}",
+//                    (fun (_username: Username) -> Set.empty: Set<TaskId>),
+//                    (fun (username: Username) ->
+//                        [
+//                            Store.gunKeyEffect
+//                                (Store.InputAtom.AtomFamily (username, Task.name, (username, Task.Default.Id)))
+//                                (Recoil.parseValidGuid TaskId)
+//                        ])
+//                )
+
+
         module rec Cell =
             let cellIdentifier (taskId: TaskId) (dateId: DateId) =
                 [
@@ -668,169 +698,171 @@ module State =
 
 
         module rec Database =
+            let rec taskIdSet =
+                Store.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Database}/{nameof taskIdSet}",
+                    (fun (username: Username, databaseId: DatabaseId) getter ->
+                        //                        let taskIdSet = getter.get (Atoms.Session.taskIdSet username)
+//
+//                        taskIdSet
+//                        |> Set.filter
+//                            (fun taskId ->
+//                                let databaseId' = getter.get (Atoms.Task.databaseId (username, taskId))
+//                                databaseId' = databaseId)
+
+                        getter.get (Atoms.Database.taskIdSet (username, databaseId)))
+                )
+
             let rec database =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Database}/{nameof database}",
                     (fun (username: Username, databaseId: DatabaseId) getter ->
-                        promise {
-                            return
-                                {
-                                    Id = databaseId
-                                    Name = getter.get (Atoms.Database.name (username, databaseId))
-                                    Owner = getter.get (Atoms.Database.owner (username, databaseId))
-                                    SharedWith = getter.get (Atoms.Database.sharedWith (username, databaseId))
-                                    Position = getter.get (Atoms.Database.position (username, databaseId))
-                                }
+
+                        {
+                            Id = databaseId
+                            Name = getter.get (Atoms.Database.name (username, databaseId))
+                            Owner = getter.get (Atoms.Database.owner (username, databaseId))
+                            SharedWith = getter.get (Atoms.Database.sharedWith (username, databaseId))
+                            Position = getter.get (Atoms.Database.position (username, databaseId))
                         })
                 )
 
             let rec isReadWrite =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Database}/{nameof isReadWrite}",
                     (fun (databaseId: DatabaseId) getter ->
-                        promise {
-                            let username = getter.get Atoms.username
+                        let username = getter.get Atoms.username
 
-                            let access =
-                                match username with
-                                | Some username ->
-                                    let database = getter.get (database (username, databaseId))
+                        let access =
+                            match username with
+                            | Some username ->
+                                let database = getter.get (database (username, databaseId))
 
-                                    if username <> Templates.templatesUser.Username
-                                       && database.Owner = Templates.templatesUser.Username then
-                                        None
-                                    else
-                                        getAccess database username
-                                | None -> None
+                                if username <> Templates.templatesUser.Username
+                                   && database.Owner = Templates.templatesUser.Username then
+                                    None
+                                else
+                                    getAccess database username
+                            | None -> None
 
-                            return access = Some Access.ReadWrite
-                        })
+                        access = Some Access.ReadWrite)
                 )
 
         module rec Information =
             let rec informationState =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Information}/{nameof informationState}",
                     (fun (username: Username, information: Information) getter ->
-                        promise {
-                            return
-                                {
-                                    Information = information
-                                    Attachments = getter.get (Atoms.Information.attachments (username, information))
-                                    SortList = []
-                                }
+
+                        {
+                            Information = information
+                            Attachments = getter.get (Atoms.Information.attachments (username, information))
+                            SortList = []
                         })
                 )
 
 
         module rec Task =
             let rec task =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof task}",
                     (fun (username: Username, taskId: TaskId) getter ->
-                        promise {
-                            return
-                                {
-                                    Id = taskId
-                                    Name = getter.get (Atoms.Task.name (username, taskId))
-                                    Information = getter.get (Atoms.Task.information (username, taskId))
-                                    PendingAfter = getter.get (Atoms.Task.pendingAfter (username, taskId))
-                                    MissedAfter = getter.get (Atoms.Task.missedAfter (username, taskId))
-                                    Scheduling = getter.get (Atoms.Task.scheduling (username, taskId))
-                                    Priority = getter.get (Atoms.Task.priority (username, taskId))
-                                    Duration = getter.get (Atoms.Task.duration (username, taskId))
-                                }
+
+                        {
+                            Id = taskId
+                            Name = getter.get (Atoms.Task.name (username, taskId))
+                            Information = getter.get (Atoms.Task.information (username, taskId))
+                            PendingAfter = getter.get (Atoms.Task.pendingAfter (username, taskId))
+                            MissedAfter = getter.get (Atoms.Task.missedAfter (username, taskId))
+                            Scheduling = getter.get (Atoms.Task.scheduling (username, taskId))
+                            Priority = getter.get (Atoms.Task.priority (username, taskId))
+                            Duration = getter.get (Atoms.Task.duration (username, taskId))
                         })
                 )
 
             let rec taskState =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof taskState}",
                     (fun (username: Username, taskId: TaskId) getter ->
-                        promise {
-                            let task = getter.get (task (username, taskId))
-                            let dateSequence = getter.get dateSequence
-                            let dayStart = getter.get (Atoms.User.dayStart username)
-                            let statusMap = getter.get (Atoms.Task.statusMap (username, taskId))
-                            let sessions = getter.get (Atoms.Task.sessions (username, taskId))
-                            let attachments = getter.get (Atoms.Task.attachments (username, taskId))
+                        let task = getter.get (task (username, taskId))
+                        let dateSequence = getter.get dateSequence
+                        let dayStart = getter.get (Atoms.User.dayStart username)
+                        let statusMap = getter.get (Atoms.Task.statusMap (username, taskId))
+                        let sessions = getter.get (Atoms.Task.sessions (username, taskId))
+                        let attachments = getter.get (Atoms.Task.attachments (username, taskId))
 
-                            let cellStateMapWithoutStatus =
-                                dateSequence
-                                |> List.map DateId
-                                |> List.map
-                                    (fun dateId ->
-                                        let cellSessions =
-                                            match dateSequence with
-                                            | firstVisibleDate :: _ when firstVisibleDate >= (dateId |> DateId.Value) ->
-                                                sessions
-                                                |> List.filter
-                                                    (fun (Session (start, _, _)) -> isToday dayStart start dateId)
-                                            | _ -> []
+                        let cellStateMapWithoutStatus =
+                            dateSequence
+                            |> List.map DateId
+                            |> List.map
+                                (fun dateId ->
+                                    let cellSessions =
+                                        match dateSequence with
+                                        | firstVisibleDate :: _ when firstVisibleDate >= (dateId |> DateId.Value) ->
+                                            sessions
+                                            |> List.filter
+                                                (fun (Session (start, _, _)) -> isToday dayStart start dateId)
+                                        | _ -> []
 
-                                        let cellAttachments =
-                                            match dateSequence with
-                                            | firstVisibleDate :: _ when firstVisibleDate >= (dateId |> DateId.Value) ->
-                                                attachments
-                                                |> List.filter (fun (moment, _) -> isToday dayStart moment dateId)
-                                                |> List.map snd
-                                            | _ -> []
+                                    let cellAttachments =
+                                        match dateSequence with
+                                        | firstVisibleDate :: _ when firstVisibleDate >= (dateId |> DateId.Value) ->
+                                            attachments
+                                            |> List.filter (fun (moment, _) -> isToday dayStart moment dateId)
+                                            |> List.map snd
+                                        | _ -> []
 
-                                        let cellState =
-                                            {
-                                                Status = Disabled
-                                                Sessions = cellSessions
-                                                Attachments = cellAttachments
-                                            }
-
-                                        dateId, cellState)
-                                |> Map.ofList
-
-                            let cellStateMap =
-                                statusMap
-                                |> Map.mapValues
-                                    (fun manualCellStatus ->
+                                    let cellState =
                                         {
-                                            Status = UserStatus (username, manualCellStatus)
-                                            Attachments = []
-                                            Sessions = []
-                                        })
-                                |> mergeCellStateMap cellStateMapWithoutStatus
-                                |> Map.filter
-                                    (fun _ cellState ->
-                                        match cellState with
-                                        | { Status = UserStatus _ } -> true
-                                        | { Sessions = _ :: _ } -> true
-                                        | { Attachments = _ :: _ } -> true
-                                        | _ -> false)
+                                            Status = Disabled
+                                            Sessions = cellSessions
+                                            Attachments = cellAttachments
+                                        }
 
-                            return
-                                {
-                                    Task = task
-                                    Sessions = sessions
-                                    Attachments = attachments
-                                    SortList = []
-                                    CellStateMap = cellStateMap
-                                }
+                                    dateId, cellState)
+                            |> Map.ofList
+
+                        let cellStateMap =
+                            statusMap
+                            |> Map.mapValues
+                                (fun manualCellStatus ->
+                                    {
+                                        Status = UserStatus (username, manualCellStatus)
+                                        Attachments = []
+                                        Sessions = []
+                                    })
+                            |> mergeCellStateMap cellStateMapWithoutStatus
+                            |> Map.filter
+                                (fun _ cellState ->
+                                    match cellState with
+                                    | { Status = UserStatus _ } -> true
+                                    | { Sessions = _ :: _ } -> true
+                                    | { Attachments = _ :: _ } -> true
+                                    | _ -> false)
+
+
+                        {
+                            Task = task
+                            Sessions = sessions
+                            Attachments = attachments
+                            SortList = []
+                            CellStateMap = cellStateMap
                         })
                 )
 
             let rec statusMap =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof statusMap}",
                     (fun (username: Username, taskId: TaskId) getter ->
-                        promise {
-                            let dayStart = getter.get (Atoms.User.dayStart username)
-                            let position = getter.get Atoms.position
-                            let taskState = getter.get (taskState (username, taskId))
-                            let dateSequence = getter.get dateSequence
+                        let dayStart = getter.get (Atoms.User.dayStart username)
+                        let position = getter.get Atoms.position
+                        let taskState = getter.get (taskState (username, taskId))
+                        let dateSequence = getter.get dateSequence
 
-                            return
-                                match position with
-                                | Some position when not dateSequence.IsEmpty ->
-                                    Rendering.renderTaskStatusMap dayStart position dateSequence taskState
-                                | _ -> Map.empty
-                        })
+                        match position with
+                        | Some position when not dateSequence.IsEmpty ->
+                            Rendering.renderTaskStatusMap dayStart position dateSequence taskState
+                        | _ -> Map.empty)
                 )
 
             let rec databaseId =
@@ -838,7 +870,7 @@ module State =
                     $"{nameof selectorFamily}/{nameof Task}/{nameof databaseId}",
                     (fun (username: Username, taskId: TaskId) getter ->
                         promise {
-                            let databaseIdSet = getter.get (Atoms.User.databaseIdSet username)
+                            let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
 
                             let databaseIdSet =
                                 databaseIdSet
@@ -861,112 +893,98 @@ module State =
                             Atoms.Database.taskIdSet (username, newValue),
                             Set.remove Task.Default.Id >> Set.add taskId
                         ))
-
                 )
 
             let rec isReadWrite =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof isReadWrite}",
                     (fun (username: Username, taskId: TaskId) getter ->
-                        promise {
-                            let databaseId = getter.get (Task.databaseId (username, taskId))
-                            return getter.get (Database.isReadWrite databaseId)
-                        })
+                        let databaseId = getter.get (databaseId (username, taskId))
+                        getter.get (Database.isReadWrite databaseId))
                 )
 
             let rec lastSession =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof lastSession}",
                     (fun (taskId: TaskId) getter ->
-                        promise {
-                            let dateSequence = getter.get dateSequence
-                            let username = getter.get Atoms.username
+                        let dateSequence = getter.get dateSequence
+                        let username = getter.get Atoms.username
 
-                            return
-                                match username with
-                                | Some username ->
-                                    let taskState = getter.get (taskState (username, taskId))
+                        match username with
+                        | Some username ->
+                            let taskState = getter.get (taskState (username, taskId))
 
-                                    dateSequence
-                                    |> List.rev
-                                    |> List.tryPick
-                                        (fun date ->
-                                            taskState.CellStateMap
-                                            |> Map.tryFind (DateId date)
-                                            |> Option.map (fun cellState -> cellState.Sessions)
-                                            |> Option.defaultValue []
-                                            |> List.sortByDescending
-                                                (fun (Session (start, _, _)) -> start |> FlukeDateTime.DateTime)
-                                            |> List.tryHead)
-                                | _ -> None
-                        })
+                            dateSequence
+                            |> List.rev
+                            |> List.tryPick
+                                (fun date ->
+                                    taskState.CellStateMap
+                                    |> Map.tryFind (DateId date)
+                                    |> Option.map (fun cellState -> cellState.Sessions)
+                                    |> Option.defaultValue []
+                                    |> List.sortByDescending
+                                        (fun (Session (start, _, _)) -> start |> FlukeDateTime.DateTime)
+                                    |> List.tryHead)
+                        | _ -> None)
                 )
 
             let rec activeSession =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof activeSession}",
                     (fun (taskId: TaskId) getter ->
-                        promise {
-                            let position = getter.get Atoms.position
-                            let lastSession = getter.get (lastSession taskId)
+                        let position = getter.get Atoms.position
+                        let lastSession = getter.get (lastSession taskId)
 
-                            return
-                                match position, lastSession with
-                                | Some position, Some lastSession ->
-                                    let (Session (start, Minute duration, Minute breakDuration)) = lastSession
+                        match position, lastSession with
+                        | Some position, Some lastSession ->
+                            let (Session (start, Minute duration, Minute breakDuration)) = lastSession
 
-                                    let currentDuration =
-                                        ((position |> FlukeDateTime.DateTime)
-                                         - (start |> FlukeDateTime.DateTime))
-                                            .TotalMinutes
+                            let currentDuration =
+                                ((position |> FlukeDateTime.DateTime)
+                                 - (start |> FlukeDateTime.DateTime))
+                                    .TotalMinutes
 
-                                    let active = currentDuration < duration + breakDuration
+                            let active = currentDuration < duration + breakDuration
 
-                                    match active with
-                                    | true -> Some currentDuration
-                                    | false -> None
-                                | _ -> None
-                        })
+                            match active with
+                            | true -> Some currentDuration
+                            | false -> None
+                        | _ -> None)
                 )
 
             let rec showUser =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof showUser}",
                     (fun (username: Username, taskId: TaskId) getter ->
-                        promise {
-                            let taskState = getter.get (taskState (username, taskId))
+                        let taskState = getter.get (taskState (username, taskId))
 
-                            let usersCount =
-                                taskState.CellStateMap
-                                |> Map.values
-                                |> Seq.choose
-                                    (function
-                                    | { Status = UserStatus (user, _) } -> Some user
-                                    | _ -> None)
-                                |> Seq.distinct
-                                |> Seq.length
+                        let usersCount =
+                            taskState.CellStateMap
+                            |> Map.values
+                            |> Seq.choose
+                                (function
+                                | { Status = UserStatus (user, _) } -> Some user
+                                | _ -> None)
+                            |> Seq.distinct
+                            |> Seq.length
 
-                            return usersCount > 1
-                        })
+                        usersCount > 1)
                 )
 
             let rec hasSelection =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof hasSelection}",
                     (fun (taskId: TaskId) getter ->
-                        promise {
-                            let dateSequence = getter.get dateSequence
-                            let username = getter.get Atoms.username
+                        let dateSequence = getter.get dateSequence
+                        let username = getter.get Atoms.username
 
-                            return
-                                match username with
-                                | Some username ->
-                                    let selectionSet = getter.get (Atoms.Task.selectionSet (username, taskId))
+                        match username with
+                        | Some username ->
+                            let selectionSet = getter.get (Atoms.Task.selectionSet (username, taskId))
 
-                                    dateSequence
-                                    |> List.exists (DateId >> selectionSet.Contains)
-                                | None -> false
-                        })
+                            dateSequence
+                            |> List.exists (DateId >> selectionSet.Contains)
+                        | None -> false)
                 )
 
         module rec Cell =
@@ -1015,7 +1033,7 @@ module State =
                     $"{nameof selectorFamily}/{nameof Session}/{nameof taskIdSet}",
                     (fun (username: Username) getter ->
                         promise {
-                            let databaseIdSet = getter.get (Atoms.User.databaseIdSet username)
+                            let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
 
                             return
                                 databaseIdSet
@@ -1025,237 +1043,209 @@ module State =
                 )
 
             let rec informationSet =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof informationSet}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let taskIdSet = getter.get (taskIdSet username)
+                        let taskIdSet = getter.get (taskIdSet username)
 
-                            return
-                                taskIdSet
-                                |> Set.toList
-                                |> List.map (fun taskId -> getter.get (Atoms.Task.information (username, taskId)))
-                                |> List.filter
-                                    (fun information ->
-                                        information
-                                        |> Information.Name
-                                        |> InformationName.Value
-                                        |> String.IsNullOrWhiteSpace
-                                        |> not)
-                                |> Set.ofList
-                        })
+                        taskIdSet
+                        |> Set.toList
+                        |> List.map (fun taskId -> getter.get (Atoms.Task.information (username, taskId)))
+                        |> List.filter
+                            (fun information ->
+                                information
+                                |> Information.Name
+                                |> InformationName.Value
+                                |> String.IsNullOrWhiteSpace
+                                |> not)
+                        |> Set.ofList)
                 )
 
             let rec selectedTaskIdSet =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof selectedTaskIdSet}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let selectedDatabaseIdSet = getter.get (Atoms.User.selectedDatabaseIdSet username)
-                            let taskIdSet = getter.get (taskIdSet username)
+                        let selectedDatabaseIdSet = getter.get (Atoms.User.selectedDatabaseIdSet username)
+                        let taskIdSet = getter.get (taskIdSet username)
 
-                            return
-                                taskIdSet
-                                |> Set.toList
-                                |> List.map (fun taskId -> taskId, getter.get (Task.databaseId (username, taskId)))
-                                |> List.filter (fun (_, databaseId) -> selectedDatabaseIdSet |> Set.contains databaseId)
-                                |> List.map fst
-                                |> Set.ofList
-                        })
+                        taskIdSet
+                        |> Set.toList
+                        |> List.map (fun taskId -> taskId, getter.get (Task.databaseId (username, taskId)))
+                        |> List.filter (fun (_, databaseId) -> selectedDatabaseIdSet |> Set.contains databaseId)
+                        |> List.map fst
+                        |> Set.ofList)
                 )
 
             let rec informationStateList =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof informationStateList}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let informationSet = getter.get (informationSet username)
+                        let informationSet = getter.get (informationSet username)
 
-                            return
-                                informationSet
-                                |> Set.toList
-                                |> List.map
-                                    (fun information ->
-                                        getter.get (Information.informationState (username, information)))
-                        })
+                        informationSet
+                        |> Set.toList
+                        |> List.map
+                            (fun information -> getter.get (Information.informationState (username, information))))
                 )
 
             let rec activeSessions =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof activeSessions}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
+                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
 
-                            let sessionLength = getter.get (Atoms.User.sessionLength username)
-                            let sessionBreakLength = getter.get (Atoms.User.sessionBreakLength username)
+                        let sessionLength = getter.get (Atoms.User.sessionLength username)
+                        let sessionBreakLength = getter.get (Atoms.User.sessionBreakLength username)
 
-                            return
-                                selectedTaskIdSet
-                                |> Set.toList
-                                |> List.choose
-                                    (fun taskId ->
+                        selectedTaskIdSet
+                        |> Set.toList
+                        |> List.choose
+                            (fun taskId ->
 
-                                        let duration = getter.get (Task.activeSession taskId)
+                                let duration = getter.get (Task.activeSession taskId)
 
-                                        duration
-                                        |> Option.map
-                                            (fun duration ->
-                                                let (TaskName taskName) =
-                                                    getter.get (Atoms.Task.name (username, taskId))
+                                duration
+                                |> Option.map
+                                    (fun duration ->
+                                        let (TaskName taskName) = getter.get (Atoms.Task.name (username, taskId))
 
-                                                TempUI.ActiveSession (
-                                                    taskName,
-                                                    Minute duration,
-                                                    sessionLength,
-                                                    sessionBreakLength
-                                                )))
-                        })
+                                        TempUI.ActiveSession (
+                                            taskName,
+                                            Minute duration,
+                                            sessionLength,
+                                            sessionBreakLength
+                                        ))))
                 )
 
             let rec filteredTaskIdSet =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof filteredTaskIdSet}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let filterTasksByView = getter.get (Atoms.User.filterTasksByView username)
-                            let searchText = getter.get (Atoms.User.searchText username)
-                            let view = getter.get (Atoms.User.view username)
-                            let dateSequence = getter.get dateSequence
-                            let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
+                        let filterTasksByView = getter.get (Atoms.User.filterTasksByView username)
+                        let searchText = getter.get (Atoms.User.searchText username)
+                        let view = getter.get (Atoms.User.view username)
+                        let dateSequence = getter.get dateSequence
+                        let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
 
-                            let taskList =
-                                selectedTaskIdSet
-                                |> Set.toList
-                                |> List.map (fun taskId -> getter.get (Task.task (username, taskId)))
+                        let taskList =
+                            selectedTaskIdSet
+                            |> Set.toList
+                            |> List.map (fun taskId -> getter.get (Task.task (username, taskId)))
 
-                            let taskListSearch =
-                                match searchText with
-                                | "" -> taskList
-                                | _ ->
-                                    taskList
-                                    |> List.filter
-                                        (fun task ->
-                                            let check (text: string) = text.IndexOf searchText >= 0
+                        let taskListSearch =
+                            match searchText with
+                            | "" -> taskList
+                            | _ ->
+                                taskList
+                                |> List.filter
+                                    (fun task ->
+                                        let check (text: string) = text.IndexOf searchText >= 0
 
-                                            (task.Name |> TaskName.Value |> check)
-                                            || (task.Information
-                                                |> Information.Name
-                                                |> InformationName.Value
-                                                |> check))
+                                        (task.Name |> TaskName.Value |> check)
+                                        || (task.Information
+                                            |> Information.Name
+                                            |> InformationName.Value
+                                            |> check))
 
-                            let filteredTaskList =
-                                if filterTasksByView then
-                                    taskListSearch
-                                    |> List.map (fun task -> getter.get (Task.taskState (username, task.Id)))
-                                    |> filterTaskStateSeq view dateSequence
-                                    |> Seq.toList
-                                    |> List.map (fun taskState -> taskState.Task)
-                                else
-                                    taskListSearch
+                        let filteredTaskList =
+                            if filterTasksByView then
+                                taskListSearch
+                                |> List.map (fun task -> getter.get (Task.taskState (username, task.Id)))
+                                |> filterTaskStateSeq view dateSequence
+                                |> Seq.toList
+                                |> List.map (fun taskState -> taskState.Task)
+                            else
+                                taskListSearch
 
 
-                            JS.log
-                                (fun () ->
-                                    $"filteredTaskList.Length={filteredTaskList.Length} taskListSearch.Length={
-                                                                                                                   taskListSearch.Length
-                                    }")
+                        JS.log
+                            (fun () ->
+                                $"filteredTaskList.Length={filteredTaskList.Length} taskListSearch.Length={
+                                                                                                               taskListSearch.Length
+                                }")
 
-                            return
-                                filteredTaskList
-                                |> List.map (fun task -> task.Id)
-                                |> Set.ofList
-                        })
+                        filteredTaskList
+                        |> List.map (fun task -> task.Id)
+                        |> Set.ofList)
                 )
 
             let rec sortedTaskIdList =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof sortedTaskIdList}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let position = getter.get Atoms.position
+                        let position = getter.get Atoms.position
 
-                            return
-                                match position with
-                                | Some position ->
-                                    let view = getter.get (Atoms.User.view username)
-                                    let dayStart = getter.get (Atoms.User.dayStart username)
-                                    let filteredTaskIdSet = getter.get (filteredTaskIdSet username)
+                        match position with
+                        | Some position ->
+                            let view = getter.get (Atoms.User.view username)
+                            let dayStart = getter.get (Atoms.User.dayStart username)
+                            let filteredTaskIdSet = getter.get (filteredTaskIdSet username)
 
-                                    let informationStateList = getter.get (Session.informationStateList username)
+                            let informationStateList = getter.get (Session.informationStateList username)
 
-                                    JS.log
-                                        (fun () ->
-                                            $"sortedTaskIdList. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
+                            JS.log (fun () -> $"sortedTaskIdList. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
 
-                                    let lanes =
-                                        filteredTaskIdSet
-                                        |> Set.toList
-                                        |> List.map
-                                            (fun taskId ->
-                                                let statusMap = getter.get (Task.statusMap (username, taskId))
-                                                let taskState = getter.get (Task.taskState (username, taskId))
-                                                taskState, statusMap)
+                            let lanes =
+                                filteredTaskIdSet
+                                |> Set.toList
+                                |> List.map
+                                    (fun taskId ->
+                                        let statusMap = getter.get (Task.statusMap (username, taskId))
+                                        let taskState = getter.get (Task.taskState (username, taskId))
+                                        taskState, statusMap)
 
-                                    let result =
-                                        sortLanes
-                                            {|
-                                                View = view
-                                                DayStart = dayStart
-                                                Position = position
-                                                InformationStateList = informationStateList
-                                                Lanes = lanes
-                                            |}
+                            let result =
+                                sortLanes
+                                    {|
+                                        View = view
+                                        DayStart = dayStart
+                                        Position = position
+                                        InformationStateList = informationStateList
+                                        Lanes = lanes
+                                    |}
 
-                                    JS.log (fun () -> $"sortedTaskIdList. result.Length={result.Length}")
+                            JS.log (fun () -> $"sortedTaskIdList. result.Length={result.Length}")
 
-                                    result
-                                    |> List.map (fun (taskState, _) -> taskState.Task.Id)
-                                | _ -> []
-                        })
+                            result
+                            |> List.map (fun (taskState, _) -> taskState.Task.Id)
+                        | _ -> [])
                 )
 
             let rec tasksByInformationKind =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof tasksByInformationKind}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let sortedTaskIdList = getter.get (sortedTaskIdList username)
+                        let sortedTaskIdList = getter.get (sortedTaskIdList username)
 
-                            return
-                                sortedTaskIdList
-                                |> List.groupBy (fun taskId -> getter.get (Atoms.Task.information (username, taskId)))
-                                |> List.sortBy (fun (information, _) -> information |> Information.Name)
-                                |> List.groupBy (fun (information, _) -> Information.toString information)
-                                |> List.sortBy (snd >> List.head >> fst >> Information.toTag)
-                        })
+                        sortedTaskIdList
+                        |> List.groupBy (fun taskId -> getter.get (Atoms.Task.information (username, taskId)))
+                        |> List.sortBy (fun (information, _) -> information |> Information.Name)
+                        |> List.groupBy (fun (information, _) -> Information.toString information)
+                        |> List.sortBy (snd >> List.head >> fst >> Information.toTag))
                 )
 
             let rec cellSelectionMap =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof cellSelectionMap}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let sortedTaskIdList = getter.get (sortedTaskIdList username)
-                            let dateSequence = getter.get dateSequence
+                        let sortedTaskIdList = getter.get (sortedTaskIdList username)
+                        let dateSequence = getter.get dateSequence
 
-                            return
-                                sortedTaskIdList
-                                |> List.map
-                                    (fun taskId ->
-                                        let selectionSet = getter.get (Atoms.Task.selectionSet (username, taskId))
+                        sortedTaskIdList
+                        |> List.map
+                            (fun taskId ->
+                                let selectionSet = getter.get (Atoms.Task.selectionSet (username, taskId))
 
-                                        let dates =
-                                            dateSequence
-                                            |> List.map (fun date -> date, selectionSet.Contains (DateId date))
-                                            |> List.filter snd
-                                            |> List.map fst
-                                            |> Set.ofList
+                                let dates =
+                                    dateSequence
+                                    |> List.map (fun date -> date, selectionSet.Contains (DateId date))
+                                    |> List.filter snd
+                                    |> List.map fst
+                                    |> Set.ofList
 
-                                        taskId, dates)
-                                |> List.filter (fun (_, dates) -> Set.isEmpty dates |> not)
-                                |> Map.ofList
-                        })
+                                taskId, dates)
+                        |> List.filter (fun (_, dates) -> Set.isEmpty dates |> not)
+                        |> Map.ofList)
                 )
 
 
@@ -1276,158 +1266,148 @@ module State =
                 )
 
             let rec hasCellSelection =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof hasCellSelection}",
                     (fun (date: FlukeDate) getter ->
-                        promise {
-                            let username = getter.get Atoms.username
+                        let username = getter.get Atoms.username
 
-                            return
-                                match username with
-                                | Some username ->
-                                    let cellSelectionMap = getter.get (Session.cellSelectionMap username)
+                        match username with
+                        | Some username ->
+                            let cellSelectionMap = getter.get (Session.cellSelectionMap username)
 
-                                    cellSelectionMap
-                                    |> Map.values
-                                    |> Seq.exists (Set.contains date)
-                                | None -> false
-                        })
+                            cellSelectionMap
+                            |> Map.values
+                            |> Seq.exists (Set.contains date)
+                        | None -> false)
                 )
 
 
         module rec BulletJournalView =
             let rec weekCellsMap =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof BulletJournalView}/{nameof weekCellsMap}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let position = getter.get Atoms.position
-                            let sortedTaskIdList = getter.get (Session.sortedTaskIdList username)
+                        let position = getter.get Atoms.position
+                        let sortedTaskIdList = getter.get (Session.sortedTaskIdList username)
 
-                            return
-                                match position with
-                                | Some position ->
-                                    let dayStart = getter.get (Atoms.User.dayStart username)
-                                    let weekStart = getter.get (Atoms.User.weekStart username)
+                        match position with
+                        | Some position ->
+                            let dayStart = getter.get (Atoms.User.dayStart username)
+                            let weekStart = getter.get (Atoms.User.weekStart username)
 
-                                    let weeks =
-                                        [
-                                            -1 .. 1
-                                        ]
-                                        |> List.map
-                                            (fun weekOffset ->
-                                                let dateIdSequence =
-                                                    let rec getWeekStart (date: DateTime) =
-                                                        if date.DayOfWeek = weekStart then
-                                                            date
-                                                        else
-                                                            getWeekStart (date.AddDays -1)
+                            let weeks =
+                                [
+                                    -1 .. 1
+                                ]
+                                |> List.map
+                                    (fun weekOffset ->
+                                        let dateIdSequence =
+                                            let rec getWeekStart (date: DateTime) =
+                                                if date.DayOfWeek = weekStart then
+                                                    date
+                                                else
+                                                    getWeekStart (date.AddDays -1)
 
-                                                    let startDate =
-                                                        dateId dayStart position
-                                                        |> fun (DateId referenceDay) ->
-                                                            (referenceDay |> FlukeDate.DateTime)
-                                                                .AddDays (7 * weekOffset)
-                                                        |> getWeekStart
+                                            let startDate =
+                                                dateId dayStart position
+                                                |> fun (DateId referenceDay) ->
+                                                    (referenceDay |> FlukeDate.DateTime)
+                                                        .AddDays (7 * weekOffset)
+                                                |> getWeekStart
 
-                                                    [
-                                                        0 .. 6
-                                                    ]
-                                                    |> List.map startDate.AddDays
-                                                    |> List.map FlukeDateTime.FromDateTime
-                                                    |> List.map (dateId dayStart)
+                                            [
+                                                0 .. 6
+                                            ]
+                                            |> List.map startDate.AddDays
+                                            |> List.map FlukeDateTime.FromDateTime
+                                            |> List.map (dateId dayStart)
 
-                                                let taskStateMap =
-                                                    sortedTaskIdList
+                                        let taskStateMap =
+                                            sortedTaskIdList
+                                            |> List.map
+                                                (fun taskId -> taskId, getter.get (Task.taskState (username, taskId)))
+                                            |> Map.ofList
+
+                                        let result =
+                                            sortedTaskIdList
+                                            |> List.collect
+                                                (fun taskId ->
+                                                    dateIdSequence
                                                     |> List.map
-                                                        (fun taskId ->
-                                                            taskId, getter.get (Task.taskState (username, taskId)))
-                                                    |> Map.ofList
-
-                                                let result =
-                                                    sortedTaskIdList
-                                                    |> List.collect
-                                                        (fun taskId ->
-                                                            dateIdSequence
-                                                            |> List.map
-                                                                (fun dateId ->
-                                                                    match dateId with
-                                                                    | DateId referenceDay as dateId ->
-                                                                        let isToday =
-                                                                            getter.get (FlukeDate.isToday referenceDay)
-
-                                                                        let cellState =
-                                                                            taskStateMap
-                                                                            |> Map.tryFind taskId
-                                                                            |> Option.bind
-                                                                                (fun taskState ->
-                                                                                    taskState.CellStateMap
-                                                                                    |> Map.tryFind dateId)
-                                                                            |> Option.defaultValue
-                                                                                {
-                                                                                    Status = CellStatus.Disabled
-                                                                                    Attachments = []
-                                                                                    Sessions = []
-                                                                                }
-
-                                                                        {|
-                                                                            DateId = dateId
-                                                                            TaskId = taskId
-                                                                            Status = cellState.Status
-                                                                            Sessions = cellState.Sessions
-                                                                            IsToday = isToday
-                                                                            Attachments = cellState.Attachments
-                                                                        |}))
-                                                    |> List.groupBy (fun x -> x.DateId)
-                                                    |> List.map
-                                                        (fun (dateId, cellsMetadata) ->
+                                                        (fun dateId ->
                                                             match dateId with
                                                             | DateId referenceDay as dateId ->
-                                                                //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
-                                                                let taskSessions =
-                                                                    cellsMetadata
-                                                                    |> List.collect (fun x -> x.Sessions)
+                                                                let isToday =
+                                                                    getter.get (FlukeDate.isToday referenceDay)
 
-                                                                let sortedTasksMap =
-                                                                    cellsMetadata
-                                                                    |> List.map
-                                                                        (fun cellMetadata ->
-                                                                            let taskState =
-                                                                                { TaskState.Default with
-                                                                                    Task =
-                                                                                        taskStateMap.[cellMetadata.TaskId]
-                                                                                            .Task
-                                                                                    Sessions = taskSessions
-                                                                                }
+                                                                let cellState =
+                                                                    taskStateMap
+                                                                    |> Map.tryFind taskId
+                                                                    |> Option.bind
+                                                                        (fun taskState ->
+                                                                            taskState.CellStateMap |> Map.tryFind dateId)
+                                                                    |> Option.defaultValue
+                                                                        {
+                                                                            Status = CellStatus.Disabled
+                                                                            Attachments = []
+                                                                            Sessions = []
+                                                                        }
 
-                                                                            taskState,
-                                                                            [
-                                                                                dateId, cellMetadata.Status
-                                                                            ]
-                                                                            |> Map.ofList)
-                                                                    |> Sorting.sortLanesByTimeOfDay
-                                                                        dayStart
-                                                                        (FlukeDateTime.Create (referenceDay, dayStart))
-                                                                    |> List.indexed
-                                                                    |> List.map
-                                                                        (fun (i, (taskState, _)) ->
-                                                                            taskState.Task.Id, i)
-                                                                    |> Map.ofList
+                                                                {|
+                                                                    DateId = dateId
+                                                                    TaskId = taskId
+                                                                    Status = cellState.Status
+                                                                    Sessions = cellState.Sessions
+                                                                    IsToday = isToday
+                                                                    Attachments = cellState.Attachments
+                                                                |}))
+                                            |> List.groupBy (fun x -> x.DateId)
+                                            |> List.map
+                                                (fun (dateId, cellsMetadata) ->
+                                                    match dateId with
+                                                    | DateId referenceDay as dateId ->
+                                                        //                |> Sorting.sortLanesByTimeOfDay input.DayStart input.Position input.TaskOrderList
+                                                        let taskSessions =
+                                                            cellsMetadata
+                                                            |> List.collect (fun x -> x.Sessions)
 
-                                                                let newCells =
-                                                                    cellsMetadata
-                                                                    |> List.sortBy
-                                                                        (fun cell ->
-                                                                            sortedTasksMap
-                                                                            |> Map.tryFind cell.TaskId
-                                                                            |> Option.defaultValue -1)
+                                                        let sortedTasksMap =
+                                                            cellsMetadata
+                                                            |> List.map
+                                                                (fun cellMetadata ->
+                                                                    let taskState =
+                                                                        { TaskState.Default with
+                                                                            Task =
+                                                                                taskStateMap.[cellMetadata.TaskId].Task
+                                                                            Sessions = taskSessions
+                                                                        }
 
-                                                                dateId, newCells)
-                                                    |> Map.ofList
+                                                                    taskState,
+                                                                    [
+                                                                        dateId, cellMetadata.Status
+                                                                    ]
+                                                                    |> Map.ofList)
+                                                            |> Sorting.sortLanesByTimeOfDay
+                                                                dayStart
+                                                                (FlukeDateTime.Create (referenceDay, dayStart))
+                                                            |> List.indexed
+                                                            |> List.map
+                                                                (fun (i, (taskState, _)) -> taskState.Task.Id, i)
+                                                            |> Map.ofList
 
-                                                result)
+                                                        let newCells =
+                                                            cellsMetadata
+                                                            |> List.sortBy
+                                                                (fun cell ->
+                                                                    sortedTasksMap
+                                                                    |> Map.tryFind cell.TaskId
+                                                                    |> Option.defaultValue -1)
 
-                                    weeks
-                                | _ -> []
-                        })
+                                                        dateId, newCells)
+                                            |> Map.ofList
+
+                                        result)
+
+                            weeks
+                        | _ -> [])
                 )

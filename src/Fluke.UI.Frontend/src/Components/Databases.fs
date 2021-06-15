@@ -269,7 +269,7 @@ module Databases =
             |]
         )
 
-        let databaseIdSet = Store.useValue (Atoms.User.databaseIdSet input.Username)
+        let databaseIdSet = Store.useValue (Atoms.Session.databaseIdSet input.Username)
 
         let databaseList =
             databaseIdSet
