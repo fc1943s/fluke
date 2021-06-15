@@ -15,11 +15,22 @@ module LoadingSpinner =
                 Chakra.stack
                     (fun _ -> ())
                     [
-                        Spinner.Spinner ()
+                        Spinner.Spinner (fun _ -> ())
                         Chakra.box
                             (fun _ -> ())
                             [
                                 str "Loading..."
                             ]
                     ]
+            ]
+
+    [<ReactComponent>]
+    let InlineLoadingSpinner () =
+        Chakra.box
+            (fun _ -> ())
+            [
+                Spinner.Spinner
+                    (fun x ->
+                        x.width <- "10px"
+                        x.height <- "10px")
             ]

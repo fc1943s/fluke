@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
+open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
@@ -19,8 +20,7 @@ module TaskName =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
         let hasSelection = Store.useValueLoadableDefault (Selectors.Task.hasSelection input.TaskId) false
-        let (TaskName taskName) = Store.useValue (Atoms.Task.name (input.Username, input.TaskId))
-        let taskState = Store.useValue (Selectors.Task.taskState (input.Username, input.TaskId))
+        let taskState = Store.useValueLoadable (Selectors.Task.taskState (input.Username, input.TaskId))
         let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         let isReadWrite =
@@ -51,7 +51,10 @@ module TaskName =
                         x.whiteSpace <- if not hovered then "nowrap" else null
                         x.textOverflow <- if not hovered then "ellipsis" else null)
                     [
-                        str taskName
+                        match taskState.valueMaybe () with
+                        | Some taskState when taskState.Task.Name |> TaskName.Value <> "" ->
+                            taskState.Task.Name |> TaskName.Value |> str
+                        | _ -> LoadingSpinner.InlineLoadingSpinner ()
                     ]
 
                 if not isReadWrite then
@@ -117,9 +120,13 @@ module TaskName =
                             MenuListProps = fun _ -> ()
                         |}
 
-                TooltipPopup.TooltipPopup
-                    {|
-                        Username = input.Username
-                        Attachments = taskState.Attachments
-                    |}
+
+                match taskState.valueMaybe () with
+                | Some taskState ->
+                    TooltipPopup.TooltipPopup
+                        {|
+                            Username = input.Username
+                            Attachments = taskState.Attachments
+                        |}
+                | None -> nothing
             ]

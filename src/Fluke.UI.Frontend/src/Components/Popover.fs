@@ -17,7 +17,15 @@ module Popover =
 
         let initialFocusRef = React.useRef ()
 
-        let content = input.Body (disclosure, initialFocusRef)
+        let content =
+            React.useMemo (
+                (fun () -> input.Body (disclosure, initialFocusRef)),
+                [|
+                    box input
+                    box disclosure
+                    box initialFocusRef
+                |]
+            )
 
         Chakra.box
             (fun _ -> ())

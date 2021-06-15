@@ -629,19 +629,18 @@ module Recoil =
 //                                                                                                                                      data
 //                                                }; decoded={unbox decoded}; typeof decoded={jsTypeof decoded};")
 
-                                        //                                        JS.setTimeout
-//                                            (fun () ->
-                                        JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
+                                        JS.setTimeout
+                                            (fun () ->
+                                                JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
 
-                                        e.setSelf
-                                            (fun _oldValue ->
-                                                //let encodedOldValue = Gun.jsonEncode oldValue
+                                                e.setSelf
+                                                    (fun _oldValue ->
+                                                        //let encodedOldValue = Gun.jsonEncode oldValue
 //                                                let decodedJson = Gun.jsonEncode decoded
 //                                                if encodedOldValue <> decodedJson then unbox decoded else oldValue
-                                                unbox decoded)
-                                    //)
-//                                            1000
-//                                        |> ignore
+                                                        unbox decoded))
+                                            500
+                                        |> ignore
                                     with ex -> Browser.Dom.console.error ("[exception1]", ex)
                                 }
                                 |> Async.StartAsPromise

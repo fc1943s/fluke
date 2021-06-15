@@ -74,6 +74,7 @@
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\DatabaseSelector.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
+        <Compile Include="src\Components\LoadingSpinner.fs" />
         <Compile Include="src\Components\TaskName.fs" />
         <Compile Include="src\Components\HabitTrackerView.fs" />
         <Compile Include="src\Components\PriorityView.fs" />
@@ -82,7 +83,6 @@
         <Compile Include="src\Components\DeleteUserButton.fs" />
         <Compile Include="src\Components\TransparentIconButton.fs" />
         <Compile Include="src\Components\TopBar.fs" />
-        <Compile Include="src\Components\LoadingSpinner.fs" />
         <Compile Include="src\Components\DatabaseLeafIcon.fs" />
         <Compile Include="src\Components\DatabaseNodeMenu.fs" />
         <Compile Include="src\Components\Databases.fs" />

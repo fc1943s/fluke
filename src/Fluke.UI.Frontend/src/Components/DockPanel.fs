@@ -32,6 +32,7 @@ module DockPanel =
                     (fun x ->
                         x.paddingLeft <- "9px"
                         x.paddingTop <- "1px"
+                        x.paddingRight <- "1px"
                         x.marginLeft <- "1px"
                         x.borderBottomWidth <- "1px"
                         x.borderBottomColor <- "gray.16"

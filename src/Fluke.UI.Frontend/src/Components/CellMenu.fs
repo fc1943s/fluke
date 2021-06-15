@@ -74,6 +74,8 @@ module CellMenu =
                 Chakra.simpleGrid
                     (fun x ->
                         x.columns <- 1
+                        x.backgroundColor <- "#636363"
+                        x.spacing <- "1px"
                         x.width <- $"{cellSize (* * 2*) }px")
                     [
                         let wrapButton icon color onClickStatus =

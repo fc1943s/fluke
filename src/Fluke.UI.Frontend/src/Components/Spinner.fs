@@ -7,5 +7,9 @@ open Fluke.UI.Frontend.Bindings
 module Spinner =
 
     [<ReactComponent>]
-    let Spinner () =
-        Chakra.spinner (fun x -> x.size <- "xl") []
+    let Spinner props =
+        Chakra.spinner
+            (fun x ->
+                x.size <- "xl"
+                props x)
+            []

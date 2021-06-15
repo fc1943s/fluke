@@ -21,7 +21,7 @@ nuget Feliz ~> 1.47
 nuget Feliz.Recoil ~> 0.19
 nuget Feliz.Router ~> 3.8
 nuget Feliz.UseListener ~> 0.6
-nuget Sutil ~> 1.0 prerelease
+nuget Sutil.Shoelace ~> 2.0 prerelease
 nuget Thoth.Json ~> 5.1
 
 // Fluke.UI.Electron.Main

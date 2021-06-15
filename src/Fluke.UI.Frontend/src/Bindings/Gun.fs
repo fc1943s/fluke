@@ -75,16 +75,20 @@ module rec Gun =
             multicast: bool option
         }
 
-//    match JS.window id with
+    //    match JS.window id with
 //    | Some _ -> ()
 //    | None -> importAll "gun"
 
-    let gun : GunProps -> IGunChainReference = importDefault "gun/gun"
+    let gun : GunProps -> IGunChainReference =
+        if JS.deviceInfo.IsTesting then
+            importDefault "gun/gun"
+        else
+            importDefault "gun"
 
-//    importAll "gun/lib/radix"
-//    importAll "gun/lib/radisk"
-//    importAll "gun/lib/store"
-//    importAll "gun/lib/rindexed"
+    importAll "gun/lib/radix"
+    importAll "gun/lib/radisk"
+    importAll "gun/lib/store"
+    importAll "gun/lib/rindexed"
 
     importAll "gun/sea"
     importAll "gun/lib/promise"

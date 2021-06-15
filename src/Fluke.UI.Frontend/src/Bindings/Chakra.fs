@@ -117,7 +117,7 @@ module Chakra =
         abstract scrollBehavior : string with get, set
         abstract size : string with get, set
         abstract spacing : string with get, set
-        abstract tabIndex : int with get, set
+        abstract tabindex : int with get, set
         abstract textAlign : string with get, set
         abstract textOverflow : string with get, set
         abstract textShadow : string with get, set

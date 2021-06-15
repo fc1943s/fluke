@@ -53,7 +53,8 @@ module LoginScreen =
                                 x.autoFocus <- true
                                 x.value <- Some usernameField
                                 x.placeholder <- "Username"
-                                x.onChange <- (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value }))
+                                x.onChange <- (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value })
+                                x.onEnterPress <- Some signInClick)
 
                         Input.Input
                             (fun x ->
