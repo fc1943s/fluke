@@ -182,9 +182,9 @@ module CellSelectionSetup =
                     (fun (KeyValue (taskId, taskState)) ->
                         promise {
                             do!
-                                Hydrate.hydrateTask
+                                Hydrate.hydrateTaskState
                                     setter
-                                    (Templates.templatesUser.Username, Recoil.AtomScope.ReadOnly, taskState.Task)
+                                    (Templates.templatesUser.Username, Recoil.AtomScope.ReadOnly, taskState)
 
                             setter.set (
                                 Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId),

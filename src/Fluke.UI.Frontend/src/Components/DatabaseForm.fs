@@ -19,7 +19,7 @@ module DatabaseForm =
     open State
 
     [<ReactComponent>]
-    let DatabaseForm
+    let rec DatabaseForm
         (input: {| Username: Username
                    DatabaseId: DatabaseId
                    OnSave: Database -> JS.Promise<unit> |})
@@ -85,6 +85,11 @@ module DatabaseForm =
                                         input.Username
                                         Atoms.Database.name
                                         (input.Username, input.DatabaseId)
+
+                                setter.set (
+                                    (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm))),
+                                    fun _ -> None
+                                )
 
                                 do! input.OnSave database
                     })

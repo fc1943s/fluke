@@ -24,7 +24,7 @@ module RightDock =
         let databaseFormIdFlag = Store.useValue (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
         let taskFormIdFlag = Store.useValue (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
-        let hydrateTask = Hydrate.useHydrateTask ()
+        let hydrateTaskState = Hydrate.useHydrateTaskState ()
 
         let taskDatabaseId =
             Recoil.useValueLoadableDefault
@@ -131,11 +131,20 @@ module RightDock =
                                                     OnSave =
                                                         fun task ->
                                                             promise {
+                                                                let taskState =
+                                                                    {
+                                                                        Task = task
+                                                                        SortList = []
+                                                                        Sessions = []
+                                                                        Attachments = []
+                                                                        CellStateMap = Map.empty
+                                                                    }
+
                                                                 do!
-                                                                    hydrateTask (
+                                                                    hydrateTaskState (
                                                                         input.Username,
                                                                         Recoil.AtomScope.ReadOnly,
-                                                                        task
+                                                                        taskState
                                                                     )
 
                                                                 if task.Id <> taskId then
@@ -176,7 +185,7 @@ module RightDock =
                 [|
                     box databaseFormIdFlag
                     box hydrateDatabase
-                    box hydrateTask
+                    box hydrateTaskState
                     box setTaskIdSet
                     box taskFormIdFlag
                     box input

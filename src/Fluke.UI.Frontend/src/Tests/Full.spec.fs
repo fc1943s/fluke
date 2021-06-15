@@ -175,6 +175,8 @@ module Full =
 
                     Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
 
+                    Cy.wait 200
+
                     Cy2.clickText "Save"
 
                     Cy2.waitFor $"{dbName}_edit" (Some {| timeout = timeout |})

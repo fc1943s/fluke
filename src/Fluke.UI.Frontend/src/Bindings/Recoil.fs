@@ -629,17 +629,19 @@ module Recoil =
 //                                                                                                                                      data
 //                                                }; decoded={unbox decoded}; typeof decoded={jsTypeof decoded};")
 
-                                        JS.setTimeout
-                                            (fun () ->
-                                                JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
-                                                e.setSelf
-                                                    (fun _oldValue ->
-                                                        //let encodedOldValue = Gun.jsonEncode oldValue
+                                        //                                        JS.setTimeout
+//                                            (fun () ->
+                                        JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
+
+                                        e.setSelf
+                                            (fun _oldValue ->
+                                                //let encodedOldValue = Gun.jsonEncode oldValue
 //                                                let decodedJson = Gun.jsonEncode decoded
 //                                                if encodedOldValue <> decodedJson then unbox decoded else oldValue
-                                                        unbox decoded))
-                                            1000
-                                        |> ignore
+                                                unbox decoded)
+                                    //)
+//                                            1000
+//                                        |> ignore
                                     with ex -> Browser.Dom.console.error ("[exception1]", ex)
                                 }
                                 |> Async.StartAsPromise
@@ -655,34 +657,26 @@ module Recoil =
                 (fun value oldValue ->
                     (async {
                         try
-                            let encodedOldValue = Gun.jsonEncode oldValue
-                            let encodedValue = Gun.jsonEncode value
+                            let! _, atomPath, gunAtomNode = getGunAtomNode atom keyIdentifier
 
-                            if encodedOldValue <> encodedValue then
-                                let! _, atomPath, gunAtomNode = getGunAtomNode atom keyIdentifier
+                            match gunAtomNode with
+                            | Some gunAtomNode ->
 
-                                match gunAtomNode with
-                                | Some gunAtomNode ->
+                                let! newValueJson =
+                                    if value |> JS.ofNonEmptyObj |> Option.isNone then
+                                        null |> Async.lift
+                                    else
+                                        userEncode<'TValue3> value
 
-                                    let! newValueJson =
-                                        if value |> JS.ofNonEmptyObj |> Option.isNone then
-                                            null |> Async.lift
-                                        else
-                                            userEncode<'TValue3> value
+                                Gun.put gunAtomNode newValueJson
 
-                                    Gun.put gunAtomNode newValueJson
-
-                                    JS.log
-                                        (fun () ->
-                                            $"[gunEffect.onRecoilSet2()] atomPath={atomPath} encodedOldValue={
-                                                                                                                  encodedOldValue
-                                            }; encodedValue={encodedValue} jsTypeof-value={jsTypeof value}")
-                                | None ->
-                                    Browser.Dom.console.error $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
-                            else if oldValue |> JS.ofNonEmptyObj |> Option.isSome then
                                 JS.log
                                     (fun () ->
-                                        $"[gunEffect.onRecoilSet()]. newValue==oldValue. skipping. value={value}")
+                                        $"[gunEffect.onRecoilSet2()] atomPath={atomPath} oldValue={oldValue} value={
+                                                                                                                        value
+                                        }; jsTypeof-value={jsTypeof value}")
+                            | None ->
+                                Browser.Dom.console.error $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
                         with ex -> Browser.Dom.console.error ("[exception2]", ex)
                      })
                     |> Async.StartAsPromise

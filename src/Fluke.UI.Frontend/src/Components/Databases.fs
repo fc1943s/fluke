@@ -246,29 +246,57 @@ module Databases =
                    Props: Chakra.IChakraProps -> unit |})
         =
         let isTesting = Store.useValue Atoms.isTesting
+
         let hideTemplates = Store.useValue (Atoms.User.hideTemplates input.Username)
         let hideTemplatesCache = React.useRef<bool option> None
+
+        let expandedDatabaseIdSet, setExpandedDatabaseIdSet =
+            Store.useState (Atoms.User.expandedDatabaseIdSet input.Username)
+
+        React.useEffect (
+            (fun () ->
+                match hideTemplates, hideTemplatesCache.current with
+                | true,
+                  (None
+                  | Some false) -> setExpandedDatabaseIdSet Set.empty
+                | _ -> ()
+
+                hideTemplatesCache.current <- Some hideTemplates),
+            [|
+                box setExpandedDatabaseIdSet
+                box hideTemplates
+                box hideTemplatesCache
+            |]
+        )
+
+        let databaseIdSet = Store.useValue (Atoms.User.databaseIdSet input.Username)
+
+        let databaseList =
+            databaseIdSet
+            |> Set.toList
+            |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
+            |> Recoil.waitForAny
+            |> Recoil.useValue
+
+        let databaseMap =
+            React.useMemo (
+                (fun () ->
+                    databaseList
+                    |> Seq.choose
+                        (fun databaseLoadable ->
+                            match databaseLoadable.valueMaybe () with
+                            | Some database -> Some (database.Id, database)
+                            | _ -> None)
+                    |> Map.ofSeq),
+                [|
+                    box databaseList
+                |]
+            )
 
         let selectedDatabaseIdSet, setSelectedDatabaseIdSet =
             Store.useState (Atoms.User.selectedDatabaseIdSet input.Username)
 
-        let databaseIdSet = Store.useValue (Atoms.User.databaseIdSet input.Username)
-
-        let databaseMap =
-            databaseIdSet
-            |> Set.toList
-            |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
-            |> Recoil.waitForNone
-            |> Store.useValue
-            |> List.choose
-                (fun database ->
-                    match database.valueMaybe () with
-//                    match Some database with
-                    | Some database -> Some (database.Id, database)
-                    | _ -> None)
-            |> Map.ofList
-
-        let nodes =
+        let nodes, newExpandedDatabaseIdSet =
             React.useMemo (
                 (fun () ->
                     let filteredDatabaseMap =
@@ -404,42 +432,26 @@ module Databases =
                             newNode :: loop tail
                         | [] -> []
 
-                    loop nodes |> List.toArray),
+                    let nodes = loop nodes |> List.toArray
+
+                    let newExpandedDatabaseIdSet =
+                        if expandedDatabaseIdSet.IsEmpty then
+                            nodes
+                            |> Array.map (fun node -> node.value |> Guid |> DatabaseId)
+                            |> Set.ofArray
+                        else
+                            expandedDatabaseIdSet
+
+                    nodes, newExpandedDatabaseIdSet),
                 [|
                     box databaseMap
                     box input.Username
                     box hideTemplates
+                    box expandedDatabaseIdSet
                     box selectedDatabaseIdSet
                     box isTesting
                 |]
             )
-
-        let expandedDatabaseIdSet, setExpandedDatabaseIdSet =
-            Store.useState (Atoms.User.expandedDatabaseIdSet input.Username)
-
-        let newExpandedDatabaseIdSet =
-            if expandedDatabaseIdSet.IsEmpty then
-                nodes
-                |> Array.map (fun node -> node.value |> Guid |> DatabaseId)
-                |> Set.ofArray
-            else
-                expandedDatabaseIdSet
-
-        React.useEffect (
-            (fun () ->
-                match hideTemplates, hideTemplatesCache.current with
-                | true,
-                  (None
-                  | Some false) -> setExpandedDatabaseIdSet Set.empty
-                | _ -> ()
-
-                hideTemplatesCache.current <- Some hideTemplates),
-            [|
-                box setExpandedDatabaseIdSet
-                box hideTemplates
-                box hideTemplatesCache
-            |]
-        )
 
         match JS.window id with
         | Some window -> window?nodes <- nodes

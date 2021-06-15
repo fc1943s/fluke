@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Hooks
 open Browser.Types
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
-open Feliz
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
@@ -39,18 +38,46 @@ module Hydrate =
             setter.scopedSet username atomScope (Atoms.Task.missedAfter, (username, task.Id), task.MissedAfter)
             setter.scopedSet username atomScope (Atoms.Task.scheduling, (username, task.Id), task.Scheduling)
             setter.scopedSet username atomScope (Atoms.Task.priority, (username, task.Id), task.Priority)
+            setter.scopedSet username atomScope (Atoms.Task.selectionSet, (username, task.Id), Set.empty)
         }
 
     let useHydrateTask () = Store.useCallbackRef hydrateTask
 
+    let hydrateTaskState setter (username, atomScope, taskState) =
+        promise {
+            do! hydrateTask setter (username, atomScope, taskState.Task)
+
+            setter.scopedSet
+                username
+                atomScope
+                (Atoms.Task.statusMap,
+                 (username, taskState.Task.Id),
+                 (taskState.CellStateMap
+                  |> Seq.choose
+                      (function
+                      | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) -> Some (dateId, userStatus)
+                      | _ -> None)
+                  |> Map.ofSeq))
+
+            setter.scopedSet
+                username
+                atomScope
+                (Atoms.Task.attachments, (username, taskState.Task.Id), taskState.Attachments)
+
+            setter.scopedSet username atomScope (Atoms.Task.sessions, (username, taskState.Task.Id), taskState.Sessions)
+        }
+
+    let useHydrateTaskState () = Store.useCallbackRef hydrateTaskState
+
+
     let useHydrateDatabaseState () =
         let hydrateDatabase = useHydrateDatabase ()
-        let hydrateTask = useHydrateTask ()
+        let hydrateTaskState = useHydrateTaskState ()
 
         Store.useCallbackRef
-            (fun setter (username, databaseState) ->
+            (fun setter (username, atomScope, databaseState) ->
                 promise {
-                    do! hydrateDatabase (username, Recoil.AtomScope.ReadOnly, databaseState.Database)
+                    do! hydrateDatabase (username, atomScope, databaseState.Database)
 
                     setter.set (Atoms.User.databaseIdSet username, Set.add databaseState.Database.Id)
 
@@ -64,7 +91,7 @@ module Hydrate =
                         |> Seq.map
                             (fun taskState ->
                                 promise {
-                                    do! hydrateTask (username, Recoil.AtomScope.ReadOnly, taskState.Task)
+                                    do! hydrateTaskState (username, atomScope, taskState)
 
                                     setter.set (
                                         Atoms.Task.statusMap (username, taskState.Task.Id),
@@ -107,7 +134,7 @@ module Hydrate =
                     |> Map.values
                     |> Seq.iter
                         (fun databaseState ->
-                            hydrateDatabaseState (username, databaseState)
+                            hydrateDatabaseState (username, Recoil.AtomScope.ReadOnly, databaseState)
                             |> Promise.start)
                 })
 
@@ -208,6 +235,7 @@ module Hydrate =
 
                                         hydrateDatabaseState (
                                             username,
+                                            Recoil.AtomScope.ReadOnly,
                                             { databaseState with
                                                 Database = database
                                                 TaskStateMap =

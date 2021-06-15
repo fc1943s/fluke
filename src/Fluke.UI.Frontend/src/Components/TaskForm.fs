@@ -16,7 +16,7 @@ open Fluke.Shared
 
 module TaskForm =
     [<ReactComponent>]
-    let TaskForm
+    let rec TaskForm
         (input: {| Username: UserInteraction.Username
                    TaskId: TaskId
                    OnSave: Task -> JS.Promise<unit> |})
@@ -107,6 +107,11 @@ module TaskForm =
                                     input.Username
                                     Atoms.Task.scheduling
                                     (input.Username, input.TaskId)
+
+                            setter.set (
+                                (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm))),
+                                fun _ -> None
+                            )
 
                             do! input.OnSave task
                     })
