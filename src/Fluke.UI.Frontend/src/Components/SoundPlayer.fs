@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
@@ -17,9 +16,9 @@ module SoundPlayer =
     [<ReactComponent>]
     let SoundPlayer (input: {| Username: Username |}) =
         let oldActiveSessions = React.useRef []
-        let (Minute sessionLength) = Recoil.useValue (Atoms.User.sessionLength input.Username)
-        let (Minute sessionBreakLength) = Recoil.useValue (Atoms.User.sessionBreakLength input.Username)
-        let activeSessions = Recoil.useValueLoadableDefault (Selectors.Session.activeSessions input.Username) []
+        let (Minute sessionLength) = Store.useValue (Atoms.User.sessionLength input.Username)
+        let (Minute sessionBreakLength) = Store.useValue (Atoms.User.sessionBreakLength input.Username)
+        let activeSessions = Store.useValueLoadableDefault (Selectors.Session.activeSessions input.Username) []
 
         React.useEffect (
             (fun () ->

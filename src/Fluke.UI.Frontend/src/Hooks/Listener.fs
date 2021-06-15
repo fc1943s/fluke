@@ -1,19 +1,23 @@
 namespace Fluke.UI.Frontend.Hooks
 
 open Browser.Types
+open Feliz.Recoil
 open Feliz
 open Feliz.UseListener
-open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.State
+open Fable.Core
 
 
 module Listener =
-    let useKeyPress fn =
+    let useKeyPress (fn: CallbackMethods -> KeyboardEvent -> Async<unit>) =
         Profiling.addTimestamp "useKeyPress.render"
 
         let keyEvent =
-            Recoil.useCallbackRef (fun setter (e: KeyboardEvent) -> async { do! fn setter e } |> Async.StartImmediate)
+            Recoil.useCallbackRef
+                (fun setter (e: KeyboardEvent) ->
+                    fn setter e
+                    |> Async.StartAsPromise
+                    |> Promise.start)
 
         React.useListener.onKeyDown keyEvent
         React.useListener.onKeyUp keyEvent
@@ -27,5 +31,4 @@ module Listener =
 
         React.useElementListener.onMouseEnter (elemRef, setIsHoveredTrue)
         React.useElementListener.onMouseLeave (elemRef, setIsHoveredFalse)
-
         isHovered

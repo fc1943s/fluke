@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Components
@@ -12,7 +11,7 @@ open Fluke.Shared
 
 module ViewTabs =
     let menuOptionGroup atom label =
-        let value, setValue = Recoil.useState atom
+        let value, setValue = Store.useState atom
 
         Chakra.menuOptionGroup
             (fun x ->
@@ -38,9 +37,9 @@ module ViewTabs =
 
     [<ReactComponent>]
     let ViewTabs (input: {| Username: Username |}) =
-        let showViewOptions = Recoil.useValue (Atoms.User.showViewOptions input.Username)
-        let view, setView = Recoil.useState (Atoms.User.view input.Username)
-        let sortedTaskIdList = Recoil.useValue (Selectors.Session.sortedTaskIdList input.Username)
+        let showViewOptions = Store.useValue (Atoms.User.showViewOptions input.Username)
+        let view, setView = Store.useState (Atoms.User.view input.Username)
+        let sortedTaskIdList = Store.useValue (Selectors.Session.sortedTaskIdList input.Username)
 
         let tabs, tabIndex =
             React.useMemo (
@@ -216,7 +215,6 @@ module ViewTabs =
                         x.flex <- "1"
                         x.display <- "flex"
                         x.overflowX <- "hidden"
-                        x.padding <- "2px"
                         x.flexBasis <- 0)
                     [
                         yield!

@@ -4,7 +4,6 @@ open Browser.Types
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain
-open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
@@ -23,7 +22,7 @@ module AreaForm =
         let areaName, setAreaName = React.useState input.Area.Name
 
         let onSave =
-            Recoil.useCallbackRef
+            Store.useCallbackRef
                 (fun _ _ ->
                     promise {
                         match areaName |> AreaName.Value with

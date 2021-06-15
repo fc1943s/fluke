@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Fable.Core
 open Feliz
 open Fable.React
-open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
 
 
@@ -18,7 +17,13 @@ module InputList =
 
     [<ReactComponent>]
     let InputList (props: IProps<'TValue list, 'TKey> -> unit) =
-        let props = JS.newObj props
+        let props =
+            React.useMemo (
+                (fun () -> JS.newObj props),
+                [|
+                    box props
+                |]
+            )
 
         let atomFieldOptions = Recoil.useAtomFieldOptions<'TValue list, 'TKey> props.atom props.inputScope
 

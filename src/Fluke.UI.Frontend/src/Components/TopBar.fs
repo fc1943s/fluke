@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Feliz.Recoil
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
@@ -16,15 +15,15 @@ module TopBar =
 
 
         let onLogoClick =
-            Recoil.useCallbackRef
+            Store.useCallbackRef
                 (fun setter _ ->
                     promise {
                         let! username = setter.snapshot.getPromise Atoms.username
 
                         match username with
                         | Some username ->
-                            setter.set (Atoms.User.leftDock username, None)
-                            setter.set (Atoms.User.view username, TempUI.defaultView)
+                            setter.set (Atoms.User.leftDock username, fun _ -> None)
+                            setter.set (Atoms.User.view username, fun _ -> TempUI.defaultView)
                         | None -> ()
                     })
 

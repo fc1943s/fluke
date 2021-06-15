@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Hooks
 
 open Browser.Types
-open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Feliz
@@ -16,33 +15,42 @@ open Fable.Core
 
 
 module Hydrate =
-    let hydrateDatabase (setter: CallbackMethods) username atomScope (database: Database) =
-        setter.scopedSet username atomScope (Atoms.Database.name, (username, database.Id), database.Name)
-        setter.scopedSet username atomScope (Atoms.Database.owner, (username, database.Id), database.Owner)
-        setter.scopedSet username atomScope (Atoms.Database.sharedWith, (username, database.Id), database.SharedWith)
-        setter.scopedSet username atomScope (Atoms.Database.position, (username, database.Id), database.Position)
+    let hydrateDatabase (setter: Store.CallbackMethods) (username, atomScope, database: Database) =
+        promise {
+            setter.scopedSet username atomScope (Atoms.Database.name, (username, database.Id), database.Name)
+            setter.scopedSet username atomScope (Atoms.Database.owner, (username, database.Id), database.Owner)
 
-    let useHydrateDatabase () = Recoil.useCallbackRef hydrateDatabase
+            setter.scopedSet
+                username
+                atomScope
+                (Atoms.Database.sharedWith, (username, database.Id), database.SharedWith)
 
-    let hydrateTask (setter: CallbackMethods) username atomScope (task: Task) =
-        setter.scopedSet username atomScope (Atoms.Task.name, (username, task.Id), task.Name)
-        setter.scopedSet username atomScope (Atoms.Task.information, (username, task.Id), task.Information)
-        setter.scopedSet username atomScope (Atoms.Task.duration, (username, task.Id), task.Duration)
-        setter.scopedSet username atomScope (Atoms.Task.pendingAfter, (username, task.Id), task.PendingAfter)
-        setter.scopedSet username atomScope (Atoms.Task.missedAfter, (username, task.Id), task.MissedAfter)
-        setter.scopedSet username atomScope (Atoms.Task.scheduling, (username, task.Id), task.Scheduling)
-        setter.scopedSet username atomScope (Atoms.Task.priority, (username, task.Id), task.Priority)
+            setter.scopedSet username atomScope (Atoms.Database.position, (username, database.Id), database.Position)
+        }
 
-    let useHydrateTask () = Recoil.useCallbackRef hydrateTask
+    let useHydrateDatabase () = Store.useCallbackRef hydrateDatabase
+
+    let hydrateTask (setter: Store.CallbackMethods) (username, atomScope, task: Task) =
+        promise {
+            setter.scopedSet username atomScope (Atoms.Task.name, (username, task.Id), task.Name)
+            setter.scopedSet username atomScope (Atoms.Task.information, (username, task.Id), task.Information)
+            setter.scopedSet username atomScope (Atoms.Task.duration, (username, task.Id), task.Duration)
+            setter.scopedSet username atomScope (Atoms.Task.pendingAfter, (username, task.Id), task.PendingAfter)
+            setter.scopedSet username atomScope (Atoms.Task.missedAfter, (username, task.Id), task.MissedAfter)
+            setter.scopedSet username atomScope (Atoms.Task.scheduling, (username, task.Id), task.Scheduling)
+            setter.scopedSet username atomScope (Atoms.Task.priority, (username, task.Id), task.Priority)
+        }
+
+    let useHydrateTask () = Store.useCallbackRef hydrateTask
 
     let useHydrateDatabaseState () =
         let hydrateDatabase = useHydrateDatabase ()
         let hydrateTask = useHydrateTask ()
 
-        Recoil.useCallbackRef
+        Store.useCallbackRef
             (fun setter (username, databaseState) ->
                 promise {
-                    hydrateDatabase username Recoil.AtomScope.ReadOnly databaseState.Database
+                    do! hydrateDatabase (username, Recoil.AtomScope.ReadOnly, databaseState.Database)
 
                     setter.set (Atoms.User.databaseIdSet username, Set.add databaseState.Database.Id)
 
@@ -50,37 +58,49 @@ module Hydrate =
                     |> Map.values
                     |> Seq.iter (fun informationState -> ())
 
-                    databaseState.TaskStateMap
-                    |> Map.values
-                    |> Seq.iter
-                        (fun taskState ->
-                            hydrateTask username Recoil.AtomScope.ReadOnly taskState.Task
+                    do!
+                        databaseState.TaskStateMap
+                        |> Map.values
+                        |> Seq.map
+                            (fun taskState ->
+                                promise {
+                                    do! hydrateTask (username, Recoil.AtomScope.ReadOnly, taskState.Task)
 
-                            setter.set (
-                                Atoms.Task.statusMap (username, taskState.Task.Id),
-                                (taskState.CellStateMap
-                                 |> Seq.choose
-                                     (function
-                                     | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
-                                         Some (dateId, userStatus)
-                                     | _ -> None)
-                                 |> Map.ofSeq)
-                            )
+                                    setter.set (
+                                        Atoms.Task.statusMap (username, taskState.Task.Id),
+                                        fun _ ->
+                                            (taskState.CellStateMap
+                                             |> Seq.choose
+                                                 (function
+                                                 | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
+                                                     Some (dateId, userStatus)
+                                                 | _ -> None)
+                                             |> Map.ofSeq)
+                                    )
 
-                            setter.set (Atoms.Task.attachments (username, taskState.Task.Id), taskState.Attachments)
+                                    setter.set (
+                                        Atoms.Task.attachments (username, taskState.Task.Id),
+                                        fun _ -> taskState.Attachments
+                                    )
 
-                            setter.set (Atoms.Task.sessions (username, taskState.Task.Id), taskState.Sessions)
+                                    setter.set (
+                                        Atoms.Task.sessions (username, taskState.Task.Id),
+                                        fun _ -> taskState.Sessions
+                                    )
 
-                            setter.set (
-                                Atoms.Database.taskIdSet (username, databaseState.Database.Id),
-                                Set.add taskState.Task.Id
-                            ))
+                                    setter.set (
+                                        Atoms.Database.taskIdSet (username, databaseState.Database.Id),
+                                        Set.add taskState.Task.Id
+                                    )
+                                })
+                        |> Promise.Parallel
+                        |> Promise.ignore
                 })
 
     let useHydrateTemplates () =
         let hydrateDatabaseState = useHydrateDatabaseState ()
 
-        Recoil.useCallbackRef
+        Store.useCallbackRef
             (fun _ username ->
                 promise {
                     TestUser.fetchTemplatesDatabaseStateMap ()
@@ -94,7 +114,7 @@ module Hydrate =
     let useExportDatabase () =
         let toast = Chakra.useToast ()
 
-        Recoil.useCallbackRef
+        Store.useCallbackRef
             (fun setter (username, databaseId) ->
                 promise {
                     let! database = setter.snapshot.getPromise (Selectors.Database.database (username, databaseId))
@@ -143,8 +163,8 @@ module Hydrate =
         let hydrateDatabaseState = useHydrateDatabaseState ()
         let toast = Chakra.useToast ()
 
-        Recoil.useCallbackRef
-            (fun _setter username files ->
+        Store.useCallbackRef
+            (fun _setter (username, files) ->
                 promise {
                     match files with
                     | Some (files: FileList) ->

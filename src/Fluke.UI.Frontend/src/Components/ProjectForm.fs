@@ -4,7 +4,6 @@ open Browser.Types
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain
-open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
@@ -23,8 +22,8 @@ module ProjectForm =
         let area, setArea = React.useState input.Project.Area
 
         let onSave =
-            Recoil.useCallbackRef
-                (fun (_setter: CallbackMethods) _ ->
+            Store.useCallbackRef
+                (fun _ _ ->
                     promise {
                         match projectName, area.Name with
                         | ProjectName String.InvalidString, _ -> toast (fun x -> x.description <- "Invalid name")

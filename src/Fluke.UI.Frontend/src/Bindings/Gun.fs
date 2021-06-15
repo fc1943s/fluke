@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Bindings
 
 open Fable.Core
 open Fable.Core.JsInterop
-open Feliz.Recoil
 
 
 module rec Gun =
@@ -81,13 +80,14 @@ module rec Gun =
 //    | None -> importAll "gun"
 
     let gun : GunProps -> IGunChainReference = importDefault "gun/gun"
+
+//    importAll "gun/lib/radix"
+//    importAll "gun/lib/radisk"
+//    importAll "gun/lib/store"
+//    importAll "gun/lib/rindexed"
+
     importAll "gun/sea"
     importAll "gun/lib/promise"
-
-    importAll "gun/lib/radix"
-    importAll "gun/lib/radisk"
-    importAll "gun/lib/store"
-    importAll "gun/lib/rindexed"
 
     let gunTest =
         Gun.gun

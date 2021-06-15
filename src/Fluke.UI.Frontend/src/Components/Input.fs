@@ -5,7 +5,6 @@ open Browser.Types
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend.Bindings
-open Feliz.Recoil
 open Fable.Core
 open Fluke.Shared
 
@@ -37,16 +36,29 @@ module Input =
 
     [<ReactComponent>]
     let Input (props: IProps<'TValue, 'TKey> -> unit) =
-        let props = JS.newObj props
+        let props =
+            React.useMemo (
+                (fun () -> JS.newObj props),
+                [|
+                    box props
+                |]
+            )
 
         let atomFieldOptions = Recoil.useAtomFieldOptions<'TValue, 'TKey> props.atom props.inputScope
 
         let inputFallbackRef = React.useRef<HTMLInputElement> null
 
         let inputRef =
-            props.ref
-            |> Option.ofObjUnbox
-            |> Option.defaultValue inputFallbackRef
+            React.useMemo (
+                (fun () ->
+                    props.ref
+                    |> Option.ofObjUnbox
+                    |> Option.defaultValue inputFallbackRef),
+                [|
+                    box props
+                    box inputFallbackRef
+                |]
+            )
 
         let mounted, setMounted = React.useState false
 
@@ -89,10 +101,12 @@ module Input =
             )
 
         let fireChange =
-            Recoil.useCallbackRef
-                (fun _ ->
-                    inputRef.current.dispatchEvent (Dom.createEvent "change" {| bubbles = true |})
-                    |> ignore)
+            Store.useCallbackRef
+                (fun _ _ ->
+                    promise {
+                        inputRef.current.dispatchEvent (Dom.createEvent "change" {| bubbles = true |})
+                        |> ignore
+                    })
 
         React.useEffect (
             (fun () ->
@@ -102,7 +116,7 @@ module Input =
                     inputRef.current.value <- currentValueString
 
                     if not mounted then
-                        if props.atom.IsSome then fireChange ()
+                        if props.atom.IsSome then fireChange () |> Promise.start
 
                         setMounted true),
             [|
@@ -116,7 +130,7 @@ module Input =
         )
 
         let onChange =
-            Recoil.useCallbackRef
+            Store.useCallbackRef
                 (fun _setter (e: KeyboardEvent) ->
                     promise {
                         if inputRef.current <> null && e.target <> null then
@@ -257,7 +271,7 @@ module Input =
                                                         (fun _ ->
                                                             promise {
                                                                 numberButtonClick inputRef.current.value ((+) 1.)
-                                                                fireChange ()
+                                                                do! fireChange ()
                                                             })
                                             Children = []
                                         |}
@@ -280,7 +294,7 @@ module Input =
                                                                     inputRef.current.value
                                                                     (fun n -> n - 1.)
 
-                                                                fireChange ()
+                                                                do! fireChange ()
                                                             })
                                             Children = []
                                         |}

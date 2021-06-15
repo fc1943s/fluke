@@ -1,7 +1,5 @@
 namespace Fluke.UI.Frontend.Hooks
 
-open Feliz
-open Feliz.Recoil
 open Fluke.Shared
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
@@ -13,7 +11,7 @@ module Setters =
     open State
 
     let useSetCellSelectionMap () =
-        Recoil.useCallbackRef
+        Store.useCallbackRef
             (fun setter (username, newSelection) ->
                 promise {
                     let! sortedTaskIdList = setter.snapshot.getPromise (Selectors.Session.sortedTaskIdList username)
@@ -50,13 +48,13 @@ module Setters =
                     operations
                     |> List.iter
                         (fun (taskId, date, selected) ->
-                            setter.set (Selectors.Cell.selected (username, taskId, DateId date), selected))
+                            setter.set (Selectors.Cell.selected (username, taskId, DateId date), (fun _ -> selected)))
                 })
 
     let useSetSelected () =
         let setCellSelectionMap = useSetCellSelectionMap ()
 
-        Recoil.useCallbackRef
+        Store.useCallbackRef
             (fun setter (username, taskId, dateId, newValue) ->
                 promise {
                     let! ctrlPressed = setter.snapshot.getPromise Atoms.ctrlPressed

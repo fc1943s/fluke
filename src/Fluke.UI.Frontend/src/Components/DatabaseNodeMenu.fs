@@ -5,7 +5,6 @@ open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fable.React
-open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
@@ -19,17 +18,16 @@ module DatabaseNodeMenu =
                    DatabaseId: DatabaseId
                    Disabled: bool |})
         =
-        let deviceInfo = Recoil.useValue Selectors.deviceInfo
-        let isReadWrite = Recoil.useValueLoadableDefault (Selectors.Database.isReadWrite input.DatabaseId) false
-
-        let setLeftDock = Recoil.useSetState (Atoms.User.leftDock input.Username)
-        let setRightDock = Recoil.useSetState (Atoms.User.rightDock input.Username)
+        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let isReadWrite = Store.useValueLoadableDefault (Selectors.Database.isReadWrite input.DatabaseId) false
+        let setLeftDock = Store.useSetState (Atoms.User.leftDock input.Username)
+        let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
 
         let setDatabaseFormIdFlag =
-            Recoil.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
+            Store.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
 
-        let setTaskFormIdFlag = Recoil.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
-        let setNewTaskDatabaseId = Recoil.useSetState (Selectors.Task.databaseId (input.Username, Task.Default.Id))
+        let setTaskFormIdFlag = Store.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
+        let setNewTaskDatabaseId = Store.useSetState (Selectors.Task.databaseId (input.Username, Task.Default.Id))
 
         let exportDatabase = Hydrate.useExportDatabase ()
 

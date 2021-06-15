@@ -22,7 +22,7 @@ module LoginScreen =
 
         let signInClick _ =
             promise {
-                match! signIn usernameField passwordField with
+                match! signIn (usernameField, passwordField) with
                 | Ok () -> printfn "logged"
                 | Error error -> toast (fun x -> x.description <- error)
             }
@@ -32,7 +32,7 @@ module LoginScreen =
                 if passwordField <> password2Field then
                     toast (fun x -> x.description <- "Passwords don't match")
                 else
-                    match! signUp usernameField passwordField with
+                    match! signUp (usernameField, passwordField) with
                     | Ok () ->
                         toast
                             (fun x ->

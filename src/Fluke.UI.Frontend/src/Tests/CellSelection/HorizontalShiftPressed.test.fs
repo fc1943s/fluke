@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Tests.CellSelection
 
 open Fable.ReactTestingLibrary
 open Fable.Jester
-open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared
@@ -18,7 +17,7 @@ module HorizontalShiftPressed =
         promise {
             let! cellMapGetter, setter = initialize ()
 
-            RTL.act (fun () -> setter.current().set (Atoms.shiftPressed, true))
+            RTL.act (fun () -> setter.current().set (Atoms.shiftPressed, fun _ -> true))
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 11))

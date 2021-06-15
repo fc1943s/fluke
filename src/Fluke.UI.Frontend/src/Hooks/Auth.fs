@@ -1,24 +1,22 @@
 namespace Fluke.UI.Frontend.Hooks
 
-open Feliz
+open Fable.Core.JsInterop
 open Fable.Core
-open Feliz.Recoil
+open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
-open Fable.Core.JsInterop
 open Fluke.UI.Frontend.Hooks
-open Fluke.Shared
 
 
 module Auth =
 
     let useLogout () =
-        let gunNamespace = Recoil.useValue Selectors.gunNamespace
-        let setUsername = Recoil.useSetState Atoms.username
-        let resetGunKeys = Recoil.useResetState Atoms.gunKeys
+        let gunNamespace = Store.useValue Selectors.gunNamespace
+        let setUsername = Store.useSetState Atoms.username
+        let resetGunKeys = Store.useResetState Atoms.gunKeys
 
-        Recoil.useCallbackRef
+        Store.useCallbackRef
             (fun _setter _ ->
                 promise {
                     printfn "before leave"
@@ -28,11 +26,11 @@ module Auth =
                 })
 
     let usePostSignIn () =
-        let gunNamespace = Recoil.useValue Selectors.gunNamespace
-        let setUsername = Recoil.useSetState Atoms.username
-        let setGunKeys = Recoil.useSetState Atoms.gunKeys
+        let gunNamespace = Store.useValue Selectors.gunNamespace
+        let setUsername = Store.useSetState Atoms.username
+        let setGunKeys = Store.useSetState Atoms.gunKeys
 
-        Recoil.useCallbackRef
+        Store.useCallbackRef
             (fun _setter username ->
                 promise {
                     setUsername (Some username)
@@ -46,11 +44,11 @@ module Auth =
                 })
 
     let useSignIn () =
-        let gunNamespace = Recoil.useValue Selectors.gunNamespace
+        let gunNamespace = Store.useValue Selectors.gunNamespace
         let postSignIn = usePostSignIn ()
 
-        Recoil.useCallbackRef
-            (fun _setter username password ->
+        Store.useCallbackRef
+            (fun _setter (username, password) ->
                 promise {
                     let! ack = Gun.authUser gunNamespace.``#`` username password
 
@@ -65,11 +63,11 @@ module Auth =
                 })
 
     let useChangePassword () =
-        let username = Recoil.useValue Atoms.username
-        let gunNamespace = Recoil.useValue Selectors.gunNamespace
+        let username = Store.useValue Atoms.username
+        let gunNamespace = Store.useValue Selectors.gunNamespace
 
-        Recoil.useCallbackRef
-            (fun _setter password newPassword ->
+        Store.useCallbackRef
+            (fun _setter (password, newPassword) ->
                 promise {
                     match username with
                     | Some (Username username) ->
@@ -86,11 +84,11 @@ module Auth =
                 })
 
     let useDeleteUser () =
-        let username = Recoil.useValue Atoms.username
-        let gunNamespace = Recoil.useValue Selectors.gunNamespace
+        let username = Store.useValue Atoms.username
+        let gunNamespace = Store.useValue Selectors.gunNamespace
         let logout = useLogout ()
 
-        Recoil.useCallbackRef
+        Store.useCallbackRef
             (fun _setter password ->
                 promise {
                     match username with
@@ -112,11 +110,11 @@ module Auth =
 
     let useSignUp () =
         let signIn = useSignIn ()
-        let gunNamespace = Recoil.useValue Selectors.gunNamespace
+        let gunNamespace = Store.useValue Selectors.gunNamespace
         let hydrateTemplates = Hydrate.useHydrateTemplates ()
 
-        Recoil.useCallbackRef
-            (fun _ username password ->
+        Store.useCallbackRef
+            (fun _ (username, password) ->
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
@@ -141,7 +139,7 @@ module Auth =
                                       ok = Some 0
                                       pub = Some _
                                   } ->
-                                    match! signIn username password with
+                                    match! signIn (username, password) with
                                     | Ok () ->
                                         do! hydrateTemplates (Username username)
 

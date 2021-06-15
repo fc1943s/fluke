@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
@@ -16,13 +15,13 @@ module StatusBar =
 
     [<ReactComponent>]
     let StatusBar (input: {| Username: Username |}) =
-        let position = Recoil.useValue Atoms.position
+        let position = Store.useValue Atoms.position
 
         let selectedTaskIdSet =
-            Recoil.useValueLoadableDefault (Selectors.Session.selectedTaskIdSet input.Username) Set.empty
+            Store.useValueLoadableDefault (Selectors.Session.selectedTaskIdSet input.Username) Set.empty
 
-        let sortedTaskIdList = Recoil.useValueLoadable (Selectors.Session.sortedTaskIdList input.Username)
-        let activeSessions = Recoil.useValueLoadable (Selectors.Session.activeSessions input.Username)
+        let sortedTaskIdList = Store.useValueLoadable (Selectors.Session.sortedTaskIdList input.Username)
+        let activeSessions = Store.useValueLoadable (Selectors.Session.activeSessions input.Username)
 
         Chakra.simpleGrid
             (fun x ->
@@ -65,8 +64,8 @@ module StatusBar =
                             []
 
                         yield!
-                            match activeSessions.state () with
-                            | HasValue activeSessions ->
+                            match activeSessions.valueMaybe () with
+                            | Some activeSessions ->
                                 activeSessions
                                 |> List.map
                                     (fun (TempUI.ActiveSession (taskName,
@@ -111,8 +110,8 @@ module StatusBar =
                                 x.marginRight <- "4px")
                             []
 
-                        match sortedTaskIdList.state () with
-                        | HasValue sortedTaskIdList ->
+                        match sortedTaskIdList.valueMaybe () with
+                        | Some sortedTaskIdList ->
                             str $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdSet.Count} visible"
                         | _ -> str "Tasks: Loading tasks"
                     ]
@@ -132,6 +131,5 @@ module StatusBar =
                                 str $"Position: {position |> FlukeDateTime.Stringify}"
                             ]
                     ]
-                | None ->
-                                str $"Position: No databases selected"
+                | None -> str $"Position: No databases selected"
             ]

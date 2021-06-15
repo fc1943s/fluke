@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.Core
-open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -15,21 +14,23 @@ module ModalForm =
     let ModalForm
         (input: {| Username: Username
                    TextKey: TextKey
-                   Content: System.Guid option * (unit -> unit) * (unit -> CallbackMethods) -> ReactElement |})
+                   Content: System.Guid option * (unit -> JS.Promise<unit>) * (unit -> Store.CallbackMethods) -> ReactElement |})
         =
-        let isTesting = Recoil.useValue Atoms.isTesting
-        let formIdFlag, setFormIdFlag = Recoil.useState (Atoms.User.formIdFlag (input.Username, input.TextKey))
+        let isTesting = Store.useValue Atoms.isTesting
+        let formIdFlag, setFormIdFlag = Store.useState (Atoms.User.formIdFlag (input.Username, input.TextKey))
 
         let formVisibleFlag, setFormVisibleFlag =
-            Recoil.useState (Atoms.User.formVisibleFlag (input.Username, input.TextKey))
+            Store.useState (Atoms.User.formVisibleFlag (input.Username, input.TextKey))
 
-        let setter = Recoil.useCallbackRef id
+        let setter = Store.useSetter ()
 
         let onHide =
-            Recoil.useCallbackRef
-                (fun _ ->
-                    setFormIdFlag None
-                    setFormVisibleFlag false)
+            Store.useCallbackRef
+                (fun _ _ ->
+                    promise {
+                        setFormIdFlag None
+                        setFormVisibleFlag false
+                    })
 
         let content =
             React.useMemo (
@@ -48,8 +49,7 @@ module ModalForm =
                     JS.newObj
                         (fun x ->
                             x.isOpen <- formVisibleFlag
-
-                            x.onClose <- fun () -> promise { onHide () }
+                            x.onClose <- onHide
 
                             x.children <-
                                 [

@@ -4,7 +4,6 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open System
-open Feliz.Recoil
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings

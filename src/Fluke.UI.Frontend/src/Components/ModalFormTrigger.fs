@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.Core
-open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -15,19 +14,25 @@ module ModalFormTrigger =
         (input: {| Username: Username
                    TextKeyValue: System.Guid option
                    TextKey: TextKey
-                   Trigger: (unit -> unit) -> (unit -> CallbackMethods) -> ReactElement |})
+                   Trigger: (unit -> JS.Promise<unit>) -> (unit -> Store.CallbackMethods) -> ReactElement |})
         =
         let onTrigger =
-            Recoil.useCallbackRef
-                (fun setter ->
-                    setter.set (Atoms.User.formIdFlag (input.Username, input.TextKey), input.TextKeyValue)
-                    setter.set (Atoms.User.formVisibleFlag (input.Username, input.TextKey), true))
+            Store.useCallbackRef
+                (fun setter _ ->
+                    promise {
+                        setter.set (
+                            Atoms.User.formIdFlag (input.Username, input.TextKey),
+                            fun _ -> input.TextKeyValue
+                        )
 
-        let setter = Recoil.useCallbackRef id
+                        setter.set (Atoms.User.formVisibleFlag (input.Username, input.TextKey), (fun _ -> true))
+                    })
+
+        let setter = Store.useSetter ()
 
         let content =
             React.useMemo (
-                (fun () -> input.Trigger (fun () -> JS.setTimeout onTrigger 0 |> ignore) setter),
+                (fun () -> input.Trigger onTrigger setter),
                 [|
                     box input
                     box onTrigger

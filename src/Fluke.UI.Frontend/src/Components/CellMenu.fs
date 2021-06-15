@@ -4,7 +4,6 @@ open Fable.Core
 open System
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Fluke.Shared
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend
@@ -24,17 +23,17 @@ module CellMenu =
                    OnClose: unit -> unit |})
         =
 
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         let sessionStatus =
-            Recoil.useValueLoadableDefault
+            Store.useValueLoadableDefault
                 (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
                 Disabled
 
         let cellSelectionMap =
-            Recoil.useValueLoadableDefault (Selectors.Session.cellSelectionMap input.Username) Map.empty
+            Store.useValueLoadableDefault (Selectors.Session.cellSelectionMap input.Username) Map.empty
 
-        let dayStart = Recoil.useValue (Atoms.User.dayStart input.Username)
+        let dayStart = Store.useValue (Atoms.User.dayStart input.Username)
 
 
         let postponedUntil =
@@ -43,7 +42,7 @@ module CellMenu =
             | _ -> None
 
         let onClick =
-            Recoil.useCallbackRef
+            Store.useCallbackRef
                 (fun setter (onClickStatus: CellStatus) ->
                     promise {
                         cellSelectionMap
@@ -54,12 +53,12 @@ module CellMenu =
                                     (fun date ->
                                         setter.set (
                                             Selectors.Cell.sessionStatus (input.Username, taskId, DateId date),
-                                            onClickStatus
+                                            fun _ -> onClickStatus
                                         )))
 
                         setter.set (
                             Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId),
-                            onClickStatus
+                            fun _ -> onClickStatus
                         )
 
                         input.OnClose ()

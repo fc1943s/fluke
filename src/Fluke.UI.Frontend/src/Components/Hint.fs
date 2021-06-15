@@ -11,7 +11,13 @@ module Hint =
 
     [<ReactComponent>]
     let Hint (props: IProps -> unit) =
-        let props = JS.newObj props
+        let props =
+            React.useMemo (
+                (fun () -> JS.newObj props),
+                [|
+                    box props
+                |]
+            )
 
         Popover.Popover
             {|

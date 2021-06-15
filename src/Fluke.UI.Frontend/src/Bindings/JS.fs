@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Bindings
 
 open Fable.Core
 open Fable.Core.JsInterop
-open Feliz.Recoil
 open Fluke.Shared
 open Fable.Extras
 
@@ -15,6 +14,9 @@ module Operators =
     [<Emit("Object.assign($0, $1)")>]
     let (<+) _o1 _o2 : unit = jsNative
 
+module Promise =
+    let ignore = Feliz.Recoil.Promise.ignore
+
 module JS =
     [<Emit "process.env.JEST_WORKER_ID">]
     let private jestWorkerId : bool = jsNative
@@ -26,17 +28,27 @@ module JS =
             printfn "No window found"
             None
 
+    type DeviceInfo =
+        {
+            UserAgent: string
+            IsEdge: bool
+            IsMobile: bool
+            IsExtension: bool
+            GitHubPages: bool
+            IsTesting: bool
+        }
+
     let deviceInfo =
         match window id with
         | None ->
-            {|
+            {
                 UserAgent = "window==null"
                 IsEdge = false
                 IsMobile = false
                 IsExtension = false
                 GitHubPages = false
                 IsTesting = false
-            |}
+            }
         | Some window ->
             let userAgent = if window?navigator = None then "" else window?navigator?userAgent
 
@@ -52,14 +64,14 @@ module JS =
             let isTesting = jestWorkerId || window?Cypress <> null
 
             let deviceInfo =
-                {|
+                {
                     UserAgent = userAgent
                     IsEdge = isEdge
                     IsMobile = isMobile
                     IsExtension = isExtension
                     GitHubPages = gitHubPages
                     IsTesting = isTesting
-                |}
+                }
 
             printfn $"deviceInfo={JS.JSON.stringify deviceInfo}"
             deviceInfo
@@ -87,7 +99,7 @@ module JS =
 
     let newObj fn = jsOptions<_> fn
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"
-    let debounce<'T, 'U> (_: 'T -> 'U) (_: int): 'T -> 'U = importDefault "lodash.debounce"
+    let debounce<'T, 'U> (_: 'T -> 'U) (_: int) : 'T -> 'U = importDefault "lodash.debounce"
     let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
     let toJsArray a = a |> Array.toList |> List.toArray
 

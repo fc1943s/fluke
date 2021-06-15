@@ -45,7 +45,7 @@ module Setup =
         //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
 //                fun _ -> failwith "called empty callback"
 //
-        let mutable setterRef : IRefValue<unit -> CallbackMethods> = unbox null
+        let mutable setterRef : IRefValue<unit -> Store.CallbackMethods> = unbox null
         //
 //            let cmpWrapper =
 //                React.memo
@@ -63,7 +63,7 @@ module Setup =
                     React.fragment [
                         (React.memo
                             (fun () ->
-                                let setter = Recoil.useCallbackRef id
+                                let setter = Store.useSetter ()
                                 let internalSetterRef = React.useRef setter
 
                                 React.useEffect (

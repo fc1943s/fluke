@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared
@@ -12,8 +11,8 @@ module CellStatusUserIndicator =
 
     [<ReactComponent>]
     let CellStatusUserIndicator (input: {| Username: Username |}) =
-        let color = Recoil.useValue (Atoms.User.color input.Username)
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let color = Store.useValue (Atoms.User.color input.Username)
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.box
             (fun x ->

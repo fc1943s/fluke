@@ -5,7 +5,6 @@ open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fable.React
-open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 
@@ -13,9 +12,9 @@ open Fluke.UI.Frontend.State
 module DatabaseLeafIcon =
     [<ReactComponent>]
     let DatabaseLeafIcon (username: Username) (databaseId: DatabaseId) =
-        let owner = Recoil.useValue (Atoms.Database.owner (username, databaseId))
-        let sharedWith = Recoil.useValue (Atoms.Database.sharedWith (username, databaseId))
-        let position = Recoil.useValue (Atoms.Database.position (username, databaseId))
+        let owner = Store.useValue (Atoms.Database.owner (username, databaseId))
+        let sharedWith = Store.useValue (Atoms.Database.sharedWith (username, databaseId))
+        let position = Store.useValue (Atoms.Database.position (username, databaseId))
 
         let newSharedWith =
             if owner = Templates.templatesUser.Username then

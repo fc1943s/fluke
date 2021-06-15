@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
@@ -17,10 +16,10 @@ module Day =
                    Date: FlukeDate
                    Label: string |})
         =
-        let isToday = Recoil.useValueLoadableDefault (Selectors.FlukeDate.isToday input.Date) false
-        let hasCellSelection = Recoil.useValueLoadableDefault (Selectors.FlukeDate.hasCellSelection input.Date) false
-        let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let isToday = Store.useValueLoadableDefault (Selectors.FlukeDate.isToday input.Date) false
+        let hasCellSelection = Store.useValueLoadableDefault (Selectors.FlukeDate.hasCellSelection input.Date) false
+        let weekStart = Store.useValue (Atoms.User.weekStart input.Username)
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.box
             (fun x ->

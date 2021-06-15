@@ -5,7 +5,6 @@ open System
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain
-open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -20,7 +19,7 @@ module AreaSelector =
                    Area: Area
                    OnSelect: Area -> unit |})
         =
-        let informationSet = Recoil.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
+        let informationSet = Store.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
 
         let sortedAreaList =
             React.useMemo (
@@ -57,7 +56,7 @@ module AreaSelector =
                 |]
             )
 
-        let isTesting = Recoil.useValue Atoms.isTesting
+        let isTesting = Store.useValue Atoms.isTesting
 
         Chakra.box
             (fun x ->

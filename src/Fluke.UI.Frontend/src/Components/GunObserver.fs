@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Feliz.UseListener
-open Feliz.Recoil
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
@@ -14,10 +13,10 @@ module GunObserver =
 
     [<ReactComponent>]
     let GunObserver () =
-        let gun = Recoil.useValue Selectors.gun
-        let gunNamespace = Recoil.useValue Selectors.gunNamespace
+        let gun = Store.useValue Selectors.gun
+        let gunNamespace = Store.useValue Selectors.gunNamespace
         //        let appKeys = Gun.gunHooks.useGunKeys Browser.Dom.window?SEA (fun () -> null) false
-        let gunKeys, setGunKeys = Recoil.useState Atoms.gunKeys
+        let gunKeys, setGunKeys = Store.useState Atoms.gunKeys
 
         //        let gunState =
 //            Gun.gunHooks.useGunState
@@ -40,7 +39,7 @@ module GunObserver =
 
         //        let setUsername = Recoil.useSetState Atoms.username
 
-        let setSessionRestored = Recoil.useSetState Atoms.sessionRestored
+        let setSessionRestored = Store.useSetState Atoms.sessionRestored
 
         printfn "GunObserver.render: Constructor"
 

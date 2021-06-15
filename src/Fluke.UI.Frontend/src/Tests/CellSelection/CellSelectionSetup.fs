@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Tests.CellSelection
 open Fable.ReactTestingLibrary
 open Fable.Jester
 open Feliz
-open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend
@@ -24,7 +23,7 @@ open State
 module CellSelectionSetup =
     let maxTimeout = 5 * 60 * 1000
 
-    let getCellMap (subject: Bindings.render<_, _>) (setter: IRefValue<unit -> CallbackMethods>) =
+    let getCellMap (subject: Bindings.render<_, _>) (setter: IRefValue<unit -> Store.CallbackMethods>) =
         promise {
             let! dateSequence =
                 setter
@@ -77,7 +76,7 @@ module CellSelectionSetup =
             | None -> return failwith $"Invalid username: {username}"
         }
 
-    let expectSelection (setter: IRefValue<unit -> CallbackMethods>) expected =
+    let expectSelection (setter: IRefValue<unit -> Store.CallbackMethods>) expected =
         let toString map =
             map
             |> Map.toList
@@ -131,55 +130,75 @@ module CellSelectionSetup =
                     (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
         }
 
-    let initialSetter (setter: CallbackMethods) =
-        let dslTemplate =
-            {
-                Templates.Position =
-                    FlukeDateTime.Create (FlukeDate.Create 2020 Month.January 10, Templates.templatesUser.DayStart)
-                Templates.Tasks =
-                    [
-                        1 .. 4
-                    ]
-                    |> List.map
-                        (fun n ->
-                            {
-                                Task =
-                                    { Task.Default with
-                                        Id = TaskId.NewId ()
-                                        Name = TaskName (string n)
-                                    }
-                                Events = []
-                                Expected = []
-                            })
-            }
+    let initialSetter (setter: Store.CallbackMethods) =
+        promise {
+            let dslTemplate =
+                {
+                    Templates.Position =
+                        FlukeDateTime.Create (FlukeDate.Create 2020 Month.January 10, Templates.templatesUser.DayStart)
+                    Templates.Tasks =
+                        [
+                            1 .. 4
+                        ]
+                        |> List.map
+                            (fun n ->
+                                {
+                                    Task =
+                                        { Task.Default with
+                                            Id = TaskId.NewId ()
+                                            Name = TaskName (string n)
+                                        }
+                                    Events = []
+                                    Expected = []
+                                })
+                }
 
-        let databaseName = "Test"
+            let databaseName = "Test"
 
-        printfn "initialSetter init"
+            printfn "initialSetter init"
 
-        let databaseId = DatabaseId.NewId ()
+            let databaseId = DatabaseId.NewId ()
 
-        let databaseState =
-            Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
+            let databaseState =
+                Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
 
-        setter.set (Atoms.username, Some Templates.templatesUser.Username)
-        setter.set (Atoms.User.view Templates.templatesUser.Username, View.View.Priority)
-        setter.set (Atoms.User.daysBefore Templates.templatesUser.Username, 2)
-        setter.set (Atoms.User.daysAfter Templates.templatesUser.Username, 2)
-        setter.set (Atoms.gunHash, Guid.NewGuid().ToString ())
-        setter.set (Atoms.position, Some dslTemplate.Position)
+            setter.set (Atoms.username, (fun _ -> Some Templates.templatesUser.Username))
+            setter.set (Atoms.User.view Templates.templatesUser.Username, (fun _ -> View.View.Priority))
+            setter.set (Atoms.User.daysBefore Templates.templatesUser.Username, (fun _ -> 2))
+            setter.set (Atoms.User.daysAfter Templates.templatesUser.Username, (fun _ -> 2))
+            setter.set (Atoms.gunHash, (fun _ -> Guid.NewGuid().ToString ()))
+            setter.set (Atoms.position, (fun _ -> Some dslTemplate.Position))
 
-        Hydrate.hydrateDatabase setter Templates.templatesUser.Username Recoil.AtomScope.ReadOnly databaseState.Database
+            do!
+                Hydrate.hydrateDatabase
+                    setter
+                    (Templates.templatesUser.Username, Recoil.AtomScope.ReadOnly, databaseState.Database)
 
-        setter.set (Atoms.User.databaseIdSet Templates.templatesUser.Username, Set.add databaseId)
+            setter.set (Atoms.User.databaseIdSet Templates.templatesUser.Username, Set.add databaseId)
 
-        databaseState.TaskStateMap
-        |> Map.iter
-            (fun taskId taskState ->
-                Hydrate.hydrateTask setter Templates.templatesUser.Username Recoil.AtomScope.ReadOnly taskState.Task
-                setter.set (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId), Set.add taskId))
+            do!
+                databaseState.TaskStateMap
+                |> Seq.map
+                    (fun (KeyValue (taskId, taskState)) ->
+                        promise {
+                            do!
+                                Hydrate.hydrateTask
+                                    setter
+                                    (Templates.templatesUser.Username, Recoil.AtomScope.ReadOnly, taskState.Task)
 
-        setter.set (Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username, set [ databaseId ])
+                            setter.set (
+                                Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId),
+                                Set.add taskId
+                            )
+                        })
+                |> Promise.Parallel
+                |> Promise.ignore
+
+            setter.set (
+                Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username,
+                fun _ -> set [ databaseId ]
+            )
+        }
 
     let getApp () =
         React.fragment [
@@ -187,8 +206,8 @@ module CellSelectionSetup =
                 (fun () ->
                     printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ BEFORE RENDER"
 
-                    let gunNamespace = Recoil.useValue Selectors.gunNamespace
-                    let username, setUsername = Recoil.useState Atoms.username
+                    let gunNamespace = Store.useValue Selectors.gunNamespace
+                    let username, setUsername = Store.useState Atoms.username
 
                     React.useEffect (
                         (fun () ->
@@ -239,7 +258,7 @@ module CellSelectionSetup =
 
             printfn $"! username={username}"
 
-            RTL.act (fun () -> initialSetter (setter.current ()))
+            do! RTL.waitFor (initialSetter (setter.current ()))
 
             //            do!
 //                RTL.waitFor (

@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
@@ -14,8 +13,8 @@ module TaskPriority =
 
     [<ReactComponent>]
     let TaskPriority (input: {| Username: Username; TaskId: TaskId |}) =
-        let priority = Recoil.useValue (Atoms.Task.priority (input.Username, input.TaskId))
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let priority = Store.useValue (Atoms.Task.priority (input.Username, input.TaskId))
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         let priorityText =
             priority

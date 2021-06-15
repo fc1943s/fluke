@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Feliz.Recoil
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 
@@ -17,7 +16,7 @@ module ShiftListener =
                     let! shiftPressed = setter.snapshot.getAsync Atoms.shiftPressed
 
                     if e.shiftKey <> shiftPressed then
-                        setter.set (Atoms.shiftPressed, e.shiftKey)
+                        setter.set (Atoms.shiftPressed, (fun _ -> e.shiftKey))
                 })
 
         nothing

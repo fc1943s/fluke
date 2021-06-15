@@ -30,7 +30,7 @@ module Cypress =
             abstract should : string -> string -> string -> unit
             abstract invoke : string -> string -> string -> Chainable2<'T>
             abstract click : {| force: bool |} option -> Chainable2<'T>
-            abstract contains : string -> Chainable2<'T>
+            abstract contains : string -> {| timeout: int |} option -> Chainable2<'T>
             abstract debug : unit -> unit
             abstract clear : {| force: bool |} -> Chainable2<'T>
             abstract eq : int -> Chainable2<'T>

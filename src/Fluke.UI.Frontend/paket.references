@@ -1,6 +1,7 @@
 FSharp.Core
 
 Fable.DateFunctions
+Fable.Extras
 Fable.Jester
 Fable.ReactTestingLibrary
 Fable.SimpleJson

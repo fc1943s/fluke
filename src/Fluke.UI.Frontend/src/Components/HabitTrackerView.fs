@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Feliz.Recoil
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
@@ -12,8 +11,8 @@ module HabitTrackerView =
 
     [<ReactComponent>]
     let HabitTrackerView (input: {| Username: Username |}) =
-        let sortedTaskIdList = Recoil.useValue (Selectors.Session.sortedTaskIdList input.Username)
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let sortedTaskIdList = Store.useValue (Selectors.Session.sortedTaskIdList input.Username)
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.flex
             (fun x -> x.flex <- "1")
@@ -23,6 +22,7 @@ module HabitTrackerView =
                         x.direction <- "column"
                         x.flex <- "1"
                         x.paddingRight <- "10px"
+                        x.paddingLeft <- "4px"
                         x.maxWidth <- "400px")
                     [
                         yield!

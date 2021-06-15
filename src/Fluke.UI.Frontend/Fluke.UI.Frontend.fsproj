@@ -16,6 +16,9 @@
         <Compile Include="src\Bindings\Chakra.fs" />
         <Compile Include="src\Bindings\Gun.fs" />
         <Compile Include="src\Bindings\Recoil.fs" />
+        <Compile Include="src\Bindings\Jotai.fs" />
+        <Compile Include="src\Bindings\Store.fs" />
+        <Compile Include="src\Bindings\Svelte.fs" />
         <Compile Include="src\Bindings\Icons.fs" />
         <Compile Include="src\Bindings\Markdown.fs" />
         <Compile Include="src\Bindings\Cypress.fs" />
@@ -69,6 +72,7 @@
         <Compile Include="src\Components\AreaSelector.fs" />
         <Compile Include="src\Components\ProjectForm.fs" />
         <Compile Include="src\Components\InformationSelector.fs" />
+        <Compile Include="src\Components\DatabaseSelector.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
         <Compile Include="src\Components\TaskName.fs" />
         <Compile Include="src\Components\HabitTrackerView.fs" />

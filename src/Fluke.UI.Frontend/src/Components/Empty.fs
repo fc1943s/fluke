@@ -7,7 +7,6 @@ open Fable.DateFunctions
 open Fluke.Shared
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
-open Feliz.Recoil
 
 
 module Empty =

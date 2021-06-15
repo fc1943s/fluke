@@ -7,9 +7,8 @@ open Fluke.Shared.Domain.UserInteraction
 
 open System
 open Microsoft.FSharp.Core.Operators
-open Fluke.Shared
 open Feliz.Recoil
-open Fluke.UI.Frontend
+open Fluke.Shared
 open Fable.Core.JsInterop
 open Feliz
 open Fluke.UI.Frontend.Bindings
@@ -249,7 +248,7 @@ module RecoilExtensions =
 
 module Recoil =
 
-    let useLoadableDefault def (loadable: Loadable<_>) =
+    let useLoadableDefault<'T> def (loadable: Loadable<'T>) =
         React.useMemo (
             (fun () ->
                 (match jsTypeof (emitJsExpr loadable "$0.valueMaybe") with
@@ -262,13 +261,13 @@ module Recoil =
             |]
         )
 
-    let useValueLoadableDefault atom def =
-        let value = Recoil.useValueLoadable atom
-        useLoadableDefault def value
+    let useValueLoadableDefault<'T, 'U when 'U :> ReadOnly> atom def =
+        let value = Recoil.useValueLoadable<'T, 'U> atom
+        useLoadableDefault<'T> def value
 
-    let useStateLoadableDefault atom def =
-        let value, setValue = Recoil.useStateLoadable atom
-        (useLoadableDefault def value), setValue
+    let useStateLoadableDefault<'T> atom def =
+        let value, setValue = Recoil.useStateLoadable<'T> atom
+        (useLoadableDefault<'T> def value), setValue
 
     let useEffect (fn, deps) =
         let run = Recoil.useCallbackRef (fun setter _deps -> promise { do! fn setter })
@@ -616,13 +615,12 @@ module Recoil =
                         gunAtomNode.on
                             (fun data _key ->
                                 async {
-                                    JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
 
                                     try
                                         let! decoded =
                                             match box data with
                                             | null -> unbox null |> Async.lift
-                                            | _ -> userDecode<'TValue3> data
+                                            | _ -> userDecode<'TValue3 option> data
 
                                         //                                        JS.log
 //                                            (fun () ->
@@ -633,13 +631,14 @@ module Recoil =
 
                                         JS.setTimeout
                                             (fun () ->
+                                                JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
                                                 e.setSelf
                                                     (fun _oldValue ->
                                                         //let encodedOldValue = Gun.jsonEncode oldValue
 //                                                let decodedJson = Gun.jsonEncode decoded
 //                                                if encodedOldValue <> decodedJson then unbox decoded else oldValue
                                                         unbox decoded))
-                                            100
+                                            1000
                                         |> ignore
                                     with ex -> Browser.Dom.console.error ("[exception1]", ex)
                                 }
@@ -793,9 +792,15 @@ module Recoil =
 
     let useStateOption (atom: RecoilValue<'TValue5, ReadWrite> option) =
         let flatAtom =
-            match atom with
-            | Some atom -> atom
-            | None -> box (RecoilValue.lift null) :?> RecoilValue<'TValue5, ReadWrite>
+            React.useMemo (
+                (fun () ->
+                    match atom with
+                    | Some atom -> atom
+                    | None -> box (RecoilValue.lift null) :?> RecoilValue<'TValue5, ReadWrite>),
+                [|
+                    box atom
+                |]
+            )
 
         let value, setValue = Recoil.useState flatAtom
 

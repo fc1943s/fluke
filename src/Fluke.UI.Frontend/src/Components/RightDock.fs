@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Fable.Core
 open Feliz
 open Fable.React
-open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
@@ -19,11 +18,11 @@ module RightDock =
 
     [<ReactComponent>]
     let RightDock (input: {| Username: Username |}) =
-        let deviceInfo = Recoil.useValue Selectors.deviceInfo
-        let setLeftDock = Recoil.useSetState (Atoms.User.leftDock input.Username)
-        let rightDock, setRightDock = Recoil.useState (Atoms.User.rightDock input.Username)
-        let databaseFormIdFlag = Recoil.useValue (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
-        let taskFormIdFlag = Recoil.useValue (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
+        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let setLeftDock = Store.useSetState (Atoms.User.leftDock input.Username)
+        let rightDock, setRightDock = Store.useState (Atoms.User.rightDock input.Username)
+        let databaseFormIdFlag = Store.useValue (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
+        let taskFormIdFlag = Store.useValue (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
         let hydrateTask = Hydrate.useHydrateTask ()
 
@@ -37,8 +36,8 @@ module RightDock =
                 ))
                 Database.Default.Id
 
-        let setDatabaseIdSet = Recoil.useSetStatePrev (Atoms.User.databaseIdSet input.Username)
-        let setTaskIdSet = Recoil.useSetStatePrev (Atoms.Database.taskIdSet (input.Username, taskDatabaseId))
+        let setDatabaseIdSet = Store.useSetStatePrev (Atoms.User.databaseIdSet input.Username)
+        let setTaskIdSet = Store.useSetStatePrev (Atoms.Database.taskIdSet (input.Username, taskDatabaseId))
 
         let items =
             React.useMemo (
@@ -69,10 +68,12 @@ module RightDock =
                                                     OnSave =
                                                         fun database ->
                                                             promise {
-                                                                hydrateDatabase
-                                                                    input.Username
-                                                                    Recoil.AtomScope.ReadOnly
-                                                                    database
+                                                                do!
+                                                                    hydrateDatabase (
+                                                                        input.Username,
+                                                                        Recoil.AtomScope.ReadOnly,
+                                                                        database
+                                                                    )
 
                                                                 if database.Id <> databaseId then
                                                                     JS.setTimeout
@@ -130,10 +131,12 @@ module RightDock =
                                                     OnSave =
                                                         fun task ->
                                                             promise {
-                                                                hydrateTask
-                                                                    input.Username
-                                                                    Recoil.AtomScope.ReadOnly
-                                                                    task
+                                                                do!
+                                                                    hydrateTask (
+                                                                        input.Username,
+                                                                        Recoil.AtomScope.ReadOnly,
+                                                                        task
+                                                                    )
 
                                                                 if task.Id <> taskId then
                                                                     JS.setTimeout

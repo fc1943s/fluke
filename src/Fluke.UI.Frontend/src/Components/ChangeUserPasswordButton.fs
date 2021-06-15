@@ -21,7 +21,7 @@ module ChangeUserPasswordButton =
                 if newPasswordField <> newPassword2Field then
                     toast (fun x -> x.description <- "Passwords don't match")
                 else
-                    match! changePassword passwordField newPasswordField with
+                    match! changePassword (passwordField, newPasswordField) with
                     | Ok () ->
                         toast
                             (fun x ->

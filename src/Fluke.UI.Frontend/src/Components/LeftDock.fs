@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Feliz.Recoil
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fable.Core.JsInterop
@@ -16,14 +15,14 @@ module LeftDock =
 
     [<ReactComponent>]
     let LeftDock (input: {| Username: Username |}) =
-        let isTesting = Recoil.useValue Atoms.isTesting
-        let leftDock, setLeftDock = Recoil.useState (Atoms.User.leftDock input.Username)
-        let setRightDock = Recoil.useSetState (Atoms.User.rightDock input.Username)
-        let deviceInfo = Recoil.useValue Selectors.deviceInfo
-        let hideTemplates, setHideTemplates = Recoil.useState (Atoms.User.hideTemplates input.Username)
+        let isTesting = Store.useValue Atoms.isTesting
+        let leftDock, setLeftDock = Store.useState (Atoms.User.leftDock input.Username)
+        let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
+        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let hideTemplates, setHideTemplates = Store.useState (Atoms.User.hideTemplates input.Username)
 
         let setDatabaseFormIdFlag =
-            Recoil.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
+            Store.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
 
         let items =
             React.useMemo (

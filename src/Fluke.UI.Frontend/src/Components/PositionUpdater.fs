@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open System
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
@@ -14,9 +13,9 @@ module PositionUpdater =
 
     [<ReactComponent>]
     let PositionUpdater (input: {| Username: Username |}) =
-        let isTesting = Recoil.useValue Atoms.isTesting
-        let position, setPosition = Recoil.useState Atoms.position
-        let selectedDatabaseIdSet = Recoil.useValue (Atoms.User.selectedDatabaseIdSet input.Username)
+        let isTesting = Store.useValue Atoms.isTesting
+        let position, setPosition = Store.useState Atoms.position
+        let selectedDatabaseIdSet = Store.useValue (Atoms.User.selectedDatabaseIdSet input.Username)
 
         Scheduling.useScheduling
             Scheduling.Interval

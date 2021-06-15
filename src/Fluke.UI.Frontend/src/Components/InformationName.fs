@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
@@ -18,8 +17,8 @@ module InformationName =
         (input: {| Username: Username
                    Information: Information |})
         =
-        let attachments = Recoil.useValue (Atoms.Information.attachments (input.Username, input.Information))
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let attachments = Store.useValue (Atoms.Information.attachments (input.Username, input.Information))
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.box
             (fun x ->

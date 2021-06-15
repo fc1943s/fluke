@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend.Components
 
 open System
 open Fable.Core.JsInterop
+open Feliz.Recoil
 open Fable.Core
 open Fable.Extras
 open Fluke.Shared
@@ -9,7 +10,6 @@ open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fable.React
-open Feliz.Recoil
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -245,25 +245,26 @@ module Databases =
         (input: {| Username: Username
                    Props: Chakra.IChakraProps -> unit |})
         =
-        let isTesting = Recoil.useValue Atoms.isTesting
-        let hideTemplates = Recoil.useValue (Atoms.User.hideTemplates input.Username)
+        let isTesting = Store.useValue Atoms.isTesting
+        let hideTemplates = Store.useValue (Atoms.User.hideTemplates input.Username)
         let hideTemplatesCache = React.useRef<bool option> None
 
         let selectedDatabaseIdSet, setSelectedDatabaseIdSet =
-            Recoil.useState (Atoms.User.selectedDatabaseIdSet input.Username)
+            Store.useState (Atoms.User.selectedDatabaseIdSet input.Username)
 
-        let databaseIdSet = Recoil.useValue (Atoms.User.databaseIdSet input.Username)
+        let databaseIdSet = Store.useValue (Atoms.User.databaseIdSet input.Username)
 
         let databaseMap =
             databaseIdSet
             |> Set.toList
             |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
-            |> Recoil.waitForAny
-            |> Recoil.useValue
+            |> Recoil.waitForNone
+            |> Store.useValue
             |> List.choose
                 (fun database ->
-                    match database.state () with
-                    | HasValue database -> Some (database.Id, database)
+                    match database.valueMaybe () with
+//                    match Some database with
+                    | Some database -> Some (database.Id, database)
                     | _ -> None)
             |> Map.ofList
 
@@ -414,7 +415,7 @@ module Databases =
             )
 
         let expandedDatabaseIdSet, setExpandedDatabaseIdSet =
-            Recoil.useState (Atoms.User.expandedDatabaseIdSet input.Username)
+            Store.useState (Atoms.User.expandedDatabaseIdSet input.Username)
 
         let newExpandedDatabaseIdSet =
             if expandedDatabaseIdSet.IsEmpty then

@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Fable.DateFunctions
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend.State
@@ -15,7 +14,7 @@ module BulletJournalView =
 
     [<ReactComponent>]
     let BulletJournalView (input: {| Username: Username |}) =
-        let weekCellsMap = Recoil.useValue (Selectors.BulletJournalView.weekCellsMap input.Username)
+        let weekCellsMap = Store.useValue (Selectors.BulletJournalView.weekCellsMap input.Username)
 
         Chakra.box
             (fun x -> x.flex <- "1")

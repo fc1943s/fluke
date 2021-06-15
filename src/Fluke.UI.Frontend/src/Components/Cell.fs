@@ -4,7 +4,6 @@ open Fable.Core
 open Fable.React
 open Fable.Core.JsInterop
 open Feliz
-open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
@@ -25,28 +24,28 @@ module Cell =
         =
         Profiling.addCount "- CellComponent.render"
 
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
-        let isTesting = Recoil.useValue Atoms.isTesting
-        let showUser = Recoil.useValueLoadableDefault (Selectors.Task.showUser (input.Username, input.TaskId)) false
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+        let isTesting = Store.useValue Atoms.isTesting
+        let showUser = Store.useValueLoadableDefault (Selectors.Task.showUser (input.Username, input.TaskId)) false
 
         let isReadWrite =
-            Recoil.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
+            Store.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
 
         let sessionStatus =
-            Recoil.useValueLoadableDefault
+            Store.useValueLoadableDefault
                 (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
                 Disabled
 
-        let taskState = Recoil.useValueLoadable (Selectors.Task.taskState (input.Username, input.TaskId))
-        let isToday = Recoil.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false
+        let taskState = Store.useValueLoadable (Selectors.Task.taskState (input.Username, input.TaskId))
+        let isToday = Store.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false
 
         let selected =
-            Recoil.useValueLoadableDefault (Selectors.Cell.selected (input.Username, input.TaskId, input.DateId)) false
+            Store.useValueLoadableDefault (Selectors.Cell.selected (input.Username, input.TaskId, input.DateId)) false
 
         let setSelected = Setters.useSetSelected ()
 
         let onCellClick =
-            Recoil.useCallbackRef
+            Store.useCallbackRef
                 (fun setter _ ->
                     promise {
                         let! ctrlPressed = setter.snapshot.getPromise Atoms.ctrlPressed
@@ -98,8 +97,8 @@ module Cell =
                                 x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
                         [
 
-                            match taskState.state () with
-                            | HasValue taskState ->
+                            match taskState.valueMaybe () with
+                            | Some taskState ->
                                 CellSessionIndicator.CellSessionIndicator
                                     {|
                                         Status = sessionStatus
@@ -121,8 +120,8 @@ module Cell =
                                 CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
                             | _ -> nothing
 
-                            match taskState.state () with
-                            | HasValue taskState ->
+                            match taskState.valueMaybe () with
+                            | Some taskState ->
                                 TooltipPopup.TooltipPopup
                                     {|
                                         Username = input.Username

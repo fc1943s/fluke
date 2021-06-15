@@ -4,7 +4,6 @@ open Browser.Types
 open Feliz
 open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
-open Feliz.Recoil
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.Shared
@@ -15,8 +14,8 @@ module InitialPeers =
     [<ReactComponent>]
     let InitialPeers () =
         let gunPeer, setGunPeer = React.useState "https://flukegunpeer-test.herokuapp.com/gun"
-        let setGunPeers = Recoil.useSetState Atoms.gunPeers
-        let setInitialPeerSkipped = Recoil.useSetState Atoms.initialPeerSkipped
+        let setGunPeers = Store.useSetState Atoms.gunPeers
+        let setInitialPeerSkipped = Store.useSetState Atoms.initialPeerSkipped
 
         let nextClick _ =
             promise {

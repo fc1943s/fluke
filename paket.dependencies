@@ -13,6 +13,7 @@ nuget Myriad.Sdk ~> 0.5
 // Fluke.UI.Frontend
 nuget Fable.Core ~> 3.2
 nuget Fable.DateFunctions ~> 3.6
+nuget Fable.Extras ~> 0.4
 nuget Fable.Jester ~> 0.31
 nuget Fable.ReactTestingLibrary ~> 0.31
 nuget Fable.SimpleJson ~> 3.21

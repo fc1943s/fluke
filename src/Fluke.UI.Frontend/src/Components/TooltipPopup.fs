@@ -6,7 +6,6 @@ open Feliz.UseListener
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
-open Feliz.Recoil
 open Fluke.UI.Frontend.State
 
 
@@ -19,7 +18,7 @@ module TooltipPopup =
         (input: {| Username: Username
                    Attachments: (FlukeDateTime * Attachment) list |})
         =
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         let tooltipContainerRef = React.useElementRef ()
 

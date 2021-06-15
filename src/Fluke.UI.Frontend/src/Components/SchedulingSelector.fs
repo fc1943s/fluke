@@ -6,7 +6,6 @@ open Browser.Types
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain
-open Feliz.Recoil
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -611,7 +610,7 @@ module SchedulingSelector =
                    TaskId: TaskId |})
         =
 
-        let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
+        let weekStart = Store.useValue (Atoms.User.weekStart input.Username)
 
         let schedulingFieldOptions =
             Recoil.useAtomFieldOptions

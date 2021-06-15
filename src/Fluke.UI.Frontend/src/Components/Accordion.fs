@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.Core
 open Fable.Core.JsInterop
-open Feliz.Recoil
 open Fable.React
 open Fluke.UI.Frontend.Bindings
 
@@ -34,7 +33,7 @@ module Accordion =
                    Atom: Recoil.RecoilValue<string [], _>
                    Props: Chakra.IChakraProps -> unit |})
         =
-        let atomValue, setAtomValue = Recoil.useState input.Atom
+        let atomValue, setAtomValue = Store.useState input.Atom
 
         Chakra.accordion
             (fun x ->

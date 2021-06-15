@@ -47,9 +47,7 @@ module Full =
             typeText (fun () -> Cy.get(parent).get selector) text
 
         let clickTextWithinSelector selector text =
-            Cy
-                .get(selector)
-                .contains(text)
+            (Cy.get(selector).contains text None)
                 .click (Some {| force = false |})
             |> ignore
 
@@ -59,6 +57,11 @@ module Full =
             |> ignore
 
         let clickSelector selector = (Cy.get selector).click None |> ignore
+
+        let waitForWithinSelector selector text options =
+            (Cy.get(selector).contains text options)
+                .should "be.visible"
+            |> ignore
 
         let waitFor text options =
             (Cy.contains text options).should "be.visible"
@@ -125,6 +128,7 @@ module Full =
                     //                    Cy.wait 400
 //                    Cy.wait 5000
 
+                    Cy2.selectorFocusTypeText "input[placeholder^=new-task-]" taskName
 
                     Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Select..."
 
@@ -150,9 +154,11 @@ module Full =
 
                     Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Save"
 
-                    Cy.wait 200
-
-                    Cy2.selectorFocusTypeText "input[placeholder^=new-task-]" taskName
+//                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" "Select..." (Some {| timeout = timeout |})
+//                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" dbName (Some {| timeout = timeout |})
+//                    Cy.wait 3000
+//                    Cy.wait 3000
+//
 
                     Cy2.clickText "Save"
 
@@ -165,13 +171,14 @@ module Full =
 
                     Cy2.clickText "Edit Database"
 
-                    Cy.wait 500
+                    Cy.wait 1000
 
                     Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
 
                     Cy2.clickText "Save"
 
-                    Cy2.clickText dbName
+                    Cy2.waitFor $"{dbName}_edit" (Some {| timeout = timeout |})
+                    Cy2.clickText $"{dbName}_edit"
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})

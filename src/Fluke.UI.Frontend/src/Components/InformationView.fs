@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
@@ -15,8 +14,8 @@ module InformationView =
     let InformationView (input: {| Username: Username |}) =
         let groupIndentationLength = 20
 
-        let tasksByInformationKind = Recoil.useValue (Selectors.Session.tasksByInformationKind input.Username)
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let tasksByInformationKind = Store.useValue (Selectors.Session.tasksByInformationKind input.Username)
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         Chakra.flex
             (fun x -> x.flex <- "1")

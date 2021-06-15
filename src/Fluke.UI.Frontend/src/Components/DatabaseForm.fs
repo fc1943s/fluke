@@ -5,7 +5,6 @@ open Fable.Core.JsInterop
 open Fable.React
 open Feliz
 open System
-open Feliz.Recoil
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
@@ -28,8 +27,8 @@ module DatabaseForm =
         let toast = Chakra.useToast ()
 
         let onSave =
-            Recoil.useCallbackRef
-                (fun (setter: CallbackMethods) _ ->
+            Store.useCallbackRef
+                (fun setter _ ->
                     promise {
                         let! databaseName =
                             setter.snapshot.getReadWritePromise
@@ -177,7 +176,7 @@ module DatabaseForm =
                                     {|
                                         Hint = None
                                         Icon = Some (Icons.bi.BiImport |> Icons.wrap, Button.IconPosition.Left)
-                                        Props = fun x -> x.onClick <- fun _ -> importDatabase input.Username files
+                                        Props = fun x -> x.onClick <- fun _ -> importDatabase (input.Username, files)
                                         Children =
                                             [
                                                 str "Confirm"

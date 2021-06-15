@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Feliz
-open Feliz.Recoil
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 
@@ -15,7 +14,7 @@ module TaskCells =
                    TaskId: TaskId
                    Index: int |})
         =
-        let dateSequence = Recoil.useValue Selectors.dateSequence
+        let dateSequence = Store.useValue Selectors.dateSequence
 
         Chakra.flex
             (fun _ -> ())

@@ -3,10 +3,10 @@ namespace Fluke.UI.Frontend.Tests
 open Fable.ReactTestingLibrary
 open Fable.React
 open Fable.Jester
-open Feliz.Recoil
 open Feliz.Router
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.Bindings.Store
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Tests.Core
 open Fluke.UI.Frontend.State
@@ -48,7 +48,7 @@ module Router =
                 ]
 
             let initialSetter (setter: CallbackMethods) =
-                promise { setter.set (Atoms.username, Some Templates.templatesUser.Username) }
+                promise { setter.set (Atoms.username, fun _ -> Some Templates.templatesUser.Username) }
 
             let initialize () =
                 promise {
@@ -58,7 +58,7 @@ module Router =
                 }
 
             let setView (setter: CallbackMethods) (view: View.View) =
-                RTL.act (fun () -> setter.set (Atoms.User.view Templates.templatesUser.Username, view))
+                RTL.act (fun () -> setter.set (Atoms.User.view Templates.templatesUser.Username, fun _ -> view))
                 RTL.waitFor id
 
             let expectView (setter: CallbackMethods) (expected: View.View) =
@@ -147,7 +147,7 @@ module Router =
                 promise {
                     let! _subject, setter = initialize ()
 
-                    RTL.act (fun () -> (setter.current ()).set (Atoms.username, None))
+                    RTL.act (fun () -> (setter.current ()).set (Atoms.username, fun _ -> None))
                     do! RTL.waitFor id
 
                     [|
@@ -199,7 +199,7 @@ module Router =
 
                     let! _subject, setter = initialize ()
 
-                    RTL.act (fun () -> (setter.current ()).set (Atoms.username, None))
+                    RTL.act (fun () -> (setter.current ()).set (Atoms.username, fun _ -> None))
                     do! RTL.waitFor id
 
                     do!

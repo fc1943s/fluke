@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
@@ -19,18 +18,18 @@ module TaskName =
     let TaskName (input: {| Username: Username; TaskId: TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
-        let hasSelection = Recoil.useValueLoadableDefault (Selectors.Task.hasSelection input.TaskId) false
-        let (TaskName taskName) = Recoil.useValue (Atoms.Task.name (input.Username, input.TaskId))
-        let taskState = Recoil.useValue (Selectors.Task.taskState (input.Username, input.TaskId))
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let hasSelection = Store.useValueLoadableDefault (Selectors.Task.hasSelection input.TaskId) false
+        let (TaskName taskName) = Store.useValue (Atoms.Task.name (input.Username, input.TaskId))
+        let taskState = Store.useValue (Selectors.Task.taskState (input.Username, input.TaskId))
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         let isReadWrite =
             Recoil.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
 
-        let deviceInfo = Recoil.useValue Selectors.deviceInfo
-        let setLeftDock = Recoil.useSetState (Atoms.User.leftDock input.Username)
-        let setRightDock = Recoil.useSetState (Atoms.User.rightDock input.Username)
-        let setTaskFormIdFlag = Recoil.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
+        let deviceInfo = Store.useValue Selectors.deviceInfo
+        let setLeftDock = Store.useSetState (Atoms.User.leftDock input.Username)
+        let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
+        let setTaskFormIdFlag = Store.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
 
         Chakra.flex
             (fun x ->

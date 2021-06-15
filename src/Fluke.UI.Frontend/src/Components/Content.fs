@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -11,11 +10,11 @@ module Content =
     [<ReactComponent>]
     let Content () =
         Profiling.addTimestamp "mainComponent.render"
-        let username = Recoil.useValue Atoms.username
-        let sessionRestored = Recoil.useValue Atoms.sessionRestored
-        let initialPeerSkipped = Recoil.useValue Atoms.initialPeerSkipped
-        let gunPeers = Recoil.useValue Selectors.gunPeers
-        let deviceInfo = Recoil.useValue Selectors.deviceInfo
+        let username = Store.useValue Atoms.username
+        let sessionRestored = Store.useValue Atoms.sessionRestored
+        let initialPeerSkipped = Store.useValue Atoms.initialPeerSkipped
+        let gunPeers = Store.useValue Selectors.gunPeers
+        let deviceInfo = Store.useValue Selectors.deviceInfo
 
         Chakra.flex
             (fun x ->

@@ -6,7 +6,6 @@ open Fable.DateFunctions
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
-open Feliz.Recoil
 
 
 module MonthResponsiveCell =
@@ -18,8 +17,8 @@ module MonthResponsiveCell =
                    Date: FlukeDate
                    Props: Chakra.IChakraProps -> unit |})
         =
-        let weekStart = Recoil.useValue (Atoms.User.weekStart input.Username)
-        let cellSize = Recoil.useValue (Atoms.User.cellSize input.Username)
+        let weekStart = Store.useValue (Atoms.User.weekStart input.Username)
+        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         let month = (input.Date |> FlukeDate.DateTime).Format "MMM"
 

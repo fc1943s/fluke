@@ -1,10 +1,8 @@
 namespace Fluke.UI.Frontend
 
-
 #nowarn "40"
 
 open System
-open Feliz.Recoil
 open Fluke.Shared
 open Fluke.Shared.Domain
 open Fluke.UI.Frontend
@@ -31,34 +29,34 @@ module State =
         | Task of DatabaseId * TaskId
 
     module Atoms =
-        let rec isTesting = Recoil.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.deviceInfo.IsTesting)
+        let rec isTesting = Store.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.deviceInfo.IsTesting)
 
         let rec debug =
-            Recoil.atomWithProfiling (
+            Store.atomWithProfiling (
                 $"{nameof atom}/{nameof debug}",
                 JS.isDebug,
                 effects =
                     [
-                        AtomEffect Storage.local
+                        Store.AtomEffect Feliz.Recoil.Storage.local
                     ]
             )
 
         let rec gunPeers =
-            Recoil.atomWithProfiling (
+            Store.atomWithProfiling (
                 $"{nameof atom}/{nameof gunPeers}",
                 ([]: string list),
                 effects =
                     [
-                        AtomEffect Storage.local
+                        Store.AtomEffect Feliz.Recoil.Storage.local
                     ]
             )
 
-        let rec sessionRestored = Recoil.atomWithProfiling ($"{nameof atom}/{nameof sessionRestored}", false)
+        let rec sessionRestored = Store.atomWithProfiling ($"{nameof atom}/{nameof sessionRestored}", false)
 
-        let rec gunHash = Recoil.atomWithProfiling ($"{nameof atom}/{nameof gunHash}", "")
+        let rec gunHash = Store.atomWithProfiling ($"{nameof atom}/{nameof gunHash}", "")
 
         let rec gunKeys =
-            Recoil.atomWithProfiling (
+            Store.atomWithProfiling (
                 $"{nameof atom}/{nameof gunKeys}",
                 {
                     Gun.pub = ""
@@ -70,11 +68,11 @@ module State =
             //                local_storage
             )
 
-        let rec initialPeerSkipped = Recoil.atomWithProfiling ($"{nameof atom}/{nameof initialPeerSkipped}", false)
-        let rec username = Recoil.atomWithProfiling ($"{nameof atom}/{nameof username}", None)
-        let rec position = Recoil.atomWithProfiling ($"{nameof atom}/{nameof position}", None)
-        let rec ctrlPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof ctrlPressed}", false)
-        let rec shiftPressed = Recoil.atomWithProfiling ($"{nameof atom}/{nameof shiftPressed}", false)
+        let rec initialPeerSkipped = Store.atomWithProfiling ($"{nameof atom}/{nameof initialPeerSkipped}", false)
+        let rec username = Store.atomWithProfiling ($"{nameof atom}/{nameof username}", None)
+        let rec position = Store.atomWithProfiling ($"{nameof atom}/{nameof position}", None)
+        let rec ctrlPressed = Store.atomWithProfiling ($"{nameof atom}/{nameof ctrlPressed}", false)
+        let rec shiftPressed = Store.atomWithProfiling ($"{nameof atom}/{nameof shiftPressed}", false)
 
 
         //        module rec Events =
@@ -90,7 +88,7 @@ module State =
 //                | NoOp
 //
 //            let rec events =
-//                Recoil.atomFamilyWithProfiling (
+//                Store.atomFamilyWithProfiling (
 //                    $"{nameof atomFamily}/{nameof Events}/{nameof events}",
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
@@ -98,237 +96,237 @@ module State =
 
         module rec User =
             let rec databaseIdSet =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof databaseIdSet}",
                     (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, databaseIdSet, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, databaseIdSet, username)) []
                         ])
                 )
 
             let rec expandedDatabaseIdSet =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof expandedDatabaseIdSet}",
                     (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, expandedDatabaseIdSet, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, expandedDatabaseIdSet, username)) []
                         ])
                 )
 
             let rec selectedDatabaseIdSet =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof selectedDatabaseIdSet}",
                     (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, selectedDatabaseIdSet, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, selectedDatabaseIdSet, username)) []
                         ])
                 )
 
             let rec view =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof view}",
                     (fun (_username: Username) -> TempUI.defaultView),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, view, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, view, username)) []
                         ])
                 )
 
             let rec language =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof language}",
                     (fun (_username: Username) -> Language.English),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, language, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, language, username)) []
                         ])
                 )
 
             let rec color =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof color}",
                     (fun (_username: Username) -> UserColor.Black),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, color, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, color, username)) []
                         ])
                 )
 
             let rec weekStart =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof weekStart}",
                     (fun (_username: Username) -> DayOfWeek.Sunday),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, weekStart, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, weekStart, username)) []
                         ])
                 )
 
             let rec dayStart =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof dayStart}",
                     (fun (_username: Username) -> FlukeTime.Create 0 0),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, dayStart, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, dayStart, username)) []
                         ])
                 )
 
             let rec sessionLength =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof sessionLength}",
                     (fun (_username: Username) -> Minute 25.),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, sessionLength, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, sessionLength, username)) []
                         ])
                 )
 
             let rec sessionBreakLength =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof sessionBreakLength}",
                     (fun (_username: Username) -> Minute 5.),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, sessionBreakLength, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, sessionBreakLength, username)) []
                         ])
                 )
 
             let rec daysBefore =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof daysBefore}",
                     (fun (_username: Username) -> 7),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, daysBefore, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, daysBefore, username)) []
                         ])
                 )
 
             let rec daysAfter =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof daysAfter}",
                     (fun (_username: Username) -> 7),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, daysAfter, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, daysAfter, username)) []
                         ])
                 )
 
             let rec searchText =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof searchText}",
                     (fun (_username: Username) -> ""),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, searchText, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, searchText, username)) []
                         ])
                 )
 
             let rec cellSize =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof cellSize}",
                     (fun (_username: Username) -> 23),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, cellSize, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, cellSize, username)) []
                         ])
                 )
 
             let rec leftDock =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof leftDock}",
                     (fun (_username: Username) -> None: TempUI.DockType option),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, leftDock, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, leftDock, username)) []
                         ])
                 )
 
             let rec rightDock =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof rightDock}",
                     (fun (_username: Username) -> None: TempUI.DockType option),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, rightDock, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, rightDock, username)) []
                         ])
                 )
 
             let rec hideTemplates =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof hideTemplates}",
                     (fun (_username: Username) -> false),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, hideTemplates, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, hideTemplates, username)) []
                         ])
                 )
 
             let rec hideSchedulingOverlay =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof hideSchedulingOverlay}",
                     (fun (_username: Username) -> false),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, hideSchedulingOverlay, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, hideSchedulingOverlay, username)) []
                         ])
                 )
 
             let rec showViewOptions =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof showViewOptions}",
                     (fun (_username: Username) -> false),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, showViewOptions, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, showViewOptions, username)) []
                         ])
                 )
 
             let rec filterTasksByView =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof filterTasksByView}",
                     (fun (_username: Username) -> true),
                     (fun (username: Username) ->
                         [
-                            Recoil.gunEffect (Recoil.AtomFamily (username, filterTasksByView, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, filterTasksByView, username)) []
                         ])
                 )
 
             let rec formIdFlag =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof formIdFlag}",
                     (fun (_username: Username, _key: TextKey) -> None: Guid option),
                     (fun (username: Username, key: TextKey) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, formIdFlag, (username, key)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, formIdFlag, (username, key)))
                                 (key |> TextKey.Value |> List.singleton)
                         ])
                 )
 
             let rec formVisibleFlag =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof formVisibleFlag}",
                     (fun (_username: Username, _key: TextKey) -> false),
                     (fun (username: Username, key: TextKey) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, formVisibleFlag, (username, key)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, formVisibleFlag, (username, key)))
                                 (key |> TextKey.Value |> List.singleton)
                         ])
                 )
 
             let rec accordionFlag =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof accordionFlag}",
                     (fun (_username: Username, _key: TextKey) -> [||]: string []),
                     (fun (username: Username, key: TextKey) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, accordionFlag, (username, key)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, accordionFlag, (username, key)))
                                 (key |> TextKey.Value |> List.singleton)
                         ])
                 )
@@ -342,68 +340,68 @@ module State =
                 |> List.singleton
 
             let rec taskIdSet =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof taskIdSet}",
                     (fun (_username: Username, _databaseId: DatabaseId) -> Set.empty: Set<TaskId>),
                     (fun (username: Username, databaseId: DatabaseId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, taskIdSet, (username, databaseId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, taskIdSet, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
 
             let rec name =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof name}",
                     (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.Name),
                     (fun (username: Username, databaseId: DatabaseId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, name, (username, databaseId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, name, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
 
             let rec owner =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof owner}",
                     (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.Owner),
                     (fun (username: Username, databaseId: DatabaseId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, owner, (username, databaseId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, owner, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
 
             let rec sharedWith =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof sharedWith}",
                     (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.SharedWith),
                     (fun (username: Username, databaseId: DatabaseId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, sharedWith, (username, databaseId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, sharedWith, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
 
             let rec position =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Database}/{nameof position}",
                     (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.Position),
                     (fun (username: Username, databaseId: DatabaseId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, position, (username, databaseId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, position, (username, databaseId)))
                                 (databaseIdIdentifier databaseId)
                         ])
                 )
 
 
         module rec Information =
-//            let informationIdentifier (information: Information) =
+            //            let informationIdentifier (information: Information) =
 //                [
 //                    $"{information |> Information.toString}/{
 //                                                                 information
@@ -413,13 +411,13 @@ module State =
 //                ]
 
             let rec attachments =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Information}/{nameof attachments}",
                     (fun (_username: Username, _information: Information) -> []: (FlukeDateTime * Attachment) list),
                     (fun (username: Username, information: Information) ->
                         [
-//                            Recoil.gunEffect
-//                                (Recoil.AtomFamily (username, attachments, (username, information)))
+                        //                            Store.gunEffect
+//                                (Store.InputAtom.AtomFamily (username, attachments, (username, information)))
 //                                (informationIdentifier information)
                         ])
                 )
@@ -430,133 +428,133 @@ module State =
                 taskId |> TaskId.Value |> string |> List.singleton
 
             let rec statusMap =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof statusMap}",
                     (fun (_username: Username, _taskId: TaskId) -> Map.empty: Map<DateId, ManualCellStatus>),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, statusMap, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, statusMap, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec sessions =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof sessions}",
                     (fun (_username: Username, _taskId: TaskId) -> []: Session list),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, sessions, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, sessions, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec attachments =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof attachments}",
                     (fun (_username: Username, _taskId: TaskId) -> []: (FlukeDateTime * Attachment) list),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, attachments, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, attachments, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec selectionSet =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof selectionSet}",
                     (fun (_username: Username, _taskId: TaskId) -> Set.empty: Set<DateId>),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, selectionSet, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, selectionSet, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec information =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof information}",
                     (fun (_username: Username, _taskId: TaskId) -> Task.Default.Information),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, information, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, information, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec name =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof name}",
                     (fun (_username: Username, _taskId: TaskId) -> Task.Default.Name),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, name, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, name, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec scheduling =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof scheduling}",
                     (fun (_username: Username, _taskId: TaskId) -> Task.Default.Scheduling),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, scheduling, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, scheduling, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec pendingAfter =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof pendingAfter}",
                     (fun (_username: Username, _taskId: TaskId) -> Task.Default.PendingAfter),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, pendingAfter, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, pendingAfter, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec missedAfter =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof missedAfter}",
                     (fun (_username: Username, _taskId: TaskId) -> Task.Default.MissedAfter),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, missedAfter, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, missedAfter, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec priority =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof priority}",
                     (fun (_username: Username, _taskId: TaskId) -> Task.Default.Priority),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, priority, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, priority, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
 
             let rec duration =
-                Recoil.atomFamilyWithProfiling (
+                Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Task}/{nameof duration}",
                     (fun (_username: Username, _taskId: TaskId) -> Task.Default.Duration),
                     (fun (username: Username, taskId: TaskId) ->
                         [
-                            Recoil.gunEffect
-                                (Recoil.AtomFamily (username, duration, (username, taskId)))
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, duration, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
@@ -572,7 +570,7 @@ module State =
 
     module Selectors =
         let rec gunPeers =
-            Recoil.selectorWithProfiling (
+            Store.selectorWithProfiling (
                 $"{nameof selector}/{nameof gunPeers}",
                 (fun getter ->
                     let _gunHash = getter.get Atoms.gunHash
@@ -584,7 +582,7 @@ module State =
 
 
         let rec gun =
-            Recoil.selectorWithProfiling (
+            Store.selectorWithProfiling (
                 $"{nameof selector}/{nameof gun}",
                 (fun getter ->
                     let isTesting = getter.get Atoms.isTesting
@@ -598,7 +596,7 @@ module State =
                                 {
                                     Gun.GunProps.peers = Some (gunPeers |> List.toArray)
                                     Gun.GunProps.radisk = Some false
-                                    Gun.GunProps.localStorage = Some false
+                                    Gun.GunProps.localStorage = Some true
                                     Gun.GunProps.multicast = None
                                 }
 
@@ -612,7 +610,7 @@ module State =
             )
 
         let rec gunNamespace =
-            Recoil.selectorWithProfiling (
+            Store.selectorWithProfiling (
                 $"{nameof selector}/{nameof gunNamespace}",
                 (fun getter ->
                     let gun = getter.get gun
@@ -630,7 +628,7 @@ module State =
             )
 
         let rec dateSequence =
-            Recoil.selectorWithProfiling (
+            Store.selectorWithProfiling (
                 $"{nameof selector}/{nameof dateSequence}",
                 (fun getter ->
                     let username = getter.get Atoms.username
@@ -651,12 +649,12 @@ module State =
             )
 
         let rec deviceInfo =
-            Recoil.selectorWithProfiling ($"{nameof selector}/{nameof deviceInfo}", (fun _getter -> JS.deviceInfo))
+            Store.selectorWithProfiling ($"{nameof selector}/{nameof deviceInfo}", (fun _getter -> JS.deviceInfo))
 
 
         module rec Database =
             let rec database =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Database}/{nameof database}",
                     (fun (username: Username, databaseId: DatabaseId) getter ->
                         promise {
@@ -672,7 +670,7 @@ module State =
                 )
 
             let rec isReadWrite =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Database}/{nameof isReadWrite}",
                     (fun (databaseId: DatabaseId) getter ->
                         promise {
@@ -696,7 +694,7 @@ module State =
 
         module rec Information =
             let rec informationState =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Information}/{nameof informationState}",
                     (fun (username: Username, information: Information) getter ->
                         promise {
@@ -712,7 +710,7 @@ module State =
 
         module rec Task =
             let rec task =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof task}",
                     (fun (username: Username, taskId: TaskId) getter ->
                         promise {
@@ -731,7 +729,7 @@ module State =
                 )
 
             let rec taskState =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof taskState}",
                     (fun (username: Username, taskId: TaskId) getter ->
                         promise {
@@ -803,7 +801,7 @@ module State =
                 )
 
             let rec statusMap =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof statusMap}",
                     (fun (username: Username, taskId: TaskId) getter ->
                         promise {
@@ -821,7 +819,7 @@ module State =
                 )
 
             let rec databaseId =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof databaseId}",
                     (fun (username: Username, taskId: TaskId) getter ->
                         promise {
@@ -852,7 +850,7 @@ module State =
                 )
 
             let rec isReadWrite =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof isReadWrite}",
                     (fun (username: Username, taskId: TaskId) getter ->
                         promise {
@@ -862,7 +860,7 @@ module State =
                 )
 
             let rec lastSession =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof lastSession}",
                     (fun (taskId: TaskId) getter ->
                         promise {
@@ -890,7 +888,7 @@ module State =
                 )
 
             let rec activeSession =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof activeSession}",
                     (fun (taskId: TaskId) getter ->
                         promise {
@@ -917,7 +915,7 @@ module State =
                 )
 
             let rec showUser =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof showUser}",
                     (fun (username: Username, taskId: TaskId) getter ->
                         promise {
@@ -938,7 +936,7 @@ module State =
                 )
 
             let rec hasSelection =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof hasSelection}",
                     (fun (taskId: TaskId) getter ->
                         promise {
@@ -958,7 +956,7 @@ module State =
 
         module rec Cell =
             let rec sessionStatus =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Cell}/{nameof sessionStatus}",
                     (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
                         promise {
@@ -986,13 +984,11 @@ module State =
                 )
 
             let rec selected =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Cell}/{nameof selected}",
                     (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
-                        promise {
-                            let selectionSet = getter.get (Atoms.Task.selectionSet (username, taskId))
-                            return selectionSet.Contains dateId
-                        }),
+                        let selectionSet = getter.get (Atoms.Task.selectionSet (username, taskId))
+                        selectionSet.Contains dateId),
                     (fun (username: Username, taskId: TaskId, dateId: DateId) setter newValue ->
                         setter.set (
                             (Atoms.Task.selectionSet (username, taskId)),
@@ -1003,7 +999,7 @@ module State =
 
         module rec Session =
             let rec taskIdSet =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof taskIdSet}",
                     (fun (username: Username) getter ->
                         promise {
@@ -1017,7 +1013,7 @@ module State =
                 )
 
             let rec informationSet =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof informationSet}",
                     (fun (username: Username) getter ->
                         promise {
@@ -1039,7 +1035,7 @@ module State =
                 )
 
             let rec selectedTaskIdSet =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof selectedTaskIdSet}",
                     (fun (username: Username) getter ->
                         promise {
@@ -1057,7 +1053,7 @@ module State =
                 )
 
             let rec informationStateList =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof informationStateList}",
                     (fun (username: Username) getter ->
                         promise {
@@ -1073,7 +1069,7 @@ module State =
                 )
 
             let rec activeSessions =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof activeSessions}",
                     (fun (username: Username) getter ->
                         promise {
@@ -1106,7 +1102,7 @@ module State =
                 )
 
             let rec filteredTaskIdSet =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof filteredTaskIdSet}",
                     (fun (username: Username) getter ->
                         promise {
@@ -1161,7 +1157,7 @@ module State =
                 )
 
             let rec sortedTaskIdList =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof sortedTaskIdList}",
                     (fun (username: Username) getter ->
                         promise {
@@ -1208,7 +1204,7 @@ module State =
                 )
 
             let rec tasksByInformationKind =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof tasksByInformationKind}",
                     (fun (username: Username) getter ->
                         promise {
@@ -1224,7 +1220,7 @@ module State =
                 )
 
             let rec cellSelectionMap =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof cellSelectionMap}",
                     (fun (username: Username) getter ->
                         promise {
@@ -1253,7 +1249,7 @@ module State =
 
         module rec FlukeDate =
             let isToday =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof isToday}",
                     (fun (date: FlukeDate) getter ->
                         promise {
@@ -1271,7 +1267,7 @@ module State =
                 )
 
             let rec hasCellSelection =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof FlukeDate}/{nameof hasCellSelection}",
                     (fun (date: FlukeDate) getter ->
                         promise {
@@ -1292,7 +1288,7 @@ module State =
 
         module rec BulletJournalView =
             let rec weekCellsMap =
-                Recoil.asyncSelectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof BulletJournalView}/{nameof weekCellsMap}",
                     (fun (username: Username) getter ->
                         promise {

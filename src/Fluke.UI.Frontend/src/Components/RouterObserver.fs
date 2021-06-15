@@ -2,16 +2,16 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.Core
 open Fable.Core.JsInterop
+open Feliz.Recoil
 open Browser.Types
 open Feliz.Router
 open Feliz
-open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.Shared
 open Fluke.UI.Frontend
+open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Bindings
 
 
 module RouterObserver =
@@ -25,9 +25,14 @@ module RouterObserver =
 
     type ParsedSegments = { View: View.View option }
 
-    let useLog () =
-        let debug = Recoil.useValue Atoms.debug
-        Recoil.useCallbackRef (fun _ (str: string) -> if debug then printfn $"[router log] {str}")
+    let parseSegments (deviceInfo: JS.DeviceInfo) segments =
+        match (segments
+               |> List.skip (if deviceInfo.GitHubPages then 1 else 0)) with
+        | [ "view"; "Information" ] -> { View = Some View.View.Information }
+        | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
+        | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
+        | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
+        | _ -> { View = None }
 
     [<ReactComponent>]
     let RouterObserver () =
@@ -43,13 +48,13 @@ module RouterObserver =
                         Router.navigatePath (redirect.Split "/" |> Array.skip 3)
                     | _ -> ()
                 | None -> ()),
-            [||]
+            [|
+            |]
         )
 
-        let log = useLog ()
-        let sessionRestored, setSessionRestored = Recoil.useState Atoms.sessionRestored
-        let username = Recoil.useValue Atoms.username
-        let deviceInfo = Recoil.useValue Selectors.deviceInfo
+        let sessionRestored, setSessionRestored = Store.useState Atoms.sessionRestored
+        let username = Store.useValue Atoms.username
+        let deviceInfo = Store.useValue Selectors.deviceInfo
 
         let view, setView = Recoil.useStateKeyDefault Atoms.User.view username TempUI.defaultView
 
@@ -58,7 +63,7 @@ module RouterObserver =
                 (fun _ (e: KeyboardEvent) ->
                     match e.ctrlKey, e.shiftKey, e.key with
                     | false, true, "I" ->
-                        log "RouterObserver.onKeyDown() View.Information"
+                        JS.log (fun () -> "RouterObserver.onKeyDown() View.Information")
                         setView View.View.Information
                     | false, true, "H" -> setView View.View.HabitTracker
                     | false, true, "P" -> setView View.View.Priority
@@ -80,16 +85,6 @@ module RouterObserver =
 
         let restoringInitialSegments, setRestoringInitialSegments = React.useState false
 
-        let parseSegments =
-            Recoil.useCallbackRef
-                (fun _ segments ->
-                    match (segments
-                           |> List.skip (if deviceInfo.GitHubPages then 1 else 0)) with
-                    | [ "view"; "Information" ] -> { View = Some View.View.Information }
-                    | [ "view"; "HabitTracker" ] -> { View = Some View.View.HabitTracker }
-                    | [ "view"; "Priority" ] -> { View = Some View.View.Priority }
-                    | [ "view"; "BulletJournal" ] -> { View = Some View.View.BulletJournal }
-                    | _ -> { View = None })
 
         let pathPrefix, parsedSegments =
             React.useMemo (
@@ -102,10 +97,9 @@ module RouterObserver =
                         else
                             [||]
 
-                    let parsedSegments = parseSegments currentSegments
+                    let parsedSegments = parseSegments deviceInfo currentSegments
                     pathPrefix, parsedSegments),
                 [|
-                    box parseSegments
                     box initialSegments
                     box deviceInfo
                     box currentSegments
@@ -114,27 +108,27 @@ module RouterObserver =
 
         React.useEffect (
             (fun () ->
-                log "RouterObserver effect. #00"
+                JS.log (fun () -> "RouterObserver effect. #00")
 
                 if restoringInitialSegments then
-                    log "RouterObserver. #10"
+                    JS.log (fun () -> "RouterObserver. #10")
 
                     if currentSegments <> initialSegments then
-                        log "RouterObserver. #11"
+                        JS.log (fun () -> "RouterObserver. #11")
 
-                        match (initialSegments |> parseSegments).View with
+                        match (initialSegments |> parseSegments deviceInfo).View with
                         | Some view -> setView view
                         | _ -> ()
 
                         Router.navigatePath (initialSegments |> List.toArray)
                     else
-                        log "RouterObserver. #12"
+                        JS.log (fun () -> "RouterObserver. #12")
 
                         if step <> Steps.AwaitingChange then
-                            log "RouterObserver. #12.1"
+                            JS.log (fun () -> "RouterObserver. #12.1")
                             setStep Steps.AwaitingChange
                         else
-                            log "RouterObserver. #12.2"
+                            JS.log (fun () -> "RouterObserver. #12.2")
                             setRestoringInitialSegments false
                 elif sessionRestored then
                     let pathFromState =
@@ -150,25 +144,27 @@ module RouterObserver =
                             |]
                         |> Array.append pathPrefix
 
-                    log
-                        $"RouterObserver. #1 {
-                                                  JS.JSON.stringify
-                                                      {|
-                                                          username = username
-                                                          step = step
-                                                          view = view
-                                                          currentSegments = currentSegments
-                                                          pathFromState = pathFromState
-                                                          initialSegments = initialSegments
-                                                          initialSegmentsView = (initialSegments |> parseSegments).View
-                                                          parsedSegments = parsedSegments
-                                                      |}
-                        }"
+                    JS.log
+                        (fun () ->
+                            $"RouterObserver. #1 {
+                                                      JS.JSON.stringify
+                                                          {|
+                                                              username = username
+                                                              step = step
+                                                              view = view
+                                                              currentSegments = currentSegments
+                                                              pathFromState = pathFromState
+                                                              initialSegments = initialSegments
+                                                              initialSegmentsView =
+                                                                  (initialSegments |> parseSegments deviceInfo).View
+                                                              parsedSegments = parsedSegments
+                                                          |}
+                            }")
 
                     match step, parsedSegments with
                     | _, { View = None } when pathFromState <> (currentSegments |> List.toArray) ->
                         setStep Steps.AwaitingChange
-                        log "RouterObserver. #2"
+                        JS.log (fun () -> "RouterObserver. #2")
 
                         match currentSegments with
                         | [ "login" ] when
@@ -180,37 +176,36 @@ module RouterObserver =
                         setStep Steps.Processing
                         setView pathView
 
-                        log "RouterObserver. #3"
+                        JS.log (fun () -> "RouterObserver. #3")
 
                     | Steps.AwaitingChange, { View = Some pathView } when view <> pathView ->
                         Router.navigatePath pathFromState
-                        log "RouterObserver. #4"
+                        JS.log (fun () -> "RouterObserver. #4")
 
                     | Steps.Processing, { View = Some pathView } when view = pathView ->
                         setStep Steps.AwaitingChange
-                        log "RouterObserver. #5"
+                        JS.log (fun () -> "RouterObserver. #5")
 
                     | Steps.PathChanged, { View = Some pathView } ->
                         setStep Steps.Processing
                         setView pathView
 
-                        log "RouterObserver. #6"
+                        JS.log (fun () -> "RouterObserver. #6")
 
                     | _ ->
                         if pathFromState <> (currentSegments |> List.toArray) then
                             Router.navigatePath pathFromState
 
-                        log "RouterObserver. #7"
+                        JS.log (fun () -> "RouterObserver. #7")
                 else
-                    log "RouterObserver. #8"
+                    JS.log (fun () -> "RouterObserver. #8")
 
                     setSessionRestored true),
             [|
                 box setView
                 box view
                 box pathPrefix
-                box parseSegments
-                box log
+                box deviceInfo
                 box restoringInitialSegments
                 box setRestoringInitialSegments
                 box initialSegments
@@ -228,19 +223,20 @@ module RouterObserver =
             router.pathMode
             router.onUrlChanged
                 (fun newSegments ->
-                    log
-                        $"RouterObserver. onUrlChanged. {
-                                                             JS.JSON.stringify
-                                                                 {|
-                                                                     username = username
-                                                                     step = step
-                                                                     currentSegments = currentSegments
-                                                                     view = view
-                                                                     newSegments = newSegments
-                                                                     initialSegments = initialSegments
-                                                                     parsedSegments = parsedSegments
-                                                                 |}
-                        }"
+                    JS.log
+                        (fun () ->
+                            $"RouterObserver. onUrlChanged. {
+                                                                 JS.JSON.stringify
+                                                                     {|
+                                                                         username = username
+                                                                         step = step
+                                                                         currentSegments = currentSegments
+                                                                         view = view
+                                                                         newSegments = newSegments
+                                                                         initialSegments = initialSegments
+                                                                         parsedSegments = parsedSegments
+                                                                     |}
+                            }")
 
                     match step with
                     | Steps.AwaitingChange when currentSegments <> newSegments -> setStep Steps.PathChanged
