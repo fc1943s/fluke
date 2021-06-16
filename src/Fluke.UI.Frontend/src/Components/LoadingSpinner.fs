@@ -26,7 +26,7 @@ module LoadingSpinner =
 
     [<ReactComponent>]
     let InlineLoadingSpinner () =
-        Chakra.box
+        Chakra.flex
             (fun _ -> ())
             [
                 Spinner.Spinner

@@ -10,11 +10,12 @@ module Content =
     [<ReactComponent>]
     let Content () =
         Profiling.addTimestamp "mainComponent.render"
-        let username = Store.useValue Atoms.username
+
         let sessionRestored = Store.useValue Atoms.sessionRestored
         let initialPeerSkipped = Store.useValue Atoms.initialPeerSkipped
         let gunPeers = Store.useValue Selectors.gunPeers
         let deviceInfo = Store.useValue Selectors.deviceInfo
+        let username = Store.useValue Atoms.username
 
         Chakra.flex
             (fun x ->

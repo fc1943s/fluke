@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Fable.Core
 open Fable.Core.JsInterop
 open Feliz.Recoil
-open Browser.Types
 open Feliz.Router
 open Feliz
 open Feliz.UseListener
@@ -48,29 +47,13 @@ module RouterObserver =
                         Router.navigatePath (redirect.Split "/" |> Array.skip 3)
                     | _ -> ()
                 | None -> ()),
-            [|
-            |]
+            [||]
         )
 
         let sessionRestored, setSessionRestored = Store.useState Atoms.sessionRestored
-        let username = Store.useValue Atoms.username
         let deviceInfo = Store.useValue Selectors.deviceInfo
-
+        let username = Store.useValue Atoms.username
         let view, setView = Recoil.useStateKeyDefault Atoms.User.view username TempUI.defaultView
-
-        let onKeyDown =
-            Recoil.useCallbackRef
-                (fun _ (e: KeyboardEvent) ->
-                    match e.ctrlKey, e.shiftKey, e.key with
-                    | false, true, "I" ->
-                        JS.log (fun () -> "RouterObserver.onKeyDown() View.Information")
-                        setView View.View.Information
-                    | false, true, "H" -> setView View.View.HabitTracker
-                    | false, true, "P" -> setView View.View.Priority
-                    | false, true, "B" -> setView View.View.BulletJournal
-                    | _ -> ())
-
-        React.useListener.onKeyDown onKeyDown
 
         let step, setStep = React.useState Steps.Start
 

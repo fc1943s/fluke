@@ -84,26 +84,30 @@ module ViewTabs =
                 |]
             )
 
-        let lastTabIndex, setLastTabIndex = React.useState (tabIndex |> Option.defaultValue 0)
+        let lastTabIndex = React.useRef (tabIndex |> Option.defaultValue 0)
 
 
         React.useEffect (
             (fun () ->
                 match tabIndex with
-                | Some tabIndex -> setLastTabIndex tabIndex
+                | Some tabIndex -> lastTabIndex.current <- tabIndex
                 | None -> ()),
             [|
                 box tabIndex
-                box setLastTabIndex
+                box lastTabIndex
             |]
         )
 
-        printfn $"ViewTabs.render. current view={view}. tabIndex={tabIndex} lastTabIndex={lastTabIndex}"
+        printfn $"ViewTabs.render. current view={view}. tabIndex={tabIndex} lastTabIndex={lastTabIndex.current}"
 
         Chakra.tabs
             (fun x ->
                 x.isLazy <- true
-                x.index <- tabIndex |> Option.defaultValue lastTabIndex
+
+                x.index <-
+                    tabIndex
+                    |> Option.defaultValue lastTabIndex.current
+
                 x.onChange <- fun e -> promise { setView tabs.[e].View }
                 x.flexDirection <- "column"
                 x.display <- "flex"

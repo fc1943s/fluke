@@ -10,67 +10,57 @@ open Fluke.UI.Frontend.Hooks
 
 
 module Auth =
-
     let useLogout () =
-        let gunNamespace = Store.useValue Selectors.gunNamespace
-        let setUsername = Store.useSetState Atoms.username
-        let resetGunKeys = Store.useResetState Atoms.gunKeys
-
         Store.useCallbackRef
-            (fun _setter _ ->
+            (fun setter _ ->
                 promise {
+                    let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
                     printfn "before leave"
                     gunNamespace.``#``.leave ()
-                    setUsername None
-                    resetGunKeys ()
+                    setter.set (Atoms.username, (fun _ -> None))
+                    setter.reset Atoms.gunKeys
                 })
 
     let usePostSignIn () =
-        let gunNamespace = Store.useValue Selectors.gunNamespace
-        let setUsername = Store.useSetState Atoms.username
-        let setGunKeys = Store.useSetState Atoms.gunKeys
-
         Store.useCallbackRef
-            (fun _setter username ->
+            (fun setter username ->
                 promise {
-                    setUsername (Some username)
-
+                    let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
                     let user = gunNamespace.``#``
                     let keys = user.__.sea
 
-                    match keys with
-                    | Some keys -> setGunKeys keys
-                    | None -> failwith $"No keys found for user {user.is}"
+                    return
+                        match keys with
+                        | Some keys ->
+                            setter.set (Atoms.gunKeys, (fun _ -> keys))
+                            setter.set (Atoms.username, (fun _ -> Some username))
+                            Ok (username, keys)
+                        | None -> Error $"No keys found for user {user.is}"
                 })
 
     let useSignIn () =
-        let gunNamespace = Store.useValue Selectors.gunNamespace
         let postSignIn = usePostSignIn ()
 
         Store.useCallbackRef
-            (fun _setter (username, password) ->
+            (fun setter (username, password) ->
                 promise {
+                    let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
                     let! ack = Gun.authUser gunNamespace.``#`` username password
 
-                    return!
-                        promise {
-                            match ack with
-                            | { err = None } ->
-                                do! postSignIn (Username username)
-                                return Ok ()
-                            | { err = Some error } -> return Error error
-                        }
+                    match ack with
+                    | { err = None } -> return! postSignIn (Username username)
+                    | { err = Some error } -> return Error error
                 })
 
     let useChangePassword () =
-        let username = Store.useValue Atoms.username
-        let gunNamespace = Store.useValue Selectors.gunNamespace
-
         Store.useCallbackRef
-            (fun _setter (password, newPassword) ->
+            (fun setter (password, newPassword) ->
                 promise {
+                    let! username = setter.snapshot.getPromise Atoms.username
+
                     match username with
                     | Some (Username username) ->
+                        let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
                         let! ack = Gun.changeUserPassword gunNamespace.``#`` username password newPassword
 
                         return!
@@ -84,15 +74,16 @@ module Auth =
                 })
 
     let useDeleteUser () =
-        let username = Store.useValue Atoms.username
-        let gunNamespace = Store.useValue Selectors.gunNamespace
         let logout = useLogout ()
 
         Store.useCallbackRef
-            (fun _setter password ->
+            (fun setter password ->
                 promise {
+                    let! username = setter.snapshot.getPromise Atoms.username
+
                     match username with
                     | Some (Username username) ->
+                        let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
                         let! ack = Gun.deleteUser gunNamespace.``#`` username password
                         printfn $"ack={JS.JSON.stringify ack}"
 
@@ -110,17 +101,18 @@ module Auth =
 
     let useSignUp () =
         let signIn = useSignIn ()
-        let gunNamespace = Store.useValue Selectors.gunNamespace
         let hydrateTemplates = Hydrate.useHydrateTemplates ()
 
         Store.useCallbackRef
-            (fun _ (username, password) ->
+            (fun setter (username, password) ->
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
                     elif username = (Templates.templatesUser.Username |> Username.Value) then
                         return Error "Invalid username"
                     else
+                        let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
+
                         printfn $"Auth.useSignUp. gunNamespace={JS.JSON.stringify gunNamespace}"
 
                         let! ack = Gun.createUser gunNamespace.``#`` username password
@@ -140,8 +132,8 @@ module Auth =
                                       pub = Some _
                                   } ->
                                     match! signIn (username, password) with
-                                    | Ok () ->
-                                        do! hydrateTemplates (Username username)
+                                    | Ok (username, keys) ->
+                                        do! hydrateTemplates username
 
                                         //                                        gunNamespace
                                         //                                            .ref
@@ -149,7 +141,7 @@ module Auth =
                                         //                                            .put {| username = username |}
                                         //                                        |> ignore
 
-                                        return Ok ()
+                                        return Ok (username, keys)
                                     | Error error -> return Error error
                                 //                                    do! postSignIn (UserInteraction.Username username)
 

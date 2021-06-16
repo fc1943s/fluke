@@ -801,6 +801,20 @@ module Recoil =
 
         value, (if key.IsNone then (fun _ -> ()) else setValue)
 
+    let useSetStateKeyDefault
+        (atom: 'TKey -> RecoilValue<'TValue5, ReadWrite>)
+        (key: 'TKey option)
+        (defaultValue: 'TValue5)
+        =
+        let atom =
+            match key with
+            | Some key -> atom key
+            | None -> box (RecoilValue.lift defaultValue) :?> RecoilValue<'TValue5, ReadWrite>
+
+        let setValue = Recoil.useSetState atom
+
+        if key.IsNone then (fun _ -> ()) else setValue
+
     let useStateOption (atom: RecoilValue<'TValue5, ReadWrite> option) =
         let flatAtom =
             React.useMemo (

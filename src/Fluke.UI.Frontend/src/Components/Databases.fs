@@ -275,18 +275,20 @@ module Databases =
             databaseIdSet
             |> Set.toList
             |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
-            |> Recoil.waitForAny
+            |> Recoil.waitForAll
             |> Recoil.useValue
 
         let databaseMap =
             React.useMemo (
                 (fun () ->
+                    //                    databaseList
+//                    |> Seq.choose
+//                        (fun databaseLoadable ->
+//                            match databaseLoadable.valueMaybe () with
+//                            | Some database -> Some (database.Id, database)
+//                            | _ -> None)
                     databaseList
-                    |> Seq.choose
-                        (fun databaseLoadable ->
-                            match databaseLoadable.valueMaybe () with
-                            | Some database -> Some (database.Id, database)
-                            | _ -> None)
+                    |> Seq.map (fun database -> database.Id, database)
                     |> Map.ofSeq),
                 [|
                     box databaseList
