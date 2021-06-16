@@ -74,6 +74,7 @@ module TaskName =
                                                 x.height <- "15px"
                                                 x.color <- "whiteAlpha.700"
                                                 x.display <- if isReadWrite then null else "none"
+                                                x.marginTop <- "-1px"
                                                 x.marginLeft <- "6px"
                                     |}
                             Body =
@@ -84,10 +85,7 @@ module TaskName =
 
                                             x.icon <-
                                                 Icons.bs.BsPen
-                                                |> Icons.renderChakra
-                                                    (fun x ->
-                                                        x.fontSize <- "13px"
-                                                        x.marginTop <- "-1px")
+                                                |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                             x.onClick <-
                                                 fun _ ->
@@ -107,10 +105,7 @@ module TaskName =
 
                                             x.icon <-
                                                 Icons.bs.BsTrash
-                                                |> Icons.renderChakra
-                                                    (fun x ->
-                                                        x.fontSize <- "13px"
-                                                        x.marginTop <- "-1px")
+                                                |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                             x.onClick <- fun e -> promise { e.preventDefault () })
                                         [

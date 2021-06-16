@@ -48,7 +48,7 @@ jobs:
           name: cypress-videos
           path: ./src/Fluke.UI.Frontend/cypress/videos
 
-      - uses: docker://electronuserland/builder:wine
+      - uses: docker://koellewe/wine-and-node:2e9517c17fa6
       - run: cd ./src/Fluke.UI.Frontend && yarn electron-build
 
       - uses: actions/upload-artifact@v2

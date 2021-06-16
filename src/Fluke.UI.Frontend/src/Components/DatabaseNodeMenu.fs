@@ -54,10 +54,7 @@ module DatabaseNodeMenu =
 
                                     x.icon <-
                                         Icons.bs.BsPlus
-                                        |> Icons.renderChakra
-                                            (fun x ->
-                                                x.fontSize <- "13px"
-                                                x.marginTop <- "-1px")
+                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                     x.onClick <-
                                         fun _ ->
@@ -79,10 +76,7 @@ module DatabaseNodeMenu =
 
                                     x.icon <-
                                         Icons.bs.BsPen
-                                        |> Icons.renderChakra
-                                            (fun x ->
-                                                x.fontSize <- "13px"
-                                                x.marginTop <- "-1px")
+                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                     x.onClick <-
                                         fun _ ->
@@ -101,10 +95,7 @@ module DatabaseNodeMenu =
                             (fun x ->
                                 x.icon <-
                                     Icons.fi.FiCopy
-                                    |> Icons.renderChakra
-                                        (fun x ->
-                                            x.fontSize <- "13px"
-                                            x.marginTop <- "-1px")
+                                    |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                 x.isDisabled <- true
                                 x.onClick <- fun e -> promise { e.preventDefault () })
@@ -116,10 +107,7 @@ module DatabaseNodeMenu =
                             (fun x ->
                                 x.icon <-
                                     Icons.bi.BiExport
-                                    |> Icons.renderChakra
-                                        (fun x ->
-                                            x.fontSize <- "13px"
-                                            x.marginTop <- "-1px")
+                                    |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                 x.onClick <- fun _ -> exportDatabase (input.Username, input.DatabaseId))
                             [
@@ -130,10 +118,7 @@ module DatabaseNodeMenu =
                             (fun x ->
                                 x.icon <-
                                     Icons.bs.BsTrash
-                                    |> Icons.renderChakra
-                                        (fun x ->
-                                            x.fontSize <- "13px"
-                                            x.marginTop <- "-1px")
+                                    |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                 x.onClick <- fun e -> promise { e.preventDefault () })
                             [
