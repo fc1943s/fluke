@@ -87,7 +87,7 @@ module Full =
                     let dbName = "db1"
                     let taskName = "task1"
 
-                    Cy2.expectLocation $"{homeUrl}/login"
+                    Cy2.expectLocation $"{homeUrl}/"
                     Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"
 
                     Cy.focused().click None |> ignore
