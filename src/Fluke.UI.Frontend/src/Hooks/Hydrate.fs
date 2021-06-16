@@ -29,7 +29,7 @@ module Hydrate =
 
     let useHydrateDatabase () = Store.useCallbackRef hydrateDatabase
 
-    let hydrateTask (setter: Store.CallbackMethods) (username, atomScope, databaseId, task: Task) =
+    let hydrateTask (setter: Store.CallbackMethods) (username, atomScope, _databaseId, task: Task) =
         promise {
             //            setter.scopedSet username atomScope (Atoms.Task.databaseId, (username, task.Id), databaseId)
             setter.scopedSet username atomScope (Atoms.Task.name, (username, task.Id), task.Name)
@@ -172,19 +172,32 @@ module Hydrate =
                                 |> Map.ofArray
                         }
 
-                    let json = databaseState |> Gun.jsonEncode
+                    if databaseState.TaskStateMap
+                       |> Map.exists
+                           (fun _ taskState ->
+                               taskState.Task.Name
+                               |> TaskName.Value
+                               |> String.IsNullOrWhiteSpace
+                               || taskState.Task.Information
+                                  |> Information.Name
+                                  |> InformationName.Value
+                                  |> String.IsNullOrWhiteSpace) then
+                        toast (fun x -> x.description <- "Database is not fully synced")
+                    else
 
-                    let timestamp =
-                        (FlukeDateTime.FromDateTime DateTime.Now)
-                        |> FlukeDateTime.Stringify
+                        let json = databaseState |> Gun.jsonEncode
 
-                    JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
+                        let timestamp =
+                            (FlukeDateTime.FromDateTime DateTime.Now)
+                            |> FlukeDateTime.Stringify
 
-                    toast
-                        (fun x ->
-                            x.description <- "Database exported successfully"
-                            x.title <- "Success"
-                            x.status <- "success")
+                        JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
+
+                        toast
+                            (fun x ->
+                                x.description <- "Database exported successfully"
+                                x.title <- "Success"
+                                x.status <- "success")
                 })
 
     let useImportDatabase () =

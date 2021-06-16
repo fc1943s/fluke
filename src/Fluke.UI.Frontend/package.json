@@ -170,16 +170,16 @@
       "main": "cra_output/electron.js"
     },
     "win": {
-      "icon": "./cra_output/icons/310x310.png",
+      "icon": "./cra_output/icons/512x512.png",
       "target": [ "nsis", "zip" ]
     },
     "mac": {
-      "icon": "./cra_output/icons/310x310.png",
+      "icon": "./cra_output/icons/512x512.png",
       "category": "public.app-category.utilities",
       "target": [ "zip" ]
     },
     "linux": {
-      "icon": "./cra_output/icons/310x310.png",
+      "icon": "./cra_output/icons/512x512.png",
       "category": "Utility",
       "target": [ "AppImage", "snap" ]
     },

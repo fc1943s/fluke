@@ -124,7 +124,7 @@
         <Content Include="public\icons\32x32.png" />
         <Content Include="public\icons\16x16.png" />
         <Content Include="public\icons\128x128.png" />
-        <Content Include="public\icons\310x310.png" />
+        <Content Include="public\icons\512x512.png" />
         <Content Include="public\manifest.json" />
         <Content Include="public\index.tsx" />
         <Content Include="public\index.ts" />
