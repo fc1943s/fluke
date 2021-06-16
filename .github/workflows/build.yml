@@ -49,7 +49,7 @@ jobs:
           path: ./src/Fluke.UI.Frontend/cypress/videos
 
       - uses: docker://electronuserland/builder:wine
-        run: cd ./src/Fluke.UI.Frontend && yarn electron-build
+      - run: cd ./src/Fluke.UI.Frontend && yarn electron-build
 
       - uses: actions/upload-artifact@v2
         with:
