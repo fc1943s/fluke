@@ -7,6 +7,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+#    container: electronuserland/builder:wine
     steps:
       - uses: actions/checkout@v2
 
@@ -47,7 +48,8 @@ jobs:
           name: cypress-videos
           path: ./src/Fluke.UI.Frontend/cypress/videos
 
-      - run: cd ./src/Fluke.UI.Frontend && yarn electron-build
+      - uses: docker://electronuserland/builder:wine
+        run: cd ./src/Fluke.UI.Frontend && yarn electron-build
 
       - uses: actions/upload-artifact@v2
         with:
@@ -56,6 +58,7 @@ jobs:
             ./src/Fluke.UI.Frontend/electron_output/*.zip
             ./src/Fluke.UI.Frontend/electron_output/*.AppImage
             ./src/Fluke.UI.Frontend/electron_output/*.snap
+            ./src/Fluke.UI.Frontend/electron_output/*.dmg
           if-no-files-found: error
 
       - uses: peaceiris/actions-gh-pages@v3

@@ -39,7 +39,7 @@
 
     "electron-watch": "electronmon .",
     "preelectron-build": "cp src/electron.js cra_output/electron.js",
-    "electron-build": "electron-builder --win --linux --x64 --publish=onTag",
+    "electron-build": "electron-builder --mac --win --linux --x64 --publish=onTag",
 
     "cordova-requirements": "cordova requirements",
     "emulate-android": "cordova emulate android",
