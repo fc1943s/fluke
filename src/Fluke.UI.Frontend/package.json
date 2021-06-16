@@ -27,7 +27,7 @@
     "ts2fable-react-icons": "ts2fable node_modules/react-icons/all.d.ts src/Bindings/Vendor/ReactIcons.fs -e react-icons",
     "test-parallel": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --rootDir . --testNamePattern=",
     "test-sequential": "yarn test-parallel --runInBand",
-    "test": "yarn test-parallel",
+    "test": "yarn test-sequential",
     "cypress-install": "cypress install --force",
     "cypress": "cypress open",
     "cypress-watch": "concurrently \"yarn:watch\" \"yarn:cypress\"",
