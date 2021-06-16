@@ -10,7 +10,7 @@ const port = 33929;
 let listen = false;
 
 app.commandLine.appendSwitch('disable-features', 'SpareRendererForSitePerProcess,WebRtcHideLocalIpsWithMdns');
-app.setPath('userData', path.resolve(app.getAppPath() + '/../../userData'));
+app.setPath('userData', process.env.FLUKE_USER_DATA_PATH || path.resolve(app.getAppPath() + '/../../userData'));
 
 async function createWindow() {
   (async () => {
