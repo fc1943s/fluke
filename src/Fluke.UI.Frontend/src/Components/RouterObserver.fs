@@ -2,12 +2,10 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.Core
 open Fable.Core.JsInterop
-open Feliz.Recoil
 open Feliz.Router
 open Feliz
 open Feliz.UseListener
 open Fluke.Shared
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
@@ -53,7 +51,6 @@ module RouterObserver =
         let sessionRestored, setSessionRestored = Store.useState Atoms.sessionRestored
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let username = Store.useValue Atoms.username
-        let view, setView = Recoil.useStateKeyDefault Atoms.User.view username TempUI.defaultView
 
         let step, setStep = React.useState Steps.Start
 
@@ -99,10 +96,6 @@ module RouterObserver =
                     if currentSegments <> initialSegments then
                         JS.log (fun () -> "RouterObserver. #11")
 
-                        match (initialSegments |> parseSegments deviceInfo).View with
-                        | Some view -> setView view
-                        | _ -> ()
-
                         Router.navigatePath (initialSegments |> List.toArray)
                     else
                         JS.log (fun () -> "RouterObserver. #12")
@@ -116,11 +109,7 @@ module RouterObserver =
                 elif sessionRestored then
                     let pathFromState =
                         match username with
-                        | Some _ ->
-                            [|
-                                "view"
-                                string view
-                            |]
+                        | Some _ -> [||]
                         | None ->
                             [|
                                 "login"
@@ -134,7 +123,6 @@ module RouterObserver =
                                                           {|
                                                               username = username
                                                               step = step
-                                                              view = view
                                                               currentSegments = currentSegments
                                                               pathFromState = pathFromState
                                                               initialSegments = initialSegments
@@ -155,23 +143,21 @@ module RouterObserver =
                             && initialSegments.[0] <> "login" -> setRestoringInitialSegments true
                         | _ -> Router.navigatePath pathFromState
 
-                    | Steps.Start, { View = Some pathView } ->
+                    | Steps.Start, { View = Some _pathView } ->
                         setStep Steps.Processing
-                        setView pathView
 
                         JS.log (fun () -> "RouterObserver. #3")
 
-                    | Steps.AwaitingChange, { View = Some pathView } when view <> pathView ->
+                    | Steps.AwaitingChange, { View = Some _pathView } ->
                         Router.navigatePath pathFromState
                         JS.log (fun () -> "RouterObserver. #4")
 
-                    | Steps.Processing, { View = Some pathView } when view = pathView ->
+                    | Steps.Processing, { View = Some _pathView } ->
                         setStep Steps.AwaitingChange
                         JS.log (fun () -> "RouterObserver. #5")
 
-                    | Steps.PathChanged, { View = Some pathView } ->
+                    | Steps.PathChanged, { View = Some _pathView } ->
                         setStep Steps.Processing
-                        setView pathView
 
                         JS.log (fun () -> "RouterObserver. #6")
 
@@ -185,8 +171,6 @@ module RouterObserver =
 
                     setSessionRestored true),
             [|
-                box setView
-                box view
                 box pathPrefix
                 box deviceInfo
                 box restoringInitialSegments
@@ -214,7 +198,6 @@ module RouterObserver =
                                                                          username = username
                                                                          step = step
                                                                          currentSegments = currentSegments
-                                                                         view = view
                                                                          newSegments = newSegments
                                                                          initialSegments = initialSegments
                                                                          parsedSegments = parsedSegments

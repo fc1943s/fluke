@@ -128,7 +128,6 @@ module Full =
                     //                    Cy.wait 400
 //                    Cy.wait 5000
 
-                    Cy2.selectorFocusTypeText "input[placeholder^=new-task-]" taskName
 
                     Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Select..."
 
@@ -159,6 +158,7 @@ module Full =
 //                    Cy.wait 3000
 //                    Cy.wait 3000
 //
+                    Cy2.selectorFocusTypeText "input[placeholder^=new-task-]" taskName
 
                     Cy2.clickText "Save"
 

@@ -85,10 +85,11 @@ module rec Gun =
         else
             importDefault "gun"
 
-    importAll "gun/lib/radix"
-    importAll "gun/lib/radisk"
-    importAll "gun/lib/store"
-    importAll "gun/lib/rindexed"
+            importAll "gun/lib/radix"
+            importAll "gun/lib/radisk"
+            importAll "gun/lib/store"
+            importAll "gun/lib/rindexed"
+
 
     importAll "gun/sea"
     importAll "gun/lib/promise"
@@ -97,7 +98,7 @@ module rec Gun =
         Gun.gun
             {
                 Gun.GunProps.peers = None
-                Gun.GunProps.radisk = None
+                Gun.GunProps.radisk = Some false
                 Gun.GunProps.localStorage = None
                 Gun.GunProps.multicast = None
             }

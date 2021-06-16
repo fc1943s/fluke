@@ -48,7 +48,7 @@ module Router =
                 ]
 
             let initialSetter (setter: CallbackMethods) =
-                promise { setter.set (Atoms.username, fun _ -> Some Templates.templatesUser.Username) }
+                promise { setter.set (Atoms.username, (fun _ -> Some Templates.templatesUser.Username)) }
 
             let initialize () =
                 promise {
@@ -58,7 +58,7 @@ module Router =
                 }
 
             let setView (setter: CallbackMethods) (view: View.View) =
-                RTL.act (fun () -> setter.set (Atoms.User.view Templates.templatesUser.Username, fun _ -> view))
+                RTL.act (fun () -> setter.set (Atoms.User.view Templates.templatesUser.Username, (fun _ -> view)))
                 RTL.waitFor id
 
             let expectView (setter: CallbackMethods) (expected: View.View) =
@@ -100,8 +100,8 @@ module Router =
 
                     do!
                         [|
-                            "view"
-                            (string TempUI.defaultView)
+//                            "view"
+//                            (string TempUI.defaultView)
                         |]
                         |> expectUrl
 
@@ -118,8 +118,8 @@ module Router =
 
                     do!
                         [|
-                            "view"
-                            "BulletJournal"
+                        //                            "view"
+//                            "BulletJournal"
                         |]
                         |> expectUrl
 
@@ -147,7 +147,11 @@ module Router =
                 promise {
                     let! _subject, setter = initialize ()
 
-                    RTL.act (fun () -> (setter.current ()).set (Atoms.username, fun _ -> None))
+                    RTL.act
+                        (fun () ->
+                            (setter.current ())
+                                .set (Atoms.username, (fun _ -> None)))
+
                     do! RTL.waitFor id
 
                     [|
@@ -178,8 +182,8 @@ module Router =
 
                     do!
                         [|
-                            "view"
-                            "Information"
+                        //                            "view"
+//                            "Information"
                         |]
                         |> expectUrl
 
@@ -199,7 +203,11 @@ module Router =
 
                     let! _subject, setter = initialize ()
 
-                    RTL.act (fun () -> (setter.current ()).set (Atoms.username, fun _ -> None))
+                    RTL.act
+                        (fun () ->
+                            (setter.current ())
+                                .set (Atoms.username, (fun _ -> None)))
+
                     do! RTL.waitFor id
 
                     do!
