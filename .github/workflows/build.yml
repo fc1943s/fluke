@@ -34,6 +34,10 @@ jobs:
           start: yarn frontend-serve
           command: yarn cypress-run
 
+      - uses: actions/upload-artifact@v2
+        with:
+          name: cra_output
+          path: ./src/Fluke.UI.Frontend/cra_output
 
       - uses: actions/upload-artifact@v2
         if: failure()
@@ -52,8 +56,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [macos-latest, ubuntu-latest, windows-latest]
+        os: [ macos-latest, ubuntu-latest, windows-latest ]
     steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: cra_output
+          path: ./src/Fluke.UI.Frontend/cra_output
+
       - uses: samuelmeuli/action-electron-builder@v1
         with:
           skip_build: true
@@ -72,6 +83,13 @@ jobs:
     needs: electron
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/download-artifact@v2
+        with:
+          name: cra_output
+          path: ./src/Fluke.UI.Frontend/cra_output
+
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
