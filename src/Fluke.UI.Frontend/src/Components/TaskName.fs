@@ -37,12 +37,12 @@ module TaskName =
                 x.alignItems <- "center"
                 x.ref <- ref
                 x.position <- "relative"
-                x.height <- $"{cellSize}px"
-                x.zIndex <- if hovered then 1 else 0)
+                x.height <- $"{cellSize}px")
             [
                 Chakra.box
                     (fun x ->
                         x.color <- if hasSelection then "#ff5656" else null
+                        x.zIndex <- if hovered then 1 else 0
                         x.overflow <- "hidden"
                         x.paddingLeft <- "5px"
                         x.paddingRight <- "5px"
