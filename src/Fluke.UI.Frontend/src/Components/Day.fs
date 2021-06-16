@@ -40,6 +40,7 @@ module Day =
                     | StartOfWeek -> "#222"
                     | _ -> null
 
+                x.whiteSpace <- "nowrap"
                 x.height <- $"{cellSize}px"
                 x.width <- $"{cellSize}px"
                 x.lineHeight <- $"{cellSize}px"

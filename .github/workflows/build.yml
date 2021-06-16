@@ -51,7 +51,11 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          path: ./src/Fluke.UI.Frontend/electron_output/*.exe
+          path: |
+            ./src/Fluke.UI.Frontend/electron_output/*.exe
+            ./src/Fluke.UI.Frontend/electron_output/*.zip
+            ./src/Fluke.UI.Frontend/electron_output/*.AppImage
+            ./src/Fluke.UI.Frontend/electron_output/*.snap
           if-no-files-found: error
 
       - uses: peaceiris/actions-gh-pages@v3

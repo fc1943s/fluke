@@ -267,7 +267,7 @@ module RightDock =
                             (fun x ->
                                 x.left <- "0"
                                 x.position <- "absolute"
-                                x.transform <- "rotate(90deg) translate(-7%, 0%)"
+                                x.transform <- "rotate(90deg) translate(-24px, 0%)"
                                 x.transformOrigin <- "0 100%"
                                 x.height <- "24px")
                             [

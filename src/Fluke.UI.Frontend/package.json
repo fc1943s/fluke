@@ -39,7 +39,7 @@
 
     "electron-watch": "electronmon .",
     "preelectron-build": "cp src/electron.js cra_output/electron.js",
-    "electron-build": "electron-builder --publish=onTag",
+    "electron-build": "electron-builder --win --linux --x64 --publish=onTag",
 
     "cordova-requirements": "cordova requirements",
     "emulate-android": "cordova emulate android",
@@ -168,11 +168,19 @@
     "extraMetadata": {
       "main": "cra_output/electron.js"
     },
-    "mac": {
-      "icon": "./cra_output/icons/310x310.png"
-    },
     "win": {
-      "icon": "./cra_output/icons/310x310.png"
+      "icon": "./cra_output/icons/310x310.png",
+      "target": [ "nsis", "zip" ]
+    },
+    "mac": {
+      "icon": "./cra_output/icons/310x310.png",
+      "category": "public.app-category.utilities",
+      "target": [ "dmg" ]
+    },
+    "linux": {
+      "icon": "./cra_output/icons/310x310.png",
+      "category": "Utility",
+      "target": [ "AppImage", "snap" ]
     },
     "asar": "false",
     "nsis": {
