@@ -38,8 +38,9 @@
     "postinstall": "patch-package",
 
     "electron-watch": "electronmon .",
-    "preelectron-build": "cp src/electron.js cra_output/electron.js",
-    "electron-build": "electron-builder --mac --win --linux --x64 --publish=onTag",
+    "preelectron-build-base": "cp src/electron.js cra_output/electron.js",
+    "electron-build-base": "electron-builder --publish=onTag",
+    "electron-build": "yarn electron-build-base --mac --win --linux --x64",
 
     "cordova-requirements": "cordova requirements",
     "emulate-android": "cordova emulate android",
@@ -175,7 +176,7 @@
     "mac": {
       "icon": "./cra_output/icons/310x310.png",
       "category": "public.app-category.utilities",
-      "target": [ "dmg" ]
+      "target": [ "zip" ]
     },
     "linux": {
       "icon": "./cra_output/icons/310x310.png",

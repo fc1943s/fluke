@@ -58,7 +58,6 @@ jobs:
             ./src/Fluke.UI.Frontend/electron_output/*.zip
             ./src/Fluke.UI.Frontend/electron_output/*.AppImage
             ./src/Fluke.UI.Frontend/electron_output/*.snap
-            ./src/Fluke.UI.Frontend/electron_output/*.dmg
           if-no-files-found: error
 
       - uses: peaceiris/actions-gh-pages@v3
