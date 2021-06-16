@@ -33,6 +33,7 @@ module JS =
             UserAgent: string
             IsEdge: bool
             IsMobile: bool
+            IsElectron: bool
             IsExtension: bool
             GitHubPages: bool
             IsTesting: bool
@@ -45,6 +46,7 @@ module JS =
                 UserAgent = "window==null"
                 IsEdge = false
                 IsMobile = false
+                IsElectron = false
                 IsExtension = false
                 GitHubPages = false
                 IsTesting = false
@@ -53,6 +55,7 @@ module JS =
             let userAgent = if window?navigator = None then "" else window?navigator?userAgent
 
             let isEdge = (JSe.RegExp @"Edg\/").Test userAgent
+            let isElectron = (JSe.RegExp @"Electron\/").Test userAgent
 
             let isMobile =
                 JSe
@@ -68,6 +71,7 @@ module JS =
                     UserAgent = userAgent
                     IsEdge = isEdge
                     IsMobile = isMobile
+                    IsElectron = isElectron
                     IsExtension = isExtension
                     GitHubPages = gitHubPages
                     IsTesting = isTesting
@@ -79,6 +83,7 @@ module JS =
     let isDebug =
         not deviceInfo.GitHubPages
         && not deviceInfo.IsExtension
+        && not deviceInfo.IsElectron
         && not deviceInfo.IsMobile
 
     let inline log fn =

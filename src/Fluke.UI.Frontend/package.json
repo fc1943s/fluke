@@ -2,7 +2,7 @@
   "name": "fluke",
   "displayName": "Fluke",
   "version": "0.0.1",
-  "description": "",
+  "description": "Opinionated Information manager to tackle decision fatigue",
   "repository": {
     "type": "git",
     "url": "https://github.com/fc1943s/fluke.git"
@@ -13,8 +13,8 @@
   "private": true,
   "scripts": {
     "build:fable": "dotnet tool restore && dotnet paket install && dotnet fable",
-    "build:react": "cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build && rm -rf dist && mv build dist",
-    "parcel-build:react": "parcel build static/index.html --detailed-report && cp -r static/manifest.json static/404.html static/sounds static/icons dist",
+    "build:react": "rm -rf build && cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build && rm -rf cra_output && mv build cra_output",
+    "parcel-build:react": "parcel build static/index.html --detailed-report && cp -r static/manifest.json static/404.html static/sounds static/icons parcel_output",
     "watch:frontend-build": "dotnet fable watch",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
     "old-watch:frontend-parcel": "cross-env EXTEND_ESLINT=true parcel public/index.html --https --port 33922 --detailed-report",
@@ -32,18 +32,19 @@
     "cypress": "cypress open",
     "cypress-watch": "concurrently \"yarn:watch\" \"yarn:cypress\"",
     "cypress-run": "cross-env NODE_TLS_REJECT_UNAUTHORIZED=0 cypress run --headed",
-    "frontend-serve": "cross-env PORT=33922 serve dist",
+    "frontend-serve": "cross-env PORT=33922 NODE_ENV=production serve cra_output",
     "test-watch": "yarn test --watchAll",
     "test-build-watch": "concurrently \"yarn:watch:frontend-build\" \"yarn:test-watch\"",
     "postinstall": "patch-package",
 
-    "dev": "electron-webpack dev",
-    "compile": "electron-webpack",
-    "dist": "yarn compile && electron-builder",
+    "electron-watch": "electronmon .",
+    "preelectron-build": "cp src/electron.js cra_output/electron.js",
+    "electron-build": "electron-builder --publish=onTag",
+    "electron-dist": "yarn electron-build --publish=always",
 
     "cordova-requirements": "cordova requirements",
     "emulate-android": "cordova emulate android",
-    "build-android": "yarn build && rm -rf www && cp -r dist www && cordova build android --prod --release -- --keystore ~/.android/debug.keystore",
+    "build-android": "yarn build && rm -rf www && cp -r cra_output www && cordova build android --prod --release -- --keystore ~/.android/debug.keystore",
     "deploy-android": "adb install -d -r ./platforms/android/app/build/outputs/apk/release/app-release-unsigned.apk",
     "run-android": "cordova run android --device"
   },
@@ -70,9 +71,11 @@
     "framer-motion": "~4.1",
     "react-icons": "~4.2",
 
+    "electron-is-dev": "~2.0",
     "electron-window-state": "~5.0",
     "electron-devtools-installer": "~3.2",
     "devtron": "~1.4",
+    "https-localhost": "~4.6",
 
     "react-checkbox-tree": "~1.7",
 
@@ -94,8 +97,8 @@
     "fable-compiler": "~2.13",
 
     "electron": "~14.0.0-beta.6",
-    "electron-webpack": "~2.8",
     "electron-builder": "~22.11",
+    "electronmon": "~2.0",
 
     "@typescript-eslint/eslint-plugin": "~4.27",
     "@typescript-eslint/parser": "~4.27",
@@ -129,8 +132,6 @@
     "cypress": "~7.5",
     "cypress-terminal-report": "~3.2",
 
-    "https-localhost": "~4.6",
-
     "patch-package": "~6.4",
     "postinstall-postinstall": "~2.1",
 
@@ -154,20 +155,35 @@
     "cordova-ios": "~6.2",
     "cordova-plugin-whitelist": "~1.3"
   },
+  "build": {
+    "appId": "fluke",
+    "productName": "Fluke",
+    "directories": {
+      "output": "electron_output",
+      "buildResources": "cra_output",
+      "app": "."
+    },
+    "files": [
+      "./cra_output/**/*"
+    ],
+    "mac": {
+      "icon": "./cra_output/icons/310x310.png"
+    },
+    "win": {
+      "icon": "./cra_output/icons/310x310.png"
+    },
+    "asar": "false",
+    "nsis": {
+      "oneClick": "false",
+      "allowToChangeInstallationDirectory": "true",
+      "installerIcon": "cra_output/favicon.ico",
+      "installerHeaderIcon": "cra_output/favicon.ico",
+      "deleteAppDataOnUninstall": false
+    }
+  },
   "keywords": [
     "ecosystem:cordova"
   ],
-  "electronWebpack": {
-    "title": true,
-    "main": {
-      "sourceDirectory": "../Fluke.UI.Electron.Main",
-      "webpackConfig": "../Fluke.UI.Electron.Main/webpack.additions.main.js"
-    },
-    "renderer": {
-      "sourceDirectory": "../Fluke.UI.Electron.Renderer",
-      "webpackConfig": "../Fluke.UI.Electron.Renderer/webpack.additions.renderer.js"
-    }
-  },
   "cordova": {
     "plugins": {
       "cordova-plugin-whitelist": {}

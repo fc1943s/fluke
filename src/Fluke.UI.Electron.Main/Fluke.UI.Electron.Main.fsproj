@@ -10,8 +10,6 @@
     <Compile Include="DevTools.fs" />
     <Compile Include="Main.fs" />
     <Content Include="paket.references" />
-    <Content Include="main.js" />
-    <Content Include="webpack.additions.main.js" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>

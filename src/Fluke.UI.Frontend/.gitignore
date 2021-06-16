@@ -5,6 +5,9 @@ cypress/videos/
 
 www/
 
+cra_output/
+electron_output/
+
 # Cordova
 /plugins/
 /platforms/

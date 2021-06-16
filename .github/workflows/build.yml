@@ -34,19 +34,27 @@ jobs:
           start: yarn frontend-serve
           command: yarn cypress-run
 
-      - uses: actions/upload-artifact@v1
+
+      - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: cypress-screenshots
           path: ./src/Fluke.UI.Frontend/cypress/screenshots
 
-      - uses: actions/upload-artifact@v1
+      - uses: actions/upload-artifact@v2
         if: failure()
         with:
           name: cypress-videos
           path: ./src/Fluke.UI.Frontend/cypress/videos
 
+      - run: cd ./src/Fluke.UI.Frontend && yarn electron-build
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./src/Fluke.UI.Frontend/electron_output/*.exe
+          if-no-files-found: error
+
       - uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./src/Fluke.UI.Frontend/dist
+          publish_dir: ./src/Fluke.UI.Frontend/cra_output

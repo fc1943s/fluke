@@ -6,8 +6,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="paket.references" />
-    <Content Include="main.js" />
-    <Content Include="webpack.additions.renderer.js" />
   </ItemGroup>
   <Import Project="..\..\.paket\Paket.Restore.targets" />
 </Project>
