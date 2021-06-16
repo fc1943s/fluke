@@ -117,7 +117,6 @@
         <Compile Include="src\Tests\CellSelection\HorizontalShiftPressed.test.fs" />
         <Compile Include="src\Tests\CellSelection\VerticalShiftPressed.test.fs" />
         <Compile Include="src\Tests\CellSelection\BoxSelection.test.fs" />
-        <Compile Include="src\Tests\Router.test.fs" />
         <Compile Include="src\Tests\Full.spec.fs" />
         <Content Include="public\sounds\tick.wav" />
         <Content Include="public\sounds\ding.wav" />
