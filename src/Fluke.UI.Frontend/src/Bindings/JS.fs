@@ -104,42 +104,64 @@ module JS =
     let toJsArray a = a |> Array.toList |> List.toArray
 
     let inline sleep (ms: int) = Async.Sleep ms
-    //        Async.FromContinuations (fun (res, _, _) -> JS.setTimeout res ms |> ignore)
+    //        Promise.sleep ms |> Async.AwaitPromise
+//        Async.FromContinuations (fun (res, _, _) -> JS.setTimeout res ms |> ignore)
+
+    let exited () =
+        if not deviceInfo.IsTesting then
+            false
+        else
+            Browser.Dom.window?exit = true
 
     let rec waitFor fn =
         async {
-            let ok = fn ()
-
-            if ok then
-                return ()
+            if exited () then
+                return (unbox null)
             else
-                printfn "waitFor: false. waiting..."
-                do! sleep 100
-                return! waitFor fn
+                let ok = fn ()
+
+                if ok then
+                    return ()
+                else
+                    printfn "waitFor: false. waiting..."
+
+                    do! sleep 100
+                    return! waitFor fn
         }
 
     let rec waitForObject fn =
         async {
-            let! obj = fn ()
+            if exited () then
+                return (unbox null)
+            else
+                let! obj = fn ()
 
-            match box obj with
-            | null ->
-                printfn "waitForObject: null. waiting..."
-                do! sleep 100
-                return! waitForObject fn
-            | _ -> return obj
+                match box obj with
+                | null ->
+                    printfn "waitForObject: null. waiting..."
+
+                    do! sleep 100
+                    return! waitForObject fn
+                | _ -> return obj
         }
 
     let rec waitForSome fn =
         async {
-            let! obj = fn ()
+            if exited () then
+                return (unbox null)
+            else
+                let! obj = fn ()
 
-            match obj with
-            | Some obj -> return obj
-            | None ->
-                consoleLog ("waitForSome: none. waiting...", fn.ToString ())
-                do! sleep 100
-                return! waitForSome fn
+                match obj with
+                | Some obj -> return obj
+                | None ->
+                    if deviceInfo.IsTesting then
+                        do! sleep 0
+                    else
+                        consoleLog ("waitForSome: none. waiting...", fn.ToString ())
+                        do! sleep 100
+
+                    return! waitForSome fn
         }
 
     let ofNonEmptyObj obj =

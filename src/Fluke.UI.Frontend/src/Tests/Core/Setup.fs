@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Tests.Core
 
+open Fable.Jester
 open Fable.ReactTestingLibrary
 open Fable.Core.JsInterop
 open Feliz
@@ -9,6 +10,7 @@ open Fluke.UI.Frontend.Bindings
 open Fable.React
 open Fluke.UI.Frontend.Hooks
 open Microsoft.FSharp.Core.Operators
+open Fable.Core
 
 
 module RTL =
@@ -18,6 +20,7 @@ module RTL =
 
             for _ in 0 .. ms / 500 do
                 do! RTL.waitFor (Promise.sleep 500)
+
             printfn $"RTL.sleep({ms}) end"
         }
 
@@ -27,6 +30,15 @@ module Setup =
 
     let handlePromise promise = promise
     //        |> Promise.catch (fun ex -> Fable.Core.JS.console.error (box ex))
+
+    Jest.afterAll (
+        promise {
+            Browser.Dom.window?exit <- true
+            Browser.Dom.window?gunNamespace <- null
+            Browser.Dom.window?lastGun <- null
+            printfn "after all"
+        }
+    )
 
     [<ReactComponent>]
     let RootWrapper cmp =
