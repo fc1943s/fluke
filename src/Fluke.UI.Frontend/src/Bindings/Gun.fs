@@ -83,25 +83,16 @@ module rec Gun =
         if JS.deviceInfo.IsTesting then
             importDefault "gun/gun"
         else
-            importDefault "gun"
-
             importAll "gun/lib/radix"
             importAll "gun/lib/radisk"
             importAll "gun/lib/store"
             importAll "gun/lib/rindexed"
 
+            importDefault "gun"
+
 
     importAll "gun/sea"
     importAll "gun/lib/promise"
-
-    let gunTest =
-        Gun.gun
-            {
-                Gun.GunProps.peers = None
-                Gun.GunProps.radisk = Some false
-                Gun.GunProps.localStorage = None
-                Gun.GunProps.multicast = None
-            }
 
     [<Emit "Gun.SEA">]
     let sea : ISEA = jsNative

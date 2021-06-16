@@ -635,7 +635,13 @@ module State =
 
                     let gun =
                         if isTesting then
-                            Gun.gunTest
+                            Gun.gun
+                                {
+                                    Gun.GunProps.peers = None
+                                    Gun.GunProps.radisk = Some false
+                                    Gun.GunProps.localStorage = None
+                                    Gun.GunProps.multicast = None
+                                }
                         else
                             Gun.gun
                                 {
