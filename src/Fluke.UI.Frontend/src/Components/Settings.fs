@@ -86,12 +86,8 @@ module Settings =
                                 CheckboxInput.CheckboxInput
                                     {|
                                         Atom = Atoms.debug
-                                        Props =
-                                            fun x ->
-                                                x.children <-
-                                                    [
-                                                        str "Show Debug Information"
-                                                    ]
+                                        Label = Some "Show Debug Information"
+                                        Props = fun _ -> ()
                                     |}
                             ])
 

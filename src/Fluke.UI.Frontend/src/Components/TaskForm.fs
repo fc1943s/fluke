@@ -22,6 +22,7 @@ module TaskForm =
                    OnSave: Task -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
+        let debug = Store.useValue Atoms.debug
 
         let onSave =
             Store.useCallbackRef
@@ -125,6 +126,15 @@ module TaskForm =
 
                         str $"""{if input.TaskId = Task.Default.Id then "Add" else "Edit"} Task"""
                     ]
+
+                if not debug then
+                    nothing
+                else
+                    Chakra.box
+                        (fun _ -> ())
+                        [
+                            str $"{input.TaskId}"
+                        ]
 
                 DatabaseSelector.DatabaseSelector
                     {|

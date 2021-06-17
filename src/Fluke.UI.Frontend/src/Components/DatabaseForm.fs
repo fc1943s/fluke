@@ -25,6 +25,7 @@ module DatabaseForm =
                    OnSave: Database -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
+        let debug = Store.useValue Atoms.debug
 
         let onSave =
             Store.useCallbackRef
@@ -111,6 +112,16 @@ module DatabaseForm =
                             [
                                 str $"""{if input.DatabaseId = Database.Default.Id then "Add" else "Edit"} Database"""
                             ]
+
+                        if not debug then
+                            nothing
+                        else
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    str $"{input.DatabaseId}"
+                                ]
+
                         Input.Input
                             (fun x ->
                                 x.autoFocus <- true

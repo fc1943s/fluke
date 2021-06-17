@@ -8,12 +8,14 @@ module CheckboxInput =
     [<ReactComponent>]
     let CheckboxInput
         (input: {| Atom: Recoil.RecoilValue<_, _>
+                   Label: string option
                    Props: Chakra.IChakraProps -> unit |})
         =
         let value, setValue = Store.useState input.Atom
 
         Checkbox.Checkbox
             {|
+                Label = input.Label
                 Props =
                     fun x ->
                         x.isChecked <- value

@@ -220,6 +220,7 @@ module SchedulingSelector =
 
                                     Checkbox.Checkbox
                                         {|
+                                            Label = None
                                             Props =
                                                 fun x ->
                                                     x.isChecked <-
@@ -303,6 +304,7 @@ module SchedulingSelector =
                                             [
                                                 Checkbox.Checkbox
                                                     {|
+                                                        Label = None
                                                         Props =
                                                             fun x ->
                                                                 x.isChecked <-

@@ -197,12 +197,8 @@ module ViewTabs =
                                     CheckboxInput.CheckboxInput
                                         {|
                                             Atom = Atoms.User.filterTasksByView input.Username
-                                            Props =
-                                                (fun x ->
-                                                    x.children <-
-                                                        [
-                                                            str "Filter tasks by view"
-                                                        ])
+                                            Label = Some "Filter tasks by view"
+                                            Props = (fun _ -> ())
                                         |}
                                 ]
                             Input.LeftIconInput
