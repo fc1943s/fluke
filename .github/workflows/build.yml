@@ -73,11 +73,28 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          path: |
-            ./src/Fluke.UI.Frontend/electron_output/*.exe
-            ./src/Fluke.UI.Frontend/electron_output/*.zip
-            ./src/Fluke.UI.Frontend/electron_output/*.AppImage
-            ./src/Fluke.UI.Frontend/electron_output/*.snap
+          path: ./src/Fluke.UI.Frontend/electron_output/*.exe
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./src/Fluke.UI.Frontend/electron_output/*-win.zip
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./src/Fluke.UI.Frontend/electron_output/*-mac.zip
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./src/Fluke.UI.Frontend/electron_output/*.dmg
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./src/Fluke.UI.Frontend/electron_output/*.snap
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./src/Fluke.UI.Frontend/electron_output/*.AppImage
+
 
   push:
     needs: electron
@@ -89,6 +106,10 @@ jobs:
         with:
           name: cra_output
           path: ./src/Fluke.UI.Frontend/cra_output
+
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: cra_output
 
       - uses: peaceiris/actions-gh-pages@v3
         with:

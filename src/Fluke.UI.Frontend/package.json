@@ -175,7 +175,7 @@
     "mac": {
       "icon": "./cra_output/icons/512x512.png",
       "category": "public.app-category.utilities",
-      "target": [ "zip" ]
+      "target": [ "zip", "dmg" ]
     },
     "linux": {
       "icon": "./cra_output/icons/512x512.png",

@@ -131,7 +131,7 @@ module State =
                 TaskStateMap = Map.empty
             }
 
-    let informationListToStateMap informationList =
+    let inline informationListToStateMap informationList =
         informationList
         |> List.map
             (fun information ->
@@ -145,7 +145,7 @@ module State =
                 information, informationState)
         |> Map.ofList
 
-    let getAccess database username =
+    let inline getAccess database username =
         match database with
         | { Owner = owner } when owner = username -> Some Access.ReadWrite
         | { SharedWith = DatabaseAccess.Public } -> Some Access.ReadWrite
@@ -164,7 +164,7 @@ module State =
             |> List.tryHead
 
 
-    let databaseStateWithInteractions (userInteractionList: UserInteraction list) (databaseState: DatabaseState) =
+    let inline databaseStateWithInteractions (userInteractionList: UserInteraction list) (databaseState: DatabaseState) =
         let newDatabaseState =
             (databaseState, userInteractionList)
             ||> List.fold
@@ -316,7 +316,7 @@ module State =
 
         newDatabaseState
 
-    let mergeInformationStateMap
+    let inline mergeInformationStateMap
         (oldMap: Map<Information, InformationState>)
         (newMap: Map<Information, InformationState>)
         =
@@ -328,7 +328,7 @@ module State =
                         SortList = oldValue.SortList @ newValue.SortList
                     })
 
-    let mergeCellStateMap (oldMap: Map<DateId, CellState>) (newMap: Map<DateId, CellState>) =
+    let inline mergeCellStateMap (oldMap: Map<DateId, CellState>) (newMap: Map<DateId, CellState>) =
         (oldMap, newMap)
         ||> Map.unionWith
                 (fun oldValue newValue ->
@@ -338,10 +338,10 @@ module State =
                         Status = newValue.Status
                     })
 
-    let mergeInformationMap (oldMap: Map<Information, unit>) (newMap: Map<Information, unit>) =
+    let inline mergeInformationMap (oldMap: Map<Information, unit>) (newMap: Map<Information, unit>) =
         oldMap |> Map.union newMap
 
-    let mergeTaskState (oldValue: TaskState) (newValue: TaskState) =
+    let inline mergeTaskState (oldValue: TaskState) (newValue: TaskState) =
         {
             Task = oldValue.Task
             Sessions = oldValue.Sessions @ newValue.Sessions
@@ -350,5 +350,5 @@ module State =
             CellStateMap = mergeCellStateMap oldValue.CellStateMap newValue.CellStateMap
         }
 
-    let mergeTaskStateMap (oldMap: Map<TaskId, TaskState>) (newMap: Map<TaskId, TaskState>) =
+    let inline mergeTaskStateMap (oldMap: Map<TaskId, TaskState>) (newMap: Map<TaskId, TaskState>) =
         Map.unionWith mergeTaskState oldMap newMap

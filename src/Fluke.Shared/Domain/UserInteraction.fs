@@ -172,7 +172,7 @@ module UserInteraction =
             FlukeDateTime.Create (FlukeDate.FromDateTime date, FlukeTime.FromDateTime date)
 
 
-    let (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position: FlukeDateTime, DateId referenceDay) =
+    let inline (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position: FlukeDateTime, DateId referenceDay) =
         let dateStart =
             FlukeDateTime.Create (referenceDay, dayStart)
             |> FlukeDateTime.DateTime
@@ -184,18 +184,18 @@ module UserInteraction =
         | position when dateStart < position -> BeforeToday
         | _ -> AfterToday
 
-    let (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, date) =
+    let inline (|StartOfMonth|StartOfWeek|NormalDay|) (weekStart, date) =
         match date with
         | { Day = Day 1 } -> StartOfMonth
         | date when (date |> FlukeDate.DateTime).DayOfWeek = weekStart -> StartOfWeek
         | _ -> NormalDay
 
-    let isToday dayStart position dateId =
+    let inline isToday dayStart position dateId =
         match (dayStart, position, dateId) with
         | Today -> true
         | _ -> false
 
-    let dateId dayStart position =
+    let inline dateId dayStart position =
         match isToday dayStart position (DateId position.Date) with
         | true -> position.Date
         | false ->

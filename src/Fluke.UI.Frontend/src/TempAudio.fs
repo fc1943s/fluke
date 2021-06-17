@@ -4,7 +4,7 @@ open Fable.Core
 
 
 module TempAudio =
-    let playDing () =
+    let inline playDing () =
         [
             0
             1400
@@ -12,5 +12,5 @@ module TempAudio =
         |> List.map (JS.setTimeout (fun () -> Bindings.JS.playAudio "../sounds/ding.wav"))
         |> ignore
 
-    let playTick () =
+    let inline playTick () =
         Bindings.JS.playAudio "../sounds/tick.wav"

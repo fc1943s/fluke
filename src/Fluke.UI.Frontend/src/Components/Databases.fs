@@ -32,8 +32,9 @@ module Databases =
                     (fun x ->
                         x.``as`` <- Icons.md.MdIndeterminateCheckBox
                         x.marginLeft <- "-51px"
-                        x.height <- "17px"
-                        x.width <- "17px"
+                        x.marginRight <- "2px"
+                        x.height <- "19px"
+                        x.width <- "19px"
                         x.color <- "white")
                     []
             uncheck =
@@ -41,14 +42,18 @@ module Databases =
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBoxOutlineBlank
                         x.marginLeft <- "-51px"
-                        x.height <- "17px"
-                        x.width <- "17px"
+                        x.marginRight <- "2px"
+                        x.height <- "19px"
+                        x.width <- "19px"
                         x.color <- "white")
                     []
             expandOpen =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronDown
+                        x.height <- "16px"
+                        x.width <- "16px"
+                        x.fontSize <- "14px"
                         x.transform <- Chakra.transformShiftBy (Some -10) None
                         x.color <- "white")
                     []
@@ -56,6 +61,9 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronRight
+                        x.height <- "16px"
+                        x.width <- "16px"
+                        x.fontSize <- "14px"
                         x.transform <- Chakra.transformShiftBy (Some -10) None
                         x.color <- "white")
                     []
@@ -63,14 +71,14 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
-                        x.marginLeft <- "-13px"
+                        x.marginLeft <- "-11px"
                         x.color <- "white")
                     []
             parentOpen =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
-                        x.marginLeft <- "-13px"
+                        x.marginLeft <- "-11px"
                         x.color <- "white")
                     []
         |}
@@ -122,6 +130,7 @@ module Databases =
                         Chakra.box
                             (fun x ->
                                 x.display <- "inline"
+                                x.marginLeft <- "-2px"
                                 x.lineHeight <- "19px")
                             [
                                 Chakra.box

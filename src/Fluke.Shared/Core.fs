@@ -12,7 +12,7 @@ module private ListIter =
 
 
 module Seq =
-    let intersperse sep list =
+    let inline intersperse sep list =
         seq {
             let mutable notFirst = false
 
@@ -38,32 +38,32 @@ module Option =
 
 
 module List =
-    let intersperse element source : list<'T> =
+    let inline intersperse element source : list<'T> =
         source
         |> List.toSeq
         |> Seq.intersperse element
         |> Seq.toList
 
 module Result =
-    let defaultValue def result =
+    let inline defaultValue def result =
         match result with
         | Ok result -> result
         | Error _ -> def
 
 module Map =
-    let singleton key value =
+    let inline singleton key value =
         [
             key, value
         ]
         |> Map.ofList
 
-    let keys (source: Map<'Key, 'T>) : seq<'Key> =
+    let inline keys (source: Map<'Key, 'T>) : seq<'Key> =
         source |> Seq.map (fun (KeyValue (k, _)) -> k)
 
-    let values (source: Map<'Key, 'T>) : seq<'T> =
+    let inline values (source: Map<'Key, 'T>) : seq<'T> =
         source |> Seq.map (fun (KeyValue (_, v)) -> v)
 
-    let unionWith combiner (source1: Map<'Key, 'Value>) (source2: Map<'Key, 'Value>) =
+    let inline unionWith combiner (source1: Map<'Key, 'Value>) (source2: Map<'Key, 'Value>) =
         Map.fold
             (fun m k v' ->
                 Map.add
@@ -75,13 +75,13 @@ module Map =
             source1
             source2
 
-    let union (source: Map<'Key, 'T>) (altSource: Map<'Key, 'T>) =
+    let inline union (source: Map<'Key, 'T>) (altSource: Map<'Key, 'T>) =
         unionWith (fun x _ -> x) source altSource
 
-    let mapValues f (x: Map<'Key, 'T>) = Map.map (fun _ -> f) x
+    let inline mapValues f (x: Map<'Key, 'T>) = Map.map (fun _ -> f) x
 
 module Set =
-    let choose fn set =
+    let inline choose fn set =
         set
         |> Set.toSeq
         |> Seq.map fn
@@ -89,13 +89,13 @@ module Set =
         |> Seq.map Option.get
         |> Set.ofSeq
 
-    let toggle value (set: Set<'T>) =
+    let inline toggle value (set: Set<'T>) =
         if set.Contains value then set.Remove value else set.Add value
 
-    let addIf item condition set =
+    let inline addIf item condition set =
         if not condition then set else set |> Set.add item
 
-    let collect fn set =
+    let inline collect fn set =
         set
         |> Set.toSeq
         |> Seq.map fn
@@ -112,7 +112,7 @@ module Operators =
     let inline (>==<) x (min, max) = (x >= min) && (x <= max)
 
 #if !FABLE_COMPILER
-    let (</>) a b = Path.Combine (a, b)
+    let inline (</>) a b = Path.Combine (a, b)
 #endif
 
 
@@ -123,16 +123,16 @@ module String =
 
     let inline take count (source: string) = source.[..count - 1]
 
-    let toLower (source: string) =
+    let inline toLower (source: string) =
         if isNull source then source else source.ToLowerInvariant ()
 
-    let (|ValidString|WhitespaceString|NullString|) (str: string) =
+    let inline (|ValidString|WhitespaceString|NullString|) (str: string) =
         match str with
         | null -> NullString
         | str when String.IsNullOrWhiteSpace str -> WhitespaceString
         | str -> ValidString str
 
-    let (|InvalidString|_|) (str: string) =
+    let inline (|InvalidString|_|) (str: string) =
         match str with
         | WhitespaceString
         | NullString -> Some InvalidString

@@ -124,7 +124,7 @@ module Model =
             | Archive information -> information |> Information.Name
 
     and Scheduling with
-        static member Label scheduling =
+        static member inline Label scheduling =
             match scheduling with
             | Manual WithoutSuggestion -> "Manual"
             | Manual WithSuggestion -> "Suggested"
@@ -144,7 +144,7 @@ module Model =
                 |> String.concat ", "
 
     and InformationName with
-        static member Value informationName =
+        static member inline Value informationName =
             match informationName with
             | Project (AreaName (String.ValidString areaName), ProjectName (String.ValidString name)) ->
                 $"{areaName}/{name}"

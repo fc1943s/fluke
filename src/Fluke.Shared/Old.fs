@@ -62,7 +62,7 @@ module Old2 =
         | LessThan of Task
         | Last
 
-    let ofLane (OldLane (taskState, cells)) = taskState, cells
+    let inline ofLane (OldLane (taskState, cells)) = taskState, cells
 
 
     module Sorting =

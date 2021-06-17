@@ -10,5 +10,6 @@ module Checkbox =
         Chakra.checkbox
             (fun x ->
                 x.colorScheme <- "purple"
+                x.size <- "lg"
                 input.Props x)
             []

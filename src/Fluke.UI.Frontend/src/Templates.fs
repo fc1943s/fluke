@@ -21,8 +21,8 @@ module TestUser =
                                         { taskTemplate with
                                             Task =
                                                 { taskTemplate.Task with
-                                                    Id =
-                                                        TaskId.NewId ()
+                                                    Id = TaskId.NewId ()
+                                                    Information = Area { Name = AreaName "temp" }
                                                 }
                                         })
                         }
