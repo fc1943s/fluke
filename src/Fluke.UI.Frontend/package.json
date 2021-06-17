@@ -38,7 +38,7 @@
     "postinstall": "patch-package",
 
     "electron-watch": "electronmon .",
-    "preelectron-build-base": "cp src/electron.js cra_output/electron.js",
+    "preelectron-build": "cp src/electron.js cra_output/electron.js",
     "electron-build": "electron-builder --publish=onTag",
 
     "cordova-requirements": "cordova requirements",
