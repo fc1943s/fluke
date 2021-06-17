@@ -23,10 +23,11 @@ module CellMenu =
                    OnClose: unit -> unit |})
         =
 
+        let toast = Chakra.useToast ()
         let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
-        let sessionStatus =
-            Store.useValueLoadableDefault
+        let sessionStatus, setSessionStatus =
+            Store.useStateLoadableDefault
                 (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
                 Disabled
 
@@ -35,11 +36,17 @@ module CellMenu =
 
         let dayStart = Store.useValue (Atoms.User.dayStart input.Username)
 
+        let postponedUntil, setPostponedUntil =
+            React.useState (
+                match sessionStatus with
+                | UserStatus (_, Postponed (Some until)) -> Some until
+                | _ -> None
+            )
 
-        let postponedUntil =
+        let postponedUntilLabel =
             match sessionStatus with
-            | UserStatus (_, Postponed (Some until)) -> Some until
-            | _ -> None
+            | UserStatus (_, Postponed (Some until)) -> until |> FlukeTime.Stringify
+            | _ -> "later"
 
         let onClick =
             Store.useCallbackRef
@@ -62,6 +69,17 @@ module CellMenu =
                         )
 
                         input.OnClose ()
+                    })
+
+        let postponeUntilLater =
+            Store.useCallbackRef
+                (fun _ _ ->
+                    promise {
+                        match postponedUntil with
+                        | Some postponedUntil ->
+                            setSessionStatus (UserStatus (input.Username, Postponed (Some postponedUntil)))
+                            input.OnClose ()
+                        | _ -> toast (fun x -> x.description <- "Invalid time")
                     })
 
         Chakra.stack
@@ -103,6 +121,18 @@ module CellMenu =
                                 [
                                     wrapButton None color (UserStatus (input.Username, status) |> Some)
                                 ]
+
+                        match sessionStatus with
+                        | UserStatus _ ->
+                            Tooltip.wrap
+                                (str "Details")
+                                [
+                                    wrapButton
+                                        (Icons.fi.FiArrowRight |> Icons.render |> Some)
+                                        (TempUI.cellStatusColor Pending)
+                                        (Some Disabled)
+                                ]
+                        | _ -> nothing
 
                         match sessionStatus with
                         | UserStatus _ ->
@@ -149,14 +179,18 @@ module CellMenu =
                         Popover.Popover
                             {|
                                 Trigger =
-                                    wrapButton
-                                        None
-                                        (postponedUntil
-                                         |> Option.defaultValue dayStart
-                                         |> Some
-                                         |> Postponed
-                                         |> TempUI.manualCellStatusColor)
-                                        None
+                                    Tooltip.wrap
+                                        (str $"Postpone until {postponedUntilLabel}")
+                                        [
+                                            wrapButton
+                                                None
+                                                (postponedUntil
+                                                 |> Option.defaultValue dayStart
+                                                 |> Some
+                                                 |> Postponed
+                                                 |> TempUI.manualCellStatusColor)
+                                                None
+                                        ]
                                 Body =
                                     fun (_disclosure, initialFocusRef) ->
                                         [
@@ -166,9 +200,10 @@ module CellMenu =
                                                     Chakra.box
                                                         (fun x ->
                                                             x.paddingBottom <- "5px"
+                                                            x.marginRight <- "24px"
                                                             x.fontSize <- "15px")
                                                         [
-                                                            str "Postpone until later"
+                                                            str $"Postpone until {postponedUntilLabel}"
                                                         ]
 
                                                     Input.Input
@@ -181,7 +216,15 @@ module CellMenu =
 
                                                             x.onChange <-
                                                                 fun (e: Browser.Types.KeyboardEvent) ->
-                                                                    promise { printfn $"val={e.Value}" }
+                                                                    promise {
+                                                                        e.Value
+                                                                        |> DateTime.TryParse
+                                                                        |> function
+                                                                        | true, date ->
+                                                                            date |> FlukeTime.FromDateTime |> Some
+                                                                        | _ -> None
+                                                                        |> setPostponedUntil
+                                                                    }
 
                                                             x.onFormat <- Some FlukeTime.Stringify
 
@@ -206,7 +249,7 @@ module CellMenu =
                                                                             Icons.fi.FiKey |> Icons.wrap,
                                                                             Button.IconPosition.Left
                                                                         )
-                                                                    Props = fun x -> () //x.onClick <- signUpClick
+                                                                    Props = fun x -> x.onClick <- postponeUntilLater
                                                                     Children =
                                                                         [
                                                                             str "Confirm"

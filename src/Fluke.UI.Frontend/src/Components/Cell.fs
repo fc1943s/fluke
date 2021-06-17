@@ -64,6 +64,7 @@ module Cell =
             {|
                 CloseButton = false
                 Padding = "3px"
+                Placement = Some "right-start"
                 Trigger =
                     Chakra.center
                         (fun x ->
@@ -102,7 +103,11 @@ module Cell =
                                 CellSessionIndicator.CellSessionIndicator
                                     {|
                                         Status = sessionStatus
-                                        Sessions = taskState.Sessions
+                                        Sessions =
+                                            taskState.CellStateMap
+                                            |> Map.tryFind input.DateId
+                                            |> Option.map (fun x -> x.Sessions)
+                                            |> Option.defaultValue []
                                     |}
                             | _ -> nothing
 
@@ -125,7 +130,11 @@ module Cell =
                                 TooltipPopup.TooltipPopup
                                     {|
                                         Username = input.Username
-                                        Attachments = taskState.Attachments
+                                        Attachments =
+                                            taskState.CellStateMap
+                                            |> Map.tryFind input.DateId
+                                            |> Option.map (fun x -> x.Attachments)
+                                            |> Option.defaultValue []
                                     |}
                             | _ -> nothing
                         ]

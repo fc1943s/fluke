@@ -70,7 +70,7 @@ module State =
     and CellState =
         {
             Status: CellStatus
-            Attachments: Attachment list
+            Attachments: (FlukeDateTime * Attachment) list
             Sessions: Session list
         }
 
@@ -164,7 +164,10 @@ module State =
             |> List.tryHead
 
 
-    let inline databaseStateWithInteractions (userInteractionList: UserInteraction list) (databaseState: DatabaseState) =
+    let inline databaseStateWithInteractions
+        (userInteractionList: UserInteraction list)
+        (databaseState: DatabaseState)
+        =
         let newDatabaseState =
             (databaseState, userInteractionList)
             ||> List.fold
@@ -276,7 +279,7 @@ module State =
                             let newCellState =
                                 match cellInteraction with
                                 | CellInteraction.Attachment attachment ->
-                                    let attachments = attachment :: cellState.Attachments
+                                    let attachments = (moment, attachment) :: cellState.Attachments
 
                                     let newCellState =
                                         { cellState with

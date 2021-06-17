@@ -9,6 +9,7 @@ module Popover =
     [<ReactComponent>]
     let CustomPopover
         (input: {| Trigger: ReactElement
+                   Placement: string option
                    CloseButton: bool
                    Padding: string
                    Body: Chakra.Disclosure * IRefValue<unit> -> ReactElement list |})
@@ -33,7 +34,11 @@ module Popover =
                 Chakra.popover
                     (fun x ->
                         x.isLazy <- true
-                        x.placement <- "right-start"
+
+                        match input.Placement with
+                        | Some placement -> x.placement <- placement
+                        | None -> ()
+
                         x.closeOnBlur <- true
                         x.isOpen <- disclosure.isOpen
                         x.onOpen <- disclosure.onOpen
@@ -54,7 +59,9 @@ module Popover =
                         | [ x ] when x = nothing -> nothing
                         | content ->
                             Chakra.popoverContent
-                                (fun x -> x.width <- "auto")
+                                (fun x ->
+                                    x.width <- "auto"
+                                    x.borderRadius <- "0px")
                                 [
                                     Chakra.popoverArrow (fun _ -> ()) []
 
@@ -84,5 +91,6 @@ module Popover =
         CustomPopover
             {| input with
                 CloseButton = true
+                Placement = None
                 Padding = "10px"
             |}

@@ -815,7 +815,6 @@ module State =
                                         | firstVisibleDate :: _ when firstVisibleDate >= (dateId |> DateId.Value) ->
                                             attachments
                                             |> List.filter (fun (moment, _) -> isToday dayStart moment dateId)
-                                            |> List.map snd
                                         | _ -> []
 
                                     let cellState =
