@@ -87,9 +87,7 @@ module Tests =
                     match expectedStatus with
                     | [] -> []
                     | expectedStatus ->
-                        let dateSequence =
-                            taskTemplate.Expected
-                            |> List.map fst
+                        let dateSequence = taskTemplate.Expected |> List.map fst
 
                         let laneStatusMap =
                             Rendering.renderTaskStatusMap
@@ -121,8 +119,7 @@ module Tests =
                                 let sessionCount =
                                     taskState.Sessions
                                     |> List.filter
-                                        (fun (Session (start, _, _)) ->
-                                            isToday templatesUser.DayStart start (DateId date))
+                                        (fun (Session start) -> isToday templatesUser.DayStart start (DateId date))
                                     |> List.length
 
                                 count, sessionCount)
@@ -240,11 +237,7 @@ module Tests =
                 |> Seq.map
                     (fun (KeyValue (_, taskState)) ->
                         let taskStatusMap =
-                            Rendering.renderTaskStatusMap
-                                templatesUser.DayStart
-                                props.Position
-                                dateSequence
-                                taskState
+                            Rendering.renderTaskStatusMap templatesUser.DayStart props.Position dateSequence taskState
 
                         taskState, taskStatusMap)
                 |> Seq.toList
