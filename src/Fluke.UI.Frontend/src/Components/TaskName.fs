@@ -68,15 +68,16 @@ module TaskName =
             [
                 Chakra.box
                     (fun x ->
+                        x.backgroundColor <- if hovered then "#292929" else null
                         x.color <- if hasSelection then "#ff5656" else null
                         x.zIndex <- if hovered then 1 else 0
                         x.overflow <- "hidden"
                         x.paddingLeft <- "5px"
                         x.paddingRight <- "5px"
+                        x.width <- "217px"
                         x.lineHeight <- $"{cellSize}px"
-                        x.backgroundColor <- if hovered then "#333" else null
-                        x.whiteSpace <- if not hovered then "nowrap" else null
-                        x.textOverflow <- if not hovered then "ellipsis" else null)
+                        x.whiteSpace <- if hovered then null else "nowrap"
+                        x.textOverflow <- if hovered then null else "ellipsis")
                     [
                         match taskState.valueMaybe () with
                         | Some taskState when taskState.Task.Name |> TaskName.Value <> "" ->

@@ -23,6 +23,9 @@ module StatusBar =
         let sortedTaskIdList = Store.useValueLoadable (Selectors.Session.sortedTaskIdList input.Username)
         let activeSessions = Store.useValueLoadable (Selectors.Session.activeSessions input.Username)
 
+        let (Minute sessionDuration) = Store.useValue (Atoms.User.sessionDuration input.Username)
+        let (Minute sessionBreakDuration) = Store.useValue (Atoms.User.sessionBreakDuration input.Username)
+
         Chakra.simpleGrid
             (fun x ->
                 x.display <-
@@ -63,41 +66,97 @@ module StatusBar =
                                 x.marginRight <- "4px")
                             []
 
-                        yield!
-                            match activeSessions.valueMaybe () with
-                            | Some activeSessions ->
-                                activeSessions
-                                |> List.map
-                                    (fun (TempUI.ActiveSession (taskName,
-                                                                Minute duration,
-                                                                Minute totalDuration,
-                                                                Minute totalBreakDuration)) ->
-                                        let sessionType, color, duration, left =
-                                            let left = totalDuration - duration
+                        match activeSessions.valueMaybe () with
+                        | Some [] -> str "Sessions: No active sessions"
+                        | Some activeSessions ->
+                            let getSessionInfo (TempUI.ActiveSession (taskName, Minute duration)) =
+                                let left = sessionDuration - duration
 
-                                            match duration < totalDuration with
-                                            | true -> "Session", "#7cca7c", duration, left
-                                            | false -> "Break", "#ca7c7c", -left, totalBreakDuration + left
+                                match duration < sessionDuration with
+                                | true ->
+                                    {|
+                                        TaskName = taskName
+                                        SessionType = "Session"
+                                        Color = "#7cca7c"
+                                        Duration = duration
+                                        Left = left
+                                    |}
+                                | false ->
+                                    {|
+                                        TaskName = taskName
+                                        SessionType = "Break"
+                                        Color = "#ca7c7c"
+                                        Duration = -left
+                                        Left = sessionBreakDuration + left
+                                    |}
 
-                                        Chakra.box
-                                            (fun x -> x.color <- color)
+
+                            Popover.Popover
+                                {|
+                                    Trigger =
+                                        Tooltip.wrap
+                                            (str "Session Details")
                                             [
-                                                str
-                                                    $"{sessionType}: Task[ {taskName} ]; Duration[ {duration} ]; Left[ {
-                                                                                                                            left
-                                                    } ]"
-                                            ])
-                                |> List.intersperse (br [])
-                                |> function
-                                | [] ->
-                                    [
-                                        str "Sessions: No active sessions"
-                                    ]
-                                | list -> list
-                            | _ ->
-                                [
-                                    str "Sessions: Loading sessions"
-                                ]
+                                                Chakra.box
+                                                    (fun x -> x.cursor <- "pointer")
+                                                    [
+                                                        let sessionInfo = getSessionInfo activeSessions.Head
+
+                                                        Chakra.flex
+                                                            (fun x -> x.color <- sessionInfo.Color)
+                                                            [
+                                                                str
+                                                                    $"{sessionInfo.SessionType}: {activeSessions.Length} active ("
+
+                                                                Chakra.box
+                                                                    (fun x ->
+                                                                        x.display <- "inline"
+                                                                        x.textOverflow <- "ellipsis"
+                                                                        x.whiteSpace <- "nowrap"
+                                                                        x.overflow <- "hidden"
+                                                                        x.maxWidth <- "100px")
+                                                                    [
+                                                                        str sessionInfo.TaskName
+                                                                    ]
+                                                                str
+                                                                    $"). Started {sessionInfo.Duration}m ago ({
+                                                                                                                   sessionInfo.Left
+                                                                    }m left)"
+                                                            ]
+                                                    ]
+                                            ]
+                                    Body =
+                                        fun (_disclosure, _initialFocusRef) ->
+                                            [
+                                                Chakra.stack
+                                                    (fun x -> x.spacing <- "10px")
+                                                    [
+                                                        Chakra.box
+                                                            (fun x -> x.fontSize <- "15px")
+                                                            [
+                                                                str "Session Details"
+                                                            ]
+                                                        yield!
+                                                            activeSessions
+                                                            |> List.map
+                                                                (fun session ->
+                                                                    let sessionInfo = getSessionInfo session
+
+                                                                    Chakra.flex
+                                                                        (fun x -> x.color <- sessionInfo.Color)
+                                                                        [
+                                                                            str
+                                                                                $"{sessionInfo.SessionType}: Started {
+                                                                                                                          sessionInfo.Duration
+                                                                                }m ago ({sessionInfo.Left}m left). {
+                                                                                                                        sessionInfo.TaskName
+                                                                                }"
+                                                                        ])
+                                                    ]
+                                            ]
+                                |}
+
+                        | _ -> str "Sessions: Loading sessions"
 
                     ]
 

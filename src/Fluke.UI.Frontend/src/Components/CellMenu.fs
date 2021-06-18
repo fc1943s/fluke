@@ -122,9 +122,7 @@ module CellMenu =
                                     wrapButton None color (UserStatus (input.Username, status) |> Some)
                                 ]
 
-                        match sessionStatus with
-                        | UserStatus _ ->
-                            Tooltip.wrap
+                        Tooltip.wrap
                                 (str "Details")
                                 [
                                     wrapButton
@@ -132,7 +130,6 @@ module CellMenu =
                                         (TempUI.cellStatusColor Pending)
                                         (Some Disabled)
                                 ]
-                        | _ -> nothing
 
                         match sessionStatus with
                         | UserStatus _ ->

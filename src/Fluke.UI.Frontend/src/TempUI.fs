@@ -25,7 +25,7 @@ module TempUI =
         | Cell
 
     type ActiveSession =
-        ActiveSession of taskName: string * duration: Minute * totalDuration: Minute * totalBreakDuration: Minute
+        ActiveSession of taskName: string * duration: Minute
 
     let colorCornerBlue = "#005688"
     let colorCornerPink = "#a91c77"

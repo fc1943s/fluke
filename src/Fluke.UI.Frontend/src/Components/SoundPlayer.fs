@@ -24,19 +24,19 @@ module SoundPlayer =
             (fun () ->
                 oldActiveSessions.current
                 |> List.map
-                    (fun (TempUI.ActiveSession (oldTaskName, Minute oldDuration, _, _)) ->
+                    (fun (TempUI.ActiveSession (oldTaskName, Minute oldDuration)) ->
                         let newSession =
                             activeSessions
                             |> List.tryFind
-                                (fun (TempUI.ActiveSession (taskName, Minute duration, _, _)) ->
+                                (fun (TempUI.ActiveSession (taskName, Minute duration)) ->
                                     taskName = oldTaskName
                                     && duration = oldDuration + 1)
 
                         match newSession with
-                        | Some (TempUI.ActiveSession (_, Minute newDuration, _, _)) when
-                            oldDuration = -1 && newDuration = 0 -> TempAudio.playTick
-                        | Some (TempUI.ActiveSession (_, newDuration, totalDuration, _)) when
-                            newDuration = totalDuration -> TempAudio.playDing
+                        | Some (TempUI.ActiveSession (_, Minute newDuration)) when oldDuration = -1 && newDuration = 0 ->
+                            TempAudio.playTick
+                        | Some (TempUI.ActiveSession (_, newDuration)) when newDuration = Minute sessionDuration ->
+                            TempAudio.playDing
                         | None ->
                             if oldDuration = sessionDuration + sessionBreakDuration - 1 then
                                 TempAudio.playDing

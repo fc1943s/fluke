@@ -804,14 +804,22 @@ module State =
                                 (fun dateId ->
                                     let cellSessions =
                                         match dateSequence with
-                                        | firstVisibleDate :: _ when firstVisibleDate >= (dateId |> DateId.Value) ->
+                                        | firstVisibleDate :: _ when firstVisibleDate <= (dateId |> DateId.Value) ->
                                             sessions
-                                            |> List.filter (fun (Session start) -> isToday dayStart start dateId)
+                                            |> List.filter
+                                                (fun (Session start) ->
+                                                    printfn
+                                                        $"isToday
+                                                        dayStart={dayStart |> FlukeTime.Stringify}
+                                                        start={start |> FlukeDateTime.Stringify}
+                                                        dateId={dateId |> DateId.Value}"
+
+                                                    isToday dayStart start dateId)
                                         | _ -> []
 
                                     let cellAttachments =
                                         match dateSequence with
-                                        | firstVisibleDate :: _ when firstVisibleDate >= (dateId |> DateId.Value) ->
+                                        | firstVisibleDate :: _ when firstVisibleDate <= (dateId |> DateId.Value) ->
                                             attachments
                                             |> List.filter (fun (moment, _) -> isToday dayStart moment dateId)
                                         | _ -> []
@@ -1097,27 +1105,21 @@ module State =
                     (fun (username: Username) getter ->
                         let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
 
-                        let sessionDuration = getter.get (Atoms.User.sessionDuration username)
-                        let sessionBreakDuration = getter.get (Atoms.User.sessionBreakDuration username)
-
                         selectedTaskIdSet
                         |> Set.toList
-                        |> List.choose
+                        |> List.map
                             (fun taskId ->
-
                                 let duration = getter.get (Task.activeSession taskId)
-
+                                taskId, duration)
+                        |> List.sortByDescending fst
+                        |> List.choose
+                            (fun (taskId, duration) ->
                                 duration
                                 |> Option.map
                                     (fun duration ->
                                         let (TaskName taskName) = getter.get (Atoms.Task.name (username, taskId))
 
-                                        TempUI.ActiveSession (
-                                            taskName,
-                                            Minute duration,
-                                            sessionDuration,
-                                            sessionBreakDuration
-                                        ))))
+                                        TempUI.ActiveSession (taskName, Minute duration))))
                 )
 
             let rec filteredTaskIdSet =
