@@ -806,15 +806,7 @@ module State =
                                         match dateSequence with
                                         | firstVisibleDate :: _ when firstVisibleDate <= (dateId |> DateId.Value) ->
                                             sessions
-                                            |> List.filter
-                                                (fun (Session start) ->
-                                                    printfn
-                                                        $"isToday
-                                                        dayStart={dayStart |> FlukeTime.Stringify}
-                                                        start={start |> FlukeDateTime.Stringify}
-                                                        dateId={dateId |> DateId.Value}"
-
-                                                    isToday dayStart start dateId)
+                                            |> List.filter (fun (Session start) -> isToday dayStart start dateId)
                                         | _ -> []
 
                                     let cellAttachments =
@@ -1111,7 +1103,7 @@ module State =
                             (fun taskId ->
                                 let duration = getter.get (Task.activeSession taskId)
                                 taskId, duration)
-                        |> List.sortByDescending fst
+                        |> List.sortBy fst
                         |> List.choose
                             (fun (taskId, duration) ->
                                 duration

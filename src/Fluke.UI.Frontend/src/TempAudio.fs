@@ -7,10 +7,10 @@ module TempAudio =
     let inline playDing () =
         [
             0
-            1400
+            1000
         ]
         |> List.map (JS.setTimeout (fun () -> Bindings.JS.playAudio "../sounds/ding.wav"))
         |> ignore
 
     let inline playTick () =
-        Bindings.JS.playAudio "../sounds/tick.wav"
+        Bindings.JS.playAudioVolume 1. "../sounds/tick.wav"

@@ -23,8 +23,9 @@ module Databases =
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBox
                         x.marginLeft <- "-51px"
-                        x.height <- "17px"
-                        x.width <- "17px"
+                        x.marginRight <- "2px"
+                        x.height <- "19px"
+                        x.width <- "19px"
                         x.color <- "white")
                     []
             halfCheck =

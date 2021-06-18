@@ -51,7 +51,10 @@ module TaskName =
                         setter.set (
                             Atoms.Task.sessions (input.Username, input.TaskId),
                             fun sessions ->
-                                Session (DateTime.Now |> FlukeDateTime.FromDateTime)
+                                Session (
+                                    (let now = DateTime.Now in if now.Second < 30 then now else now.AddMinutes 1.)
+                                    |> FlukeDateTime.FromDateTime
+                                )
                                 :: sessions
                         )
                     })

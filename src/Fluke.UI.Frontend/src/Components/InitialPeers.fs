@@ -59,8 +59,13 @@ module InitialPeers =
                             [
                                 Button.Button
                                     {|
-                                        Icon = None
                                         Hint = None
+                                        Icon =
+                                            Some (
+                                                Icons.cg.CgCornerDownRight
+                                                |> Icons.wrap,
+                                                Button.IconPosition.Left
+                                            )
                                         Props =
                                             fun x ->
                                                 x.flex <- "1"
@@ -75,8 +80,13 @@ module InitialPeers =
 
                                 Button.Button
                                     {|
-                                        Icon = None
                                         Hint = None
+                                        Icon =
+                                            Some (
+                                                Icons.hi.HiArrowRight
+                                                |> Icons.wrap,
+                                                Button.IconPosition.Right
+                                            )
                                         Props =
                                             fun x ->
                                                 x.flex <- "1"
@@ -85,7 +95,7 @@ module InitialPeers =
                                                 x.disabled <- gunPeer.Length = 0
                                         Children =
                                             [
-                                                str "Next"
+                                                str "Connect"
                                             ]
                                     |}
 

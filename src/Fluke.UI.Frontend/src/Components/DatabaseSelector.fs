@@ -27,8 +27,6 @@ module DatabaseSelector =
 
         let databaseIdSet = Store.useValue (Atoms.Session.databaseIdSet input.Username)
 
-        JS.log (fun () -> $"DatabaseSelector.render. databaseIdSet={databaseIdSet}")
-
         let setDatabaseIdSet = Store.useSetStatePrev (Atoms.Session.databaseIdSet input.Username)
 
         let hydrateDatabase = Hydrate.useHydrateDatabase ()

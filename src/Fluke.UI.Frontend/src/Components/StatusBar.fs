@@ -1,9 +1,11 @@
 namespace Fluke.UI.Frontend.Components
 
+open System
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.Shared.Domain
@@ -12,6 +14,12 @@ open Fluke.Shared.Domain
 module StatusBar =
     open Model
     open UserInteraction
+
+    [<ReactComponent>]
+    let NowIndicator () =
+        let now, setNow = React.useState DateTime.Now
+        Scheduling.useScheduling Scheduling.Interval 1000 (fun _ -> promise { setNow DateTime.Now })
+        str $"Now: {now.ToString ()}"
 
     [<ReactComponent>]
     let StatusBar (input: {| Username: Username |}) =
@@ -73,6 +81,14 @@ module StatusBar =
                                 let left = sessionDuration - duration
 
                                 match duration < sessionDuration with
+                                | true when duration < 0 ->
+                                    {|
+                                        TaskName = taskName
+                                        SessionType = "Session"
+                                        Color = "#d8b324"
+                                        Duration = -duration
+                                        Left = duration
+                                    |}
                                 | true ->
                                     {|
                                         TaskName = taskName
@@ -119,9 +135,14 @@ module StatusBar =
                                                                         str sessionInfo.TaskName
                                                                     ]
                                                                 str
-                                                                    $"). Started {sessionInfo.Duration}m ago ({
-                                                                                                                   sessionInfo.Left
-                                                                    }m left)"
+                                                                    $"""). {
+                                                                                if sessionInfo.Left < 0 then
+                                                                                    $"Starts in {sessionInfo.Duration}m."
+                                                                                else
+                                                                                    $"Started {sessionInfo.Duration}m ago ({
+                                                                                                                                sessionInfo.Left
+                                                                                    }m left)"
+                                                                    }"""
                                                             ]
                                                     ]
                                             ]
@@ -136,6 +157,7 @@ module StatusBar =
                                                             [
                                                                 str "Session Details"
                                                             ]
+
                                                         yield!
                                                             activeSessions
                                                             |> List.map
@@ -146,11 +168,18 @@ module StatusBar =
                                                                         (fun x -> x.color <- sessionInfo.Color)
                                                                         [
                                                                             str
-                                                                                $"{sessionInfo.SessionType}: Started {
-                                                                                                                          sessionInfo.Duration
-                                                                                }m ago ({sessionInfo.Left}m left). {
-                                                                                                                        sessionInfo.TaskName
-                                                                                }"
+                                                                                $"""{sessionInfo.SessionType}: {
+                                                                                                                    if sessionInfo.Left < 0 then
+                                                                                                                        $"Starts in {
+                                                                                                                                         sessionInfo.Duration
+                                                                                                                        }m"
+                                                                                                                    else
+                                                                                                                        $" {
+                                                                                                                                       sessionInfo.Duration
+                                                                                                                        }m ago ({
+                                                                                                                                     sessionInfo.Left
+                                                                                                                        }m left)"
+                                                                                }. Task: {sessionInfo.TaskName}"""
                                                                         ])
                                                     ]
                                             ]
@@ -187,8 +216,12 @@ module StatusBar =
                                         x.marginRight <- "4px")
                                     []
 
-                                str $"Position: {position |> FlukeDateTime.Stringify}"
+                                Tooltip.wrap
+                                    (NowIndicator ())
+                                    [
+                                        str $"Position: {position |> FlukeDateTime.Stringify}"
+                                    ]
                             ]
                     ]
-                | None -> str $"Position: No databases selected"
+                | None -> str "Position: No databases selected"
             ]

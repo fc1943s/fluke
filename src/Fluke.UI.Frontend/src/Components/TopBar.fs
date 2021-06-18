@@ -23,6 +23,7 @@ module TopBar =
                         match username with
                         | Some username ->
                             setter.set (Atoms.User.leftDock username, fun _ -> None)
+                            setter.set (Atoms.User.rightDock username, fun _ -> None)
                             setter.set (Atoms.User.view username, fun _ -> TempUI.defaultView)
                         | None -> ()
                     })
