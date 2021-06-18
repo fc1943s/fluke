@@ -29,9 +29,8 @@ module CellStatusUserIndicator =
 
                             x.borderBottomColor <-
                                 match color with
-                                | UserColor.Blue -> "#000000"
-                                | UserColor.Pink -> "#a91c77"
-                                | _ -> null
+                                | String.ValidString color -> color
+                                | _ -> "#000000"
 
                             x.borderLeftWidth <- "8px"
                             x.borderLeftColor <- "transparent"

@@ -25,6 +25,7 @@ module InformationView =
                         x.direction <- "column"
                         x.flex <- "1"
                         x.paddingRight <- "10px"
+                        x.paddingLeft <- "4px"
                         x.maxWidth <- "400px")
                     [
                         yield!

@@ -16,42 +16,55 @@ module ChangeUserPasswordButton =
         let newPasswordField, setNewPasswordField = React.useState ""
         let newPassword2Field, setNewPassword2Field = React.useState ""
 
-        let confirmClick (disclosure: Chakra.Disclosure) _ =
-            promise {
-                if newPasswordField <> newPassword2Field then
-                    toast (fun x -> x.description <- "Passwords don't match")
-                else
-                    match! changePassword (passwordField, newPasswordField) with
-                    | Ok () ->
-                        toast
-                            (fun x ->
-                                x.title <- "Success"
-                                x.status <- "success"
-                                x.description <- "Password changed successfully")
+        let confirmClick =
+            Store.useCallbackRef
+                (fun _ _ ->
+                    promise {
+                        if newPasswordField <> newPassword2Field then
+                            toast (fun x -> x.description <- "Passwords don't match")
+                            return false
+                        else
+                            match! changePassword (passwordField, newPasswordField) with
+                            | Ok () ->
+                                toast
+                                    (fun x ->
+                                        x.title <- "Success"
+                                        x.status <- "success"
+                                        x.description <- "Password changed successfully")
 
-                        setPasswordField ""
-                        setNewPasswordField ""
-                        setNewPassword2Field ""
+                                setPasswordField ""
+                                setNewPasswordField ""
+                                setNewPassword2Field ""
 
-                        disclosure.onClose ()
-                    | Error error -> toast (fun x -> x.description <- error)
-            }
+                                return true
+                            | Error error ->
+                                toast (fun x -> x.description <- error)
+                                return false
+                    })
 
-        Popover.Popover
+        Menu.Drawer
             {|
+                Tooltip = ""
+                Left = true
                 Trigger =
-                    Button.Button
-                        {|
-                            Hint = None
-                            Icon = Some (Icons.fi.FiKey |> Icons.wrap, Button.IconPosition.Left)
-                            Props = fun _ -> ()
-                            Children =
-                                [
-                                    str "Change Password"
-                                ]
-                        |}
+                    fun visible setVisible ->
+                        Button.Button
+                            {|
+                                Hint = None
+                                Icon =
+                                    Some (
+                                        (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
+                                        |> Icons.wrap,
+                                        Button.IconPosition.Right
+                                    )
+                                Props = fun x -> x.onClick <- fun _ -> promise { setVisible (not visible) }
+                                Children =
+                                    [
+                                        str "Change Password"
+                                    ]
+                            |}
                 Body =
-                    fun (disclosure, initialFocusRef) ->
+                    fun onHide ->
                         [
                             Chakra.stack
                                 (fun x -> x.spacing <- "10px")
@@ -66,7 +79,7 @@ module ChangeUserPasswordButton =
 
                                     Input.Input
                                         (fun x ->
-                                            x.ref <- initialFocusRef
+                                            x.autoFocus <- true
                                             x.value <- Some passwordField
                                             x.placeholder <- "Password"
                                             x.inputFormat <- Some Input.InputFormat.Password
@@ -92,7 +105,13 @@ module ChangeUserPasswordButton =
                                             x.onChange <-
                                                 (fun (e: KeyboardEvent) -> promise { setNewPassword2Field e.Value })
 
-                                            x.onEnterPress <- Some (confirmClick disclosure))
+                                            x.onEnterPress <-
+                                                Some
+                                                    (fun _ ->
+                                                        promise {
+                                                            let! result = confirmClick ()
+                                                            if result then onHide ()
+                                                        }))
 
                                     Chakra.box
                                         (fun _ -> ())
@@ -101,7 +120,14 @@ module ChangeUserPasswordButton =
                                                 {|
                                                     Hint = None
                                                     Icon = Some (Icons.fi.FiKey |> Icons.wrap, Button.IconPosition.Left)
-                                                    Props = fun x -> x.onClick <- confirmClick disclosure
+                                                    Props =
+                                                        fun x ->
+                                                            x.onClick <-
+                                                                fun _ ->
+                                                                    promise {
+                                                                        let! result = confirmClick ()
+                                                                        if result then onHide ()
+                                                                    }
                                                     Children =
                                                         [
                                                             str "Confirm"

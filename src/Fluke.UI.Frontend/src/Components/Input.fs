@@ -211,10 +211,6 @@ module Input =
                                             | null -> ()
                                             | _ -> do! props.onKeyDown e
 
-                                            match box props.onChange with
-                                            | null -> ()
-                                            | _ -> do! props.onChange e
-
                                             match props.onEnterPress with
                                             | Some onEnterPress -> if e.key = "Enter" then do! onEnterPress ()
                                             | None -> ()
@@ -251,7 +247,11 @@ module Input =
                                             match props.onValidate with
                                             | Some onValidate ->
                                                 match onValidate (string (op value), currentValue) with
-                                                | Some value -> inputRef.current.valueAsNumber <- unbox value
+                                                | Some value ->
+                                                    inputRef.current.valueAsNumber <-
+                                                        match props.onFormat with
+                                                        | Some onFormat -> onFormat value |> unbox
+                                                        | None -> unbox value
                                                 | None -> ()
                                             | None -> inputRef.current.valueAsNumber <- op value
                                         | _ -> ()

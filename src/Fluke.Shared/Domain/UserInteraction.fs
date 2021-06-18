@@ -42,7 +42,7 @@ module UserInteraction =
     and User =
         {
             Username: Username
-            Color: UserColor
+            Color: Color
             WeekStart: DayOfWeek
             DayStart: FlukeTime
             SessionDuration: Minute
@@ -50,11 +50,7 @@ module UserInteraction =
         }
 
     and Username = Username of username: string
-
-    and [<RequireQualifiedAccess>] UserColor =
-        | Black
-        | Pink
-        | Blue
+    and Color = Color of hex:string
 
     and [<RequireQualifiedAccess>] Language =
         | English
@@ -86,6 +82,8 @@ module UserInteraction =
 
     and DateId with
         static member inline Value (DateId referenceDay) = referenceDay
+    and Color with
+        static member inline Value (Color hex) = hex
 
     and FlukeDate with
         static member inline DateTime

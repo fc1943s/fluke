@@ -138,7 +138,7 @@ module State =
             let rec color =
                 Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof color}",
-                    (fun (_username: Username) -> UserColor.Black),
+                    (fun (_username: Username) -> "#FF0000"),
                     (fun (username: Username) ->
                         [
                             Store.gunEffect (Store.InputAtom.AtomFamily (username, color, username)) []
@@ -168,7 +168,7 @@ module State =
             let rec sessionDuration =
                 Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof sessionDuration}",
-                    (fun (_username: Username) -> Minute 25.),
+                    (fun (_username: Username) -> Minute 25),
                     (fun (username: Username) ->
                         [
                             Store.gunEffect (Store.InputAtom.AtomFamily (username, sessionDuration, username)) []
@@ -178,7 +178,7 @@ module State =
             let rec sessionBreakDuration =
                 Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof sessionBreakDuration}",
-                    (fun (_username: Username) -> Minute 5.),
+                    (fun (_username: Username) -> Minute 5),
                     (fun (username: Username) ->
                         [
                             Store.gunEffect (Store.InputAtom.AtomFamily (username, sessionBreakDuration, username)) []
@@ -947,6 +947,7 @@ module State =
                                 ((position |> FlukeDateTime.DateTime)
                                  - (start |> FlukeDateTime.DateTime))
                                     .TotalMinutes
+                                |> int
 
                             let active =
                                 currentDuration < (sessionDuration |> Minute.Value)

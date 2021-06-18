@@ -56,11 +56,11 @@ module Model =
 
     and TaskName = TaskName of name: string
 
-    and Minute = Minute of float
+    and Minute = Minute of int
 
     and [<Generator.Fields "Domain">] FlukeTime = { Hour: Hour; Minute: Minute }
 
-    and Hour = Hour of float
+    and Hour = Hour of int
 
     and Scheduling =
         | Manual of ManualScheduling
@@ -205,8 +205,8 @@ module Model =
     and FlukeTime with
         static member inline Create hour minute =
             {
-                Hour = Hour (float hour)
-                Minute = Minute (float minute)
+                Hour = Hour hour
+                Minute = Minute minute
             }
 
         static member inline Stringify
@@ -215,12 +215,12 @@ module Model =
                 Minute = Minute minute
             }
             =
-            $"%02.0f{hour}:%02.0f{minute}"
+            $"%02d{hour}:%02d{minute}"
 
         static member inline FromDateTime (date: DateTime) =
             {
-                Hour = float date.Hour |> Hour
-                Minute = float date.Minute |> Minute
+                Hour = Hour date.Hour
+                Minute = Minute date.Minute
             }
 
         static member inline GreaterEqualThan time this =

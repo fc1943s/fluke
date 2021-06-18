@@ -116,6 +116,7 @@ module Auth =
                         printfn $"Auth.useSignUp. gunNamespace={JS.JSON.stringify gunNamespace}"
 
                         let! ack = Gun.createUser gunNamespace.``#`` username password
+
                         printfn $"Auth.useSignUp. Gun.createUser signUpAck={JS.JSON.stringify ack}"
                         JS.consoleLog ("ack", ack)
 

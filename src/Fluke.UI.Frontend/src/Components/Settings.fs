@@ -9,6 +9,15 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
+open System
+open Fluke.Shared
+open Browser.Types
+open Fable.React
+open Feliz
+open Fluke.Shared.Domain
+open Fluke.Shared.Domain.Model
+open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.State
 
 
 module Settings =
@@ -27,8 +36,6 @@ module Settings =
                         (Chakra.stack
                             (fun x -> x.spacing <- "10px")
                             [
-                                ChangeUserPasswordButton.ChangeUserPasswordButton ()
-
                                 Input.Input
                                     (fun x ->
                                         x.label <- str "Day Start"
@@ -46,7 +53,10 @@ module Settings =
                                         x.onValidate <-
                                             Some (
                                                 fst
-                                                >> DateTime.Parse
+                                                >> DateTime.TryParse
+                                                >> function
+                                                | true, value -> value
+                                                | _ -> DateTime.Parse "00:00"
                                                 >> FlukeTime.FromDateTime
                                                 >> Some
                                             ))
@@ -56,26 +66,53 @@ module Settings =
                                         x.label <- str "Session Duration"
 
                                         x.atom <-
-                                            Some (Recoil.Atom (input.Username, Atoms.User.sessionDuration input.Username))
+                                            Some (
+                                                Recoil.Atom (input.Username, Atoms.User.sessionDuration input.Username)
+                                            )
 
-                                        x.inputFormat <- Some Input.InputFormat.Number)
+                                        x.inputFormat <- Some Input.InputFormat.Number
+                                        x.onFormat <- Some (Minute.Value >> string)
+
+                                        x.onValidate <-
+                                            Some (
+                                                fst
+                                                >> String.parseIntMin 1
+                                                >> Option.defaultValue 1
+                                                >> Minute
+                                                >> Some
+                                            ))
 
                                 Input.Input
                                     (fun x ->
                                         x.label <- str "Session Break Duration"
 
                                         x.atom <-
-                                            Some (Recoil.Atom (input.Username, Atoms.User.sessionBreakDuration input.Username))
+                                            Some (
+                                                Recoil.Atom (
+                                                    input.Username,
+                                                    Atoms.User.sessionBreakDuration input.Username
+                                                )
+                                            )
 
-                                        x.inputFormat <- Some Input.InputFormat.Number)
+                                        x.inputFormat <- Some Input.InputFormat.Number
+                                        x.onFormat <- Some (Minute.Value >> string)
+
+                                        x.onValidate <-
+                                            Some (
+                                                fst
+                                                >> String.parseIntMin 1
+                                                >> Option.defaultValue 1
+                                                >> Minute
+                                                >> Some
+                                            ))
 
                                 Input.Input
                                     (fun x ->
                                         x.label <- str "Color"
 
-                                        x.atom <-
-                                            Some (Recoil.Atom (input.Username, Atoms.User.color input.Username))
-                                        )
+                                        x.atom <- Some (Recoil.Atom (input.Username, Atoms.User.color input.Username)))
+
+                                ChangeUserPasswordButton.ChangeUserPasswordButton ()
                             ])
 
                         "View",

@@ -1775,7 +1775,7 @@ module Templates =
                                     { taskState with
                                         Task =
                                             { taskState.Task with
-                                                Duration = Some (Minute (float minutes))
+                                                Duration = Some (Minute minutes)
                                             }
                                     }
 
@@ -1871,9 +1871,9 @@ module Templates =
     let templatesUser =
         {
             Username = Username "Fluke"
-            Color = UserColor.Black
+            Color = Color "#000000"
             WeekStart = DayOfWeek.Sunday
             DayStart = FlukeTime.Create 12 0
-            SessionDuration = Minute 25.
-            SessionBreakDuration = Minute 5.
+            SessionDuration = Minute 25
+            SessionBreakDuration = Minute 5
         }

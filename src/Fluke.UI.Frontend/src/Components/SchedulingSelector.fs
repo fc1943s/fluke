@@ -12,6 +12,7 @@ open Fluke.UI.Frontend.State
 
 
 module SchedulingSelector =
+
     let numberInput value (setValue: int -> unit) =
         Input.Input
             (fun x ->
@@ -21,31 +22,34 @@ module SchedulingSelector =
                 x.onChange <-
                     fun (e: KeyboardEvent) ->
                         promise {
-                            setValue (
-                                match Int32.TryParse e.Value with
-                                | true, value -> value
-                                | _ -> 0
-                                |> int
-                            )
+                            e.Value
+                            |> String.parseIntMin 1
+                            |> Option.defaultValue 1
+                            |> setValue
                         }
 
-                x.onValidate <-
-                    Some
-                        (fun (value, _) ->
-                            match Int32.TryParse value with
-                            | true, value when value > 0 -> Some value
-                            | _ -> None)
-
+                x.onValidate <- Some (fst >> String.parseIntMin 1)
                 x.inputFormat <- Some Input.InputFormat.Number)
 
     let inline radio flexDirection value children =
-        Chakra.radio
+        Chakra.stack
             (fun x ->
-                x.colorScheme <- "purple"
-                x.value <- value |> Gun.jsonEncode
-                x.flexDirection <- flexDirection)
+                x.spacing <- "4px"
+                x.alignItems <- "center"
+                x.direction <- "row")
             [
-                yield! children
+                Chakra.radio
+                    (fun x ->
+                        x.colorScheme <- "purple"
+                        x.size <- "lg"
+                        x.value <- value |> Gun.jsonEncode
+                        x.flexDirection <- flexDirection)
+                    []
+                Chakra.box
+                    (fun _ -> ())
+                    [
+                        yield! children
+                    ]
             ]
 
     let manualRadio value =
@@ -420,6 +424,7 @@ module SchedulingSelector =
                                                         {|
                                                             Props =
                                                                 fun x ->
+                                                                    x.margin <- "4px"
                                                                     x.icon <- Icons.fa.FaPlus |> Icons.render
 
                                                                     x.onClick <-
@@ -459,6 +464,7 @@ module SchedulingSelector =
                                                         {|
                                                             Props =
                                                                 fun x ->
+                                                                    x.margin <- "4px"
                                                                     x.icon <- Icons.fa.FaMinus |> Icons.render
 
                                                                     x.onClick <-
@@ -548,11 +554,7 @@ module SchedulingSelector =
                                                                              Some (i, day, month)
                                                                          | _ -> Some (-1, Day 1, month))
                                                                         [
-                                                                            Chakra.box
-                                                                                (fun x -> x.marginLeft <- "-6px")
-                                                                                [
-                                                                                    str (Enum.name month)
-                                                                                ]
+                                                                            str (Enum.name month)
                                                                         ])
                                                     ]
 
@@ -584,13 +586,7 @@ module SchedulingSelector =
                                                                              | _ ->
                                                                                  Some (-1, Day dayNumber, Month.January))
                                                                             [
-                                                                                Chakra.box
-                                                                                    (fun x ->
-                                                                                        x.marginLeft <- "-6px"
-                                                                                        x.marginTop <- "3px")
-                                                                                    [
-                                                                                        str (dayNumber |> string)
-                                                                                    ]
+                                                                                str (dayNumber |> string)
                                                                             ]
                                                                     ])
                                                     )
@@ -662,6 +658,7 @@ module SchedulingSelector =
                                         (fun x ->
                                             x.overflow <- "auto"
                                             x.maxHeight <- "350px"
+
                                             x.onChange <-
                                                 fun (radioValueSelected: string) ->
                                                     promise {

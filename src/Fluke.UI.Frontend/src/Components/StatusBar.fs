@@ -83,8 +83,8 @@ module StatusBar =
                                             (fun x -> x.color <- color)
                                             [
                                                 str
-                                                    $"{sessionType}: Task[ {taskName} ]; Duration[ %.1f{duration} ]; Left[ %.1f{
-                                                                                                                                    left
+                                                    $"{sessionType}: Task[ {taskName} ]; Duration[ {duration} ]; Left[ {
+                                                                                                                            left
                                                     } ]"
                                             ])
                                 |> List.intersperse (br [])

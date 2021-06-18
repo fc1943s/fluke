@@ -83,7 +83,6 @@ module LoginScreen =
                                 Left = false
                                 Trigger =
                                     fun visible setVisible ->
-
                                         Chakra.hStack
                                             (fun x -> x.alignItems <- "stretch")
                                             [

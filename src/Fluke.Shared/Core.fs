@@ -144,6 +144,22 @@ module String =
         | NullString -> Some InvalidString
         | _ -> None
 
+    let parseInt (text: string) =
+        match Int32.TryParse text with
+        | true, value -> Some value
+        | _ -> None
+
+    let parseIntMin min (text: string) =
+        parseInt text
+        |> Option.bind (fun n -> if n >= min then Some n else None)
+
+    let parseUInt = parseIntMin 0
+
+    let parseIntMax max (text: string) =
+        parseInt text
+        |> Option.bind (fun n -> if n <= max then Some n else None)
+
+
 module Enum =
     let inline ToList<'T> () =
         (Enum.GetValues typeof<'T> :?> 'T [])
