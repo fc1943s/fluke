@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open System
 open Fable.React
 open Feliz
 open Feliz.Recoil
@@ -26,10 +27,36 @@ module TaskName =
         let isReadWrite =
             Recoil.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
 
-        let deviceInfo = Store.useValue Selectors.deviceInfo
-        let setLeftDock = Store.useSetState (Atoms.User.leftDock input.Username)
-        let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
-        let setTaskFormIdFlag = Store.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
+        let editTask =
+            Store.useCallbackRef
+                (fun setter _ ->
+                    promise {
+                        let! deviceInfo = setter.snapshot.getPromise Selectors.deviceInfo
+
+                        if deviceInfo.IsMobile then
+                            setter.set (Atoms.User.leftDock input.Username, None)
+
+                        setter.set (Atoms.User.rightDock input.Username, Some DockType.Task)
+
+                        setter.set (
+                            Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)),
+                            input.TaskId |> TaskId.Value |> Some
+                        )
+                    })
+
+        let startSession =
+            Store.useCallbackRef
+                (fun setter _ ->
+                    promise {
+                        setter.set (
+                            Atoms.Task.sessions (input.Username, input.TaskId),
+                            fun sessions ->
+                                Session (DateTime.Now |> FlukeDateTime.FromDateTime)
+                                :: sessions
+                        )
+                    })
+
+        let deleteTask = Store.useCallbackRef (fun _setter _ -> promise { () })
 
         Chakra.flex
             (fun x ->
@@ -87,14 +114,7 @@ module TaskName =
                                                 Icons.bs.BsPen
                                                 |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
-                                            x.onClick <-
-                                                fun _ ->
-                                                    promise {
-                                                        if deviceInfo.IsMobile then setLeftDock None
-
-                                                        setRightDock (Some DockType.Task)
-                                                        setTaskFormIdFlag (input.TaskId |> TaskId.Value |> Some)
-                                                    })
+                                            x.onClick <- editTask)
                                         [
                                             str "Edit Task"
                                         ]
@@ -104,10 +124,24 @@ module TaskName =
                                             x.closeOnSelect <- true
 
                                             x.icon <-
+                                                Icons.gi.GiHourglass
+                                                |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+
+                                            x.onClick <- startSession)
+                                        [
+                                            str "Start Session"
+                                        ]
+
+                                    Chakra.menuItem
+                                        (fun x ->
+                                            x.closeOnSelect <- true
+                                            x.isDisabled <- true
+
+                                            x.icon <-
                                                 Icons.bs.BsTrash
                                                 |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
-                                            x.onClick <- fun e -> promise { e.preventDefault () })
+                                            x.onClick <- deleteTask)
                                         [
                                             str "Delete Task"
                                         ]

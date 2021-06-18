@@ -95,7 +95,7 @@
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "electron": "~14.0.0-beta.6",
+    "electron": "~14.0.0-beta.7",
     "electron-builder": "~22.11",
     "electronmon": "~2.0",
 

@@ -7,6 +7,7 @@ open Feliz.Recoil
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
 open Fable.Core
@@ -23,6 +24,19 @@ module TaskForm =
         =
         let toast = Chakra.useToast ()
         let debug = Store.useValue Atoms.debug
+
+        let sessions, setSessions = Store.useState (Atoms.Task.sessions (input.Username, input.TaskId))
+
+        let deleteSession =
+            Store.useCallbackRef
+                (fun _setter start ->
+                    promise {
+                        let index =
+                            sessions
+                            |> List.findIndex (fun (Session start') -> start' = start)
+
+                        setSessions (sessions |> List.removeAt index)
+                    })
 
         let onSave =
             Store.useCallbackRef
@@ -118,76 +132,157 @@ module TaskForm =
                     })
 
         Chakra.stack
-            (fun x -> x.spacing <- "18px")
+            (fun x -> x.spacing <- "30px")
             [
-                Chakra.box
-                    (fun x -> x.fontSize <- "15px")
-                    [
-
-                        str $"""{if input.TaskId = Task.Default.Id then "Add" else "Edit"} Task"""
-                    ]
-
-                if not debug then
-                    nothing
-                else
-                    Chakra.box
-                        (fun _ -> ())
-                        [
-                            str $"{input.TaskId}"
-                        ]
-
-                DatabaseSelector.DatabaseSelector
-                    {|
-                        Username = input.Username
-                        TaskId = input.TaskId
-                    |}
-
-                InformationSelector.InformationSelector
-                    {|
-                        Username = input.Username
-                        DisableResource = true
-                        SelectionType = InformationSelector.InformationSelectionType.Information
-                        TaskId = input.TaskId
-                    |}
-
-                SchedulingSelector.SchedulingSelector
-                    {|
-                        Username = input.Username
-                        TaskId = input.TaskId
-                    |}
-
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")
                     [
-                        Input.Input
-                            (fun x ->
-                                x.autoFocus <- true
-                                x.label <- str "Name"
-                                x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
+                        Chakra.box
+                            (fun x -> x.fontSize <- "15px")
+                            [
+                                str $"""{if input.TaskId = Task.Default.Id then "Add" else "Edit"} Task"""
+                            ]
 
-                                x.atom <-
-                                    Some (
-                                        Store.InputAtom.AtomFamily (
-                                            input.Username,
-                                            Atoms.Task.name,
-                                            (input.Username, input.TaskId)
-                                        )
-                                    )
+                        if not debug then
+                            nothing
+                        else
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    str $"{input.TaskId}"
+                                ]
 
-                                x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
-                                x.onFormat <- Some (fun (TaskName name) -> name)
-                                x.onEnterPress <- Some onSave
-                                x.onValidate <- Some (fst >> TaskName >> Some))
+                        DatabaseSelector.DatabaseSelector
+                            {|
+                                Username = input.Username
+                                TaskId = input.TaskId
+                            |}
+
+                        InformationSelector.InformationSelector
+                            {|
+                                Username = input.Username
+                                DisableResource = true
+                                SelectionType = InformationSelector.InformationSelectionType.Information
+                                TaskId = input.TaskId
+                            |}
+
+                        SchedulingSelector.SchedulingSelector
+                            {|
+                                Username = input.Username
+                                TaskId = input.TaskId
+                            |}
+
+                        Chakra.stack
+                            (fun x -> x.spacing <- "15px")
+                            [
+                                Input.Input
+                                    (fun x ->
+                                        x.autoFocus <- true
+                                        x.label <- str "Name"
+                                        x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
+
+                                        x.atom <-
+                                            Some (
+                                                Store.InputAtom.AtomFamily (
+                                                    input.Username,
+                                                    Atoms.Task.name,
+                                                    (input.Username, input.TaskId)
+                                                )
+                                            )
+
+                                        x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
+                                        x.onFormat <- Some (fun (TaskName name) -> name)
+                                        x.onEnterPress <- Some onSave
+                                        x.onValidate <- Some (fst >> TaskName >> Some))
+                            ]
+
+                        Button.Button
+                            {|
+                                Hint = None
+                                Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
+                                Props = fun x -> x.onClick <- onSave
+                                Children =
+                                    [
+                                        str "Save"
+                                    ]
+                            |}
                     ]
 
-                Button.Button
-                    {|
-                        Hint = None
-                        Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
-                        Props = fun x -> x.onClick <- onSave
-                        Children =
-                            [
-                                str "Save"
-                            ]
-                    |}
+
+                if input.TaskId = Task.Default.Id then
+                    nothing
+                else
+                    Html.hr []
+
+                    Chakra.stack
+                        (fun x -> x.spacing <- "15px")
+                        [
+                            Chakra.box
+                                (fun x -> x.fontSize <- "15px")
+                                [
+                                    str "Sessions"
+                                ]
+
+                            match sessions with
+                            | [] ->
+                                Chakra.box
+                                    (fun _ -> ())
+                                    [
+                                        str "No sessions found"
+                                    ]
+                            | sessions ->
+                                yield!
+                                    sessions
+                                    |> List.map
+                                        (fun (Session start) ->
+                                            Chakra.flex
+                                                (fun _ -> ())
+                                                [
+                                                    Chakra.box
+                                                        (fun _ -> ())
+                                                        [
+                                                            str (start |> FlukeDateTime.Stringify)
+                                                        ]
+
+                                                    Menu.Menu
+                                                        {|
+                                                            Tooltip = ""
+                                                            Trigger =
+                                                                InputLabelIconButton.InputLabelIconButton
+                                                                    {|
+                                                                        Props =
+                                                                            fun x ->
+                                                                                x.``as`` <- Chakra.react.MenuButton
+
+                                                                                x.icon <-
+                                                                                    Icons.bs.BsThreeDots |> Icons.render
+
+                                                                                x.fontSize <- "11px"
+                                                                                x.height <- "15px"
+                                                                                x.color <- "whiteAlpha.700"
+                                                                                x.marginTop <- "-1px"
+                                                                                x.marginLeft <- "6px"
+                                                                    |}
+                                                            Body =
+                                                                [
+                                                                    Chakra.menuItem
+                                                                        (fun x ->
+                                                                            x.closeOnSelect <- true
+
+                                                                            x.icon <-
+                                                                                Icons.bs.BsTrash
+                                                                                |> Icons.renderChakra
+                                                                                    (fun x -> x.fontSize <- "13px")
+
+                                                                            x.onClick <-
+                                                                                fun _ ->
+                                                                                    promise { do! deleteSession start })
+                                                                        [
+                                                                            str "Delete Session"
+                                                                        ]
+                                                                ]
+                                                            MenuListProps = fun _ -> ()
+                                                        |}
+                                                ])
+                        ]
             ]

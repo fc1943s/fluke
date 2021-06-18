@@ -74,32 +74,32 @@ jobs:
 
       - uses: actions/upload-artifact@v2
         with:
-          name: Fluke-${{ env.VERSION }}-win-setup
+          name: Fluke-win-setup
           path: ./src/Fluke.UI.Frontend/electron_output/*.exe
 
       - uses: actions/upload-artifact@v2
         with:
-          name: Fluke-${{ env.VERSION }}-win-zip
+          name: Fluke-win-zip
           path: ./src/Fluke.UI.Frontend/electron_output/*-win.zip
 
       - uses: actions/upload-artifact@v2
         with:
-          name: Fluke-${{ env.VERSION }}-mac-zip
+          name: Fluke-mac-zip
           path: ./src/Fluke.UI.Frontend/electron_output/*-mac.zip
 
       - uses: actions/upload-artifact@v2
         with:
-          name: Fluke-${{ env.VERSION }}-mac-dmg
+          name: Fluke-mac-dmg
           path: ./src/Fluke.UI.Frontend/electron_output/*.dmg
 
       - uses: actions/upload-artifact@v2
         with:
-          name: Fluke-${{ env.VERSION }}-linux-snap
+          name: Fluke-linux-snap
           path: ./src/Fluke.UI.Frontend/electron_output/*.snap
 
       - uses: actions/upload-artifact@v2
         with:
-          name: Fluke-${{ env.VERSION }}-linux-AppImage
+          name: Fluke-linux-AppImage
           path: ./src/Fluke.UI.Frontend/electron_output/*.AppImage
 
 

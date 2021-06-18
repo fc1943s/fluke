@@ -227,7 +227,7 @@ module State =
                                     { taskState with
                                         SortList = newSortList
                                     }
-                                | TaskInteraction.Session (Session (_start, _duration, _breakDuration) as session) ->
+                                | TaskInteraction.Session session ->
                                     let newSessions = session :: taskState.Sessions
 
                                     { taskState with

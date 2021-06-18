@@ -32,7 +32,7 @@ module InformationView =
                             |> List.replicate 3
 
                         Chakra.flex
-                            (fun _ -> ())
+                            (fun x -> x.direction <- "column")
                             [
                                 yield!
                                     tasksByInformationKind

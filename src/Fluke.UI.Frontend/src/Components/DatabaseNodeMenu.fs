@@ -119,6 +119,7 @@ module DatabaseNodeMenu =
                                 x.icon <-
                                     Icons.bs.BsTrash
                                     |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+                                x.isDisabled <- true
 
                                 x.onClick <- fun e -> promise { e.preventDefault () })
                             [

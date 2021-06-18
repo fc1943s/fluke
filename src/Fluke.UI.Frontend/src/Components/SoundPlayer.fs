@@ -16,8 +16,8 @@ module SoundPlayer =
     [<ReactComponent>]
     let SoundPlayer (input: {| Username: Username |}) =
         let oldActiveSessions = React.useRef []
-        let (Minute sessionLength) = Store.useValue (Atoms.User.sessionLength input.Username)
-        let (Minute sessionBreakLength) = Store.useValue (Atoms.User.sessionBreakLength input.Username)
+        let (Minute sessionDuration) = Store.useValue (Atoms.User.sessionDuration input.Username)
+        let (Minute sessionBreakDuration) = Store.useValue (Atoms.User.sessionBreakDuration input.Username)
         let activeSessions = Store.useValueLoadableDefault (Selectors.Session.activeSessions input.Username) []
 
         React.useEffect (
@@ -38,7 +38,7 @@ module SoundPlayer =
                         | Some (TempUI.ActiveSession (_, newDuration, totalDuration, _)) when
                             newDuration = totalDuration -> TempAudio.playDing
                         | None ->
-                            if oldDuration = sessionLength + sessionBreakLength - 1. then
+                            if oldDuration = sessionDuration + sessionBreakDuration - 1. then
                                 TempAudio.playDing
                             else
                                 id
@@ -48,8 +48,8 @@ module SoundPlayer =
                 oldActiveSessions.current <- activeSessions),
             [|
                 box oldActiveSessions
-                box sessionLength
-                box sessionBreakLength
+                box sessionDuration
+                box sessionBreakDuration
                 box activeSessions
             |]
         )

@@ -1667,7 +1667,7 @@ module Templates =
 
                             taskState, newUserInteractions
                         | DslSession start ->
-                            let session = Session (start, user.SessionLength, user.SessionBreakLength)
+                            let session = Session start
 
                             let taskInteraction = TaskInteraction.Session session
                             let interaction = Interaction.Task (task.Id, taskInteraction)
@@ -1874,6 +1874,6 @@ module Templates =
             Color = UserColor.Black
             WeekStart = DayOfWeek.Sunday
             DayStart = FlukeTime.Create 12 0
-            SessionLength = Minute 25.
-            SessionBreakLength = Minute 5.
+            SessionDuration = Minute 25.
+            SessionBreakDuration = Minute 5.
         }

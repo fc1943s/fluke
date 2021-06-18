@@ -100,9 +100,8 @@ module DatabaseForm =
         let importDatabase = Hydrate.useImportDatabase ()
 
         Chakra.stack
-            (fun x -> x.spacing <- "35px")
+            (fun x -> x.spacing <- "30px")
             [
-
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")
                     [
@@ -168,6 +167,7 @@ module DatabaseForm =
                             |}
                     ]
 
+                Html.hr []
 
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")

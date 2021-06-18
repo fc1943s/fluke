@@ -165,23 +165,23 @@ module State =
                         ])
                 )
 
-            let rec sessionLength =
+            let rec sessionDuration =
                 Store.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof sessionLength}",
+                    $"{nameof atomFamily}/{nameof User}/{nameof sessionDuration}",
                     (fun (_username: Username) -> Minute 25.),
                     (fun (username: Username) ->
                         [
-                            Store.gunEffect (Store.InputAtom.AtomFamily (username, sessionLength, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, sessionDuration, username)) []
                         ])
                 )
 
-            let rec sessionBreakLength =
+            let rec sessionBreakDuration =
                 Store.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof sessionBreakLength}",
+                    $"{nameof atomFamily}/{nameof User}/{nameof sessionBreakDuration}",
                     (fun (_username: Username) -> Minute 5.),
                     (fun (username: Username) ->
                         [
-                            Store.gunEffect (Store.InputAtom.AtomFamily (username, sessionBreakLength, username)) []
+                            Store.gunEffect (Store.InputAtom.AtomFamily (username, sessionBreakDuration, username)) []
                         ])
                 )
 
@@ -806,8 +806,7 @@ module State =
                                         match dateSequence with
                                         | firstVisibleDate :: _ when firstVisibleDate >= (dateId |> DateId.Value) ->
                                             sessions
-                                            |> List.filter
-                                                (fun (Session (start, _, _)) -> isToday dayStart start dateId)
+                                            |> List.filter (fun (Session start) -> isToday dayStart start dateId)
                                         | _ -> []
 
                                     let cellAttachments =
@@ -871,25 +870,22 @@ module State =
                 )
 
             let rec databaseId =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof databaseId}",
                     (fun (username: Username, taskId: TaskId) getter ->
-                        promise {
-                            let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
+                        let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
 
-                            let databaseIdSet =
-                                databaseIdSet
-                                |> Set.choose
-                                    (fun databaseId ->
-                                        let taskIdSet = getter.get (Atoms.Database.taskIdSet (username, databaseId))
-                                        if taskIdSet.Contains taskId then Some databaseId else None)
+                        let databaseIdSet =
+                            databaseIdSet
+                            |> Set.choose
+                                (fun databaseId ->
+                                    let taskIdSet = getter.get (Atoms.Database.taskIdSet (username, databaseId))
+                                    if taskIdSet.Contains taskId then Some databaseId else None)
 
-                            return
-                                match databaseIdSet |> Set.toList with
-                                | [] -> Database.Default.Id
-                                | [ databaseId ] -> databaseId
-                                | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdSet})"
-                        }),
+                        match databaseIdSet |> Set.toList with
+                        | [] -> Database.Default.Id
+                        | [ databaseId ] -> databaseId
+                        | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdSet})"),
                     (fun (username: Username, taskId: TaskId) setter newValue ->
                         let databaseId = setter.get (databaseId (username, taskId))
                         setter.set (Atoms.Database.taskIdSet (username, databaseId), Set.remove taskId)
@@ -927,8 +923,7 @@ module State =
                                     |> Map.tryFind (DateId date)
                                     |> Option.map (fun cellState -> cellState.Sessions)
                                     |> Option.defaultValue []
-                                    |> List.sortByDescending
-                                        (fun (Session (start, _, _)) -> start |> FlukeDateTime.DateTime)
+                                    |> List.sortByDescending (fun (Session start) -> start |> FlukeDateTime.DateTime)
                                     |> List.tryHead)
                         | _ -> None)
                 )
@@ -937,19 +932,25 @@ module State =
                 Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof activeSession}",
                     (fun (taskId: TaskId) getter ->
+                        let username = getter.get Atoms.username
                         let position = getter.get Atoms.position
                         let lastSession = getter.get (lastSession taskId)
 
-                        match position, lastSession with
-                        | Some position, Some lastSession ->
-                            let (Session (start, Minute duration, Minute breakDuration)) = lastSession
+                        match username, position, lastSession with
+                        | Some username, Some position, Some lastSession ->
+                            let sessionDuration = getter.get (Atoms.User.sessionDuration username)
+                            let sessionBreakDuration = getter.get (Atoms.User.sessionBreakDuration username)
+
+                            let (Session start) = lastSession
 
                             let currentDuration =
                                 ((position |> FlukeDateTime.DateTime)
                                  - (start |> FlukeDateTime.DateTime))
                                     .TotalMinutes
 
-                            let active = currentDuration < duration + breakDuration
+                            let active =
+                                currentDuration < (sessionDuration |> Minute.Value)
+                                                  + (sessionBreakDuration |> Minute.Value)
 
                             match active with
                             | true -> Some currentDuration
@@ -1034,17 +1035,13 @@ module State =
 
         module rec Session =
             let rec taskIdSet =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof taskIdSet}",
                     (fun (username: Username) getter ->
-                        promise {
-                            let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
+                        let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
 
-                            return
-                                databaseIdSet
-                                |> Set.collect
-                                    (fun databaseId -> getter.get (Atoms.Database.taskIdSet (username, databaseId)))
-                        })
+                        databaseIdSet
+                        |> Set.collect (fun databaseId -> getter.get (Atoms.Database.taskIdSet (username, databaseId))))
                 )
 
             let rec informationSet =
@@ -1099,8 +1096,8 @@ module State =
                     (fun (username: Username) getter ->
                         let selectedTaskIdSet = getter.get (selectedTaskIdSet username)
 
-                        let sessionLength = getter.get (Atoms.User.sessionLength username)
-                        let sessionBreakLength = getter.get (Atoms.User.sessionBreakLength username)
+                        let sessionDuration = getter.get (Atoms.User.sessionDuration username)
+                        let sessionBreakDuration = getter.get (Atoms.User.sessionBreakDuration username)
 
                         selectedTaskIdSet
                         |> Set.toList
@@ -1117,8 +1114,8 @@ module State =
                                         TempUI.ActiveSession (
                                             taskName,
                                             Minute duration,
-                                            sessionLength,
-                                            sessionBreakLength
+                                            sessionDuration,
+                                            sessionBreakDuration
                                         ))))
                 )
 

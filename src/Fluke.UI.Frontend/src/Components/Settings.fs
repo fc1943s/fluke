@@ -50,6 +50,32 @@ module Settings =
                                                 >> FlukeTime.FromDateTime
                                                 >> Some
                                             ))
+
+                                Input.Input
+                                    (fun x ->
+                                        x.label <- str "Session Duration"
+
+                                        x.atom <-
+                                            Some (Recoil.Atom (input.Username, Atoms.User.sessionDuration input.Username))
+
+                                        x.inputFormat <- Some Input.InputFormat.Number)
+
+                                Input.Input
+                                    (fun x ->
+                                        x.label <- str "Session Break Duration"
+
+                                        x.atom <-
+                                            Some (Recoil.Atom (input.Username, Atoms.User.sessionBreakDuration input.Username))
+
+                                        x.inputFormat <- Some Input.InputFormat.Number)
+
+                                Input.Input
+                                    (fun x ->
+                                        x.label <- str "Color"
+
+                                        x.atom <-
+                                            Some (Recoil.Atom (input.Username, Atoms.User.color input.Username))
+                                        )
                             ])
 
                         "View",

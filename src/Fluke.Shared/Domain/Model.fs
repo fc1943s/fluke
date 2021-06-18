@@ -170,6 +170,9 @@ module Model =
             }
 
 
+    and Minute with
+        static member inline Value (Minute minute) = minute
+
     and TaskId with
         static member inline NewId () = TaskId (Guid.NewGuid ())
         static member inline Value (TaskId guid) = guid

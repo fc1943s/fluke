@@ -45,8 +45,8 @@ module UserInteraction =
             Color: UserColor
             WeekStart: DayOfWeek
             DayStart: FlukeTime
-            SessionLength: Minute
-            SessionBreakLength: Minute
+            SessionDuration: Minute
+            SessionBreakDuration: Minute
         }
 
     and Username = Username of username: string
@@ -66,7 +66,7 @@ module UserInteraction =
         | Session of session: Session
         | Sort of top: TaskId option * bottom: TaskId option
 
-    and Session = Session of start: FlukeDateTime * duration: Minute * breakDuration: Minute
+    and Session = Session of start: FlukeDateTime
 
     and DateId = DateId of referenceDay: FlukeDate
 

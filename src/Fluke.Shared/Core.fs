@@ -38,6 +38,12 @@ module Option =
 
 
 module List =
+    let removeAt index list =
+        list
+        |> List.indexed
+        |> List.filter (fun (i, _) -> i <> index)
+        |> List.map snd
+
     let inline intersperse element source : list<'T> =
         source
         |> List.toSeq
