@@ -63,7 +63,53 @@ module Hydrate =
             setter.scopedSet
                 username
                 atomScope
-                (Atoms.Task.attachments, (username, taskState.Task.Id), taskState.Attachments)
+                (Atoms.Task.attachmentIdSet,
+                 (username, taskState.Task.Id),
+                 taskState.Attachments
+                 |> List.map
+                     (fun (timestamp, attachment) ->
+                         let attachmentId = AttachmentId.NewId ()
+
+                         setter.scopedSet
+                             username
+                             atomScope
+                             (Atoms.Attachment.timestamp, (username, attachmentId), Some timestamp)
+
+                         setter.scopedSet
+                             username
+                             atomScope
+                             (Atoms.Attachment.attachment, (username, attachmentId), Some attachment)
+
+                         attachmentId)
+                 |> Set.ofList)
+
+            setter.scopedSet
+                username
+                atomScope
+                (Atoms.Task.cellAttachmentMap,
+                 (username, taskState.Task.Id),
+                 taskState.CellStateMap
+                 |> Seq.map
+                     (fun (KeyValue (dateId, { Attachments = attachments })) ->
+                         dateId,
+                         attachments
+                         |> List.choose
+                             (fun (timestamp, attachment) ->
+                                 let attachmentId = AttachmentId.NewId ()
+
+                                 setter.scopedSet
+                                     username
+                                     atomScope
+                                     (Atoms.Attachment.timestamp, (username, attachmentId), Some timestamp)
+
+                                 setter.scopedSet
+                                     username
+                                     atomScope
+                                     (Atoms.Attachment.attachment, (username, attachmentId), Some attachment)
+
+                                 Some attachmentId)
+                         |> Set.ofList)
+                 |> Map.ofSeq)
 
             setter.scopedSet username atomScope (Atoms.Task.sessions, (username, taskState.Task.Id), taskState.Sessions)
         }
@@ -104,16 +150,6 @@ module Hydrate =
                                                      Some (dateId, userStatus)
                                                  | _ -> None)
                                              |> Map.ofSeq)
-                                    )
-
-                                    setter.set (
-                                        Atoms.Task.attachments (username, taskState.Task.Id),
-                                        fun _ -> taskState.Attachments
-                                    )
-
-                                    setter.set (
-                                        Atoms.Task.sessions (username, taskState.Task.Id),
-                                        fun _ -> taskState.Sessions
                                     )
 
                                     setter.set (

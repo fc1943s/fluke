@@ -92,6 +92,8 @@
         <Compile Include="src\Components\Settings.fs" />
         <Compile Include="src\Components\DockButton.fs" />
         <Compile Include="src\Components\DockPanel.fs" />
+        <Compile Include="src\Components\InformationForm.fs" />
+        <Compile Include="src\Components\CellForm.fs" />
         <Compile Include="src\Components\RightDock.fs" />
         <Compile Include="src\Components\LeftDock.fs" />
         <Compile Include="src\Components\StatusBar.fs" />

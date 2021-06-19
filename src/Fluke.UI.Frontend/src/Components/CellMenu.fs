@@ -48,6 +48,9 @@ module CellMenu =
             | UserStatus (_, Postponed (Some until)) -> until |> FlukeTime.Stringify
             | _ -> "later"
 
+        let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
+        let setCellUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Cell))
+
         let onClick =
             Store.useCallbackRef
                 (fun setter (onClickStatus: CellStatus) ->
@@ -96,7 +99,7 @@ module CellMenu =
                         x.spacing <- "1px"
                         x.width <- $"{cellSize (* * 2*) }px")
                     [
-                        let wrapButton icon color onClickStatus =
+                        let wrapButton icon color onClick =
                             Chakra.iconButton
                                 (fun x ->
                                     x.icon <- icon
@@ -108,10 +111,13 @@ module CellMenu =
                                     x.height <- $"{cellSize}px"
                                     x.borderRadius <- "0"
 
-                                    match onClickStatus with
-                                    | Some onClickStatus -> x.onClick <- fun _ -> onClick onClickStatus
+                                    match onClick with
+                                    | Some onClick -> x.onClick <- fun _ -> onClick ()
                                     | None -> ())
                                 []
+
+                        let wrapButtonStatus icon color status =
+                            wrapButton icon color (Some (fun () -> onClick status))
 
                         let wrapButtonTooltip status tooltipLabel =
                             let color = TempUI.manualCellStatusColor status
@@ -119,27 +125,35 @@ module CellMenu =
                             Tooltip.wrap
                                 tooltipLabel
                                 [
-                                    wrapButton None color (UserStatus (input.Username, status) |> Some)
+                                    wrapButtonStatus None color (UserStatus (input.Username, status))
                                 ]
 
                         Tooltip.wrap
-                                (str "Details")
-                                [
-                                    wrapButton
-                                        (Icons.fi.FiArrowRight |> Icons.render |> Some)
-                                        (TempUI.cellStatusColor Pending)
-                                        (Some Disabled)
-                                ]
+                            (str "Details")
+                            [
+                                wrapButton
+                                    (Icons.fi.FiArrowRight |> Icons.render |> Some)
+                                    (TempUI.cellStatusColor Pending)
+                                    (Some
+                                        (fun () ->
+                                            promise {
+                                                setRightDock (Some TempUI.DockType.Cell)
+
+                                                setCellUIFlag (
+                                                    Some (Atoms.User.UIFlag.Cell (input.TaskId, input.DateId))
+                                                )
+                                            }))
+                            ]
 
                         match sessionStatus with
                         | UserStatus _ ->
                             Tooltip.wrap
                                 (str "Clear")
                                 [
-                                    wrapButton
+                                    wrapButtonStatus
                                         (Icons.md.MdClear |> Icons.render |> Some)
                                         (TempUI.cellStatusColor Disabled)
-                                        (Some Disabled)
+                                        Disabled
                                 ]
                         | _ -> nothing
 

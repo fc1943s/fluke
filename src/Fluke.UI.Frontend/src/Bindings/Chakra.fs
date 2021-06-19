@@ -36,6 +36,10 @@ module Chakra =
         abstract borderLeftColor : string with get, set
         abstract borderLeftWidth : string with get, set
         abstract borderRadius : string with get, set
+        abstract borderTopRightRadius : string with get, set
+        abstract borderBottomRightRadius : string with get, set
+        abstract borderBottomLeftRadius : string with get, set
+        abstract borderTopLeftRadius : string with get, set
         abstract borderRightColor : string with get, set
         abstract borderRightWidth : string with get, set
         abstract borderTopColor : string with get, set

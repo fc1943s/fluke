@@ -39,8 +39,8 @@ module TaskName =
                         setter.set (Atoms.User.rightDock input.Username, Some DockType.Task)
 
                         setter.set (
-                            Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)),
-                            input.TaskId |> TaskId.Value |> Some
+                            Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task),
+                            input.TaskId |> Atoms.User.UIFlag.Task |> Some
                         )
                     })
 

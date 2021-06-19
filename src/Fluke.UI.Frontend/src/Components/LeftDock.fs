@@ -20,9 +20,7 @@ module LeftDock =
         let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let hideTemplates, setHideTemplates = Store.useState (Atoms.User.hideTemplates input.Username)
-
-        let setDatabaseFormIdFlag =
-            Store.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
+        let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
 
         let items, itemsMap =
             React.useMemo (
@@ -89,7 +87,7 @@ module LeftDock =
 
                                                                                 setRightDock (Some DockType.Database)
 
-                                                                                setDatabaseFormIdFlag None
+                                                                                setDatabaseUIFlag None
                                                                             }
                                                         |}
                                                 ]
@@ -141,7 +139,7 @@ module LeftDock =
                     box input.Username
                     box isTesting
                     box hideTemplates
-                    box setDatabaseFormIdFlag
+                    box setDatabaseUIFlag
                     box setHideTemplates
                 |]
             )

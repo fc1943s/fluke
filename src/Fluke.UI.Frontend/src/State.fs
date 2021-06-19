@@ -285,27 +285,41 @@ module State =
                         ])
                 )
 
-            let rec formIdFlag =
+            [<RequireQualifiedAccess>]
+            type UIFlag =
+                | Database of DatabaseId
+                | Information of Information
+                | Task of TaskId
+                | Cell of TaskId * DateId
+
+            [<RequireQualifiedAccess>]
+            type UIFlagType =
+                | Database
+                | Information
+                | Task
+                | Cell
+
+            let rec uiFlag =
                 Store.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof formIdFlag}",
-                    (fun (_username: Username, _key: TextKey) -> None: Guid option),
-                    (fun (username: Username, key: TextKey) ->
+                    $"{nameof atomFamily}/{nameof User}/{nameof uiFlag}",
+                    (fun (_username: Username, _uiFlagType: UIFlagType) -> None: UIFlag option),
+                    (fun (username: Username, uiFlagType: UIFlagType) ->
                         [
                             Store.gunEffect
-                                (Store.InputAtom.AtomFamily (username, formIdFlag, (username, key)))
-                                (key |> TextKey.Value |> List.singleton)
+                                (Store.InputAtom.AtomFamily (username, uiFlag, (username, uiFlagType)))
+                                (uiFlagType |> string |> List.singleton)
                         ])
                 )
 
-            let rec formVisibleFlag =
+            let rec uiVisibleFlag =
                 Store.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof User}/{nameof formVisibleFlag}",
-                    (fun (_username: Username, _key: TextKey) -> false),
-                    (fun (username: Username, key: TextKey) ->
+                    $"{nameof atomFamily}/{nameof User}/{nameof uiVisibleFlag}",
+                    (fun (_username: Username, _uiFlagType: UIFlagType) -> false),
+                    (fun (username: Username, uiFlagType: UIFlagType) ->
                         [
                             Store.gunEffect
-                                (Store.InputAtom.AtomFamily (username, formVisibleFlag, (username, key)))
-                                (key |> TextKey.Value |> List.singleton)
+                                (Store.InputAtom.AtomFamily (username, uiVisibleFlag, (username, uiFlagType)))
+                                (uiFlagType |> string |> List.singleton)
                         ])
                 )
 
@@ -390,18 +404,33 @@ module State =
                 )
 
         module rec Attachment =
-            type AttachmentId = AttachmentId of guid: Guid
+            let attachmentIdIdentifier (attachmentId: AttachmentId) =
+                attachmentId
+                |> AttachmentId.Value
+                |> string
+                |> List.singleton
+
+            let rec timestamp =
+                Store.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Attachment}/{nameof timestamp}",
+                    (fun (_username: Username, _attachmentId: AttachmentId) -> None: FlukeDateTime option),
+                    (fun (username: Username, attachmentId: AttachmentId) ->
+                        [
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, timestamp, (username, attachmentId)))
+                                (attachmentIdIdentifier attachmentId)
+                        ])
+                )
 
             let rec attachment =
                 Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof Attachment}/{nameof attachment}",
-                    (fun (_username: Username, _attachmentId: AttachmentId) ->
-                        None: (FlukeDateTime * Attachment) option),
+                    (fun (_username: Username, _attachmentId: AttachmentId) -> None: Attachment option),
                     (fun (username: Username, attachmentId: AttachmentId) ->
                         [
-                        //                            Store.gunEffect
-//                                (Store.InputAtom.AtomFamily (username, attachments, (username, information)))
-//                                (informationIdentifier information)
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, attachment, (username, attachmentId)))
+                                (attachmentIdIdentifier attachmentId)
                         ])
                 )
 
@@ -468,14 +497,26 @@ module State =
                         ])
                 )
 
-            let rec attachments =
+            let rec attachmentIdSet =
                 Store.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Task}/{nameof attachments}",
-                    (fun (_username: Username, _taskId: TaskId) -> []: (FlukeDateTime * Attachment) list),
+                    $"{nameof atomFamily}/{nameof Task}/{nameof attachmentIdSet}",
+                    (fun (_username: Username, _taskId: TaskId) -> Set.empty: Set<AttachmentId>),
                     (fun (username: Username, taskId: TaskId) ->
                         [
                             Store.gunEffect
-                                (Store.InputAtom.AtomFamily (username, attachments, (username, taskId)))
+                                (Store.InputAtom.AtomFamily (username, attachmentIdSet, (username, taskId)))
+                                (taskIdIdentifier taskId)
+                        ])
+                )
+
+            let rec cellAttachmentMap =
+                Store.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof Task}/{nameof cellAttachmentMap}",
+                    (fun (_username: Username, _taskId: TaskId) -> Map.empty: Map<DateId, Set<AttachmentId>>),
+                    (fun (username: Username, taskId: TaskId) ->
+                        [
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, cellAttachmentMap, (username, taskId)))
                                 (taskIdIdentifier taskId)
                         ])
                 )
@@ -795,7 +836,22 @@ module State =
                         let dayStart = getter.get (Atoms.User.dayStart username)
                         let statusMap = getter.get (Atoms.Task.statusMap (username, taskId))
                         let sessions = getter.get (Atoms.Task.sessions (username, taskId))
-                        let attachments = getter.get (Atoms.Task.attachments (username, taskId))
+                        let attachmentIdSet = getter.get (Atoms.Task.attachmentIdSet (username, taskId))
+                        let cellAttachmentMap = getter.get (Atoms.Task.cellAttachmentMap (username, taskId))
+
+                        let attachmentIdList = attachmentIdSet |> Set.toList
+
+                        let attachmentTimestamps =
+                            attachmentIdList
+                            |> List.choose
+                                (fun attachmentId -> getter.get (Atoms.Attachment.timestamp (username, attachmentId)))
+
+                        let attachments =
+                            attachmentIdList
+                            |> List.choose
+                                (fun attachmentId -> getter.get (Atoms.Attachment.attachment (username, attachmentId)))
+                            |> List.zip attachmentTimestamps
+                            |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
 
                         let cellStateMapWithoutStatus =
                             dateSequence
@@ -812,8 +868,27 @@ module State =
                                     let cellAttachments =
                                         match dateSequence with
                                         | firstVisibleDate :: _ when firstVisibleDate <= (dateId |> DateId.Value) ->
-                                            attachments
-                                            |> List.filter (fun (moment, _) -> isToday dayStart moment dateId)
+                                            cellAttachmentMap
+                                            |> Map.tryFind dateId
+                                            |> Option.defaultValue Set.empty
+                                            |> Set.toList
+                                            |> List.map
+                                                (fun attachmentId ->
+
+                                                    let timestamp =
+                                                        getter.get (Atoms.Attachment.timestamp (username, attachmentId))
+
+                                                    let attachment =
+                                                        getter.get (
+                                                            Atoms.Attachment.attachment (username, attachmentId)
+                                                        )
+
+                                                    timestamp, attachment)
+                                            |> List.choose
+                                                (function
+                                                | (Some timestamp, Some attachment) -> Some (timestamp, attachment)
+                                                | _ -> None)
+                                            |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
                                         | _ -> []
 
                                     let cellState =

@@ -88,7 +88,7 @@ module DatabaseForm =
                                         (input.Username, input.DatabaseId)
 
                                 setter.set (
-                                    (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm))),
+                                    (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database)),
                                     fun _ -> None
                                 )
 

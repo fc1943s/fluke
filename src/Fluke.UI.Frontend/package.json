@@ -61,10 +61,10 @@
     "gun": "amark/gun.git#manhattan",
 
     "@chakra-ui/react": "~1.6",
-    "@chakra-ui/system": "~1.6",
+    "@chakra-ui/system": "~1.7",
     "@chakra-ui/icons": "~1.0",
     "@chakra-ui/theme-tools": "~1.1",
-    "@chakra-ui/media-query": "~1.0",
+    "@chakra-ui/media-query": "~1.1",
     "@emotion/react": "~11.4",
     "@emotion/styled": "~11.3",
     "framer-motion": "~4.1",
@@ -101,7 +101,7 @@
 
     "@typescript-eslint/eslint-plugin": "~4.27",
     "@typescript-eslint/parser": "~4.27",
-    "eslint": "~7.28",
+    "eslint": "~7.29",
     "eslint-plugin-react": "~7.24",
     "eslint-plugin-import": "~2.23",
     "eslint-plugin-jsx-a11y": "~6.4",

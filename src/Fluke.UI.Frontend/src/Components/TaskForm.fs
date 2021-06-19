@@ -124,7 +124,7 @@ module TaskForm =
                                     (input.Username, input.TaskId)
 
                             setter.set (
-                                (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm))),
+                                (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task)),
                                 fun _ -> None
                             )
 

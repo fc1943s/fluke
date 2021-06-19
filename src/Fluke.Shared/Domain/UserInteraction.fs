@@ -76,6 +76,11 @@ module UserInteraction =
         | Dismiss
         | Schedule
 
+    and AttachmentId = AttachmentId of guid: Guid
+
+    and AttachmentId with
+        static member inline NewId () = AttachmentId (Guid.NewGuid ())
+        static member inline Value (AttachmentId guid) = guid
 
     and Username with
         static member inline Value (Username username) = username

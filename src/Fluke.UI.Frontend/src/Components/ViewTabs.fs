@@ -201,6 +201,7 @@ module ViewTabs =
                                             Props = (fun _ -> ())
                                         |}
                                 ]
+
                             Input.LeftIconInput
                                 (Icons.bs.BsSearch |> Icons.render)
                                 "Search task or information"

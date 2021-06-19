@@ -12,20 +12,16 @@ module ModalFormTrigger =
     [<ReactComponent>]
     let ModalFormTrigger
         (input: {| Username: Username
-                   TextKeyValue: System.Guid option
-                   TextKey: TextKey
+                   UIFlagType: Atoms.User.UIFlagType
+                   UIFlagValue: Atoms.User.UIFlag option
                    Trigger: (unit -> JS.Promise<unit>) -> (unit -> Store.CallbackMethods) -> ReactElement |})
         =
         let onTrigger =
             Store.useCallbackRef
                 (fun setter _ ->
                     promise {
-                        setter.set (
-                            Atoms.User.formIdFlag (input.Username, input.TextKey),
-                            fun _ -> input.TextKeyValue
-                        )
-
-                        setter.set (Atoms.User.formVisibleFlag (input.Username, input.TextKey), (fun _ -> true))
+                        setter.set (Atoms.User.uiFlag (input.Username, input.UIFlagType), (fun _ -> input.UIFlagValue))
+                        setter.set (Atoms.User.uiVisibleFlag (input.Username, input.UIFlagType), (fun _ -> true))
                     })
 
         let setter = Store.useSetter ()

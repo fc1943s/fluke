@@ -192,6 +192,22 @@ module Input =
 
                                 x.autoFocus <- props.autoFocus
 
+                                props.borderBottomRightRadius
+                                |> Chakra.mapIfSet (fun value -> x.borderBottomRightRadius <- value)
+                                |> ignore
+
+                                props.borderTopRightRadius
+                                |> Chakra.mapIfSet (fun value -> x.borderTopRightRadius <- value)
+                                |> ignore
+
+                                props.borderBottomLeftRadius
+                                |> Chakra.mapIfSet (fun value -> x.borderBottomLeftRadius <- value)
+                                |> ignore
+
+                                props.borderTopLeftRadius
+                                |> Chakra.mapIfSet (fun value -> x.borderTopLeftRadius <- value)
+                                |> ignore
+
                                 props.placeholder
                                 |> Chakra.mapIfSet (fun value -> x.placeholder <- value)
                                 |> ignore

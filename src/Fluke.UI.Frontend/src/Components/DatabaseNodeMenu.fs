@@ -22,11 +22,8 @@ module DatabaseNodeMenu =
         let isReadWrite = Store.useValueLoadableDefault (Selectors.Database.isReadWrite input.DatabaseId) false
         let setLeftDock = Store.useSetState (Atoms.User.leftDock input.Username)
         let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
-
-        let setDatabaseFormIdFlag =
-            Store.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
-
-        let setTaskFormIdFlag = Store.useSetState (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
+        let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
+        let setTaskUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
         let setNewTaskDatabaseId = Store.useSetState (Selectors.Task.databaseId (input.Username, Task.Default.Id))
 
         let exportDatabase = Hydrate.useExportDatabase ()
@@ -64,7 +61,7 @@ module DatabaseNodeMenu =
                                                 setRightDock (Some DockType.Task)
 
                                                 setNewTaskDatabaseId input.DatabaseId
-                                                setTaskFormIdFlag None
+                                                setTaskUIFlag None
                                             })
                                 [
                                     str "Add Task"
@@ -85,7 +82,11 @@ module DatabaseNodeMenu =
 
                                                 setRightDock (Some DockType.Database)
 
-                                                setDatabaseFormIdFlag (input.DatabaseId |> DatabaseId.Value |> Some)
+                                                setDatabaseUIFlag (
+                                                    input.DatabaseId
+                                                    |> Atoms.User.UIFlag.Database
+                                                    |> Some
+                                                )
                                             })
                                 [
                                     str "Edit Database"
@@ -119,6 +120,7 @@ module DatabaseNodeMenu =
                                 x.icon <-
                                     Icons.bs.BsTrash
                                     |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+
                                 x.isDisabled <- true
 
                                 x.onClick <- fun e -> promise { e.preventDefault () })

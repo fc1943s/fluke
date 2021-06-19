@@ -13,14 +13,14 @@ module ModalForm =
     [<ReactComponent>]
     let ModalForm
         (input: {| Username: Username
-                   TextKey: TextKey
-                   Content: System.Guid option * (unit -> JS.Promise<unit>) * (unit -> Store.CallbackMethods) -> ReactElement |})
+                   UIFlagType: Atoms.User.UIFlagType
+                   Content: Atoms.User.UIFlag option * (unit -> JS.Promise<unit>) * (unit -> Store.CallbackMethods) -> ReactElement |})
         =
         let isTesting = Store.useValue Atoms.isTesting
-        let formIdFlag, setFormIdFlag = Store.useState (Atoms.User.formIdFlag (input.Username, input.TextKey))
+        let formIdFlag, setFormIdFlag = Store.useState (Atoms.User.uiFlag (input.Username, input.UIFlagType))
 
         let formVisibleFlag, setFormVisibleFlag =
-            Store.useState (Atoms.User.formVisibleFlag (input.Username, input.TextKey))
+            Store.useState (Atoms.User.uiVisibleFlag (input.Username, input.UIFlagType))
 
         let setter = Store.useSetter ()
 
@@ -54,7 +54,7 @@ module ModalForm =
                             x.children <-
                                 [
                                     Chakra.box
-                                        (fun x -> if isTesting then x?``data-testid`` <- input.TextKey)
+                                        (fun x -> if isTesting then x?``data-testid`` <- input.UIFlagType)
                                         [
                                             content
                                         ]

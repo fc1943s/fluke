@@ -5,6 +5,7 @@ open Feliz
 open Fable.React
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
@@ -14,15 +15,14 @@ open Fluke.UI.Frontend.State
 
 
 module RightDock =
-    open Domain.UserInteraction
 
     [<ReactComponent>]
     let RightDock (input: {| Username: Username |}) =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let setLeftDock = Store.useSetState (Atoms.User.leftDock input.Username)
         let rightDock, setRightDock = Store.useState (Atoms.User.rightDock input.Username)
-        let databaseFormIdFlag = Store.useValue (Atoms.User.formIdFlag (input.Username, TextKey (nameof DatabaseForm)))
-        let taskFormIdFlag = Store.useValue (Atoms.User.formIdFlag (input.Username, TextKey (nameof TaskForm)))
+        let databaseUIFlag = Store.useValue (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
+        let taskUIFlag = Store.useValue (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
         let hydrateTaskState = Hydrate.useHydrateTaskState ()
 
@@ -30,8 +30,11 @@ module RightDock =
             Recoil.useValueLoadableDefault
                 (Selectors.Task.databaseId (
                     input.Username,
-                    taskFormIdFlag
-                    |> Option.map TaskId
+                    taskUIFlag
+                    |> Option.bind
+                        (function
+                        | Atoms.User.UIFlag.Task taskId -> Some taskId
+                        | _ -> None)
                     |> Option.defaultValue Task.Default.Id
                 ))
                 Database.Default.Id
@@ -49,16 +52,20 @@ module RightDock =
                             Icon = Icons.fi.FiDatabase
                             Content =
                                 fun () ->
-                                    Chakra.box
+                                    Chakra.flex
                                         (fun x ->
+                                            x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
                                             x.padding <- "14px"
                                             x.flexBasis <- 0)
                                         [
                                             let databaseId =
-                                                databaseFormIdFlag
-                                                |> Option.map DatabaseId
+                                                databaseUIFlag
+                                                |> Option.bind
+                                                    (function
+                                                    | Atoms.User.UIFlag.Database databaseId -> Some databaseId
+                                                    | _ -> None)
                                                 |> Option.defaultValue Database.Default.Id
 
                                             DatabaseForm.DatabaseForm
@@ -95,13 +102,15 @@ module RightDock =
                             Icon = Icons.bs.BsListNested
                             Content =
                                 fun () ->
-                                    Chakra.box
+                                    Chakra.flex
                                         (fun x ->
+                                            x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
+                                            x.padding <- "14px"
                                             x.flexBasis <- 0)
                                         [
-                                            str "Information Form"
+                                            InformationForm.InformationForm {| Username = input.Username |}
                                         ]
                             RightIcons = []
                         |}
@@ -112,16 +121,20 @@ module RightDock =
                             Icon = Icons.bs.BsListTask
                             Content =
                                 fun () ->
-                                    Chakra.box
+                                    Chakra.flex
                                         (fun x ->
+                                            x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
                                             x.padding <- "14px"
                                             x.flexBasis <- 0)
                                         [
                                             let taskId =
-                                                taskFormIdFlag
-                                                |> Option.map TaskId
+                                                taskUIFlag
+                                                |> Option.bind
+                                                    (function
+                                                    | Atoms.User.UIFlag.Task taskId -> Some taskId
+                                                    | _ -> None)
                                                 |> Option.defaultValue Task.Default.Id
 
                                             TaskForm.TaskForm
@@ -171,25 +184,26 @@ module RightDock =
                             Icon = Icons.fa.FaCalendarCheck
                             Content =
                                 fun () ->
-                                    Chakra.box
+                                    Chakra.flex
                                         (fun x ->
+                                            x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
+                                            x.padding <- "14px"
                                             x.flexBasis <- 0)
                                         [
-
-                                            str "Cell Form"
+                                            CellForm.CellForm {| Username = input.Username |}
                                         ]
                             RightIcons = []
                         |}
                     ]),
                 [|
                     box taskDatabaseId
-                    box databaseFormIdFlag
+                    box databaseUIFlag
                     box hydrateDatabase
                     box hydrateTaskState
                     box setTaskIdSet
-                    box taskFormIdFlag
+                    box taskUIFlag
                     box input
                     box setRightDock
                     box setDatabaseIdSet
