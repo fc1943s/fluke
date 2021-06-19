@@ -15,21 +15,25 @@ module SchedulingSelector =
 
     let numberInput value (setValue: int -> unit) =
         Input.Input
-            (fun x ->
-                x.width <- "70px"
-                x.value <- value
+            {|
+                CustomProps =
+                    fun x ->
+                        x.fixedValue <- value
+                        x.onValidate <- Some (fst >> String.parseIntMin 1)
+                        x.inputFormat <- Some Input.InputFormat.Number
+                Props =
+                    fun x ->
+                        x.width <- "70px"
 
-                x.onChange <-
-                    fun (e: KeyboardEvent) ->
-                        promise {
-                            e.Value
-                            |> String.parseIntMin 1
-                            |> Option.defaultValue 1
-                            |> setValue
-                        }
-
-                x.onValidate <- Some (fst >> String.parseIntMin 1)
-                x.inputFormat <- Some Input.InputFormat.Number)
+                        x.onChange <-
+                            fun (e: KeyboardEvent) ->
+                                promise {
+                                    e.Value
+                                    |> String.parseIntMin 1
+                                    |> Option.defaultValue 1
+                                    |> setValue
+                                }
+            |}
 
     let inline radio flexDirection value children =
         Chakra.stack
@@ -625,7 +629,7 @@ module SchedulingSelector =
                         Label = str "Scheduling"
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
-                Menu.Drawer
+                Dropdown.Dropdown
                     {|
                         Tooltip = ""
                         Left = true

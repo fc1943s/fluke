@@ -6,7 +6,6 @@ open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fable.React
-open Fluke.UI.Frontend.State
 
 
 module LoginScreen =
@@ -61,23 +60,32 @@ module LoginScreen =
                     (fun _ -> ())
                     [
                         Input.Input
-                            (fun x ->
-                                x.autoFocus <- true
-                                x.value <- Some usernameField
-                                x.placeholder <- "Username"
-                                x.onChange <- (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value })
-                                x.onEnterPress <- Some signInClick)
+                            {|
+                                CustomProps = fun x ->
+                                 x.fixedValue <- Some usernameField
+                                 x.onEnterPress <- Some signInClick
+                                Props =
+                                    fun x ->
+                                        x.autoFocus <- true
+                                        x.placeholder <- "Username"
+                                        x.onChange <- (fun (e: KeyboardEvent) -> promise { setUsernameField e.Value })
+                            |}
 
                         Input.Input
-                            (fun x ->
-                                x.value <- Some passwordField
-                                x.placeholder <- "Password"
-                                x.inputFormat <- Some Input.InputFormat.Password
-                                x.onChange <- (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
-                                x.onEnterPress <- Some signInClick)
+                            {|
+                                CustomProps =
+                                    fun x ->
+                                        x.fixedValue <- Some passwordField
+                                        x.onEnterPress <- Some signInClick
+                                        x.inputFormat <- Some Input.InputFormat.Password
+                                Props =
+                                    fun x ->
+                                        x.placeholder <- "Password"
+                                        x.onChange <- (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
+                            |}
 
 
-                        Menu.Drawer
+                        Dropdown.Dropdown
                             {|
                                 Tooltip = ""
                                 Left = false
@@ -144,24 +152,26 @@ module LoginScreen =
                                                         ]
 
                                                     Input.Input
-                                                        (fun x ->
-                                                            x.autoFocus <- true
-                                                            x.value <- Some password2Field
-                                                            x.placeholder <- "Confirm Password"
-
-                                                            x.inputFormat <- Some Input.InputFormat.Password
-
-                                                            x.onChange <-
-                                                                (fun (e: KeyboardEvent) ->
-                                                                    promise { setPassword2Field e.Value })
-
-                                                            x.onEnterPress <-
-                                                                Some
-                                                                    (fun _ ->
-                                                                        promise {
-                                                                            let! result = signUpClick ()
-                                                                            if result then onHide ()
-                                                                        }))
+                                                        {|
+                                                            CustomProps =
+                                                                fun x ->
+                                                                    x.fixedValue <- Some password2Field
+                                                                    x.inputFormat <- Some Input.InputFormat.Password
+                                                                    x.onEnterPress <-
+                                                                        Some
+                                                                            (fun _ ->
+                                                                                promise {
+                                                                                    let! result = signUpClick ()
+                                                                                    if result then onHide ()
+                                                                                })
+                                                            Props =
+                                                                fun x ->
+                                                                    x.autoFocus <- true
+                                                                    x.placeholder <- "Confirm Password"
+                                                                    x.onChange <-
+                                                                        (fun (e: KeyboardEvent) ->
+                                                                            promise { setPassword2Field e.Value })
+                                                        |}
 
                                                     Chakra.box
                                                         (fun _ -> ())

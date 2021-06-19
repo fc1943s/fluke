@@ -945,22 +945,25 @@ module State =
                 )
 
             let rec databaseId =
-                Store.selectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Task}/{nameof databaseId}",
                     (fun (username: Username, taskId: TaskId) getter ->
-                        let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
+                        promise {
+                            let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
 
-                        let databaseIdSet =
-                            databaseIdSet
-                            |> Set.choose
-                                (fun databaseId ->
-                                    let taskIdSet = getter.get (Atoms.Database.taskIdSet (username, databaseId))
-                                    if taskIdSet.Contains taskId then Some databaseId else None)
+                            let databaseIdSet =
+                                databaseIdSet
+                                |> Set.choose
+                                    (fun databaseId ->
+                                        let taskIdSet = getter.get (Atoms.Database.taskIdSet (username, databaseId))
+                                        if taskIdSet.Contains taskId then Some databaseId else None)
 
-                        match databaseIdSet |> Set.toList with
-                        | [] -> Database.Default.Id
-                        | [ databaseId ] -> databaseId
-                        | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdSet})"),
+                            return
+                                match databaseIdSet |> Set.toList with
+                                | [] -> Database.Default.Id
+                                | [ databaseId ] -> databaseId
+                                | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdSet})"
+                        }),
                     (fun (username: Username, taskId: TaskId) setter newValue ->
                         let databaseId = setter.get (databaseId (username, taskId))
                         setter.set (Atoms.Database.taskIdSet (username, databaseId), Set.remove taskId)
@@ -1137,13 +1140,17 @@ module State =
 
         module rec Session =
             let rec taskIdSet =
-                Store.selectorFamilyWithProfiling (
+                Store.asyncSelectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Session}/{nameof taskIdSet}",
                     (fun (username: Username) getter ->
-                        let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
+                        promise {
+                            let databaseIdSet = getter.get (Atoms.Session.databaseIdSet username)
 
-                        databaseIdSet
-                        |> Set.collect (fun databaseId -> getter.get (Atoms.Database.taskIdSet (username, databaseId))))
+                            return
+                                databaseIdSet
+                                |> Set.collect
+                                    (fun databaseId -> getter.get (Atoms.Database.taskIdSet (username, databaseId)))
+                        })
                 )
 
             let rec informationSet =

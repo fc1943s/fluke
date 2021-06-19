@@ -33,26 +33,29 @@ module InitialPeers =
                     (fun x -> x.minWidth <- "200px")
                     [
                         Input.Input
-                            (fun x ->
-                                x.autoFocus <- true
-                                x.label <- str "Gun peer"
+                            {|
+                                CustomProps =
+                                    fun x ->
+                                        x.hint <-
+                                            Some (
+                                                ExternalLink.ExternalLink
+                                                    {|
+                                                        Link = str "Read documentation"
+                                                        Href =
+                                                            "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers"
+                                                        Props = fun _ -> ()
+                                                    |}
+                                            )
 
-                                x.hint <-
-                                    Some (
-                                        ExternalLink.ExternalLink
-                                            {|
-                                                Link = str "Read documentation"
-                                                Href =
-                                                    "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers"
-                                                Props = fun _ -> ()
-                                            |}
-                                    )
-
-
-                                x.value <- Some gunPeer
-                                x.placeholder <- "https://??????.herokuapp.com/gun"
-                                x.onEnterPress <- Some nextClick
-                                x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value }))
+                                        x.fixedValue <- Some gunPeer
+                                        x.onEnterPress <- Some nextClick
+                                Props =
+                                    fun x ->
+                                        x.autoFocus <- true
+                                        x.label <- str "Gun peer"
+                                        x.placeholder <- "https://??????.herokuapp.com/gun"
+                                        x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value })
+                            |}
 
                         Chakra.hStack
                             (fun x -> x.alignItems <- "stretch")
@@ -60,12 +63,7 @@ module InitialPeers =
                                 Button.Button
                                     {|
                                         Hint = None
-                                        Icon =
-                                            Some (
-                                                Icons.cg.CgCornerDownRight
-                                                |> Icons.wrap,
-                                                Button.IconPosition.Left
-                                            )
+                                        Icon = Some (Icons.cg.CgCornerDownRight |> Icons.wrap, Button.IconPosition.Left)
                                         Props =
                                             fun x ->
                                                 x.flex <- "1"
@@ -81,12 +79,7 @@ module InitialPeers =
                                 Button.Button
                                     {|
                                         Hint = None
-                                        Icon =
-                                            Some (
-                                                Icons.hi.HiArrowRight
-                                                |> Icons.wrap,
-                                                Button.IconPosition.Right
-                                            )
+                                        Icon = Some (Icons.hi.HiArrowRight |> Icons.wrap, Button.IconPosition.Right)
                                         Props =
                                             fun x ->
                                                 x.flex <- "1"

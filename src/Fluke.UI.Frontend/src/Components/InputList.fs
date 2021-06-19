@@ -85,19 +85,24 @@ module InputList =
                                 Chakra.box
                                     (fun x -> x.position <- "relative")
                                     [
-                                        Input.Input
-                                            (fun x ->
-                                                x.onChange <-
-                                                    fun (e: Browser.Types.KeyboardEvent) ->
-                                                        promise {
-                                                            atomFieldOptions.SetAtomValue (
-                                                                atomFieldOptions.AtomValue
-                                                                |> List.mapi
-                                                                    (fun i' v -> if i' = i then unbox e.Value else v)
-                                                            )
-                                                        }
 
-                                                x.value <- Some value)
+                                        Input.Input
+                                            {|
+                                                CustomProps = fun x -> x.fixedValue <- Some value
+                                                Props =
+                                                    fun x ->
+                                                        x.onChange <-
+                                                            fun (e: Browser.Types.KeyboardEvent) ->
+                                                                promise {
+                                                                    atomFieldOptions.SetAtomValue (
+                                                                        atomFieldOptions.AtomValue
+                                                                        |> List.mapi
+                                                                            (fun i' v ->
+                                                                                if i' = i then unbox e.Value else v)
+                                                                    )
+                                                                }
+                                            |}
+
 
                                         match inputList.Length with
                                         | 1 -> nothing

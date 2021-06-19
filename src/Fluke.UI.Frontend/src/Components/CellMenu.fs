@@ -218,36 +218,42 @@ module CellMenu =
                                                         ]
 
                                                     Input.Input
-                                                        (fun x ->
-                                                            x.label <- str "Time"
-                                                            x.placeholder <- "00:00"
-                                                            x.ref <- initialFocusRef
-                                                            x.value <- postponedUntil
-                                                            x.inputFormat <- Some Input.InputFormat.Time
+                                                        {|
+                                                            CustomProps =
+                                                                fun x ->
+                                                                    x.fixedValue <- postponedUntil
+                                                                    x.inputFormat <- Some Input.InputFormat.Time
+                                                                    x.onFormat <- Some FlukeTime.Stringify
 
-                                                            x.onChange <-
-                                                                fun (e: Browser.Types.KeyboardEvent) ->
-                                                                    promise {
-                                                                        e.Value
-                                                                        |> DateTime.TryParse
-                                                                        |> function
-                                                                        | true, date ->
-                                                                            date |> FlukeTime.FromDateTime |> Some
-                                                                        | _ -> None
-                                                                        |> setPostponedUntil
-                                                                    }
+                                                                    x.onValidate <-
+                                                                        Some (
+                                                                            fst
+                                                                            >> DateTime.TryParse
+                                                                            >> function
+                                                                            | true, date ->
+                                                                                date |> FlukeTime.FromDateTime |> Some
+                                                                            | _ -> None
+                                                                        )
+                                                            Props =
+                                                                fun x ->
+                                                                    x.label <- str "Time"
+                                                                    x.placeholder <- "00:00"
+                                                                    x.ref <- initialFocusRef
 
-                                                            x.onFormat <- Some FlukeTime.Stringify
-
-                                                            x.onValidate <-
-                                                                Some (
-                                                                    fst
-                                                                    >> DateTime.TryParse
-                                                                    >> function
-                                                                    | true, date ->
-                                                                        date |> FlukeTime.FromDateTime |> Some
-                                                                    | _ -> None
-                                                                ))
+                                                                    x.onChange <-
+                                                                        fun (e: Browser.Types.KeyboardEvent) ->
+                                                                            promise {
+                                                                                e.Value
+                                                                                |> DateTime.TryParse
+                                                                                |> function
+                                                                                | true, date ->
+                                                                                    date
+                                                                                    |> FlukeTime.FromDateTime
+                                                                                    |> Some
+                                                                                | _ -> None
+                                                                                |> setPostponedUntil
+                                                                            }
+                                                        |}
 
                                                     Chakra.box
                                                         (fun _ -> ())

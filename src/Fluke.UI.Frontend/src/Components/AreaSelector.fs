@@ -79,7 +79,7 @@ module AreaSelector =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                Menu.Drawer
+                Dropdown.Dropdown
                     {|
                         Tooltip = ""
                         Left = true
@@ -157,7 +157,7 @@ module AreaSelector =
                                                             |})
                                         ]
 
-                                    Menu.Drawer
+                                    Dropdown.Dropdown
                                         {|
                                             Tooltip = ""
                                             Left = true

@@ -1,16 +1,31 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
+open Fluke.UI.Frontend.Bindings
+open Fluke.Shared
 open Fable.Core
 open Fable.Core.JsInterop
 open Fable.React
-open Fluke.UI.Frontend.Bindings
 
 
 module Accordion =
     let accordionItem title children =
         Chakra.accordionItem
-            (fun _ -> ())
+            (fun x ->
+
+                if children
+                   |> Seq.exists
+                       (fun cmp ->
+                           let props : {| props: Chakra.IChakraProps |} = unbox cmp
+
+                           match props.props.flex with
+                           | String.ValidString _ -> true
+                           | _ -> false) then
+                    x.flex <- "1"
+
+                x.borderBottomWidth <- "0 !important"
+                x.flexDirection <- "column"
+                x.display <- "flex")
             [
                 Chakra.accordionButton
                     (fun x -> x.backgroundColor <- "gray.16")
@@ -24,7 +39,13 @@ module Accordion =
                         Chakra.accordionIcon (fun _ -> ()) []
                     ]
 
-                Chakra.accordionPanel (fun x -> x.paddingTop <- "10px") children
+                Chakra.accordionPanel
+                    (fun x ->
+                        x.flex <- "1"
+                        x.flexDirection <- "column"
+                        x.display <- "flex"
+                        x.paddingTop <- "10px")
+                    children
             ]
 
     [<ReactComponent>]
@@ -39,6 +60,10 @@ module Accordion =
             (fun x ->
                 x.allowMultiple <- true
                 x.reduceMotion <- true
+
+                x.display <- "flex"
+                x.flexDirection <- "column"
+                x.flex <- "1"
 
                 x.defaultIndex <-
                     input.Items

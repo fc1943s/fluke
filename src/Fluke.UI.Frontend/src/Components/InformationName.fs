@@ -74,8 +74,7 @@ module InformationName =
                             |}
                     ]
 
-
-                TooltipPopup.TooltipPopup
+                AttachmentIndicator.AttachmentIndicator
                     {|
                         Username = input.Username
                         Attachments = attachments

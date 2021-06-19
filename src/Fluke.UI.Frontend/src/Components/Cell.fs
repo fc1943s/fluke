@@ -128,7 +128,7 @@ module Cell =
 
                             match attachments.valueMaybe () with
                             | Some attachments ->
-                                TooltipPopup.TooltipPopup
+                                AttachmentIndicator.AttachmentIndicator
                                     {|
                                         Username = input.Username
                                         Attachments = attachments

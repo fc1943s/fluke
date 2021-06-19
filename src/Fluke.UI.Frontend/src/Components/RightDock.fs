@@ -57,7 +57,6 @@ module RightDock =
                                             x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
-                                            x.padding <- "14px"
                                             x.flexBasis <- 0)
                                         [
                                             let databaseId =
@@ -107,7 +106,6 @@ module RightDock =
                                             x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
-                                            x.padding <- "14px"
                                             x.flexBasis <- 0)
                                         [
                                             InformationForm.InformationForm {| Username = input.Username |}
@@ -126,7 +124,6 @@ module RightDock =
                                             x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
-                                            x.padding <- "14px"
                                             x.flexBasis <- 0)
                                         [
                                             let taskId =
@@ -189,7 +186,6 @@ module RightDock =
                                             x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
-                                            x.padding <- "14px"
                                             x.flexBasis <- 0)
                                         [
                                             CellForm.CellFormWrapper {| Username = input.Username |}

@@ -58,16 +58,19 @@ module DeleteUserButton =
                                         ]
 
                                     Input.Input
-                                        (fun x ->
-                                            x.value <- Some passwordField
-                                            x.ref <- initialFocusRef
-                                            x.placeholder <- "Password"
-                                            x.inputFormat <- Some Input.InputFormat.Password
-
-                                            x.onChange <-
-                                                (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
-
-                                            x.onEnterPress <- Some (confirmClick disclosure))
+                                        {|
+                                            CustomProps =
+                                                fun x ->
+                                                    x.fixedValue <- Some passwordField
+                                                    x.inputFormat <- Some Input.InputFormat.Password
+                                                    x.onEnterPress <- Some (confirmClick disclosure)
+                                            Props =
+                                                fun x ->
+                                                    x.ref <- initialFocusRef
+                                                    x.placeholder <- "Password"
+                                                    x.onChange <-
+                                                        (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
+                                        |}
 
                                     Chakra.box
                                         (fun _ -> ())

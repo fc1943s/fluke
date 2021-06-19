@@ -39,7 +39,6 @@ module LeftDock =
                                                 Props =
                                                     fun x ->
                                                         x.flex <- "1"
-                                                        x.padding <- "14px"
                                                         x.overflowY <- "auto"
                                                         x.flexBasis <- 0
                                             |}

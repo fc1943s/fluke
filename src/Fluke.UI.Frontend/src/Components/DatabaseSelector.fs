@@ -88,7 +88,7 @@ module DatabaseSelector =
                         Label = str "Database"
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
-                Menu.Drawer
+                Dropdown.Dropdown
                     {|
                         Tooltip = ""
                         Left = true
@@ -129,7 +129,7 @@ module DatabaseSelector =
                                                         let label = databaseNameList.[i]
 
                                                         let cmp =
-                                                            Menu.DrawerMenuButton
+                                                            DropdownMenuButton.DropdownMenuButton
                                                                 {|
                                                                     Label = label
                                                                     OnClick =
@@ -148,7 +148,7 @@ module DatabaseSelector =
                                                 |> List.map (Option.defaultValue nothing)
                                         ]
 
-                                    Menu.Drawer
+                                    Dropdown.Dropdown
                                         {|
                                             Tooltip = ""
                                             Left = true

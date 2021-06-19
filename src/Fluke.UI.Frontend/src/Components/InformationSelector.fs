@@ -131,7 +131,7 @@ module InformationSelector =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                Menu.Drawer
+                Dropdown.Dropdown
                     {|
                         Tooltip = ""
                         Left = true
@@ -304,7 +304,7 @@ module InformationSelector =
                                             Chakra.box
                                                 (fun x -> x.textAlign <- "center")
                                                 [
-                                                    Menu.Drawer
+                                                    Dropdown.Dropdown
                                                         {|
                                                             Tooltip = ""
                                                             Left = true

@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-
 open Fable.React
 open Feliz
 open System
@@ -9,15 +8,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
-open System
 open Fluke.Shared
-open Browser.Types
-open Fable.React
-open Feliz
-open Fluke.Shared.Domain
-open Fluke.Shared.Domain.Model
-open Fluke.UI.Frontend.Bindings
-open Fluke.UI.Frontend.State
 
 
 module Settings =
@@ -40,76 +31,91 @@ module Settings =
                             (fun x -> x.spacing <- "10px")
                             [
                                 Input.Input
-                                    (fun x ->
-                                        x.label <- str "Day Start"
-                                        x.alignSelf <- "flex-start"
-                                        x.placeholder <- "00:00"
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <-
+                                                    Some (
+                                                        Recoil.AtomFamily (
+                                                            input.Username,
+                                                            Atoms.User.dayStart,
+                                                            input.Username
+                                                        )
+                                                    )
 
-                                        x.atom <-
-                                            Some (
-                                                Recoil.AtomFamily (input.Username, Atoms.User.dayStart, input.Username)
-                                            )
+                                                x.inputFormat <- Some Input.InputFormat.Time
+                                                x.onFormat <- Some FlukeTime.Stringify
 
-                                        x.inputFormat <- Some Input.InputFormat.Time
-                                        x.onFormat <- Some FlukeTime.Stringify
-
-                                        x.onValidate <-
-                                            Some (
-                                                fst
-                                                >> DateTime.TryParse
-                                                >> function
-                                                | true, value -> value
-                                                | _ -> DateTime.Parse "00:00"
-                                                >> FlukeTime.FromDateTime
-                                                >> Some
-                                            ))
-
-                                Input.Input
-                                    (fun x ->
-                                        x.label <- str "Session Duration"
-
-                                        x.atom <-
-                                            Some (
-                                                Recoil.Atom (input.Username, Atoms.User.sessionDuration input.Username)
-                                            )
-
-                                        x.inputFormat <- Some Input.InputFormat.Number
-                                        x.onFormat <- Some (Minute.Value >> string)
-
-                                        x.onValidate <-
-                                            Some (
-                                                fst
-                                                >> String.parseIntMin 1
-                                                >> Option.defaultValue 1
-                                                >> Minute
-                                                >> Some
-                                            ))
+                                                x.onValidate <-
+                                                    Some (
+                                                        fst
+                                                        >> DateTime.TryParse
+                                                        >> function
+                                                        | true, value -> value
+                                                        | _ -> DateTime.Parse "00:00"
+                                                        >> FlukeTime.FromDateTime
+                                                        >> Some
+                                                    )
+                                        Props =
+                                            fun x ->
+                                                x.label <- str "Day Start"
+                                                x.alignSelf <- "flex-start"
+                                                x.placeholder <- "00:00"
+                                    |}
 
                                 Input.Input
-                                    (fun x ->
-                                        x.label <- str "Session Break Duration"
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <-
+                                                    Some (
+                                                        Recoil.Atom (
+                                                            input.Username,
+                                                            Atoms.User.sessionDuration input.Username
+                                                        )
+                                                    )
 
-                                        x.atom <-
-                                            Some (
-                                                Recoil.Atom (
-                                                    input.Username,
-                                                    Atoms.User.sessionBreakDuration input.Username
-                                                )
-                                            )
+                                                x.inputFormat <- Some Input.InputFormat.Number
+                                                x.onFormat <- Some (Minute.Value >> string)
 
-                                        x.inputFormat <- Some Input.InputFormat.Number
-                                        x.onFormat <- Some (Minute.Value >> string)
+                                                x.onValidate <-
+                                                    Some (
+                                                        fst
+                                                        >> String.parseIntMin 1
+                                                        >> Option.defaultValue 1
+                                                        >> Minute
+                                                        >> Some
+                                                    )
+                                        Props = fun x -> x.label <- str "Session Duration"
+                                    |}
 
-                                        x.onValidate <-
-                                            Some (
-                                                fst
-                                                >> String.parseIntMin 1
-                                                >> Option.defaultValue 1
-                                                >> Minute
-                                                >> Some
-                                            ))
+                                Input.Input
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <-
+                                                    Some (
+                                                        Recoil.Atom (
+                                                            input.Username,
+                                                            Atoms.User.sessionBreakDuration input.Username
+                                                        )
+                                                    )
 
-                                Menu.Drawer
+                                                x.inputFormat <- Some Input.InputFormat.Number
+                                                x.onFormat <- Some (Minute.Value >> string)
+
+                                                x.onValidate <-
+                                                    Some (
+                                                        fst
+                                                        >> String.parseIntMin 1
+                                                        >> Option.defaultValue 1
+                                                        >> Minute
+                                                        >> Some
+                                                    )
+                                        Props = fun x -> x.label <- str "Session Break Duration"
+                                    |}
+
+                                Dropdown.Dropdown
                                     {|
                                         Tooltip = ""
                                         Left = false
@@ -119,17 +125,23 @@ module Settings =
                                                     (fun x -> x.position <- "relative")
                                                     [
                                                         Input.Input
-                                                            (fun x ->
-                                                                x.label <- str "Color"
-                                                                x.isReadOnly <- true
-
-                                                                x.atom <-
-                                                                    Some (
-                                                                        Recoil.Atom (
-                                                                            input.Username,
-                                                                            Atoms.User.color input.Username
-                                                                        )
-                                                                    ))
+                                                            {|
+                                                                CustomProps =
+                                                                    fun x ->
+                                                                        x.atom <-
+                                                                            Some (
+                                                                                Recoil.Atom (
+                                                                                    input.Username,
+                                                                                    Atoms.User.color input.Username
+                                                                                )
+                                                                            )
+                                                                Props =
+                                                                    fun x ->
+                                                                        x.label <- str "Color"
+                                                                        x.color <- color
+                                                                        x.fontWeight <- "bold"
+                                                                        x.isReadOnly <- true
+                                                            |}
 
                                                         Chakra.stack
                                                             (fun x ->
@@ -184,7 +196,7 @@ module Settings =
                         (Chakra.stack
                             (fun x -> x.spacing <- "10px")
                             [
-                                Menu.Drawer
+                                Dropdown.Dropdown
                                     {|
                                         Tooltip = ""
                                         Left = false
@@ -194,19 +206,23 @@ module Settings =
                                                     (fun x -> x.position <- "relative")
                                                     [
                                                         Input.Input
-                                                            (fun x ->
-                                                                x.label <- str "Week Start"
-                                                                x.isReadOnly <- true
+                                                            {|
+                                                                CustomProps =
+                                                                    fun x ->
+                                                                        x.atom <-
+                                                                            Some (
+                                                                                Recoil.Atom (
+                                                                                    input.Username,
+                                                                                    Atoms.User.weekStart input.Username
+                                                                                )
+                                                                            )
 
-                                                                x.atom <-
-                                                                    Some (
-                                                                        Recoil.Atom (
-                                                                            input.Username,
-                                                                            Atoms.User.weekStart input.Username
-                                                                        )
-                                                                    )
-
-                                                                x.onFormat <- Some Enum.name)
+                                                                        x.onFormat <- Some Enum.name
+                                                                Props =
+                                                                    fun x ->
+                                                                        x.label <- str "Week Start"
+                                                                        x.isReadOnly <- true
+                                                            |}
 
                                                         Chakra.stack
                                                             (fun x ->
@@ -264,7 +280,7 @@ module Settings =
                                                                 )
                                                                 |> Seq.map
                                                                     (fun dayOfWeek ->
-                                                                        Menu.DrawerMenuButton
+                                                                        DropdownMenuButton.DropdownMenuButton
                                                                             {|
                                                                                 Label = Enum.name dayOfWeek
                                                                                 OnClick =
@@ -282,32 +298,53 @@ module Settings =
                                                 ]
                                     |}
 
-                                Input.Input
-                                    (fun x ->
-                                        x.label <- str "Days Before"
-
-                                        x.atom <-
-                                            Some (Recoil.Atom (input.Username, Atoms.User.daysBefore input.Username))
-
-                                        x.inputFormat <- Some Input.InputFormat.Number)
 
                                 Input.Input
-                                    (fun x ->
-                                        x.label <- str "Days After"
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <-
+                                                    Some (
+                                                        Recoil.Atom (
+                                                            input.Username,
+                                                            Atoms.User.daysBefore input.Username
+                                                        )
+                                                    )
 
-                                        x.atom <-
-                                            Some (Recoil.Atom (input.Username, Atoms.User.daysAfter input.Username))
+                                                x.inputFormat <- Some Input.InputFormat.Number
+                                        Props = fun x -> x.label <- str "Days Before"
+                                    |}
 
-                                        x.inputFormat <- Some Input.InputFormat.Number)
 
                                 Input.Input
-                                    (fun x ->
-                                        x.label <- str "Cell Size"
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <-
+                                                    Some (
+                                                        Recoil.Atom (
+                                                            input.Username,
+                                                            Atoms.User.daysAfter input.Username
+                                                        )
+                                                    )
 
-                                        x.atom <-
-                                            Some (Recoil.Atom (input.Username, Atoms.User.cellSize input.Username))
+                                                x.inputFormat <- Some Input.InputFormat.Number
+                                        Props = fun x -> x.label <- str "Days After"
+                                    |}
 
-                                        x.inputFormat <- Some Input.InputFormat.Number)
+
+                                Input.Input
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <-
+                                                    Some (
+                                                        Recoil.Atom (input.Username, Atoms.User.cellSize input.Username)
+                                                    )
+
+                                                x.inputFormat <- Some Input.InputFormat.Number
+                                        Props = fun x -> x.label <- str "Cell Size"
+                                    |}
 
                                 CheckboxInput.CheckboxInput
                                     {|

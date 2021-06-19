@@ -203,10 +203,19 @@ module ViewTabs =
                                 ]
 
                             Input.LeftIconInput
-                                (Icons.bs.BsSearch |> Icons.render)
-                                "Search task or information"
-                                (fun x ->
-                                    x.atom <- Some (Recoil.Atom (input.Username, Atoms.User.searchText input.Username)))
+                                {|
+                                    Icon = Icons.bs.BsSearch |> Icons.render
+                                    CustomProps =
+                                        fun x ->
+                                            x.atom <-
+                                                Some (
+                                                    Recoil.Atom (input.Username, Atoms.User.searchText input.Username)
+                                                )
+                                    Props =
+                                        fun x ->
+                                            x.placeholder <- "Search task or information"
+                                            x.isReadOnly <- true
+                                |}
                         ]
                 else
                     nothing

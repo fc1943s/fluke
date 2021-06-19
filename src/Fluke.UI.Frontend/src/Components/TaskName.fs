@@ -76,10 +76,10 @@ module TaskName =
                         x.overflow <- "hidden"
                         x.paddingLeft <- "5px"
                         x.paddingRight <- "5px"
-                        x.width <- "217px"
                         x.lineHeight <- $"{cellSize}px"
-                        x.whiteSpace <- if hovered then null else "nowrap"
-                        x.textOverflow <- if hovered then null else "ellipsis")
+                        x.whiteSpace <- (*if hovered then null else*) "nowrap"
+                        x.textOverflow <- (*if hovered then null else*) "ellipsis"
+                        )
                     [
                         match taskState.valueMaybe () with
                         | Some taskState when taskState.Task.Name |> TaskName.Value <> "" ->
@@ -155,7 +155,7 @@ module TaskName =
 
                 match taskState.valueMaybe () with
                 | Some taskState ->
-                    TooltipPopup.TooltipPopup
+                    AttachmentIndicator.AttachmentIndicator
                         {|
                             Username = input.Username
                             Attachments = taskState.Attachments

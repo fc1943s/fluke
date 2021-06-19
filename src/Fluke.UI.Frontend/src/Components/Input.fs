@@ -21,13 +21,11 @@ module Input =
         | Number
 
     type IProps<'TValue, 'TKey> =
-        inherit Chakra.IChakraProps
-
         abstract hint : ReactElement option with get, set
         abstract hintTitle : ReactElement option with get, set
         abstract atom : Recoil.InputAtom<'TValue, 'TKey> option with get, set
         abstract inputScope : Recoil.InputScope<'TValue> option with get, set
-        abstract value : 'TValue option with get, set
+        abstract fixedValue : 'TValue option with get, set
         abstract onFormat : ('TValue -> string) option with get, set
         abstract onValidate : (string * 'TValue option -> 'TValue option) option with get, set
         abstract onEnterPress : (_ -> JS.Promise<unit>) option with get, set
@@ -35,16 +33,20 @@ module Input =
 
 
     [<ReactComponent>]
-    let Input (props: IProps<'TValue, 'TKey> -> unit) =
-        let props =
+    let Input
+        (input: {| CustomProps: IProps<'TValue, 'TKey> -> unit
+                   Props: Chakra.IChakraProps -> unit |})
+        =
+        let props, customProps =
             React.useMemo (
-                (fun () -> JS.newObj props),
+                (fun () -> JS.newObj input.Props, JS.newObj input.CustomProps),
                 [|
-                    box props
+                    box input.Props
+                    box input.CustomProps
                 |]
             )
 
-        let atomFieldOptions = Recoil.useAtomFieldOptions<'TValue, 'TKey> props.atom props.inputScope
+        let atomFieldOptions = Recoil.useAtomFieldOptions<'TValue, 'TKey> customProps.atom customProps.inputScope
 
         let inputFallbackRef = React.useRef<HTMLInputElement> null
 
@@ -66,19 +68,19 @@ module Input =
             React.useMemo (
                 (fun () ->
                     let value =
-                        match mounted, props.value with
+                        match mounted, customProps.fixedValue with
                         | _, Some value -> Some value
                         | false, None -> None
                         | true, None ->
                             match inputRef.current, box atomFieldOptions.AtomValue with
                             | null, _ -> None
                             | _, null ->
-                                match props.onValidate with
+                                match customProps.onValidate with
                                 | Some onValidate ->
                                     onValidate (inputRef.current.value, Some atomFieldOptions.AtomValue)
                                 | None -> None
                             | _ ->
-                                match props.atom with
+                                match customProps.atom with
                                 | Some _ -> Some atomFieldOptions.AtomValue
                                 | None -> None
 
@@ -86,7 +88,7 @@ module Input =
                     let valueString =
                         match value with
                         | Some value when box value <> null ->
-                            match props.onFormat with
+                            match customProps.onFormat with
                             | Some onFormat -> onFormat value
                             | None -> string value
                         | _ -> ""
@@ -94,7 +96,7 @@ module Input =
                     value, valueString),
                 [|
                     box mounted
-                    box props
+                    box customProps
                     box inputRef
                     box atomFieldOptions.AtomValue
                 |]
@@ -116,12 +118,12 @@ module Input =
                     inputRef.current.value <- currentValueString
 
                     if not mounted then
-                        if props.atom.IsSome then fireChange () |> Promise.start
+                        if customProps.atom.IsSome then fireChange () |> Promise.start
 
                         setMounted true),
             [|
                 box fireChange
-                box props
+                box customProps
                 box inputRef
                 box currentValueString
                 box mounted
@@ -139,7 +141,7 @@ module Input =
                             | _ -> do! props.onChange e
 
                             let validValue =
-                                match props.onValidate with
+                                match customProps.onValidate with
                                 | Some onValidate ->
                                     let validValue = onValidate (e.Value, currentValue)
                                     validValue
@@ -148,7 +150,7 @@ module Input =
                             let validValueString =
                                 match validValue with
                                 | Some validValue ->
-                                    match props.onFormat with
+                                    match customProps.onFormat with
                                     | Some onFormat -> onFormat validValue
                                     | None -> string validValue
                                 | None -> ""
@@ -156,7 +158,7 @@ module Input =
                             if validValueString <> currentValueString then
                                 inputRef.current.value <- validValueString
 
-                            if props.atom.IsSome then
+                            if customProps.atom.IsSome then
                                 match validValue with
                                 | Some value -> atomFieldOptions.SetAtomValue value
                                 | None -> atomFieldOptions.SetAtomValue atomFieldOptions.ReadOnlyValue
@@ -172,8 +174,8 @@ module Input =
                 | _ ->
                     InputLabel.InputLabel
                         {|
-                            Hint = props.hint
-                            HintTitle = props.hintTitle
+                            Hint = customProps.hint
+                            HintTitle = customProps.hintTitle
                             Label = props.label
                             Props = fun _ -> ()
                         |}
@@ -185,48 +187,9 @@ module Input =
                     [
                         Chakra.input
                             (fun x ->
-
                                 x.onChange <- onChange
                                 x.ref <- inputRef
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
-
-                                x.autoFocus <- props.autoFocus
-
-                                props.borderBottomRightRadius
-                                |> Chakra.mapIfSet (fun value -> x.borderBottomRightRadius <- value)
-                                |> ignore
-
-                                props.borderTopRightRadius
-                                |> Chakra.mapIfSet (fun value -> x.borderTopRightRadius <- value)
-                                |> ignore
-
-                                props.borderBottomLeftRadius
-                                |> Chakra.mapIfSet (fun value -> x.borderBottomLeftRadius <- value)
-                                |> ignore
-
-                                props.isReadOnly
-                                |> Chakra.mapIfSet (fun value -> x.isReadOnly <- value)
-                                |> ignore
-
-                                props.isDisabled
-                                |> Chakra.mapIfSet (fun value -> x.isDisabled <- value)
-                                |> ignore
-
-                                props.borderTopLeftRadius
-                                |> Chakra.mapIfSet (fun value -> x.borderTopLeftRadius <- value)
-                                |> ignore
-
-                                props.placeholder
-                                |> Chakra.mapIfSet (fun value -> x.placeholder <- value)
-                                |> ignore
-
-                                props.width
-                                |> Chakra.mapIfSet (fun value -> x.width <- value)
-                                |> ignore
-
-                                props.paddingLeft
-                                |> Chakra.mapIfSet (fun value -> x.paddingLeft <- value)
-                                |> ignore
 
                                 x.onKeyDown <-
                                     fun (e: KeyboardEvent) ->
@@ -235,13 +198,13 @@ module Input =
                                             | null -> ()
                                             | _ -> do! props.onKeyDown e
 
-                                            match props.onEnterPress with
+                                            match customProps.onEnterPress with
                                             | Some onEnterPress -> if e.key = "Enter" then do! onEnterPress ()
                                             | None -> ()
                                         }
 
                                 x.``type`` <-
-                                    match props.inputFormat with
+                                    match customProps.inputFormat with
                                     | Some inputFormat ->
                                         match inputFormat with
                                         | InputFormat.Date -> "date"
@@ -250,10 +213,12 @@ module Input =
                                         | InputFormat.DateTime -> "datetime-local"
                                         | InputFormat.Email -> "email"
                                         | InputFormat.Password -> "password"
-                                    | None -> null)
+                                    | None -> null
+
+                                x <+ props)
                             []
 
-                        match props.inputFormat with
+                        match customProps.inputFormat with
                         | Some InputFormat.Number ->
                             Chakra.stack
                                 (fun x ->
@@ -268,12 +233,12 @@ module Input =
                                     let numberButtonClick (value: string) (op: float -> float) =
                                         match Double.TryParse value with
                                         | true, value ->
-                                            match props.onValidate with
+                                            match customProps.onValidate with
                                             | Some onValidate ->
                                                 match onValidate (string (op value), currentValue) with
                                                 | Some value ->
                                                     inputRef.current.valueAsNumber <-
-                                                        match props.onFormat with
+                                                        match customProps.onFormat with
                                                         | Some onFormat -> onFormat value |> unbox
                                                         | None -> unbox value
                                                 | None -> ()
@@ -327,21 +292,27 @@ module Input =
                     ]
             ]
 
-    let inline LeftIconInput icon placeholder props =
+    let inline LeftIconInput
+        (input: {| Icon: ReactElement
+                   CustomProps: IProps<'TValue, 'TKey> -> unit
+                   Props: Chakra.IChakraProps -> unit |})
+        =
         Chakra.inputGroup
             (fun x -> x.display <- "flex")
             [
                 Chakra.inputLeftElement
                     (fun x -> x.zIndex <- 0)
                     [
-                        icon
+                        input.Icon
                     ]
 
                 Input
-                    (fun x ->
-                        x.paddingLeft <- "28px"
-                        x.placeholder <- placeholder
-
-                        props x)
+                    {|
+                        CustomProps = input.CustomProps
+                        Props =
+                            fun x ->
+                                x.paddingLeft <- "28px"
+                                input.Props x
+                    |}
 
             ]

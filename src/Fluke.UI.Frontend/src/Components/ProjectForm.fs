@@ -55,14 +55,20 @@ module ProjectForm =
                     (fun x -> x.spacing <- "15px")
                     [
                         Input.Input
-                            (fun x ->
-                                x.autoFocus <- true
-                                x.label <- str "Name"
-                                x.placeholder <- "e.g. home renovation"
+                            {|
+                                CustomProps =
+                                    fun x ->
+                                        x.fixedValue <- projectName |> ProjectName.Value |> Some
+                                        x.onEnterPress <- Some onSave
+                                Props =
+                                    fun x ->
+                                        x.autoFocus <- true
+                                        x.label <- str "Name"
+                                        x.placeholder <- "e.g. home renovation"
 
-                                x.value <- projectName |> ProjectName.Value |> Some
-                                x.onChange <- fun (e: KeyboardEvent) -> promise { setProjectName (ProjectName e.Value) }
-                                x.onEnterPress <- Some onSave)
+                                        x.onChange <-
+                                            fun (e: KeyboardEvent) -> promise { setProjectName (ProjectName e.Value) }
+                            |}
                     ]
 
                 Button.Button

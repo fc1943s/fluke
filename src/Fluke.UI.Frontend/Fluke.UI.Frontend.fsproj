@@ -46,7 +46,9 @@
         <Compile Include="src\Components\Day.fs" />
         <Compile Include="src\Components\Spinner.fs" />
         <Compile Include="src\Components\GridHeader.fs" />
-        <Compile Include="src\Components\TooltipPopup.fs" />
+        <Compile Include="src\Components\Dropdown.fs" />
+        <Compile Include="src\Components\DropdownMenuButton.fs" />
+        <Compile Include="src\Components\AttachmentIndicator.fs" />
         <Compile Include="src\Components\Menu.fs" />
         <Compile Include="src\Components\Modal.fs" />
         <Compile Include="src\Components\ModalFormTrigger.fs" />

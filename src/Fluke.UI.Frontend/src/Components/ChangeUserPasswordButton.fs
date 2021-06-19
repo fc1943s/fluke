@@ -42,7 +42,7 @@ module ChangeUserPasswordButton =
                                 return false
                     })
 
-        Menu.Drawer
+        Dropdown.Dropdown
             {|
                 Tooltip = ""
                 Left = true
@@ -78,40 +78,53 @@ module ChangeUserPasswordButton =
                                         ]
 
                                     Input.Input
-                                        (fun x ->
-                                            x.autoFocus <- true
-                                            x.value <- Some passwordField
-                                            x.placeholder <- "Password"
-                                            x.inputFormat <- Some Input.InputFormat.Password
+                                        {|
+                                            CustomProps = fun x ->
+                                                x.fixedValue <- Some passwordField
+                                                x.inputFormat <- Some Input.InputFormat.Password
+                                            Props =
+                                                fun x ->
+                                                    x.autoFocus <- true
+                                                    x.placeholder <- "Password"
 
-                                            x.onChange <-
-                                                (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value }))
-
-                                    Input.Input
-                                        (fun x ->
-                                            x.value <- Some newPasswordField
-                                            x.placeholder <- "New Password"
-                                            x.inputFormat <- Some Input.InputFormat.Password
-
-                                            x.onChange <-
-                                                (fun (e: KeyboardEvent) -> promise { setNewPasswordField e.Value }))
+                                                    x.onChange <-
+                                                        (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
+                                        |}
 
                                     Input.Input
-                                        (fun x ->
-                                            x.value <- Some newPassword2Field
-                                            x.placeholder <- "Confirm New Password"
-                                            x.inputFormat <- Some Input.InputFormat.Password
+                                        {|
+                                            CustomProps = fun x ->
+                                                x.fixedValue <- Some newPasswordField
+                                                x.inputFormat <- Some Input.InputFormat.Password
+                                            Props =
+                                                fun x ->
+                                                    x.placeholder <- "New Password"
 
-                                            x.onChange <-
-                                                (fun (e: KeyboardEvent) -> promise { setNewPassword2Field e.Value })
+                                                    x.onChange <-
+                                                        (fun (e: KeyboardEvent) ->
+                                                            promise { setNewPasswordField e.Value })
+                                        |}
 
-                                            x.onEnterPress <-
-                                                Some
-                                                    (fun _ ->
-                                                        promise {
-                                                            let! result = confirmClick ()
-                                                            if result then onHide ()
-                                                        }))
+                                    Input.Input
+                                        {|
+                                            CustomProps =
+                                                fun x ->
+                                                    x.fixedValue <- Some newPassword2Field
+                                                    x.inputFormat <- Some Input.InputFormat.Password
+                                                    x.onEnterPress <-
+                                                        Some
+                                                            (fun _ ->
+                                                                promise {
+                                                                    let! result = confirmClick ()
+                                                                    if result then onHide ()
+                                                                })
+                                            Props =
+                                                fun x ->
+                                                    x.placeholder <- "Confirm New Password"
+                                                    x.onChange <-
+                                                        (fun (e: KeyboardEvent) ->
+                                                            promise { setNewPassword2Field e.Value })
+                                        |}
 
                                     Chakra.box
                                         (fun _ -> ())

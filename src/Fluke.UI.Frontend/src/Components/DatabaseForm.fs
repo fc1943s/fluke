@@ -122,24 +122,28 @@ module DatabaseForm =
                                 ]
 
                         Input.Input
-                            (fun x ->
-                                x.autoFocus <- true
-                                x.label <- str "Name"
-                                x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
+                            {|
+                                CustomProps =
+                                    fun x ->
+                                        x.atom <-
+                                            Some (
+                                                Recoil.AtomFamily (
+                                                    input.Username,
+                                                    Atoms.Database.name,
+                                                    (input.Username, input.DatabaseId)
+                                                )
+                                            )
 
-                                x.atom <-
-                                    Some (
-                                        Recoil.AtomFamily (
-                                            input.Username,
-                                            Atoms.Database.name,
-                                            (input.Username, input.DatabaseId)
-                                        )
-                                    )
-
-                                x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
-                                x.onFormat <- Some (fun (DatabaseName name) -> name)
-                                x.onValidate <- Some (fst >> DatabaseName >> Some)
-                                x.onEnterPress <- Some onSave)
+                                        x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
+                                        x.onFormat <- Some (fun (DatabaseName name) -> name)
+                                        x.onValidate <- Some (fst >> DatabaseName >> Some)
+                                        x.onEnterPress <- Some onSave
+                                Props =
+                                    fun x ->
+                                        x.autoFocus <- true
+                                        x.label <- str "Name"
+                                        x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
+                            |}
 
                         Chakra.stack
                             (fun x ->

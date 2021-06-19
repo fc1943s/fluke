@@ -45,13 +45,20 @@ module AreaForm =
                     (fun x -> x.spacing <- "15px")
                     [
                         Input.Input
-                            (fun x ->
-                                x.autoFocus <- true
-                                x.label <- str "Name"
-                                x.placeholder <- "e.g. chores"
-                                x.value <- areaName |> AreaName.Value |> Some
-                                x.onChange <- fun (e: KeyboardEvent) -> promise { setAreaName (AreaName e.Value) }
-                                x.onEnterPress <- Some onSave)
+                            {|
+                                CustomProps =
+                                    fun x ->
+                                        x.fixedValue <- areaName |> AreaName.Value |> Some
+                                        x.onEnterPress <- Some onSave
+                                Props =
+                                    fun x ->
+                                        x.autoFocus <- true
+                                        x.label <- str "Name"
+                                        x.placeholder <- "e.g. chores"
+
+                                        x.onChange <-
+                                            fun (e: KeyboardEvent) -> promise { setAreaName (AreaName e.Value) }
+                            |}
                     ]
 
 
