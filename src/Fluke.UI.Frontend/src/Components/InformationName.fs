@@ -20,6 +20,26 @@ module InformationName =
         let attachments = Store.useValue (Atoms.Information.attachments (input.Username, input.Information))
         let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
+        let detailsClick =
+            Store.useCallbackRef
+                (fun setter _ ->
+                    promise {
+                        let! deviceInfo = setter.snapshot.getPromise Selectors.deviceInfo
+
+                        if deviceInfo.IsMobile then
+                            setter.set (Atoms.User.leftDock input.Username, (fun _ -> None))
+
+                        setter.set (Atoms.User.rightDock input.Username, (fun _ -> Some TempUI.DockType.Information))
+
+                        setter.set (
+                            Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Information),
+                            fun _ ->
+                                input.Information
+                                |> Atoms.User.UIFlag.Information
+                                |> Some
+                        )
+                    })
+
         Chakra.box
             (fun x ->
                 x.position <- "relative"
@@ -39,6 +59,19 @@ module InformationName =
                             | "" -> "???"
                             | x -> x
                         )
+
+                        InputLabelIconButton.InputLabelIconButton
+                            {|
+                                Props =
+                                    fun x ->
+                                        x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                        x.fontSize <- "11px"
+                                        x.height <- "15px"
+                                        x.color <- "whiteAlpha.700"
+                                        x.marginTop <- "-1px"
+                                        x.marginLeft <- "6px"
+                                        x.onClick <- detailsClick
+                            |}
                     ]
 
 

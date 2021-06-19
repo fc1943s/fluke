@@ -9,7 +9,10 @@ module.exports = {
   setupFilesAfterEnv: ["./jest-setup.ts"],
   moduleNameMapper: {
     "\\.(css|less|scss|sss|styl)$": "<rootDir>/node_modules/jest-css-modules"
-  }
+  },
+  "transformIgnorePatterns": [
+    "node_modules/react-color"
+  ]
   // transform: {'.*?\.fs\.js': "babel-jest"},
   // maxConcurrency: 1,
 };

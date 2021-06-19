@@ -138,7 +138,7 @@ module State =
             let rec color =
                 Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof color}",
-                    (fun (_username: Username) -> "#FF0000"),
+                    (fun (_username: Username) -> String.Format ("#{0:X6}", Random().Next (0x1000000))),
                     (fun (username: Username) ->
                         [
                             Store.gunEffect (Store.InputAtom.AtomFamily (username, color, username)) []

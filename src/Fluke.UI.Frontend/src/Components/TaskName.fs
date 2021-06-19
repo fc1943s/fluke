@@ -3,14 +3,13 @@ namespace Fluke.UI.Frontend.Components
 open System
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Feliz.UseListener
 open Fluke.Shared.Domain.UserInteraction
+open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
-open Fluke.UI.Frontend.TempUI
 
 
 module TaskName =
@@ -25,7 +24,7 @@ module TaskName =
         let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         let isReadWrite =
-            Recoil.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
+            Store.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
 
         let editTask =
             Store.useCallbackRef
@@ -34,13 +33,13 @@ module TaskName =
                         let! deviceInfo = setter.snapshot.getPromise Selectors.deviceInfo
 
                         if deviceInfo.IsMobile then
-                            setter.set (Atoms.User.leftDock input.Username, None)
+                            setter.set (Atoms.User.leftDock input.Username, (fun _ -> None))
 
-                        setter.set (Atoms.User.rightDock input.Username, Some DockType.Task)
+                        setter.set (Atoms.User.rightDock input.Username, (fun _ -> Some TempUI.DockType.Task))
 
                         setter.set (
                             Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task),
-                            input.TaskId |> Atoms.User.UIFlag.Task |> Some
+                            fun _ -> input.TaskId |> Atoms.User.UIFlag.Task |> Some
                         )
                     })
 
