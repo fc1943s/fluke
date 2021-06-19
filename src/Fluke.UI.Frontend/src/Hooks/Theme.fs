@@ -124,6 +124,12 @@ module Theme =
                                 ``.rct-node:first-of-type`` = {| marginTop = "2px" |}
                                 ``.rct-node-leaf`` = {| marginBottom = "-11px" |}
                                 ``.rct-title`` = {| display = "contents" |}
+                                ``.sketch-picker`` =
+                                    {|
+                                        backgroundColor = "#333 !important"
+                                    |}
+                                ``.sketch-picker span`` = {| color = "#DDD !important" |}
+                                ``.sketch-picker input`` = {| color = "#333" |}
                                 ``.markdown-container h1`` =
                                     {|
                                         borderBottom = "1px solid #777"

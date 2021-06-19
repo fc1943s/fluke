@@ -129,39 +129,17 @@ module DatabaseSelector =
                                                         let label = databaseNameList.[i]
 
                                                         let cmp =
-                                                            Button.Button
+                                                            Menu.DrawerMenuButton
                                                                 {|
-                                                                    Hint = None
-                                                                    Icon =
-                                                                        Some (
-                                                                            (if index = i then
-                                                                                 Icons.fi.FiCheck |> Icons.wrap
-                                                                             else
-                                                                                 fun () ->
-                                                                                     (Chakra.box
-                                                                                         (fun x -> x.width <- "11px")
-                                                                                         [])),
-                                                                            Button.IconPosition.Left
-                                                                        )
-                                                                    Props =
-                                                                        fun x ->
-                                                                            x.onClick <-
-                                                                                fun _ ->
-                                                                                    promise {
-                                                                                        setDatabaseId databaseId
+                                                                    Label = label
+                                                                    OnClick =
+                                                                        fun () ->
+                                                                            promise {
+                                                                                setDatabaseId databaseId
 
-                                                                                        onHide ()
-                                                                                    }
-
-                                                                            x.alignSelf <- "stretch"
-
-                                                                            x.backgroundColor <- "whiteAlpha.100"
-
-                                                                            x.borderRadius <- "2px"
-                                                                    Children =
-                                                                        [
-                                                                            str label
-                                                                        ]
+                                                                                onHide ()
+                                                                            }
+                                                                    Checked = index = i
                                                                 |}
 
                                                         Some (label, cmp))

@@ -1108,6 +1108,32 @@ module State =
                         ))
                 )
 
+            let rec sessions =
+                Store.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Cell}/{nameof sessions}",
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
+                        let taskState = getter.get (Task.taskState (username, taskId))
+
+                        taskState.CellStateMap
+                        |> Map.tryFind dateId
+                        |> Option.map (fun x -> x.Sessions)
+                        |> Option.defaultValue []),
+                    (fun (username: Username, taskId: TaskId, dateId) setter newValue -> ())
+                )
+
+            let rec attachments =
+                Store.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Cell}/{nameof attachments}",
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) getter ->
+                        let taskState = getter.get (Task.taskState (username, taskId))
+
+                        taskState.CellStateMap
+                        |> Map.tryFind dateId
+                        |> Option.map (fun x -> x.Attachments)
+                        |> Option.defaultValue []),
+                    (fun (username: Username, taskId: TaskId, dateId) setter newValue -> ())
+                )
+
 
         module rec Session =
             let rec taskIdSet =

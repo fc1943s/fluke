@@ -19,25 +19,13 @@ module TooltipPopup =
                    Attachments: (FlukeDateTime * Attachment) list |})
         =
         let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+        let color = Store.useValue (Atoms.User.color input.Username)
 
         let tooltipContainerRef = React.useElementRef ()
 
         let hovered = Listener.useElementHover tooltipContainerRef
 
-        let comments =
-            React.useMemo (
-                (fun () ->
-                    input.Attachments
-                    |> List.choose
-                        (function
-                        | moment, Attachment.Comment comment -> Some (moment, comment)
-                        | _ -> None)),
-                [|
-                    box input.Attachments
-                |]
-            )
-
-        match comments with
+        match input.Attachments with
         | [] -> nothing
         | _ ->
             Chakra.box
@@ -46,7 +34,8 @@ module TooltipPopup =
                     x.height <- $"{cellSize}px"
                     x.lineHeight <- $"{cellSize}px"
                     x.position <- "absolute"
-                    x.top <- "0"
+                    x.top <- "-1px"
+                    x.right <- "-1px"
                     x.width <- "100%"
 
                     x._after <-
@@ -54,7 +43,7 @@ module TooltipPopup =
                             (fun x ->
                                 x.content <- "\"\""
                                 x.borderTopWidth <- "8px"
-                                x.borderTopColor <- "#000000"
+                                x.borderTopColor <- color
                                 x.borderLeftWidth <- "8px"
                                 x.borderLeftColor <- "transparent"
                                 x.position <- "absolute"
@@ -83,7 +72,11 @@ module TooltipPopup =
 
                             [
                                 yield!
-                                    comments
+                                    input.Attachments
+                                    |> List.choose
+                                        (function
+                                        | moment, Attachment.Comment comment -> Some (moment, comment)
+                                        | _ -> None)
                                     |> List.map
                                         (fun (moment, (Comment.Comment comment)) ->
                                             Chakra.box

@@ -192,7 +192,7 @@ module RightDock =
                                             x.padding <- "14px"
                                             x.flexBasis <- 0)
                                         [
-                                            CellForm.CellForm {| Username = input.Username |}
+                                            CellForm.CellFormWrapper {| Username = input.Username |}
                                         ]
                             RightIcons = []
                         |}

@@ -36,7 +36,11 @@ module Cell =
                 (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
                 Disabled
 
-        let taskState = Store.useValueLoadable (Selectors.Task.taskState (input.Username, input.TaskId))
+        let sessions = Store.useValueLoadable (Selectors.Cell.sessions (input.Username, input.TaskId, input.DateId))
+
+        let attachments =
+            Store.useValueLoadable (Selectors.Cell.attachments (input.Username, input.TaskId, input.DateId))
+
         let isToday = Store.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false
 
         let selected =
@@ -80,6 +84,7 @@ module Cell =
                             x.width <- $"{cellSize}px"
                             x.height <- $"{cellSize}px"
                             x.lineHeight <- $"{cellSize}px"
+                            x.position <- "relative"
 
                             x.backgroundColor <-
                                 (TempUI.cellStatusColor sessionStatus)
@@ -98,16 +103,12 @@ module Cell =
                                 x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
                         [
 
-                            match taskState.valueMaybe () with
-                            | Some taskState ->
+                            match sessions.valueMaybe () with
+                            | Some sessions ->
                                 CellSessionIndicator.CellSessionIndicator
                                     {|
                                         Status = sessionStatus
-                                        Sessions =
-                                            taskState.CellStateMap
-                                            |> Map.tryFind input.DateId
-                                            |> Option.map (fun x -> x.Sessions)
-                                            |> Option.defaultValue []
+                                        Sessions = sessions
                                     |}
                             | _ -> nothing
 
@@ -125,16 +126,12 @@ module Cell =
                                 CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
                             | _ -> nothing
 
-                            match taskState.valueMaybe () with
-                            | Some taskState ->
+                            match attachments.valueMaybe () with
+                            | Some attachments ->
                                 TooltipPopup.TooltipPopup
                                     {|
                                         Username = input.Username
-                                        Attachments =
-                                            taskState.CellStateMap
-                                            |> Map.tryFind input.DateId
-                                            |> Option.map (fun x -> x.Attachments)
-                                            |> Option.defaultValue []
+                                        Attachments = attachments
                                     |}
                             | _ -> nothing
                         ]

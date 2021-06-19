@@ -204,6 +204,14 @@ module Input =
                                 |> Chakra.mapIfSet (fun value -> x.borderBottomLeftRadius <- value)
                                 |> ignore
 
+                                props.isReadOnly
+                                |> Chakra.mapIfSet (fun value -> x.isReadOnly <- value)
+                                |> ignore
+
+                                props.isDisabled
+                                |> Chakra.mapIfSet (fun value -> x.isDisabled <- value)
+                                |> ignore
+
                                 props.borderTopLeftRadius
                                 |> Chakra.mapIfSet (fun value -> x.borderTopLeftRadius <- value)
                                 |> ignore

@@ -26,6 +26,9 @@ module Settings =
         (input: {| Username: Username
                    Props: Chakra.IChakraProps -> unit |})
         =
+        let weekStart, setWeekStart = Store.useState (Atoms.User.weekStart input.Username)
+        let color, setColor = Store.useState (Atoms.User.color input.Username)
+
         Accordion.Accordion
             {|
                 Props = input.Props
@@ -106,11 +109,73 @@ module Settings =
                                                 >> Some
                                             ))
 
-                                Input.Input
-                                    (fun x ->
-                                        x.label <- str "Color"
+                                Menu.Drawer
+                                    {|
+                                        Tooltip = ""
+                                        Left = false
+                                        Trigger =
+                                            fun visible setVisible ->
+                                                Chakra.box
+                                                    (fun x -> x.position <- "relative")
+                                                    [
+                                                        Input.Input
+                                                            (fun x ->
+                                                                x.label <- str "Color"
+                                                                x.isReadOnly <- true
 
-                                        x.atom <- Some (Recoil.Atom (input.Username, Atoms.User.color input.Username)))
+                                                                x.atom <-
+                                                                    Some (
+                                                                        Recoil.Atom (
+                                                                            input.Username,
+                                                                            Atoms.User.color input.Username
+                                                                        )
+                                                                    ))
+
+                                                        Chakra.stack
+                                                            (fun x ->
+                                                                x.position <- "absolute"
+                                                                x.right <- "1px"
+                                                                x.top <- "0"
+                                                                x.height <- "100%"
+                                                                x.placeContent <- "flex-end"
+                                                                x.spacing <- "0")
+                                                            [
+                                                                Button.Button
+                                                                    {|
+                                                                        Hint = None
+                                                                        Icon =
+                                                                            Some (
+                                                                                Icons.fi.FiChevronDown |> Icons.wrap,
+                                                                                Button.IconPosition.Left
+                                                                            )
+                                                                        Props =
+                                                                            fun x ->
+                                                                                x.borderRadius <- "0 5px 5px 0"
+                                                                                x.minWidth <- "26px"
+                                                                                x.height <- "28px"
+                                                                                x.marginBottom <- "1px"
+
+                                                                                x.borderLeftWidth <- "1px"
+                                                                                x.borderLeftColor <- "#484848"
+
+                                                                                x.onClick <-
+                                                                                    (fun _ ->
+                                                                                        promise {
+                                                                                            setVisible (not visible) })
+                                                                        Children = []
+                                                                    |}
+                                                            ]
+                                                    ]
+                                        Body =
+                                            fun _onHide ->
+                                                [
+                                                    ColorPicker.render
+                                                        {|
+                                                            color = color
+                                                            onChange = fun color -> setColor color.hex
+                                                        |}
+                                                ]
+                                    |}
 
                                 ChangeUserPasswordButton.ChangeUserPasswordButton ()
                             ])
@@ -119,6 +184,104 @@ module Settings =
                         (Chakra.stack
                             (fun x -> x.spacing <- "10px")
                             [
+                                Menu.Drawer
+                                    {|
+                                        Tooltip = ""
+                                        Left = false
+                                        Trigger =
+                                            fun visible setVisible ->
+                                                Chakra.box
+                                                    (fun x -> x.position <- "relative")
+                                                    [
+                                                        Input.Input
+                                                            (fun x ->
+                                                                x.label <- str "Week Start"
+                                                                x.isReadOnly <- true
+
+                                                                x.atom <-
+                                                                    Some (
+                                                                        Recoil.Atom (
+                                                                            input.Username,
+                                                                            Atoms.User.weekStart input.Username
+                                                                        )
+                                                                    )
+
+                                                                x.onFormat <- Some Enum.name)
+
+                                                        Chakra.stack
+                                                            (fun x ->
+                                                                x.position <- "absolute"
+                                                                x.right <- "1px"
+                                                                x.top <- "0"
+                                                                x.height <- "100%"
+                                                                x.placeContent <- "flex-end"
+                                                                x.spacing <- "0")
+                                                            [
+                                                                Button.Button
+                                                                    {|
+                                                                        Hint = None
+                                                                        Icon =
+                                                                            Some (
+                                                                                Icons.fi.FiChevronDown |> Icons.wrap,
+                                                                                Button.IconPosition.Left
+                                                                            )
+                                                                        Props =
+                                                                            fun x ->
+                                                                                x.borderRadius <- "0 5px 5px 0"
+                                                                                x.minWidth <- "26px"
+                                                                                x.height <- "28px"
+                                                                                x.marginBottom <- "1px"
+
+                                                                                x.borderLeftWidth <- "1px"
+                                                                                x.borderLeftColor <- "#484848"
+
+                                                                                x.onClick <-
+                                                                                    (fun _ ->
+                                                                                        promise {
+                                                                                            setVisible (not visible) })
+                                                                        Children = []
+                                                                    |}
+                                                            ]
+                                                    ]
+                                        Body =
+                                            fun onHide ->
+                                                [
+                                                    Chakra.stack
+                                                        (fun x ->
+                                                            x.flex <- "1"
+                                                            x.spacing <- "1px"
+                                                            x.padding <- "1px"
+                                                            x.marginBottom <- "6px"
+                                                            x.maxHeight <- "217px"
+                                                            x.overflowY <- "auto"
+                                                            x.flexBasis <- 0)
+                                                        [
+                                                            yield!
+                                                                Enum.ToList<DayOfWeek> ()
+                                                                |> List.sortBy (
+                                                                    int
+                                                                    >> fun x -> if int weekStart >= x then x * x else x
+                                                                )
+                                                                |> Seq.map
+                                                                    (fun dayOfWeek ->
+                                                                        Menu.DrawerMenuButton
+                                                                            {|
+                                                                                Label = Enum.name dayOfWeek
+                                                                                OnClick =
+                                                                                    fun () ->
+                                                                                        promise {
+                                                                                            setWeekStart dayOfWeek
+
+                                                                                            onHide ()
+                                                                                        }
+                                                                                Checked = weekStart = dayOfWeek
+                                                                            |}
+
+                                                                        )
+                                                        ]
+                                                ]
+                                    |}
+
                                 Input.Input
                                     (fun x ->
                                         x.label <- str "Days Before"
