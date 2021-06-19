@@ -11,7 +11,7 @@ module.exports = {
     "\\.(css|less|scss|sss|styl)$": "<rootDir>/node_modules/jest-css-modules"
   },
   "transformIgnorePatterns": [
-    "node_modules/react-color"
+    "node_modules/(?!react-color)"
   ]
   // transform: {'.*?\.fs\.js': "babel-jest"},
   // maxConcurrency: 1,
