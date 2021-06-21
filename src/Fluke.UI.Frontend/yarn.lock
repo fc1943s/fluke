@@ -13189,6 +13189,11 @@ joi@^17.2.1, joi@^17.4.0:
     "@sideway/formula" "^3.0.0"
     "@sideway/pinpoint" "^2.0.0"
 
+jotai@~1.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.0.0.tgz#d5e7f7044d89e543a9c7429a9723e11528b2760e"
+  integrity sha512-6hZGy3hqIlBlLSKppTrxDc1Vb7mi3I8eEQOIu7Kj6ceX1PSzjxdsEVC9TjAqaio8gZJEz+2ufNUf4afvbs0RXg==
+
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/js-tokens/-/js-tokens-4.0.0.tgz#19203fb59991df98e3a287050d4647cdeaf32499"
@@ -17801,11 +17806,6 @@ recoil@facebookexperimental/Recoil.git#nightly:
   resolved "https://codeload.github.com/facebookexperimental/Recoil/tar.gz/2f3799446457c31f7bedbaa1188250b237808268"
   dependencies:
     hamt_plus "1.0.2"
-
-recoilize@~2.0:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/recoilize/-/recoilize-2.0.1.tgz#8c81ba83a7da8c8c881b861b87d1a1fd00a25a8c"
-  integrity sha512-C/JML0SxXDbJ74iNF46GQGrc9g3CRd2+rmNBcpwkCc1L9OSSYki4ipbUPCJL6I8Bbw5slKXY809RWrF0nwhRoQ==
 
 recursive-readdir@2.2.2:
   version "2.2.2"

@@ -7,11 +7,11 @@ open Fluke.UI.Frontend.Bindings
 module CheckboxInput =
     [<ReactComponent>]
     let CheckboxInput
-        (input: {| Atom: Recoil.RecoilValue<_, _>
+        (input: {| Atom: Jotai.Atom<_>
                    Label: string option
                    Props: Chakra.IChakraProps -> unit |})
         =
-        let value, setValue = Store.useState input.Atom
+        let value, setValue = Jotai.useAtom input.Atom
 
         Checkbox.Checkbox
             {|

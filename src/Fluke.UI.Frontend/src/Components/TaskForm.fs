@@ -23,8 +23,7 @@ module TaskForm =
                    OnSave: Task -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
-        let debug = Store.useValue Atoms.debug
-
+        let debug = JotaiUtils.useAtomValue Atoms.debug
         let sessions, setSessions = Store.useState (Atoms.Task.sessions (input.Username, input.TaskId))
 
         let deleteSession =

@@ -25,7 +25,7 @@ module DatabaseForm =
                    OnSave: Database -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
-        let debug = Store.useValue Atoms.debug
+        let debug = JotaiUtils.useAtomValue Atoms.debug
 
         let onSave =
             Store.useCallbackRef

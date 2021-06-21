@@ -15,7 +15,7 @@ module DebugOverlay =
     let DebugOverlay () =
         let text, setText = React.useState ""
         let oldJson, setOldJson = React.useState ""
-        let debug = Store.useValue Atoms.debug
+        let debug = JotaiUtils.useAtomValue Atoms.debug
         let isTesting = Store.useValue Atoms.isTesting
 
         Scheduling.useScheduling

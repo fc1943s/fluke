@@ -31,15 +31,7 @@ module State =
     module Atoms =
         let rec isTesting = Store.atomWithProfiling ($"{nameof atom}/{nameof isTesting}", JS.deviceInfo.IsTesting)
 
-        let rec debug =
-            Store.atomWithProfiling (
-                $"{nameof atom}/{nameof debug}",
-                JS.isDebug,
-                effects =
-                    [
-                        Store.AtomEffect Feliz.Recoil.Storage.local
-                    ]
-            )
+        let rec debug = JotaiUtils.atomWithStorage $"{nameof atom}/{nameof debug}" JS.isDebug
 
         let rec gunPeers =
             Store.atomWithProfiling (
@@ -138,7 +130,7 @@ module State =
             let rec color =
                 Store.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof color}",
-                    (fun (_username: Username) -> String.Format ("#{0:X6}", Random().Next (0x1000000))),
+                    (fun (_username: Username) -> String.Format ("#{0:X6}", Random().Next 0x1000000)),
                     (fun (username: Username) ->
                         [
                             Store.gunEffect (Store.InputAtom.AtomFamily (username, color, username)) []
@@ -276,12 +268,24 @@ module State =
                 )
 
             let rec filterTasksByView =
-                Store.atomFamilyWithProfiling (
+                JotaiUtils.atomFamilyWithProfiling (
                     $"{nameof atomFamily}/{nameof User}/{nameof filterTasksByView}",
                     (fun (_username: Username) -> true),
                     (fun (username: Username) ->
                         [
-                            Store.gunEffect (Store.InputAtom.AtomFamily (username, filterTasksByView, username)) []
+                        //                            Store.gunEffect (Store.InputAtom.AtomFamily (username, filterTasksByView, username)) []
+                        ])
+                )
+
+            let rec informationAttachmentMap =
+                Store.atomFamilyWithProfiling (
+                    $"{nameof atomFamily}/{nameof User}/{nameof informationAttachmentMap}",
+                    (fun (_username: Username) -> Map.empty: Map<Information, Set<AttachmentId>>),
+                    (fun (username: Username) ->
+                        [
+                            Store.gunEffect
+                                (Store.InputAtom.AtomFamily (username, informationAttachmentMap, username))
+                                []
                         ])
                 )
 
@@ -403,6 +407,7 @@ module State =
                         ])
                 )
 
+
         module rec Attachment =
             let attachmentIdIdentifier (attachmentId: AttachmentId) =
                 attachmentId
@@ -431,28 +436,6 @@ module State =
                             Store.gunEffect
                                 (Store.InputAtom.AtomFamily (username, attachment, (username, attachmentId)))
                                 (attachmentIdIdentifier attachmentId)
-                        ])
-                )
-
-        module rec Information =
-            //            let informationIdentifier (information: Information) =
-//                [
-//                    $"{information |> Information.toString}/{
-//                                                                 information
-//                                                                 |> Information.Name
-//                                                                 |> InformationName.Value
-//                    }"
-//                ]
-
-            let rec attachments =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof atomFamily}/{nameof Information}/{nameof attachments}",
-                    (fun (_username: Username, _information: Information) -> []: (FlukeDateTime * Attachment) list),
-                    (fun (username: Username, information: Information) ->
-                        [
-                        //                            Store.gunEffect
-//                                (Store.InputAtom.AtomFamily (username, attachments, (username, information)))
-//                                (informationIdentifier information)
                         ])
                 )
 
@@ -795,15 +778,40 @@ module State =
                         access = Some Access.ReadWrite)
                 )
 
+
+        module rec Attachment =
+            let rec attachment =
+                Store.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Attachment}/{nameof attachment}",
+                    (fun (username: Username, attachmentId: AttachmentId) getter ->
+                        let timestamp = getter.get (Atoms.Attachment.timestamp (username, attachmentId))
+                        let attachment = getter.get (Atoms.Attachment.attachment (username, attachmentId))
+
+                        match timestamp, attachment with
+                        | Some timestamp, Some attachment -> Some (timestamp, attachment)
+                        | _ -> None)
+                )
+
+
         module rec Information =
+            let rec attachments =
+                Store.selectorFamilyWithProfiling (
+                    $"{nameof selectorFamily}/{nameof Information}/{nameof attachments}",
+                    (fun (username: Username, information: Information) getter ->
+                        getter.get (Atoms.User.informationAttachmentMap username)
+                        |> Map.tryFind information
+                        |> Option.defaultValue Set.empty
+                        |> Set.toList
+                        |> List.choose (fun attachmentId -> getter.get (Attachment.attachment (username, attachmentId))))
+                )
+
             let rec informationState =
                 Store.selectorFamilyWithProfiling (
                     $"{nameof selectorFamily}/{nameof Information}/{nameof informationState}",
                     (fun (username: Username, information: Information) getter ->
-
                         {
                             Information = information
-                            Attachments = getter.get (Atoms.Information.attachments (username, information))
+                            Attachments = getter.get (attachments (username, information))
                             SortList = []
                         })
                 )
@@ -839,18 +847,11 @@ module State =
                         let attachmentIdSet = getter.get (Atoms.Task.attachmentIdSet (username, taskId))
                         let cellAttachmentMap = getter.get (Atoms.Task.cellAttachmentMap (username, taskId))
 
-                        let attachmentIdList = attachmentIdSet |> Set.toList
-
-                        let attachmentTimestamps =
-                            attachmentIdList
-                            |> List.choose
-                                (fun attachmentId -> getter.get (Atoms.Attachment.timestamp (username, attachmentId)))
-
                         let attachments =
-                            attachmentIdList
+                            attachmentIdSet
+                            |> Set.toList
                             |> List.choose
-                                (fun attachmentId -> getter.get (Atoms.Attachment.attachment (username, attachmentId)))
-                            |> List.zip attachmentTimestamps
+                                (fun attachmentId -> getter.get (Attachment.attachment (username, attachmentId)))
                             |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
 
                         let cellStateMapWithoutStatus =
@@ -886,7 +887,7 @@ module State =
                                                     timestamp, attachment)
                                             |> List.choose
                                                 (function
-                                                | (Some timestamp, Some attachment) -> Some (timestamp, attachment)
+                                                | Some timestamp, Some attachment -> Some (timestamp, attachment)
                                                 | _ -> None)
                                             |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
                                         | _ -> []
@@ -1120,8 +1121,7 @@ module State =
                         taskState.CellStateMap
                         |> Map.tryFind dateId
                         |> Option.map (fun x -> x.Sessions)
-                        |> Option.defaultValue []),
-                    (fun (username: Username, taskId: TaskId, dateId) setter newValue -> ())
+                        |> Option.defaultValue [])
                 )
 
             let rec attachments =
@@ -1133,8 +1133,7 @@ module State =
                         taskState.CellStateMap
                         |> Map.tryFind dateId
                         |> Option.map (fun x -> x.Attachments)
-                        |> Option.defaultValue []),
-                    (fun (username: Username, taskId: TaskId, dateId) setter newValue -> ())
+                        |> Option.defaultValue [])
                 )
 
 

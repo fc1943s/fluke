@@ -17,7 +17,7 @@ module InformationName =
         (input: {| Username: Username
                    Information: Information |})
         =
-        let attachments = Store.useValue (Atoms.Information.attachments (input.Username, input.Information))
+        let attachments = Store.useValue (Selectors.Information.attachments (input.Username, input.Information))
         let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         let detailsClick =
