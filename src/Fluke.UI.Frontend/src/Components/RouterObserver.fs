@@ -5,7 +5,6 @@ open Fable.Core
 open Fable.Core.JsInterop
 open Feliz.Router
 open Feliz
-open Feliz.UseListener
 open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks

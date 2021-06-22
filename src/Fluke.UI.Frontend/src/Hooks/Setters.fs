@@ -11,11 +11,11 @@ module Setters =
     open State
 
     let useSetCellSelectionMap () =
-        Store.useCallbackRef
-            (fun setter (username, newSelection) ->
+        Store.useCallback (
+            (fun get set (username, newSelection) ->
                 promise {
-                    let! sortedTaskIdList = setter.snapshot.getPromise (Selectors.Session.sortedTaskIdList username)
-                    let! cellSelectionMap = setter.snapshot.getPromise (Selectors.Session.cellSelectionMap username)
+                    let sortedTaskIdList = Atoms.getAtomValue get (Selectors.Session.sortedTaskIdList username)
+                    let cellSelectionMap = Atoms.getAtomValue get (Selectors.Session.cellSelectionMap username)
 
                     let operations =
                         sortedTaskIdList
@@ -48,17 +48,22 @@ module Setters =
                     operations
                     |> List.iter
                         (fun (taskId, date, selected) ->
-                            setter.set (Selectors.Cell.selected (username, taskId, DateId date), (fun _ -> selected)))
-                })
+                            Atoms.setAtomValue
+                                set
+                                (Selectors.Cell.selected (username, taskId, DateId date))
+                                (fun _ -> selected))
+                }),
+            [||]
+        )
 
     let useSetSelected () =
         let setCellSelectionMap = useSetCellSelectionMap ()
 
-        Store.useCallbackRef
-            (fun setter (username, taskId, dateId, newValue) ->
+        Store.useCallback (
+            (fun get _set (username, taskId, dateId, newValue) ->
                 promise {
-                    let! ctrlPressed = setter.snapshot.getPromise Atoms.ctrlPressed
-                    let! shiftPressed = setter.snapshot.getPromise Atoms.shiftPressed
+                    let ctrlPressed = Atoms.getAtomValue get Atoms.ctrlPressed
+                    let shiftPressed = Atoms.getAtomValue get Atoms.shiftPressed
 
                     let! newCellSelectionMap =
                         match shiftPressed, ctrlPressed with
@@ -86,18 +91,17 @@ module Setters =
 
                                     oldSelection |> Map.add taskId newSet
 
-                                let! oldSelection =
-                                    setter.snapshot.getPromise (Selectors.Session.cellSelectionMap username)
+                                let oldSelection = Atoms.getAtomValue get (Selectors.Session.cellSelectionMap username)
 
                                 return swapSelection oldSelection taskId (dateId |> DateId.Value)
                             }
                         | true, _ ->
                             promise {
-                                let! sortedTaskIdList =
-                                    setter.snapshot.getPromise (Selectors.Session.sortedTaskIdList username)
+                                let sortedTaskIdList =
+                                    Atoms.getAtomValue get (Selectors.Session.sortedTaskIdList username)
 
-                                let! oldCellSelectionMap =
-                                    setter.snapshot.getPromise (Selectors.Session.cellSelectionMap username)
+                                let oldCellSelectionMap =
+                                    Atoms.getAtomValue get (Selectors.Session.cellSelectionMap username)
 
                                 let initialTaskIdSet =
                                     oldCellSelectionMap
@@ -143,4 +147,8 @@ module Setters =
 
 
                     do! setCellSelectionMap (username, newCellSelectionMap)
-                })
+                }),
+            [|
+                box setCellSelectionMap
+            |]
+        )

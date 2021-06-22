@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.UseListener
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
@@ -15,14 +14,15 @@ module DebugOverlay =
     let DebugOverlay () =
         let text, setText = React.useState ""
         let oldJson, setOldJson = React.useState ""
-        let debug = JotaiUtils.useAtomValue Atoms.debug
-        let isTesting = Store.useValue Atoms.isTesting
+        let debug = Store.useValue Atoms.debug
 
         Scheduling.useScheduling
             Scheduling.Interval
             1000
-            (fun _ ->
+            (fun get _ ->
                 promise {
+                    let isTesting = Atoms.getAtomValue get Atoms.isTesting
+
                     if isTesting || not debug then
                         ()
                     else

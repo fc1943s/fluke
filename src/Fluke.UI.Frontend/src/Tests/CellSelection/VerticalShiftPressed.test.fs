@@ -7,6 +7,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared
 open Microsoft.FSharp.Core.Operators
 open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.Bindings
 
 
 module VerticalShiftPressed =
@@ -15,9 +16,9 @@ module VerticalShiftPressed =
     Jest.test (
         "cell selection - vertical shift pressed",
         promise {
-            let! cellMapGetter, setter = initialize ()
+            let! cellMapGetter, (get, setFn) = initialize ()
 
-            RTL.act (fun () -> setter.current().set (Atoms.shiftPressed, fun _ -> true))
+            RTL.act (fun () -> Atoms.setAtomValue setFn Atoms.shiftPressed (fun _ -> true))
 
             do! RTL.waitFor id
 
@@ -40,7 +41,7 @@ module VerticalShiftPressed =
                     ]
                 ]
                 |> Map.ofList
-                |> expectSelection setter
+                |> expectSelection get
         },
         maxTimeout
     )

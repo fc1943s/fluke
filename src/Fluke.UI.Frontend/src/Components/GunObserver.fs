@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
@@ -13,10 +12,10 @@ module GunObserver =
 
     [<ReactComponent>]
     let GunObserver () =
-        let gun = Store.useValue Selectors.gun
-        let gunNamespace = Store.useValue Selectors.gunNamespace
+        let gun = Store.useValue Atoms.gun
+        let gunNamespace = Store.useValue Atoms.gunNamespace
         //        let appKeys = Gun.gunHooks.useGunKeys Browser.Dom.window?SEA (fun () -> null) false
-        let gunKeys, setGunKeys = Store.useState Atoms.gunKeys
+        let gunKeys, setGunKeys = Jotai.useAtom Atoms.gunKeys
 
         //        let gunState =
 //            Gun.gunHooks.useGunState
@@ -85,40 +84,38 @@ module GunObserver =
 
                 printfn "after newRecall"),
             [|
-                box gunNamespace.``#``
+                box gunNamespace
                 box gunKeys
             |]
         )
 
         React.useDisposableEffect (
             (fun disposed ->
-                gun.``#``.on (
+                gun.on (
                     "auth",
                     (fun () ->
                         match disposed.current with
                         | false ->
 
-                            match gunNamespace.``#``.is with
+                            match gunNamespace.is with
                             | Some { alias = Some username } ->
                                 printfn $"GunObserver.render: .on(auth) effect. setUsername. username={username}"
 
-                                let user = gunNamespace.``#``
-                                let keys = user.__.sea
+                                let keys = gunNamespace.__.sea
 
                                 match keys with
                                 | Some keys -> setGunKeys keys
-                                | None -> failwith $"No keys found for user {user.is}"
+                                | None -> failwith $"No keys found for user {gunNamespace.is}"
 
                             //                                gunState.put ({| username = username |} |> toPlainJsObj)
 //                                |> Promise.start
                             //                                setUsername (Some (UserInteraction.Username username))
-                            | _ ->
-                                printfn $"GunObserver.render: Auth occurred without username: {gunNamespace.``#``.is}"
+                            | _ -> printfn $"GunObserver.render: Auth occurred without username: {gunNamespace.is}"
                         | true -> ())
                 )),
             [|
-                box gun.``#``
-                box gunNamespace.``#``
+                box gun
+                box gunNamespace
             |]
         )
 

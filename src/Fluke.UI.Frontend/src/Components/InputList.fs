@@ -7,16 +7,17 @@ open Fluke.UI.Frontend.Bindings
 
 
 module InputList =
-    type IProps<'TValue, 'TKey> =
+    type IProps<'TValue> =
         inherit Chakra.IChakraProps
 
         abstract hint : ReactElement option with get, set
         abstract hintTitle : ReactElement option with get, set
-        abstract atom : Recoil.InputAtom<'TValue, 'TKey> option with get, set
-        abstract inputScope : Recoil.InputScope<'TValue> option with get, set
+        abstract atom : JotaiTypes.InputAtom<'TValue> option with get, set
+        abstract inputScope : JotaiTypes.InputScope<'TValue> option with get, set
+
 
     [<ReactComponent>]
-    let InputList (props: IProps<'TValue list, 'TKey> -> unit) =
+    let InputList (props: IProps<'TValue list> -> unit) =
         let props =
             React.useMemo (
                 (fun () -> JS.newObj props),
@@ -25,7 +26,7 @@ module InputList =
                 |]
             )
 
-        let atomFieldOptions = Recoil.useAtomFieldOptions<'TValue list, 'TKey> props.atom props.inputScope
+        let atomFieldOptions = Store.useAtomFieldOptions<'TValue list> props.atom props.inputScope
 
         Chakra.box
             (fun _ -> ())
@@ -49,6 +50,7 @@ module InputList =
                                                         Props =
                                                             fun x ->
                                                                 x.icon <- Icons.fa.FaPlus |> Icons.render
+                                                                x.marginLeft <- "5px"
 
                                                                 x.onClick <-
                                                                     fun _ ->
@@ -69,7 +71,7 @@ module InputList =
                         |}
 
                 match props.atom with
-                | Some (Recoil.InputAtom.Atom _) ->
+                | Some _ ->
                     let inputList =
                         match atomFieldOptions.AtomValue with
                         | [] ->

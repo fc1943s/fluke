@@ -16,27 +16,34 @@ module Scheduling =
         | Timeout -> JS.setTimeout, JS.clearTimeout
         | Interval -> JS.setInterval, JS.clearInterval
 
-    let useScheduling schedulingType duration (fn: Store.CallbackMethods -> JS.Promise<unit>) =
-        let savedCallback = React.useRef fn
+    let useScheduling schedulingType duration (fn: Jotai.GetFn -> Jotai.SetFn -> JS.Promise<unit>) =
+        let fnCallback = React.useCallbackRef (fun (get, set) -> fn get set)
+
+        let savedCallback = React.useRef fnCallback
 
         React.useEffect (
-            (fun () -> savedCallback.current <- fn),
+            (fun () -> savedCallback.current <- fnCallback),
             [|
                 box savedCallback
-                box fn
+                box fnCallback
             |]
         )
 
         let mounted, setMounted = React.useState true
 
-        let fn = Store.useCallbackRef (fun setter _ -> promise { if mounted then do! savedCallback.current setter })
+        let fn =
+            Store.useCallback (
+                (fun get set _ -> promise { if mounted then do! savedCallback.current (get, set) }),
+                [|
+                    box mounted
+                    box savedCallback
+                |]
+            )
 
         React.useEffect (
             (fun () ->
                 let setFn, clearFn = schedulingFn schedulingType
-
                 let id = setFn (fn >> Promise.start) duration
-
                 setMounted true
 
                 { new IDisposable with

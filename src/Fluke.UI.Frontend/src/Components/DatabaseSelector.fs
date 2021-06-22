@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Feliz.Recoil
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
@@ -18,17 +17,13 @@ module DatabaseSelector =
     [<ReactComponent>]
     let rec DatabaseSelector
         (input: {| Username: UserInteraction.Username
+                   DatabaseId: DatabaseId
+                   OnChange: DatabaseId -> unit
                    TaskId: TaskId |})
         =
-        let databaseId, setDatabaseId =
-            Store.useStateLoadableDefault (Selectors.Task.databaseId (input.Username, input.TaskId)) Database.Default.Id
-
-        let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name (input.Username, databaseId))
-
+        let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name (input.Username, input.DatabaseId))
         let databaseIdSet = Store.useValue (Atoms.Session.databaseIdSet input.Username)
-
         let setDatabaseIdSet = Store.useSetStatePrev (Atoms.Session.databaseIdSet input.Username)
-
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
         let databaseIdList =
@@ -42,12 +37,13 @@ module DatabaseSelector =
         let filteredDatabaseIdList =
             databaseIdList
             |> List.map Selectors.Database.isReadWrite
-            |> Recoil.waitForNone
+            |> List.toArray
+            |> Store.waitForAll
             |> Store.useValue
+            |> Array.toList
             |> List.mapi
                 (fun i isReadWrite ->
-                    match isReadWrite.valueMaybe () with
-                    //                    match Some isReadWrite with
+                    match Some isReadWrite with
                     | Some true -> Some databaseIdList.[i]
                     | _ -> None)
             |> List.choose id
@@ -55,24 +51,22 @@ module DatabaseSelector =
         let databaseNameList =
             filteredDatabaseIdList
             |> List.map (fun databaseId -> Atoms.Database.name (input.Username, databaseId))
-            |> Recoil.waitForNone
+            |> List.toArray
+            |> Store.waitForAll
             |> Store.useValue
-            |> List.map
-                (fun name ->
-                    name.valueMaybe ()
-                    |> Option.map DatabaseName.Value
-                    |> Option.defaultValue "")
+            |> Array.toList
+            |> List.map DatabaseName.Value
 
         let index =
             React.useMemo (
                 (fun () ->
                     filteredDatabaseIdList
                     |> List.sort
-                    |> List.tryFindIndex ((=) databaseId)
+                    |> List.tryFindIndex ((=) input.DatabaseId)
                     |> Option.defaultValue -1),
                 [|
                     box filteredDatabaseIdList
-                    box databaseId
+                    box input.DatabaseId
                 |]
             )
 
@@ -135,7 +129,7 @@ module DatabaseSelector =
                                                                     OnClick =
                                                                         fun () ->
                                                                             promise {
-                                                                                setDatabaseId databaseId
+                                                                                input.OnChange databaseId
 
                                                                                 onHide ()
                                                                             }
@@ -188,7 +182,7 @@ module DatabaseSelector =
                                                                             do!
                                                                                 hydrateDatabase (
                                                                                     input.Username,
-                                                                                    Recoil.AtomScope.ReadOnly,
+                                                                                    JotaiTypes.AtomScope.ReadOnly,
                                                                                     database
                                                                                 )
 

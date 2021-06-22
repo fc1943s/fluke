@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core.JsInterop
 open System
 open Browser.Types
 open Fable.React
@@ -23,8 +24,8 @@ module Input =
     type IProps<'TValue, 'TKey> =
         abstract hint : ReactElement option with get, set
         abstract hintTitle : ReactElement option with get, set
-        abstract atom : Recoil.InputAtom<'TValue, 'TKey> option with get, set
-        abstract inputScope : Recoil.InputScope<'TValue> option with get, set
+        abstract atom : JotaiTypes.InputAtom<'TValue> option with get, set
+        abstract inputScope : JotaiTypes.InputScope<'TValue> option with get, set
         abstract fixedValue : 'TValue option with get, set
         abstract onFormat : ('TValue -> string) option with get, set
         abstract onValidate : (string * 'TValue option -> 'TValue option) option with get, set
@@ -41,12 +42,10 @@ module Input =
             React.useMemo (
                 (fun () -> JS.newObj input.Props, JS.newObj input.CustomProps),
                 [|
-                    box input.Props
                     box input.CustomProps
+                    box input.Props
                 |]
             )
-
-        let atomFieldOptions = Recoil.useAtomFieldOptions<'TValue, 'TKey> customProps.atom customProps.inputScope
 
         let inputFallbackRef = React.useRef<HTMLInputElement> null
 
@@ -57,10 +56,13 @@ module Input =
                     |> Option.ofObjUnbox
                     |> Option.defaultValue inputFallbackRef),
                 [|
-                    box props
+                    box props.ref
                     box inputFallbackRef
                 |]
             )
+
+        let atomFieldOptions = Store.useAtomFieldOptions<'TValue> customProps.atom customProps.inputScope
+
 
         let mounted, setMounted = React.useState false
 
@@ -84,7 +86,6 @@ module Input =
                                 | Some _ -> Some atomFieldOptions.AtomValue
                                 | None -> None
 
-
                     let valueString =
                         match value with
                         | Some value when box value <> null ->
@@ -96,19 +97,26 @@ module Input =
                     value, valueString),
                 [|
                     box mounted
-                    box customProps
+                    box customProps.fixedValue
+                    box customProps.onValidate
+                    box customProps.onFormat
+                    box customProps.atom
                     box inputRef
                     box atomFieldOptions.AtomValue
                 |]
             )
 
         let fireChange =
-            Store.useCallbackRef
-                (fun _ _ ->
+            Store.useCallback (
+                (fun _ _ _ ->
                     promise {
                         inputRef.current.dispatchEvent (Dom.createEvent "change" {| bubbles = true |})
                         |> ignore
-                    })
+                    }),
+                [|
+                    box inputRef
+                |]
+            )
 
         React.useEffect (
             (fun () ->
@@ -118,9 +126,8 @@ module Input =
                     inputRef.current.value <- currentValueString
 
                     if not mounted then
-                        if customProps.atom.IsSome then fireChange () |> Promise.start
-
-                        setMounted true),
+                        setMounted true
+                        if customProps.atom.IsSome then fireChange () |> Promise.start),
             [|
                 box fireChange
                 box customProps
@@ -132,8 +139,8 @@ module Input =
         )
 
         let onChange =
-            Store.useCallbackRef
-                (fun _setter (e: KeyboardEvent) ->
+            Store.useCallback (
+                (fun _get _set (e: KeyboardEvent) ->
                     promise {
                         if inputRef.current <> null && e.target <> null then
                             match box props.onChange with
@@ -162,7 +169,18 @@ module Input =
                                 match validValue with
                                 | Some value -> atomFieldOptions.SetAtomValue value
                                 | None -> atomFieldOptions.SetAtomValue atomFieldOptions.ReadOnlyValue
-                    })
+                    }),
+                [|
+                    box props
+                    box atomFieldOptions
+                    box currentValue
+                    box currentValueString
+                    box inputRef
+                    box customProps.onFormat
+                    box customProps.onValidate
+                    box customProps.atom
+                |]
+            )
 
         Chakra.stack
             (fun x ->
@@ -314,5 +332,4 @@ module Input =
                                 x.paddingLeft <- "28px"
                                 input.Props x
                     |}
-
             ]

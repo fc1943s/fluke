@@ -1,34 +1,57 @@
 namespace Fluke.UI.Frontend.Hooks
 
 open Browser.Types
-open Feliz.Recoil
 open Feliz
-open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
+open Feliz.UseListener
 
 
 module Listener =
-    let useKeyPress (fn: CallbackMethods -> KeyboardEvent -> Async<unit>) =
+    let useKeyPress keys (fn: Jotai.GetFn -> Jotai.SetFn -> KeyboardEvent -> JS.Promise<unit>) =
+        let fnCallback = React.useCallbackRef (fun (get, set, e) -> fn get set e)
         Profiling.addTimestamp "useKeyPress.render"
 
         let keyEvent =
-            Recoil.useCallbackRef
-                (fun setter (e: KeyboardEvent) ->
-                    fn setter e
-                    |> Async.StartAsPromise
-                    |> Promise.start)
+            Store.useCallback (
+                (fun get set e -> fnCallback (get, set, e)),
+                [|
+                    box fnCallback
+                |]
+            )
 
-        React.useListener.onKeyDown keyEvent
-        React.useListener.onKeyUp keyEvent
+        Rooks.useKey
+            keys
+            (fun e -> keyEvent e |> Promise.start)
+            {|
+                eventTypes =
+                    [|
+                        "keydown"
+                        "keyup"
+                    |]
+            |}
 
 
     let useElementHover (elemRef: IRefValue<#HTMLElement option>) =
         let isHovered, setIsHovered = React.useState false
 
-        let setIsHoveredTrue = Recoil.useCallbackRef (fun _ _ -> setIsHovered true)
-        let setIsHoveredFalse = Recoil.useCallbackRef (fun _ _ -> setIsHovered false)
+        let setIsHoveredTrue =
+            React.useCallback (
+                (fun _ -> setIsHovered true),
+                [|
+                    box setIsHovered
+                |]
+            )
+
+        let setIsHoveredFalse =
+            React.useCallback (
+                (fun _ -> setIsHovered false),
+                [|
+                    box setIsHovered
+                |]
+            )
 
         React.useElementListener.onMouseEnter (elemRef, setIsHoveredTrue)
         React.useElementListener.onMouseLeave (elemRef, setIsHoveredFalse)
+
         isHovered

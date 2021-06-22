@@ -10,8 +10,11 @@ open Fluke.Shared
 
 
 module ViewTabs =
-    let menuOptionGroup atom label =
+    [<ReactComponent>]
+    let MenuOptionGroup (atom: JotaiTypes.Atom<_>) label =
         let value, setValue = Store.useState atom
+
+        let key = atom.toString ()
 
         Chakra.menuOptionGroup
             (fun x ->
@@ -19,21 +22,20 @@ module ViewTabs =
 
                 x.value <-
                     [|
-                        if value then yield atom.key
+                        if value then yield key
                     |]
 
-                x.onChange <- fun (checks: string []) -> promise { setValue (checks |> Array.contains atom.key) })
+                x.onChange <- fun (checks: string []) -> promise { setValue (checks |> Array.contains key) })
             [
                 Chakra.menuItemOption
                     (fun x ->
-                        x.value <- atom.key
+                        x.value <- key
                         x.marginTop <- "2px"
                         x.marginBottom <- "2px")
                     [
                         str label
                     ]
             ]
-
 
     [<ReactComponent>]
     let ViewTabs (input: {| Username: Username |}) =
@@ -51,25 +53,25 @@ module ViewTabs =
                                 View = View.View.Information
                                 Name = "Information View"
                                 Icon = Icons.ti.TiFlowChildren
-                                Content = fun () -> InformationView.InformationView {| Username = input.Username |}
+                                Content = InformationView.InformationView {| Username = input.Username |}
                             |}
                             {|
                                 View = View.View.HabitTracker
                                 Name = "Habit Tracker View"
                                 Icon = Icons.bs.BsGrid
-                                Content = fun () -> HabitTrackerView.HabitTrackerView {| Username = input.Username |}
+                                Content = HabitTrackerView.HabitTrackerView {| Username = input.Username |}
                             |}
                             {|
                                 View = View.View.Priority
                                 Name = "Priority View"
                                 Icon = Icons.fa.FaSortNumericDownAlt
-                                Content = fun () -> PriorityView.PriorityView {| Username = input.Username |}
+                                Content = PriorityView.PriorityView {| Username = input.Username |}
                             |}
                             {|
                                 View = View.View.BulletJournal
                                 Name = "Bullet Journal View"
                                 Icon = Icons.bs.BsListCheck
-                                Content = fun () -> BulletJournalView.BulletJournalView {| Username = input.Username |}
+                                Content = BulletJournalView.BulletJournalView {| Username = input.Username |}
                             |}
                         ]
 
@@ -175,10 +177,10 @@ module ViewTabs =
                                                 |}
                                         Body =
                                             [
-                                                menuOptionGroup
+                                                MenuOptionGroup
                                                     (Atoms.User.hideSchedulingOverlay input.Username)
                                                     "Hide Scheduling Overlay"
-                                                menuOptionGroup
+                                                MenuOptionGroup
                                                     (Atoms.User.showViewOptions input.Username)
                                                     "Show View Options"
                                             ]
@@ -209,7 +211,12 @@ module ViewTabs =
                                         fun x ->
                                             x.atom <-
                                                 Some (
-                                                    Recoil.Atom (input.Username, Atoms.User.searchText input.Username)
+                                                        JotaiTypes.InputAtom (
+                                                            input.Username,
+                                                            JotaiTypes.AtomPath.Atom (
+                                                                Atoms.User.searchText input.Username
+                                                            )
+                                                        )
                                                 )
                                     Props =
                                         fun x ->
@@ -248,7 +255,7 @@ module ViewTabs =
                                                     [
                                                         str "No tasks found. Add tasks in the Databases panel."
                                                     ]
-                                            | _ -> tab.Content ()
+                                            | _ -> tab.Content
                                         ])
                     ]
             ]

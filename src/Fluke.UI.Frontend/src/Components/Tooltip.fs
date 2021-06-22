@@ -7,8 +7,7 @@ open Fluke.UI.Frontend.Bindings
 
 module Tooltip =
 
-    [<ReactComponent>]
-    let Tooltip
+    let inline Tooltip
         (input: {| Children: seq<ReactElement>
                    Props: Chakra.IChakraProps -> unit |})
         =

@@ -41,7 +41,7 @@ module Dropdown =
                             x.borderColor <- "whiteAlpha.200"
 
                             x.background <-
-                                "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.01) 7%, rgba(255,255,255,0.02) 100%);"
+                                "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.01) 20%, rgba(255,255,255,0.02) 100%);"
 
                             x.padding <- "17px")
                         [

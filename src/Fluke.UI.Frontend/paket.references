@@ -5,7 +5,5 @@ Fable.Extras
 Fable.Jester
 Fable.ReactTestingLibrary
 Fable.SimpleJson
-Feliz.Recoil
 Feliz.Router
-Feliz.UseListener
 Thoth.Json

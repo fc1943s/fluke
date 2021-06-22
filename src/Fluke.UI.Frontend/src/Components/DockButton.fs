@@ -13,7 +13,7 @@ module DockButton =
     let DockButton
         (input: {| Name: string
                    Icon: obj
-                   Atom: Recoil.RecoilValue<TempUI.DockType option, _>
+                   Atom: JotaiTypes.Atom<TempUI.DockType option>
                    OnClick: TempUI.DockType option -> JS.Promise<unit>
                    DockType: TempUI.DockType |})
         =

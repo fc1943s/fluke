@@ -9,8 +9,7 @@ open Fluke.Shared
 module Logo =
     open Domain.State
 
-    [<ReactComponent>]
-    let Logo () =
+    let inline Logo () =
         Chakra.simpleGrid
             (fun x ->
                 x.columns <- 2

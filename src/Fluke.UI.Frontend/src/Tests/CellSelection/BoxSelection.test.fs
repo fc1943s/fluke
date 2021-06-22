@@ -7,6 +7,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared
 open Microsoft.FSharp.Core.Operators
 open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.Bindings
 
 
 module BoxSelection =
@@ -15,13 +16,9 @@ module BoxSelection =
     Jest.test (
         "box selection",
         promise {
-            let! cellMapGetter, setter = initialize ()
+            let! cellMapGetter, (get, setFn) = initialize ()
 
-            RTL.act
-                (fun () ->
-                    setter
-                        .current()
-                        .set (Atoms.shiftPressed, (fun _ -> true)))
+            RTL.act (fun () -> Atoms.setAtomValue setFn Atoms.shiftPressed (fun _ -> true))
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
             do! click (getCell (cellMapGetter, TaskName "3", FlukeDate.Create 2020 Month.January 10))
@@ -46,7 +43,7 @@ module BoxSelection =
                     ]
                 ]
                 |> Map.ofList
-                |> expectSelection setter
+                |> expectSelection get
 
 
             do! click (getCell (cellMapGetter, TaskName "4", FlukeDate.Create 2020 Month.January 11))
@@ -75,7 +72,7 @@ module BoxSelection =
                     ]
                 ]
                 |> Map.ofList
-                |> expectSelection setter
+                |> expectSelection get
 
             do! click (getCell (cellMapGetter, TaskName "1", FlukeDate.Create 2020 Month.January 8))
 
@@ -114,7 +111,7 @@ module BoxSelection =
                     ]
                 ]
                 |> Map.ofList
-                |> expectSelection setter
+                |> expectSelection get
         },
         maxTimeout
     )

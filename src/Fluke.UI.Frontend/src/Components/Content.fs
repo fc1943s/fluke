@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 
@@ -13,7 +12,7 @@ module Content =
 
         let sessionRestored = Store.useValue Atoms.sessionRestored
         let initialPeerSkipped = Store.useValue Atoms.initialPeerSkipped
-        let gunPeers = Store.useValue Selectors.gunPeers
+        let gunPeers = Store.useValue Atoms.gunPeers
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let username = Store.useValue Atoms.username
 

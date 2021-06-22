@@ -23,6 +23,7 @@
         <Compile Include="src\Bindings\Icons.fs" />
         <Compile Include="src\Bindings\Markdown.fs" />
         <Compile Include="src\Bindings\Cypress.fs" />
+        <Compile Include="src\Bindings\Rooks.fs" />
         <Compile Include="src\TempAudio.fs" />
         <Compile Include="src\TempUI.fs" />
         <Compile Include="src\Templates.fs" />
@@ -114,6 +115,7 @@
         <Compile Include="src\Components\RootWrapper.fs" />
         <Compile Include="src\App.fs" />
         <Compile Include="src\Main.fs" />
+        <Content Include="src\wdyr.js" />
         <Content Include="src\index.ts" />
         <Compile Include="src\Tests\Core\Setup.fs" />
         <Compile Include="src\Tests\CellSelection\CellSelectionSetup.fs" />

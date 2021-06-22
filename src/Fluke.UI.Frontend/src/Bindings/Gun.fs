@@ -12,6 +12,13 @@ module rec Gun =
             priv: string
             epriv: string
         }
+        static member inline Default =
+            {
+                Gun.pub = ""
+                Gun.epub = ""
+                Gun.priv = ""
+                Gun.epriv = ""
+            }
 
     type UserResult =
         {

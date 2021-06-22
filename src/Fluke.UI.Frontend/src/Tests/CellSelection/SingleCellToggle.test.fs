@@ -7,6 +7,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.Shared
 open Microsoft.FSharp.Core.Operators
 open Fluke.UI.Frontend.State
+open Fluke.UI.Frontend.Bindings
 
 
 module SingleCellToggle =
@@ -15,9 +16,9 @@ module SingleCellToggle =
     Jest.test (
         "single cell toggle",
         promise {
-            let! cellMapGetter, setter = initialize ()
+            let! cellMapGetter, (get, setFn) = initialize ()
 
-            RTL.act (fun () -> setter.current().set (Atoms.ctrlPressed, fun _ -> true))
+            RTL.act (fun () -> Atoms.setAtomValue setFn Atoms.ctrlPressed (fun _ -> true))
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 
@@ -31,11 +32,11 @@ module SingleCellToggle =
                     ]
                 ]
                 |> Map.ofList
-                |> expectSelection setter
+                |> expectSelection get
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 
-            do! [] |> Map.ofList |> expectSelection setter
+            do! [] |> Map.ofList |> expectSelection get
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 11))
 
@@ -47,7 +48,7 @@ module SingleCellToggle =
                     ]
                 ]
                 |> Map.ofList
-                |> expectSelection setter
+                |> expectSelection get
         },
         maxTimeout
     )

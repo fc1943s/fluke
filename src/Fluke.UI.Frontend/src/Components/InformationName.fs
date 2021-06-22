@@ -21,24 +21,28 @@ module InformationName =
         let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
         let detailsClick =
-            Store.useCallbackRef
-                (fun setter _ ->
+            Store.useCallback (
+                (fun get set _ ->
                     promise {
-                        let! deviceInfo = setter.snapshot.getPromise Selectors.deviceInfo
+                        let deviceInfo = Atoms.getAtomValue get Selectors.deviceInfo
 
                         if deviceInfo.IsMobile then
-                            setter.set (Atoms.User.leftDock input.Username, (fun _ -> None))
+                            Atoms.setAtomValue set (Atoms.User.leftDock input.Username) (fun _ -> None)
 
-                        setter.set (Atoms.User.rightDock input.Username, (fun _ -> Some TempUI.DockType.Information))
+                        Atoms.setAtomValue
+                            set
+                            (Atoms.User.rightDock input.Username)
+                            (fun _ -> Some TempUI.DockType.Information)
 
-                        setter.set (
-                            Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Information),
-                            fun _ ->
-                                input.Information
-                                |> Atoms.User.UIFlag.Information
-                                |> Some
-                        )
-                    })
+                        Atoms.setAtomValue
+                            set
+                            (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Information))
+                            (fun _ -> input.Information |> Atoms.User.UIFlag.Information)
+                    }),
+                [|
+                    box input
+                |]
+            )
 
         Chakra.box
             (fun x ->

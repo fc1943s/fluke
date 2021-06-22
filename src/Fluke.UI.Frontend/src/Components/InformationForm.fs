@@ -13,4 +13,8 @@ module InformationForm =
         let informationUIFlag =
             Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Information))
 
-        str "Information Form"
+        Chakra.box
+            (fun x -> x.padding <- "15px")
+            [
+                str "No information selected"
+            ]

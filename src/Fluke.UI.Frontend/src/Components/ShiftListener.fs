@@ -15,30 +15,36 @@ module ShiftListener =
     let ShiftListener () =
 
         Listener.useKeyPress
-            (fun setter e ->
-                async {
+            [|
+                "I"
+                "H"
+                "P"
+                "B"
+                "Shift"
+                "Control"
+            |]
+            (fun get set e ->
+                promise {
                     let setView value =
-                        async {
-                            let! username = setter.snapshot.getAsync Atoms.username
+                        let username = Atoms.getAtomValue get Atoms.username
 
-                            match username with
-                            | Some username -> setter.set (Atoms.User.view username, (fun _ -> value))
-                            | None -> ()
-                        }
+                        match username with
+                        | Some username -> Atoms.setAtomValue set (Atoms.User.view username) (fun _ -> value)
+                        | None -> ()
 
                     match e.ctrlKey, e.shiftKey, e.key with
                     | false, true, "I" ->
                         JS.log (fun () -> "RouterObserver.onKeyDown() View.Information")
-                        do! setView View.View.Information
-                    | false, true, "H" -> do! setView View.View.HabitTracker
-                    | false, true, "P" -> do! setView View.View.Priority
-                    | false, true, "B" -> do! setView View.View.BulletJournal
+                        setView View.View.Information
+                    | false, true, "H" -> setView View.View.HabitTracker
+                    | false, true, "P" -> setView View.View.Priority
+                    | false, true, "B" -> setView View.View.BulletJournal
                     | _ -> ()
 
-                    let! shiftPressed = setter.snapshot.getAsync Atoms.shiftPressed
+                    let shiftPressed = Atoms.getAtomValue get Atoms.shiftPressed
 
                     if e.shiftKey <> shiftPressed then
-                        setter.set (Atoms.shiftPressed, (fun _ -> e.shiftKey))
+                        Atoms.setAtomValue set Atoms.shiftPressed (fun _ -> e.shiftKey)
                 })
 
         nothing

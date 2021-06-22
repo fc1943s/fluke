@@ -17,8 +17,8 @@ module ChangeUserPasswordButton =
         let newPassword2Field, setNewPassword2Field = React.useState ""
 
         let confirmClick =
-            Store.useCallbackRef
-                (fun _ _ ->
+            Store.useCallback (
+                (fun _ _ _ ->
                     promise {
                         if newPasswordField <> newPassword2Field then
                             toast (fun x -> x.description <- "Passwords don't match")
@@ -40,7 +40,18 @@ module ChangeUserPasswordButton =
                             | Error error ->
                                 toast (fun x -> x.description <- error)
                                 return false
-                    })
+                    }),
+                [|
+                    box newPasswordField
+                    box newPassword2Field
+                    box setNewPasswordField
+                    box setNewPassword2Field
+                    box setPasswordField
+                    box passwordField
+                    box changePassword
+                    box toast
+                |]
+            )
 
         Dropdown.Dropdown
             {|
@@ -79,9 +90,10 @@ module ChangeUserPasswordButton =
 
                                     Input.Input
                                         {|
-                                            CustomProps = fun x ->
-                                                x.fixedValue <- Some passwordField
-                                                x.inputFormat <- Some Input.InputFormat.Password
+                                            CustomProps =
+                                                fun x ->
+                                                    x.fixedValue <- Some passwordField
+                                                    x.inputFormat <- Some Input.InputFormat.Password
                                             Props =
                                                 fun x ->
                                                     x.autoFocus <- true
@@ -93,9 +105,10 @@ module ChangeUserPasswordButton =
 
                                     Input.Input
                                         {|
-                                            CustomProps = fun x ->
-                                                x.fixedValue <- Some newPasswordField
-                                                x.inputFormat <- Some Input.InputFormat.Password
+                                            CustomProps =
+                                                fun x ->
+                                                    x.fixedValue <- Some newPasswordField
+                                                    x.inputFormat <- Some Input.InputFormat.Password
                                             Props =
                                                 fun x ->
                                                     x.placeholder <- "New Password"
@@ -111,6 +124,7 @@ module ChangeUserPasswordButton =
                                                 fun x ->
                                                     x.fixedValue <- Some newPassword2Field
                                                     x.inputFormat <- Some Input.InputFormat.Password
+
                                                     x.onEnterPress <-
                                                         Some
                                                             (fun _ ->
@@ -121,6 +135,7 @@ module ChangeUserPasswordButton =
                                             Props =
                                                 fun x ->
                                                     x.placeholder <- "Confirm New Password"
+
                                                     x.onChange <-
                                                         (fun (e: KeyboardEvent) ->
                                                             promise { setNewPassword2Field e.Value })

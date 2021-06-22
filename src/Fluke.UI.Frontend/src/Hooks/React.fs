@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Hooks
 
 open System
 open Feliz
-open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 
 

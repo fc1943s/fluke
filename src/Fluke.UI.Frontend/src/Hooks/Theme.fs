@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Hooks
 #nowarn "40"
 
 open Feliz
-open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
 
@@ -142,4 +141,4 @@ module Theme =
         |}
 
     let useTheme () =
-        React.useMemo (fun () -> Chakra.react.extendTheme (JsInterop.toPlainJsObj theme))
+        React.useMemo ((fun () -> Chakra.react.extendTheme (JsInterop.toPlainJsObj theme)), [||])

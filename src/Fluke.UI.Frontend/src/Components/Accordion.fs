@@ -51,7 +51,7 @@ module Accordion =
     [<ReactComponent>]
     let Accordion
         (input: {| Items: (string * ReactElement) list
-                   Atom: Recoil.RecoilValue<string [], _>
+                   Atom: JotaiTypes.Atom<string []>
                    Props: Chakra.IChakraProps -> unit |})
         =
         let atomValue, setAtomValue = Store.useState input.Atom

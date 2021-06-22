@@ -6,8 +6,7 @@ open Fluke.UI.Frontend.Bindings
 
 
 module InputLabel =
-    [<ReactComponent>]
-    let InputLabel
+    let inline InputLabel
         (input: {| Label: ReactElement
                    Hint: ReactElement option
                    HintTitle: ReactElement option

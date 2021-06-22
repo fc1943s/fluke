@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open System
 open Fable.Core.JsInterop
-open Feliz.Recoil
 open Fable.Core
 open Fable.Extras
 open Fluke.Shared
@@ -285,8 +284,9 @@ module Databases =
             databaseIdSet
             |> Set.toList
             |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
-            |> Recoil.waitForAll
-            |> Recoil.useValue
+            |> List.toArray
+            |> Store.waitForAll
+            |> Store.useValue
 
         let databaseMap =
             React.useMemo (

@@ -22,8 +22,8 @@ module ProjectForm =
         let area, setArea = React.useState input.Project.Area
 
         let onSave =
-            Store.useCallbackRef
-                (fun _ _ ->
+            Store.useCallback (
+                (fun _ _ _ ->
                     promise {
                         match projectName, area.Name with
                         | ProjectName String.InvalidString, _ -> toast (fun x -> x.description <- "Invalid name")
@@ -31,7 +31,14 @@ module ProjectForm =
                         | _ ->
                             let project : Project = { Name = projectName; Area = area }
                             do! input.OnSave project
-                    })
+                    }),
+                [|
+                    box input
+                    box projectName
+                    box area
+                    box toast
+                |]
+            )
 
         Chakra.stack
             (fun x -> x.spacing <- "18px")

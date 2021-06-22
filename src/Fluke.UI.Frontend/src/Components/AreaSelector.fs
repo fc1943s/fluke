@@ -19,7 +19,7 @@ module AreaSelector =
                    Area: Area
                    OnSelect: Area -> unit |})
         =
-        let informationSet = Store.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
+        let informationSet = Store.useValue (Selectors.Session.informationSet input.Username)
 
         let sortedAreaList =
             React.useMemo (

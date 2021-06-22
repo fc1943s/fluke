@@ -2,14 +2,12 @@ namespace Fluke.UI.Frontend.Components
 
 open Browser.Types
 open Feliz
-open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fable.React
 
 
 module LoginScreen =
-
     [<ReactComponent>]
     let LoginScreen () =
         let toast = Chakra.useToast ()
@@ -21,19 +19,24 @@ module LoginScreen =
         let signUp = Auth.useSignUp ()
 
         let signInClick =
-            Store.useCallbackRef
-                (fun _ _ ->
+            Store.useCallback (
+                (fun _ _ _ ->
                     promise {
                         match! signIn (usernameField, passwordField) with
                         | Ok _ -> printfn "logged"
-                        | Error error ->
-                            //
-                            toast (fun x -> x.description <- error)
-                    })
+                        | Error error -> toast (fun x -> x.description <- error)
+                    }),
+                [|
+                    box signIn
+                    box toast
+                    box usernameField
+                    box passwordField
+                |]
+            )
 
         let signUpClick =
-            Store.useCallbackRef
-                (fun _ _ ->
+            Store.useCallback (
+                (fun _ _ _ ->
                     promise {
                         if passwordField <> password2Field then
                             toast (fun x -> x.description <- "Passwords don't match")
@@ -51,7 +54,15 @@ module LoginScreen =
                             | Error error ->
                                 toast (fun x -> x.description <- error)
                                 return false
-                    })
+                    }),
+                [|
+                    box signUp
+                    box toast
+                    box usernameField
+                    box passwordField
+                    box password2Field
+                |]
+            )
 
         Chakra.center
             (fun x -> x.flex <- "1")
@@ -61,9 +72,10 @@ module LoginScreen =
                     [
                         Input.Input
                             {|
-                                CustomProps = fun x ->
-                                 x.fixedValue <- Some usernameField
-                                 x.onEnterPress <- Some signInClick
+                                CustomProps =
+                                    fun x ->
+                                        x.fixedValue <- Some usernameField
+                                        x.onEnterPress <- Some signInClick
                                 Props =
                                     fun x ->
                                         x.autoFocus <- true
@@ -157,6 +169,7 @@ module LoginScreen =
                                                                 fun x ->
                                                                     x.fixedValue <- Some password2Field
                                                                     x.inputFormat <- Some Input.InputFormat.Password
+
                                                                     x.onEnterPress <-
                                                                         Some
                                                                             (fun _ ->
@@ -168,6 +181,7 @@ module LoginScreen =
                                                                 fun x ->
                                                                     x.autoFocus <- true
                                                                     x.placeholder <- "Confirm Password"
+
                                                                     x.onChange <-
                                                                         (fun (e: KeyboardEvent) ->
                                                                             promise { setPassword2Field e.Value })

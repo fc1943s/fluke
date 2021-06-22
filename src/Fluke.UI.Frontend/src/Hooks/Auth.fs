@@ -11,57 +11,63 @@ open Fluke.UI.Frontend.Hooks
 
 module Auth =
     let useLogout () =
-        Store.useCallbackRef
-            (fun setter _ ->
+        Store.useCallback (
+            (fun get set () ->
                 promise {
-                    let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
+                    let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
                     printfn "before leave"
-                    gunNamespace.``#``.leave ()
-                    setter.set (Atoms.username, (fun _ -> None))
-                    setter.reset Atoms.gunKeys
-                })
+                    gunNamespace.leave ()
+                    Atoms.setAtomValue set Atoms.username (fun _ -> None)
+                    Atoms.setAtomValue set Atoms.gunKeys (fun _ -> Gun.GunKeys.Default)
+                }),
+            [||]
+        )
 
     let usePostSignIn () =
-        Store.useCallbackRef
-            (fun setter username ->
+        Store.useCallback (
+            (fun get set username ->
                 promise {
-                    let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
-                    let user = gunNamespace.``#``
-                    let keys = user.__.sea
+                    let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                    let keys = gunNamespace.__.sea
 
-                    return
-                        match keys with
-                        | Some keys ->
-                            setter.set (Atoms.gunKeys, (fun _ -> keys))
-                            setter.set (Atoms.username, (fun _ -> Some username))
-                            Ok (username, keys)
-                        | None -> Error $"No keys found for user {user.is}"
-                })
+                    match keys with
+                    | Some keys ->
+                        Atoms.setAtomValue set Atoms.gunKeys (fun _ -> keys)
+                        Atoms.setAtomValue set Atoms.username (fun _ -> Some username)
+                        return Ok (username, keys)
+                    | None -> return Error $"No keys found for user {gunNamespace.is}"
+                }),
+            [||]
+        )
 
     let useSignIn () =
         let postSignIn = usePostSignIn ()
 
-        Store.useCallbackRef
-            (fun setter (username, password) ->
+        Store.useCallback (
+            (fun get _set (username, password) ->
                 promise {
-                    let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
-                    let! ack = Gun.authUser gunNamespace.``#`` username password
+                    let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                    let! ack = Gun.authUser gunNamespace username password
 
                     match ack with
                     | { err = None } -> return! postSignIn (Username username)
                     | { err = Some error } -> return Error error
-                })
+                }),
+            [|
+                box postSignIn
+            |]
+        )
 
     let useChangePassword () =
-        Store.useCallbackRef
-            (fun setter (password, newPassword) ->
+        Store.useCallback (
+            (fun get _set (password, newPassword) ->
                 promise {
-                    let! username = setter.snapshot.getPromise Atoms.username
+                    let username = Atoms.getAtomValue get Atoms.username
 
                     match username with
                     | Some (Username username) ->
-                        let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
-                        let! ack = Gun.changeUserPassword gunNamespace.``#`` username password newPassword
+                        let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                        let! ack = Gun.changeUserPassword gunNamespace username password newPassword
 
                         return!
                             promise {
@@ -71,20 +77,22 @@ module Auth =
                                 | _ -> return Error $"invalid ack {JS.JSON.stringify ack}"
                             }
                     | _ -> return Error "Invalid username"
-                })
+                }),
+            [||]
+        )
 
     let useDeleteUser () =
         let logout = useLogout ()
 
-        Store.useCallbackRef
-            (fun setter password ->
+        Store.useCallback (
+            (fun get _set password ->
                 promise {
-                    let! username = setter.snapshot.getPromise Atoms.username
+                    let username = Atoms.getAtomValue get Atoms.username
 
                     match username with
                     | Some (Username username) ->
-                        let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
-                        let! ack = Gun.deleteUser gunNamespace.``#`` username password
+                        let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                        let! ack = Gun.deleteUser gunNamespace username password
                         printfn $"ack={JS.JSON.stringify ack}"
 
                         return!
@@ -97,25 +105,29 @@ module Auth =
                                 | _ -> return Error $"invalid ack {JS.JSON.stringify ack}"
                             }
                     | _ -> return Error "Invalid username"
-                })
+                }),
+            [|
+                box logout
+            |]
+        )
 
     let useSignUp () =
         let signIn = useSignIn ()
         let hydrateTemplates = Hydrate.useHydrateTemplates ()
 
-        Store.useCallbackRef
-            (fun setter (username, password) ->
+        Store.useCallback (
+            (fun get _set (username, password) ->
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
                     elif username = (Templates.templatesUser.Username |> Username.Value) then
                         return Error "Invalid username"
                     else
-                        let! gunNamespace = setter.snapshot.getPromise Selectors.gunNamespace
+                        let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
 
                         printfn $"Auth.useSignUp. gunNamespace={JS.JSON.stringify gunNamespace}"
 
-                        let! ack = Gun.createUser gunNamespace.``#`` username password
+                        let! ack = Gun.createUser gunNamespace username password
 
                         printfn $"Auth.useSignUp. Gun.createUser signUpAck={JS.JSON.stringify ack}"
                         JS.consoleLog ("ack", ack)
@@ -161,4 +173,9 @@ module Auth =
                                 | { err = Some err } -> return Error err
                                 | _ -> return Error $"Invalid ack: {JS.JSON.stringify ack}"
                             }
-                })
+                }),
+            [|
+                box hydrateTemplates
+                box signIn
+            |]
+        )

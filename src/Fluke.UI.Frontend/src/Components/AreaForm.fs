@@ -22,15 +22,21 @@ module AreaForm =
         let areaName, setAreaName = React.useState input.Area.Name
 
         let onSave =
-            Store.useCallbackRef
-                (fun _ _ ->
+            Store.useCallback (
+                (fun _ _ _ ->
                     promise {
                         match areaName |> AreaName.Value with
                         | String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
                             let area = { Name = areaName }
                             do! input.OnSave area
-                    })
+                    }),
+                [|
+                    box areaName
+                    box input
+                    box toast
+                |]
+            )
 
         Chakra.stack
             (fun x -> x.spacing <- "18px")

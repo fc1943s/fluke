@@ -14,7 +14,7 @@ module ModalForm =
     let ModalForm
         (input: {| Username: Username
                    UIFlagType: Atoms.User.UIFlagType
-                   Content: Atoms.User.UIFlag option * (unit -> JS.Promise<unit>) * (unit -> Store.CallbackMethods) -> ReactElement |})
+                   Content: Atoms.User.UIFlag * (unit -> JS.Promise<unit>) * (Jotai.GetFn * Jotai.SetFn) -> ReactElement |})
         =
         let isTesting = Store.useValue Atoms.isTesting
         let formIdFlag, setFormIdFlag = Store.useState (Atoms.User.uiFlag (input.Username, input.UIFlagType))
@@ -22,26 +22,35 @@ module ModalForm =
         let formVisibleFlag, setFormVisibleFlag =
             Store.useState (Atoms.User.uiVisibleFlag (input.Username, input.UIFlagType))
 
-        let setter = Store.useSetter ()
 
         let onHide =
-            Store.useCallbackRef
-                (fun _ _ ->
+            Store.useCallback (
+                (fun _ _ _ ->
                     promise {
-                        setFormIdFlag None
+                        setFormIdFlag Atoms.User.UIFlag.None
                         setFormVisibleFlag false
-                    })
-
-        let content =
-            React.useMemo (
-                (fun () -> input.Content (formIdFlag, onHide, setter)),
-                [|
-                    box onHide
-                    box formIdFlag
-                    box input
-                    box setter
-                |]
+                    }),
+                [||]
             )
+
+        let callbacks = Store.useCallbacks ()
+        let content, setContent = React.useState nothing
+
+        React.useEffect (
+            (fun () ->
+                promise {
+                    let! callbacks = callbacks ()
+                    setContent (input.Content (formIdFlag, onHide, callbacks))
+                }
+                |> Promise.start),
+            [|
+                box onHide
+                box formIdFlag
+                box input
+                box callbacks
+
+            |]
+        )
 
         Modal.Modal
             {|

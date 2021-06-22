@@ -4,13 +4,10 @@ open Fable.Jester
 open Fable.ReactTestingLibrary
 open Fable.Core.JsInterop
 open Feliz
-open Feliz.Recoil
-open Feliz.UseListener
 open Fluke.UI.Frontend.Bindings
 open Fable.React
 open Fluke.UI.Frontend.Hooks
 open Microsoft.FSharp.Core.Operators
-open Fable.Core
 
 
 module RTL =
@@ -43,21 +40,21 @@ module Setup =
     [<ReactComponent>]
     let RootWrapper cmp =
         React.strictMode [
-            Recoil.root [
-                root.children [
+//            Recoil.root [
+//                root.children [
                     React.ReactErrorBoundary.renderCatchFn
                         (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
                         (str "error")
                         cmp
-                ]
-            ]
+//                ]
+//            ]
         ]
 
     let render (cmp: ReactElement) =
         //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
 //                fun _ -> failwith "called empty callback"
 //
-        let mutable setterRef : IRefValue<unit -> Store.CallbackMethods> = unbox null
+        let mutable callbacksRef : IRefValue<Jotai.GetFn * Jotai.SetFn> = unbox null
         //
 //            let cmpWrapper =
 //                React.memo
@@ -75,17 +72,20 @@ module Setup =
                     React.fragment [
                         (React.memo
                             (fun () ->
-                                let setter = Store.useSetter ()
-                                let internalSetterRef = React.useRef setter
+                                let callbacks = Store.useCallbacks ()
+                                let internalCallbacksRef = React.useRef<Jotai.GetFn * Jotai.SetFn> (unbox null)
 
                                 React.useEffect (
                                     (fun () ->
-                                        internalSetterRef.current <- setter
-                                        setterRef <- internalSetterRef
-                                        ()),
+                                        promise {
+                                            let! callbacksValue = callbacks ()
+                                            internalCallbacksRef.current <- callbacksValue
+                                            callbacksRef <- internalCallbacksRef
+                                        }
+                                        |> Promise.start),
                                     [|
-                                        box internalSetterRef
-                                        box setter
+                                        box internalCallbacksRef
+                                        box callbacks
                                     |]
                                 )
 
@@ -101,7 +101,7 @@ module Setup =
         //            do! RTL.waitFor id
 //            do! RTL.waitFor id
         //            return subject, peekFn
-        subject, setterRef
+        subject, callbacksRef
 
     //    let waitForObj setter fn =
 //        promise {
@@ -117,4 +117,4 @@ module Setup =
 //            return obj.Value
 //        }
 
-    let getSnapshot (fn: (MutableSnapshot -> unit) option) : Snapshot = emitJsExpr fn "snapshot_UNSTABLE($0)"
+//    let getSnapshot (fn: (MutableSnapshot -> unit) option) : Snapshot = emitJsExpr fn "snapshot_UNSTABLE($0)"

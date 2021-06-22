@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open System
 open Fable.React
 open Feliz
-open Feliz.UseListener
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
@@ -19,46 +18,62 @@ module TaskName =
     let TaskName (input: {| Username: Username; TaskId: TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
-        let hasSelection = Store.useValueLoadableDefault (Selectors.Task.hasSelection input.TaskId) false
-        let taskState = Store.useValueLoadable (Selectors.Task.taskState (input.Username, input.TaskId))
+        let hasSelection = Store.useValue (Selectors.Task.hasSelection input.TaskId)
+        let taskState = Store.useValue (Selectors.Task.taskState (input.Username, input.TaskId))
         let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
 
-        let isReadWrite =
-            Store.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
+        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite (input.Username, input.TaskId))
 
         let editTask =
-            Store.useCallbackRef
-                (fun setter _ ->
+            Store.useCallback (
+                (fun get set _ ->
                     promise {
-                        let! deviceInfo = setter.snapshot.getPromise Selectors.deviceInfo
+                        let deviceInfo = Atoms.getAtomValue get Selectors.deviceInfo
 
                         if deviceInfo.IsMobile then
-                            setter.set (Atoms.User.leftDock input.Username, (fun _ -> None))
+                            Atoms.setAtomValue set (Atoms.User.leftDock input.Username) (fun _ -> None)
 
-                        setter.set (Atoms.User.rightDock input.Username, (fun _ -> Some TempUI.DockType.Task))
+                        Atoms.setAtomValue
+                            set
+                            (Atoms.User.rightDock input.Username)
+                            (fun _ -> Some TempUI.DockType.Task)
 
-                        setter.set (
-                            Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task),
-                            fun _ -> input.TaskId |> Atoms.User.UIFlag.Task |> Some
-                        )
-                    })
+                        let databaseId =
+                            Atoms.getAtomValue get (Selectors.Task.databaseId (input.Username, input.TaskId))
+
+                        Atoms.setAtomValue
+                            set
+                            (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
+                            (fun _ -> Atoms.User.UIFlag.Task (databaseId, input.TaskId))
+
+                    }),
+                [|
+                    box input.Username
+                    box input.TaskId
+                |]
+            )
 
         let startSession =
-            Store.useCallbackRef
-                (fun setter _ ->
+            Store.useCallback (
+                (fun _get set _ ->
                     promise {
-                        setter.set (
-                            Atoms.Task.sessions (input.Username, input.TaskId),
-                            fun sessions ->
+                        Atoms.setAtomValue
+                            set
+                            (Atoms.Task.sessions (input.Username, input.TaskId))
+                            (fun sessions ->
                                 Session (
                                     (let now = DateTime.Now in if now.Second < 30 then now else now.AddMinutes 1.)
                                     |> FlukeDateTime.FromDateTime
                                 )
-                                :: sessions
-                        )
-                    })
+                                :: sessions)
+                    }),
+                [|
+                    box input.Username
+                    box input.TaskId
+                |]
+            )
 
-        let deleteTask = Store.useCallbackRef (fun _setter _ -> promise { () })
+        let deleteTask = Store.useCallback ((fun _get _set _ -> promise { () }), [||])
 
         Chakra.flex
             (fun x ->
@@ -77,14 +92,12 @@ module TaskName =
                         x.paddingLeft <- "5px"
                         x.paddingRight <- "5px"
                         x.lineHeight <- $"{cellSize}px"
-                        x.whiteSpace <- (*if hovered then null else*) "nowrap"
-                        x.textOverflow <- (*if hovered then null else*) "ellipsis"
-                        )
+                        x.whiteSpace <- "nowrap"
+                        x.textOverflow <- "ellipsis")
                     [
-                        match taskState.valueMaybe () with
-                        | Some taskState when taskState.Task.Name |> TaskName.Value <> "" ->
-                            taskState.Task.Name |> TaskName.Value |> str
-                        | _ -> LoadingSpinner.InlineLoadingSpinner ()
+                        //                        match taskState with
+//                        | Some taskState when taskState.Task.Name |> TaskName.Value <> "" ->
+                        taskState.Task.Name |> TaskName.Value |> str
                     ]
 
                 if not isReadWrite then
@@ -153,12 +166,12 @@ module TaskName =
                         |}
 
 
-                match taskState.valueMaybe () with
-                | Some taskState ->
-                    AttachmentIndicator.AttachmentIndicator
-                        {|
-                            Username = input.Username
-                            Attachments = taskState.Attachments
-                        |}
-                | None -> nothing
+                //                match taskState.valueMaybe () with
+//                | Some taskState ->
+                AttachmentIndicator.AttachmentIndicator
+                    {|
+                        Username = input.Username
+                        Attachments = taskState.Attachments
+                    |}
+            //                | None -> nothing
             ]

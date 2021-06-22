@@ -2,13 +2,12 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open System
-open Feliz.Recoil
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
+open System
 open Fable.DateFunctions
 open Fable.Core
 open Fluke.UI.Frontend.State
@@ -23,49 +22,49 @@ module TaskForm =
                    OnSave: Task -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
-        let debug = JotaiUtils.useAtomValue Atoms.debug
+        let debug = Store.useValue Atoms.debug
         let sessions, setSessions = Store.useState (Atoms.Task.sessions (input.Username, input.TaskId))
 
         let deleteSession =
-            Store.useCallbackRef
-                (fun _setter start ->
+            Store.useCallback (
+                (fun _get _set start ->
                     promise {
                         let index =
                             sessions
                             |> List.findIndex (fun (Session start') -> start' = start)
 
                         setSessions (sessions |> List.removeAt index)
-                    })
+                    }),
+                [|
+                    box sessions
+                    box setSessions
+                |]
+            )
+
+        let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
+
+        let taskDatabaseId =
+            match taskUIFlag with
+            | Atoms.User.UIFlag.Task (databaseId, taskId) when taskId = input.TaskId -> databaseId
+            | _ -> Database.Default.Id
 
         let onSave =
-            Store.useCallbackRef
-                (fun setter _ ->
+            Store.useCallback (
+                (fun get set _ ->
                     promise {
-                        let! databaseId =
-                            setter.snapshot.getReadWritePromise
-                                input.Username
-                                Selectors.Task.databaseId
-                                (input.Username, input.TaskId)
+                        let taskName =
+                            Store.getReadWrite get input.Username (Atoms.Task.name (input.Username, input.TaskId))
 
-                        let! taskName =
-                            setter.snapshot.getReadWritePromise
+                        let taskInformation =
+                            Store.getReadWrite
+                                get
                                 input.Username
-                                Atoms.Task.name
-                                (input.Username, input.TaskId)
+                                (Atoms.Task.information (input.Username, input.TaskId))
 
-                        let! taskInformation =
-                            setter.snapshot.getReadWritePromise
-                                input.Username
-                                Atoms.Task.information
-                                (input.Username, input.TaskId)
+                        let taskScheduling =
+                            Store.getReadWrite get input.Username (Atoms.Task.scheduling (input.Username, input.TaskId))
 
-                        let! taskScheduling =
-                            setter.snapshot.getReadWritePromise
-                                input.Username
-                                Atoms.Task.scheduling
-                                (input.Username, input.TaskId)
-
-                        if databaseId = Database.Default.Id then
+                        if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
                         elif (match taskName |> TaskName.Value with
                               | String.InvalidString -> true
@@ -95,10 +94,8 @@ module TaskForm =
                                     |> Promise.lift
                                 else
                                     promise {
-                                        let! task =
-                                            setter.snapshot.getPromise (
-                                                Selectors.Task.task (input.Username, input.TaskId)
-                                            )
+                                        let task =
+                                            Atoms.getAtomValue get (Selectors.Task.task (input.Username, input.TaskId))
 
                                         return
                                             { task with
@@ -108,27 +105,30 @@ module TaskForm =
                                             }
                                     }
 
-                            do! setter.readWriteReset input.Username Atoms.Task.name (input.Username, input.TaskId)
+                            Store.readWriteReset set input.Username (Atoms.Task.name (input.Username, input.TaskId))
 
-                            do!
-                                setter.readWriteReset
-                                    input.Username
-                                    Atoms.Task.information
-                                    (input.Username, input.TaskId)
+                            Store.readWriteReset
+                                set
+                                input.Username
+                                (Atoms.Task.information (input.Username, input.TaskId))
 
-                            do!
-                                setter.readWriteReset
-                                    input.Username
-                                    Atoms.Task.scheduling
-                                    (input.Username, input.TaskId)
+                            Store.readWriteReset
+                                set
+                                input.Username
+                                (Atoms.Task.scheduling (input.Username, input.TaskId))
 
-                            setter.set (
-                                (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task)),
-                                fun _ -> None
-                            )
+                            Atoms.setAtomValue
+                                set
+                                (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
+                                (fun _ -> Atoms.User.UIFlag.None)
 
                             do! input.OnSave task
-                    })
+                    }),
+                [|
+                    box input
+                    box toast
+                |]
+            )
 
         Chakra.stack
             (fun x -> x.spacing <- "30px")
@@ -155,6 +155,9 @@ module TaskForm =
                             {|
                                 Username = input.Username
                                 TaskId = input.TaskId
+                                DatabaseId = taskDatabaseId
+                                OnChange =
+                                    fun databaseId -> setTaskUIFlag (Atoms.User.UIFlag.Task (databaseId, input.TaskId))
                             |}
 
                         InformationSelector.InformationSelector
@@ -180,14 +183,17 @@ module TaskForm =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom.AtomFamily (
+                                                        JotaiTypes.InputAtom (
                                                             input.Username,
-                                                            Atoms.Task.name,
-                                                            (input.Username, input.TaskId)
+                                                            JotaiTypes.AtomPath.Atom (
+                                                                Atoms.Task.name (input.Username, input.TaskId)
+                                                            )
                                                         )
                                                     )
 
-                                                x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
+                                                x.inputScope <-
+                                                    Some (JotaiTypes.InputScope.ReadWrite Gun.defaultSerializer)
+
                                                 x.onFormat <- Some (fun (TaskName name) -> name)
                                                 x.onEnterPress <- Some onSave
                                                 x.onValidate <- Some (fst >> TaskName >> Some)

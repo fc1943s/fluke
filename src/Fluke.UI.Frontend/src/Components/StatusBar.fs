@@ -18,7 +18,7 @@ module StatusBar =
     [<ReactComponent>]
     let NowIndicator () =
         let now, setNow = React.useState DateTime.Now
-        Scheduling.useScheduling Scheduling.Interval 1000 (fun _ -> promise { setNow DateTime.Now })
+        Scheduling.useScheduling Scheduling.Interval 1000 (fun _ _ -> promise { setNow DateTime.Now })
         str $"Now: {now.ToString ()}"
 
     [<ReactComponent>]
@@ -26,10 +26,10 @@ module StatusBar =
         let position = Store.useValue Atoms.position
 
         let selectedTaskIdSet =
-            Store.useValueLoadableDefault (Selectors.Session.selectedTaskIdSet input.Username) Set.empty
+            Store.useValue (Selectors.Session.selectedTaskIdSet input.Username)
 
-        let sortedTaskIdList = Store.useValueLoadable (Selectors.Session.sortedTaskIdList input.Username)
-        let activeSessions = Store.useValueLoadable (Selectors.Session.activeSessions input.Username)
+        let sortedTaskIdList = Store.useValue (Selectors.Session.sortedTaskIdList input.Username)
+        let activeSessions = Store.useValue (Selectors.Session.activeSessions input.Username)
 
         let (Minute sessionDuration) = Store.useValue (Atoms.User.sessionDuration input.Username)
         let (Minute sessionBreakDuration) = Store.useValue (Atoms.User.sessionBreakDuration input.Username)
@@ -74,9 +74,9 @@ module StatusBar =
                                 x.marginRight <- "4px")
                             []
 
-                        match activeSessions.valueMaybe () with
-                        | Some [] -> str "Sessions: No active sessions"
-                        | Some activeSessions ->
+                        match activeSessions with
+                        | [] -> str "Sessions: No active sessions"
+                        | activeSessions ->
                             let getSessionInfo (TempUI.ActiveSession (taskName, Minute duration)) =
                                 let left = sessionDuration - duration
 
@@ -185,7 +185,7 @@ module StatusBar =
                                             ]
                                 |}
 
-                        | _ -> str "Sessions: Loading sessions"
+//                        | _ -> str "Sessions: Loading sessions"
 
                     ]
 
@@ -198,10 +198,10 @@ module StatusBar =
                                 x.marginRight <- "4px")
                             []
 
-                        match sortedTaskIdList.valueMaybe () with
-                        | Some sortedTaskIdList ->
-                            str $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdSet.Count} visible"
-                        | _ -> str "Tasks: Loading tasks"
+//                        match sortedTaskIdList with
+//                        | sortedTaskIdList ->
+                        str $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdSet.Count} visible"
+//                        | _ -> str "Tasks: Loading tasks"
                     ]
 
                 match position with

@@ -26,45 +26,50 @@ module CellForm =
         let addAttachmentText, setAddAttachmentText = React.useState ""
 
         let addAttachment =
-            Store.useCallbackRef
-                (fun setter _ ->
+            Store.useCallback (
+                (fun _get set _ ->
                     promise {
                         match addAttachmentText with
                         | String.ValidString _ ->
                             let attachmentId = AttachmentId.NewId ()
 
-                            setter.set (
-                                Atoms.Attachment.timestamp (input.Username, attachmentId),
-                                fun _ -> DateTime.Now |> FlukeDateTime.FromDateTime |> Some
-                            )
+                            Atoms.setAtomValue
+                                set
+                                (Atoms.Attachment.timestamp (input.Username, attachmentId))
+                                (fun _ -> DateTime.Now |> FlukeDateTime.FromDateTime |> Some)
 
-                            setter.set (
-                                Atoms.Attachment.attachment (input.Username, attachmentId),
-                                fun _ ->
+                            Atoms.setAtomValue
+                                set
+                                (Atoms.Attachment.attachment (input.Username, attachmentId))
+                                (fun _ ->
                                     addAttachmentText
                                     |> Comment.Comment
                                     |> Attachment.Comment
-                                    |> Some
-                            )
+                                    |> Some)
 
-                            setter.set (
-                                Atoms.Task.cellAttachmentMap (input.Username, input.TaskId),
-                                fun oldMap ->
+                            Atoms.setAtomValue
+                                set
+                                (Atoms.Task.cellAttachmentMap (input.Username, input.TaskId))
+                                (fun oldMap ->
                                     oldMap
                                     |> Map.add
                                         input.DateId
                                         (oldMap
                                          |> Map.tryFind input.DateId
                                          |> Option.defaultValue Set.empty
-                                         |> Set.add attachmentId)
-                            )
+                                         |> Set.add attachmentId))
 
                             setAddAttachmentText ""
                         | _ -> ()
-                    })
+                    }),
+                [|
+                    box addAttachmentText
+                    box setAddAttachmentText
+                    box input
+                |]
+            )
 
-        let attachments =
-            Store.useValueLoadable (Selectors.Cell.attachments (input.Username, input.TaskId, input.DateId))
+        let attachments = Store.useValue (Selectors.Cell.attachments (input.Username, input.TaskId, input.DateId))
 
 
         Accordion.Accordion
@@ -111,15 +116,15 @@ module CellForm =
                                                 x.overflowY <- "auto"
                                                 x.flexBasis <- 0)
                                             [
-                                                match attachments.valueMaybe () with
-                                                | None -> LoadingSpinner.LoadingSpinner ()
-                                                | Some [] ->
+                                                match attachments with
+                                                //                                                | None -> LoadingSpinner.LoadingSpinner ()
+                                                | [] ->
                                                     Chakra.box
                                                         (fun _ -> ())
                                                         [
                                                             str "No attachments found"
                                                         ]
-                                                | Some attachments ->
+                                                | attachments ->
                                                     Chakra.stack
                                                         (fun x -> x.spacing <- "10px")
                                                         [
@@ -216,7 +221,7 @@ module CellForm =
 
         let taskId, dateId =
             match cellUIFlag with
-            | Some (Atoms.User.UIFlag.Cell (taskId, dateId)) -> Some taskId, Some dateId
+            | Atoms.User.UIFlag.Cell (taskId, dateId) -> Some taskId, Some dateId
             | _ -> None, None
 
         match taskId, dateId with
@@ -227,4 +232,9 @@ module CellForm =
                     TaskId = taskId
                     DateId = dateId
                 |}
-        | _ -> str "No cell selected"
+        | _ ->
+            Chakra.box
+                (fun x -> x.padding <- "15px")
+                [
+                    str "No cell selected"
+                ]

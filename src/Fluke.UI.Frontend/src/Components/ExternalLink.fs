@@ -13,8 +13,7 @@ module ExternalLink =
                 x.marginTop <- "-1px")
             []
 
-    [<ReactComponent>]
-    let ExternalLink
+    let inline ExternalLink
         (input: {| Link: ReactElement
                    Href: string
                    Props: Chakra.IChakraProps -> unit |})

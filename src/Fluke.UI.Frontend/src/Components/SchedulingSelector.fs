@@ -615,9 +615,14 @@ module SchedulingSelector =
         let weekStart = Store.useValue (Atoms.User.weekStart input.Username)
 
         let schedulingFieldOptions =
-            Recoil.useAtomFieldOptions
-                (Some (Recoil.AtomFamily (input.Username, Atoms.Task.scheduling, (input.Username, input.TaskId))))
-                (Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer))
+            Store.useAtomFieldOptions
+                (Some (
+                    JotaiTypes.InputAtom (
+                        input.Username,
+                        JotaiTypes.AtomPath.Atom (Atoms.Task.scheduling (input.Username, input.TaskId))
+                    )
+                ))
+                (Some (JotaiTypes.InputScope.ReadWrite Gun.defaultSerializer))
 
         Chakra.box
             (fun x -> x.display <- "inline")

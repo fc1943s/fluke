@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Feliz.Router
-open Feliz.Recoil
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 
@@ -15,8 +14,8 @@ module RootWrapper =
 
         React.strictMode [
             Jotai.provider [
-                Recoil.root [
-                    root.children [
+//                Recoil.root [
+//                    root.children [
                         React.ReactErrorBoundary.renderCatchFn
                             (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
                             (Html.div [
@@ -30,7 +29,7 @@ module RootWrapper =
                                         router.children [ yield! children ]
                                     ]
                                 ])
-                    ]
-                ]
+//                    ]
+//                ]
             ]
         ]

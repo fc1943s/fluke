@@ -7,6 +7,7 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.Shared
+open Fluke.UI.Frontend.Bindings
 
 
 module SelectionListener =
@@ -14,14 +15,18 @@ module SelectionListener =
     [<ReactComponent>]
     let SelectionListener () =
         Listener.useKeyPress
-            (fun setter e ->
-                async {
-                    let! username = setter.snapshot.getAsync Atoms.username
+            [|
+                "Escape"
+                "R"
+            |]
+            (fun get set e ->
+                promise {
+                    let username = Atoms.getAtomValue get Atoms.username
 
 
                     match username with
                     | Some username ->
-                        let! cellSelectionMap = setter.snapshot.getAsync (Selectors.Session.cellSelectionMap username)
+                        let cellSelectionMap = Atoms.getAtomValue get (Selectors.Session.cellSelectionMap username)
 
                         if e.key = "Escape" && e.``type`` = "keydown" then
                             if not cellSelectionMap.IsEmpty then
@@ -29,7 +34,10 @@ module SelectionListener =
                                 |> Map.keys
                                 |> Seq.iter
                                     (fun taskId ->
-                                        setter.set (Atoms.Task.selectionSet (username, taskId), (fun _ -> Set.empty)))
+                                        Atoms.setAtomValue
+                                            set
+                                            (Atoms.Task.selectionSet (username, taskId))
+                                            (fun _ -> Set.empty))
 
                         if e.key = "R" && e.``type`` = "keydown" then
                             if not cellSelectionMap.IsEmpty then
@@ -56,10 +64,10 @@ module SelectionListener =
                                 newMap
                                 |> Map.iter
                                     (fun taskId dates ->
-                                        setter.set (
-                                            Atoms.Task.selectionSet (username, taskId),
-                                            (fun _ -> dates |> Set.map DateId)
-                                        ))
+                                        Atoms.setAtomValue
+                                            set
+                                            (Atoms.Task.selectionSet (username, taskId))
+                                            (fun _ -> dates |> Set.map DateId))
                     | None -> ()
                 })
 

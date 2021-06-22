@@ -27,17 +27,9 @@ module RightDock =
         let hydrateTaskState = Hydrate.useHydrateTaskState ()
 
         let taskDatabaseId =
-            Recoil.useValueLoadableDefault
-                (Selectors.Task.databaseId (
-                    input.Username,
-                    taskUIFlag
-                    |> Option.bind
-                        (function
-                        | Atoms.User.UIFlag.Task taskId -> Some taskId
-                        | _ -> None)
-                    |> Option.defaultValue Task.Default.Id
-                ))
-                Database.Default.Id
+            match taskUIFlag with
+            | Atoms.User.UIFlag.Task (databaseId, _) -> databaseId
+            | _ -> Database.Default.Id
 
         let setDatabaseIdSet = Store.useSetStatePrev (Atoms.Session.databaseIdSet input.Username)
         let setTaskIdSet = Store.useSetStatePrev (Atoms.Database.taskIdSet (input.Username, taskDatabaseId))
@@ -57,15 +49,13 @@ module RightDock =
                                             x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
+                                            x.padding <- "15px"
                                             x.flexBasis <- 0)
                                         [
                                             let databaseId =
-                                                databaseUIFlag
-                                                |> Option.bind
-                                                    (function
-                                                    | Atoms.User.UIFlag.Database databaseId -> Some databaseId
-                                                    | _ -> None)
-                                                |> Option.defaultValue Database.Default.Id
+                                                match databaseUIFlag with
+                                                | Atoms.User.UIFlag.Database databaseId -> databaseId
+                                                | _ -> Database.Default.Id
 
                                             DatabaseForm.DatabaseForm
                                                 {|
@@ -77,7 +67,7 @@ module RightDock =
                                                                 do!
                                                                     hydrateDatabase (
                                                                         input.Username,
-                                                                        Recoil.AtomScope.ReadOnly,
+                                                                        JotaiTypes.AtomScope.ReadOnly,
                                                                         database
                                                                     )
 
@@ -124,15 +114,13 @@ module RightDock =
                                             x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
+                                            x.padding <- "15px"
                                             x.flexBasis <- 0)
                                         [
                                             let taskId =
-                                                taskUIFlag
-                                                |> Option.bind
-                                                    (function
-                                                    | Atoms.User.UIFlag.Task taskId -> Some taskId
-                                                    | _ -> None)
-                                                |> Option.defaultValue Task.Default.Id
+                                                match taskUIFlag with
+                                                | Atoms.User.UIFlag.Task (_, taskId) -> taskId
+                                                | _ -> Task.Default.Id
 
                                             TaskForm.TaskForm
                                                 {|
@@ -153,7 +141,7 @@ module RightDock =
                                                                 do!
                                                                     hydrateTaskState (
                                                                         input.Username,
-                                                                        Recoil.AtomScope.ReadOnly,
+                                                                        JotaiTypes.AtomScope.ReadOnly,
                                                                         taskDatabaseId,
                                                                         taskState
                                                                     )

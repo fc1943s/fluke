@@ -25,24 +25,24 @@ module DatabaseForm =
                    OnSave: Database -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
-        let debug = JotaiUtils.useAtomValue Atoms.debug
+        let debug = Store.useValue Atoms.debug
 
         let onSave =
-            Store.useCallbackRef
-                (fun setter _ ->
+            Store.useCallback (
+                (fun get set _ ->
                     promise {
-                        let! databaseName =
-                            setter.snapshot.getReadWritePromise
+                        let databaseName =
+                            Store.getReadWrite
+                                get
                                 input.Username
-                                Atoms.Database.name
-                                (input.Username, input.DatabaseId)
+                                (Atoms.Database.name (input.Username, input.DatabaseId))
 
                         match databaseName with
                         | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let! databaseIdSet = setter.snapshot.getPromise (Atoms.Session.databaseIdSet input.Username)
+                            let databaseIdSet = Atoms.getAtomValue get (Atoms.Session.databaseIdSet input.Username)
 
-                            let! databaseNames =
+                            let databaseNames =
                                 databaseIdSet
                                 |> Set.toList
                                 |> List.filter
@@ -50,10 +50,9 @@ module DatabaseForm =
                                         input.DatabaseId <> Database.Default.Id
                                         || input.DatabaseId <> databaseId)
                                 |> List.map (fun databaseId -> Atoms.Database.name (input.Username, databaseId))
-                                |> List.map setter.snapshot.getPromise
-                                |> Promise.Parallel
+                                |> List.map (Atoms.getAtomValue get)
 
-                            if databaseNames |> Array.contains databaseName then
+                            if databaseNames |> List.contains databaseName then
                                 toast (fun x -> x.description <- "Database with this name already exists")
                             else
                                 let! database =
@@ -68,10 +67,10 @@ module DatabaseForm =
                                         |> Promise.lift
                                     else
                                         promise {
-                                            let! database =
-                                                setter.snapshot.getPromise (
-                                                    Selectors.Database.database (input.Username, input.DatabaseId)
-                                                )
+                                            let database =
+                                                Atoms.getAtomValue
+                                                    get
+                                                    (Selectors.Database.database (input.Username, input.DatabaseId))
 
                                             return { database with Name = databaseName }
                                         }
@@ -81,19 +80,23 @@ module DatabaseForm =
 //                                setter.set (Atoms.Events.events eventId, event)
 //                                printfn $"event {event}"
 
-                                do!
-                                    setter.readWriteReset
-                                        input.Username
-                                        Atoms.Database.name
-                                        (input.Username, input.DatabaseId)
+                                Store.readWriteReset
+                                    set
+                                    input.Username
+                                    (Atoms.Database.name (input.Username, input.DatabaseId))
 
-                                setter.set (
-                                    (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database)),
-                                    fun _ -> None
-                                )
+                                Atoms.setAtomValue
+                                    set
+                                    (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
+                                    (fun _ -> Atoms.User.UIFlag.None)
 
                                 do! input.OnSave database
-                    })
+                    }),
+                [|
+                    box toast
+                    box input
+                |]
+            )
 
         let files, setFiles = React.useState (None: FileList option)
 
@@ -127,14 +130,16 @@ module DatabaseForm =
                                     fun x ->
                                         x.atom <-
                                             Some (
-                                                Recoil.AtomFamily (
+
+                                                JotaiTypes.InputAtom (
                                                     input.Username,
-                                                    Atoms.Database.name,
-                                                    (input.Username, input.DatabaseId)
+                                                    JotaiTypes.AtomPath.Atom (
+                                                        Atoms.Database.name (input.Username, input.DatabaseId)
+                                                    )
                                                 )
                                             )
 
-                                        x.inputScope <- Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer)
+                                        x.inputScope <- Some (JotaiTypes.InputScope.ReadWrite Gun.defaultSerializer)
                                         x.onFormat <- Some (fun (DatabaseName name) -> name)
                                         x.onValidate <- Some (fst >> DatabaseName >> Some)
                                         x.onEnterPress <- Some onSave

@@ -36,10 +36,11 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Recoil.AtomFamily (
+                                                        JotaiTypes.InputAtom (
                                                             input.Username,
-                                                            Atoms.User.dayStart,
-                                                            input.Username
+                                                            JotaiTypes.AtomPath.Atom (
+                                                                Atoms.User.dayStart input.Username
+                                                            )
                                                         )
                                                     )
 
@@ -69,9 +70,11 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Recoil.Atom (
+                                                        JotaiTypes.InputAtom (
                                                             input.Username,
-                                                            Atoms.User.sessionDuration input.Username
+                                                            JotaiTypes.AtomPath.Atom (
+                                                                Atoms.User.sessionDuration input.Username
+                                                            )
                                                         )
                                                     )
 
@@ -95,9 +98,11 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Recoil.Atom (
+                                                        JotaiTypes.InputAtom (
                                                             input.Username,
-                                                            Atoms.User.sessionBreakDuration input.Username
+                                                            JotaiTypes.AtomPath.Atom (
+                                                                Atoms.User.sessionBreakDuration input.Username
+                                                            )
                                                         )
                                                     )
 
@@ -130,9 +135,11 @@ module Settings =
                                                                     fun x ->
                                                                         x.atom <-
                                                                             Some (
-                                                                                Recoil.Atom (
+                                                                                JotaiTypes.InputAtom (
                                                                                     input.Username,
-                                                                                    Atoms.User.color input.Username
+                                                                                    JotaiTypes.AtomPath.Atom (
+                                                                                        Atoms.User.color input.Username
+                                                                                    )
                                                                                 )
                                                                             )
                                                                 Props =
@@ -211,9 +218,12 @@ module Settings =
                                                                     fun x ->
                                                                         x.atom <-
                                                                             Some (
-                                                                                Recoil.Atom (
+                                                                                JotaiTypes.InputAtom (
                                                                                     input.Username,
-                                                                                    Atoms.User.weekStart input.Username
+                                                                                    JotaiTypes.AtomPath.Atom (
+                                                                                        Atoms.User.weekStart
+                                                                                            input.Username
+                                                                                    )
                                                                                 )
                                                                             )
 
@@ -305,9 +315,11 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Recoil.Atom (
+                                                        JotaiTypes.InputAtom (
                                                             input.Username,
-                                                            Atoms.User.daysBefore input.Username
+                                                            JotaiTypes.AtomPath.Atom (
+                                                                Atoms.User.daysBefore input.Username
+                                                            )
                                                         )
                                                     )
 
@@ -322,9 +334,11 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Recoil.Atom (
+                                                        JotaiTypes.InputAtom (
                                                             input.Username,
-                                                            Atoms.User.daysAfter input.Username
+                                                            JotaiTypes.AtomPath.Atom (
+                                                                Atoms.User.daysAfter input.Username
+                                                            )
                                                         )
                                                     )
 
@@ -339,7 +353,12 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Recoil.Atom (input.Username, Atoms.User.cellSize input.Username)
+                                                        JotaiTypes.InputAtom (
+                                                            input.Username,
+                                                            JotaiTypes.AtomPath.Atom (
+                                                                Atoms.User.cellSize input.Username
+                                                            )
+                                                        )
                                                     )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
@@ -361,7 +380,14 @@ module Settings =
                                 InputList.InputList
                                     (fun x ->
                                         x.label <- str "Gun peers"
-                                        x.atom <- Some (Recoil.Atom (input.Username, Atoms.gunPeers)))
+
+                                        x.atom <-
+                                            Some (
+                                                JotaiTypes.InputAtom (
+                                                    input.Username,
+                                                    JotaiTypes.AtomPath.Atom Atoms.gunPeers
+                                                )
+                                            ))
                             ])
                     ]
             |}

@@ -19,12 +19,11 @@ module DatabaseNodeMenu =
                    Disabled: bool |})
         =
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let isReadWrite = Store.useValueLoadableDefault (Selectors.Database.isReadWrite input.DatabaseId) false
+        let isReadWrite = Store.useValue (Selectors.Database.isReadWrite input.DatabaseId)
         let setLeftDock = Store.useSetState (Atoms.User.leftDock input.Username)
         let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
         let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
         let setTaskUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
-        let setNewTaskDatabaseId = Store.useSetState (Selectors.Task.databaseId (input.Username, Task.Default.Id))
 
         let exportDatabase = Hydrate.useExportDatabase ()
 
@@ -60,8 +59,10 @@ module DatabaseNodeMenu =
 
                                                 setRightDock (Some DockType.Task)
 
-                                                setNewTaskDatabaseId input.DatabaseId
-                                                setTaskUIFlag None
+                                                setTaskUIFlag (
+                                                    (input.DatabaseId, Task.Default.Id)
+                                                    |> Atoms.User.UIFlag.Task
+                                                )
                                             })
                                 [
                                     str "Add Task"
@@ -82,11 +83,7 @@ module DatabaseNodeMenu =
 
                                                 setRightDock (Some DockType.Database)
 
-                                                setDatabaseUIFlag (
-                                                    input.DatabaseId
-                                                    |> Atoms.User.UIFlag.Database
-                                                    |> Some
-                                                )
+                                                setDatabaseUIFlag (input.DatabaseId |> Atoms.User.UIFlag.Database)
                                             })
                                 [
                                     str "Edit Database"

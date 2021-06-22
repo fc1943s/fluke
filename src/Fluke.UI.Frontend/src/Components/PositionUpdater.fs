@@ -13,38 +13,43 @@ module PositionUpdater =
 
     [<ReactComponent>]
     let PositionUpdater (input: {| Username: Username |}) =
-        let isTesting = Store.useValue Atoms.isTesting
-        let position, setPosition = Store.useState Atoms.position
-        let selectedDatabaseIdSet = Store.useValue (Atoms.User.selectedDatabaseIdSet input.Username)
-
         Scheduling.useScheduling
             Scheduling.Interval
             1000
-            (fun setter ->
+            (fun get set ->
                 promise {
-                    let! selectedDatabasePositions =
+                    let selectedDatabaseIdSet = Atoms.getAtomValue get (Atoms.User.selectedDatabaseIdSet input.Username)
+
+                    let selectedDatabasePositions =
                         selectedDatabaseIdSet
                         |> Set.toList
                         |> List.map (fun databaseId -> Atoms.Database.position (input.Username, databaseId))
-                        |> List.map setter.snapshot.getPromise
-                        |> Promise.Parallel
+                        |> List.map (Atoms.getAtomValue get)
 
                     let pausedPosition =
                         selectedDatabasePositions
-                        |> Array.choose id
-                        |> Array.tryHead
+                        |> List.choose id
+                        |> List.tryHead
 
-                    match selectedDatabasePositions, pausedPosition with
-                    | [||], _ -> if position <> None then setPosition None
-                    | _, None ->
-                        let newPosition = FlukeDateTime.FromDateTime DateTime.Now
+                    let position = Atoms.getAtomValue get Atoms.position
 
-                        if (not isTesting || position.IsNone)
-                           && Some newPosition <> position then
-                            printfn $"Updating position newPosition={newPosition |> FlukeDateTime.Stringify}"
-                            setPosition (Some newPosition)
-                    | _, Some _ ->
-                        if position <> pausedPosition then
+                    let newPosition =
+                        match selectedDatabasePositions, pausedPosition with
+                        | [], _ -> if position <> None then None else position
+                        | _, None ->
+                            let newPosition = FlukeDateTime.FromDateTime DateTime.Now
+
+                            let isTesting = Atoms.getAtomValue get Atoms.isTesting
+                            let position = Atoms.getAtomValue get Atoms.position
+
+                            if (not isTesting || position.IsNone)
+                               && Some newPosition <> position then
+                                printfn $"Updating position newPosition={newPosition |> FlukeDateTime.Stringify}"
+                                Atoms.setAtomValue set Atoms.position (fun _ -> Some newPosition)
+                                Some newPosition
+                            else
+                                position
+                        | _, Some _ ->
                             printfn
                                 $"Updating position selectedDatabasePositions.[0]={
                                                                                        pausedPosition
@@ -52,7 +57,10 @@ module PositionUpdater =
                                                                                            FlukeDateTime.Stringify
                                 }"
 
-                            setPosition pausedPosition
+                            pausedPosition
+
+                    if position <> newPosition then
+                        Atoms.setAtomValue set Atoms.position (fun _ -> newPosition)
                 })
 
         nothing

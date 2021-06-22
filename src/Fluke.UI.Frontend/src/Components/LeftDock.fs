@@ -86,7 +86,7 @@ module LeftDock =
 
                                                                                 setRightDock (Some DockType.Database)
 
-                                                                                setDatabaseUIFlag None
+                                                                                setDatabaseUIFlag Atoms.User.UIFlag.None
                                                                             }
                                                         |}
                                                 ]

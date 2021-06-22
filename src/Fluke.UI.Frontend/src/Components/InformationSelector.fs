@@ -45,9 +45,14 @@ module InformationSelector =
                    TaskId: TaskId |})
         =
         let informationFieldOptions =
-            Recoil.useAtomFieldOptions
-                (Some (Recoil.AtomFamily (input.Username, Atoms.Task.information, (input.Username, input.TaskId))))
-                (Some (Recoil.InputScope.ReadWrite Gun.defaultSerializer))
+            Store.useAtomFieldOptions
+                (Some (
+                    JotaiTypes.InputAtom (
+                        input.Username,
+                        JotaiTypes.AtomPath.Atom (Atoms.Task.information (input.Username, input.TaskId))
+                    )
+                ))
+                (Some (JotaiTypes.InputScope.ReadWrite Gun.defaultSerializer))
 
         let informationName, informationSelected =
             React.useMemo (
@@ -79,7 +84,7 @@ module InformationSelector =
             |]
         )
 
-        let informationSet = Store.useValueLoadableDefault (Selectors.Session.informationSet input.Username) Set.empty
+        let informationSet = Store.useValue (Selectors.Session.informationSet input.Username)
 
         let sortedInformationList =
             React.useMemo (

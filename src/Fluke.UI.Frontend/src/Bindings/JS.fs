@@ -15,7 +15,7 @@ module Operators =
     let (<+) _o1 _o2 : unit = jsNative
 
 module Promise =
-    let ignore = Feliz.Recoil.Promise.ignore
+    let ignore (fn: JS.Promise<_>) = Promise.map ignore fn
 
 module JS =
     [<Emit "process.env.JEST_WORKER_ID">]

@@ -13,27 +13,41 @@ module ModalFormTrigger =
     let ModalFormTrigger
         (input: {| Username: Username
                    UIFlagType: Atoms.User.UIFlagType
-                   UIFlagValue: Atoms.User.UIFlag option
-                   Trigger: (unit -> JS.Promise<unit>) -> (unit -> Store.CallbackMethods) -> ReactElement |})
+                   UIFlagValue: Atoms.User.UIFlag
+                   Trigger: (unit -> JS.Promise<unit>) -> Jotai.GetFn * Jotai.SetFn -> ReactElement |})
         =
         let onTrigger =
-            Store.useCallbackRef
-                (fun setter _ ->
+            Store.useCallback (
+                (fun _get set _ ->
                     promise {
-                        setter.set (Atoms.User.uiFlag (input.Username, input.UIFlagType), (fun _ -> input.UIFlagValue))
-                        setter.set (Atoms.User.uiVisibleFlag (input.Username, input.UIFlagType), (fun _ -> true))
-                    })
+                        Atoms.setAtomValue
+                            set
+                            (Atoms.User.uiFlag (input.Username, input.UIFlagType))
+                            (fun _ -> input.UIFlagValue)
 
-        let setter = Store.useSetter ()
-
-        let content =
-            React.useMemo (
-                (fun () -> input.Trigger onTrigger setter),
-                [|
-                    box input
-                    box onTrigger
-                    box setter
-                |]
+                        Atoms.setAtomValue
+                            set
+                            (Atoms.User.uiVisibleFlag (input.Username, input.UIFlagType))
+                            (fun _ -> true)
+                    }),
+                [||]
             )
+
+        let callbacks = Store.useCallbacks ()
+        let content, setContent = React.useState nothing
+
+        React.useEffect (
+            (fun () ->
+                promise {
+                    let! callbacks = callbacks ()
+                    setContent (input.Trigger onTrigger callbacks)
+                }
+                |> Promise.start),
+            [|
+                box input
+                box onTrigger
+                box callbacks
+            |]
+        )
 
         content

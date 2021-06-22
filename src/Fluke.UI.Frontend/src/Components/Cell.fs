@@ -26,34 +26,21 @@ module Cell =
 
         let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
         let isTesting = Store.useValue Atoms.isTesting
-        let showUser = Store.useValueLoadableDefault (Selectors.Task.showUser (input.Username, input.TaskId)) false
-
-        let isReadWrite =
-            Store.useValueLoadableDefault (Selectors.Task.isReadWrite (input.Username, input.TaskId)) false
-
-        let sessionStatus =
-            Store.useValueLoadableDefault
-                (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
-                Disabled
-
-        let sessions = Store.useValueLoadable (Selectors.Cell.sessions (input.Username, input.TaskId, input.DateId))
-
-        let attachments =
-            Store.useValueLoadable (Selectors.Cell.attachments (input.Username, input.TaskId, input.DateId))
-
-        let isToday = Store.useValueLoadableDefault (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value)) false
-
-        let selected =
-            Store.useValueLoadableDefault (Selectors.Cell.selected (input.Username, input.TaskId, input.DateId)) false
-
+        let showUser = Store.useValue (Selectors.Task.showUser (input.Username, input.TaskId))
+        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite (input.Username, input.TaskId))
+        let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
+        let sessions = Store.useValue (Selectors.Cell.sessions (input.Username, input.TaskId, input.DateId))
+        let attachments = Store.useValue (Selectors.Cell.attachments (input.Username, input.TaskId, input.DateId))
+        let isToday = Store.useValue (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value))
+        let selected = Store.useValue (Selectors.Cell.selected (input.Username, input.TaskId, input.DateId))
         let setSelected = Setters.useSetSelected ()
 
         let onCellClick =
-            Store.useCallbackRef
-                (fun setter _ ->
+            Store.useCallback (
+                (fun get set _ ->
                     promise {
-                        let! ctrlPressed = setter.snapshot.getPromise Atoms.ctrlPressed
-                        let! shiftPressed = setter.snapshot.getPromise Atoms.shiftPressed
+                        let ctrlPressed = Atoms.getAtomValue get Atoms.ctrlPressed
+                        let shiftPressed = Atoms.getAtomValue get Atoms.shiftPressed
 
                         let newSelected =
                             if ctrlPressed || shiftPressed then
@@ -62,7 +49,13 @@ module Cell =
                                 input.Username, input.TaskId, input.DateId, false
 
                         do! setSelected newSelected
-                    })
+                    }),
+                [|
+                    box input
+                    box selected
+                    box setSelected
+                |]
+            )
 
         Popover.CustomPopover
             {|
@@ -103,14 +96,11 @@ module Cell =
                                 x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
                         [
 
-                            match sessions.valueMaybe () with
-                            | Some sessions ->
-                                CellSessionIndicator.CellSessionIndicator
-                                    {|
-                                        Status = sessionStatus
-                                        Sessions = sessions
-                                    |}
-                            | _ -> nothing
+                            CellSessionIndicator.CellSessionIndicator
+                                {|
+                                    Status = sessionStatus
+                                    Sessions = sessions
+                                |}
 
                             if selected then
                                 nothing
@@ -118,6 +108,7 @@ module Cell =
                                 CellBorder.CellBorder
                                     {|
                                         Username = input.Username
+                                        TaskId = input.TaskId
                                         Date = input.DateId |> DateId.Value
                                     |}
 
@@ -126,14 +117,11 @@ module Cell =
                                 CellStatusUserIndicator.CellStatusUserIndicator {| Username = username |}
                             | _ -> nothing
 
-                            match attachments.valueMaybe () with
-                            | Some attachments ->
-                                AttachmentIndicator.AttachmentIndicator
-                                    {|
-                                        Username = input.Username
-                                        Attachments = attachments
-                                    |}
-                            | _ -> nothing
+                            AttachmentIndicator.AttachmentIndicator
+                                {|
+                                    Username = input.Username
+                                    Attachments = attachments
+                                |}
                         ]
                 Body =
                     fun (disclosure, _initialFocusRef) ->

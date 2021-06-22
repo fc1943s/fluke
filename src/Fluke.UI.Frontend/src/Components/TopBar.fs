@@ -13,20 +13,21 @@ module TopBar =
     let TopBar () =
         let logout = Auth.useLogout ()
 
-
         let onLogoClick =
-            Store.useCallbackRef
-                (fun setter _ ->
+            Store.useCallback (
+                (fun get set _ ->
                     promise {
-                        let! username = setter.snapshot.getPromise Atoms.username
+                        let username = Atoms.getAtomValue get Atoms.username
 
                         match username with
                         | Some username ->
-                            setter.set (Atoms.User.leftDock username, fun _ -> None)
-                            setter.set (Atoms.User.rightDock username, fun _ -> None)
-                            setter.set (Atoms.User.view username, fun _ -> TempUI.defaultView)
+                            Atoms.setAtomValue set (Atoms.User.leftDock username) (fun _ -> None)
+                            Atoms.setAtomValue set (Atoms.User.rightDock username) (fun _ -> None)
+                            Atoms.setAtomValue set (Atoms.User.view username) (fun _ -> TempUI.defaultView)
                         | None -> ()
-                    })
+                    }),
+                [||]
+            )
 
         Chakra.flex
             (fun x ->
@@ -92,7 +93,7 @@ module TopBar =
                                                 x.icon <- Icons.fi.FiLogOut |> Icons.render
                                                 x.height <- "27px"
                                                 x.fontSize <- "17px"
-                                                x.onClick <- logout
+                                                x.onClick <- fun _ -> promise { do! logout () }
                                     |}
                             ]
                     ]

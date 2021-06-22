@@ -4551,6 +4551,13 @@
     "@webassemblyjs/wast-parser" "1.9.0"
     "@xtuc/long" "4.2.2"
 
+"@welldone-software/why-did-you-render@~6.2":
+  version "6.2.0"
+  resolved "https://registry.yarnpkg.com/@welldone-software/why-did-you-render/-/why-did-you-render-6.2.0.tgz#a053e63f45adb57161c723dee4b005769ea1b64f"
+  integrity sha512-ViwaE09Vgb0yXzyZuGTWCmWy/nBRAEGyztMdFYuxIgmL8yoXX5TVMCfieiJGdRQQPiDUznlYmcu0lu8kN1lwtQ==
+  dependencies:
+    lodash "^4"
+
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@xtuc/ieee754/-/ieee754-1.2.0.tgz#eef014a3145ae477a1cbc00cd1e552336dceb790"
@@ -10779,11 +10786,6 @@ gzip-size@5.1.1:
     duplexer "^0.1.1"
     pify "^4.0.1"
 
-hamt_plus@1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/hamt_plus/-/hamt_plus-1.0.2.tgz#e21c252968c7e33b20f6a1b094cd85787a265601"
-  integrity sha1-4hwlKWjH4zsg9qGwlM2FeHomVgE=
-
 handle-thing@^2.0.0:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/handle-thing/-/handle-thing-2.0.1.tgz#857f79ce359580c340d43081cc648970d0bb234e"
@@ -13765,7 +13767,7 @@ lodash.without@^4.4.0:
   resolved "https://registry.yarnpkg.com/lodash.without/-/lodash.without-4.4.0.tgz#3cd4574a00b67bae373a94b748772640507b7aac"
   integrity sha1-PNRXSgC2e643OpS3SHcmQFB7eqw=
 
-lodash@4.17.21, lodash@4.x, "lodash@>=3.5 <5", lodash@^4.0.1, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.7.0:
+lodash@4.17.21, lodash@4.x, "lodash@>=3.5 <5", lodash@^4, lodash@^4.0.1, lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.12, lodash@^4.17.14, lodash@^4.17.15, lodash@^4.17.19, lodash@^4.17.20, lodash@^4.17.21, lodash@^4.17.4, lodash@^4.17.5, lodash@^4.7.0:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
@@ -17461,7 +17463,7 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@~18.0.0-alpha-7ec4c5597:
+react-dom@~18.0.0-alpha-568dc3532:
   version "18.0.0-alpha-e6be2d531"
   resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.0.0-alpha-e6be2d531.tgz#89b1aef488a56ceac7cc0169ae02d7fbb58cbbb6"
   integrity sha512-mMGiX/kyhxaUTRDt+Q5oIbpU6cPvO8Sp/kHz3cdNFviwVTHHF2YrnnD70BD2F1R0b7wAdfVVit9EfE+Rqt0sJA==
@@ -17640,7 +17642,7 @@ react-style-singleton@^2.1.0:
     invariant "^2.2.4"
     tslib "^1.0.0"
 
-react@~18.0.0-alpha-7ec4c5597:
+react@~18.0.0-alpha-568dc3532:
   version "18.0.0-alpha-e6be2d531"
   resolved "https://registry.yarnpkg.com/react/-/react-18.0.0-alpha-e6be2d531.tgz#c5cf6d5706f7b6411d36848b483a7937c94fc5c9"
   integrity sha512-roZmm4MYfuGN65PiagPvhumBb3Da1FAgyj6Ti2sHwQDIxhi40PMq5V90gBSKXl7qXbaXHrtpuAtG5R+XkqpDYA==
@@ -17800,12 +17802,6 @@ readdirp@~3.6.0:
   integrity sha512-hOS089on8RduqdbhvQ5Z37A0ESjsqz6qnRcffsMU3495FuTdqSm+7bhJ29JvIOsBDEEnan5DPu9t3To9VRlMzA==
   dependencies:
     picomatch "^2.2.1"
-
-recoil@facebookexperimental/Recoil.git#nightly:
-  version "0.3.1"
-  resolved "https://codeload.github.com/facebookexperimental/Recoil/tar.gz/2f3799446457c31f7bedbaa1188250b237808268"
-  dependencies:
-    hamt_plus "1.0.2"
 
 recursive-readdir@2.2.2:
   version "2.2.2"
@@ -18323,6 +18319,14 @@ rollup@^1.31.1:
     "@types/estree" "*"
     "@types/node" "*"
     acorn "^7.1.0"
+
+rooks@~5.0:
+  version "5.0.2"
+  resolved "https://registry.yarnpkg.com/rooks/-/rooks-5.0.2.tgz#080a3ad5b65f089ca6c39a10426db9d6ba3e59f5"
+  integrity sha512-GPydrZ6Sd0g1INCK6RrzM+xnu5I2Fiir/3WRGDw1XeaU026xibPiTl/lOct5Q9ErRerSi0ETHwzdpcHuCw7NlA==
+  dependencies:
+    lodash.debounce "^4.0.8"
+    raf "^3.4.1"
 
 rsvp@^4.8.4:
   version "4.8.5"

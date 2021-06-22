@@ -13,7 +13,6 @@ open Fluke.Shared
 open Fable.React
 open Fluke.UI.Frontend.Hooks
 open Microsoft.FSharp.Core.Operators
-open System
 open Fluke.UI.Frontend.State
 open Fable.Core
 open State
@@ -22,60 +21,40 @@ open State
 module CellSelectionSetup =
     let maxTimeout = 5 * 60 * 1000
 
-    let getCellMap (subject: Bindings.render<_, _>) (setter: IRefValue<unit -> Store.CallbackMethods>) =
-        promise {
-            let! dateSequence =
-                setter
-                    .current()
-                    .snapshot.getPromise Selectors.dateSequence
+    let getCellMap (subject: Bindings.render<_, _>) (getFn: Jotai.GetFn) =
+        let dateSequence = Atoms.getAtomValue getFn Selectors.dateSequence
+        let username = Atoms.getAtomValue getFn Atoms.username
 
-            let! username =
-                setter
-                    .current()
-                    .snapshot.getPromise Atoms.username
+        match username with
+        | Some username ->
 
-            match username with
-            | Some username ->
+            let sortedTaskIdList = Atoms.getAtomValue getFn (Selectors.Session.sortedTaskIdList username)
 
-                let! sortedTaskIdList =
-                    setter
-                        .current()
-                        .snapshot.getPromise (Selectors.Session.sortedTaskIdList username)
+            printfn $"sortedTaskIdList ={sortedTaskIdList}"
 
-                printfn $"sortedTaskIdList ={sortedTaskIdList}"
+            let cellMap =
+                sortedTaskIdList
+                |> List.collect
+                    (fun taskId ->
+                        let taskName = Atoms.getAtomValue getFn (Atoms.Task.name (username, taskId))
 
-                let! cellList =
-                    sortedTaskIdList
-                    |> List.map
-                        (fun taskId ->
-                            promise {
-                                let! taskName =
-                                    setter
-                                        .current()
-                                        .snapshot.getPromise (Atoms.Task.name (username, taskId))
+                        dateSequence
+                        |> List.map
+                            (fun date ->
+                                let el =
+                                    subject.queryByTestId
+                                        $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
 
-                                return
-                                    dateSequence
-                                    |> List.toArray
-                                    |> Array.map
-                                        (fun date ->
-                                            let el =
-                                                subject.queryByTestId
-                                                    $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
+                                ((taskId, taskName), date), (el |> Option.defaultValue (unbox null))))
+                |> Map.ofList
 
-                                            ((taskId, taskName), date), (el |> Option.defaultValue (unbox null)))
-                            })
-                    |> Promise.Parallel
 
-                let cellMap = cellList |> Array.collect id |> Map.ofArray
+            printfn $"cellMap=%A{cellMap |> Map.keys |> Seq.map fst |> Seq.distinct}"
 
-                printfn $"cellMap=%A{cellMap |> Map.keys |> Seq.map fst |> Seq.distinct}"
+            cellMap
+        | None -> failwith $"Invalid username: {username}"
 
-                return cellMap
-            | None -> return failwith $"Invalid username: {username}"
-        }
-
-    let expectSelection (setter: IRefValue<unit -> Store.CallbackMethods>) expected =
+    let expectSelection (getFn: Jotai.GetFn) expected =
         let toString map =
             map
             |> Map.toList
@@ -90,10 +69,8 @@ module CellSelectionSetup =
         promise {
             do! RTL.waitFor id
 
-            let! cellSelectionMap =
-                setter
-                    .current()
-                    .snapshot.getPromise (Selectors.Session.cellSelectionMap Templates.templatesUser.Username)
+            let cellSelectionMap =
+                Atoms.getAtomValue getFn (Selectors.Session.cellSelectionMap Templates.templatesUser.Username)
 
             Jest
                 .expect(toString cellSelectionMap)
@@ -110,7 +87,7 @@ module CellSelectionSetup =
     let getCell (cellMapGetter, taskName, date) =
         fun () ->
             promise {
-                let! cellMap = cellMapGetter ()
+                let cellMap = cellMapGetter ()
 
                 return
                     cellMap
@@ -121,7 +98,7 @@ module CellSelectionSetup =
 
     let taskIdByName cellMapGetter taskName =
         promise {
-            let! cellMap = cellMapGetter ()
+            let cellMap = cellMapGetter ()
 
             return
                 cellMap
@@ -129,8 +106,10 @@ module CellSelectionSetup =
                     (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
         }
 
-    let initialSetter (setter: Store.CallbackMethods) =
+    let initialSetter (getFn: Jotai.GetFn) (setFn: Jotai.SetFn) =
         promise {
+            let set atom value = Atoms.setAtomValue setFn atom value
+
             let dslTemplate =
                 {
                     Templates.Position =
@@ -161,19 +140,20 @@ module CellSelectionSetup =
             let databaseState =
                 Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
 
-            setter.set (Atoms.username, (fun _ -> Some Templates.templatesUser.Username))
-            setter.set (Atoms.User.view Templates.templatesUser.Username, (fun _ -> View.View.Priority))
-            setter.set (Atoms.User.daysBefore Templates.templatesUser.Username, (fun _ -> 2))
-            setter.set (Atoms.User.daysAfter Templates.templatesUser.Username, (fun _ -> 2))
-            setter.set (Atoms.gunHash, (fun _ -> Guid.NewGuid().ToString ()))
-            setter.set (Atoms.position, (fun _ -> Some dslTemplate.Position))
+
+            set Atoms.username (fun _ -> Some Templates.templatesUser.Username)
+            set (Atoms.User.view Templates.templatesUser.Username) (fun _ -> View.View.Priority)
+            set (Atoms.User.daysBefore Templates.templatesUser.Username) (fun _ -> 2)
+            set (Atoms.User.daysAfter Templates.templatesUser.Username) (fun _ -> 2)
+            set Atoms.position (fun _ -> Some dslTemplate.Position)
 
             do!
                 Hydrate.hydrateDatabase
-                    setter
-                    (Templates.templatesUser.Username, Recoil.AtomScope.ReadOnly, databaseState.Database)
+                    getFn
+                    setFn
+                    (Templates.templatesUser.Username, JotaiTypes.AtomScope.ReadOnly, databaseState.Database)
 
-            setter.set (Atoms.Session.databaseIdSet Templates.templatesUser.Username, Set.add databaseId)
+            set (Atoms.Session.databaseIdSet Templates.templatesUser.Username) (Set.add databaseId)
 
             do!
                 databaseState.TaskStateMap
@@ -182,24 +162,27 @@ module CellSelectionSetup =
                         promise {
                             do!
                                 Hydrate.hydrateTaskState
-                                    setter
+                                    getFn
+                                    setFn
                                     (Templates.templatesUser.Username,
-                                     Recoil.AtomScope.ReadOnly,
+                                     JotaiTypes.AtomScope.ReadOnly,
                                      databaseState.Database.Id,
                                      taskState)
 
-                            setter.set (
-                                Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId),
-                                Set.add taskId
-                            )
+                            set
+                                (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId))
+                                (Set.add taskId)
                         })
                 |> Promise.Parallel
                 |> Promise.ignore
 
-            setter.set (
-                Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username,
-                fun _ -> set [ databaseId ]
-            )
+            set
+                (Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username)
+                (fun _ ->
+                    [
+                        databaseId
+                    ]
+                    |> Set.ofList)
         }
 
     let getApp () =
@@ -208,18 +191,16 @@ module CellSelectionSetup =
                 (fun () ->
                     printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ BEFORE RENDER"
 
-                    let gunNamespace = Store.useValue Selectors.gunNamespace
+                    let gunNamespace = Store.useValue Atoms.gunNamespace
                     let username, setUsername = Store.useState Atoms.username
 
                     React.useEffect (
                         (fun () ->
                             promise {
-                                let user = gunNamespace.``#``
-
-                                if user.__.sea.IsNone then
+                                if gunNamespace.__.sea.IsNone then
                                     let username = Templates.templatesUser.Username |> Username.Value
-                                    let! _ = Gun.createUser user username username
-                                    let! _ = Gun.authUser gunNamespace.``#`` username username
+                                    let! _ = Gun.createUser gunNamespace username username
+                                    let! _ = Gun.authUser gunNamespace username username
 
                                     RTL.act (fun () -> setUsername (Some Templates.templatesUser.Username))
                             }
@@ -243,35 +224,28 @@ module CellSelectionSetup =
 
     let initialize () =
         promise {
-            let subject, setter = getApp () |> Setup.render
+            let subject, callbacks = getApp () |> Setup.render
+
+            let getFn, setFn = callbacks.current
 
             do! RTL.sleep 400
 
             let! username =
-                JS.waitForSome
-                    (fun () ->
-                        async {
-                            match box setter with
-                            | null -> return None
-                            | _ -> return! setter.current().snapshot.getAsync Atoms.username
-                        })
+                JS.waitForSome (fun () -> async { return Atoms.getAtomValue getFn Atoms.username })
                 |> Async.StartAsPromise
 
             printfn $"! username={username}"
 
-            do! RTL.waitFor (initialSetter (setter.current ()))
+            do! RTL.waitFor (initialSetter getFn setFn)
 
             let! sortedTaskIdList =
                 JS.waitForSome
                     (fun () ->
                         async {
-                            let! sortedTaskIdList =
-                                setter
-                                    .current()
-                                    .snapshot
-                                    .getAsync (
-                                        Selectors.Session.sortedTaskIdList Templates.templatesUser.Username
-                                    )
+                            let sortedTaskIdList =
+                                Atoms.getAtomValue
+                                    getFn
+                                    (Selectors.Session.sortedTaskIdList Templates.templatesUser.Username)
 
                             return if sortedTaskIdList.Length = 4 then Some sortedTaskIdList else None
                         })
@@ -279,7 +253,7 @@ module CellSelectionSetup =
 
             printfn $"! sortedTaskIdList={sortedTaskIdList}"
 
-            let cellMapGetter = fun () -> getCellMap subject setter
+            let cellMapGetter = fun () -> getCellMap subject getFn
 
-            return cellMapGetter, setter
+            return cellMapGetter, callbacks.current
         }
