@@ -9,14 +9,14 @@ module Full =
 
     module Cy2 =
         let typeText (fn: unit -> Cy.Chainable2<_>) (text: string) =
-            //            Cy.wait 200
+            Cy.wait 200
             fn().clear {| force = false |} |> ignore
             fn().should "be.empty" null null
 
             text
             |> Seq.iter
                 (fun letter ->
-                    Cy.wait 250
+//                    Cy.wait 250
 
                     fn().first().click (Some {| force = false |})
                     |> ignore
@@ -102,6 +102,9 @@ module Full =
                     Cy2.clickText "Register"
                     Cy2.selectorFocusTypeText "input[placeholder='Confirm Password']" password
                     Cy2.clickText "Confirm"
+
+                    Cy.wait 500
+
                     Cy2.waitFor "User registered successfully" None
 
                     Cy.wait 1000
@@ -123,11 +126,11 @@ module Full =
 
                     //                    Cy.wait 400
 
+                    Cy.wait 2000
+
                     Cy2.clickText "Add Task"
 
-                    //                    Cy.wait 400
 //                    Cy.wait 5000
-
 
                     Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Select..."
 
@@ -169,9 +172,9 @@ module Full =
                         .click (Some {| force = false |})
                     |> ignore
 
-                    Cy2.clickText "Edit Database"
+                    Cy.wait 2000
 
-                    Cy.wait 1000
+                    Cy2.clickText "Edit Database"
 
                     Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
 
