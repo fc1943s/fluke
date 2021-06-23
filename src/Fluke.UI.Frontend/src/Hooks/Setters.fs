@@ -48,10 +48,7 @@ module Setters =
                     operations
                     |> List.iter
                         (fun (taskId, date, selected) ->
-                            Atoms.setAtomValue
-                                set
-                                (Selectors.Cell.selected (username, taskId, DateId date))
-                                (fun _ -> selected))
+                            Atoms.setAtomValue set (Selectors.Cell.selected (username, taskId, DateId date)) selected)
                 }),
             [||]
         )

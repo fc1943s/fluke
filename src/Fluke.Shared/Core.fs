@@ -166,3 +166,8 @@ module Enum =
         |> Array.toList
 
     let inline name<'T> (value: 'T) = Enum.GetName (typeof<'T>, value)
+
+module DateTime =
+    let ticksDiff ticks =
+        (TimeSpan (DateTime.Now.Ticks - ticks))
+            .TotalMilliseconds

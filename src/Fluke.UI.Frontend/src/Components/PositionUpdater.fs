@@ -45,7 +45,7 @@ module PositionUpdater =
                             if (not isTesting || position.IsNone)
                                && Some newPosition <> position then
                                 printfn $"Updating position newPosition={newPosition |> FlukeDateTime.Stringify}"
-                                Atoms.setAtomValue set Atoms.position (fun _ -> Some newPosition)
+                                Atoms.setAtomValue set Atoms.position (Some newPosition)
                                 Some newPosition
                             else
                                 position
@@ -60,7 +60,7 @@ module PositionUpdater =
                             pausedPosition
 
                     if position <> newPosition then
-                        Atoms.setAtomValue set Atoms.position (fun _ -> newPosition)
+                        Atoms.setAtomValue set Atoms.position newPosition
                 })
 
         nothing

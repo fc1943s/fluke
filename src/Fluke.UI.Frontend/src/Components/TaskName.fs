@@ -31,12 +31,9 @@ module TaskName =
                         let deviceInfo = Atoms.getAtomValue get Selectors.deviceInfo
 
                         if deviceInfo.IsMobile then
-                            Atoms.setAtomValue set (Atoms.User.leftDock input.Username) (fun _ -> None)
+                            Atoms.setAtomValue set (Atoms.User.leftDock input.Username) None
 
-                        Atoms.setAtomValue
-                            set
-                            (Atoms.User.rightDock input.Username)
-                            (fun _ -> Some TempUI.DockType.Task)
+                        Atoms.setAtomValue set (Atoms.User.rightDock input.Username) (Some TempUI.DockType.Task)
 
                         let databaseId =
                             Atoms.getAtomValue get (Selectors.Task.databaseId (input.Username, input.TaskId))
@@ -44,7 +41,7 @@ module TaskName =
                         Atoms.setAtomValue
                             set
                             (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
-                            (fun _ -> Atoms.User.UIFlag.Task (databaseId, input.TaskId))
+                            (Atoms.User.UIFlag.Task (databaseId, input.TaskId))
 
                     }),
                 [|
@@ -55,17 +52,18 @@ module TaskName =
 
         let startSession =
             Store.useCallback (
-                (fun _get set _ ->
+                (fun get set _ ->
                     promise {
+                        let sessions = Atoms.getAtomValue get (Atoms.Task.sessions (input.Username, input.TaskId))
+
                         Atoms.setAtomValue
                             set
                             (Atoms.Task.sessions (input.Username, input.TaskId))
-                            (fun sessions ->
-                                Session (
-                                    (let now = DateTime.Now in if now.Second < 30 then now else now.AddMinutes 1.)
-                                    |> FlukeDateTime.FromDateTime
-                                )
-                                :: sessions)
+                            (Session (
+                                (let now = DateTime.Now in if now.Second < 30 then now else now.AddMinutes 1.)
+                                |> FlukeDateTime.FromDateTime
+                             )
+                             :: sessions)
                     }),
                 [|
                     box input.Username

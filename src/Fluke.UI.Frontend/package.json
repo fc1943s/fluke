@@ -98,12 +98,12 @@
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "electron": "~14.0.0-beta.7",
+    "electron": "~14.0.0-beta.8",
     "electron-builder": "~22.11",
     "electronmon": "~2.0",
 
-    "@typescript-eslint/eslint-plugin": "~4.27",
-    "@typescript-eslint/parser": "~4.27",
+    "@typescript-eslint/eslint-plugin": "~4.28",
+    "@typescript-eslint/parser": "~4.28",
     "eslint": "~7.29",
     "eslint-plugin-react": "~7.24",
     "eslint-plugin-import": "~2.23",
@@ -111,7 +111,7 @@
     "eslint-plugin-react-hooks": "~4.2",
     "eslint-plugin-jest-dom": "~3.9",
 
-    "gatsby": "~3.7",
+    "gatsby": "~3.8",
     "@chakra-ui/gatsby-plugin": "~2.0",
     "postcss": "~8.3",
 
@@ -153,7 +153,7 @@
     "concurrently": "~6.2",
 
     "cordova": "~10.0",
-    "cordova-android": "~10.0.0-nightly.2021.6.6.6d803e2f",
+    "cordova-android": "~10.0.0-nightly.2021.6.22.6d803e2f",
     "cordova-ios": "~6.2",
     "cordova-plugin-whitelist": "~1.3"
   },

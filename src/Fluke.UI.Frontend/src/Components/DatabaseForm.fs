@@ -88,7 +88,7 @@ module DatabaseForm =
                                 Atoms.setAtomValue
                                     set
                                     (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
-                                    (fun _ -> Atoms.User.UIFlag.None)
+                                    Atoms.User.UIFlag.None
 
                                 do! input.OnSave database
                     }),

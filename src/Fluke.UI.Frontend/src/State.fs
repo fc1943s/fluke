@@ -714,14 +714,27 @@ module State =
                     (fun (username: Username, taskId: TaskId) get set newValue ->
                         let databaseId = Atoms.getAtomValue get (databaseId (username, taskId))
 
-                        printfn $"databaseId.set databaseId={databaseId} username={username} taskId={taskId} newValue={newValue}"
+                        printfn
+                            $"databaseId.set databaseId={databaseId} username={username} taskId={taskId} newValue={
+                                                                                                                       newValue
+                            }"
 
-                        Atoms.setAtomValue set (Atoms.Database.taskIdSet (username, databaseId)) (Set.remove taskId)
+                        if databaseId <> newValue then
+                            let taskIdSet = Atoms.getAtomValue get (Atoms.Database.taskIdSet (username, databaseId))
+
+                            Atoms.setAtomValue
+                                set
+                                (Atoms.Database.taskIdSet (username, databaseId))
+                                (taskIdSet |> Set.remove taskId)
+
+                        let taskIdSet = Atoms.getAtomValue get (Atoms.Database.taskIdSet (username, newValue))
 
                         Atoms.setAtomValue
                             set
                             (Atoms.Database.taskIdSet (username, newValue))
-                            (Set.remove Task.Default.Id >> Set.add taskId))
+                            (taskIdSet
+                             |> Set.remove Task.Default.Id
+                             |> Set.add taskId))
                 )
 
             let rec isReadWrite =
@@ -839,13 +852,14 @@ module State =
                             |> Map.tryFind dateId
                             |> Option.defaultValue Disabled),
                     (fun (username: Username, taskId: TaskId, dateId: DateId) get set newValue ->
+                        let statusMap = Atoms.getAtomValue get (Atoms.Task.statusMap (username, taskId))
+
                         Atoms.setAtomValue
                             set
                             (Atoms.Task.statusMap (username, taskId))
-                            (fun oldStatusMap ->
-                                match newValue with
-                                | UserStatus (_, status) -> oldStatusMap |> Map.add dateId status
-                                | _ -> oldStatusMap |> Map.remove dateId))
+                            (match newValue with
+                             | UserStatus (_, status) -> statusMap |> Map.add dateId status
+                             | _ -> statusMap |> Map.remove dateId))
                 )
 
             let rec selected =
@@ -855,10 +869,13 @@ module State =
                         let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet (username, taskId))
                         selectionSet.Contains dateId),
                     (fun (username: Username, taskId: TaskId, dateId: DateId) get set newValue ->
+                        let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet (username, taskId))
+
                         Atoms.setAtomValue
                             set
                             (Atoms.Task.selectionSet (username, taskId))
-                            ((if newValue then Set.add else Set.remove) dateId))
+                            (selectionSet
+                             |> (if newValue then Set.add else Set.remove) dateId))
                 )
 
             let rec sessions =

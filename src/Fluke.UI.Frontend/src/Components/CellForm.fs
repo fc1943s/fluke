@@ -27,7 +27,7 @@ module CellForm =
 
         let addAttachment =
             Store.useCallback (
-                (fun _get set _ ->
+                (fun get set _ ->
                     promise {
                         match addAttachmentText with
                         | String.ValidString _ ->
@@ -36,28 +36,29 @@ module CellForm =
                             Atoms.setAtomValue
                                 set
                                 (Atoms.Attachment.timestamp (input.Username, attachmentId))
-                                (fun _ -> DateTime.Now |> FlukeDateTime.FromDateTime |> Some)
+                                (DateTime.Now |> FlukeDateTime.FromDateTime |> Some)
 
                             Atoms.setAtomValue
                                 set
                                 (Atoms.Attachment.attachment (input.Username, attachmentId))
-                                (fun _ ->
-                                    addAttachmentText
-                                    |> Comment.Comment
-                                    |> Attachment.Comment
-                                    |> Some)
+                                (addAttachmentText
+                                 |> Comment.Comment
+                                 |> Attachment.Comment
+                                 |> Some)
+
+                            let cellAttachmentMap =
+                                Atoms.getAtomValue get (Atoms.Task.cellAttachmentMap (input.Username, input.TaskId))
 
                             Atoms.setAtomValue
                                 set
                                 (Atoms.Task.cellAttachmentMap (input.Username, input.TaskId))
-                                (fun oldMap ->
-                                    oldMap
-                                    |> Map.add
-                                        input.DateId
-                                        (oldMap
-                                         |> Map.tryFind input.DateId
-                                         |> Option.defaultValue Set.empty
-                                         |> Set.add attachmentId))
+                                (cellAttachmentMap
+                                 |> Map.add
+                                     input.DateId
+                                     (cellAttachmentMap
+                                      |> Map.tryFind input.DateId
+                                      |> Option.defaultValue Set.empty
+                                      |> Set.add attachmentId))
 
                             setAddAttachmentText ""
                         | _ -> ()

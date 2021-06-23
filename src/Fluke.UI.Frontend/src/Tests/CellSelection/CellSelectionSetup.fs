@@ -45,7 +45,7 @@ module CellSelectionSetup =
                                     subject.queryByTestId
                                         $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
 
-                                ((taskId, taskName), date), (el |> Option.defaultValue (unbox null))))
+                                ((taskId, taskName), date), (el |> Option.defaultValue null)))
                 |> Map.ofList
 
 
@@ -108,6 +108,7 @@ module CellSelectionSetup =
 
     let initialSetter (getFn: Jotai.GetFn) (setFn: Jotai.SetFn) =
         promise {
+            let get atom = Atoms.getAtomValue getFn atom
             let set atom value = Atoms.setAtomValue setFn atom value
 
             let dslTemplate =
@@ -141,11 +142,11 @@ module CellSelectionSetup =
                 Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
 
 
-            set Atoms.username (fun _ -> Some Templates.templatesUser.Username)
-            set (Atoms.User.view Templates.templatesUser.Username) (fun _ -> View.View.Priority)
-            set (Atoms.User.daysBefore Templates.templatesUser.Username) (fun _ -> 2)
-            set (Atoms.User.daysAfter Templates.templatesUser.Username) (fun _ -> 2)
-            set Atoms.position (fun _ -> Some dslTemplate.Position)
+            set Atoms.username (Some Templates.templatesUser.Username)
+            set (Atoms.User.view Templates.templatesUser.Username) View.View.Priority
+            set (Atoms.User.daysBefore Templates.templatesUser.Username) 2
+            set (Atoms.User.daysAfter Templates.templatesUser.Username) 2
+            set Atoms.position (Some dslTemplate.Position)
 
             do!
                 Hydrate.hydrateDatabase
@@ -153,7 +154,7 @@ module CellSelectionSetup =
                     setFn
                     (Templates.templatesUser.Username, JotaiTypes.AtomScope.ReadOnly, databaseState.Database)
 
-            set (Atoms.Session.databaseIdSet Templates.templatesUser.Username) (Set.add databaseId)
+            set (Atoms.Session.databaseIdSet Templates.templatesUser.Username) (Set.singleton databaseId)
 
             do!
                 databaseState.TaskStateMap
@@ -169,20 +170,17 @@ module CellSelectionSetup =
                                      databaseState.Database.Id,
                                      taskState)
 
+                            let taskIdSet =
+                                get (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId))
+
                             set
                                 (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId))
-                                (Set.add taskId)
+                                (taskIdSet |> Set.add taskId)
                         })
                 |> Promise.Parallel
                 |> Promise.ignore
 
-            set
-                (Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username)
-                (fun _ ->
-                    [
-                        databaseId
-                    ]
-                    |> Set.ofList)
+            set (Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username) (Set.singleton databaseId)
         }
 
     let getApp () =
@@ -224,9 +222,7 @@ module CellSelectionSetup =
 
     let initialize () =
         promise {
-            let subject, callbacks = getApp () |> Setup.render
-
-            let getFn, setFn = callbacks.current
+            let! subject, (getFn, setFn) = getApp () |> Setup.render
 
             do! RTL.sleep 400
 
@@ -255,5 +251,5 @@ module CellSelectionSetup =
 
             let cellMapGetter = fun () -> getCellMap subject getFn
 
-            return cellMapGetter, callbacks.current
+            return cellMapGetter, (getFn, setFn)
         }

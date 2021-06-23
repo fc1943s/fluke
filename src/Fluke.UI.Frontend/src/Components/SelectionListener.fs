@@ -34,10 +34,7 @@ module SelectionListener =
                                 |> Map.keys
                                 |> Seq.iter
                                     (fun taskId ->
-                                        Atoms.setAtomValue
-                                            set
-                                            (Atoms.Task.selectionSet (username, taskId))
-                                            (fun _ -> Set.empty))
+                                        Atoms.setAtomValue set (Atoms.Task.selectionSet (username, taskId)) Set.empty)
 
                         if e.key = "R" && e.``type`` = "keydown" then
                             if not cellSelectionMap.IsEmpty then
@@ -67,7 +64,7 @@ module SelectionListener =
                                         Atoms.setAtomValue
                                             set
                                             (Atoms.Task.selectionSet (username, taskId))
-                                            (fun _ -> dates |> Set.map DateId))
+                                            (dates |> Set.map DateId))
                     | None -> ()
                 })
 

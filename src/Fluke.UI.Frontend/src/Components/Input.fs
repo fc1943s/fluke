@@ -233,7 +233,7 @@ module Input =
                                         | InputFormat.Password -> "password"
                                     | None -> null
 
-                                x <+ props)
+                                input.Props x)
                             []
 
                         match customProps.inputFormat with

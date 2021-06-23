@@ -18,7 +18,7 @@ module VerticalShiftPressed =
         promise {
             let! cellMapGetter, (get, setFn) = initialize ()
 
-            RTL.act (fun () -> Atoms.setAtomValue setFn Atoms.shiftPressed (fun _ -> true))
+            RTL.act (fun () -> Atoms.setAtomValue setFn Atoms.shiftPressed true)
 
             do! RTL.waitFor id
 

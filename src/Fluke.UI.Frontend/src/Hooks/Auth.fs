@@ -17,8 +17,8 @@ module Auth =
                     let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
                     printfn "before leave"
                     gunNamespace.leave ()
-                    Atoms.setAtomValue set Atoms.username (fun _ -> None)
-                    Atoms.setAtomValue set Atoms.gunKeys (fun _ -> Gun.GunKeys.Default)
+                    Atoms.setAtomValue set Atoms.username None
+                    Atoms.setAtomValue set Atoms.gunKeys Gun.GunKeys.Default
                 }),
             [||]
         )
@@ -32,8 +32,8 @@ module Auth =
 
                     match keys with
                     | Some keys ->
-                        Atoms.setAtomValue set Atoms.gunKeys (fun _ -> keys)
-                        Atoms.setAtomValue set Atoms.username (fun _ -> Some username)
+                        Atoms.setAtomValue set Atoms.gunKeys keys
+                        Atoms.setAtomValue set Atoms.username (Some username)
                         return Ok (username, keys)
                     | None -> return Error $"No keys found for user {gunNamespace.is}"
                 }),

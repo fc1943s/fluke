@@ -73,9 +73,8 @@ module Store =
             Some
                 (fun get set value ->
                     Profiling.addCount $"{atomPath}<"
-                    let newValue =
-                        value
-//                        match jsTypeof value with
+                    let newValue = value
+                    //                        match jsTypeof value with
 //                         | "function" -> (unbox value) () |> unbox
 //                         | _ -> value
                     setFn get set newValue)
@@ -203,7 +202,7 @@ module Store =
 //        let gunAtomNode = getInternalGunAtomNode gun username atomPath
 //        username, atomPath, gunAtomNode
 
-    let inline atomFamilyWithProfiling<'TKey, 'TValue>
+    let atomFamilyWithProfiling<'TKey, 'TValue>
         (
             atomPath,
             defaultValue: 'TKey -> 'TValue,
@@ -219,7 +218,7 @@ module Store =
                     | Some (username, keyIdentifier) -> Some username, Some keyIdentifier
                     | None -> None, None
 
-                printfn $"jotaiAtomFamily atomFamily constructor atomPath={atomPath} param={param} "
+//                printfn $"atomFamily constructor atomPath={atomPath} param={param} keyIdentifier={keyIdentifier}"
 
                 let rec wrapper =
                     atomSetterWithProfiling (
@@ -230,60 +229,63 @@ module Store =
                                 match username with
                                 | Some username ->
                                     let gun = Atoms.getAtomValue get Atoms.gun
-
-                                    printfn $"jotaiAtomFamily get() atomPath={atomPath} param={param} "
-
                                     getInternalGunAtomNode gun username (AtomPath.Atom wrapper)
                                 | None -> None
 
-
                             let result = Atoms.getAtomValue get internalAtom
 
-                            printfn
-                                $"jotaiAtomFamily atomFamily.get() atomPath={atomPath} param={param} result={result} gunAtomNode={
-                                                                                                                                      gunAtomNode
-                                }"
+//                            printfn
+//                                $"atomFamily.get() atomPath={atomPath} keyIdentifier={keyIdentifier} param={param} result={
+//                                                                                                                               result
+//                                }"
 
                             result),
                         (fun get set newValue ->
                             let gun = Atoms.getAtomValue get Atoms.gun
 
-                            printfn
-                                $"jotaiAtomFamily atomFamily.set() atomPath={atomPath} param={param} newValue={newValue}"
+//                            printfn
+//                                $"atomFamily.set() atomPath={atomPath} keyIdentifier={keyIdentifier} param={param} newValue={
+//                                                                                                                                 newValue
+//                                }"
 
-                            Atoms.setAtomValue set internalAtom (newValue |> box |> unbox))
+                            Atoms.setAtomValue set internalAtom newValue)
                     )
 
                 let subscribe setAtom =
-                    printfn $"jotaiAtomFamily debouncedSubscribe() atomPath={atomPath} param={param}"
+                    ()
+//                    printfn $"atomFamily debouncedSubscribe() atomPath={atomPath} param={param}"
                 // setAtom (fun x ->
 //                                    printfn $"jotaiAtomFamily: setting {x} + 1"
 //                                    x + 1)
 
                 let unsubscribe setAtom =
-                    printfn $"jotaiAtomFamily debouncedUnsubscribe() atomPath={atomPath} param={param}"
+                    ()
+//                    printfn $"atomFamily debouncedUnsubscribe() atomPath={atomPath} param={param}"
 
-                let mutable subscribed = false
+                let mutable lastSubscription = None
 
                 let debouncedSubscribe =
-                    JS.debounce
-                        (fun setAtom ->
-                            if not subscribed then
-                                subscribe setAtom
-                                subscribed <- true
-                            else
-                                printf "skipping subscribe")
-                        0
+                    //                    JS.debounce
+                    (fun setAtom ->
+                        if lastSubscription.IsNone then
+                            subscribe setAtom
+                            lastSubscription <- Some DateTime.Now.Ticks
+                        else
+//                            printf $"atomFamily Skipping subscribe atomPath={atomPath} param={param} diffMs={DateTime.ticksDiff (lastSubscription |>Option.defaultValue DateTime.Now.Ticks)}"
+                            ())
+                //                        0
 
                 let debouncedUnsubscribe =
-                    JS.debounce
-                        (fun setAtom ->
-                            if subscribed then
-                                unsubscribe setAtom
-                                subscribed <- false
-                            else
-                                printf "skipping unsubscribe")
-                        0
+                    //                    JS.debounce
+                    (fun setAtom ->
+                        match lastSubscription with
+                        | Some ticks when DateTime.ticksDiff ticks < 300. ->
+                            ()
+//                            printf $"atomFamily Skipping unsubscribe atomPath={atomPath} param={param} diffMs={DateTime.ticksDiff (lastSubscription |>Option.defaultValue DateTime.Now.Ticks)}"
+                        | _ ->
+                            unsubscribe setAtom
+                            lastSubscription <- None)
+                //                        0
 
                 wrapper?onMount <- fun setAtom ->
                                        debouncedSubscribe setAtom
@@ -417,7 +419,7 @@ module Store =
 
         React.useMemo (
             (fun () ->
-                let defaultJsonEncode, defaultJsonDecode = unbox Gun.defaultSerializer
+                let defaultJsonEncode, _defaultJsonDecode = unbox Gun.defaultSerializer
 
                 let newReadWriteValue =
                     match inputScope, readWriteValue |> Option.defaultValue null with
@@ -525,7 +527,7 @@ module Store =
         let atomField = getAtomField (Some (InputAtom (username, AtomPath.Atom atom))) AtomScope.ReadWrite
 
         match atomField.ReadWrite with
-        | Some atom -> Atoms.setAtomValue setFn atom (fun _ -> value |> Gun.jsonEncode<'TValue9>)
+        | Some atom -> Atoms.setAtomValue setFn atom (value |> Gun.jsonEncode<'TValue9>)
         | _ -> ()
 
     let inline scopedSet<'TValue10, 'TKey>
@@ -535,14 +537,14 @@ module Store =
         (atom: 'TKey -> Atom<'TValue10>, key: 'TKey, value: 'TValue10)
         =
         match atomScope with
-        | AtomScope.ReadOnly -> Atoms.setAtomValue setFn (atom key) (fun _ -> value)
+        | AtomScope.ReadOnly -> Atoms.setAtomValue setFn (atom key) value
         | AtomScope.ReadWrite -> readWriteSet<'TValue10, 'TKey> (setFn, username, atom key, value)
 
     let inline readWriteReset<'TValue8, 'TKey> (setFn: SetFn) (username: Username) (atom: Atom<'TValue8>) =
         let atomField = getAtomField (Some (InputAtom (username, AtomPath.Atom atom))) AtomScope.ReadWrite
 
         match atomField.ReadWrite with
-        | Some atom -> Atoms.setAtomValue setFn atom (fun _ -> null)
+        | Some atom -> Atoms.setAtomValue setFn atom null
         | _ -> ()
 
     let inline getReadWrite<'TValue11, 'TKey> getFn (username: Username) (atom: Atom<'TValue11>) =

@@ -69,7 +69,7 @@ module Jotai =
 
 
     type GetFn = Atom<obj> -> obj
-    type SetFn = Atom<obj> -> (obj -> obj) -> unit
+    type SetFn = Atom<obj> -> obj -> unit
 
 
     type IJotai =
@@ -154,24 +154,22 @@ module Jotai =
     let private atomIdMap = Dictionary<string, string> ()
 
     let registerAtomPathById atomPath (atom: Atom<_>) =
-        atomIdMap.Add (atom.toString (), atomPath)
+        atomIdMap.[atom.toString ()] <- atomPath
         atom
 
     let registerAtomIdByPath (atom: Atom<_>) atomPath =
-        atomPathMap.Add (atomPath, atom.toString ())
+        atomPathMap.[atomPath] <- atom.toString ()
         atomPath
 
     let registerAtom atomPath keyIdentifier atom =
         match keyIdentifier with
         | Some keyIdentifier ->
             let gunNodePath = getGunNodePath atomPath keyIdentifier
-            printfn $"registerAtom atomPath={atomPath} gunNodePath={gunNodePath}"
-
+//            printfn $"registerAtom atomPath={atomPath} gunNodePath={gunNodePath}"
             registerAtomIdByPath atom gunNodePath |> ignore
-
             registerAtomPathById gunNodePath atom
         | None ->
-            printfn $"registerAtom atomPath={atomPath}. skipping registration."
+//            printfn $"registerAtom atomPath={atomPath}. skipping registration."
             atom
 
     let queryAtomPath atomPath =
@@ -202,15 +200,6 @@ module JotaiMagic =
         member inline _.provider children =
             ReactBindings.React.createElement (Jotai.Jotai.Provider, (), children)
 
-        member inline _.getGun () =
-            JS.waitForObject
-                (fun () ->
-                    async {
-                        return
-                            match JS.window id with
-                            | Some window -> box window?lastGun :?> Gun.IGunChainReference
-                            | None -> unbox null
-                    })
 
     let Jotai = Jotai.Jotai
 
@@ -229,15 +218,15 @@ module JotaiUtilsMagic =
         let inline getAtomValue<'TValue> (getter: GetFn) (atom: Atom<'TValue>) : 'TValue =
             (getter (unbox atom)) :?> 'TValue
 
-        let inline setAtomValue<'TValue> (setter: SetFn) (atom: Atom<'TValue>) (value: 'TValue -> 'TValue) =
-            setter (atom |> box |> unbox) (value |> box |> unbox)
+        let inline setAtomValue<'TValue> (setter: SetFn) (atom: Atom<'TValue>) (value: 'TValue) =
+            setter (atom |> box |> unbox) value
 
         let atomWithStorage atomPath defaultValue (map: _ -> _) =
             let internalAtom = JotaiUtils.atomWithStorage atomPath defaultValue
 
             Jotai.atom (
                 (fun get -> getAtomValue get internalAtom),
-                Some (fun _get set arg -> setAtomValue set internalAtom (fun _ -> map arg))
+                Some (fun _get set arg -> setAtomValue set internalAtom (map arg))
             )
             |> registerAtom atomPath None
 
@@ -271,10 +260,6 @@ module JotaiUtilsMagic =
                                     Gun.GunProps.localStorage = Some false
                                     Gun.GunProps.multicast = None
                                 }
-
-                    match JS.window id with
-                    | Some window -> window?lastGun <- gun
-                    | None -> ()
 
                     printfn $"jotai gun selector. peers={gunPeers}. gun={gun} returning gun..."
 

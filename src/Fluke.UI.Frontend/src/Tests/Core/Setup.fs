@@ -23,7 +23,6 @@ module RTL =
 
 module Setup =
     import "jest" "@jest/globals"
-    import "snapshot_UNSTABLE" "recoil"
 
     let handlePromise promise = promise
     //        |> Promise.catch (fun ex -> Fable.Core.JS.console.error (box ex))
@@ -31,8 +30,6 @@ module Setup =
     Jest.afterAll (
         promise {
             Browser.Dom.window?exit <- true
-            Browser.Dom.window?gunNamespace <- null
-            Browser.Dom.window?lastGun <- null
             printfn "after all"
         }
     )
@@ -40,22 +37,23 @@ module Setup =
     [<ReactComponent>]
     let RootWrapper cmp =
         React.strictMode [
-//            Recoil.root [
+            //            Recoil.root [
 //                root.children [
-                    React.ReactErrorBoundary.renderCatchFn
-                        (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
-                        (str "error")
-                        cmp
-//                ]
+            React.ReactErrorBoundary.renderCatchFn
+                (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
+                (str "error")
+                cmp
+        //                ]
 //            ]
         ]
 
     let render (cmp: ReactElement) =
-        //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
+        promise {
+            //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
 //                fun _ -> failwith "called empty callback"
 //
-        let mutable callbacksRef : IRefValue<Jotai.GetFn * Jotai.SetFn> = unbox null
-        //
+            let mutable callbacksRef : Jotai.GetFn * Jotai.SetFn = unbox null
+            //
 //            let cmpWrapper =
 //                React.memo
 //                    (fun () ->
@@ -66,44 +64,41 @@ module Setup =
 //
 //                        cmp)
 
-        let subject =
-            RTL.render (
-                RootWrapper (
-                    React.fragment [
-                        (React.memo
-                            (fun () ->
-                                let callbacks = Store.useCallbacks ()
-                                let internalCallbacksRef = React.useRef<Jotai.GetFn * Jotai.SetFn> (unbox null)
+            let subject =
+                RTL.render (
+                    RootWrapper (
+                        React.fragment [
+                            (React.memo
+                                (fun () ->
+                                    let callbacks = Store.useCallbacks ()
 
-                                React.useEffect (
-                                    (fun () ->
-                                        promise {
-                                            let! callbacksValue = callbacks ()
-                                            internalCallbacksRef.current <- callbacksValue
-                                            callbacksRef <- internalCallbacksRef
-                                        }
-                                        |> Promise.start),
-                                    [|
-                                        box internalCallbacksRef
-                                        box callbacks
-                                    |]
-                                )
+                                    React.useEffect (
+                                        (fun () ->
+                                            promise {
+                                                let! callbacksValue = callbacks ()
+                                                callbacksRef <- callbacksValue
+                                            }
+                                            |> Promise.start),
+                                        [|
+                                            box callbacks
+                                        |]
+                                    )
 
-                                nothing)
-                            ())
-                        cmp
-                    ]
+                                    nothing)
+                                ())
+                            cmp
+                        ]
+                    )
                 )
-            )
 
-        //            RTL.act (fun () -> Jest.runAllTimers())
+            //            RTL.act (fun () -> Jest.runAllTimers())
 
-        //            do! RTL.waitFor id
-//            do! RTL.waitFor id
-        //            return subject, peekFn
-        subject, callbacksRef
+            do! RTL.waitFor id
+            //            return subject, peekFn
+            return subject, callbacksRef
+        }
 
-    //    let waitForObj setter fn =
+//    let waitForObj setter fn =
 //        promise {
 //            let mutable obj = None
 //

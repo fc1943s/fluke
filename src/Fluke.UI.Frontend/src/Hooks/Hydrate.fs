@@ -136,11 +136,16 @@ module Hydrate =
         let hydrateTaskState = useHydrateTaskState ()
 
         Store.useCallback (
-            (fun _get set (username, atomScope, databaseState) ->
+            (fun get set (username, atomScope, databaseState) ->
                 promise {
                     do! hydrateDatabase (username, atomScope, databaseState.Database)
 
-                    Atoms.setAtomValue set (Atoms.Session.databaseIdSet username) (Set.add databaseState.Database.Id)
+                    let databaseIdSet = Atoms.getAtomValue get (Atoms.Session.databaseIdSet username)
+
+                    Atoms.setAtomValue
+                        set
+                        (Atoms.Session.databaseIdSet username)
+                        (databaseIdSet |> Set.add databaseState.Database.Id)
 
                     databaseState.InformationStateMap
                     |> Map.values
@@ -174,19 +179,23 @@ module Hydrate =
                                     Atoms.setAtomValue
                                         set
                                         (Atoms.Task.statusMap (username, taskState.Task.Id))
-                                        (fun _ ->
-                                            (taskState.CellStateMap
-                                             |> Seq.choose
-                                                 (function
-                                                 | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
-                                                     Some (dateId, userStatus)
-                                                 | _ -> None)
-                                             |> Map.ofSeq))
+                                        ((taskState.CellStateMap
+                                          |> Seq.choose
+                                              (function
+                                              | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
+                                                  Some (dateId, userStatus)
+                                              | _ -> None)
+                                          |> Map.ofSeq))
+
+                                    let taskIdSet =
+                                        Atoms.getAtomValue
+                                            get
+                                            (Atoms.Database.taskIdSet (username, databaseState.Database.Id))
 
                                     Atoms.setAtomValue
                                         set
                                         (Atoms.Database.taskIdSet (username, databaseState.Database.Id))
-                                        (Set.add taskState.Task.Id)
+                                        (taskIdSet |> Set.add taskState.Task.Id)
                                 })
                         |> Promise.Parallel
                         |> Promise.ignore

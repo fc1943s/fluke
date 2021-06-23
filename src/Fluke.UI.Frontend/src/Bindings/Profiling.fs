@@ -2,18 +2,16 @@ namespace Fluke.UI.Frontend.Bindings
 
 open System
 open System.Collections.Generic
+open Fluke.Shared
 
 
 module Profiling =
     let private initialTicks = DateTime.Now.Ticks
 
-    let private ticksDiff ticks =
-        int64 (TimeSpan(ticks - initialTicks).TotalMilliseconds)
-
     let internal profilingState =
         {|
             CallCount = Dictionary<string, int> ()
-            Timestamps = List<string * int64> ()
+            Timestamps = List<string * float> ()
         |}
 
     Dom.set (nameof profilingState) profilingState
@@ -24,6 +22,6 @@ module Profiling =
         | true -> profilingState.CallCount.[id] <- profilingState.CallCount.[id] + 1
 
     let addTimestamp id =
-        profilingState.Timestamps.Add (id, ticksDiff DateTime.Now.Ticks)
+        profilingState.Timestamps.Add (id, DateTime.ticksDiff initialTicks)
 
     addTimestamp "Init"

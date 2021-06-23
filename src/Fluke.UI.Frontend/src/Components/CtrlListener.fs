@@ -20,7 +20,7 @@ module CtrlListener =
                     let ctrlPressed = Atoms.getAtomValue get Atoms.ctrlPressed
 
                     if e.ctrlKey <> ctrlPressed then
-                        Atoms.setAtomValue set Atoms.ctrlPressed (fun _ -> e.ctrlKey)
+                        Atoms.setAtomValue set Atoms.ctrlPressed e.ctrlKey
                 })
 
         nothing

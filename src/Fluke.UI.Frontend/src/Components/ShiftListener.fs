@@ -29,7 +29,7 @@ module ShiftListener =
                         let username = Atoms.getAtomValue get Atoms.username
 
                         match username with
-                        | Some username -> Atoms.setAtomValue set (Atoms.User.view username) (fun _ -> value)
+                        | Some username -> Atoms.setAtomValue set (Atoms.User.view username) value
                         | None -> ()
 
                     match e.ctrlKey, e.shiftKey, e.key with
@@ -44,7 +44,7 @@ module ShiftListener =
                     let shiftPressed = Atoms.getAtomValue get Atoms.shiftPressed
 
                     if e.shiftKey <> shiftPressed then
-                        Atoms.setAtomValue set Atoms.shiftPressed (fun _ -> e.shiftKey)
+                        Atoms.setAtomValue set Atoms.shiftPressed e.shiftKey
                 })
 
         nothing

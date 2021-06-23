@@ -21,9 +21,9 @@ module TopBar =
 
                         match username with
                         | Some username ->
-                            Atoms.setAtomValue set (Atoms.User.leftDock username) (fun _ -> None)
-                            Atoms.setAtomValue set (Atoms.User.rightDock username) (fun _ -> None)
-                            Atoms.setAtomValue set (Atoms.User.view username) (fun _ -> TempUI.defaultView)
+                            Atoms.setAtomValue set (Atoms.User.leftDock username) None
+                            Atoms.setAtomValue set (Atoms.User.rightDock username) None
+                            Atoms.setAtomValue set (Atoms.User.view username) TempUI.defaultView
                         | None -> ()
                     }),
                 [||]

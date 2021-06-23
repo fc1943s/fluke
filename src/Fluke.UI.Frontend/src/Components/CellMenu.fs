@@ -61,12 +61,12 @@ module CellMenu =
                                         Atoms.setAtomValue
                                             set
                                             (Selectors.Cell.sessionStatus (input.Username, taskId, DateId date))
-                                            (fun _ -> onClickStatus)))
+                                            onClickStatus))
 
                         Atoms.setAtomValue
                             set
                             (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
-                            (fun _ -> onClickStatus)
+                            onClickStatus
 
                         input.OnClose ()
                     }),

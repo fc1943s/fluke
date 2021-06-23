@@ -44,9 +44,16 @@ module TaskForm =
         let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
 
         let taskDatabaseId =
-            match taskUIFlag with
-            | Atoms.User.UIFlag.Task (databaseId, taskId) when taskId = input.TaskId -> databaseId
-            | _ -> Database.Default.Id
+            React.useMemo (
+                (fun () ->
+                    match taskUIFlag with
+                    | Atoms.User.UIFlag.Task (databaseId, taskId) when taskId = input.TaskId -> databaseId
+                    | _ -> Database.Default.Id),
+                [|
+                    box taskUIFlag
+                    box input.TaskId
+                |]
+            )
 
         let onSave =
             Store.useCallback (
@@ -120,13 +127,14 @@ module TaskForm =
                             Atoms.setAtomValue
                                 set
                                 (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
-                                (fun _ -> Atoms.User.UIFlag.None)
+                                Atoms.User.UIFlag.None
 
                             do! input.OnSave task
                     }),
                 [|
                     box input
                     box toast
+                    box taskDatabaseId
                 |]
             )
 

@@ -27,17 +27,14 @@ module InformationName =
                         let deviceInfo = Atoms.getAtomValue get Selectors.deviceInfo
 
                         if deviceInfo.IsMobile then
-                            Atoms.setAtomValue set (Atoms.User.leftDock input.Username) (fun _ -> None)
+                            Atoms.setAtomValue set (Atoms.User.leftDock input.Username) None
 
-                        Atoms.setAtomValue
-                            set
-                            (Atoms.User.rightDock input.Username)
-                            (fun _ -> Some TempUI.DockType.Information)
+                        Atoms.setAtomValue set (Atoms.User.rightDock input.Username) (Some TempUI.DockType.Information)
 
                         Atoms.setAtomValue
                             set
                             (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Information))
-                            (fun _ -> input.Information |> Atoms.User.UIFlag.Information)
+                            (input.Information |> Atoms.User.UIFlag.Information)
                     }),
                 [|
                     box input

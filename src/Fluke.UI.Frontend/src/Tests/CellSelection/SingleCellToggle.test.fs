@@ -18,7 +18,7 @@ module SingleCellToggle =
         promise {
             let! cellMapGetter, (get, setFn) = initialize ()
 
-            RTL.act (fun () -> Atoms.setAtomValue setFn Atoms.ctrlPressed (fun _ -> true))
+            RTL.act (fun () -> Atoms.setAtomValue setFn Atoms.ctrlPressed true)
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 

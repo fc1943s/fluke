@@ -20,15 +20,8 @@ module ModalFormTrigger =
             Store.useCallback (
                 (fun _get set _ ->
                     promise {
-                        Atoms.setAtomValue
-                            set
-                            (Atoms.User.uiFlag (input.Username, input.UIFlagType))
-                            (fun _ -> input.UIFlagValue)
-
-                        Atoms.setAtomValue
-                            set
-                            (Atoms.User.uiVisibleFlag (input.Username, input.UIFlagType))
-                            (fun _ -> true)
+                        Atoms.setAtomValue set (Atoms.User.uiFlag (input.Username, input.UIFlagType)) input.UIFlagValue
+                        Atoms.setAtomValue set (Atoms.User.uiVisibleFlag (input.Username, input.UIFlagType)) true
                     }),
                 [||]
             )
