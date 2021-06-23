@@ -200,4 +200,4 @@ module Rendering =
         loop WaitingFirstEvent dateSequenceWithEntries
         |> List.filter (fun (moment, _) -> moment >==< (firstDateRange, lastDateRange))
         |> List.map (fun (moment, cellStatus) -> dateId dayStart moment, cellStatus)
-        |> Map.ofList
+        |> Map.ofSeq

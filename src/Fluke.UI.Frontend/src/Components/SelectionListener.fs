@@ -49,7 +49,7 @@ module SelectionListener =
                                                     |> Seq.item (Random().Next (0, dates.Count - 1))
 
                                                 taskId, Set.singleton date)
-                                        |> Map.ofList
+                                        |> Map.ofSeq
                                     else
                                         let key =
                                             cellSelectionMap

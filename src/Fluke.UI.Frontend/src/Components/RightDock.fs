@@ -190,7 +190,7 @@ module RightDock =
                 |]
             )
 
-        let itemsMap = items |> Map.ofList
+        let itemsMap = items |> Map.ofSeq
 
         Chakra.flex
             (fun _ -> ())

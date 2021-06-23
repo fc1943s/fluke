@@ -32,7 +32,6 @@ module LeftDock =
                                 Name = "Settings"
                                 Icon = Icons.md.MdSettings
                                 Content =
-                                    fun () ->
                                         Settings.Settings
                                             {|
                                                 Username = input.Username
@@ -50,7 +49,6 @@ module LeftDock =
                                 Name = "Databases"
                                 Icon = Icons.fi.FiDatabase
                                 Content =
-                                    fun () ->
                                         Databases.Databases
                                             {|
                                                 Username = input.Username
@@ -130,7 +128,7 @@ module LeftDock =
                             |}
                         ]
 
-                    let itemsMap = items |> Map.ofList
+                    let itemsMap = items |> Map.ofSeq
                     items, itemsMap),
                 [|
                     box setLeftDock
@@ -226,7 +224,7 @@ module LeftDock =
                                             [
                                                 React.suspense (
                                                     [
-                                                        item.Content ()
+                                                        item.Content
                                                     ],
                                                     LoadingSpinner.LoadingSpinner ()
                                                 )

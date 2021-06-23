@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Bindings
 
 open System.Collections.Generic
+open Fable.Core.JS
 open Fable.Core.JsInterop
 open Fable.Core
 open Fable.React
@@ -12,8 +13,14 @@ open Microsoft.FSharp.Core.Operators
 
 
 module DeepEqual =
-    let deepEqual<'T> (_a: 'T) (_b: 'T) : bool = importDefault "fast-deep-equal"
+    let fastDeepEqual<'T> (_a: 'T) (_b: 'T) : bool = importDefault "fast-deep-equal/react"
 
+    let deepEqual<'T> (a: 'T) (b: 'T) =
+//        if unbox a <> null && a?toString <> null && jsTypeof a <> "boolean" then
+//            a?toString <- emitJsExpr () "Object.prototype.toString"
+//            b?toString <- emitJsExpr () "Object.prototype.toString"
+
+        fastDeepEqual a b
 
 module JotaiTypes =
     type Atom<'TValue> =
@@ -90,6 +97,8 @@ module Jotai =
     let Jotai : IJotai = importAll "jotai"
 
     type IJotaiUtils =
+        abstract atomWithDefault : (GetFn -> 'TValue) -> Atom<'TValue>
+
         abstract atomWithReducer : 'TValue -> ('TValue -> 'TValue -> 'TValue) -> Atom<'TValue>
         abstract atomWithStorage : string -> 'TValue -> Atom<'TValue>
 
@@ -287,3 +296,29 @@ module JotaiUtilsMagic =
 
                     user
             )
+
+        let rec getInternalGunAtomNode (gun: Gun.IGunChainReference) (Username username) (atomPath: AtomPath<_>) =
+            let user = gun.user ()
+
+            match queryAtomPath atomPath, user.is with
+            | Some atomPath, Some { alias = Some username' } when username' = username ->
+                let nodes = atomPath |> String.split "/" |> Array.toList
+
+                (Some (user.get nodes.Head), nodes.Tail)
+                ||> List.fold
+                        (fun result node ->
+                            result
+                            |> Option.map (fun result -> result.get node))
+            | _ ->
+                match JS.window id with
+                | Some window ->
+                    JS.setTimeout
+                        (fun () -> window?lastToast (fun (x: Chakra.IToastProps) -> x.description <- "Please log in again"))
+                        0
+                    |> ignore
+                | None -> ()
+
+                failwith
+                    $"Invalid username. username={username} user.is={JS.JSON.stringify user.is} username={username} atomPath={
+                                                                                                                                  atomPath
+                    }"

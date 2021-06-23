@@ -33,7 +33,7 @@ module CtrlPressed =
                         FlukeDate.Create 2020 Month.January 11
                     ]
                 ]
-                |> Map.ofList
+                |> Map.ofSeq
                 |> expectSelection get
         },
         maxTimeout

@@ -282,7 +282,7 @@ module TempData =
             //            let databaseState = dslDataToDatabaseState input.User dslData
 
             //            let databaseStateMap =
-//                [ databaseState.Id, (databaseState, true) ] |> Map.ofList
+//                [ databaseState.Id, (databaseState, true) ] |> Map.ofSeq
 
             //            let state =
 //                {
@@ -333,7 +333,7 @@ module TempData =
 //            let databaseState = dslDataToDatabaseState input.User dslData
 //
 //            let databaseStateMap =
-//                [ databaseState.Id, (databaseState, true) ] |> Map.ofList
+//                [ databaseState.Id, (databaseState, true) ] |> Map.ofSeq
 //
 //            let state =
 //                {

@@ -326,7 +326,7 @@ module Databases =
                                 nodeType, database)
                         |> List.filter (fun (nodeType, _) -> nodeType <> NodeType.Template || not hideTemplates)
                         |> List.groupBy fst
-                        |> Map.ofList
+                        |> Map.ofSeq
                         |> Map.map (fun _ v -> v |> List.map snd)
 
                     let nodeData =
@@ -450,7 +450,7 @@ module Databases =
                         if expandedDatabaseIdSet.IsEmpty then
                             nodes
                             |> Array.map (fun node -> node.value |> Guid |> DatabaseId)
-                            |> Set.ofArray
+                            |> Set.ofSeq
                         else
                             expandedDatabaseIdSet
 
@@ -491,13 +491,13 @@ module Databases =
                                     (fun (x: string []) ->
                                         x
                                         |> Array.map (Guid >> DatabaseId)
-                                        |> Set.ofArray
+                                        |> Set.ofSeq
                                         |> setSelectedDatabaseIdSet)
                                 onExpand =
                                     (fun (x: string []) ->
                                         x
                                         |> Array.map (Guid >> DatabaseId)
-                                        |> Set.ofArray
+                                        |> Set.ofSeq
                                         |> setExpandedDatabaseIdSet)
                                 expandOnClick = true
                                 onlyLeafCheckboxes = true

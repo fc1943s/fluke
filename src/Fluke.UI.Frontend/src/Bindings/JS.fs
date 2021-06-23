@@ -92,7 +92,7 @@ module JS =
             | None -> false
             | Some window -> window?Debug
 
-        if debug || isDebug then printfn $"[log] {fn ()}" else ()
+        if debug <> false && (debug || isDebug) then printfn $"[log] {fn ()}" else ()
 
     let inline consoleLog x = Browser.Dom.console.log x
 

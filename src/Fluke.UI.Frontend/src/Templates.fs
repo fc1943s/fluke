@@ -36,6 +36,6 @@ module TestUser =
         let databaseStateMap =
             templates
             |> List.map (fun databaseState -> databaseState.Database.Id, databaseState)
-            |> Map.ofList
+            |> Map.ofSeq
 
         databaseStateMap

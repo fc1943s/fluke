@@ -134,7 +134,7 @@ module Old2 =
                 newTaskOrderList
                 |> getManualSortedTaskList
                 |> List.mapi (fun i task -> task, i)
-                |> Map.ofList
+                |> Map.ofSeq
 
             lanes
             |> List.sortBy (fun (OldLane (taskState, _)) -> taskIndexMap.[taskState.Task])
@@ -143,7 +143,7 @@ module Old2 =
             let taskMap =
                 taskStateList
                 |> List.map (fun x -> (x.Task.Information, x.Task.Name), x)
-                |> Map.ofList
+                |> Map.ofSeq
 
             let newTaskOrderList =
                 manualTaskOrder

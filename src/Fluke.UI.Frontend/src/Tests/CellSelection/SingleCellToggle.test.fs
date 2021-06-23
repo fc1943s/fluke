@@ -31,12 +31,12 @@ module SingleCellToggle =
                         FlukeDate.Create 2020 Month.January 9
                     ]
                 ]
-                |> Map.ofList
+                |> Map.ofSeq
                 |> expectSelection get
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
 
-            do! [] |> Map.ofList |> expectSelection get
+            do! [] |> Map.ofSeq |> expectSelection get
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 11))
 
@@ -47,7 +47,7 @@ module SingleCellToggle =
                         FlukeDate.Create 2020 Month.January 11
                     ]
                 ]
-                |> Map.ofList
+                |> Map.ofSeq
                 |> expectSelection get
         },
         maxTimeout

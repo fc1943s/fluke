@@ -143,7 +143,7 @@ module State =
                     }
 
                 information, informationState)
-        |> Map.ofList
+        |> Map.ofSeq
 
     let inline getAccess database username =
         match database with

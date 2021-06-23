@@ -63,7 +63,7 @@ module Map =
         [
             key, value
         ]
-        |> Map.ofList
+        |> Map.ofSeq
 
     let inline keys (source: Map<'Key, 'T>) : seq<'Key> =
         source |> Seq.map (fun (KeyValue (k, _)) -> k)

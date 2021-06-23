@@ -42,7 +42,7 @@ module BoxSelection =
                         FlukeDate.Create 2020 Month.January 10
                     ]
                 ]
-                |> Map.ofList
+                |> Map.ofSeq
                 |> expectSelection get
 
 
@@ -71,7 +71,7 @@ module BoxSelection =
                         FlukeDate.Create 2020 Month.January 11
                     ]
                 ]
-                |> Map.ofList
+                |> Map.ofSeq
                 |> expectSelection get
 
             do! click (getCell (cellMapGetter, TaskName "1", FlukeDate.Create 2020 Month.January 8))
@@ -110,7 +110,7 @@ module BoxSelection =
                         FlukeDate.Create 2020 Month.January 11
                     ]
                 ]
-                |> Map.ofList
+                |> Map.ofSeq
                 |> expectSelection get
         },
         maxTimeout

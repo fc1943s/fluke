@@ -10830,9 +10830,9 @@ growly@^1.3.0:
   resolved "https://registry.yarnpkg.com/growly/-/growly-1.3.0.tgz#f10748cbe76af964b7c96c93c6bcc28af120c081"
   integrity sha1-8QdIy+dq+WS3yWyTxrzCivEgwIE=
 
-gun@amark/gun.git#manhattan:
-  version "0.2020.520"
-  resolved "https://codeload.github.com/amark/gun/tar.gz/4a022da60eef41c6c4eeea92bf5931f0b128cad2"
+gun@amark/gun.git#master:
+  version "0.2020.1232"
+  resolved "https://codeload.github.com/amark/gun/tar.gz/b1b04329830c876708f86f04c390d84fd196bdf5"
   dependencies:
     ws "^7.2.1"
   optionalDependencies:
@@ -13254,10 +13254,10 @@ joi@^17.2.1, joi@^17.4.0:
     "@sideway/formula" "^3.0.0"
     "@sideway/pinpoint" "^2.0.0"
 
-jotai@~1.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.0.0.tgz#d5e7f7044d89e543a9c7429a9723e11528b2760e"
-  integrity sha512-6hZGy3hqIlBlLSKppTrxDc1Vb7mi3I8eEQOIu7Kj6ceX1PSzjxdsEVC9TjAqaio8gZJEz+2ufNUf4afvbs0RXg==
+jotai@~1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.0.1.tgz#c962a7d279ec81a3e78d45267d90434dd1aadd5f"
+  integrity sha512-FZEXZnBdbH+HErXQP2Efzue107OB3cMoSlyZ+FG3lXGwmhgQFOpad7lDihv7kHmKMZ7YIJ0NXRhQVCD7aB+OGA==
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"

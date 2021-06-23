@@ -55,9 +55,9 @@
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
-    "jotai": "~1.0",
+    "jotai": "~1.0.1",
 
-    "gun": "amark/gun.git#manhattan",
+    "gun": "amark/gun.git#master",
 
     "@chakra-ui/react": "~1.6",
     "@chakra-ui/system": "~1.7",

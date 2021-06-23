@@ -261,7 +261,7 @@ module SchedulingSelector =
                                                                                 | recurrency -> None, Some recurrency)
 
                                                                         let weeklySet =
-                                                                            tmp |> List.choose fst |> Set.ofList
+                                                                            tmp |> List.choose fst |> Set.ofSeq
 
                                                                         let otherRecurrencies = tmp |> List.choose snd
 
@@ -351,7 +351,7 @@ module SchedulingSelector =
                                                                                     let monthlySet =
                                                                                         tmp
                                                                                         |> List.choose fst
-                                                                                        |> Set.ofList
+                                                                                        |> Set.ofSeq
 
                                                                                     let otherRecurrencies =
                                                                                         tmp |> List.choose snd

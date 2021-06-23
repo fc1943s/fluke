@@ -87,7 +87,7 @@ module Hydrate =
                              (Atoms.Attachment.attachment, (username, attachmentId), Some attachment)
 
                          attachmentId)
-                 |> Set.ofList)
+                 |> Set.ofSeq)
 
             Store.scopedSet
                 set
@@ -117,7 +117,7 @@ module Hydrate =
                                      (Atoms.Attachment.attachment, (username, attachmentId), Some attachment)
 
                                  Some attachmentId)
-                         |> Set.ofList)
+                         |> Set.ofSeq)
                  |> Map.ofSeq)
 
             Store.scopedSet
@@ -166,20 +166,7 @@ module Hydrate =
                         |> Map.values
                         |> Seq.map
                             (fun taskState ->
-                                promise {
-                                    do! hydrateTaskState (username, atomScope, databaseState.Database.Id, taskState)
-
-                                    Atoms.setAtomValue
-                                        set
-                                        (Atoms.Task.statusMap (username, taskState.Task.Id))
-                                        (taskState.CellStateMap
-                                         |> Seq.choose
-                                             (function
-                                             | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
-                                                 Some (dateId, userStatus)
-                                             | _ -> None)
-                                         |> Map.ofSeq)
-                                })
+                                hydrateTaskState (username, atomScope, databaseState.Database.Id, taskState))
                         |> Promise.Parallel
                         |> Promise.ignore
 
@@ -231,7 +218,7 @@ module Hydrate =
                 promise {
                     let database = Atoms.getAtomValue get (Selectors.Database.database (username, databaseId))
 
-                    let taskIdSet = Atoms.getAtomValue get (Selectors.Database.taskIdSet (username, databaseId))
+                    let taskIdSet = Atoms.getAtomValue get (Atoms.Database.taskIdSet (username, databaseId))
 
                     let taskStateList =
                         taskIdSet
@@ -247,11 +234,11 @@ module Hydrate =
                             InformationStateMap =
                                 informationStateList
                                 |> List.map (fun informationState -> informationState.Information, informationState)
-                                |> Map.ofList
+                                |> Map.ofSeq
                             TaskStateMap =
                                 taskStateList
                                 |> List.map (fun taskState -> taskState.Task.Id, taskState)
-                                |> Map.ofList
+                                |> Map.ofSeq
                         }
 
                     if databaseState.TaskStateMap

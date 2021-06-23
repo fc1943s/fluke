@@ -111,7 +111,7 @@ module View =
                 lanes
                 //                    |> Sorting.applyManualOrder input.TaskOrderList
                 |> List.groupBy (fun (taskState, _) -> taskState.Task.Information)
-                |> Map.ofList
+                |> Map.ofSeq
 
             input.InformationStateList
             |> List.map

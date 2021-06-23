@@ -46,7 +46,7 @@ module CellSelectionSetup =
                                         $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
 
                                 ((taskId, taskName), date), (el |> Option.defaultValue null)))
-                |> Map.ofList
+                |> Map.ofSeq
 
 
             printfn $"cellMap=%A{cellMap |> Map.keys |> Seq.map fst |> Seq.distinct}"

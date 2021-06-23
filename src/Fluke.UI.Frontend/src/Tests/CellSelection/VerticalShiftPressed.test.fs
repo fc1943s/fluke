@@ -40,7 +40,7 @@ module VerticalShiftPressed =
                         FlukeDate.Create 2020 Month.January 9
                     ]
                 ]
-                |> Map.ofList
+                |> Map.ofSeq
                 |> expectSelection get
         },
         maxTimeout

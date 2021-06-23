@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
+open Fable.React
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 
@@ -44,25 +45,41 @@ module Content =
                                         x.borderColor <- "whiteAlpha.300"
                                         x.maxWidth <- "100vw")
                                     [
+
                                         TopBar.TopBar ()
 
                                         Chakra.flex
                                             (fun x -> x.flex <- "1")
                                             [
-                                                LeftDock.LeftDock {| Username = username |}
+                                                React.suspense (
+                                                    [
+                                                        LeftDock.LeftDock {| Username = username |}
+                                                    ],
+                                                    LoadingSpinner.LoadingSpinner ()
+                                                )
                                                 React.suspense (
                                                     [
                                                         ViewTabs.ViewTabs {| Username = username |}
                                                     ],
                                                     LoadingSpinner.LoadingSpinner ()
                                                 )
-                                                RightDock.RightDock {| Username = username |}
+                                                React.suspense (
+                                                    [
+                                                        RightDock.RightDock {| Username = username |}
+                                                    ],
+                                                    LoadingSpinner.LoadingSpinner ()
+                                                )
                                             ]
 
                                         StatusBar.StatusBar {| Username = username |}
                                     ]
 
-                                SoundPlayer.SoundPlayer {| Username = username |}
+                                React.suspense (
+                                    [
+                                        SoundPlayer.SoundPlayer {| Username = username |}
+                                    ],
+                                    nothing
+                                )
                             ],
                             LoadingSpinner.LoadingSpinner ()
                         )

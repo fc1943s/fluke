@@ -1605,7 +1605,7 @@ module Templates =
                                     }
 
                                 name, newDslTemplate)))
-        |> Map.ofList
+        |> Map.ofSeq
 
     let createCellStatusChangeInteraction (user: User) (task: Task) date manualCellStatus =
         let cellStatusChange =

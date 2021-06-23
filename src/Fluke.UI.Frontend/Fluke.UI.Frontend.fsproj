@@ -62,6 +62,7 @@
         <Compile Include="src\Components\CellSessionIndicator.fs" />
         <Compile Include="src\Components\CellMenu.fs" />
         <Compile Include="src\Components\Cell.fs" />
+        <Compile Include="src\Components\LoadingSpinner.fs" />
         <Compile Include="src\Components\TaskCells.fs" />
         <Compile Include="src\Components\Cells.fs" />
         <Compile Include="src\Components\Checkbox.fs" />
@@ -78,7 +79,6 @@
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\DatabaseSelector.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
-        <Compile Include="src\Components\LoadingSpinner.fs" />
         <Compile Include="src\Components\TaskName.fs" />
         <Compile Include="src\Components\HabitTrackerView.fs" />
         <Compile Include="src\Components\PriorityView.fs" />

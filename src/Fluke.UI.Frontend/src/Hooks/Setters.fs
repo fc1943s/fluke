@@ -71,7 +71,7 @@ module Setters =
                             [
                                 taskId, newTaskSelection
                             ]
-                            |> Map.ofList
+                            |> Map.ofSeq
                             |> Promise.lift
                         | false, true ->
                             promise {
@@ -132,12 +132,12 @@ module Setters =
                                             dateList |> List.last
                                         ]
                                         |> Rendering.getDateSequence (0, 0)
-                                    |> Set.ofList
+                                    |> Set.ofSeq
 
                                 let newMap =
                                     newTaskIdList
                                     |> List.map (fun taskId -> taskId, dateSet)
-                                    |> Map.ofList
+                                    |> Map.ofSeq
 
                                 return newMap
                             }
