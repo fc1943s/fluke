@@ -17,7 +17,7 @@ module InputList =
 
 
     [<ReactComponent>]
-    let InputList (props: IProps<'TValue list> -> unit) =
+    let InputList (props: IProps<'TValue []> -> unit) =
         let props =
             React.useMemo (
                 (fun () -> JS.newObj props),
@@ -26,7 +26,7 @@ module InputList =
                 |]
             )
 
-        let atomFieldOptions = Store.useAtomFieldOptions<'TValue list> props.atom props.inputScope
+        let atomFieldOptions = Store.useAtomFieldOptions<'TValue []> props.atom props.inputScope
 
         Chakra.box
             (fun _ -> ())
@@ -57,9 +57,7 @@ module InputList =
                                                                         promise {
                                                                             atomFieldOptions.SetAtomValue (
                                                                                 atomFieldOptions.AtomValue
-                                                                                @ [
-                                                                                    unbox ""
-                                                                                ]
+                                                                                |> Array.append [| unbox "" |]
                                                                             )
                                                                         }
                                                     |}
@@ -74,15 +72,15 @@ module InputList =
                 | Some _ ->
                     let inputList =
                         match atomFieldOptions.AtomValue with
-                        | [] ->
-                            [
+                        | [||] ->
+                            [|
                                 unbox ""
-                            ]
+                            |]
                         | inputList -> inputList
 
                     yield!
                         inputList
-                        |> List.mapi
+                        |> Array.mapi
                             (fun i value ->
                                 Chakra.box
                                     (fun x -> x.position <- "relative")
@@ -98,7 +96,7 @@ module InputList =
                                                                 promise {
                                                                     atomFieldOptions.SetAtomValue (
                                                                         atomFieldOptions.AtomValue
-                                                                        |> List.mapi
+                                                                        |> Array.mapi
                                                                             (fun i' v ->
                                                                                 if i' = i then unbox e.Value else v)
                                                                     )
@@ -123,11 +121,10 @@ module InputList =
                                                                             promise {
                                                                                 atomFieldOptions.SetAtomValue (
                                                                                     atomFieldOptions.AtomValue
-                                                                                    |> Seq.indexed
-                                                                                    |> Seq.filter
+                                                                                    |> Array.indexed
+                                                                                    |> Array.filter
                                                                                         (fun (i', _) -> i' <> i)
-                                                                                    |> Seq.map snd
-                                                                                    |> Seq.toList
+                                                                                    |> Array.map snd
                                                                                 )
                                                                             }
 

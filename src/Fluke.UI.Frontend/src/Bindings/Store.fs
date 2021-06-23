@@ -326,25 +326,39 @@ module Store =
                             lastValue <- Some result
 
                             result),
-                        (fun get set newValue ->
+                        (fun get set newValueFn ->
                             match username, lastGunAtomNode with
                             | Some _, None -> lastGunAtomNode <- getGunAtomNode get wrapper
                             | _ -> ()
+
+                            //
+//                            match lastValue with
+//                                        | Some value decoded when value |> DeepEqual.deepEqual decoded |> not ->
+//                                            assign ()
+//                                        | None -> ()
 
                             Atoms.setAtomValue
                                 set
                                 internalAtom
                                 (unbox
                                     (fun oldValue ->
+                                        let newValue =
+                                            match jsTypeof newValueFn with
+                                            | "function" -> (unbox newValueFn) oldValue |> unbox
+                                            | _ -> newValueFn
+
                                         if oldValue |> DeepEqual.deepEqual newValue |> not then
                                             JS.log
                                                 (fun () ->
-                                                    $"atomFamily.set() atomPath={atomPath} keyIdentifier={keyIdentifier} param={
-                                                                                                                                    param
-                                                    } newValue={newValue} oldValue={oldValue} newValue={newValue} jsTypeof-newValue={
-                                                                                                                                         jsTypeof
-                                                                                                                                             newValue
-                                                    }")
+                                                    $"atomFamily.set()
+                                                    atomPath={atomPath} keyIdentifier={keyIdentifier} param={param} jsTypeof-newValue={
+                                                                                                                                           jsTypeof
+                                                                                                                                               newValue
+                                                    }
+                                                    oldValue={oldValue}
+                                                    newValue={newValue}
+                                                    lastValue={lastValue}
+                                                    ")
 
                                             async {
                                                 try
@@ -375,6 +389,8 @@ module Store =
                         //                        Profiling.addCount $"[gunEffect.on()] atomPath={atomPath}"
                         JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath}")
 
+                        let setAtom = JS.debounce setAtom 2000
+
                         gunAtomNode.on
                             (fun data _key ->
                                 async {
@@ -398,11 +414,16 @@ module Store =
 
 
                                         let assign () =
-                                            JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
+                                            JS.log
+                                                (fun () ->
+                                                    $"[gunEffect.on() value] atomPath={atomPath} lastValue={lastValue} decoded={
+                                                                                                                                    decoded
+                                                    } ")
+
                                             setAtom decoded
 
                                         match lastValue, decoded with
-                                        | Some value, Some decoded when value |> DeepEqual.deepEqual decoded |> not ->
+                                        | Some value, decoded when value |> DeepEqual.deepEqual (unbox decoded) |> not ->
                                             assign ()
                                         | None, _ -> assign ()
                                         | _ -> ()
@@ -740,9 +761,10 @@ module Store =
 
     let useState = Jotai.useAtom
 
-    let inline useSetState atom =
-        let setter = JotaiUtils.useUpdateAtom atom
-        fun value -> setter (fun _ -> value)
+    let inline useSetState atom = JotaiUtils.useUpdateAtom atom
 
-    let useSetStatePrev = JotaiUtils.useUpdateAtom
+    let inline useSetStatePrev<'T> atom =
+        let setter = JotaiUtils.useUpdateAtom<'T> atom
+        fun (value: 'T -> 'T) -> setter (unbox value)
+
     let inline atomWithProfiling x = atomWithProfiling x

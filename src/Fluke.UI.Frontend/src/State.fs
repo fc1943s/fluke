@@ -714,11 +714,6 @@ module State =
                     (fun (username: Username, taskId: TaskId) get set newValue ->
                         let databaseId = Atoms.getAtomValue get (databaseId (username, taskId))
 
-                        printfn
-                            $"databaseId.set databaseId={databaseId} username={username} taskId={taskId} newValue={
-                                                                                                                       newValue
-                            }"
-
                         if databaseId <> newValue then
                             let taskIdSet = Atoms.getAtomValue get (Atoms.Database.taskIdSet (username, databaseId))
 
@@ -727,14 +722,7 @@ module State =
                                 (Atoms.Database.taskIdSet (username, databaseId))
                                 (taskIdSet |> Set.remove taskId)
 
-                        let taskIdSet = Atoms.getAtomValue get (Atoms.Database.taskIdSet (username, newValue))
-
-                        Atoms.setAtomValue
-                            set
-                            (Atoms.Database.taskIdSet (username, newValue))
-                            (taskIdSet
-                             |> Set.remove Task.Default.Id
-                             |> Set.add taskId))
+                        Atoms.setAtomValuePrev set (Atoms.Database.taskIdSet (username, newValue)) (Set.add taskId))
                 )
 
             let rec isReadWrite =
@@ -868,14 +856,11 @@ module State =
                     (fun (username: Username, taskId: TaskId, dateId: DateId) get ->
                         let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet (username, taskId))
                         selectionSet.Contains dateId),
-                    (fun (username: Username, taskId: TaskId, dateId: DateId) get set newValue ->
-                        let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet (username, taskId))
-
-                        Atoms.setAtomValue
+                    (fun (username: Username, taskId: TaskId, dateId: DateId) _get set newValue ->
+                        Atoms.setAtomValuePrev
                             set
                             (Atoms.Task.selectionSet (username, taskId))
-                            (selectionSet
-                             |> (if newValue then Set.add else Set.remove) dateId))
+                            ((if newValue then Set.add else Set.remove) dateId))
                 )
 
             let rec sessions =

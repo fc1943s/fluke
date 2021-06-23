@@ -191,7 +191,7 @@ module Settings =
                                                     ColorPicker.render
                                                         {|
                                                             color = color
-                                                            onChange = fun color -> setColor color.hex
+                                                            onChange = fun color -> setColor (color.hex.ToUpper ())
                                                         |}
                                                 ]
                                     |}

@@ -93,16 +93,14 @@ module Jotai =
         abstract atomWithReducer : 'TValue -> ('TValue -> 'TValue -> 'TValue) -> Atom<'TValue>
         abstract atomWithStorage : string -> 'TValue -> Atom<'TValue>
 
-        //        [<Emit "$0.atomFamily($1, $2)">]
         abstract atomFamily : ('TKey -> Atom<'TValue>) -> ('TValue -> 'TValue -> bool) -> ('TKey -> Atom<'TValue>)
         abstract selectAtom : Atom<'TValue> * ('TValue -> 'U) -> Atom<'U>
 
         abstract waitForAll : Atom<'T> [] -> Atom<'T []>
 
         abstract useAtomValue : Atom<'TValue> -> 'TValue
-        //        abstract useUpdateAtom : Atom<'TValue> -> ('TValue -> unit)
 
-        abstract useUpdateAtom : Atom<'TValue> -> (('TValue -> 'TValue) -> unit)
+        abstract useUpdateAtom : Atom<'TValue> -> ('TValue -> unit)
 
         abstract useAtomCallback : (GetFn * SetFn * 'TArg -> JS.Promise<'TValue>) -> ('TArg -> JS.Promise<'TValue>)
 
@@ -165,11 +163,11 @@ module Jotai =
         match keyIdentifier with
         | Some keyIdentifier ->
             let gunNodePath = getGunNodePath atomPath keyIdentifier
-//            printfn $"registerAtom atomPath={atomPath} gunNodePath={gunNodePath}"
+            //            printfn $"registerAtom atomPath={atomPath} gunNodePath={gunNodePath}"
             registerAtomIdByPath atom gunNodePath |> ignore
             registerAtomPathById gunNodePath atom
         | None ->
-//            printfn $"registerAtom atomPath={atomPath}. skipping registration."
+            //            printfn $"registerAtom atomPath={atomPath}. skipping registration."
             atom
 
     let queryAtomPath atomPath =
@@ -221,19 +219,30 @@ module JotaiUtilsMagic =
         let inline setAtomValue<'TValue> (setter: SetFn) (atom: Atom<'TValue>) (value: 'TValue) =
             setter (atom |> box |> unbox) value
 
+        let inline setAtomValuePrev<'TValue> (setter: SetFn) (atom: Atom<'TValue>) (value: 'TValue -> 'TValue) =
+            setter (atom |> box |> unbox) value
+
         let atomWithStorage atomPath defaultValue (map: _ -> _) =
             let internalAtom = JotaiUtils.atomWithStorage atomPath defaultValue
 
             Jotai.atom (
                 (fun get -> getAtomValue get internalAtom),
-                Some (fun _get set arg -> setAtomValue set internalAtom (map arg))
+                Some
+                    (fun _get set argFn ->
+                        let arg =
+                            match jsTypeof argFn with
+                            | "function" -> (argFn |> box |> unbox) () |> unbox
+                            | _ -> argFn
+
+                        printfn $"atomWithStorage arg={arg} map={map} ma={map arg}"
+                        setAtomValue set internalAtom (map arg))
             )
             |> registerAtom atomPath None
 
         let isTesting = Jotai.atom JS.deviceInfo.IsTesting
 
         let rec gunPeers =
-            atomWithStorage $"{nameof gunPeers}" ([]: string list) (List.filter (String.IsNullOrWhiteSpace >> not))
+            atomWithStorage $"{nameof gunPeers}" ([||]: string []) (Array.filter (String.IsNullOrWhiteSpace >> not))
 
         let rec gunKeys = Jotai.atom Gun.GunKeys.Default
 
@@ -255,7 +264,7 @@ module JotaiUtilsMagic =
                         else
                             Gun.gun
                                 {
-                                    Gun.GunProps.peers = Some (gunPeers |> List.toArray)
+                                    Gun.GunProps.peers = Some gunPeers
                                     Gun.GunProps.radisk = Some true
                                     Gun.GunProps.localStorage = Some false
                                     Gun.GunProps.multicast = None

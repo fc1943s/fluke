@@ -19,7 +19,7 @@ module InitialPeers =
         let nextClick _ =
             promise {
                 match gunPeer with
-                | String.ValidString _ -> setGunPeers [ gunPeer ]
+                | String.ValidString _ -> setGunPeers [| gunPeer |]
                 | _ -> ()
             }
 

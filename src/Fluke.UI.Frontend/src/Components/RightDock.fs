@@ -148,11 +148,7 @@ module RightDock =
 
                                                                 if task.Id <> taskId then
                                                                     JS.setTimeout
-                                                                        (fun () ->
-                                                                            setTaskIdSet (
-                                                                                Set.remove Task.Default.Id
-                                                                                >> Set.add task.Id
-                                                                            ))
+                                                                        (fun () -> setTaskIdSet (Set.add task.Id))
                                                                         0
                                                                     |> ignore
 

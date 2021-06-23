@@ -136,16 +136,9 @@ module Hydrate =
         let hydrateTaskState = useHydrateTaskState ()
 
         Store.useCallback (
-            (fun get set (username, atomScope, databaseState) ->
+            (fun _get set (username, atomScope, databaseState) ->
                 promise {
                     do! hydrateDatabase (username, atomScope, databaseState.Database)
-
-                    let databaseIdSet = Atoms.getAtomValue get (Atoms.Session.databaseIdSet username)
-
-                    Atoms.setAtomValue
-                        set
-                        (Atoms.Session.databaseIdSet username)
-                        (databaseIdSet |> Set.add databaseState.Database.Id)
 
                     databaseState.InformationStateMap
                     |> Map.values
@@ -186,19 +179,16 @@ module Hydrate =
                                                  Some (dateId, userStatus)
                                              | _ -> None)
                                          |> Map.ofSeq)
-
-                                    let taskIdSet =
-                                        Atoms.getAtomValue
-                                            get
-                                            (Atoms.Database.taskIdSet (username, databaseState.Database.Id))
-
-                                    Atoms.setAtomValue
-                                        set
-                                        (Atoms.Database.taskIdSet (username, databaseState.Database.Id))
-                                        (taskIdSet |> Set.add taskState.Task.Id)
                                 })
                         |> Promise.Parallel
                         |> Promise.ignore
+
+                    Atoms.setAtomValue
+                        set
+                        (Atoms.Database.taskIdSet (username, databaseState.Database.Id))
+                        (databaseState.TaskStateMap
+                         |> Map.keys
+                         |> Set.ofSeq)
                 }),
             [|
                 box hydrateDatabase
@@ -210,14 +200,23 @@ module Hydrate =
         let hydrateDatabaseState = useHydrateDatabaseState ()
 
         Store.useCallback (
-            (fun _ _ username ->
+            (fun _ set username ->
                 promise {
-                    TestUser.fetchTemplatesDatabaseStateMap ()
-                    |> Map.values
-                    |> Seq.iter
-                        (fun databaseState ->
-                            hydrateDatabaseState (username, JotaiTypes.AtomScope.ReadOnly, databaseState)
-                            |> Promise.start)
+                    let databaseStateMap = TestUser.fetchTemplatesDatabaseStateMap ()
+
+                    do!
+                        databaseStateMap
+                        |> Map.values
+                        |> Seq.map
+                            (fun databaseState ->
+                                hydrateDatabaseState (username, JotaiTypes.AtomScope.ReadOnly, databaseState))
+                        |> Promise.Parallel
+                        |> Promise.ignore
+
+                    Atoms.setAtomValue
+                        set
+                        (Atoms.Session.databaseIdSet username)
+                        (databaseStateMap |> Map.keys |> Set.ofSeq)
                 }),
             [|
                 box hydrateDatabaseState

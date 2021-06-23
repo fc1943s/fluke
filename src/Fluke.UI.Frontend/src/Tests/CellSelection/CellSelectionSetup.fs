@@ -170,12 +170,11 @@ module CellSelectionSetup =
                                      databaseState.Database.Id,
                                      taskState)
 
-                            let taskIdSet =
-                                get (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId))
 
-                            set
+                            Atoms.setAtomValuePrev
+                                setFn
                                 (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId))
-                                (taskIdSet |> Set.add taskId)
+                                (Set.add taskId)
                         })
                 |> Promise.Parallel
                 |> Promise.ignore

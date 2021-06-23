@@ -103,6 +103,12 @@ module Set =
     let inline addIf item condition set =
         if not condition then set else set |> Set.add item
 
+    let inline seqAdd item seq =
+        seq
+        |> Set.ofSeq
+        |> Set.add item
+        |> Set.toSeq
+
     let inline collect fn set =
         set
         |> Set.toSeq

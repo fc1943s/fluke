@@ -29,7 +29,7 @@ module Content =
                     match username with
                     | None ->
                         match gunPeers, initialPeerSkipped with
-                        | [], false -> InitialPeers.InitialPeers ()
+                        | [||], false -> InitialPeers.InitialPeers ()
                         | _ -> LoginScreen.LoginScreen ()
                     | Some username ->
                         React.suspense (
