@@ -10,6 +10,8 @@ module private ListIter =
     let inline item (target: ^X when ^X: (member item : int -> ^Y)) (index: int) =
         (^X: (member item : int -> ^Y) target, index)
 
+module Async =
+    let lift (value: 'T) = async { return value }
 
 module Seq =
     let inline intersperse sep list =

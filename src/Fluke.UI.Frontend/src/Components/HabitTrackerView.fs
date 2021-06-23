@@ -20,10 +20,8 @@ module HabitTrackerView =
                 Chakra.flex
                     (fun x ->
                         x.direction <- "column"
-                        x.flex <- "1"
                         x.paddingRight <- "10px"
-                        x.paddingLeft <- "4px"
-                        x.maxWidth <- "400px")
+                        x.paddingLeft <- "4px")
                     [
                         yield!
                             Chakra.box (fun x -> x.minHeight <- $"{cellSize}px") []
@@ -77,8 +75,9 @@ module HabitTrackerView =
                                     ]
                             ]
                     ]
+
                 Chakra.box
-                    (fun _ -> ())
+                    (fun x -> x.flex <- "1")
                     [
                         GridHeader.GridHeader {| Username = input.Username |}
                         Cells.Cells

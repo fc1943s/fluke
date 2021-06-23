@@ -179,13 +179,13 @@ module Hydrate =
                                     Atoms.setAtomValue
                                         set
                                         (Atoms.Task.statusMap (username, taskState.Task.Id))
-                                        ((taskState.CellStateMap
-                                          |> Seq.choose
-                                              (function
-                                              | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
-                                                  Some (dateId, userStatus)
-                                              | _ -> None)
-                                          |> Map.ofSeq))
+                                        (taskState.CellStateMap
+                                         |> Seq.choose
+                                             (function
+                                             | KeyValue (dateId, { Status = UserStatus (_, userStatus) }) ->
+                                                 Some (dateId, userStatus)
+                                             | _ -> None)
+                                         |> Map.ofSeq)
 
                                     let taskIdSet =
                                         Atoms.getAtomValue

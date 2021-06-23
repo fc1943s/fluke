@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Bindings
 #nowarn "40"
 
 
+
 open Fluke.UI.Frontend.Bindings
 open Fable.Core.JsInterop
 open Fable.Core
@@ -11,6 +12,11 @@ open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
 open Microsoft.FSharp.Core.Operators
 open Feliz
+open Fluke.Shared
+open Fable.Core.JsInterop
+open Feliz
+open Fluke.UI.Frontend.Bindings
+open Fable.Core
 
 
 //[<AutoOpen>]
@@ -131,6 +137,20 @@ module Store =
     let inline asyncSelectorFamilyWithProfiling<'TKey, 'TValue>
         (
             atomPath,
+            getFn: 'TKey -> GetFn -> JS.Promise<'TValue>
+        ) =
+        JotaiUtils.atomFamily
+            (fun param ->
+                asyncAtomSetterWithProfiling (
+                    (atomPath,
+                     (fun get -> promise { return! getFn param get }),
+                     (fun _get _set _newValue -> promise { () }))
+                ))
+            DeepEqual.deepEqual
+
+    let inline asyncSelectorFamilySetterWithProfiling<'TKey, 'TValue>
+        (
+            atomPath,
             getFn: 'TKey -> GetFn -> JS.Promise<'TValue>,
             setFn: 'TKey -> GetFn -> SetFn -> 'TValue -> JS.Promise<unit>
         ) =
@@ -202,7 +222,63 @@ module Store =
 //        let gunAtomNode = getInternalGunAtomNode gun username atomPath
 //        username, atomPath, gunAtomNode
 
-    let atomFamilyWithProfiling<'TKey, 'TValue>
+    let inline userEncode<'TValue> (gun: Gun.IGunChainReference) (value: 'TValue) =
+        async {
+            try
+                let user = gun.user ()
+                let keys = user.__.sea
+
+                match keys with
+                | Some keys ->
+                    let json =
+                        value
+                        |> Gun.jsonEncode<'TValue>
+                        |> Gun.jsonEncode<string>
+
+                    //                    printfn $"userEncode value={value} json={json}"
+//
+                    let! encrypted = Gun.sea.encrypt json keys |> Async.AwaitPromise
+
+                    let! signed = Gun.sea.sign encrypted keys |> Async.AwaitPromise
+                    //                    JS.log (fun () -> $"userEncode. json={json} encrypted={encrypted} signed={signed}")
+                    return signed
+                | None -> return failwith $"No keys found for user {user.is}"
+            with ex ->
+                Browser.Dom.console.error ("[exception4]", ex)
+                return raise ex
+        }
+
+    let inline userDecode<'TValue> (gun: Gun.IGunChainReference) data =
+        async {
+            try
+                let user = gun.user ()
+                let keys = user.__.sea
+
+                match keys |> Option.ofObjUnbox with
+                | Some (Some keys) ->
+                    let! verified = Gun.sea.verify data keys.pub |> Async.AwaitPromise
+
+                    let! decrypted =
+                        Gun.sea.decrypt verified keys
+                        |> Async.AwaitPromise
+                    //
+//                    printfn
+//                        $"userDecode
+//                    decrypted={decrypted}
+//                    typeof decrypted={jsTypeof decrypted}"
+
+                    let decoded = decrypted |> Gun.jsonDecode<'TValue option>
+
+                    //                    printfn $"userDecode decoded={decoded}"
+//
+                    return decoded
+                | _ -> return failwith $"No keys found for user {user.is}"
+            with ex ->
+                Browser.Dom.console.error ("[exception5]", ex)
+                return raise ex
+        }
+
+    let inline atomFamilyWithProfiling<'TKey, 'TValue>
         (
             atomPath,
             defaultValue: 'TKey -> 'TValue,
@@ -218,49 +294,149 @@ module Store =
                     | Some (username, keyIdentifier) -> Some username, Some keyIdentifier
                     | None -> None, None
 
-//                printfn $"atomFamily constructor atomPath={atomPath} param={param} keyIdentifier={keyIdentifier}"
+                //                printfn $"atomFamily constructor atomPath={atomPath} param={param} keyIdentifier={keyIdentifier}"
+
+                let mutable lastGunAtomNode = None
+                let mutable lastValue = None
+
+                let getGunAtomNode get atom =
+                    match username with
+                    | Some username ->
+                        let gun = Atoms.getAtomValue get Atoms.gun
+                        getInternalGunAtomNode gun username (AtomPath.Atom atom)
+                    | None -> None
 
                 let rec wrapper =
                     atomSetterWithProfiling (
                         atomPath,
                         keyIdentifier |> Option.defaultValue [] |> Some,
                         (fun get ->
-                            let gunAtomNode =
-                                match username with
-                                | Some username ->
-                                    let gun = Atoms.getAtomValue get Atoms.gun
-                                    getInternalGunAtomNode gun username (AtomPath.Atom wrapper)
-                                | None -> None
+                            match username, lastGunAtomNode with
+                            | Some _, None -> lastGunAtomNode <- getGunAtomNode get wrapper
+                            | _ -> ()
 
                             let result = Atoms.getAtomValue get internalAtom
 
-//                            printfn
-//                                $"atomFamily.get() atomPath={atomPath} keyIdentifier={keyIdentifier} param={param} result={
-//                                                                                                                               result
-//                                }"
+                            JS.log
+                                (fun () ->
+                                    $"atomFamily.get() atomPath={atomPath} keyIdentifier={keyIdentifier} param={param} result={
+                                                                                                                                   result
+                                    }")
+
+                            lastValue <- Some result
 
                             result),
                         (fun get set newValue ->
-                            let gun = Atoms.getAtomValue get Atoms.gun
+                            match username, lastGunAtomNode with
+                            | Some _, None -> lastGunAtomNode <- getGunAtomNode get wrapper
+                            | _ -> ()
 
-//                            printfn
-//                                $"atomFamily.set() atomPath={atomPath} keyIdentifier={keyIdentifier} param={param} newValue={
-//                                                                                                                                 newValue
-//                                }"
+                            Atoms.setAtomValue
+                                set
+                                internalAtom
+                                (unbox
+                                    (fun oldValue ->
+                                        if oldValue |> DeepEqual.deepEqual newValue |> not then
+                                            JS.log
+                                                (fun () ->
+                                                    $"atomFamily.set() atomPath={atomPath} keyIdentifier={keyIdentifier} param={
+                                                                                                                                    param
+                                                    } newValue={newValue} oldValue={oldValue} newValue={newValue} jsTypeof-newValue={
+                                                                                                                                         jsTypeof
+                                                                                                                                             newValue
+                                                    }")
 
-                            Atoms.setAtomValue set internalAtom newValue)
+                                            async {
+                                                try
+                                                    match lastGunAtomNode with
+                                                    | Some gunAtomNode ->
+
+                                                        let! newValueJson =
+                                                            if newValue |> JS.ofNonEmptyObj |> Option.isNone then
+                                                                null |> Async.lift
+                                                            else
+                                                                userEncode<'TValue> gunAtomNode newValue
+
+                                                        Gun.put gunAtomNode newValueJson
+                                                    | None ->
+                                                        Browser.Dom.console.error
+                                                            $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
+                                                with ex -> Browser.Dom.console.error ("[exception2]", ex)
+                                            }
+                                            |> Async.StartAsPromise
+                                            |> Promise.start
+
+                                        newValue)))
                     )
 
                 let subscribe setAtom =
-                    ()
-//                    printfn $"atomFamily debouncedSubscribe() atomPath={atomPath} param={param}"
+                    match lastGunAtomNode with
+                    | Some gunAtomNode ->
+                        //                        Profiling.addCount $"[gunEffect.on()] atomPath={atomPath}"
+                        JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath}")
+
+                        gunAtomNode.on
+                            (fun data _key ->
+                                async {
+                                    try
+                                        let! decoded =
+                                            match box data with
+                                            | null -> unbox null |> Async.lift
+                                            | _ ->
+                                                //                                            printfn $"decoding atomPath={atomPath}"
+                                                userDecode<'TValue> gunAtomNode data
+
+                                        //                                        JS.log
+                                        //                                            (fun () ->
+                                        //                                                $"[gunEffect.onGunData()] atomPath={atomPath} data={unbox data}; typeof data={
+                                        //                                                                                                                                  jsTypeof
+                                        //                                                                                                                                      data
+                                        //                                                }; decoded={unbox decoded}; typeof decoded={jsTypeof decoded};")
+
+                                        //                                    JS.setTimeout
+                                        //                                        (fun () ->
+
+
+                                        let assign () =
+                                            JS.log (fun () -> $"[gunEffect.on() value] atomPath={atomPath}")
+                                            setAtom decoded
+
+                                        match lastValue, decoded with
+                                        | Some value, Some decoded when value |> DeepEqual.deepEqual decoded |> not ->
+                                            assign ()
+                                        | None, _ -> assign ()
+                                        | _ -> ()
+                                    //                                        e.setSelf
+//                                            (fun _oldValue ->
+//                                                //let encodedOldValue = Gun.jsonEncode oldValue
+//                                                //                                                let decodedJson = Gun.jsonEncode decoded
+//                                                //                                                if encodedOldValue <> decodedJson then unbox decoded else oldValue
+//                                                unbox decoded)
+                                    //                                                )
+                                    //                                        500
+                                    //                                    |> ignore
+                                    with ex -> Browser.Dom.console.error ("[exception1]", ex)
+                                }
+                                |> Async.StartAsPromise
+                                |> Promise.start)
+
+                    | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {atomPath}"
+                //                    printfn $"atomFamily debouncedSubscribe() atomPath={atomPath} param={param}"
                 // setAtom (fun x ->
 //                                    printfn $"jotaiAtomFamily: setting {x} + 1"
 //                                    x + 1)
 
-                let unsubscribe setAtom =
-                    ()
-//                    printfn $"atomFamily debouncedUnsubscribe() atomPath={atomPath} param={param}"
+                let unsubscribe _setAtom =
+                    try
+                        match lastGunAtomNode with
+                        | Some gunAtomNode ->
+                            JS.log (fun () -> $"[atomFamily.unsubscribe()] atomPath={atomPath} param={param}")
+
+                            gunAtomNode.off () |> ignore
+                        | None -> Browser.Dom.console.error $"[gunEffect.off()] Gun node not found: {atomPath}"
+                    with ex -> Browser.Dom.console.error ("[exception3]", ex)
+
+                //                    lastGunAtomNode <- None
 
                 let mutable lastSubscription = None
 
@@ -268,10 +444,11 @@ module Store =
                     //                    JS.debounce
                     (fun setAtom ->
                         if lastSubscription.IsNone then
+                            //                            if atomPath = "User/leftDock" then
                             subscribe setAtom
                             lastSubscription <- Some DateTime.Now.Ticks
                         else
-//                            printf $"atomFamily Skipping subscribe atomPath={atomPath} param={param} diffMs={DateTime.ticksDiff (lastSubscription |>Option.defaultValue DateTime.Now.Ticks)}"
+                            //                            printf $"atomFamily Skipping subscribe atomPath={atomPath} param={param} diffMs={DateTime.ticksDiff (lastSubscription |>Option.defaultValue DateTime.Now.Ticks)}"
                             ())
                 //                        0
 
@@ -279,10 +456,10 @@ module Store =
                     //                    JS.debounce
                     (fun setAtom ->
                         match lastSubscription with
-                        | Some ticks when DateTime.ticksDiff ticks < 300. ->
-                            ()
-//                            printf $"atomFamily Skipping unsubscribe atomPath={atomPath} param={param} diffMs={DateTime.ticksDiff (lastSubscription |>Option.defaultValue DateTime.Now.Ticks)}"
+                        | Some ticks when DateTime.ticksDiff ticks < 1000. -> ()
+                        //                            printf $"atomFamily Skipping unsubscribe atomPath={atomPath} param={param} diffMs={DateTime.ticksDiff (lastSubscription |>Option.defaultValue DateTime.Now.Ticks)}"
                         | _ ->
+                            //                            if atomPath = "User/leftDock" then
                             unsubscribe setAtom
                             lastSubscription <- None)
                 //                        0
@@ -314,15 +491,16 @@ module Store =
                 let guidHash = Crypto.getTextGuidHash atomPath
                 let pathHash = username, guidHash
 
-                printfn $"readWriteValueWrapper constructor. atomPath={atomPath} guidHash={guidHash}"
+                JS.log (fun () -> $"readWriteValueWrapper constructor. atomPath={atomPath} guidHash={guidHash}")
 
                 let wrapper =
                     Jotai.atom (
                         (fun get ->
                             let value = Atoms.getAtomValue get (readWriteValue pathHash)
 
-                            printfn
-                                $"readWriteValueWrapper.get(). atomPath={atomPath} guidHash={guidHash} value={value}"
+                            JS.log
+                                (fun () ->
+                                    $"readWriteValueWrapper.get(). atomPath={atomPath} guidHash={guidHash} value={value}")
 
                             match value with
                             | null -> null
@@ -341,10 +519,11 @@ module Store =
                                             Value = newValue |> Option.ofObj
                                         }
 
-                                printfn
-                                    $"readWriteValueWrapper.set(). atomPath={atomPath} guidHash={guidHash} newValue={
-                                                                                                                         newValue
-                                    }"
+                                JS.log
+                                    (fun () ->
+                                        $"readWriteValueWrapper.set(). atomPath={atomPath} guidHash={guidHash} newValue={
+                                                                                                                             newValue
+                                        }")
 
                                 Atoms.setAtomValue set (readWriteValue pathHash) (newValue |> box |> unbox))
                     )

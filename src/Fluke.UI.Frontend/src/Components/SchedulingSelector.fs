@@ -13,7 +13,8 @@ open Fluke.UI.Frontend.State
 
 module SchedulingSelector =
 
-    let numberInput value (setValue: int -> unit) =
+    [<ReactComponent>]
+    let NumberInput value (setValue: int -> unit) =
         Input.Input
             {|
                 CustomProps =
@@ -56,7 +57,8 @@ module SchedulingSelector =
                     ]
             ]
 
-    let manualRadio value =
+    [<ReactComponent>]
+    let ManualRadio value =
         radio
             "row"
             (match value with
@@ -83,7 +85,8 @@ module SchedulingSelector =
                     ]
             ]
 
-    let suggestedRadio value =
+    [<ReactComponent>]
+    let SuggestedRadio value =
         radio
             "row"
             (match value with
@@ -110,7 +113,9 @@ module SchedulingSelector =
                     ]
             ]
 
-    let offsetDaysRadio value setValue =
+
+    [<ReactComponent>]
+    let OffsetDaysRadio value setValue =
         radio
             "row"
             (match value with
@@ -127,7 +132,7 @@ module SchedulingSelector =
                             [
                                 str "Every"
                             ]
-                        numberInput
+                        NumberInput
                             (match value with
                              | Recurrency (Offset (Days n)) -> Some n
                              | _ -> Some 1)
@@ -140,7 +145,8 @@ module SchedulingSelector =
                     ]
             ]
 
-    let offsetWeeksRadio value setValue =
+    [<ReactComponent>]
+    let OffsetWeeksRadio value setValue =
         radio
             "row"
             (match value with
@@ -157,7 +163,7 @@ module SchedulingSelector =
                             [
                                 str "Every"
                             ]
-                        numberInput
+                        NumberInput
                             (match value with
                              | Recurrency (Offset (Weeks n)) -> Some n
                              | _ -> Some 1)
@@ -170,7 +176,8 @@ module SchedulingSelector =
                     ]
             ]
 
-    let offsetMonthsRadio value setValue =
+    [<ReactComponent>]
+    let OffsetMonthsRadio value setValue =
         radio
             "row"
             (match value with
@@ -187,7 +194,7 @@ module SchedulingSelector =
                             [
                                 str "Every"
                             ]
-                        numberInput
+                        NumberInput
                             (match value with
                              | Recurrency (Offset (Months n)) -> Some n
                              | _ -> Some 1)
@@ -200,7 +207,9 @@ module SchedulingSelector =
                     ]
             ]
 
-    let fixedWeeklyRadio value setValue weekStart =
+
+    [<ReactComponent>]
+    let FixedWeeklyRadio value setValue weekStart =
         Chakra.stack
             (fun x ->
                 x.alignItems <- "center"
@@ -277,7 +286,9 @@ module SchedulingSelector =
                                 ])
             ]
 
-    let fixedMonthlyRadio value setValue =
+
+    [<ReactComponent>]
+    let FixedMonthlyRadio value setValue =
         Chakra.stack
             (fun x ->
                 x.alignItems <- "center"
@@ -380,7 +391,9 @@ module SchedulingSelector =
                     ]
             ]
 
-    let inline fixedYearlyRadio value setValue =
+
+    [<ReactComponent>]
+    let FixedYearlyRadio value setValue =
         let rows =
             match value with
             | Recurrency (Fixed fixedRecurrencyList) ->
@@ -683,25 +696,25 @@ module SchedulingSelector =
                                                     x.spacing <- "18px"
                                                     x.padding <- "5px")
                                                 [
-                                                    manualRadio schedulingFieldOptions.AtomValue
-                                                    suggestedRadio schedulingFieldOptions.AtomValue
-                                                    offsetDaysRadio
+                                                    ManualRadio schedulingFieldOptions.AtomValue
+                                                    SuggestedRadio schedulingFieldOptions.AtomValue
+                                                    OffsetDaysRadio
                                                         schedulingFieldOptions.AtomValue
                                                         schedulingFieldOptions.SetAtomValue
-                                                    offsetWeeksRadio
+                                                    OffsetWeeksRadio
                                                         schedulingFieldOptions.AtomValue
                                                         schedulingFieldOptions.SetAtomValue
-                                                    offsetMonthsRadio
+                                                    OffsetMonthsRadio
                                                         schedulingFieldOptions.AtomValue
                                                         schedulingFieldOptions.SetAtomValue
-                                                    fixedWeeklyRadio
+                                                    FixedWeeklyRadio
                                                         schedulingFieldOptions.AtomValue
                                                         schedulingFieldOptions.SetAtomValue
                                                         weekStart
-                                                    fixedMonthlyRadio
+                                                    FixedMonthlyRadio
                                                         schedulingFieldOptions.AtomValue
                                                         schedulingFieldOptions.SetAtomValue
-                                                    fixedYearlyRadio
+                                                    FixedYearlyRadio
                                                         schedulingFieldOptions.AtomValue
                                                         schedulingFieldOptions.SetAtomValue
 

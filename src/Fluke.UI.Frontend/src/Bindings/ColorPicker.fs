@@ -10,4 +10,4 @@ module ColorPicker =
         (props: {| color: string
                    onChange: {| hex: string |} -> unit |})
         =
-        ReactBindings.React.createElement (sketchPicker, {| props with width = "183px" |}, [])
+        ReactBindings.React.createElement (sketchPicker, {| props with width = "210px" |}, [])
