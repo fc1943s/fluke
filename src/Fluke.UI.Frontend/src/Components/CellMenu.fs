@@ -29,7 +29,7 @@ module CellMenu =
         let sessionStatus, setSessionStatus =
             Store.useState (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
 
-        let cellSelectionMap = Store.useValue (Selectors.Session.cellSelectionMap input.Username)
+        let cellSelectionMap, setCellSelectionMap = Store.useState (Selectors.Session.cellSelectionMap input.Username)
 
         let dayStart = Store.useValue (Atoms.User.dayStart input.Username)
 
@@ -68,10 +68,13 @@ module CellMenu =
                             (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
                             onClickStatus
 
+                        setCellSelectionMap Map.empty
+
                         input.OnClose ()
                     }),
                 [|
                     box cellSelectionMap
+                    box setCellSelectionMap
                     box input
                 |]
             )

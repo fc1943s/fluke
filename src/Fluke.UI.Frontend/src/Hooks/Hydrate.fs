@@ -213,10 +213,10 @@ module Hydrate =
                         |> Promise.Parallel
                         |> Promise.ignore
 
-                    Atoms.setAtomValue
+                    Atoms.setAtomValuePrev
                         set
                         (Atoms.Session.databaseIdSet username)
-                        (databaseStateMap |> Map.keys |> Set.ofSeq)
+                        (Set.union (databaseStateMap |> Map.keys |> Set.ofSeq))
                 }),
             [|
                 box hydrateDatabaseState
@@ -291,7 +291,7 @@ module Hydrate =
         let toast = Chakra.useToast ()
 
         Store.useCallback (
-            (fun _get _set (username, files) ->
+            (fun _get set (username, files) ->
                 promise {
                     match files with
                     | Some (files: FileList) ->
@@ -312,46 +312,54 @@ module Hydrate =
                                 files
                                 |> Array.map
                                     (fun content ->
-                                        let databaseState = Gun.jsonDecode<DatabaseState> content
+                                        promise {
+                                            let databaseState = Gun.jsonDecode<DatabaseState> content
 
-                                        let database =
-                                            let databaseName =
-                                                let databaseName = databaseState.Database.Name |> DatabaseName.Value
+                                            let database =
+                                                let databaseName =
+                                                    let databaseName = databaseState.Database.Name |> DatabaseName.Value
 
-                                                let timestamp =
-                                                    DateTime.Now
-                                                    |> FlukeDateTime.FromDateTime
-                                                    |> FlukeDateTime.Stringify
+                                                    let timestamp =
+                                                        DateTime.Now
+                                                        |> FlukeDateTime.FromDateTime
+                                                        |> FlukeDateTime.Stringify
 
-                                                DatabaseName $"{databaseName}_{timestamp}"
+                                                    DatabaseName $"{databaseName}_{timestamp}"
 
-                                            {
-                                                Id = DatabaseId.NewId ()
-                                                Name = databaseName
-                                                Owner = username
-                                                SharedWith = DatabaseAccess.Private []
-                                                Position = databaseState.Database.Position
-                                            }
+                                                {
+                                                    Id = DatabaseId.NewId ()
+                                                    Name = databaseName
+                                                    Owner = username
+                                                    SharedWith = DatabaseAccess.Private []
+                                                    Position = databaseState.Database.Position
+                                                }
 
-                                        hydrateDatabaseState (
-                                            username,
-                                            JotaiTypes.AtomScope.ReadOnly,
-                                            { databaseState with
-                                                Database = database
-                                                TaskStateMap =
-                                                    databaseState.TaskStateMap
-                                                    |> Map.toSeq
-                                                    |> Seq.map
-                                                        (fun (_, taskState) ->
-                                                            let taskId = TaskId.NewId ()
+                                            do!
+                                                hydrateDatabaseState (
+                                                    username,
+                                                    JotaiTypes.AtomScope.ReadOnly,
+                                                    { databaseState with
+                                                        Database = database
+                                                        TaskStateMap =
+                                                            databaseState.TaskStateMap
+                                                            |> Map.toSeq
+                                                            |> Seq.map
+                                                                (fun (_, taskState) ->
+                                                                    let taskId = TaskId.NewId ()
 
-                                                            taskId,
-                                                            { taskState with
-                                                                Task = { taskState.Task with Id = taskId }
-                                                            })
-                                                    |> Map.ofSeq
-                                            }
-                                        ))
+                                                                    taskId,
+                                                                    { taskState with
+                                                                        Task = { taskState.Task with Id = taskId }
+                                                                    })
+                                                            |> Map.ofSeq
+                                                    }
+                                                )
+
+                                            Atoms.setAtomValuePrev
+                                                set
+                                                (Atoms.Session.databaseIdSet username)
+                                                (Set.add database.Id)
+                                        })
                                 |> Promise.Parallel
                                 |> Promise.ignore
 

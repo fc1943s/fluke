@@ -234,7 +234,6 @@ module JotaiUtilsMagic =
                             | "function" -> (argFn |> box |> unbox) () |> unbox
                             | _ -> argFn
 
-                        printfn $"atomWithStorage arg={arg} map={map} ma={map arg}"
                         setAtomValue set internalAtom (map arg))
             )
             |> registerAtom atomPath None
@@ -283,10 +282,6 @@ module JotaiUtilsMagic =
                     //                    let username = getter.get Atoms.username
 //                    let gunKeys = getter.get Atoms.gunKeys
                     let user = gun.user ()
-
-                    match JS.window id with
-                    | Some window -> window?gunNamespace <- gun
-                    | None -> ()
 
                     printfn $"gunNamespace selector. user.is={JS.JSON.stringify user.is} keys={user.__.sea}..."
 

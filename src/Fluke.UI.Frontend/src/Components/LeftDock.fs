@@ -58,6 +58,7 @@ module LeftDock =
                                                     fun x ->
                                                         x.flex <- "1"
                                                         x.padding <- "10px"
+                                                        x.paddingTop <- "3px"
                                                         x.overflowY <- "auto"
                                                         x.flexBasis <- 0
                                             |}

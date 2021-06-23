@@ -323,7 +323,7 @@ module Store =
                                                                                                                                    result
                                     }")
 
-                            lastValue <- Some result
+                            lastValue <- Some (DateTime.Now.Ticks, result)
 
                             result),
                         (fun get set newValueFn ->
@@ -380,6 +380,8 @@ module Store =
                                             |> Async.StartAsPromise
                                             |> Promise.start
 
+                                        lastValue <- Some (DateTime.Now.Ticks, newValue)
+
                                         newValue)))
                     )
 
@@ -389,57 +391,43 @@ module Store =
                         //                        Profiling.addCount $"[gunEffect.on()] atomPath={atomPath}"
                         JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath}")
 
-                        let setAtom = JS.debounce setAtom 2000
+                        let newSetAtom =
+                            JS.debounce
+                                (fun (ticks, data) ->
+                                    async {
+                                        try
+                                            let! newValue =
+                                                match box data with
+                                                | null -> unbox null |> Async.lift
+                                                | _ -> userDecode<'TValue> gunAtomNode data
 
-                        gunAtomNode.on
-                            (fun data _key ->
-                                async {
-                                    try
-                                        let! decoded =
-                                            match box data with
-                                            | null -> unbox null |> Async.lift
+                                            match lastValue with
+                                            | Some (lastValueTicks, lastValue) when
+                                                lastValueTicks > ticks
+                                                || lastValue |> DeepEqual.deepEqual (unbox newValue)
+                                                || (unbox lastValue = null && unbox newValue = null) ->
+                                                ()
+//                                                printfn
+//                                                    $"on() value. skipping. atomPath={atomPath} lastValue={lastValue} newValue={
+//                                                                                                                                    newValue
+//                                                    }"
                                             | _ ->
-                                                //                                            printfn $"decoding atomPath={atomPath}"
-                                                userDecode<'TValue> gunAtomNode data
+                                                ()
+//                                                printfn
+//                                                    $"on() value. triggering. atomPath={atomPath} lastValue={lastValue} newValue={
+//                                                                                                                                      newValue
+//                                                    }"
 
-                                        //                                        JS.log
-                                        //                                            (fun () ->
-                                        //                                                $"[gunEffect.onGunData()] atomPath={atomPath} data={unbox data}; typeof data={
-                                        //                                                                                                                                  jsTypeof
-                                        //                                                                                                                                      data
-                                        //                                                }; decoded={unbox decoded}; typeof decoded={jsTypeof decoded};")
+                                                setAtom newValue
+                                        with ex -> Browser.Dom.console.error ("[exception1]", ex)
+                                    }
+                                    |> Async.StartAsPromise
+                                    |> Promise.start
 
-                                        //                                    JS.setTimeout
-                                        //                                        (fun () ->
+                                    )
+                                2000
 
-
-                                        let assign () =
-                                            JS.log
-                                                (fun () ->
-                                                    $"[gunEffect.on() value] atomPath={atomPath} lastValue={lastValue} decoded={
-                                                                                                                                    decoded
-                                                    } ")
-
-                                            setAtom decoded
-
-                                        match lastValue, decoded with
-                                        | Some value, decoded when value |> DeepEqual.deepEqual (unbox decoded) |> not ->
-                                            assign ()
-                                        | None, _ -> assign ()
-                                        | _ -> ()
-                                    //                                        e.setSelf
-//                                            (fun _oldValue ->
-//                                                //let encodedOldValue = Gun.jsonEncode oldValue
-//                                                //                                                let decodedJson = Gun.jsonEncode decoded
-//                                                //                                                if encodedOldValue <> decodedJson then unbox decoded else oldValue
-//                                                unbox decoded)
-                                    //                                                )
-                                    //                                        500
-                                    //                                    |> ignore
-                                    with ex -> Browser.Dom.console.error ("[exception1]", ex)
-                                }
-                                |> Async.StartAsPromise
-                                |> Promise.start)
+                        gunAtomNode.on (fun data _key -> newSetAtom (DateTime.Now.Ticks, data))
 
                     | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {atomPath}"
                 //                    printfn $"atomFamily debouncedSubscribe() atomPath={atomPath} param={param}"
