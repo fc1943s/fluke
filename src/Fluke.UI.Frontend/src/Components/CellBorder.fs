@@ -12,14 +12,10 @@ module CellBorder =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let CellBorder
-        (input: {| Username: Username
-                   TaskId: TaskId
-                   Date: FlukeDate |})
-        =
-        let weekStart = Store.useValue (Atoms.User.weekStart input.Username)
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite (input.Username, input.TaskId))
+    let CellBorder (input: {| TaskId: TaskId; Date: FlukeDate |}) =
+        let weekStart = Store.useValue Atoms.weekStart
+        let cellSize = Store.useValue Atoms.cellSize
+        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
 
         match (weekStart, input.Date) with
         | StartOfMonth -> Some ("1px", "#ffffff3d")

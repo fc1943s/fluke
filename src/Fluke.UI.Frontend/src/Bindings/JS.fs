@@ -80,19 +80,22 @@ module JS =
             printfn $"deviceInfo={JS.JSON.stringify deviceInfo}"
             deviceInfo
 
-    let isDebug =
+    let private isDebugStatic =
         not deviceInfo.GitHubPages
         && not deviceInfo.IsExtension
         && not deviceInfo.IsElectron
         && not deviceInfo.IsMobile
 
-    let inline log fn =
+    let isDebug () =
         let debug =
             match window id with
             | None -> false
             | Some window -> window?Debug
 
-        if debug <> false && (debug || isDebug) then printfn $"[log] {fn ()}" else ()
+        debug <> false && (debug || isDebugStatic)
+
+    let inline log fn =
+        if isDebug () then printfn $"[log] {fn ()}"
 
     let inline consoleLog x = Browser.Dom.console.log x
 
@@ -104,6 +107,10 @@ module JS =
     let playAudioVolume (_volume: float) (_file: string) : unit = jsNative
 
     let playAudio = playAudioVolume 0.5
+
+
+    [<Emit "$0($1,$2)">]
+    let inline jsCall _fn _a _b = jsNative
 
     let newObj fn = jsOptions<_> fn
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"

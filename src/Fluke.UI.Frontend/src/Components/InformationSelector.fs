@@ -39,20 +39,14 @@ module InformationSelector =
 
     [<ReactComponent>]
     let InformationSelector
-        (input: {| Username: UserInteraction.Username
-                   DisableResource: bool
+        (input: {| DisableResource: bool
                    SelectionType: InformationSelectionType
                    TaskId: TaskId |})
         =
         let informationFieldOptions =
             Store.useAtomFieldOptions
-                (Some (
-                    JotaiTypes.InputAtom (
-                        input.Username,
-                        JotaiTypes.AtomPath.Atom (Atoms.Task.information (input.Username, input.TaskId))
-                    )
-                ))
-                (Some (JotaiTypes.InputScope.ReadWrite Gun.defaultSerializer))
+                (Some (Store.InputAtom (Store.AtomPath.Atom (Atoms.Task.information input.TaskId))))
+                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
 
         let informationName, informationSelected =
             React.useMemo (
@@ -84,7 +78,7 @@ module InformationSelector =
             |]
         )
 
-        let informationSet = Store.useValue (Selectors.Session.informationSet input.Username)
+        let informationSet = Store.useValue Selectors.Session.informationSet
 
         let sortedInformationList =
             React.useMemo (
@@ -353,7 +347,6 @@ module InformationSelector =
                                                                         | nameof Project ->
                                                                             ProjectForm.ProjectForm
                                                                                 {|
-                                                                                    Username = input.Username
                                                                                     Project =
                                                                                         match informationFieldOptions.AtomValue with
                                                                                         | Project project -> project
@@ -372,7 +365,6 @@ module InformationSelector =
                                                                         | nameof Area ->
                                                                             AreaForm.AreaForm
                                                                                 {|
-                                                                                    Username = input.Username
                                                                                     Area =
                                                                                         match informationFieldOptions.AtomValue with
                                                                                         | Area area -> area

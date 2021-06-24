@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fable.Core
 open System
 open Fable.React
 open Feliz
@@ -17,21 +16,16 @@ module CellMenu =
 
     [<ReactComponent>]
     let CellMenu
-        (input: {| Username: Username
-                   TaskId: TaskId
+        (input: {| TaskId: TaskId
                    DateId: DateId
                    OnClose: unit -> unit |})
         =
-
+        let username = Store.useValue Atoms.username
         let toast = Chakra.useToast ()
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
-
-        let sessionStatus, setSessionStatus =
-            Store.useState (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
-
-        let cellSelectionMap, setCellSelectionMap = Store.useState (Selectors.Session.cellSelectionMap input.Username)
-
-        let dayStart = Store.useValue (Atoms.User.dayStart input.Username)
+        let cellSize = Store.useValue Atoms.cellSize
+        let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (input.TaskId, input.DateId))
+        let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
+        let dayStart = Store.useValue Atoms.dayStart
 
         let postponedUntil, setPostponedUntil =
             React.useState (
@@ -45,12 +39,12 @@ module CellMenu =
             | UserStatus (_, Postponed (Some until)) -> until |> FlukeTime.Stringify
             | _ -> "later"
 
-        let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
-        let setCellUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Cell))
+        let setRightDock = Store.useSetState Atoms.rightDock
+        let setCellUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Cell)
 
         let onClick =
             Store.useCallback (
-                (fun get set (onClickStatus: CellStatus) ->
+                (fun _get set (onClickStatus: CellStatus) ->
                     promise {
                         cellSelectionMap
                         |> Map.iter
@@ -60,21 +54,19 @@ module CellMenu =
                                     (fun date ->
                                         Atoms.setAtomValue
                                             set
-                                            (Selectors.Cell.sessionStatus (input.Username, taskId, DateId date))
+                                            (Selectors.Cell.sessionStatus (taskId, DateId date))
                                             onClickStatus))
 
-                        Atoms.setAtomValue
-                            set
-                            (Selectors.Cell.sessionStatus (input.Username, input.TaskId, input.DateId))
-                            onClickStatus
+                        Atoms.setAtomValue set (Selectors.Cell.sessionStatus (input.TaskId, input.DateId)) onClickStatus
 
-                        setCellSelectionMap Map.empty
+                        cellSelectionMap
+                        |> Map.keys
+                        |> Seq.iter (fun taskId -> Atoms.setAtomValue set (Atoms.Task.selectionSet taskId) Set.empty)
 
                         input.OnClose ()
                     }),
                 [|
                     box cellSelectionMap
-                    box setCellSelectionMap
                     box input
                 |]
             )
@@ -83,13 +75,14 @@ module CellMenu =
             Store.useCallback (
                 (fun _ _ _ ->
                     promise {
-                        match postponedUntil with
-                        | Some postponedUntil ->
-                            setSessionStatus (UserStatus (input.Username, Postponed (Some postponedUntil)))
+                        match username, postponedUntil with
+                        | Some username, Some postponedUntil ->
+                            setSessionStatus (UserStatus (username, Postponed (Some postponedUntil)))
                             input.OnClose ()
                         | _ -> toast (fun x -> x.description <- "Invalid time")
                     }),
                 [|
+                    box username
                     box postponedUntil
                     box setSessionStatus
                     box input
@@ -137,7 +130,9 @@ module CellMenu =
                             Tooltip.wrap
                                 tooltipLabel
                                 [
-                                    wrapButtonStatus None color (UserStatus (input.Username, status))
+                                    match username with
+                                    | Some username -> wrapButtonStatus None color (UserStatus (username, status))
+                                    | _ -> nothing
                                 ]
 
                         Tooltip.wrap
@@ -151,7 +146,7 @@ module CellMenu =
                                             promise {
                                                 setRightDock (Some TempUI.DockType.Cell)
 
-                                                setCellUIFlag (Atoms.User.UIFlag.Cell (input.TaskId, input.DateId))
+                                                setCellUIFlag (Atoms.UIFlag.Cell (input.TaskId, input.DateId))
                                             }))
                             ]
 

@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend
 
-open Fluke.Shared
 open Fluke.Shared.Domain
 
 
@@ -24,13 +23,7 @@ module TempUI =
         | Task
         | Cell
 
-    type ActiveSession =
-        ActiveSession of taskName: string * duration: Minute
-
-    let colorCornerBlue = "#005688"
-    let colorCornerPink = "#a91c77"
-
-    let defaultView = View.View.Information
+    type ActiveSession = ActiveSession of taskName: string * duration: Minute
 
     let rec informationColor =
         function

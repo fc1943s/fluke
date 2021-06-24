@@ -8,16 +8,14 @@ open Fluke.Shared.Domain
 open Fluke.UI.Frontend.Bindings
 
 module SoundPlayer =
-
     open Model
-    open UserInteraction
 
     [<ReactComponent>]
-    let SoundPlayer (input: {| Username: Username |}) =
+    let SoundPlayer () =
         let oldActiveSessions = React.useRef []
-        let sessionDuration = Store.useValue (Atoms.User.sessionDuration input.Username)
-        let sessionBreakDuration = Store.useValue (Atoms.User.sessionBreakDuration input.Username)
-        let activeSessions = Store.useValue (Selectors.Session.activeSessions input.Username)
+        let sessionDuration = Store.useValue Atoms.sessionDuration
+        let sessionBreakDuration = Store.useValue Atoms.sessionBreakDuration
+        let activeSessions = Store.useValue Selectors.Session.activeSessions
 
         React.useEffect (
             (fun () ->

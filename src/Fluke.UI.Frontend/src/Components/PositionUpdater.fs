@@ -10,20 +10,19 @@ open Fluke.UI.Frontend.Bindings
 
 
 module PositionUpdater =
-
     [<ReactComponent>]
-    let PositionUpdater (input: {| Username: Username |}) =
+    let PositionUpdater () =
         Scheduling.useScheduling
             Scheduling.Interval
             1000
             (fun get set ->
                 promise {
-                    let selectedDatabaseIdSet = Atoms.getAtomValue get (Atoms.User.selectedDatabaseIdSet input.Username)
+                    let selectedDatabaseIdSet = Atoms.getAtomValue get Atoms.selectedDatabaseIdSet
 
                     let selectedDatabasePositions =
                         selectedDatabaseIdSet
                         |> Set.toList
-                        |> List.map (fun databaseId -> Atoms.Database.position (input.Username, databaseId))
+                        |> List.map (fun databaseId -> Atoms.Database.position databaseId)
                         |> List.map (Atoms.getAtomValue get)
 
                     let pausedPosition =

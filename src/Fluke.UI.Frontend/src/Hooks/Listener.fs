@@ -8,7 +8,7 @@ open Feliz.UseListener
 
 
 module Listener =
-    let useKeyPress keys (fn: Jotai.GetFn -> Jotai.SetFn -> KeyboardEvent -> JS.Promise<unit>) =
+    let useKeyPress keys (fn: Store.GetFn -> Store.SetFn -> KeyboardEvent -> JS.Promise<unit>) =
         let fnCallback = React.useCallbackRef (fun (get, set, e) -> fn get set e)
         Profiling.addTimestamp "useKeyPress.render"
 

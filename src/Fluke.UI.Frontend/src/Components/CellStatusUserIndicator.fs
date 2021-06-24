@@ -7,12 +7,10 @@ open Fluke.Shared
 
 
 module CellStatusUserIndicator =
-    open Domain.UserInteraction
-
     [<ReactComponent>]
-    let CellStatusUserIndicator (input: {| Username: Username |}) =
-        let color = Store.useValue (Atoms.User.color input.Username)
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+    let CellStatusUserIndicator () =
+        let color = Store.useValue Atoms.color
+        let cellSize = Store.useValue Atoms.cellSize
 
         Chakra.box
             (fun x ->

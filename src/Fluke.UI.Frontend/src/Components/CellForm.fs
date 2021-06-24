@@ -16,12 +16,8 @@ open Fluke.UI.Frontend.State
 module CellForm =
 
     [<ReactComponent>]
-    let rec CellForm
-        (input: {| Username: Username
-                   TaskId: TaskId
-                   DateId: DateId |})
-        =
-        let (TaskName taskName) = Store.useValue (Atoms.Task.name (input.Username, input.TaskId))
+    let rec CellForm (input: {| TaskId: TaskId; DateId: DateId |}) =
+        let (TaskName taskName) = Store.useValue (Atoms.Task.name input.TaskId)
 
         let addAttachmentText, setAddAttachmentText = React.useState ""
 
@@ -35,23 +31,22 @@ module CellForm =
 
                             Atoms.setAtomValue
                                 set
-                                (Atoms.Attachment.timestamp (input.Username, attachmentId))
+                                (Atoms.Attachment.timestamp attachmentId)
                                 (DateTime.Now |> FlukeDateTime.FromDateTime |> Some)
 
                             Atoms.setAtomValue
                                 set
-                                (Atoms.Attachment.attachment (input.Username, attachmentId))
+                                (Atoms.Attachment.attachment attachmentId)
                                 (addAttachmentText
                                  |> Comment.Comment
                                  |> Attachment.Comment
                                  |> Some)
 
-                            let cellAttachmentMap =
-                                Atoms.getAtomValue get (Atoms.Task.cellAttachmentMap (input.Username, input.TaskId))
+                            let cellAttachmentMap = Atoms.getAtomValue get (Atoms.Task.cellAttachmentMap input.TaskId)
 
                             Atoms.setAtomValue
                                 set
-                                (Atoms.Task.cellAttachmentMap (input.Username, input.TaskId))
+                                (Atoms.Task.cellAttachmentMap input.TaskId)
                                 (cellAttachmentMap
                                  |> Map.add
                                      input.DateId
@@ -70,13 +65,13 @@ module CellForm =
                 |]
             )
 
-        let attachments = Store.useValue (Selectors.Cell.attachments (input.Username, input.TaskId, input.DateId))
+        let attachments = Store.useValue (Selectors.Cell.attachments (input.TaskId, input.DateId))
 
 
         Accordion.Accordion
             {|
                 Props = fun _ -> ()
-                Atom = Atoms.User.accordionFlag (input.Username, TextKey (nameof CellForm))
+                Atom = Atoms.accordionFlag (TextKey (nameof CellForm))
                 Items =
                     [
                         "Info",
@@ -180,6 +175,7 @@ module CellForm =
                                                         Icon = Icons.fi.FiPaperclip |> Icons.render
                                                         CustomProps =
                                                             fun x ->
+                                                                x.textarea <- true
                                                                 x.onEnterPress <- Some addAttachment
                                                                 x.fixedValue <- Some addAttachmentText
                                                         Props =
@@ -211,28 +207,31 @@ module CellForm =
                                                         Children = []
                                                     |}
                                             ]
+
+                                        if false then
+                                            Vim.render
+                                                {|
+                                                    OnVimCreated = fun vim -> printfn $"vim {vim}"
+                                                    Props = fun x -> x.height <- "150px"
+                                                    Fallback = fun () -> str "wasm error"
+                                                |}
+
                                     ]
                             ])
                     ]
             |}
 
     [<ReactComponent>]
-    let CellFormWrapper (input: {| Username: Username |}) =
-        let cellUIFlag = Store.useValue (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Cell))
+    let CellFormWrapper () =
+        let cellUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Cell)
 
         let taskId, dateId =
             match cellUIFlag with
-            | Atoms.User.UIFlag.Cell (taskId, dateId) -> Some taskId, Some dateId
+            | Atoms.UIFlag.Cell (taskId, dateId) -> Some taskId, Some dateId
             | _ -> None, None
 
         match taskId, dateId with
-        | Some taskId, Some dateId ->
-            CellForm
-                {|
-                    Username = input.Username
-                    TaskId = taskId
-                    DateId = dateId
-                |}
+        | Some taskId, Some dateId -> CellForm {| TaskId = taskId; DateId = dateId |}
         | _ ->
             Chakra.box
                 (fun x -> x.padding <- "15px")

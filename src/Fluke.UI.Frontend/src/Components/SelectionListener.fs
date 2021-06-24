@@ -21,51 +21,41 @@ module SelectionListener =
             |]
             (fun get set e ->
                 promise {
-                    let username = Atoms.getAtomValue get Atoms.username
+                    let cellSelectionMap = Atoms.getAtomValue get Selectors.Session.cellSelectionMap
 
+                    if e.key = "Escape" && e.``type`` = "keydown" then
+                        if not cellSelectionMap.IsEmpty then
+                            cellSelectionMap
+                            |> Map.keys
+                            |> Seq.iter
+                                (fun taskId -> Atoms.setAtomValue set (Atoms.Task.selectionSet taskId) Set.empty)
 
-                    match username with
-                    | Some username ->
-                        let cellSelectionMap = Atoms.getAtomValue get (Selectors.Session.cellSelectionMap username)
+                    if e.key = "R" && e.``type`` = "keydown" then
+                        if not cellSelectionMap.IsEmpty then
+                            let newMap =
+                                if cellSelectionMap.Count = 1 then
+                                    cellSelectionMap
+                                    |> Map.toList
+                                    |> List.map
+                                        (fun (taskId, dates) ->
+                                            let date =
+                                                dates
+                                                |> Seq.item (Random().Next (0, dates.Count - 1))
 
-                        if e.key = "Escape" && e.``type`` = "keydown" then
-                            if not cellSelectionMap.IsEmpty then
-                                cellSelectionMap
-                                |> Map.keys
-                                |> Seq.iter
-                                    (fun taskId ->
-                                        Atoms.setAtomValue set (Atoms.Task.selectionSet (username, taskId)) Set.empty)
-
-                        if e.key = "R" && e.``type`` = "keydown" then
-                            if not cellSelectionMap.IsEmpty then
-                                let newMap =
-                                    if cellSelectionMap.Count = 1 then
+                                            taskId, Set.singleton date)
+                                    |> Map.ofSeq
+                                else
+                                    let key =
                                         cellSelectionMap
-                                        |> Map.toList
-                                        |> List.map
-                                            (fun (taskId, dates) ->
-                                                let date =
-                                                    dates
-                                                    |> Seq.item (Random().Next (0, dates.Count - 1))
+                                        |> Map.keys
+                                        |> Seq.item (Random().Next (0, cellSelectionMap.Count - 1))
 
-                                                taskId, Set.singleton date)
-                                        |> Map.ofSeq
-                                    else
-                                        let key =
-                                            cellSelectionMap
-                                            |> Map.keys
-                                            |> Seq.item (Random().Next (0, cellSelectionMap.Count - 1))
+                                    Map.singleton key cellSelectionMap.[key]
 
-                                        Map.singleton key cellSelectionMap.[key]
-
-                                newMap
-                                |> Map.iter
-                                    (fun taskId dates ->
-                                        Atoms.setAtomValue
-                                            set
-                                            (Atoms.Task.selectionSet (username, taskId))
-                                            (dates |> Set.map DateId))
-                    | None -> ()
+                            newMap
+                            |> Map.iter
+                                (fun taskId dates ->
+                                    Atoms.setAtomValue set (Atoms.Task.selectionSet taskId) (dates |> Set.map DateId))
                 })
 
         nothing

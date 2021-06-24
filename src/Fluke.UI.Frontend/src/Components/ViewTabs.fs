@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
@@ -11,7 +10,7 @@ open Fluke.Shared
 
 module ViewTabs =
     [<ReactComponent>]
-    let MenuOptionGroup (atom: JotaiTypes.Atom<_>) label =
+    let MenuOptionGroup (atom: Store.Atom<_>) label =
         let value, setValue = Store.useState atom
 
         let key = atom.toString ()
@@ -38,10 +37,10 @@ module ViewTabs =
             ]
 
     [<ReactComponent>]
-    let ViewTabs (input: {| Username: Username |}) =
-        let showViewOptions = Store.useValue (Atoms.User.showViewOptions input.Username)
-        let view, setView = Store.useState (Atoms.User.view input.Username)
-        let sortedTaskIdList = Store.useValue (Selectors.Session.sortedTaskIdList input.Username)
+    let ViewTabs () =
+        let showViewOptions = Store.useValue Atoms.showViewOptions
+        let view, setView = Store.useState Atoms.view
+        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
 
         let tabs, tabIndex =
             React.useMemo (
@@ -53,25 +52,25 @@ module ViewTabs =
                                 View = View.View.Information
                                 Name = "Information View"
                                 Icon = Icons.ti.TiFlowChildren
-                                Content = InformationView.InformationView {| Username = input.Username |}
+                                Content = InformationView.InformationView ()
                             |}
                             {|
                                 View = View.View.HabitTracker
                                 Name = "Habit Tracker View"
                                 Icon = Icons.bs.BsGrid
-                                Content = HabitTrackerView.HabitTrackerView {| Username = input.Username |}
+                                Content = HabitTrackerView.HabitTrackerView ()
                             |}
                             {|
                                 View = View.View.Priority
                                 Name = "Priority View"
                                 Icon = Icons.fa.FaSortNumericDownAlt
-                                Content = PriorityView.PriorityView {| Username = input.Username |}
+                                Content = PriorityView.PriorityView ()
                             |}
                             {|
                                 View = View.View.BulletJournal
                                 Name = "Bullet Journal View"
                                 Icon = Icons.bs.BsListCheck
-                                Content = BulletJournalView.BulletJournalView {| Username = input.Username |}
+                                Content = BulletJournalView.BulletJournalView ()
                             |}
                         ]
 
@@ -82,7 +81,6 @@ module ViewTabs =
                     tabs, tabIndex),
                 [|
                     box view
-                    box input.Username
                 |]
             )
 
@@ -177,12 +175,8 @@ module ViewTabs =
                                                 |}
                                         Body =
                                             [
-                                                MenuOptionGroup
-                                                    (Atoms.User.hideSchedulingOverlay input.Username)
-                                                    "Hide Scheduling Overlay"
-                                                MenuOptionGroup
-                                                    (Atoms.User.showViewOptions input.Username)
-                                                    "Show View Options"
+                                                MenuOptionGroup Atoms.hideSchedulingOverlay "Hide Scheduling Overlay"
+                                                MenuOptionGroup Atoms.showViewOptions "Show View Options"
                                             ]
                                         MenuListProps = fun _ -> ()
                                     |}
@@ -198,7 +192,7 @@ module ViewTabs =
                                 [
                                     CheckboxInput.CheckboxInput
                                         {|
-                                            Atom = Atoms.User.filterTasksByView input.Username
+                                            Atom = Atoms.filterTasksByView
                                             Label = Some "Filter tasks by view"
                                             Props = (fun _ -> ())
                                         |}
@@ -208,16 +202,7 @@ module ViewTabs =
                                 {|
                                     Icon = Icons.bs.BsSearch |> Icons.render
                                     CustomProps =
-                                        fun x ->
-                                            x.atom <-
-                                                Some (
-                                                        JotaiTypes.InputAtom (
-                                                            input.Username,
-                                                            JotaiTypes.AtomPath.Atom (
-                                                                Atoms.User.searchText input.Username
-                                                            )
-                                                        )
-                                                )
+                                        fun x -> x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.searchText))
                                     Props =
                                         fun x ->
                                             x.placeholder <- "Search task or information"

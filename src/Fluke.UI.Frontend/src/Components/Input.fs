@@ -23,9 +23,10 @@ module Input =
 
     type IProps<'TValue, 'TKey> =
         abstract hint : ReactElement option with get, set
+        abstract textarea : bool with get, set
         abstract hintTitle : ReactElement option with get, set
-        abstract atom : JotaiTypes.InputAtom<'TValue> option with get, set
-        abstract inputScope : JotaiTypes.InputScope<'TValue> option with get, set
+        abstract atom : Store.InputAtom<'TValue> option with get, set
+        abstract inputScope : Store.InputScope<'TValue> option with get, set
         abstract fixedValue : 'TValue option with get, set
         abstract onFormat : ('TValue -> string) option with get, set
         abstract onValidate : (string * 'TValue option -> 'TValue option) option with get, set
@@ -203,7 +204,7 @@ module Input =
                         x.position <- "relative"
                         x.flex <- "1")
                     [
-                        Chakra.input
+                        (if customProps.textarea then Chakra.textarea else Chakra.input)
                             (fun x ->
                                 x.onChange <- onChange
                                 x.ref <- inputRef

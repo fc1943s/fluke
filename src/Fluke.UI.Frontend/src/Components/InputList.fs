@@ -12,8 +12,8 @@ module InputList =
 
         abstract hint : ReactElement option with get, set
         abstract hintTitle : ReactElement option with get, set
-        abstract atom : JotaiTypes.InputAtom<'TValue> option with get, set
-        abstract inputScope : JotaiTypes.InputScope<'TValue> option with get, set
+        abstract atom : Store.InputAtom<'TValue> option with get, set
+        abstract inputScope : Store.InputScope<'TValue> option with get, set
 
 
     [<ReactComponent>]

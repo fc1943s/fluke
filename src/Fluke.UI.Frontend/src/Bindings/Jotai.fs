@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Bindings
 
 open System.Collections.Generic
-open Fable.Core.JS
 open Fable.Core.JsInterop
 open Fable.Core
 open Fable.React
@@ -16,7 +15,7 @@ module DeepEqual =
     let fastDeepEqual<'T> (_a: 'T) (_b: 'T) : bool = importDefault "fast-deep-equal/react"
 
     let deepEqual<'T> (a: 'T) (b: 'T) =
-//        if unbox a <> null && a?toString <> null && jsTypeof a <> "boolean" then
+        //        if unbox a <> null && a?toString <> null && jsTypeof a <> "boolean" then
 //            a?toString <- emitJsExpr () "Object.prototype.toString"
 //            b?toString <- emitJsExpr () "Object.prototype.toString"
 
@@ -49,11 +48,6 @@ module JotaiTypes =
         | ReadOnly
         | ReadWrite
 
-    //    type InputAtom = InputAtom of username: Username * atomPath: AtomPath
-//
-//    and AtomPath = AtomPath of string
-    type InputAtom<'T> = InputAtom of username: Username * atomPath: AtomPath<'T>
-
     and [<RequireQualifiedAccess>] AtomPath<'T> =
         | Atom of Atom<'T>
         | Path of string
@@ -80,8 +74,6 @@ module Jotai =
 
 
     type IJotai =
-        //        abstract atom : (unit -> unit) * JS.Promise<'Value> -> Atom<'TValue>
-
         abstract Provider : obj -> obj
 
         abstract atom : 'TValue -> Atom<'TValue>
@@ -91,39 +83,28 @@ module Jotai =
             Atom<'TValue>
 
         abstract atom : (GetFn -> 'TValue) * (GetFn -> SetFn -> 'TValue -> unit) option -> Atom<'TValue>
-
         abstract useAtom : Atom<'TValue> -> 'TValue * ('TValue -> unit)
 
-    let Jotai : IJotai = importAll "jotai"
+    let jotai : IJotai = importAll "jotai"
 
     type IJotaiUtils =
+        abstract atomFamily : ('TKey -> Atom<'TValue>) -> ('TValue -> 'TValue -> bool) -> ('TKey -> Atom<'TValue>)
         abstract atomWithDefault : (GetFn -> 'TValue) -> Atom<'TValue>
-
         abstract atomWithReducer : 'TValue -> ('TValue -> 'TValue -> 'TValue) -> Atom<'TValue>
         abstract atomWithStorage : string -> 'TValue -> Atom<'TValue>
-
-        abstract atomFamily : ('TKey -> Atom<'TValue>) -> ('TValue -> 'TValue -> bool) -> ('TKey -> Atom<'TValue>)
         abstract selectAtom : Atom<'TValue> * ('TValue -> 'U) -> Atom<'U>
-
+        abstract useAtomValue : Atom<'TValue> -> 'TValue
+        abstract useUpdateAtom : Atom<'TValue> -> ('TValue -> unit)
+        abstract useAtomCallback : (GetFn * SetFn * 'TArg -> JS.Promise<'TValue>) -> ('TArg -> JS.Promise<'TValue>)
         abstract waitForAll : Atom<'T> [] -> Atom<'T []>
 
-        abstract useAtomValue : Atom<'TValue> -> 'TValue
-
-        abstract useUpdateAtom : Atom<'TValue> -> ('TValue -> unit)
-
-        abstract useAtomCallback : (GetFn * SetFn * 'TArg -> JS.Promise<'TValue>) -> ('TArg -> JS.Promise<'TValue>)
-
-    let JotaiUtils : IJotaiUtils = importAll "jotai/utils"
+    let jotaiUtils : IJotaiUtils = importAll "jotai/utils"
 
 
     let wrapAtomPath (atomPath: string) =
         let header = $"{nameof Fluke}/"
         let header = if atomPath.StartsWith header then "" else header
-        let result = $"{header}{atomPath}"
-
-        //        JS.log (fun () -> $"wrapAtomPath. result={result} atomPath={atomPath}")
-//
-        result
+        $"{header}{atomPath}"
 
     let getGunNodePath (atomPath: string) (keyIdentifier: string list) =
         let newAtomPath =
@@ -169,15 +150,15 @@ module Jotai =
         atomPath
 
     let registerAtom atomPath keyIdentifier atom =
+        printfn $"registerAtom atomPath={atomPath} keyIdentifier={keyIdentifier} atom={atom}"
+
         match keyIdentifier with
         | Some keyIdentifier ->
             let gunNodePath = getGunNodePath atomPath keyIdentifier
-            //            printfn $"registerAtom atomPath={atomPath} gunNodePath={gunNodePath}"
             registerAtomIdByPath atom gunNodePath |> ignore
-            registerAtomPathById gunNodePath atom
-        | None ->
-            //            printfn $"registerAtom atomPath={atomPath}. skipping registration."
-            atom
+            let atom = registerAtomPathById gunNodePath atom
+            atom, Some gunNodePath
+        | None -> atom, None
 
     let queryAtomPath atomPath =
         match atomPath with
@@ -190,14 +171,15 @@ module Jotai =
             | true, value -> Some value
             | _ -> None
 
-    let inline atomWithProfiling<'TValue> (atomPath, defaultValue: 'TValue) =
-        Jotai.atom (
+    let inline atom<'TValue> (atomPath, defaultValue: 'TValue) =
+        jotai.atom (
             (fun () ->
                 Profiling.addCount atomPath
                 defaultValue)
                 ()
         )
         |> registerAtom atomPath None
+        |> fst
 
 
 [<AutoOpen>]
@@ -205,11 +187,7 @@ module JotaiMagic =
 
     type Jotai.IJotai with
         member inline _.provider children =
-            ReactBindings.React.createElement (Jotai.Jotai.Provider, (), children)
-
-
-    let Jotai = Jotai.Jotai
-
+            ReactBindings.React.createElement (Jotai.jotai.Provider, (), children)
 
 
 [<AutoOpen>]
@@ -217,10 +195,9 @@ module JotaiUtilsMagic =
     open Jotai
     open JotaiTypes
 
-    let JotaiUtils = JotaiUtils
 
     module Atoms =
-        let rec username = atomWithProfiling ($"{nameof username}", (None: Username option))
+        let rec username = atom ($"{nameof username}", (None: Username option))
 
         let inline getAtomValue<'TValue> (getter: GetFn) (atom: Atom<'TValue>) : 'TValue =
             (getter (unbox atom)) :?> 'TValue
@@ -232,9 +209,9 @@ module JotaiUtilsMagic =
             setter (atom |> box |> unbox) value
 
         let atomWithStorage atomPath defaultValue (map: _ -> _) =
-            let internalAtom = JotaiUtils.atomWithStorage atomPath defaultValue
+            let internalAtom = jotaiUtils.atomWithStorage atomPath defaultValue
 
-            Jotai.atom (
+            jotai.atom (
                 (fun get -> getAtomValue get internalAtom),
                 Some
                     (fun _get set argFn ->
@@ -246,16 +223,17 @@ module JotaiUtilsMagic =
                         setAtomValue set internalAtom (map arg))
             )
             |> registerAtom atomPath None
+            |> fst
 
-        let isTesting = Jotai.atom JS.deviceInfo.IsTesting
+        let isTesting = jotai.atom JS.deviceInfo.IsTesting
 
         let rec gunPeers =
             atomWithStorage $"{nameof gunPeers}" ([||]: string []) (Array.filter (String.IsNullOrWhiteSpace >> not))
 
-        let rec gunKeys = Jotai.atom Gun.GunKeys.Default
+        let rec gunKeys = jotai.atom Gun.GunKeys.Default
 
         let gun =
-            Jotai.atom (
+            jotai.atom (
                 (fun get ->
                     let isTesting = getAtomValue get isTesting
                     let gunPeers = getAtomValue get gunPeers
@@ -285,11 +263,9 @@ module JotaiUtilsMagic =
             )
 
         let rec gunNamespace =
-            JotaiUtils.selectAtom (
+            jotaiUtils.selectAtom (
                 gun,
                 fun gun ->
-                    //                    let username = getter.get Atoms.username
-//                    let gunKeys = getter.get Atoms.gunKeys
                     let user = gun.user ()
 
                     printfn $"gunNamespace selector. user.is={JS.JSON.stringify user.is} keys={user.__.sea}..."
@@ -313,7 +289,8 @@ module JotaiUtilsMagic =
                 match JS.window id with
                 | Some window ->
                     JS.setTimeout
-                        (fun () -> window?lastToast (fun (x: Chakra.IToastProps) -> x.description <- "Please log in again"))
+                        (fun () ->
+                            window?lastToast (fun (x: Chakra.IToastProps) -> x.description <- "Please log in again"))
                         0
                     |> ignore
                 | None -> ()

@@ -2,28 +2,26 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.Bindings
-open Fable.Core
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.Shared
+open Fable.Core
 open Fable.Core.JsInterop
 
 
 module DatabaseSelector =
     [<ReactComponent>]
     let rec DatabaseSelector
-        (input: {| Username: UserInteraction.Username
-                   DatabaseId: DatabaseId
+        (input: {| DatabaseId: DatabaseId
                    OnChange: DatabaseId -> unit
                    TaskId: TaskId |})
         =
-        let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name (input.Username, input.DatabaseId))
-        let databaseIdSet = Store.useValue (Atoms.Session.databaseIdSet input.Username)
-        let setDatabaseIdSet = Store.useSetStatePrev (Atoms.Session.databaseIdSet input.Username)
+        let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name input.DatabaseId)
+        let databaseIdSet = Store.useValue Atoms.databaseIdSet
+        let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
         let databaseIdList =
@@ -50,7 +48,7 @@ module DatabaseSelector =
 
         let databaseNameList =
             filteredDatabaseIdList
-            |> List.map (fun databaseId -> Atoms.Database.name (input.Username, databaseId))
+            |> List.map Atoms.Database.name
             |> List.toArray
             |> Store.waitForAll
             |> Store.useValue
@@ -174,15 +172,13 @@ module DatabaseSelector =
                                                     [
                                                         DatabaseForm.DatabaseForm
                                                             {|
-                                                                Username = input.Username
                                                                 DatabaseId = Database.Default.Id
                                                                 OnSave =
                                                                     fun database ->
                                                                         promise {
                                                                             do!
                                                                                 hydrateDatabase (
-                                                                                    input.Username,
-                                                                                    JotaiTypes.AtomScope.ReadOnly,
+                                                                                    Store.AtomScope.ReadOnly,
                                                                                     database
                                                                                 )
 

@@ -17,6 +17,8 @@ module Tooltip =
                 x.backgroundColor <- "gray.77"
                 x.color <- "black"
                 x.zIndex <- 20000
+                x.closeOnMouseDown <- true
+                x.shouldWrapChildren <- true
                 input.Props x)
             input.Children
 

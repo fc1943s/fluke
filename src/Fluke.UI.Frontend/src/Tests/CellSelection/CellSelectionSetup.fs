@@ -21,40 +21,34 @@ open State
 module CellSelectionSetup =
     let maxTimeout = 5 * 60 * 1000
 
-    let getCellMap (subject: Bindings.render<_, _>) (getFn: Jotai.GetFn) =
+    let getCellMap (subject: Bindings.render<_, _>) (getFn: Store.GetFn) =
         let dateSequence = Atoms.getAtomValue getFn Selectors.dateSequence
-        let username = Atoms.getAtomValue getFn Atoms.username
+        let sortedTaskIdList = Atoms.getAtomValue getFn Selectors.Session.sortedTaskIdList
 
-        match username with
-        | Some username ->
+        printfn $"sortedTaskIdList ={sortedTaskIdList}"
 
-            let sortedTaskIdList = Atoms.getAtomValue getFn (Selectors.Session.sortedTaskIdList username)
+        let cellMap =
+            sortedTaskIdList
+            |> List.collect
+                (fun taskId ->
+                    let taskName = Atoms.getAtomValue getFn (Atoms.Task.name taskId)
 
-            printfn $"sortedTaskIdList ={sortedTaskIdList}"
+                    dateSequence
+                    |> List.map
+                        (fun date ->
+                            let el =
+                                subject.queryByTestId
+                                    $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
 
-            let cellMap =
-                sortedTaskIdList
-                |> List.collect
-                    (fun taskId ->
-                        let taskName = Atoms.getAtomValue getFn (Atoms.Task.name (username, taskId))
-
-                        dateSequence
-                        |> List.map
-                            (fun date ->
-                                let el =
-                                    subject.queryByTestId
-                                        $"cell-{taskId}-{(date |> FlukeDate.DateTime).ToShortDateString ()}"
-
-                                ((taskId, taskName), date), (el |> Option.defaultValue null)))
-                |> Map.ofSeq
+                            ((taskId, taskName), date), (el |> Option.defaultValue null)))
+            |> Map.ofSeq
 
 
-            printfn $"cellMap=%A{cellMap |> Map.keys |> Seq.map fst |> Seq.distinct}"
+        printfn $"cellMap=%A{cellMap |> Map.keys |> Seq.map fst |> Seq.distinct}"
 
-            cellMap
-        | None -> failwith $"Invalid username: {username}"
+        cellMap
 
-    let expectSelection (getFn: Jotai.GetFn) expected =
+    let expectSelection (getFn: Store.GetFn) expected =
         let toString map =
             map
             |> Map.toList
@@ -69,8 +63,7 @@ module CellSelectionSetup =
         promise {
             do! RTL.waitFor id
 
-            let cellSelectionMap =
-                Atoms.getAtomValue getFn (Selectors.Session.cellSelectionMap Templates.templatesUser.Username)
+            let cellSelectionMap = Atoms.getAtomValue getFn Selectors.Session.cellSelectionMap
 
             Jest
                 .expect(toString cellSelectionMap)
@@ -106,9 +99,8 @@ module CellSelectionSetup =
                     (fun ((taskId, TaskName taskName'), _) _ -> if taskName = taskName' then Some taskId else None)
         }
 
-    let initialSetter (getFn: Jotai.GetFn) (setFn: Jotai.SetFn) =
+    let initialSetter (getFn: Store.GetFn) (setFn: Store.SetFn) =
         promise {
-            let get atom = Atoms.getAtomValue getFn atom
             let set atom value = Atoms.setAtomValue setFn atom value
 
             let dslTemplate =
@@ -143,18 +135,14 @@ module CellSelectionSetup =
 
 
             set Atoms.username (Some Templates.templatesUser.Username)
-            set (Atoms.User.view Templates.templatesUser.Username) View.View.Priority
-            set (Atoms.User.daysBefore Templates.templatesUser.Username) 2
-            set (Atoms.User.daysAfter Templates.templatesUser.Username) 2
+            set Atoms.view View.View.Priority
+            set Atoms.daysBefore 2
+            set Atoms.daysAfter 2
             set Atoms.position (Some dslTemplate.Position)
 
-            do!
-                Hydrate.hydrateDatabase
-                    getFn
-                    setFn
-                    (Templates.templatesUser.Username, JotaiTypes.AtomScope.ReadOnly, databaseState.Database)
+            do! Hydrate.hydrateDatabase getFn setFn (Store.AtomScope.ReadOnly, databaseState.Database)
 
-            set (Atoms.Session.databaseIdSet Templates.templatesUser.Username) (Set.singleton databaseId)
+            set Atoms.databaseIdSet (Set.singleton databaseId)
 
             do!
                 databaseState.TaskStateMap
@@ -165,21 +153,14 @@ module CellSelectionSetup =
                                 Hydrate.hydrateTaskState
                                     getFn
                                     setFn
-                                    (Templates.templatesUser.Username,
-                                     JotaiTypes.AtomScope.ReadOnly,
-                                     databaseState.Database.Id,
-                                     taskState)
+                                    (Store.AtomScope.ReadOnly, databaseState.Database.Id, taskState)
 
-
-                            Atoms.setAtomValuePrev
-                                setFn
-                                (Atoms.Database.taskIdSet (Templates.templatesUser.Username, databaseId))
-                                (Set.add taskId)
+                            Atoms.setAtomValuePrev setFn (Atoms.Database.taskIdSet databaseId) (Set.add taskId)
                         })
                 |> Promise.Parallel
                 |> Promise.ignore
 
-            set (Atoms.User.selectedDatabaseIdSet Templates.templatesUser.Username) (Set.singleton databaseId)
+            set Atoms.selectedDatabaseIdSet (Set.singleton databaseId)
         }
 
     let getApp () =
@@ -237,11 +218,7 @@ module CellSelectionSetup =
                 JS.waitForSome
                     (fun () ->
                         async {
-                            let sortedTaskIdList =
-                                Atoms.getAtomValue
-                                    getFn
-                                    (Selectors.Session.sortedTaskIdList Templates.templatesUser.Username)
-
+                            let sortedTaskIdList = Atoms.getAtomValue getFn Selectors.Session.sortedTaskIdList
                             return if sortedTaskIdList.Length = 4 then Some sortedTaskIdList else None
                         })
                 |> Async.StartAsPromise

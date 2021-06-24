@@ -5,7 +5,6 @@ open Fluke.Shared
 open Browser.Types
 open Fable.React
 open Feliz
-open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -620,22 +619,13 @@ module SchedulingSelector =
         ]
 
     [<ReactComponent>]
-    let SchedulingSelector
-        (input: {| Username: UserInteraction.Username
-                   TaskId: TaskId |})
-        =
-
-        let weekStart = Store.useValue (Atoms.User.weekStart input.Username)
+    let SchedulingSelector (input: {| TaskId: TaskId |}) =
+        let weekStart = Store.useValue Atoms.weekStart
 
         let schedulingFieldOptions =
             Store.useAtomFieldOptions
-                (Some (
-                    JotaiTypes.InputAtom (
-                        input.Username,
-                        JotaiTypes.AtomPath.Atom (Atoms.Task.scheduling (input.Username, input.TaskId))
-                    )
-                ))
-                (Some (JotaiTypes.InputScope.ReadWrite Gun.defaultSerializer))
+                (Some (Store.InputAtom (Store.AtomPath.Atom (Atoms.Task.scheduling input.TaskId))))
+                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
 
         Chakra.box
             (fun x -> x.display <- "inline")

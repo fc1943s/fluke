@@ -3,7 +3,6 @@ namespace rec Fluke.UI.Frontend.Components
 open Browser.Types
 open Fable.React
 open Feliz
-open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
@@ -13,8 +12,7 @@ open Fluke.Shared
 module ProjectForm =
     [<ReactComponent>]
     let ProjectForm
-        (input: {| Username: UserInteraction.Username
-                   Project: Project
+        (input: {| Project: Project
                    OnSave: Project -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
@@ -51,12 +49,7 @@ module ProjectForm =
                         str "Add Project"
                     ]
 
-                AreaSelector.AreaSelector
-                    {|
-                        Username = input.Username
-                        Area = area
-                        OnSelect = setArea
-                    |}
+                AreaSelector.AreaSelector {| Area = area; OnSelect = setArea |}
 
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")

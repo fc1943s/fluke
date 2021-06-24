@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.Core
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fable.React
@@ -11,17 +10,16 @@ open Fable.React
 module ModalFormTrigger =
     [<ReactComponent>]
     let ModalFormTrigger
-        (input: {| Username: Username
-                   UIFlagType: Atoms.User.UIFlagType
-                   UIFlagValue: Atoms.User.UIFlag
-                   Trigger: (unit -> JS.Promise<unit>) -> Jotai.GetFn * Jotai.SetFn -> ReactElement |})
+        (input: {| UIFlagType: Atoms.UIFlagType
+                   UIFlagValue: Atoms.UIFlag
+                   Trigger: (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement |})
         =
         let onTrigger =
             Store.useCallback (
                 (fun _get set _ ->
                     promise {
-                        Atoms.setAtomValue set (Atoms.User.uiFlag (input.Username, input.UIFlagType)) input.UIFlagValue
-                        Atoms.setAtomValue set (Atoms.User.uiVisibleFlag (input.Username, input.UIFlagType)) true
+                        Atoms.setAtomValue set (Atoms.uiFlag input.UIFlagType) input.UIFlagValue
+                        Atoms.setAtomValue set (Atoms.uiVisibleFlag input.UIFlagType) true
                     }),
                 [||]
             )

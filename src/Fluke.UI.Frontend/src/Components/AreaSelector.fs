@@ -15,11 +15,11 @@ module AreaSelector =
 
     [<ReactComponent>]
     let AreaSelector
-        (input: {| Username: UserInteraction.Username
+        (input: {|
                    Area: Area
                    OnSelect: Area -> unit |})
         =
-        let informationSet = Store.useValue (Selectors.Session.informationSet input.Username)
+        let informationSet = Store.useValue Selectors.Session.informationSet
 
         let sortedAreaList =
             React.useMemo (
@@ -189,7 +189,6 @@ module AreaSelector =
                                                     [
                                                         AreaForm.AreaForm
                                                             {|
-                                                                Username = input.Username
                                                                 Area = input.Area
                                                                 OnSave =
                                                                     fun area ->

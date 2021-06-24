@@ -8,12 +8,10 @@ open Fluke.Shared
 
 
 module HabitTrackerView =
-    open Domain.UserInteraction
-
     [<ReactComponent>]
-    let HabitTrackerView (input: {| Username: Username |}) =
-        let sortedTaskIdList = Store.useValue (Selectors.Session.sortedTaskIdList input.Username)
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+    let HabitTrackerView () =
+        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
+        let cellSize = Store.useValue Atoms.cellSize
 
         Chakra.flex
             (fun x -> x.flex <- "1")
@@ -42,10 +40,7 @@ module HabitTrackerView =
                                                     React.suspense (
                                                         [
                                                             TaskInformationName.TaskInformationName
-                                                                {|
-                                                                    Username = input.Username
-                                                                    TaskId = taskId
-                                                                |}
+                                                                {| TaskId = taskId |}
                                                         ],
                                                         nothing
                                                     ))
@@ -63,11 +58,7 @@ module HabitTrackerView =
 
                                                     React.suspense (
                                                         [
-                                                            TaskPriority.TaskPriority
-                                                                {|
-                                                                    Username = input.Username
-                                                                    TaskId = taskId
-                                                                |}
+                                                            TaskPriority.TaskPriority {| TaskId = taskId |}
                                                         ],
                                                         nothing
                                                     ))
@@ -80,17 +71,17 @@ module HabitTrackerView =
                                             sortedTaskIdList
                                             |> List.map
                                                 (fun taskId ->
-
-                                                    React.suspense (
+                                                    Chakra.box
+                                                        (fun x -> x.height <- $"{cellSize}px")
                                                         [
-                                                            TaskName.TaskName
-                                                                {|
-                                                                    Username = input.Username
-                                                                    TaskId = taskId
-                                                                |}
-                                                        ],
-                                                        LoadingSpinner.InlineLoadingSpinner ()
-                                                    ))
+
+                                                            React.suspense (
+                                                                [
+                                                                    TaskName.TaskName {| TaskId = taskId |}
+                                                                ],
+                                                                LoadingSpinner.InlineLoadingSpinner ()
+                                                            )
+                                                        ])
                                     ]
                             ]
                     ]
@@ -98,14 +89,10 @@ module HabitTrackerView =
                 Chakra.box
                     (fun x -> x.flex <- "1")
                     [
-                        GridHeader.GridHeader {| Username = input.Username |}
+                        GridHeader.GridHeader ()
                         React.suspense (
                             [
-                                Cells.Cells
-                                    {|
-                                        Username = input.Username
-                                        TaskIdList = sortedTaskIdList
-                                    |}
+                                Cells.Cells {| TaskIdList = sortedTaskIdList |}
                             ],
                             nothing
                         )

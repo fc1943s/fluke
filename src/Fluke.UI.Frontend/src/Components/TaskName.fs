@@ -15,37 +15,30 @@ module TaskName =
     open Domain.Model
 
     [<ReactComponent>]
-    let TaskName (input: {| Username: Username; TaskId: TaskId |}) =
+    let TaskName (input: {| TaskId: TaskId |}) =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
         let hasSelection = Store.useValue (Selectors.Task.hasSelection input.TaskId)
-        let taskState = Store.useValue (Selectors.Task.taskState (input.Username, input.TaskId))
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
-
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite (input.Username, input.TaskId))
+        let taskState = Store.useValue (Selectors.Task.taskState input.TaskId)
+        let cellSize = Store.useValue Atoms.cellSize
+        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
 
         let editTask =
             Store.useCallback (
                 (fun get set _ ->
                     promise {
                         let deviceInfo = Atoms.getAtomValue get Selectors.deviceInfo
-
-                        if deviceInfo.IsMobile then
-                            Atoms.setAtomValue set (Atoms.User.leftDock input.Username) None
-
-                        Atoms.setAtomValue set (Atoms.User.rightDock input.Username) (Some TempUI.DockType.Task)
-
-                        let databaseId =
-                            Atoms.getAtomValue get (Selectors.Task.databaseId (input.Username, input.TaskId))
+                        if deviceInfo.IsMobile then Atoms.setAtomValue set Atoms.leftDock None
+                        Atoms.setAtomValue set Atoms.rightDock (Some TempUI.DockType.Task)
+                        let databaseId = Atoms.getAtomValue get (Selectors.Task.databaseId input.TaskId)
 
                         Atoms.setAtomValue
                             set
-                            (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
-                            (Atoms.User.UIFlag.Task (databaseId, input.TaskId))
+                            (Atoms.uiFlag Atoms.UIFlagType.Task)
+                            (Atoms.UIFlag.Task (databaseId, input.TaskId))
 
                     }),
                 [|
-                    box input.Username
                     box input.TaskId
                 |]
             )
@@ -54,11 +47,11 @@ module TaskName =
             Store.useCallback (
                 (fun get set _ ->
                     promise {
-                        let sessions = Atoms.getAtomValue get (Atoms.Task.sessions (input.Username, input.TaskId))
+                        let sessions = Atoms.getAtomValue get (Atoms.Task.sessions input.TaskId)
 
                         Atoms.setAtomValue
                             set
-                            (Atoms.Task.sessions (input.Username, input.TaskId))
+                            (Atoms.Task.sessions input.TaskId)
                             (Session (
                                 (let now = DateTime.Now in if now.Second < 30 then now else now.AddMinutes 1.)
                                 |> FlukeDateTime.FromDateTime
@@ -66,7 +59,6 @@ module TaskName =
                              :: sessions)
                     }),
                 [|
-                    box input.Username
                     box input.TaskId
                 |]
             )
@@ -168,7 +160,6 @@ module TaskName =
 //                | Some taskState ->
                 AttachmentIndicator.AttachmentIndicator
                     {|
-                        Username = input.Username
                         Attachments = taskState.Attachments
                     |}
             //                | None -> nothing

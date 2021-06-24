@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Browser.Types
 open Fable.React
 open Feliz
-open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
@@ -14,8 +13,7 @@ module AreaForm =
 
     [<ReactComponent>]
     let AreaForm
-        (input: {| Username: UserInteraction.Username
-                   Area: Area
+        (input: {| Area: Area
                    OnSave: Area -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()

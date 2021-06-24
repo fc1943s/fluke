@@ -16,7 +16,7 @@ module Scheduling =
         | Timeout -> JS.setTimeout, JS.clearTimeout
         | Interval -> JS.setInterval, JS.clearInterval
 
-    let useScheduling schedulingType duration (fn: Jotai.GetFn -> Jotai.SetFn -> JS.Promise<unit>) =
+    let useScheduling schedulingType duration (fn: Store.GetFn -> Store.SetFn -> JS.Promise<unit>) =
         let fnCallback = React.useCallbackRef (fun (get, set) -> fn get set)
 
         let savedCallback = React.useRef fnCallback

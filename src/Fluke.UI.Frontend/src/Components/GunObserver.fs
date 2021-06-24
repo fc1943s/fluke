@@ -15,7 +15,7 @@ module GunObserver =
         let gun = Store.useValue Atoms.gun
         let gunNamespace = Store.useValue Atoms.gunNamespace
         //        let appKeys = Gun.gunHooks.useGunKeys Browser.Dom.window?SEA (fun () -> null) false
-        let gunKeys, setGunKeys = Jotai.useAtom Atoms.gunKeys
+        let gunKeys, setGunKeys = Store.useState Atoms.gunKeys
 
         //        let gunState =
 //            Gun.gunHooks.useGunState

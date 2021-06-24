@@ -6,7 +6,6 @@ open Fable.React
 open Feliz
 open System
 open Fluke.Shared.Domain
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
@@ -20,8 +19,7 @@ module DatabaseForm =
 
     [<ReactComponent>]
     let rec DatabaseForm
-        (input: {| Username: Username
-                   DatabaseId: DatabaseId
+        (input: {| DatabaseId: DatabaseId
                    OnSave: Database -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
@@ -31,16 +29,13 @@ module DatabaseForm =
             Store.useCallback (
                 (fun get set _ ->
                     promise {
-                        let databaseName =
-                            Store.getReadWrite
-                                get
-                                input.Username
-                                (Atoms.Database.name (input.Username, input.DatabaseId))
+                        let databaseName = Store.getReadWrite get (Atoms.Database.name input.DatabaseId)
+                        let username = Atoms.getAtomValue get Atoms.username
 
                         match databaseName with
                         | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let databaseIdSet = Atoms.getAtomValue get (Atoms.Session.databaseIdSet input.Username)
+                            let databaseIdSet = Atoms.getAtomValue get Atoms.databaseIdSet
 
                             let databaseNames =
                                 databaseIdSet
@@ -49,48 +44,45 @@ module DatabaseForm =
                                     (fun databaseId ->
                                         input.DatabaseId <> Database.Default.Id
                                         || input.DatabaseId <> databaseId)
-                                |> List.map (fun databaseId -> Atoms.Database.name (input.Username, databaseId))
+                                |> List.map Atoms.Database.name
                                 |> List.map (Atoms.getAtomValue get)
 
-                            if databaseNames |> List.contains databaseName then
-                                toast (fun x -> x.description <- "Database with this name already exists")
-                            else
-                                let! database =
-                                    if input.DatabaseId = Database.Default.Id then
-                                        {
-                                            Id = DatabaseId.NewId ()
-                                            Name = databaseName
-                                            Owner = input.Username
-                                            SharedWith = DatabaseAccess.Private []
-                                            Position = None
-                                        }
-                                        |> Promise.lift
-                                    else
-                                        promise {
-                                            let database =
-                                                Atoms.getAtomValue
-                                                    get
-                                                    (Selectors.Database.database (input.Username, input.DatabaseId))
+                            match username with
+                            | Some username ->
+                                if databaseNames |> List.contains databaseName then
+                                    toast (fun x -> x.description <- "Database with this name already exists")
+                                else
+                                    let! database =
+                                        if input.DatabaseId = Database.Default.Id then
+                                            {
+                                                Id = DatabaseId.NewId ()
+                                                Name = databaseName
+                                                Owner = username
+                                                SharedWith = DatabaseAccess.Private []
+                                                Position = None
+                                            }
+                                            |> Promise.lift
+                                        else
+                                            promise {
+                                                let database =
+                                                    Atoms.getAtomValue
+                                                        get
+                                                        (Selectors.Database.database input.DatabaseId)
 
-                                            return { database with Name = databaseName }
-                                        }
+                                                return { database with Name = databaseName }
+                                            }
 
-                                //                                let eventId = Atoms.Events.newEventId ()
-//                                let event = Atoms.Events.Event.AddDatabase (eventId, databaseName, dayStart)
-//                                setter.set (Atoms.Events.events eventId, event)
-//                                printfn $"event {event}"
+                                    //                                let eventId = Atoms.Events.newEventId ()
+                                    //                                let event = Atoms.Events.Event.AddDatabase (eventId, databaseName, dayStart)
+                                    //                                setter.set (Atoms.Events.events eventId, event)
+                                    //                                printfn $"event {event}"
 
-                                Store.readWriteReset
-                                    set
-                                    input.Username
-                                    (Atoms.Database.name (input.Username, input.DatabaseId))
+                                    Store.readWriteReset set (Atoms.Database.name input.DatabaseId)
 
-                                Atoms.setAtomValue
-                                    set
-                                    (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
-                                    Atoms.User.UIFlag.None
+                                    Atoms.setAtomValue set (Atoms.uiFlag Atoms.UIFlagType.Database) Atoms.UIFlag.None
 
-                                do! input.OnSave database
+                                    do! input.OnSave database
+                            | None -> ()
                     }),
                 [|
                     box toast
@@ -130,16 +122,12 @@ module DatabaseForm =
                                     fun x ->
                                         x.atom <-
                                             Some (
-
-                                                JotaiTypes.InputAtom (
-                                                    input.Username,
-                                                    JotaiTypes.AtomPath.Atom (
-                                                        Atoms.Database.name (input.Username, input.DatabaseId)
-                                                    )
+                                                Store.InputAtom (
+                                                    Store.AtomPath.Atom (Atoms.Database.name input.DatabaseId)
                                                 )
                                             )
 
-                                        x.inputScope <- Some (JotaiTypes.InputScope.ReadWrite Gun.defaultSerializer)
+                                        x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
                                         x.onFormat <- Some (fun (DatabaseName name) -> name)
                                         x.onValidate <- Some (fst >> DatabaseName >> Some)
                                         x.onEnterPress <- Some onSave
@@ -201,7 +189,7 @@ module DatabaseForm =
                                     {|
                                         Hint = None
                                         Icon = Some (Icons.bi.BiImport |> Icons.wrap, Button.IconPosition.Left)
-                                        Props = fun x -> x.onClick <- fun _ -> importDatabase (input.Username, files)
+                                        Props = fun x -> x.onClick <- fun _ -> importDatabase files
                                         Children =
                                             [
                                                 str "Confirm"

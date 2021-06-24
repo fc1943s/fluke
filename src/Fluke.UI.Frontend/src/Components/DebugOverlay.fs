@@ -28,6 +28,11 @@ module DebugOverlay =
                     else
                         let json =
                             {|
+                                SortedCallCount =
+                                    Profiling.profilingState.CallCount
+                                    |> Seq.map (fun (KeyValue (k, v)) -> k, box <| string v)
+                                    |> Seq.sortBy fst
+                                    |> JsInterop.createObj
                                 CallCount =
                                     Profiling.profilingState.CallCount
                                     |> Seq.map (fun (KeyValue (k, v)) -> k, box <| string v)
@@ -47,27 +52,27 @@ module DebugOverlay =
                 })
 
         React.fragment [
-            if debug then
-                Chakra.box
-                    (fun x ->
-                        x.id <- "test1"
-                        x.position <- "absolute"
-                        x.width <- "100px"
-                        x.height <- "80px"
-                        x.top <- "40px"
-                        x.right <- "0"
-                        x.backgroundColor <- "#ccc3"
-                        x.zIndex <- 1)
-                    [
-                        str "test1"
-                    ]
+//            if debug then
+//                Chakra.box
+//                    (fun x ->
+//                        x.id <- "test1"
+//                        x.position <- "absolute"
+//                        x.width <- "100px"
+//                        x.height <- "80px"
+//                        x.top <- "40px"
+//                        x.right <- "24px"
+//                        x.backgroundColor <- "#ccc3"
+//                        x.zIndex <- 1)
+//                    [
+//                        str "test1"
+//                    ]
 
             Chakra.box
                 (fun x ->
                     x.width <- "min-content"
-                    x.height <- if debug then "80%" else "initial"
+                    x.height <- if debug then "60%" else "initial"
                     x.position <- "fixed"
-                    x.right <- "0"
+                    x.right <- "24px"
                     x.bottom <- "0"
                     x.fontSize <- "9px"
                     x.backgroundColor <- "#44444488"

@@ -7,13 +7,10 @@ open Fluke.Shared
 
 
 module PriorityView =
-
-    open Domain.UserInteraction
-
     [<ReactComponent>]
-    let PriorityView (input: {| Username: Username |}) =
-        let sortedTaskIdList = Store.useValue (Selectors.Session.sortedTaskIdList input.Username)
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+    let PriorityView () =
+        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
+        let cellSize = Store.useValue Atoms.cellSize
 
         Chakra.flex
             (fun x -> x.flex <- "1")
@@ -40,11 +37,7 @@ module PriorityView =
                                             sortedTaskIdList
                                             |> List.map
                                                 (fun taskId ->
-                                                    TaskInformationName.TaskInformationName
-                                                        {|
-                                                            Username = input.Username
-                                                            TaskId = taskId
-                                                        |})
+                                                    TaskInformationName.TaskInformationName {| TaskId = taskId |})
                                     ]
                                 // Column: Priority
                                 Chakra.box
@@ -54,13 +47,7 @@ module PriorityView =
                                     [
                                         yield!
                                             sortedTaskIdList
-                                            |> List.map
-                                                (fun taskId ->
-                                                    TaskPriority.TaskPriority
-                                                        {|
-                                                            Username = input.Username
-                                                            TaskId = taskId
-                                                        |})
+                                            |> List.map (fun taskId -> TaskPriority.TaskPriority {| TaskId = taskId |})
                                     ]
                                 // Column: Task Name
                                 Chakra.box
@@ -68,13 +55,7 @@ module PriorityView =
                                     [
                                         yield!
                                             sortedTaskIdList
-                                            |> List.map
-                                                (fun taskId ->
-                                                    TaskName.TaskName
-                                                        {|
-                                                            Username = input.Username
-                                                            TaskId = taskId
-                                                        |})
+                                            |> List.map (fun taskId -> TaskName.TaskName {| TaskId = taskId |})
                                     ]
                             ]
                     ]
@@ -82,11 +63,7 @@ module PriorityView =
                 Chakra.box
                     (fun _ -> ())
                     [
-                        GridHeader.GridHeader {| Username = input.Username |}
-                        Cells.Cells
-                            {|
-                                Username = input.Username
-                                TaskIdList = sortedTaskIdList
-                            |}
+                        GridHeader.GridHeader ()
+                        Cells.Cells {| TaskIdList = sortedTaskIdList |}
                     ]
             ]

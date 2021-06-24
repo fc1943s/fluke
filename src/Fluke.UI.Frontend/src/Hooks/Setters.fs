@@ -12,10 +12,10 @@ module Setters =
 
     let useSetCellSelectionMap () =
         Store.useCallback (
-            (fun get set (username, newSelection) ->
+            (fun get set newSelection ->
                 promise {
-                    let sortedTaskIdList = Atoms.getAtomValue get (Selectors.Session.sortedTaskIdList username)
-                    let cellSelectionMap = Atoms.getAtomValue get (Selectors.Session.cellSelectionMap username)
+                    let sortedTaskIdList = Atoms.getAtomValue get Selectors.Session.sortedTaskIdList
+                    let cellSelectionMap = Atoms.getAtomValue get Selectors.Session.cellSelectionMap
 
                     let operations =
                         sortedTaskIdList
@@ -48,7 +48,7 @@ module Setters =
                     operations
                     |> List.iter
                         (fun (taskId, date, selected) ->
-                            Atoms.setAtomValue set (Selectors.Cell.selected (username, taskId, DateId date)) selected)
+                            Atoms.setAtomValue set (Selectors.Cell.selected (taskId, DateId date)) selected)
                 }),
             [||]
         )
@@ -57,7 +57,7 @@ module Setters =
         let setCellSelectionMap = useSetCellSelectionMap ()
 
         Store.useCallback (
-            (fun get _set (username, taskId, dateId, newValue) ->
+            (fun get _set (taskId, dateId, newValue) ->
                 promise {
                     let ctrlPressed = Atoms.getAtomValue get Atoms.ctrlPressed
                     let shiftPressed = Atoms.getAtomValue get Atoms.shiftPressed
@@ -88,17 +88,15 @@ module Setters =
 
                                     oldSelection |> Map.add taskId newSet
 
-                                let oldSelection = Atoms.getAtomValue get (Selectors.Session.cellSelectionMap username)
+                                let oldSelection = Atoms.getAtomValue get Selectors.Session.cellSelectionMap
 
                                 return swapSelection oldSelection taskId (dateId |> DateId.Value)
                             }
                         | true, _ ->
                             promise {
-                                let sortedTaskIdList =
-                                    Atoms.getAtomValue get (Selectors.Session.sortedTaskIdList username)
+                                let sortedTaskIdList = Atoms.getAtomValue get Selectors.Session.sortedTaskIdList
 
-                                let oldCellSelectionMap =
-                                    Atoms.getAtomValue get (Selectors.Session.cellSelectionMap username)
+                                let oldCellSelectionMap = Atoms.getAtomValue get Selectors.Session.cellSelectionMap
 
                                 let initialTaskIdSet =
                                     oldCellSelectionMap
@@ -143,7 +141,7 @@ module Setters =
                             }
 
 
-                    do! setCellSelectionMap (username, newCellSelectionMap)
+                    do! setCellSelectionMap newCellSelectionMap
                 }),
             [|
                 box setCellSelectionMap

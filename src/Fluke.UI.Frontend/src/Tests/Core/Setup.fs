@@ -52,7 +52,7 @@ module Setup =
             //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
 //                fun _ -> failwith "called empty callback"
 //
-            let mutable callbacksRef : Jotai.GetFn * Jotai.SetFn = unbox null
+            let mutable callbacksRef : Store.GetFn * Store.SetFn = unbox null
             //
 //            let cmpWrapper =
 //                React.memo

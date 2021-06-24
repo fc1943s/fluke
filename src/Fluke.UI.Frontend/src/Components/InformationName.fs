@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
@@ -11,14 +10,10 @@ open Fluke.Shared.Domain.Model
 
 
 module InformationName =
-
     [<ReactComponent>]
-    let InformationName
-        (input: {| Username: Username
-                   Information: Information |})
-        =
-        let attachments = Store.useValue (Selectors.Information.attachments (input.Username, input.Information))
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+    let InformationName (input: {| Information: Information |}) =
+        let attachments = Store.useValue (Selectors.Information.attachments input.Information)
+        let cellSize = Store.useValue Atoms.cellSize
 
         let detailsClick =
             Store.useCallback (
@@ -26,15 +21,14 @@ module InformationName =
                     promise {
                         let deviceInfo = Atoms.getAtomValue get Selectors.deviceInfo
 
-                        if deviceInfo.IsMobile then
-                            Atoms.setAtomValue set (Atoms.User.leftDock input.Username) None
+                        if deviceInfo.IsMobile then Atoms.setAtomValue set Atoms.leftDock None
 
-                        Atoms.setAtomValue set (Atoms.User.rightDock input.Username) (Some TempUI.DockType.Information)
+                        Atoms.setAtomValue set Atoms.rightDock (Some TempUI.DockType.Information)
 
                         Atoms.setAtomValue
                             set
-                            (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Information))
-                            (input.Information |> Atoms.User.UIFlag.Information)
+                            (Atoms.uiFlag Atoms.UIFlagType.Information)
+                            (input.Information |> Atoms.UIFlag.Information)
                     }),
                 [|
                     box input
@@ -75,9 +69,5 @@ module InformationName =
                             |}
                     ]
 
-                AttachmentIndicator.AttachmentIndicator
-                    {|
-                        Username = input.Username
-                        Attachments = attachments
-                    |}
+                AttachmentIndicator.AttachmentIndicator {| Attachments = attachments |}
             ]

@@ -7,19 +7,14 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
 module Day =
-
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let Day
-        (input: {| Username: Username
-                   Date: FlukeDate
-                   Label: string |})
-        =
+    let Day (input: {| Date: FlukeDate; Label: string |}) =
         let isToday = Store.useValue (Selectors.FlukeDate.isToday input.Date)
         let hasCellSelection = Store.useValue (Selectors.FlukeDate.hasCellSelection input.Date)
-        let weekStart = Store.useValue (Atoms.User.weekStart input.Username)
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+        let weekStart = Store.useValue Atoms.weekStart
+        let cellSize = Store.useValue Atoms.cellSize
 
         Chakra.box
             (fun x ->

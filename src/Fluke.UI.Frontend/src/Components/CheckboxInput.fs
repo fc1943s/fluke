@@ -1,17 +1,16 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 
 module CheckboxInput =
     [<ReactComponent>]
     let CheckboxInput
-        (input: {| Atom: JotaiTypes.Atom<_>
+        (input: {| Atom: Store.Atom<_>
                    Label: string option
                    Props: Chakra.IChakraProps -> unit |})
         =
-        let value, setValue = Jotai.useAtom input.Atom
+        let value, setValue = Store.useState input.Atom
 
         Checkbox.Checkbox
             {|

@@ -13,8 +13,8 @@ module GridHeader =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let GridHeader (input: {| Username: Username |}) =
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+    let GridHeader () =
+        let cellSize = Store.useValue Atoms.cellSize
         let dateSequence = Store.useValue Selectors.dateSequence
 
         let datesByMonth =
@@ -41,7 +41,6 @@ module GridHeader =
 
                                     MonthResponsiveCell.MonthResponsiveCell
                                         {|
-                                            Username = input.Username
                                             Date = firstDate
                                             Props = (fun x -> x.width <- $"{cellWidth}px")
                                         |})
@@ -59,7 +58,6 @@ module GridHeader =
                                         {|
                                             Date = date
                                             Label = (date |> FlukeDate.DateTime).Format "EEEEEE"
-                                            Username = input.Username
                                         |})
                     ]
 
@@ -77,7 +75,6 @@ module GridHeader =
                                             {|
                                                 Date = date
                                                 Label = day.ToString "D2"
-                                                Username = input.Username
                                             |})
                     ]
             ]

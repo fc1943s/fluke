@@ -5,7 +5,6 @@ open Feliz
 open Fable.React
 open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
@@ -17,22 +16,22 @@ open Fluke.UI.Frontend.State
 module RightDock =
 
     [<ReactComponent>]
-    let RightDock (input: {| Username: Username |}) =
+    let RightDock () =
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let setLeftDock = Store.useSetState (Atoms.User.leftDock input.Username)
-        let rightDock, setRightDock = Store.useState (Atoms.User.rightDock input.Username)
-        let databaseUIFlag = Store.useValue (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
-        let taskUIFlag = Store.useValue (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
+        let setLeftDock = Store.useSetState Atoms.leftDock
+        let rightDock, setRightDock = Store.useState Atoms.rightDock
+        let databaseUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Database)
+        let taskUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Task)
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
         let hydrateTaskState = Hydrate.useHydrateTaskState ()
 
         let taskDatabaseId =
             match taskUIFlag with
-            | Atoms.User.UIFlag.Task (databaseId, _) -> databaseId
+            | Atoms.UIFlag.Task (databaseId, _) -> databaseId
             | _ -> Database.Default.Id
 
-        let setDatabaseIdSet = Store.useSetStatePrev (Atoms.Session.databaseIdSet input.Username)
-        let setTaskIdSet = Store.useSetStatePrev (Atoms.Database.taskIdSet (input.Username, taskDatabaseId))
+        let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
+        let setTaskIdSet = Store.useSetStatePrev (Atoms.Database.taskIdSet taskDatabaseId)
 
         let items =
             React.useMemo (
@@ -54,22 +53,16 @@ module RightDock =
                                         [
                                             let databaseId =
                                                 match databaseUIFlag with
-                                                | Atoms.User.UIFlag.Database databaseId -> databaseId
+                                                | Atoms.UIFlag.Database databaseId -> databaseId
                                                 | _ -> Database.Default.Id
 
                                             DatabaseForm.DatabaseForm
                                                 {|
-                                                    Username = input.Username
                                                     DatabaseId = databaseId
                                                     OnSave =
                                                         fun database ->
                                                             promise {
-                                                                do!
-                                                                    hydrateDatabase (
-                                                                        input.Username,
-                                                                        JotaiTypes.AtomScope.ReadOnly,
-                                                                        database
-                                                                    )
+                                                                do! hydrateDatabase (Store.AtomScope.ReadOnly, database)
 
                                                                 if database.Id <> databaseId then
                                                                     JS.setTimeout
@@ -98,7 +91,7 @@ module RightDock =
                                             x.overflowY <- "auto"
                                             x.flexBasis <- 0)
                                         [
-                                            InformationForm.InformationForm {| Username = input.Username |}
+                                            InformationForm.InformationForm ()
                                         ]
                             RightIcons = []
                         |}
@@ -119,12 +112,11 @@ module RightDock =
                                         [
                                             let taskId =
                                                 match taskUIFlag with
-                                                | Atoms.User.UIFlag.Task (_, taskId) -> taskId
+                                                | Atoms.UIFlag.Task (_, taskId) -> taskId
                                                 | _ -> Task.Default.Id
 
                                             TaskForm.TaskForm
                                                 {|
-                                                    Username = input.Username
                                                     TaskId = taskId
                                                     OnSave =
                                                         fun task ->
@@ -140,8 +132,7 @@ module RightDock =
 
                                                                 do!
                                                                     hydrateTaskState (
-                                                                        input.Username,
-                                                                        JotaiTypes.AtomScope.ReadOnly,
+                                                                        Store.AtomScope.ReadOnly,
                                                                         taskDatabaseId,
                                                                         taskState
                                                                     )
@@ -172,21 +163,20 @@ module RightDock =
                                             x.overflowY <- "auto"
                                             x.flexBasis <- 0)
                                         [
-                                            CellForm.CellFormWrapper {| Username = input.Username |}
+                                            CellForm.CellFormWrapper ()
                                         ]
                             RightIcons = []
                         |}
                     ]),
                 [|
-                    box taskDatabaseId
                     box databaseUIFlag
                     box hydrateDatabase
                     box hydrateTaskState
-                    box setTaskIdSet
-                    box taskUIFlag
-                    box input
-                    box setRightDock
                     box setDatabaseIdSet
+                    box setRightDock
+                    box setTaskIdSet
+                    box taskDatabaseId
+                    box taskUIFlag
                 |]
             )
 
@@ -238,7 +228,7 @@ module RightDock =
                                         Name = item.Name
                                         Icon = item.Icon
                                         RightIcons = item.RightIcons
-                                        Atom = Atoms.User.rightDock input.Username
+                                        Atom = Atoms.rightDock
                                         children =
                                             [
                                                 React.suspense (
@@ -277,7 +267,7 @@ module RightDock =
                                                     OnClick =
                                                         fun _ ->
                                                             promise { if deviceInfo.IsMobile then setLeftDock None }
-                                                    Atom = Atoms.User.rightDock input.Username
+                                                    Atom = Atoms.rightDock
                                                 |})
                             ]
                     ]

@@ -8,7 +8,6 @@ open Fluke.Shared.Domain
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fable.DateFunctions
-open Fable.Core.JsInterop
 open Fable.Core
 
 
@@ -29,12 +28,6 @@ module State =
         | Task of DatabaseId * TaskId
 
     module Atoms =
-        let rec debug = JotaiUtils.atomWithStorage $"{nameof debug}" JS.isDebug
-        let rec sessionRestored = Store.atomWithProfiling ($"{nameof sessionRestored}", false)
-        let rec initialPeerSkipped = Store.atomWithProfiling ($"{nameof initialPeerSkipped}", false)
-        let rec position = Store.atomWithProfiling ($"{nameof position}", None)
-        let rec ctrlPressed = Store.atomWithProfiling ($"{nameof ctrlPressed}", false)
-        let rec shiftPressed = Store.atomWithProfiling ($"{nameof shiftPressed}", false)
 
 
         //        module rec Events =
@@ -50,191 +43,135 @@ module State =
 //                | NoOp
 //
 //            let rec events =
-//                Store.atomFamilyWithProfiling (
+//                Store.atomFamilyWithSync (
 //                    $"{nameof Events}/{nameof events}",
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
 
+        let rec debug = Store.atomWithStorage $"{nameof debug}" (JS.isDebug ())
 
-        module rec User =
-            let rec expandedDatabaseIdSet =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof expandedDatabaseIdSet}",
-                    (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
+        let rec initialPeerSkipped = Store.atom ($"{nameof initialPeerSkipped}", false)
+        let rec position = Store.atom ($"{nameof position}", None)
+        let rec ctrlPressed = Store.atom ($"{nameof ctrlPressed}", false)
+        let rec shiftPressed = Store.atom ($"{nameof shiftPressed}", false)
 
-            let rec selectedDatabaseIdSet =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof selectedDatabaseIdSet}",
-                    (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
-                    (fun (username: Username) -> Some (username, []))
-                )
 
-            let rec view =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof view}",
-                    (fun (_username: Username) -> TempUI.defaultView),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let rec databaseIdSet = Store.atomWithSync ($"{nameof databaseIdSet}", (Set.empty: Set<DatabaseId>), [])
 
-            let rec language =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof language}",
-                    (fun (_username: Username) -> Language.English),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let expandedDatabaseIdSetDefault : Set<DatabaseId> = Set.empty
 
-            let rec color =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof color}",
-                    (fun (_username: Username) -> String.Format ("#{0:X6}", Random().Next 0x1000000)),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let rec expandedDatabaseIdSet =
+            Store.atomWithSync ($"{nameof expandedDatabaseIdSet}", expandedDatabaseIdSetDefault, [])
 
-            let rec weekStart =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof weekStart}",
-                    (fun (_username: Username) -> DayOfWeek.Sunday),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let selectedDatabaseIdSetDefault : Set<DatabaseId> = Set.empty
 
-            let rec dayStart =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof dayStart}",
-                    (fun (_username: Username) -> FlukeTime.Create 0 0),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let rec selectedDatabaseIdSet =
+            Store.atomWithSync ($"{nameof selectedDatabaseIdSet}", selectedDatabaseIdSetDefault, [])
 
-            let rec sessionDuration =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof sessionDuration}",
-                    (fun (_username: Username) -> Minute 25),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let viewDefault = View.View.Information
+        let rec view = Store.atomWithSync ($"{nameof view}", viewDefault, [])
 
-            let rec sessionBreakDuration =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof sessionBreakDuration}",
-                    (fun (_username: Username) -> Minute 5),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let languageDefault = Language.English
+        let rec language = Store.atomWithSync ($"{nameof language}", languageDefault, [])
 
-            let rec daysBefore =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof daysBefore}",
-                    (fun (_username: Username) -> 7),
-                    (fun (username: Username) -> Some (username, []))
+        let colorDefault = String.Format ("#{0:X6}", Random().Next 0x1000000)
+        let rec color = Store.atomWithSync ($"{nameof color}", colorDefault, [])
 
-                )
+        let weekStartDefault = DayOfWeek.Sunday
+        let rec weekStart = Store.atomWithSync ($"{nameof weekStart}", weekStartDefault, [])
 
-            let rec daysAfter =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof daysAfter}",
-                    (fun (_username: Username) -> 7),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let dayStartDefault = FlukeTime.Create 0 0
+        let rec dayStart = Store.atomWithSync ($"{nameof dayStart}", dayStartDefault, [])
 
-            let rec searchText =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof searchText}",
-                    (fun (_username: Username) -> ""),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let sessionDurationDefault = Minute 25
+        let rec sessionDuration = Store.atomWithSync ($"{nameof sessionDuration}", sessionDurationDefault, [])
 
-            let rec cellSize =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof cellSize}",
-                    (fun (_username: Username) -> 23),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let sessionBreakDurationDefault = Minute 5
 
-            let rec leftDock =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof leftDock}",
-                    (fun (_username: Username) -> None: TempUI.DockType option),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let rec sessionBreakDuration =
+            Store.atomWithSync ($"{nameof sessionBreakDuration}", sessionBreakDurationDefault, [])
 
-            let rec rightDock =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof rightDock}",
-                    (fun (_username: Username) -> None: TempUI.DockType option),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let daysBeforeDefault = 7
+        let rec daysBefore = Store.atomWithSync ($"{nameof daysBefore}", daysBeforeDefault, [])
 
-            let rec hideTemplates =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof hideTemplates}",
-                    (fun (_username: Username) -> false),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let daysAfterDefault = 7
+        let rec daysAfter = Store.atomWithSync ($"{nameof daysAfter}", daysAfterDefault, [])
 
-            let rec hideSchedulingOverlay =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof hideSchedulingOverlay}",
-                    (fun (_username: Username) -> false),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let searchTextDefault = ""
+        let rec searchText = Store.atomWithSync ($"{nameof searchText}", searchTextDefault, [])
 
-            let rec showViewOptions =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof showViewOptions}",
-                    (fun (_username: Username) -> false),
-                    (fun (username: Username) -> Some (username, []))
-                )
 
-            let rec filterTasksByView =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof filterTasksByView}",
-                    (fun (_username: Username) -> true),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let cellSizeDefault = 23
+        let rec cellSize = Store.atomWithSync ($"{nameof cellSize}", cellSizeDefault, [])
 
-            let rec informationAttachmentMap =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof informationAttachmentMap}",
-                    (fun (_username: Username) -> Map.empty: Map<Information, Set<AttachmentId>>),
-                    (fun (username: Username) -> Some (username, []))
-                )
+        let leftDockDefault : TempUI.DockType option = None
+        let rec leftDock = Store.atomWithSync ($"{nameof leftDock}", leftDockDefault, [])
 
-            [<RequireQualifiedAccess>]
-            type UIFlag =
-                | None
-                | Database of DatabaseId
-                | Information of Information
-                | Task of DatabaseId * TaskId
-                | Cell of TaskId * DateId
+        let rightDockDefault : TempUI.DockType option = None
+        let rec rightDock = Store.atomWithSync ($"{nameof rightDock}", rightDockDefault, [])
 
-            [<RequireQualifiedAccess>]
-            type UIFlagType =
-                | Database
-                | Information
-                | Task
-                | Cell
+        let hideTemplatesDefault = false
+        let rec hideTemplates = Store.atomWithSync ($"{nameof hideTemplates}", hideTemplatesDefault, [])
 
-            let rec uiFlag =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof uiFlag}",
-                    (fun (_username: Username, _uiFlagType: UIFlagType) -> UIFlag.None: UIFlag),
-                    (fun (username: Username, uiFlagType: UIFlagType) ->
-                        Some (username, uiFlagType |> string |> List.singleton))
-                )
+        let hideSchedulingOverlayDefault = false
 
-            let rec uiVisibleFlag =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof uiVisibleFlag}",
-                    (fun (_username: Username, _uiFlagType: UIFlagType) -> false),
-                    (fun (username: Username, uiFlagType: UIFlagType) ->
-                        Some (username, uiFlagType |> string |> List.singleton))
-                )
+        let rec hideSchedulingOverlay =
+            Store.atomWithSync ($"{nameof hideSchedulingOverlay}", hideSchedulingOverlayDefault, [])
 
-            let rec accordionFlag =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof User}/{nameof accordionFlag}",
-                    (fun (_username: Username, _key: TextKey) -> [||]: string []),
-                    (fun (username: Username, key: TextKey) -> Some (username, key |> TextKey.Value |> List.singleton))
-                )
+        let showViewOptionsDefault = false
+        let rec showViewOptions = Store.atomWithSync ($"{nameof showViewOptions}", showViewOptionsDefault, [])
+
+        let filterTasksByViewDefault = true
+        let rec filterTasksByView = Store.atomWithSync ($"{nameof filterTasksByView}", filterTasksByViewDefault, [])
+
+        let informationAttachmentMapDefault : Map<Information, Set<AttachmentId>> = Map.empty
+
+        let rec informationAttachmentMap =
+            Store.atomWithSync ($"{nameof informationAttachmentMap}", informationAttachmentMapDefault, [])
+
+
+        [<RequireQualifiedAccess>]
+        type UIFlag =
+            | None
+            | Database of DatabaseId
+            | Information of Information
+            | Task of DatabaseId * TaskId
+            | Cell of TaskId * DateId
+
+        [<RequireQualifiedAccess>]
+        type UIFlagType =
+            | Database
+            | Information
+            | Task
+            | Cell
+
+        let uiFlagDefault = UIFlag.None
+
+        let rec uiFlag =
+            Store.atomFamilyWithSync (
+                $"{nameof uiFlag}",
+                (fun (_uiFlagType: UIFlagType) -> uiFlagDefault),
+                (fun (uiFlagType: UIFlagType) -> uiFlagType |> string |> List.singleton)
+            )
+
+        let uiVisibleFlagDefault = false
+
+        let rec uiVisibleFlag =
+            Store.atomFamilyWithSync (
+                $"{nameof uiVisibleFlag}",
+                (fun (_uiFlagType: UIFlagType) -> uiVisibleFlagDefault),
+                (fun (uiFlagType: UIFlagType) -> uiFlagType |> string |> List.singleton)
+            )
+
+        let accordionFlagDefault : string [] = [||]
+
+        let rec accordionFlag =
+            Store.atomFamilyWithSync (
+                $"{nameof accordionFlag}",
+                (fun (_key: TextKey) -> accordionFlagDefault),
+                (fun (key: TextKey) -> key |> TextKey.Value |> List.singleton)
+            )
 
 
         module rec Database =
@@ -245,43 +182,38 @@ module State =
                 |> List.singleton
 
             let rec taskIdSet =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Database}/{nameof taskIdSet}",
-                    (fun (_username: Username, _databaseId: DatabaseId) -> Set.empty: Set<TaskId>),
-                    (fun (username: Username, databaseId: DatabaseId) ->
-                        Some (username, databaseIdIdentifier databaseId))
+                    (fun (_databaseId: DatabaseId) -> Set.empty: Set<TaskId>),
+                    databaseIdIdentifier
                 )
 
             let rec name =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Database}/{nameof name}",
-                    (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.Name),
-                    (fun (username: Username, databaseId: DatabaseId) ->
-                        Some (username, databaseIdIdentifier databaseId))
+                    (fun (_databaseId: DatabaseId) -> Database.Default.Name),
+                    databaseIdIdentifier
                 )
 
             let rec owner =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Database}/{nameof owner}",
-                    (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.Owner),
-                    (fun (username: Username, databaseId: DatabaseId) ->
-                        Some (username, databaseIdIdentifier databaseId))
+                    (fun (_databaseId: DatabaseId) -> Database.Default.Owner),
+                    databaseIdIdentifier
                 )
 
             let rec sharedWith =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Database}/{nameof sharedWith}",
-                    (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.SharedWith),
-                    (fun (username: Username, databaseId: DatabaseId) ->
-                        Some (username, databaseIdIdentifier databaseId))
+                    (fun (_databaseId: DatabaseId) -> Database.Default.SharedWith),
+                    databaseIdIdentifier
                 )
 
             let rec position =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Database}/{nameof position}",
-                    (fun (_username: Username, _databaseId: DatabaseId) -> Database.Default.Position),
-                    (fun (username: Username, databaseId: DatabaseId) ->
-                        Some (username, databaseIdIdentifier databaseId))
+                    (fun (_databaseId: DatabaseId) -> Database.Default.Position),
+                    databaseIdIdentifier
                 )
 
 
@@ -293,19 +225,17 @@ module State =
                 |> List.singleton
 
             let rec timestamp =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Attachment}/{nameof timestamp}",
-                    (fun (_username: Username, _attachmentId: AttachmentId) -> None: FlukeDateTime option),
-                    (fun (username: Username, attachmentId: AttachmentId) ->
-                        Some (username, attachmentIdIdentifier attachmentId))
+                    (fun (_attachmentId: AttachmentId) -> None: FlukeDateTime option),
+                    attachmentIdIdentifier
                 )
 
             let rec attachment =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Attachment}/{nameof attachment}",
-                    (fun (_username: Username, _attachmentId: AttachmentId) -> None: Attachment option),
-                    (fun (username: Username, attachmentId: AttachmentId) ->
-                        Some (username, attachmentIdIdentifier attachmentId))
+                    (fun (_attachmentId: AttachmentId) -> None: Attachment option),
+                    attachmentIdIdentifier
                 )
 
 
@@ -314,17 +244,17 @@ module State =
                 taskId |> TaskId.Value |> string |> List.singleton
 
             let rec statusMap =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof statusMap}",
-                    (fun (_username: Username, _taskId: TaskId) -> Map.empty: Map<DateId, ManualCellStatus>),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Username * ManualCellStatus>),
+                    taskIdIdentifier
                 )
 
             //            let rec databaseId =
-//                Store.atomFamilyWithProfiling (
+//                Store.atomFamilyWithSync (
 //                    $"{nameof Task}/{nameof databaseId}",
-//                    (fun (_username: Username, _taskId: TaskId) -> Database.Default.Id),
-//                    (fun (username: Username, taskId: TaskId) ->
+//                    (fun (_taskId: TaskId) -> Database.Default.Id),
+//                    (fun (username: Username) ->
 //                        [
 //                            Store.gunEffect
 //                                (Store.InputAtom.Atom
@@ -333,94 +263,87 @@ module State =
 //                )
 
             let rec sessions =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof sessions}",
-                    (fun (_username: Username, _taskId: TaskId) -> []: Session list),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> []: Session list),
+                    taskIdIdentifier
                 )
 
             let rec attachmentIdSet =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof attachmentIdSet}",
-                    (fun (_username: Username, _taskId: TaskId) -> Set.empty: Set<AttachmentId>),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Set.empty: Set<AttachmentId>),
+                    taskIdIdentifier
                 )
 
             let rec cellAttachmentMap =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof cellAttachmentMap}",
-                    (fun (_username: Username, _taskId: TaskId) -> Map.empty: Map<DateId, Set<AttachmentId>>),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Set<AttachmentId>>),
+                    taskIdIdentifier
                 )
 
             let rec selectionSet =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof selectionSet}",
-                    (fun (_username: Username, _taskId: TaskId) -> Set.empty: Set<DateId>),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Set.empty: Set<DateId>),
+                    taskIdIdentifier
                 )
 
             let rec information =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof information}",
-                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Information),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Task.Default.Information),
+                    taskIdIdentifier
                 )
 
             let rec name =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof name}",
-                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Name),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Task.Default.Name),
+                    taskIdIdentifier
                 )
 
             let rec scheduling =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof scheduling}",
-                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Scheduling),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Task.Default.Scheduling),
+                    taskIdIdentifier
                 )
 
             let rec pendingAfter =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof pendingAfter}",
-                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.PendingAfter),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Task.Default.PendingAfter),
+                    taskIdIdentifier
                 )
 
             let rec missedAfter =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof missedAfter}",
-                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.MissedAfter),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Task.Default.MissedAfter),
+                    taskIdIdentifier
                 )
 
             let rec priority =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof priority}",
-                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Priority),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Task.Default.Priority),
+                    taskIdIdentifier
                 )
 
             let rec duration =
-                Store.atomFamilyWithProfiling (
+                Store.atomFamilyWithSync (
                     $"{nameof Task}/{nameof duration}",
-                    (fun (_username: Username, _taskId: TaskId) -> Task.Default.Duration),
-                    (fun (username: Username, taskId: TaskId) -> Some (username, taskIdIdentifier taskId))
+                    (fun (_taskId: TaskId) -> Task.Default.Duration),
+                    taskIdIdentifier
                 )
 
 
-        module rec Session =
-            let rec databaseIdSet =
-                Store.atomFamilyWithProfiling (
-                    $"{nameof Session}/{nameof databaseIdSet}",
-                    (fun (_username: Username) -> Set.empty: Set<DatabaseId>),
-                    (fun (username: Username) -> Some (username, []))
-                )
 
         //
 //            let rec taskIdSet =
-//                Store.atomFamilyWithProfiling (
+//                Store.atomFamilyWithSync (
 //                    $"{nameof Session}/{nameof taskIdSet}",
 //                    (fun (_username: Username) -> Set.empty: Set<TaskId>),
 //                    (fun (username: Username) ->
@@ -442,17 +365,16 @@ module State =
 
     module Selectors =
         let rec dateSequence =
-            Store.selectorWithProfiling (
+            Store.readSelector (
                 $"{nameof dateSequence}",
                 (fun get ->
-                    let username = Atoms.getAtomValue get Atoms.username
                     let position = Atoms.getAtomValue get Atoms.position
 
-                    match position, username with
-                    | Some position, Some username ->
-                        let daysBefore = Atoms.getAtomValue get (Atoms.User.daysBefore username)
-                        let daysAfter = Atoms.getAtomValue get (Atoms.User.daysAfter username)
-                        let dayStart = Atoms.getAtomValue get (Atoms.User.dayStart username)
+                    match position with
+                    | Some position ->
+                        let daysBefore = Atoms.getAtomValue get Atoms.daysBefore
+                        let daysAfter = Atoms.getAtomValue get Atoms.daysAfter
+                        let dayStart = Atoms.getAtomValue get Atoms.dayStart
                         let dateId = dateId dayStart position
                         let (DateId referenceDay) = dateId
 
@@ -462,77 +384,67 @@ module State =
                     | _ -> [])
             )
 
-        let rec deviceInfo =
-            Store.selectorWithProfiling (
-                $"{Store.selectorWithProfiling}/{nameof deviceInfo}",
-                (fun _getter -> JS.deviceInfo)
-            )
+        let rec deviceInfo = Store.readSelector ($"{nameof deviceInfo}", (fun _getter -> JS.deviceInfo))
 
 
         module rec Database =
             //            let rec taskIdSet =
-//                Store.selectorFamilyWithProfiling (
+//                Store.readSelectorFamily (
 //                    $"{nameof Database}/{nameof taskIdSet}",
-//                    (fun (username: Username, databaseId: DatabaseId) get ->
+//                    (fun (databaseId: DatabaseId) get ->
 //                        //                        let taskIdSet = getter.get (Atoms.Session.taskIdSet username)
 ////
 ////                        taskIdSet
 ////                        |> Set.filter
 ////                            (fun taskId ->
-////                                let databaseId' = getter.get (Atoms.Task.databaseId (username, taskId))
+////                                let databaseId' = getter.get (Atoms.Task.databaseId taskId)
 ////                                databaseId' = databaseId)
 //
-//                        Atoms.getAtomValue get (Atoms.Database.taskIdSet (username, databaseId)))
+//                        Atoms.getAtomValue get (Atoms.Database.taskIdSet databaseId))
 //                )
 
             let rec database =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Database}/{nameof database}",
-                    (fun (username: Username, databaseId: DatabaseId) get ->
-                        promise {
-                            return
-                                {
-                                    Id = databaseId
-                                    Name = Atoms.getAtomValue get (Atoms.Database.name (username, databaseId))
-                                    Owner = Atoms.getAtomValue get (Atoms.Database.owner (username, databaseId))
-                                    SharedWith =
-                                        Atoms.getAtomValue get (Atoms.Database.sharedWith (username, databaseId))
-                                    Position = Atoms.getAtomValue get (Atoms.Database.position (username, databaseId))
-                                }
+                    (fun (databaseId: DatabaseId) get ->
+                        {
+                            Id = databaseId
+                            Name = Atoms.getAtomValue get (Atoms.Database.name databaseId)
+                            Owner = Atoms.getAtomValue get (Atoms.Database.owner databaseId)
+                            SharedWith = Atoms.getAtomValue get (Atoms.Database.sharedWith databaseId)
+                            Position = Atoms.getAtomValue get (Atoms.Database.position databaseId)
                         })
                 )
 
             let rec isReadWrite =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Database}/{nameof isReadWrite}",
                     (fun (databaseId: DatabaseId) get ->
-                        promise {
-                            let username = Atoms.getAtomValue get Atoms.username
+                        let username = Atoms.getAtomValue get Atoms.username
 
-                            let access =
-                                match username with
-                                | Some username ->
-                                    let database = Atoms.getAtomValue get (database (username, databaseId))
+                        let access =
+                            match username with
+                            | Some username ->
+                                let database = Atoms.getAtomValue get (database databaseId)
 
-                                    if username <> Templates.templatesUser.Username
-                                       && database.Owner = Templates.templatesUser.Username then
-                                        None
-                                    else
-                                        getAccess database username
-                                | None -> None
+                                if username <> Templates.templatesUser.Username
+                                   && database.Owner = Templates.templatesUser.Username then
+                                    None
+                                else
+                                    getAccess database username
+                            | None -> None
 
-                            return access = Some Access.ReadWrite
-                        })
+                        access = Some Access.ReadWrite)
                 )
 
 
         module rec Attachment =
             let rec attachment =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Attachment}/{nameof attachment}",
-                    (fun (username: Username, attachmentId: AttachmentId) get ->
-                        let timestamp = Atoms.getAtomValue get (Atoms.Attachment.timestamp (username, attachmentId))
-                        let attachment = Atoms.getAtomValue get (Atoms.Attachment.attachment (username, attachmentId))
+                    (fun (attachmentId: AttachmentId) get ->
+                        let timestamp = Atoms.getAtomValue get (Atoms.Attachment.timestamp attachmentId)
+                        let attachment = Atoms.getAtomValue get (Atoms.Attachment.attachment attachmentId)
 
                         match timestamp, attachment with
                         | Some timestamp, Some attachment -> Some (timestamp, attachment)
@@ -542,25 +454,23 @@ module State =
 
         module rec Information =
             let rec attachments =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Information}/{nameof attachments}",
-                    (fun (username: Username, information: Information) get ->
-                        Atoms.getAtomValue get (Atoms.User.informationAttachmentMap username)
+                    (fun (information: Information) get ->
+                        Atoms.getAtomValue get Atoms.informationAttachmentMap
                         |> Map.tryFind information
                         |> Option.defaultValue Set.empty
                         |> Set.toList
-                        |> List.choose
-                            (fun attachmentId ->
-                                Atoms.getAtomValue get (Attachment.attachment (username, attachmentId))))
+                        |> List.choose (fun attachmentId -> Atoms.getAtomValue get (Attachment.attachment attachmentId)))
                 )
 
             let rec informationState =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Information}/{nameof informationState}",
-                    (fun (username: Username, information: Information) get ->
+                    (fun (information: Information) get ->
                         {
                             Information = information
-                            Attachments = Atoms.getAtomValue get (attachments (username, information))
+                            Attachments = Atoms.getAtomValue get (attachments information)
                             SortList = []
                         })
                 )
@@ -568,43 +478,43 @@ module State =
 
         module rec Task =
             let rec task =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Task}/{nameof task}",
-                    (fun (username: Username, taskId: TaskId) get ->
+                    (fun (taskId: TaskId) get ->
 
                         {
                             Id = taskId
-                            Name = Atoms.getAtomValue get (Atoms.Task.name (username, taskId))
-                            Information = Atoms.getAtomValue get (Atoms.Task.information (username, taskId))
-                            PendingAfter = Atoms.getAtomValue get (Atoms.Task.pendingAfter (username, taskId))
-                            MissedAfter = Atoms.getAtomValue get (Atoms.Task.missedAfter (username, taskId))
-                            Scheduling = Atoms.getAtomValue get (Atoms.Task.scheduling (username, taskId))
-                            Priority = Atoms.getAtomValue get (Atoms.Task.priority (username, taskId))
-                            Duration = Atoms.getAtomValue get (Atoms.Task.duration (username, taskId))
+                            Name = Atoms.getAtomValue get (Atoms.Task.name taskId)
+                            Information = Atoms.getAtomValue get (Atoms.Task.information taskId)
+                            PendingAfter = Atoms.getAtomValue get (Atoms.Task.pendingAfter taskId)
+                            MissedAfter = Atoms.getAtomValue get (Atoms.Task.missedAfter taskId)
+                            Scheduling = Atoms.getAtomValue get (Atoms.Task.scheduling taskId)
+                            Priority = Atoms.getAtomValue get (Atoms.Task.priority taskId)
+                            Duration = Atoms.getAtomValue get (Atoms.Task.duration taskId)
                         })
                 )
 
             let rec taskState =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Task}/{nameof taskState}",
-                    (fun (username: Username, taskId: TaskId) get ->
-                        let task = Atoms.getAtomValue get (task (username, taskId))
+                    (fun (taskId: TaskId) get ->
+                        let task = Atoms.getAtomValue get (task taskId)
                         let dateSequence = Atoms.getAtomValue get dateSequence
-                        let dayStart = Atoms.getAtomValue get (Atoms.User.dayStart username)
-                        let statusMap = Atoms.getAtomValue get (Atoms.Task.statusMap (username, taskId))
-                        let sessions = Atoms.getAtomValue get (Atoms.Task.sessions (username, taskId))
-                        let attachmentIdSet = Atoms.getAtomValue get (Atoms.Task.attachmentIdSet (username, taskId))
-                        let cellAttachmentMap = Atoms.getAtomValue get (Atoms.Task.cellAttachmentMap (username, taskId))
+                        let statusMap = Atoms.getAtomValue get (Atoms.Task.statusMap taskId)
+                        let sessions = Atoms.getAtomValue get (Atoms.Task.sessions taskId)
+                        let attachmentIdSet = Atoms.getAtomValue get (Atoms.Task.attachmentIdSet taskId)
+                        let cellAttachmentMap = Atoms.getAtomValue get (Atoms.Task.cellAttachmentMap taskId)
 
                         let attachments =
                             attachmentIdSet
                             |> Set.toList
                             |> List.choose
-                                (fun attachmentId ->
-                                    Atoms.getAtomValue get (Attachment.attachment (username, attachmentId)))
+                                (fun attachmentId -> Atoms.getAtomValue get (Attachment.attachment attachmentId))
                             |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
 
                         let cellStateMapWithoutStatus =
+                            let dayStart = Atoms.getAtomValue get Atoms.dayStart
+
                             dateSequence
                             |> List.map DateId
                             |> List.map
@@ -627,14 +537,12 @@ module State =
                                                 (fun attachmentId ->
 
                                                     let timestamp =
-                                                        Atoms.getAtomValue
-                                                            get
-                                                            (Atoms.Attachment.timestamp (username, attachmentId))
+                                                        Atoms.getAtomValue get (Atoms.Attachment.timestamp attachmentId)
 
                                                     let attachment =
                                                         Atoms.getAtomValue
                                                             get
-                                                            (Atoms.Attachment.attachment (username, attachmentId))
+                                                            (Atoms.Attachment.attachment attachmentId)
 
                                                     timestamp, attachment)
                                             |> List.choose
@@ -659,7 +567,7 @@ module State =
                             |> Map.mapValues
                                 (fun manualCellStatus ->
                                     {
-                                        Status = UserStatus (username, manualCellStatus)
+                                        Status = UserStatus manualCellStatus
                                         Attachments = []
                                         Sessions = []
                                     })
@@ -683,13 +591,13 @@ module State =
                 )
 
             let rec statusMap =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Task}/{nameof statusMap}",
-                    (fun (username: Username, taskId: TaskId) get ->
-                        let dayStart = Atoms.getAtomValue get (Atoms.User.dayStart username)
+                    (fun (taskId: TaskId) get ->
                         let position = Atoms.getAtomValue get Atoms.position
-                        let taskState = Atoms.getAtomValue get (taskState (username, taskId))
+                        let taskState = Atoms.getAtomValue get (taskState taskId)
                         let dateSequence = Atoms.getAtomValue get dateSequence
+                        let dayStart = Atoms.getAtomValue get Atoms.dayStart
 
                         match position with
                         | Some position when not dateSequence.IsEmpty ->
@@ -698,17 +606,16 @@ module State =
                 )
 
             let rec databaseId =
-                Store.selectorFamilySetterWithProfiling (
+                Store.selectorFamily (
                     $"{nameof Task}/{nameof databaseId}",
-                    (fun (username: Username, taskId: TaskId) get ->
-                        let databaseIdSet = Atoms.getAtomValue get (Atoms.Session.databaseIdSet username)
+                    (fun (taskId: TaskId) get ->
+                        let databaseIdSet = Atoms.getAtomValue get Atoms.databaseIdSet
 
                         let databaseIdSet =
                             databaseIdSet
                             |> Set.choose
                                 (fun databaseId ->
-                                    let taskIdSet =
-                                        Atoms.getAtomValue get (Atoms.Database.taskIdSet (username, databaseId))
+                                    let taskIdSet = Atoms.getAtomValue get (Atoms.Database.taskIdSet databaseId)
 
                                     if taskIdSet.Contains taskId then Some databaseId else None)
 
@@ -716,64 +623,58 @@ module State =
                         | [] -> Database.Default.Id
                         | [ databaseId ] -> databaseId
                         | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdSet})"),
-                    (fun (username: Username, taskId: TaskId) get set newValue ->
-                        let databaseId = Atoms.getAtomValue get (databaseId (username, taskId))
+                    (fun (taskId: TaskId) get set newValue ->
+                        let databaseId = Atoms.getAtomValue get (databaseId taskId)
 
                         if databaseId <> newValue then
-                            let taskIdSet = Atoms.getAtomValue get (Atoms.Database.taskIdSet (username, databaseId))
+                            let taskIdSet = Atoms.getAtomValue get (Atoms.Database.taskIdSet databaseId)
 
                             Atoms.setAtomValue
                                 set
-                                (Atoms.Database.taskIdSet (username, databaseId))
+                                (Atoms.Database.taskIdSet databaseId)
                                 (taskIdSet |> Set.remove taskId)
 
-                        Atoms.setAtomValuePrev set (Atoms.Database.taskIdSet (username, newValue)) (Set.add taskId))
+                        Atoms.setAtomValuePrev set (Atoms.Database.taskIdSet newValue) (Set.add taskId))
                 )
 
             let rec isReadWrite =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Task}/{nameof isReadWrite}",
-                    (fun (username: Username, taskId: TaskId) get -> promise {
-                        let databaseId = Atoms.getAtomValue get (databaseId (username, taskId))
-                        return Atoms.getAtomValue get (Database.isReadWrite databaseId)})
+                    (fun (taskId: TaskId) get ->
+                        let databaseId = Atoms.getAtomValue get (databaseId taskId)
+                        Atoms.getAtomValue get (Database.isReadWrite databaseId))
                 )
 
             let rec lastSession =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Task}/{nameof lastSession}",
                     (fun (taskId: TaskId) get ->
                         let dateSequence = Atoms.getAtomValue get dateSequence
-                        let username = Atoms.getAtomValue get Atoms.username
+                        let taskState = Atoms.getAtomValue get (taskState taskId)
 
-                        match username with
-                        | Some username ->
-                            let taskState = Atoms.getAtomValue get (taskState (username, taskId))
-
-                            dateSequence
-                            |> List.rev
-                            |> List.tryPick
-                                (fun date ->
-                                    taskState.CellStateMap
-                                    |> Map.tryFind (DateId date)
-                                    |> Option.map (fun cellState -> cellState.Sessions)
-                                    |> Option.defaultValue []
-                                    |> List.sortByDescending (fun (Session start) -> start |> FlukeDateTime.DateTime)
-                                    |> List.tryHead)
-                        | _ -> None)
+                        dateSequence
+                        |> List.rev
+                        |> List.tryPick
+                            (fun date ->
+                                taskState.CellStateMap
+                                |> Map.tryFind (DateId date)
+                                |> Option.map (fun cellState -> cellState.Sessions)
+                                |> Option.defaultValue []
+                                |> List.sortByDescending (fun (Session start) -> start |> FlukeDateTime.DateTime)
+                                |> List.tryHead))
                 )
 
             let rec activeSession =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Task}/{nameof activeSession}",
                     (fun (taskId: TaskId) get ->
-                        let username = Atoms.getAtomValue get Atoms.username
                         let position = Atoms.getAtomValue get Atoms.position
                         let lastSession = Atoms.getAtomValue get (lastSession taskId)
 
-                        match username, position, lastSession with
-                        | Some username, Some position, Some lastSession ->
-                            let sessionDuration = Atoms.getAtomValue get (Atoms.User.sessionDuration username)
-                            let sessionBreakDuration = Atoms.getAtomValue get (Atoms.User.sessionBreakDuration username)
+                        match position, lastSession with
+                        | Some position, Some lastSession ->
+                            let sessionDuration = Atoms.getAtomValue get Atoms.sessionDuration
+                            let sessionBreakDuration = Atoms.getAtomValue get Atoms.sessionBreakDuration
 
                             let (Session start) = lastSession
 
@@ -794,10 +695,10 @@ module State =
                 )
 
             let rec showUser =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Task}/{nameof showUser}",
-                    (fun (username: Username, taskId: TaskId) get ->
-                        let taskState = Atoms.getAtomValue get (taskState (username, taskId))
+                    (fun (taskId: TaskId) get ->
+                        let taskState = Atoms.getAtomValue get (taskState taskId)
 
                         let usersCount =
                             taskState.CellStateMap
@@ -813,66 +714,61 @@ module State =
                 )
 
             let rec hasSelection =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Task}/{nameof hasSelection}",
                     (fun (taskId: TaskId) get ->
                         let dateSequence = Atoms.getAtomValue get dateSequence
-                        let username = Atoms.getAtomValue get Atoms.username
+                        let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet taskId)
 
-                        match username with
-                        | Some username ->
-                            let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet (username, taskId))
-
-                            dateSequence
-                            |> List.exists (DateId >> selectionSet.Contains)
-                        | None -> false)
+                        dateSequence
+                        |> List.exists (DateId >> selectionSet.Contains))
                 )
 
         module rec Cell =
             let rec sessionStatus =
-                Store.selectorFamilySetterWithProfiling (
+                Store.selectorFamily (
                     $"{nameof Cell}/{nameof sessionStatus}",
-                    (fun (username: Username, taskId: TaskId, dateId: DateId) get ->
-                        let hideSchedulingOverlay = Atoms.getAtomValue get (Atoms.User.hideSchedulingOverlay username)
+                    (fun (taskId: TaskId, dateId: DateId) get ->
+                        let hideSchedulingOverlay = Atoms.getAtomValue get Atoms.hideSchedulingOverlay
 
                         if hideSchedulingOverlay then
-                            Atoms.getAtomValue get (Atoms.Task.statusMap (username, taskId))
+                            Atoms.getAtomValue get (Atoms.Task.statusMap taskId)
                             |> Map.tryFind dateId
-                            |> Option.map (fun manualUserStatus -> UserStatus (username, manualUserStatus))
+                            |> Option.map UserStatus
                             |> Option.defaultValue Disabled
                         else
-                            Atoms.getAtomValue get (Task.statusMap (username, taskId))
+                            Atoms.getAtomValue get (Task.statusMap taskId)
                             |> Map.tryFind dateId
                             |> Option.defaultValue Disabled),
-                    (fun (username: Username, taskId: TaskId, dateId: DateId) get set newValue ->
-                        let statusMap = Atoms.getAtomValue get (Atoms.Task.statusMap (username, taskId))
+                    (fun (taskId: TaskId, dateId: DateId) get set newValue ->
+                        let statusMap = Atoms.getAtomValue get (Atoms.Task.statusMap taskId)
 
                         Atoms.setAtomValue
                             set
-                            (Atoms.Task.statusMap (username, taskId))
+                            (Atoms.Task.statusMap taskId)
                             (match newValue with
-                             | UserStatus (_, status) -> statusMap |> Map.add dateId status
+                             | UserStatus (username, status) -> statusMap |> Map.add dateId (username, status)
                              | _ -> statusMap |> Map.remove dateId))
                 )
 
             let rec selected =
-                Store.selectorFamilySetterWithProfiling (
+                Store.selectorFamily (
                     $"{nameof Cell}/{nameof selected}",
-                    (fun (username: Username, taskId: TaskId, dateId: DateId) get ->
-                        let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet (username, taskId))
+                    (fun (taskId: TaskId, dateId: DateId) get ->
+                        let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet taskId)
                         selectionSet.Contains dateId),
-                    (fun (username: Username, taskId: TaskId, dateId: DateId) _get set newValue ->
+                    (fun (taskId: TaskId, dateId: DateId) _get set newValue ->
                         Atoms.setAtomValuePrev
                             set
-                            (Atoms.Task.selectionSet (username, taskId))
+                            (Atoms.Task.selectionSet taskId)
                             ((if newValue then Set.add else Set.remove) dateId))
                 )
 
             let rec sessions =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Cell}/{nameof sessions}",
-                    (fun (username: Username, taskId: TaskId, dateId: DateId) get ->
-                        let taskState = Atoms.getAtomValue get (Task.taskState (username, taskId))
+                    (fun (taskId: TaskId, dateId: DateId) get ->
+                        let taskState = Atoms.getAtomValue get (Task.taskState taskId)
 
                         taskState.CellStateMap
                         |> Map.tryFind dateId
@@ -881,10 +777,10 @@ module State =
                 )
 
             let rec attachments =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof Cell}/{nameof attachments}",
-                    (fun (username: Username, taskId: TaskId, dateId: DateId) get ->
-                        let taskState = Atoms.getAtomValue get (Task.taskState (username, taskId))
+                    (fun (taskId: TaskId, dateId: DateId) get ->
+                        let taskState = Atoms.getAtomValue get (Task.taskState taskId)
 
                         taskState.CellStateMap
                         |> Map.tryFind dateId
@@ -895,25 +791,24 @@ module State =
 
         module rec Session =
             let rec taskIdSet =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof Session}/{nameof taskIdSet}",
-                    (fun (username: Username) get ->
-                        let databaseIdSet = Atoms.getAtomValue get (Atoms.Session.databaseIdSet username)
+                    (fun get ->
+                        let databaseIdSet = Atoms.getAtomValue get Atoms.databaseIdSet
 
                         databaseIdSet
-                        |> Set.collect
-                            (fun databaseId -> Atoms.getAtomValue get (Atoms.Database.taskIdSet (username, databaseId))))
+                        |> Set.collect (fun databaseId -> Atoms.getAtomValue get (Atoms.Database.taskIdSet databaseId)))
                 )
 
             let rec informationSet =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof Session}/{nameof informationSet}",
-                    (fun (username: Username) get ->
-                        let taskIdSet = Atoms.getAtomValue get (taskIdSet username)
+                    (fun get ->
+                        let taskIdSet = Atoms.getAtomValue get taskIdSet
 
                         taskIdSet
                         |> Set.toList
-                        |> List.map (fun taskId -> Atoms.getAtomValue get (Atoms.Task.information (username, taskId)))
+                        |> List.map (fun taskId -> Atoms.getAtomValue get (Atoms.Task.information taskId))
                         |> List.filter
                             (fun information ->
                                 information
@@ -925,76 +820,73 @@ module State =
                 )
 
             let rec selectedTaskIdSet =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof Session}/{nameof selectedTaskIdSet}",
-                    (fun (username: Username) get ->
-                        let selectedDatabaseIdSet = Atoms.getAtomValue get (Atoms.User.selectedDatabaseIdSet username)
-                        let taskIdSet = Atoms.getAtomValue get (taskIdSet username)
+                    (fun get ->
+                        let selectedDatabaseIdSet = Atoms.getAtomValue get Atoms.selectedDatabaseIdSet
+
+                        let taskIdSet = Atoms.getAtomValue get taskIdSet
 
                         taskIdSet
                         |> Set.toList
-                        |> List.map (fun taskId -> taskId, Atoms.getAtomValue get (Task.databaseId (username, taskId)))
+                        |> List.map (fun taskId -> taskId, Atoms.getAtomValue get (Task.databaseId taskId))
                         |> List.filter (fun (_, databaseId) -> selectedDatabaseIdSet |> Set.contains databaseId)
                         |> List.map fst
                         |> Set.ofSeq)
                 )
 
             let rec informationStateList =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof Session}/{nameof informationStateList}",
-                    (fun (username: Username) get ->
-                        let informationSet = Atoms.getAtomValue get (informationSet username)
+                    (fun get ->
+                        let informationSet = Atoms.getAtomValue get informationSet
 
                         informationSet
                         |> Set.toList
                         |> List.map
-                            (fun information ->
-                                Atoms.getAtomValue get (Information.informationState (username, information))))
+                            (fun information -> Atoms.getAtomValue get (Information.informationState information)))
                 )
 
             let rec activeSessions =
-                Store.asyncSelectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof Session}/{nameof activeSessions}",
-                    (fun (username: Username) get ->
-                        promise {
-                            let selectedTaskIdSet = Atoms.getAtomValue get (selectedTaskIdSet username)
+                    (fun get ->
+                        let selectedTaskIdSet = Atoms.getAtomValue get selectedTaskIdSet
 
-                            return
-                                selectedTaskIdSet
-                                |> Set.toList
-                                |> List.map
-                                    (fun taskId ->
-                                        let duration = Atoms.getAtomValue get (Task.activeSession taskId)
-                                        taskId, duration)
-                                |> List.sortBy fst
-                                |> List.choose
-                                    (fun (taskId, duration) ->
-                                        duration
-                                        |> Option.map
-                                            (fun duration ->
-                                                let (TaskName taskName) =
-                                                    Atoms.getAtomValue get (Atoms.Task.name (username, taskId))
+                        selectedTaskIdSet
+                        |> Set.toList
+                        |> List.map
+                            (fun taskId ->
+                                let duration = Atoms.getAtomValue get (Task.activeSession taskId)
+                                taskId, duration)
+                        |> List.sortBy fst
+                        |> List.choose
+                            (fun (taskId, duration) ->
+                                duration
+                                |> Option.map
+                                    (fun duration ->
+                                        let (TaskName taskName) = Atoms.getAtomValue get (Atoms.Task.name taskId)
 
-                                                TempUI.ActiveSession (taskName, Minute duration)))
-                        })
+                                        TempUI.ActiveSession (taskName, Minute duration))))
                 )
 
             let rec filteredTaskIdSet =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof Session}/{nameof filteredTaskIdSet}",
-                    (fun (username: Username) get ->
+                    (fun get ->
                         let filterTasksByView = true
                         // TODO: !!
                         //getter.get (Atoms.User.filterTasksByView username)
-                        let searchText = Atoms.getAtomValue get (Atoms.User.searchText username)
-                        let view = Atoms.getAtomValue get (Atoms.User.view username)
+
+                        let searchText = Atoms.getAtomValue get Atoms.searchText
+                        let view = Atoms.getAtomValue get Atoms.view
                         let dateSequence = Atoms.getAtomValue get dateSequence
-                        let selectedTaskIdSet = Atoms.getAtomValue get (selectedTaskIdSet username)
+                        let selectedTaskIdSet = Atoms.getAtomValue get selectedTaskIdSet
 
                         let taskList =
                             selectedTaskIdSet
                             |> Set.toList
-                            |> List.map (fun taskId -> Atoms.getAtomValue get (Task.task (username, taskId)))
+                            |> List.map (fun taskId -> Atoms.getAtomValue get (Task.task taskId))
 
                         let taskListSearch =
                             match searchText with
@@ -1014,7 +906,7 @@ module State =
                         let filteredTaskList =
                             if filterTasksByView then
                                 taskListSearch
-                                |> List.map (fun task -> Atoms.getAtomValue get (Task.taskState (username, task.Id)))
+                                |> List.map (fun task -> Atoms.getAtomValue get (Task.taskState task.Id))
                                 |> filterTaskStateSeq view dateSequence
                                 |> Seq.toList
                                 |> List.map (fun taskState -> taskState.Task)
@@ -1034,18 +926,17 @@ module State =
                 )
 
             let rec sortedTaskIdList =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof Session}/{nameof sortedTaskIdList}",
-                    (fun (username: Username) get ->
+                    (fun get ->
                         let position = Atoms.getAtomValue get Atoms.position
 
                         match position with
                         | Some position ->
-                            let view = Atoms.getAtomValue get (Atoms.User.view username)
-                            let dayStart = Atoms.getAtomValue get (Atoms.User.dayStart username)
-                            let filteredTaskIdSet = Atoms.getAtomValue get (filteredTaskIdSet username)
-
-                            let informationStateList = Atoms.getAtomValue get (Session.informationStateList username)
+                            let view = Atoms.getAtomValue get Atoms.view
+                            let dayStart = Atoms.getAtomValue get Atoms.dayStart
+                            let filteredTaskIdSet = Atoms.getAtomValue get filteredTaskIdSet
+                            let informationStateList = Atoms.getAtomValue get Session.informationStateList
 
                             JS.log (fun () -> $"sortedTaskIdList. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
 
@@ -1054,8 +945,8 @@ module State =
                                 |> Set.toList
                                 |> List.map
                                     (fun taskId ->
-                                        let statusMap = Atoms.getAtomValue get (Task.statusMap (username, taskId))
-                                        let taskState = Atoms.getAtomValue get (Task.taskState (username, taskId))
+                                        let statusMap = Atoms.getAtomValue get (Task.statusMap taskId)
+                                        let taskState = Atoms.getAtomValue get (Task.taskState taskId)
                                         taskState, statusMap)
 
                             let result =
@@ -1076,30 +967,29 @@ module State =
                 )
 
             let rec tasksByInformationKind =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof Session}/{nameof tasksByInformationKind}",
-                    (fun (username: Username) get ->
-                        let sortedTaskIdList = Atoms.getAtomValue get (sortedTaskIdList username)
+                    (fun get ->
+                        let sortedTaskIdList = Atoms.getAtomValue get sortedTaskIdList
 
                         sortedTaskIdList
-                        |> List.groupBy
-                            (fun taskId -> Atoms.getAtomValue get (Atoms.Task.information (username, taskId)))
+                        |> List.groupBy (fun taskId -> Atoms.getAtomValue get (Atoms.Task.information taskId))
                         |> List.sortBy (fun (information, _) -> information |> Information.Name)
                         |> List.groupBy (fun (information, _) -> Information.toString information)
                         |> List.sortBy (snd >> List.head >> fst >> Information.toTag))
                 )
 
             let rec cellSelectionMap =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof Session}/{nameof cellSelectionMap}",
-                    (fun (username: Username) get ->
-                        let sortedTaskIdList = Atoms.getAtomValue get (sortedTaskIdList username)
+                    (fun get ->
+                        let sortedTaskIdList = Atoms.getAtomValue get sortedTaskIdList
                         let dateSequence = Atoms.getAtomValue get dateSequence
 
                         sortedTaskIdList
                         |> List.map
                             (fun taskId ->
-                                let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet (username, taskId))
+                                let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet taskId)
 
                                 let dates =
                                     dateSequence
@@ -1116,49 +1006,43 @@ module State =
 
         module rec FlukeDate =
             let isToday =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof FlukeDate}/{nameof isToday}",
                     (fun (date: FlukeDate) get ->
-                        let username = Atoms.getAtomValue get Atoms.username
                         let position = Atoms.getAtomValue get Atoms.position
 
-                        match username, position with
-                        | Some username, Some position ->
-                            let dayStart = Atoms.getAtomValue get (Atoms.User.dayStart username)
+                        match position with
+                        | Some position ->
+                            let dayStart = Atoms.getAtomValue get Atoms.dayStart
 
                             Domain.UserInteraction.isToday dayStart position (DateId date)
                         | _ -> false)
                 )
 
             let rec hasCellSelection =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelectorFamily (
                     $"{nameof FlukeDate}/{nameof hasCellSelection}",
                     (fun (date: FlukeDate) get ->
-                        let username = Atoms.getAtomValue get Atoms.username
+                        let cellSelectionMap = Atoms.getAtomValue get Session.cellSelectionMap
 
-                        match username with
-                        | Some username ->
-                            let cellSelectionMap = Atoms.getAtomValue get (Session.cellSelectionMap username)
-
-                            cellSelectionMap
-                            |> Map.values
-                            |> Seq.exists (Set.contains date)
-                        | None -> false)
+                        cellSelectionMap
+                        |> Map.values
+                        |> Seq.exists (Set.contains date))
                 )
 
 
         module rec BulletJournalView =
             let rec weekCellsMap =
-                Store.selectorFamilyWithProfiling (
+                Store.readSelector (
                     $"{nameof BulletJournalView}/{nameof weekCellsMap}",
-                    (fun (username: Username) get ->
+                    (fun get ->
                         let position = Atoms.getAtomValue get Atoms.position
-                        let sortedTaskIdList = Atoms.getAtomValue get (Session.sortedTaskIdList username)
+                        let sortedTaskIdList = Atoms.getAtomValue get Session.sortedTaskIdList
 
                         match position with
                         | Some position ->
-                            let dayStart = Atoms.getAtomValue get (Atoms.User.dayStart username)
-                            let weekStart = Atoms.getAtomValue get (Atoms.User.weekStart username)
+                            let dayStart = Atoms.getAtomValue get Atoms.dayStart
+                            let weekStart = Atoms.getAtomValue get Atoms.weekStart
 
                             let weeks =
                                 [
@@ -1190,8 +1074,7 @@ module State =
                                         let taskStateMap =
                                             sortedTaskIdList
                                             |> List.map
-                                                (fun taskId ->
-                                                    taskId, Atoms.getAtomValue get (Task.taskState (username, taskId)))
+                                                (fun taskId -> taskId, Atoms.getAtomValue get (Task.taskState taskId))
                                             |> Map.ofSeq
 
                                         let result =
@@ -1275,7 +1158,9 @@ module State =
                                             |> Map.ofSeq
 
                                         result)
-
                             weeks
                         | _ -> [])
                 )
+
+module X =
+    let a = 6

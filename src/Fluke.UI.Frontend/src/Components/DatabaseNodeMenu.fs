@@ -14,16 +14,15 @@ open Fluke.UI.Frontend.TempUI
 module DatabaseNodeMenu =
     [<ReactComponent>]
     let DatabaseNodeMenu
-        (input: {| Username: Username
-                   DatabaseId: DatabaseId
+        (input: {| DatabaseId: DatabaseId
                    Disabled: bool |})
         =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite input.DatabaseId)
-        let setLeftDock = Store.useSetState (Atoms.User.leftDock input.Username)
-        let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
-        let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
-        let setTaskUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
+        let setLeftDock = Store.useSetState Atoms.leftDock
+        let setRightDock = Store.useSetState Atoms.rightDock
+        let setDatabaseUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Database)
+        let setTaskUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Task)
 
         let exportDatabase = Hydrate.useExportDatabase ()
 
@@ -61,7 +60,7 @@ module DatabaseNodeMenu =
 
                                                 setTaskUIFlag (
                                                     (input.DatabaseId, Task.Default.Id)
-                                                    |> Atoms.User.UIFlag.Task
+                                                    |> Atoms.UIFlag.Task
                                                 )
                                             })
                                 [
@@ -80,10 +79,8 @@ module DatabaseNodeMenu =
                                         fun _ ->
                                             promise {
                                                 if deviceInfo.IsMobile then setLeftDock None
-
                                                 setRightDock (Some DockType.Database)
-
-                                                setDatabaseUIFlag (input.DatabaseId |> Atoms.User.UIFlag.Database)
+                                                setDatabaseUIFlag (input.DatabaseId |> Atoms.UIFlag.Database)
                                             })
                                 [
                                     str "Edit Database"
@@ -107,7 +104,7 @@ module DatabaseNodeMenu =
                                     Icons.bi.BiExport
                                     |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
-                                x.onClick <- fun _ -> exportDatabase (input.Username, input.DatabaseId))
+                                x.onClick <- fun _ -> exportDatabase input.DatabaseId)
                             [
                                 str "Export Database"
                             ]

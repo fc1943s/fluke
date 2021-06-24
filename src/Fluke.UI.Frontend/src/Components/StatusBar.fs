@@ -22,11 +22,11 @@ module StatusBar =
         str $"Now: {now.ToString ()}"
 
     [<ReactComponent>]
-    let SessionIndicator (input: {| Username: Username |}) =
-        let activeSessions = Store.useValue (Selectors.Session.activeSessions input.Username)
+    let SessionIndicator () =
+        let activeSessions = Store.useValue Selectors.Session.activeSessions
 
-        let (Minute sessionDuration) = Store.useValue (Atoms.User.sessionDuration input.Username)
-        let (Minute sessionBreakDuration) = Store.useValue (Atoms.User.sessionBreakDuration input.Username)
+        let (Minute sessionDuration) = Store.useValue Atoms.sessionDuration
+        let (Minute sessionBreakDuration) = Store.useValue Atoms.sessionBreakDuration
 
         Chakra.flex
             (fun _ -> ())
@@ -154,9 +154,9 @@ module StatusBar =
 
 
     [<ReactComponent>]
-    let TasksIndicator (input: {| Username: Username |}) =
-        let selectedTaskIdSet = Store.useValue (Selectors.Session.selectedTaskIdSet input.Username)
-        let sortedTaskIdList = Store.useValue (Selectors.Session.sortedTaskIdList input.Username)
+    let TasksIndicator () =
+        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
+        let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
 
         Chakra.flex
             (fun _ -> ())
@@ -174,7 +174,8 @@ module StatusBar =
             ]
 
     [<ReactComponent>]
-    let StatusBar (input: {| Username: Username |}) =
+    let StatusBar () =
+        let username = Store.useValue Atoms.username
         let position = Store.useValue Atoms.position
 
         Chakra.simpleGrid
@@ -204,20 +205,21 @@ module StatusBar =
                                 x.marginRight <- "4px")
                             []
 
-                        let (Username username) = input.Username
-                        str $"User: {username}"
+                        match username with
+                        | Some (Username username) -> str $"User: {username}"
+                        | _ -> nothing
                     ]
 
                 React.suspense (
                     [
-                        SessionIndicator {| Username = input.Username |}
+                        SessionIndicator ()
                     ],
                     LoadingSpinner.InlineLoadingSpinner ()
                 )
 
                 React.suspense (
                     [
-                        TasksIndicator {| Username = input.Username |}
+                        TasksIndicator ()
                     ],
                     LoadingSpinner.InlineLoadingSpinner ()
                 )

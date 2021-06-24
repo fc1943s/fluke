@@ -8,14 +8,12 @@ open Fluke.Shared
 
 
 module InformationView =
-    open Domain.UserInteraction
-
     [<ReactComponent>]
-    let InformationView (input: {| Username: Username |}) =
+    let InformationView () =
         let groupIndentationLength = 20
 
-        let tasksByInformationKind = Store.useValue (Selectors.Session.tasksByInformationKind input.Username)
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+        let tasksByInformationKind = Store.useValue Selectors.Session.tasksByInformationKind
+        let cellSize = Store.useValue Atoms.cellSize
 
         Chakra.flex
             (fun x -> x.flex <- "1")
@@ -64,10 +62,7 @@ module InformationView =
                                                                             (fun x -> x.paddingLeft <- $"{cellSize}px")
                                                                             [
                                                                                 InformationName.InformationName
-                                                                                    {|
-                                                                                        Username = input.Username
-                                                                                        Information = information
-                                                                                    |}
+                                                                                    {| Information = information |}
 
                                                                                 // Task Name
                                                                                 Chakra.box
@@ -92,15 +87,11 @@ module InformationView =
                                                                                                         [
                                                                                                             TaskPriority.TaskPriority
                                                                                                                 {|
-                                                                                                                    Username =
-                                                                                                                        input.Username
                                                                                                                     TaskId =
                                                                                                                         taskId
                                                                                                                 |}
                                                                                                             TaskName.TaskName
                                                                                                                 {|
-                                                                                                                    Username =
-                                                                                                                        input.Username
                                                                                                                     TaskId =
                                                                                                                         taskId
                                                                                                                 |}
@@ -115,7 +106,7 @@ module InformationView =
                 Chakra.box
                     (fun _ -> ())
                     [
-                        GridHeader.GridHeader {| Username = input.Username |}
+                        GridHeader.GridHeader ()
 
                         Chakra.box
                             (fun _ -> ())
@@ -146,11 +137,7 @@ module InformationView =
                                                                                 x.height <- $"{cellSize}px"
                                                                                 x.lineHeight <- $"{cellSize}px")
                                                                             []
-                                                                        Cells.Cells
-                                                                            {|
-                                                                                Username = input.Username
-                                                                                TaskIdList = taskIdList
-                                                                            |}
+                                                                        Cells.Cells {| TaskIdList = taskIdList |}
                                                                     ])
                                                 ])
                             ]

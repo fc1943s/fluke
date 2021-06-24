@@ -1,10 +1,10 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fable.React
+open Fable.Core.JsInterop
 open Feliz
 open System
 open Fluke.Shared.Domain
-open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
@@ -13,17 +13,15 @@ open Fluke.Shared
 
 module Settings =
     [<ReactComponent>]
-    let rec Settings
-        (input: {| Username: Username
-                   Props: Chakra.IChakraProps -> unit |})
-        =
-        let weekStart, setWeekStart = Store.useState (Atoms.User.weekStart input.Username)
-        let color, setColor = Store.useState (Atoms.User.color input.Username)
+    let rec Settings (input: {| Props: Chakra.IChakraProps -> unit |}) =
+        let weekStart, setWeekStart = Store.useState Atoms.weekStart
+        let color, setColor = Store.useState Atoms.color
+        let debug = Store.useValue Atoms.debug
 
         Accordion.Accordion
             {|
                 Props = input.Props
-                Atom = Atoms.User.accordionFlag (input.Username, TextKey (nameof Settings))
+                Atom = Atoms.accordionFlag (TextKey (nameof Settings))
                 Items =
                     [
                         "User",
@@ -34,15 +32,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        JotaiTypes.InputAtom (
-                                                            input.Username,
-                                                            JotaiTypes.AtomPath.Atom (
-                                                                Atoms.User.dayStart input.Username
-                                                            )
-                                                        )
-                                                    )
+                                                x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.dayStart))
 
                                                 x.inputFormat <- Some Input.InputFormat.Time
                                                 x.onFormat <- Some FlukeTime.Stringify
@@ -69,14 +59,7 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (
-                                                        JotaiTypes.InputAtom (
-                                                            input.Username,
-                                                            JotaiTypes.AtomPath.Atom (
-                                                                Atoms.User.sessionDuration input.Username
-                                                            )
-                                                        )
-                                                    )
+                                                    Some (Store.InputAtom (Store.AtomPath.Atom Atoms.sessionDuration))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                                 x.onFormat <- Some (Minute.Value >> string)
@@ -98,12 +81,7 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        JotaiTypes.InputAtom (
-                                                            input.Username,
-                                                            JotaiTypes.AtomPath.Atom (
-                                                                Atoms.User.sessionBreakDuration input.Username
-                                                            )
-                                                        )
+                                                        Store.InputAtom (Store.AtomPath.Atom Atoms.sessionBreakDuration)
                                                     )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
@@ -135,11 +113,8 @@ module Settings =
                                                                     fun x ->
                                                                         x.atom <-
                                                                             Some (
-                                                                                JotaiTypes.InputAtom (
-                                                                                    input.Username,
-                                                                                    JotaiTypes.AtomPath.Atom (
-                                                                                        Atoms.User.color input.Username
-                                                                                    )
+                                                                                Store.InputAtom (
+                                                                                    Store.AtomPath.Atom Atoms.color
                                                                                 )
                                                                             )
                                                                 Props =
@@ -218,12 +193,8 @@ module Settings =
                                                                     fun x ->
                                                                         x.atom <-
                                                                             Some (
-                                                                                JotaiTypes.InputAtom (
-                                                                                    input.Username,
-                                                                                    JotaiTypes.AtomPath.Atom (
-                                                                                        Atoms.User.weekStart
-                                                                                            input.Username
-                                                                                    )
+                                                                                Store.InputAtom (
+                                                                                    Store.AtomPath.Atom Atoms.weekStart
                                                                                 )
                                                                             )
 
@@ -313,15 +284,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        JotaiTypes.InputAtom (
-                                                            input.Username,
-                                                            JotaiTypes.AtomPath.Atom (
-                                                                Atoms.User.daysBefore input.Username
-                                                            )
-                                                        )
-                                                    )
+                                                x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.daysBefore))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days Before"
@@ -332,15 +295,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        JotaiTypes.InputAtom (
-                                                            input.Username,
-                                                            JotaiTypes.AtomPath.Atom (
-                                                                Atoms.User.daysAfter input.Username
-                                                            )
-                                                        )
-                                                    )
+                                                x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.daysAfter))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days After"
@@ -351,15 +306,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        JotaiTypes.InputAtom (
-                                                            input.Username,
-                                                            JotaiTypes.AtomPath.Atom (
-                                                                Atoms.User.cellSize input.Username
-                                                            )
-                                                        )
-                                                    )
+                                                x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.cellSize))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Cell Size"
@@ -369,7 +316,15 @@ module Settings =
                                     {|
                                         Atom = Atoms.debug
                                         Label = Some "Show Debug Information"
-                                        Props = fun _ -> ()
+                                        Props =
+                                            fun x ->
+                                                x.onClick <-
+                                                    fun _ ->
+                                                        promise {
+                                                            match JS.window id with
+                                                            | None -> ()
+                                                            | Some window -> window?Debug <- not debug
+                                                        }
                                     |}
                             ])
 
@@ -381,13 +336,7 @@ module Settings =
                                     (fun x ->
                                         x.label <- str "Gun peers"
 
-                                        x.atom <-
-                                            Some (
-                                                JotaiTypes.InputAtom (
-                                                    input.Username,
-                                                    JotaiTypes.AtomPath.Atom Atoms.gunPeers
-                                                )
-                                            ))
+                                        x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.gunPeers)))
                             ])
                     ]
             |}

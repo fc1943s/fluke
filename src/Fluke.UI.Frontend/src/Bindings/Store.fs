@@ -3,82 +3,34 @@ namespace Fluke.UI.Frontend.Bindings
 #nowarn "40"
 
 
-
 open Fluke.UI.Frontend.Bindings
 open Fable.Core.JsInterop
 open Fable.Core
 open System
 open Fluke.Shared
-open Fluke.Shared.Domain.UserInteraction
 open Microsoft.FSharp.Core.Operators
 open Feliz
-open Fluke.Shared
-open Fable.Core.JsInterop
-open Feliz
-open Fluke.UI.Frontend.Bindings
-open Fable.Core
+open Browser.Types
 
-
-//[<AutoOpen>]
-//module StoreMagic =
-//    type StoreValue<'T>  =
-//        class
-//        end
-//
-//    [<Erase>]
-//    type SelectorGetter =
-//        [<Emit("$0.get($1)")>]
-//        member _.get (_storeValue: StoreValue<'T>) : 'T = jsNative
-//
-//
-
-//    type atom = unit
-//
-//    type atomFamily = unit
-//    type selector = unit
-//    type selectorFamily = unit
-
-//    type Store = Recoil
 
 module Store =
     open Jotai
     open JotaiTypes
-    //    type InputAtom<'TValue1, 'TKey> =
-//        | Atom of Username * StoreValue<'TValue1>
-//        | AtomFamily of Username * ('TKey -> StoreValue<'TValue1>) * 'TKey
-//        | AtomPath of Username * atomPath: string
 
-
-    //    let inline useValueLoadableDefault atom def = Recoil.useValueLoadableDefault atom def
-//    let inline useStateLoadableDefault atom def = Recoil.useStateLoadableDefault atom def
-
-    //    type CallbackMethods = Feliz.Recoil.CallbackMethods
-//    type AtomEffect<'T, 'U> = Feliz.Recoil.AtomEffect<'T, 'U>
-
-    //        Recoil.gunEffect<'TValue3, 'TKey>
-
-    //    let inline gunKeyEffect<'TAtomValue, 'TValue, 'TKey when 'TValue: comparison> =
-//        Recoil.gunKeyEffect<'TAtomValue, 'TValue, 'TKey>
-    //    let inline gunEffect<'TValue3, 'TKey> (atom: InputAtom<'TValue3, 'TKey>) (keyIdentifier: string list) =
-//        Recoil.gunEffect atom keyIdentifier
-
-    let inline gunEffect<'TValue3, 'TKey> = fun _ _ -> ()
-
-
-    let inline atomSetterWithProfiling<'TValue>
+    let inline selector<'TValue>
         (
             atomPath,
             keyIdentifier,
             getFn: GetFn -> 'TValue,
             setFn: GetFn -> SetFn -> 'TValue -> unit
         ) =
-        Jotai.atom (
+        jotai.atom (
             (fun get ->
                 Profiling.addCount atomPath
                 getFn get),
             Some
                 (fun get set value ->
-                    Profiling.addCount $"{atomPath}<"
+                    Profiling.addCount $"{atomPath} set"
                     let newValue = value
                     //                        match jsTypeof value with
 //                         | "function" -> (unbox value) () |> unbox
@@ -86,82 +38,81 @@ module Store =
                     setFn get set newValue)
         )
         |> registerAtom atomPath keyIdentifier
+        |> fst
 
-    let inline asyncAtomSetterWithProfiling<'TValue>
+    let inline readSelector<'TValue> (atomPath, getFn: GetFn -> 'TValue) =
+        selector (
+            atomPath,
+            None,
+            getFn,
+            (fun _ _ _ ->
+                Profiling.addCount $"{atomPath} set"
+                failwith "readonly selector")
+        )
+
+    let inline asyncSelector<'TValue>
         (
             atomPath,
             keyIdentifier,
             getFn: GetFn -> JS.Promise<'TValue>,
             setFn: GetFn -> SetFn -> 'TValue -> JS.Promise<unit>
         ) =
-        Jotai.atom (
+        jotai.atom (
             (fun get ->
                 promise {
-                    Profiling.addCount $"{atomPath}>"
+                    Profiling.addCount $"{atomPath}"
                     let a = getFn get
                     return! a
                 }),
             Some
                 (fun get set newValue ->
                     promise {
-                        Profiling.addCount $"{atomPath}<"
+                        Profiling.addCount $"{atomPath} set"
                         do! setFn get set newValue
                     })
         )
         |> registerAtom atomPath keyIdentifier
+        |> fst
 
-    let inline selectorFamilyWithProfiling<'TKey, 'TValue>
+    let inline readSelectorFamily<'TKey, 'TValue>
         (
             atomPath,
             getFn: 'TKey -> GetFn -> 'TValue
         ) : ('TKey -> Atom<'TValue>) =
-        JotaiUtils.atomFamily
-            (fun param ->
-                atomSetterWithProfiling (
-                    atomPath,
-                    None,
-                    (getFn param),
-                    (fun _ -> failwith $"readonly selector {atomPath}")
-                ))
+        jotaiUtils.atomFamily
+            (fun param -> selector (atomPath, None, (getFn param), (fun _ -> failwith $"readonly selector {atomPath}")))
             DeepEqual.deepEqual
 
-    let inline selectorFamilySetterWithProfiling<'TKey, 'TValue>
+    let inline selectorFamily<'TKey, 'TValue>
         (
             atomPath,
             getFn: 'TKey -> GetFn -> 'TValue,
             setFn: 'TKey -> GetFn -> SetFn -> 'TValue -> unit
         ) =
-        JotaiUtils.atomFamily
-            (fun param -> atomSetterWithProfiling (atomPath, None, getFn param, setFn param))
-            DeepEqual.deepEqual
+        jotaiUtils.atomFamily (fun param -> selector (atomPath, None, getFn param, setFn param)) DeepEqual.deepEqual
 
-    let inline asyncSelectorFamilyWithProfiling<'TKey, 'TValue>
-        (
-            atomPath,
-            getFn: 'TKey -> GetFn -> JS.Promise<'TValue>
-        ) =
-        JotaiUtils.atomFamily
-            (fun param ->
-                asyncAtomSetterWithProfiling (
-                    (atomPath, None, (getFn param), (fun _get _set _newValue -> promise { () }))
-                ))
-            DeepEqual.deepEqual
-
-    let inline asyncSelectorFamilySetterWithProfiling<'TKey, 'TValue>
+    let inline asyncSelectorFamily<'TKey, 'TValue>
         (
             atomPath,
             getFn: 'TKey -> GetFn -> JS.Promise<'TValue>,
             setFn: 'TKey -> GetFn -> SetFn -> 'TValue -> JS.Promise<unit>
         ) =
-        JotaiUtils.atomFamily
+        jotaiUtils.atomFamily
             (fun param ->
-                asyncAtomSetterWithProfiling (
+                asyncSelector (
                     (atomPath,
                      None,
                      (getFn param),
                      (fun get set newValue -> promise { do! setFn param get set newValue }))
                 ))
             DeepEqual.deepEqual
+
+    let inline asyncReadSelectorFamily<'TKey, 'TValue> (atomPath, getFn: 'TKey -> GetFn -> JS.Promise<'TValue>) =
+        asyncSelectorFamily (
+            atomPath,
+            getFn,
+            (fun _key _get _set _newValue -> promise { failwith $"readonly selector {atomPath}" })
+        )
 
     type AtomField<'TValue67> =
         {
@@ -175,31 +126,14 @@ module Store =
             Value: string option
         }
 
-
-    //    let getAtomPath (atom: InputAtom) (keyIdentifier: string list) =
-//        let username, rawAtomKey, atomPath =
-//            match atom with
-//            | InputAtom.Atom metadata -> metadata.Username, (Some (metadata.Atom.toString())), None
-//            | InputAtom.AtomPath metadata -> metadata.Username, None, Some metadata.AtomPath
-//
-//        let newAtomPath =
-//            atomPath
-//            |> Option.defaultValue (
-//                match rawAtomKey with
-//                | Some rawAtomKey -> getInternalAtomPath rawAtomKey keyIdentifier
-//                | None -> failwith $"Invalid rawAtomKey: {rawAtomKey}"
-//            )
-//
-//        username, newAtomPath
-
     let rec gunAtomNode =
-        selectorFamilyWithProfiling (
+        readSelectorFamily (
             $"{nameof gunAtomNode}",
-            (fun (username: Username, atomPath: AtomPath<obj>) get ->
+            (fun (atomPath: AtomPath<obj>) get ->
                 let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
 
                 match queryAtomPath atomPath, gunNamespace.is with
-                | Some atomPath, Some { alias = Some username' } when Username username' = username ->
+                | Some atomPath, Some { alias = Some _username } ->
                     let nodes = atomPath |> String.split "/" |> Array.toList
 
                     (Some (gunNamespace.get nodes.Head), nodes.Tail)
@@ -220,14 +154,8 @@ module Store =
                     failwith
                         $"Invalid username.
                                 atomPath={atomPath}
-                                username={username}
                                 user.is={JS.JSON.stringify gunNamespace.is}")
         )
-
-
-    //    let inline getGunAtomNode gun (InputAtom (username, atomPath)) =
-//        let gunAtomNode = getInternalGunAtomNode gun username atomPath
-//        username, atomPath, gunAtomNode
 
     let inline userEncode<'TValue> (gun: Gun.IGunChainReference) (value: 'TValue) =
         promise {
@@ -282,236 +210,240 @@ module Store =
                 return raise ex
         }
 
-    let inline atomFamilyWithProfiling<'TKey, 'TValue>
-        (
-            atomPath,
-            defaultValue: 'TKey -> 'TValue,
-            persist: 'TKey -> (Username * string list) option
-        ) =
-        JotaiUtils.atomFamily
-            (fun param ->
+    module Gun =
+        let batchData =
+            Batcher.batcher
+                (Array.map
+                    (fun (item: {| Fn: int64 * string -> JS.Promise<unit>
+                                   Timestamp: int64
+                                   Data: string |}) -> item.Fn (item.Timestamp, item.Data))
+                 >> Promise.Parallel
+                 >> Promise.start)
+                {| interval = 1000 |}
 
-                let mutable lastGunAtomNode = None
-                let mutable lastValue = None
+        let batchSubscribe =
+            Batcher.batcher
+                (Array.map
+                    (fun (item: {| GunAtomNode: Gun.IGunChainReference
+                                   Fn: int64 * string -> JS.Promise<unit> |}) ->
+                        promise {
+                            item.GunAtomNode.on
+                                (fun data _key ->
+                                    batchData
+                                        {|
+                                            Timestamp = DateTime.Now.Ticks
+                                            Data = data
+                                            Fn = item.Fn
+                                        |})
+                        })
+                 >> Promise.Parallel
+                 >> Promise.start)
+                {| interval = 1000 |}
 
-                let username, keyIdentifier =
-                    match persist param with
-                    | Some (username, keyIdentifier) -> Some username, Some keyIdentifier
-                    | None -> None, None
 
-                let assignLastGunAtomNode get atom =
-                    match username, lastGunAtomNode with
-                    | Some _, None ->
-                        lastGunAtomNode <-
-                            match username with
-                            | Some username ->
-                                Atoms.getAtomValue get (gunAtomNode (username, AtomPath.Atom (unbox atom)))
-                            | None -> None
-                    | _ -> ()
+    let inline atomWithSync<'TKey, 'TValue> (atomPath, defaultValue: 'TValue, keyIdentifier: string list) =
+        let mutable lastGunAtomNode = None
+        let mutable lastValue = None
 
-                let getFn get atom =
-                    assignLastGunAtomNode get atom
+        let assignLastGunAtomNode get atom =
+            match lastGunAtomNode with
+            | None -> lastGunAtomNode <- Atoms.getAtomValue get (gunAtomNode (AtomPath.Atom (unbox atom)))
+            | _ -> ()
 
-                    let result = Atoms.getAtomValue get atom
+        let internalAtom = jotai.atom defaultValue
 
-                    JS.log
-                        (fun () ->
-                            $"atomFamily.get() atomPath={atomPath} keyIdentifier={keyIdentifier}
-                                    param={param} result={result}")
+        let gunNodePath = getGunNodePath atomPath keyIdentifier
+
+        Profiling.addCount $"{gunNodePath} constructor"
+        //                JS.log
+//                    (fun () ->
+//                        $"atomFamily constructor gunAtomPath={gunAtomPath} atomPath={atomPath} param={param} keyIdentifier={
+//                                                                                                                                keyIdentifier
+//                        }")
+
+        let rec wrapper =
+            selector (
+                atomPath,
+                (Some keyIdentifier),
+                (fun get ->
+                    assignLastGunAtomNode get wrapper
+
+                    let result = Atoms.getAtomValue get internalAtom
+
+                    Profiling.addCount $"{gunNodePath} get"
+
+                    //                                JS.log
+//                                    (fun () ->
+//                                        $"atomFamily.get() atomPath={atomPath} keyIdentifier={keyIdentifier}
+//                                                param={param} result={result}")
 
                     lastValue <- Some (DateTime.Now.Ticks, result)
 
-                    result
+                    result),
+                (fun get set newValueFn ->
+                    assignLastGunAtomNode get wrapper
 
-                let rec internalAtom =
-                    //                    JotaiUtils.atomWithDefault (fun get ->
-//                            getFn get internalAtom
-////                            defaultValue param
-//                    )
-                    Jotai.atom (defaultValue param)
-                    |> registerAtom atomPath (keyIdentifier |> Option.defaultValue [] |> Some)
+                    Atoms.setAtomValue
+                        set
+                        internalAtom
+                        (unbox
+                            (fun oldValue ->
+                                let newValue =
+                                    match jsTypeof newValueFn with
+                                    | "function" -> (unbox newValueFn) oldValue |> unbox
+                                    | _ -> newValueFn
 
+                                if true
+                                   || oldValue |> DeepEqual.deepEqual newValue |> not
+                                   || (lastValue.IsNone
+                                       && newValue |> DeepEqual.deepEqual defaultValue) then
 
-                //                printfn $"atomFamily constructor atomPath={atomPath} param={param} keyIdentifier={keyIdentifier}"
+                                    Profiling.addCount $"{gunNodePath} set"
 
+                                    //                                            JS.log
+//                                                (fun () ->
+//                                                    $"atomFamily.set()
+//                                                    atomPath={atomPath} keyIdentifier={keyIdentifier}
+//                                                    param={param} jsTypeof-newValue={jsTypeof newValue}
+//                                                    oldValue={oldValue} newValue={newValue}
+//                                                    newValueFn={newValueFn}
+//                                                    lastValue={lastValue}
+//                                                    ")
 
-                let rec wrapper =
-                    atomSetterWithProfiling (
-                        atomPath,
-                        None,
-                        (fun get -> getFn get internalAtom),
-                        (fun get set newValueFn ->
-                                assignLastGunAtomNode get internalAtom
-
-                                Atoms.setAtomValue
-                                    set
-                                    internalAtom
-                                    (unbox
-                                        (fun oldValue ->
-                                            let newValue =
-                                                match jsTypeof newValueFn with
-                                                | "function" -> (unbox newValueFn) oldValue |> unbox
-                                                | _ -> newValueFn
-
-                                            if oldValue |> DeepEqual.deepEqual newValue |> not then
-                                                JS.log
-                                                    (fun () ->
-                                                        $"atomFamily.set()
-                                                    atomPath={atomPath} keyIdentifier={keyIdentifier}
-                                                    param={param} jsTypeof-newValue={jsTypeof newValue}
-                                                    oldValue={oldValue} newValue={newValue}
-                                                    lastValue={lastValue}
-                                                    ")
-
-                                                promise {
-                                                    try
-                                                        match lastGunAtomNode with
-                                                        | Some gunAtomNode ->
-
-                                                            let! newValueJson =
-                                                                if newValue |> JS.ofNonEmptyObj |> Option.isNone then
-                                                                    null |> Promise.lift
-                                                                else
-                                                                    userEncode<'TValue> gunAtomNode newValue
-
-                                                            Gun.put gunAtomNode newValueJson
-                                                        | None ->
-                                                            Browser.Dom.console.error
-                                                                $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
-                                                    with ex -> Browser.Dom.console.error ("[exception2]", ex)
-                                                }
-                                                |> Promise.start
-
-                                            lastValue <- Some (DateTime.Now.Ticks, newValue)
-
-                                            newValue))
-                            )
-                    )
-
-                let subscribe setAtom =
-                    match lastGunAtomNode with
-                    | Some gunAtomNode ->
-                        //                        Profiling.addCount $"[gunEffect.on()] atomPath={atomPath}"
-                        JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath}")
-
-                        let newSetAtom =
-                            JS.debounce
-                                (fun (ticks, data) ->
                                     promise {
                                         try
-                                            let! newValue =
-                                                match box data with
-                                                | null -> unbox null |> Promise.lift
-                                                | _ -> userDecode<'TValue> gunAtomNode data
+                                            match lastGunAtomNode with
+                                            | Some gunAtomNode ->
 
-                                            match lastValue with
-                                            | Some (lastValueTicks, lastValue) when
-                                                lastValueTicks > ticks
-                                                || lastValue |> DeepEqual.deepEqual (unbox newValue)
-                                                || (unbox lastValue = null && unbox newValue = null) -> ()
-                                            //                                                printfn
-//                                                    $"on() value. skipping. atomPath={atomPath} lastValue={lastValue} newValue={
-//                                                                                                                                    newValue
-//                                                    }"
-                                            | _ ->
-                                                ()
-                                                //                                                printfn
-//                                                    $"on() value. triggering. atomPath={atomPath} lastValue={lastValue} newValue={
-//                                                                                                                                      newValue
-//                                                    }"
+                                                let! newValueJson =
+                                                    if newValue |> JS.ofNonEmptyObj |> Option.isNone then
+                                                        null |> Promise.lift
+                                                    else
+                                                        userEncode<'TValue> gunAtomNode newValue
 
-                                                setAtom newValue
-                                        with ex -> Browser.Dom.console.error ("[exception1]", ex)
+                                                Gun.put gunAtomNode newValueJson
+                                            | None ->
+                                                Browser.Dom.console.error
+                                                    $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
+                                        with ex -> Browser.Dom.console.error ("[exception2]", ex)
                                     }
-                                    |> Promise.start)
-                                2000
+                                    |> Promise.start
 
-                        let wrap fn =
-                            JS.setTimeout (fun () -> fn ()) 0 |> ignore
+                                lastValue <- Some (DateTime.Now.Ticks, newValue)
 
-                        gunAtomNode.on (fun data _key -> newSetAtom (DateTime.Now.Ticks, data))
+                                newValue)))
+            )
 
-                    | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {atomPath}"
-                //                    printfn $"atomFamily debouncedSubscribe() atomPath={atomPath} param={param}"
-                // setAtom (fun x ->
-//                                    printfn $"jotaiAtomFamily: setting {x} + 1"
-//                                    x + 1)
+        let setInternalFromGun gunAtomNode setAtom (ticks, data) =
+            promise {
+                try
+                    let! newValue =
+                        match box data with
+                        | null -> unbox null |> Promise.lift
+                        | _ -> userDecode<'TValue> gunAtomNode data
 
-                let unsubscribe _setAtom =
+                    match lastValue with
+                    | Some (lastValueTicks, lastValue) when
+                        lastValueTicks > ticks
+                        || lastValue |> DeepEqual.deepEqual (unbox newValue)
+                        || (unbox lastValue = null && unbox newValue = null) ->
+
+                        Profiling.addCount $"{gunNodePath} on() skip"
+                    //                                printfn
+//                                    $"on() value. skipping. atomPath={atomPath} lastValue={lastValue} newValue={newValue}"
+                    | _ ->
+                        Profiling.addCount $"{gunNodePath} on() assign"
+                        //                                printfn
+//                                    $"on() value. triggering. atomPath={atomPath} lastValue={lastValue} newValue={
+//                                                                                                                      newValue
+//                                    }"
+
+                        setAtom newValue
+                with ex -> Browser.Dom.console.error ("[exception1]", ex)
+            }
+
+        let mutable lastSubscription = None
+
+        let subscribe =
+            (fun setAtom ->
+                if lastSubscription.IsNone then
+                    match lastGunAtomNode with
+                    | Some gunAtomNode ->
+                        Profiling.addCount $"{gunNodePath} subscribe"
+                        //                                JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath}")
+
+                        Gun.batchSubscribe
+                            {|
+                                GunAtomNode = gunAtomNode
+                                Fn = setInternalFromGun gunAtomNode setAtom
+                            |}
+
+                        lastSubscription <- Some DateTime.Now.Ticks
+                    | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {atomPath}")
+
+        let unsubscribe =
+            (fun _setAtom ->
+                match lastSubscription with
+                | Some ticks when DateTime.ticksDiff ticks < 1000. -> ()
+                | _ ->
                     try
                         match lastGunAtomNode with
                         | Some gunAtomNode ->
-                            JS.log (fun () -> $"[atomFamily.unsubscribe()] atomPath={atomPath} param={param}")
+
+                            Profiling.addCount $"{gunNodePath} unsubscribe"
+                            //                                    JS.log (fun () -> $"[atomFamily.unsubscribe()] atomPath={atomPath} param={param}")
 
                             gunAtomNode.off () |> ignore
+                            lastSubscription <- None
                         | None -> Browser.Dom.console.error $"[gunEffect.off()] Gun node not found: {atomPath}"
-                    with ex -> Browser.Dom.console.error ("[exception3]", ex)
+                    with ex -> Browser.Dom.console.error ("[exception3]", ex))
 
-                //                    lastGunAtomNode <- None
+        wrapper?onMount <- fun setAtom ->
+                               subscribe setAtom
+                               fun () -> unsubscribe setAtom
 
-                let mutable lastSubscription = None
+        wrapper
 
-                let debouncedSubscribe =
-                    //                    JS.debounce
-                    (fun setAtom ->
-                        if lastSubscription.IsNone then
-                            //                            if atomPath = "User/leftDock" then
-                            subscribe setAtom
-                            lastSubscription <- Some DateTime.Now.Ticks
-                        else
-                            //                            printf $"atomFamily Skipping subscribe atomPath={atomPath} param={param} diffMs={DateTime.ticksDiff (lastSubscription |>Option.defaultValue DateTime.Now.Ticks)}"
-                            ())
-                //                        0
-
-                let debouncedUnsubscribe =
-                    //                    JS.debounce
-                    (fun setAtom ->
-                        match lastSubscription with
-                        | Some ticks when DateTime.ticksDiff ticks < 1000. -> ()
-                        //                            printf $"atomFamily Skipping unsubscribe atomPath={atomPath} param={param} diffMs={DateTime.ticksDiff (lastSubscription |>Option.defaultValue DateTime.Now.Ticks)}"
-                        | _ ->
-                            //                            if atomPath = "User/leftDock" then
-                            unsubscribe setAtom
-                            lastSubscription <- None)
-                //                        0
-
-                internalAtom?onMount <- fun setAtom ->
-                                            debouncedSubscribe setAtom
-                                            fun () -> debouncedUnsubscribe setAtom
-
-                wrapper)
+    let inline atomFamilyWithSync<'TKey, 'TValue>
+        (
+            atomPath,
+            defaultValueFn: 'TKey -> 'TValue,
+            persist: 'TKey -> string list
+        ) =
+        jotaiUtils.atomFamily
+            (fun param -> atomWithSync (atomPath, defaultValueFn param, persist param))
             DeepEqual.deepEqual
 
-    let rec private readWriteValue =
-        atomFamilyWithProfiling (
-            $"{nameof User}/{nameof readWriteValue}",
-            (fun (_username: Username, _guid: Guid) -> null: string),
-            (fun (username: Username, guid: Guid) ->
-                Some (
-                    username,
+    let inline atomFamily<'TKey, 'TValue> (atomPath, defaultValueFn: 'TKey -> 'TValue) =
+        jotaiUtils.atomFamily (fun param -> atom (atomPath, defaultValueFn param)) DeepEqual.deepEqual
+
+    let readWriteValue =
+        let rec readWriteValue =
+            atomFamilyWithSync (
+                $"{nameof User}/{nameof readWriteValue}",
+                (fun (_guid: Guid) -> null: string),
+                (fun (guid: Guid) ->
                     [
                         string guid
-                    ]
-                ))
-        )
+                    ])
+            )
 
-    let readWriteValueWrapper =
-        JotaiUtils.atomFamily
-            (fun (username: Username, atomPath: string) ->
+        jotaiUtils.atomFamily
+            (fun (atomPath: string) ->
 
                 let guidHash = Crypto.getTextGuidHash atomPath
-                let pathHash = username, guidHash
+                let pathHash = guidHash
 
-                JS.log (fun () -> $"readWriteValueWrapper constructor. atomPath={atomPath} guidHash={guidHash}")
+                printfn $"readWriteValueWrapper constructor. atomPath={atomPath} guidHash={guidHash}"
 
                 let wrapper =
-                    Jotai.atom (
+                    jotai.atom (
                         (fun get ->
                             let value = Atoms.getAtomValue get (readWriteValue pathHash)
+                            Profiling.addCount $"{atomPath} readWriteValue set"
 
-                            JS.log
-                                (fun () ->
-                                    $"readWriteValueWrapper.get(). atomPath={atomPath} guidHash={guidHash} value={value}")
+                            printfn
+                                $"readWriteValueWrapper.get(). atomPath={atomPath} guidHash={guidHash} value={value}"
 
                             match value with
                             | null -> null
@@ -521,7 +453,12 @@ module Store =
                                 | _ -> null),
                         Some
                             (fun _get set newValue ->
-                                Profiling.addCount $"{atomPath}-readWriteValue<"
+                                Profiling.addCount $"{atomPath} readWriteValue set"
+
+                                printfn
+                                    $"readWriteValueWrapper.set(). atomPath={atomPath} guidHash={guidHash} newValue={
+                                                                                                                         newValue
+                                    }"
 
                                 let newValue =
                                     Gun.jsonEncode
@@ -530,45 +467,40 @@ module Store =
                                             Value = newValue |> Option.ofObj
                                         }
 
-                                JS.log
-                                    (fun () ->
-                                        $"readWriteValueWrapper.set(). atomPath={atomPath} guidHash={guidHash} newValue={
-                                                                                                                             newValue
-                                        }")
+                                printfn $"readWriteValueWrapper.set(). newValue2={newValue}"
 
                                 Atoms.setAtomValue set (readWriteValue pathHash) (newValue |> box |> unbox))
                     )
-                    |> registerAtom (string guidHash) None
 
                 wrapper)
             DeepEqual.deepEqual
 
-    let emptyAtom = Jotai.atom<obj> null
+    let emptyAtom = jotai.atom<obj> null
+
+    type InputAtom<'T> = InputAtom of atomPath: AtomPath<'T>
 
     let inline getAtomField (atom: InputAtom<'TValue> option) (inputScope: AtomScope) =
         match atom with
-        | Some (InputAtom (username, atomPath)) ->
+        | Some (InputAtom atomPath) ->
             {
                 ReadOnly =
                     match atomPath with
                     | AtomPath.Atom atom -> Some atom
                     | _ -> Some (unbox emptyAtom)
                 ReadWrite =
+                    printfn
+                        $"getAtomField
+                    atomPath={atomPath}
+                    queryAtomPath atomPath={queryAtomPath atomPath}
+                    inputScope={inputScope}
+                    "
+
                     match queryAtomPath atomPath, inputScope with
-                    | Some atomPath, AtomScope.ReadWrite -> Some (readWriteValueWrapper (username, atomPath))
-                    | _ ->
-                        match atomPath with
-                        | AtomPath.Atom atom -> Some (unbox atom)
-                        | _ -> None
+                    | Some atomPath, AtomScope.ReadWrite -> Some (readWriteValue atomPath)
+                    | _ -> None
             }
         | _ -> { ReadOnly = None; ReadWrite = None }
 
-    let emptyArrayAtom = Jotai.atom<obj []> [||]
-
-    let waitForAll<'T> (atoms: Atom<'T> []) =
-        match atoms with
-        | [||] -> unbox emptyArrayAtom
-        | _ -> JotaiUtils.waitForAll atoms
 
     let useStateOption (atom: Atom<'TValue5> option) =
         let flatAtom =
@@ -582,7 +514,7 @@ module Store =
                 |]
             )
 
-        let value, setValue = Jotai.useAtom flatAtom
+        let value, setValue = jotai.useAtom flatAtom
 
         React.useMemo (
             (fun () -> (if atom.IsNone then None else Some value), (if atom.IsNone then (fun _ -> ()) else setValue)),
@@ -614,7 +546,20 @@ module Store =
                 let newReadWriteValue =
                     match inputScope, readWriteValue |> Option.defaultValue null with
                     | _, null -> readOnlyValue |> Option.defaultValue (unbox null)
-                    | Some (InputScope.ReadWrite (_, jsonDecode)), readWriteValue -> jsonDecode readWriteValue
+                    | Some (InputScope.ReadWrite (_, jsonDecode)), readWriteValue ->
+                        try
+                            printfn
+                                $"useAtomFieldOptins
+                            readOnlyValue={readOnlyValue}
+                            atom={atom}
+                            readWriteValue={readWriteValue}"
+
+                            jsonDecode readWriteValue
+                        with ex ->
+                            printfn $"Error decoding readWriteValue={readWriteValue} ex={ex}"
+
+                            readOnlyValue
+                            |> Option.defaultValue (unbox readWriteValue)
                     | _ ->
                         readOnlyValue
                         |> Option.defaultValue (unbox readWriteValue)
@@ -662,24 +607,31 @@ module Store =
             |]
         )
 
-    let inline useValue atom = JotaiUtils.useAtomValue atom
+    let inline useValue atom = jotaiUtils.useAtomValue atom
 
-    let inline selectorWithProfiling (_atomKey, getFn) =
-        Jotai.atom (
-            getFn,
-            Some
-                (fun _ _ _ ->
-                    failwith "@@ readonly selector"
-                    ())
-        )
 
-    let useCallback (fn: GetFn -> SetFn -> 'a -> JS.Promise<'c>, deps) : ('a -> JS.Promise<'c>) =
+    let shadowedCallbackFn (fn, deps) =
+        (emitJsExpr (React.useCallback, fn, deps) "$0($1,$2)")
+
+    let useCallback (fn: GetFn -> SetFn -> 'a -> JS.Promise<'c>, deps: obj []) : ('a -> JS.Promise<'c>) =
+
         let fnCallback = React.useCallbackRef (fun (get, set, arg) -> fn get set arg)
+
+        let fnCallback =
+            shadowedCallbackFn (
+                fnCallback,
+                Array.concat [
+                    deps
+                    [|
+                        fnCallback
+                    |]
+                ]
+            )
 
         let atom =
             React.useMemo (
                 (fun () ->
-                    Jotai.atom (
+                    jotai.atom (
                         unbox null,
                         Some
                             (fun get set (arg, resolve, err) ->
@@ -696,7 +648,7 @@ module Store =
                 |]
             )
 
-        let _value, setValue = Jotai.useAtom atom
+        let _value, setValue = jotai.useAtom atom
 
         let useAtomCallback =
             React.useCallback (
@@ -713,8 +665,8 @@ module Store =
     let inline useCallbacks () =
         useCallback ((fun get set () -> promise { return (get, set) }), [||])
 
-    let inline readWriteSet<'TValue9, 'TKey> (setFn: SetFn, username: Username, atom: Atom<'TValue9>, value: 'TValue9) =
-        let atomField = getAtomField (Some (InputAtom (username, AtomPath.Atom atom))) AtomScope.ReadWrite
+    let inline readWriteSet<'TValue9, 'TKey> (setFn: SetFn, atom: Atom<'TValue9>, value: 'TValue9) =
+        let atomField = getAtomField (Some (InputAtom (AtomPath.Atom atom))) AtomScope.ReadWrite
 
         match atomField.ReadWrite with
         | Some atom -> Atoms.setAtomValue setFn atom (value |> Gun.jsonEncode<'TValue9>)
@@ -722,23 +674,22 @@ module Store =
 
     let inline scopedSet<'TValue10, 'TKey>
         (setFn: SetFn)
-        (username: Username)
         (atomScope: AtomScope)
         (atom: 'TKey -> Atom<'TValue10>, key: 'TKey, value: 'TValue10)
         =
         match atomScope with
         | AtomScope.ReadOnly -> Atoms.setAtomValue setFn (atom key) value
-        | AtomScope.ReadWrite -> readWriteSet<'TValue10, 'TKey> (setFn, username, atom key, value)
+        | AtomScope.ReadWrite -> readWriteSet<'TValue10, 'TKey> (setFn, atom key, value)
 
-    let inline readWriteReset<'TValue8, 'TKey> (setFn: SetFn) (username: Username) (atom: Atom<'TValue8>) =
-        let atomField = getAtomField (Some (InputAtom (username, AtomPath.Atom atom))) AtomScope.ReadWrite
+    let inline readWriteReset<'TValue8, 'TKey> (setFn: SetFn) (atom: Atom<'TValue8>) =
+        let atomField = getAtomField (Some (InputAtom (AtomPath.Atom atom))) AtomScope.ReadWrite
 
         match atomField.ReadWrite with
         | Some atom -> Atoms.setAtomValue setFn atom null
         | _ -> ()
 
-    let inline getReadWrite<'TValue11, 'TKey> getFn (username: Username) (atom: Atom<'TValue11>) =
-        let atomField = getAtomField (Some (InputAtom (username, AtomPath.Atom atom))) AtomScope.ReadWrite
+    let inline getReadWrite<'TValue11, 'TKey> getFn (atom: Atom<'TValue11>) =
+        let atomField = getAtomField (Some (InputAtom (AtomPath.Atom atom))) AtomScope.ReadWrite
 
         match atomField.ReadWrite with
         | Some readWriteAtom ->
@@ -749,12 +700,28 @@ module Store =
             | _ -> Gun.jsonDecode<'TValue11> value
         | _ -> Atoms.getAtomValue getFn atom
 
-    let useState = Jotai.useAtom
+    let useState = jotai.useAtom
 
-    let inline useSetState atom = JotaiUtils.useUpdateAtom atom
+    let inline useSetState atom = jotaiUtils.useUpdateAtom atom
 
     let inline useSetStatePrev<'T> atom =
-        let setter = JotaiUtils.useUpdateAtom<'T> atom
+        let setter = jotaiUtils.useUpdateAtom<'T> atom
         fun (value: 'T -> 'T) -> setter (unbox value)
 
-    let inline atomWithProfiling x = atomWithProfiling x
+    let inline atom x = atom x
+
+    let provider = jotai.provider
+    let atomWithStorage = jotaiUtils.atomWithStorage
+
+    type GetFn = Jotai.GetFn
+    type SetFn = Jotai.SetFn
+    type AtomScope = JotaiTypes.AtomScope
+    type InputScope<'T> = JotaiTypes.InputScope<'T>
+    type AtomPath<'T> = JotaiTypes.AtomPath<'T>
+    type Atom<'T> = JotaiTypes.Atom<'T>
+    let emptyArrayAtom = jotai.atom<obj []> [||]
+
+    let waitForAll<'T> (atoms: Atom<'T> []) =
+        match atoms with
+        | [||] -> unbox emptyArrayAtom
+        | _ -> jotaiUtils.waitForAll atoms

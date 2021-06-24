@@ -11,15 +11,18 @@ open Fluke.UI.Frontend.State
 
 module DatabaseLeafIcon =
     [<ReactComponent>]
-    let DatabaseLeafIcon (username: Username) (databaseId: DatabaseId) =
-        let owner = Store.useValue (Atoms.Database.owner (username, databaseId))
-        let sharedWith = Store.useValue (Atoms.Database.sharedWith (username, databaseId))
-        let position = Store.useValue (Atoms.Database.position (username, databaseId))
+    let DatabaseLeafIcon (databaseId: DatabaseId) =
+        let username = Store.useValue Atoms.username
+        let owner = Store.useValue (Atoms.Database.owner databaseId)
+        let sharedWith = Store.useValue (Atoms.Database.sharedWith databaseId)
+        let position = Store.useValue (Atoms.Database.position databaseId)
 
         let newSharedWith =
             if owner = Templates.templatesUser.Username then
                 [
-                    username
+                    match username with
+                    | Some username -> yield username
+                    | _ -> ()
                 ]
             else
                 match sharedWith with
@@ -27,12 +30,13 @@ module DatabaseLeafIcon =
                 | DatabaseAccess.Private accessList -> accessList |> List.map fst
 
         let isPrivate =
-            match sharedWith with
-            | DatabaseAccess.Public -> false
-            | _ ->
+            match username, sharedWith with
+            | _, DatabaseAccess.Public -> false
+            | Some username, _ ->
                 newSharedWith
                 |> List.exists (fun share -> share <> username)
                 |> not
+            | _ -> true
 
         Chakra.stack
             (fun x ->

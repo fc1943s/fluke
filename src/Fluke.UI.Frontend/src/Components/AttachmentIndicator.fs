@@ -13,12 +13,9 @@ module AttachmentIndicator =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let AttachmentIndicator
-        (input: {| Username: Username
-                   Attachments: (FlukeDateTime * Attachment) list |})
-        =
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
-        let color = Store.useValue (Atoms.User.color input.Username)
+    let AttachmentIndicator (input: {| Attachments: (FlukeDateTime * Attachment) list |}) =
+        let cellSize = Store.useValue Atoms.cellSize
+        let color = Store.useValue Atoms.color
 
         let tooltipContainerRef = React.useElementRef ()
 

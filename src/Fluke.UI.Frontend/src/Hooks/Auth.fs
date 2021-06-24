@@ -116,7 +116,7 @@ module Auth =
         let hydrateTemplates = Hydrate.useHydrateTemplates ()
 
         Store.useCallback (
-            (fun get _set (username, password) ->
+            (fun get set (username, password) ->
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
@@ -146,7 +146,50 @@ module Auth =
                                   } ->
                                     match! signIn (username, password) with
                                     | Ok (username, keys) ->
-                                        do! hydrateTemplates username
+                                        Atoms.setAtomValue
+                                            set
+                                            Atoms.expandedDatabaseIdSet
+                                            Atoms.expandedDatabaseIdSetDefault
+
+                                        Atoms.setAtomValue
+                                            set
+                                            Atoms.selectedDatabaseIdSet
+                                            Atoms.selectedDatabaseIdSetDefault
+
+                                        Atoms.setAtomValue set Atoms.view Atoms.viewDefault
+                                        Atoms.setAtomValue set Atoms.language Atoms.languageDefault
+                                        Atoms.setAtomValue set Atoms.color Atoms.colorDefault
+                                        Atoms.setAtomValue set Atoms.weekStart Atoms.weekStartDefault
+                                        Atoms.setAtomValue set Atoms.dayStart Atoms.dayStartDefault
+                                        Atoms.setAtomValue set Atoms.sessionDuration Atoms.sessionDurationDefault
+
+                                        Atoms.setAtomValue
+                                            set
+                                            Atoms.sessionBreakDuration
+                                            Atoms.sessionBreakDurationDefault
+
+                                        Atoms.setAtomValue set Atoms.daysBefore Atoms.daysBeforeDefault
+                                        Atoms.setAtomValue set Atoms.daysAfter Atoms.daysAfterDefault
+                                        Atoms.setAtomValue set Atoms.searchText Atoms.searchTextDefault
+                                        Atoms.setAtomValue set Atoms.cellSize Atoms.cellSizeDefault
+                                        Atoms.setAtomValue set Atoms.leftDock Atoms.leftDockDefault
+                                        Atoms.setAtomValue set Atoms.rightDock Atoms.rightDockDefault
+                                        Atoms.setAtomValue set Atoms.hideTemplates Atoms.hideTemplatesDefault
+
+                                        Atoms.setAtomValue
+                                            set
+                                            Atoms.hideSchedulingOverlay
+                                            Atoms.hideSchedulingOverlayDefault
+
+                                        Atoms.setAtomValue set Atoms.showViewOptions Atoms.showViewOptionsDefault
+                                        Atoms.setAtomValue set Atoms.filterTasksByView Atoms.filterTasksByViewDefault
+
+                                        Atoms.setAtomValue
+                                            set
+                                            Atoms.informationAttachmentMap
+                                            Atoms.informationAttachmentMapDefault
+
+                                        do! hydrateTemplates ()
 
                                         //                                        gunNamespace
                                         //                                            .ref

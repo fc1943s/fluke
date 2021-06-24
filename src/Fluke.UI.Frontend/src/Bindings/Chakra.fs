@@ -51,6 +51,7 @@ module Chakra =
         abstract className : string with get, set
         abstract closeOnSelect : bool with get, set
         abstract closeOnBlur : bool with get, set
+        abstract closeOnMouseDown : bool with get, set
         abstract color : string with get, set
         abstract colorScheme : string with get, set
         abstract columns : int with get, set
@@ -121,6 +122,7 @@ module Chakra =
         abstract right : string with get, set
         abstract rightIcon : ReactElement with get, set
         abstract scrollBehavior : string with get, set
+        abstract shouldWrapChildren : bool with get, set
         abstract size : string with get, set
         abstract spacing : string with get, set
         abstract tabindex : int with get, set
@@ -209,6 +211,7 @@ module Chakra =
                    TabPanels: obj
                    Tab: obj
                    Tabs: obj
+                   Textarea: obj
                    Tooltip: obj
                    useDisclosure: unit -> Disclosure
                    useToast: unit -> System.Func<obj, unit> |} =
@@ -282,6 +285,7 @@ module Chakra =
     let tabPanels<'T> = composeChakraComponent react.TabPanels
     let tab<'T> = composeChakraComponent react.Tab
     let tabs<'T> = composeChakraComponent react.Tabs
+    let textarea<'T> = composeChakraComponent react.Textarea
     let tooltip<'T> = composeChakraComponent react.Tooltip
 
 

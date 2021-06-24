@@ -93,8 +93,7 @@ module Databases =
         }
 
     let node
-        (input: {| Username: Username
-                   DatabaseId: DatabaseId option
+        (input: {| DatabaseId: DatabaseId option
                    Disabled: bool
                    IsTesting: bool
                    Value: string
@@ -169,7 +168,6 @@ module Databases =
 
                                             DatabaseNodeMenu.DatabaseNodeMenu
                                                 {|
-                                                    Username = input.Username
                                                     DatabaseId = databaseId
                                                     Disabled = disabled
                                                 |}
@@ -250,17 +248,14 @@ module Databases =
         | Shared
 
     [<ReactComponent>]
-    let rec Databases
-        (input: {| Username: Username
-                   Props: Chakra.IChakraProps -> unit |})
-        =
+    let rec Databases (input: {| Props: Chakra.IChakraProps -> unit |}) =
+        let username = Store.useValue Atoms.username
         let isTesting = Store.useValue Atoms.isTesting
 
-        let hideTemplates = Store.useValue (Atoms.User.hideTemplates input.Username)
+        let hideTemplates = Store.useValue Atoms.hideTemplates
         let hideTemplatesCache = React.useRef<bool option> None
 
-        let expandedDatabaseIdSet, setExpandedDatabaseIdSet =
-            Store.useState (Atoms.User.expandedDatabaseIdSet input.Username)
+        let expandedDatabaseIdSet, setExpandedDatabaseIdSet = Store.useState Atoms.expandedDatabaseIdSet
 
         React.useEffect (
             (fun () ->
@@ -278,12 +273,12 @@ module Databases =
             |]
         )
 
-        let databaseIdSet = Store.useValue (Atoms.Session.databaseIdSet input.Username)
+        let databaseIdSet = Store.useValue Atoms.databaseIdSet
 
         let databaseList =
             databaseIdSet
             |> Set.toList
-            |> List.map (fun databaseId -> Selectors.Database.database (input.Username, databaseId))
+            |> List.map (fun databaseId -> Selectors.Database.database databaseId)
             |> List.toArray
             |> Store.waitForAll
             |> Store.useValue
@@ -305,8 +300,7 @@ module Databases =
                 |]
             )
 
-        let selectedDatabaseIdSet, setSelectedDatabaseIdSet =
-            Store.useState (Atoms.User.selectedDatabaseIdSet input.Username)
+        let selectedDatabaseIdSet, setSelectedDatabaseIdSet = Store.useState Atoms.selectedDatabaseIdSet
 
         let nodes, newExpandedDatabaseIdSet =
             React.useMemo (
@@ -320,7 +314,7 @@ module Databases =
                                 let nodeType =
                                     match database.Owner with
                                     | owner when owner = Templates.templatesUser.Username -> NodeType.Template
-                                    | owner when owner = input.Username -> NodeType.Owned
+                                    | owner when Some owner = username -> NodeType.Owned
                                     | _ -> NodeType.Shared
 
                                 nodeType, database)
@@ -381,7 +375,7 @@ module Databases =
 
                             let icon =
                                 match database with
-                                | Some database -> DatabaseLeafIcon.DatabaseLeafIcon input.Username database.Id
+                                | Some database -> DatabaseLeafIcon.DatabaseLeafIcon database.Id
                                 | _ -> JS.undefined
 
                             let disabled =
@@ -428,7 +422,6 @@ module Databases =
                             let newNode =
                                 node
                                     {|
-                                        Username = input.Username
                                         DatabaseId =
                                             database
                                             |> Option.map (fun database -> database.Id)
@@ -457,11 +450,11 @@ module Databases =
                     nodes, newExpandedDatabaseIdSet),
                 [|
                     box databaseMap
-                    box input.Username
                     box hideTemplates
                     box expandedDatabaseIdSet
                     box selectedDatabaseIdSet
                     box isTesting
+                    box username
                 |]
             )
 

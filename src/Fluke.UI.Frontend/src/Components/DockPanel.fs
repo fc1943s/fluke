@@ -16,7 +16,7 @@ module DockPanel =
     let DockPanel
         (input: {| Name: string
                    Icon: obj
-                   Atom: JotaiTypes.Atom<TempUI.DockType option>
+                   Atom: Store.Atom<TempUI.DockType option>
                    RightIcons: DockPanelIcon list
                    children: seq<ReactElement> |})
         =

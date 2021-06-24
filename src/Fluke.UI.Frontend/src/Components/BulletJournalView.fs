@@ -13,8 +13,8 @@ module BulletJournalView =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let BulletJournalView (input: {| Username: Username |}) =
-        let weekCellsMap = Store.useValue (Selectors.BulletJournalView.weekCellsMap input.Username)
+    let BulletJournalView () =
+        let weekCellsMap = Store.useValue Selectors.BulletJournalView.weekCellsMap
 
         Chakra.box
             (fun x -> x.flex <- "1")
@@ -87,7 +87,6 @@ module BulletJournalView =
                                                                             [
                                                                                 Cell.Cell
                                                                                     {|
-                                                                                        Username = input.Username
                                                                                         DateId = dateId
                                                                                         TaskId = cell.TaskId
                                                                                         SemiTransparent = false
@@ -96,11 +95,7 @@ module BulletJournalView =
                                                                                     (fun x -> x.paddingLeft <- "4px")
                                                                                     [
                                                                                         TaskName.TaskName
-                                                                                            {|
-                                                                                                Username =
-                                                                                                    input.Username
-                                                                                                TaskId = cell.TaskId
-                                                                                            |}
+                                                                                            {| TaskId = cell.TaskId |}
                                                                                     ]
                                                                             ])
                                                         ])

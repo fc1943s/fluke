@@ -32,10 +32,10 @@ module Content =
                         match gunPeers, initialPeerSkipped with
                         | [||], false -> InitialPeers.InitialPeers ()
                         | _ -> LoginScreen.LoginScreen ()
-                    | Some username ->
+                    | Some _ ->
                         React.suspense (
                             [
-                                PositionUpdater.PositionUpdater {| Username = username |}
+                                PositionUpdater.PositionUpdater ()
 
                                 Chakra.stack
                                     (fun x ->
@@ -53,30 +53,30 @@ module Content =
                                             [
                                                 React.suspense (
                                                     [
-                                                        LeftDock.LeftDock {| Username = username |}
+                                                        LeftDock.LeftDock ()
                                                     ],
                                                     LoadingSpinner.LoadingSpinner ()
                                                 )
                                                 React.suspense (
                                                     [
-                                                        ViewTabs.ViewTabs {| Username = username |}
+                                                        ViewTabs.ViewTabs ()
                                                     ],
                                                     LoadingSpinner.LoadingSpinner ()
                                                 )
                                                 React.suspense (
                                                     [
-                                                        RightDock.RightDock {| Username = username |}
+                                                        RightDock.RightDock ()
                                                     ],
                                                     LoadingSpinner.LoadingSpinner ()
                                                 )
                                             ]
 
-                                        StatusBar.StatusBar {| Username = username |}
+                                        StatusBar.StatusBar ()
                                     ]
 
                                 React.suspense (
                                     [
-                                        SoundPlayer.SoundPlayer {| Username = username |}
+                                        SoundPlayer.SoundPlayer ()
                                     ],
                                     nothing
                                 )

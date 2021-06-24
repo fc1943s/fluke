@@ -17,11 +17,13 @@ module Profiling =
     Dom.set (nameof profilingState) profilingState
 
     let addCount id =
-        match profilingState.CallCount.ContainsKey id with
-        | false -> profilingState.CallCount.[id] <- 1
-        | true -> profilingState.CallCount.[id] <- profilingState.CallCount.[id] + 1
+        if JS.isDebug () then
+            match profilingState.CallCount.ContainsKey id with
+            | false -> profilingState.CallCount.[id] <- 1
+            | true -> profilingState.CallCount.[id] <- profilingState.CallCount.[id] + 1
 
     let addTimestamp id =
-        profilingState.Timestamps.Add (id, DateTime.ticksDiff initialTicks)
+        if JS.isDebug () then
+            profilingState.Timestamps.Add (id, DateTime.ticksDiff initialTicks)
 
     addTimestamp "Init"

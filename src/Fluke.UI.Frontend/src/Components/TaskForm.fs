@@ -17,13 +17,12 @@ open Fluke.Shared
 module TaskForm =
     [<ReactComponent>]
     let rec TaskForm
-        (input: {| Username: UserInteraction.Username
-                   TaskId: TaskId
+        (input: {| TaskId: TaskId
                    OnSave: Task -> JS.Promise<unit> |})
         =
         let toast = Chakra.useToast ()
         let debug = Store.useValue Atoms.debug
-        let sessions, setSessions = Store.useState (Atoms.Task.sessions (input.Username, input.TaskId))
+        let sessions, setSessions = Store.useState (Atoms.Task.sessions input.TaskId)
 
         let deleteSession =
             Store.useCallback (
@@ -41,13 +40,13 @@ module TaskForm =
                 |]
             )
 
-        let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
+        let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.uiFlag Atoms.UIFlagType.Task)
 
         let taskDatabaseId =
             React.useMemo (
                 (fun () ->
                     match taskUIFlag with
-                    | Atoms.User.UIFlag.Task (databaseId, taskId) when taskId = input.TaskId -> databaseId
+                    | Atoms.UIFlag.Task (databaseId, taskId) when taskId = input.TaskId -> databaseId
                     | _ -> Database.Default.Id),
                 [|
                     box taskUIFlag
@@ -59,17 +58,11 @@ module TaskForm =
             Store.useCallback (
                 (fun get set _ ->
                     promise {
-                        let taskName =
-                            Store.getReadWrite get input.Username (Atoms.Task.name (input.Username, input.TaskId))
+                        let taskName = Store.getReadWrite get (Atoms.Task.name input.TaskId)
 
-                        let taskInformation =
-                            Store.getReadWrite
-                                get
-                                input.Username
-                                (Atoms.Task.information (input.Username, input.TaskId))
+                        let taskInformation = Store.getReadWrite get (Atoms.Task.information input.TaskId)
 
-                        let taskScheduling =
-                            Store.getReadWrite get input.Username (Atoms.Task.scheduling (input.Username, input.TaskId))
+                        let taskScheduling = Store.getReadWrite get (Atoms.Task.scheduling input.TaskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -101,8 +94,7 @@ module TaskForm =
                                     |> Promise.lift
                                 else
                                     promise {
-                                        let task =
-                                            Atoms.getAtomValue get (Selectors.Task.task (input.Username, input.TaskId))
+                                        let task = Atoms.getAtomValue get (Selectors.Task.task input.TaskId)
 
                                         return
                                             { task with
@@ -112,22 +104,13 @@ module TaskForm =
                                             }
                                     }
 
-                            Store.readWriteReset set input.Username (Atoms.Task.name (input.Username, input.TaskId))
+                            Store.readWriteReset set (Atoms.Task.name input.TaskId)
 
-                            Store.readWriteReset
-                                set
-                                input.Username
-                                (Atoms.Task.information (input.Username, input.TaskId))
+                            Store.readWriteReset set (Atoms.Task.information input.TaskId)
 
-                            Store.readWriteReset
-                                set
-                                input.Username
-                                (Atoms.Task.scheduling (input.Username, input.TaskId))
+                            Store.readWriteReset set (Atoms.Task.scheduling input.TaskId)
 
-                            Atoms.setAtomValue
-                                set
-                                (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Task))
-                                Atoms.User.UIFlag.None
+                            Atoms.setAtomValue set (Atoms.uiFlag Atoms.UIFlagType.Task) Atoms.UIFlag.None
 
                             do! input.OnSave task
                     }),
@@ -161,26 +144,20 @@ module TaskForm =
 
                         DatabaseSelector.DatabaseSelector
                             {|
-                                Username = input.Username
                                 TaskId = input.TaskId
                                 DatabaseId = taskDatabaseId
                                 OnChange =
-                                    fun databaseId -> setTaskUIFlag (Atoms.User.UIFlag.Task (databaseId, input.TaskId))
+                                    fun databaseId -> setTaskUIFlag (Atoms.UIFlag.Task (databaseId, input.TaskId))
                             |}
 
                         InformationSelector.InformationSelector
                             {|
-                                Username = input.Username
                                 DisableResource = true
                                 SelectionType = InformationSelector.InformationSelectionType.Information
                                 TaskId = input.TaskId
                             |}
 
-                        SchedulingSelector.SchedulingSelector
-                            {|
-                                Username = input.Username
-                                TaskId = input.TaskId
-                            |}
+                        SchedulingSelector.SchedulingSelector {| TaskId = input.TaskId |}
 
                         Chakra.stack
                             (fun x -> x.spacing <- "15px")
@@ -191,16 +168,12 @@ module TaskForm =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        JotaiTypes.InputAtom (
-                                                            input.Username,
-                                                            JotaiTypes.AtomPath.Atom (
-                                                                Atoms.Task.name (input.Username, input.TaskId)
-                                                            )
+                                                        Store.InputAtom (
+                                                            Store.AtomPath.Atom (Atoms.Task.name input.TaskId)
                                                         )
                                                     )
 
-                                                x.inputScope <-
-                                                    Some (JotaiTypes.InputScope.ReadWrite Gun.defaultSerializer)
+                                                x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
 
                                                 x.onFormat <- Some (fun (TaskName name) -> name)
                                                 x.onEnterPress <- Some onSave

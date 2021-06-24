@@ -13,12 +13,11 @@ module MonthResponsiveCell =
 
     [<ReactComponent>]
     let MonthResponsiveCell
-        (input: {| Username: Username
-                   Date: FlukeDate
+        (input: {| Date: FlukeDate
                    Props: Chakra.IChakraProps -> unit |})
         =
-        let weekStart = Store.useValue (Atoms.User.weekStart input.Username)
-        let cellSize = Store.useValue (Atoms.User.cellSize input.Username)
+        let weekStart = Store.useValue Atoms.weekStart
+        let cellSize = Store.useValue Atoms.cellSize
 
         let month = (input.Date |> FlukeDate.DateTime).Format "MMM"
 

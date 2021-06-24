@@ -13,7 +13,7 @@
   "private": true,
   "scripts": {
     "build:fable": "dotnet tool restore && dotnet paket install && dotnet fable",
-    "build:react": "rm -rf build && cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build && rm -rf cra_output && mv build cra_output",
+    "build:react": "rm -rf build && cross-env CI= INLINE_RUNTIME_CHUNK=false EXTEND_ESLINT=true SKIP_PREFLIGHT_CHECK=true react-app-rewired build && rm -rf cra_output && mv build cra_output && cp -var node_modules/vim-wasm/small cra_output/static/js/vim-wasm",
     "parcel-build:react": "parcel build static/index.html --detailed-report && cp -r static/manifest.json static/404.html static/sounds static/icons parcel_output",
     "watch:frontend-build": "dotnet fable watch",
     "watch:frontend": "cross-env HTTPS=true EXTEND_ESLINT=true BROWSER=none FAST_REFRESH=true PORT=33922 SKIP_PREFLIGHT_CHECK=true react-app-rewired start",
@@ -50,14 +50,14 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "~18.0.0-alpha-568dc3532",
-    "react-dom": "~18.0.0-alpha-568dc3532",
+    "react": "~18.0.0-alpha-386e8f2ea-20210624",
+    "react-dom": "~18.0.0-alpha-386e8f2ea-20210624",
 
     "@pmmmwh/react-refresh-webpack-plugin": "^0.4.3",
 
     "jotai": "~1.0.1",
 
-    "gun": "amark/gun.git#master",
+    "gun": "amark/gun.git#manhattan",
 
     "@chakra-ui/react": "~1.6",
     "@chakra-ui/system": "~1.7",
@@ -76,6 +76,9 @@
     "https-localhost": "~4.6",
 
     "react-checkbox-tree": "~1.7",
+
+    "batcher-js": "~1.0",
+    "react-vim-wasm": "~0.1",
 
     "rooks": "~5.0",
     "react-color": "~3.0.0-beta.3",

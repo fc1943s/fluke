@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
@@ -15,16 +14,11 @@ module TopBar =
 
         let onLogoClick =
             Store.useCallback (
-                (fun get set _ ->
+                (fun _get set _ ->
                     promise {
-                        let username = Atoms.getAtomValue get Atoms.username
-
-                        match username with
-                        | Some username ->
-                            Atoms.setAtomValue set (Atoms.User.leftDock username) None
-                            Atoms.setAtomValue set (Atoms.User.rightDock username) None
-                            Atoms.setAtomValue set (Atoms.User.view username) TempUI.defaultView
-                        | None -> ()
+                        Atoms.setAtomValue set Atoms.leftDock None
+                        Atoms.setAtomValue set Atoms.rightDock None
+                        Atoms.setAtomValue set Atoms.view Atoms.viewDefault
                     }),
                 [||]
             )

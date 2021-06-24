@@ -11,16 +11,14 @@ open Fluke.UI.Frontend.TempUI
 
 
 module LeftDock =
-    open Domain.UserInteraction
-
     [<ReactComponent>]
-    let LeftDock (input: {| Username: Username |}) =
+    let LeftDock () =
         let isTesting = Store.useValue Atoms.isTesting
-        let leftDock, setLeftDock = Store.useState (Atoms.User.leftDock input.Username)
-        let setRightDock = Store.useSetState (Atoms.User.rightDock input.Username)
+        let leftDock, setLeftDock = Store.useState Atoms.leftDock
+        let setRightDock = Store.useSetState Atoms.rightDock
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let hideTemplates, setHideTemplates = Store.useState (Atoms.User.hideTemplates input.Username)
-        let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag (input.Username, Atoms.User.UIFlagType.Database))
+        let hideTemplates, setHideTemplates = Store.useState Atoms.hideTemplates
+        let setDatabaseUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Database)
 
         let items, itemsMap =
             React.useMemo (
@@ -32,15 +30,14 @@ module LeftDock =
                                 Name = "Settings"
                                 Icon = Icons.md.MdSettings
                                 Content =
-                                        Settings.Settings
-                                            {|
-                                                Username = input.Username
-                                                Props =
-                                                    fun x ->
-                                                        x.flex <- "1"
-                                                        x.overflowY <- "auto"
-                                                        x.flexBasis <- 0
-                                            |}
+                                    Settings.Settings
+                                        {|
+                                            Props =
+                                                fun x ->
+                                                    x.flex <- "1"
+                                                    x.overflowY <- "auto"
+                                                    x.flexBasis <- 0
+                                        |}
                                 RightIcons = []
                             |}
 
@@ -49,17 +46,16 @@ module LeftDock =
                                 Name = "Databases"
                                 Icon = Icons.fi.FiDatabase
                                 Content =
-                                        Databases.Databases
-                                            {|
-                                                Username = input.Username
-                                                Props =
-                                                    fun x ->
-                                                        x.flex <- "1"
-                                                        x.padding <- "10px"
-                                                        x.paddingTop <- "3px"
-                                                        x.overflowY <- "auto"
-                                                        x.flexBasis <- 0
-                                            |}
+                                    Databases.Databases
+                                        {|
+                                            Props =
+                                                fun x ->
+                                                    x.flex <- "1"
+                                                    x.padding <- "10px"
+                                                    x.paddingTop <- "3px"
+                                                    x.overflowY <- "auto"
+                                                    x.flexBasis <- 0
+                                        |}
                                 RightIcons =
                                     [
                                         DockPanel.DockPanelIcon.Component (
@@ -85,7 +81,7 @@ module LeftDock =
 
                                                                                 setRightDock (Some DockType.Database)
 
-                                                                                setDatabaseUIFlag Atoms.User.UIFlag.None
+                                                                                setDatabaseUIFlag Atoms.UIFlag.None
                                                                             }
                                                         |}
                                                 ]
@@ -101,8 +97,7 @@ module LeftDock =
 
                                                         x.value <-
                                                             [|
-                                                                if hideTemplates then
-                                                                    yield nameof Atoms.User.hideTemplates
+                                                                if hideTemplates then yield nameof Atoms.hideTemplates
                                                             |]
 
                                                         x.onChange <-
@@ -110,14 +105,12 @@ module LeftDock =
                                                                 promise {
                                                                     setHideTemplates (
                                                                         checks
-                                                                        |> Array.contains (
-                                                                            nameof Atoms.User.hideTemplates
-                                                                        )
+                                                                        |> Array.contains (nameof Atoms.hideTemplates)
                                                                     )
                                                                 })
                                                     [
                                                         Chakra.menuItemOption
-                                                            (fun x -> x.value <- nameof Atoms.User.hideTemplates)
+                                                            (fun x -> x.value <- nameof Atoms.hideTemplates)
                                                             [
                                                                 str "Hide Templates"
                                                             ]
@@ -134,7 +127,6 @@ module LeftDock =
                     box setLeftDock
                     box setRightDock
                     box deviceInfo
-                    box input.Username
                     box isTesting
                     box hideTemplates
                     box setDatabaseUIFlag
@@ -171,7 +163,7 @@ module LeftDock =
                                                     OnClick =
                                                         fun _ ->
                                                             promise { if deviceInfo.IsMobile then setRightDock None }
-                                                    Atom = Atoms.User.leftDock input.Username
+                                                    Atom = Atoms.leftDock
                                                 |})
                             ]
                     ]
@@ -219,7 +211,7 @@ module LeftDock =
                                         Name = item.Name
                                         Icon = item.Icon
                                         RightIcons = item.RightIcons
-                                        Atom = Atoms.User.leftDock input.Username
+                                        Atom = Atoms.leftDock
                                         children =
                                             [
                                                 React.suspense (

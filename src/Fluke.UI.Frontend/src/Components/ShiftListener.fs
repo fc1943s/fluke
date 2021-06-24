@@ -25,12 +25,7 @@ module ShiftListener =
             |]
             (fun get set e ->
                 promise {
-                    let setView value =
-                        let username = Atoms.getAtomValue get Atoms.username
-
-                        match username with
-                        | Some username -> Atoms.setAtomValue set (Atoms.User.view username) value
-                        | None -> ()
+                    let setView value = Atoms.setAtomValue set Atoms.view value
 
                     match e.ctrlKey, e.shiftKey, e.key with
                     | false, true, "I" ->
