@@ -31,7 +31,7 @@ module React =
             override x.render () =
                 if x.state.HasErrors then x.props.ErrorComponent else x.props.Inner
 
-        let renderCatchSimple errorElement element =
+        let inline renderCatchSimple errorElement element =
             ofType<ErrorBoundary, _, _>
                 {
                     Inner = element
@@ -40,7 +40,7 @@ module React =
                 }
                 []
 
-        let renderCatchFn onError errorElement element =
+        let inline renderCatchFn onError errorElement element =
             ofType<ErrorBoundary, _, _>
                 {
                     Inner = element
@@ -50,23 +50,23 @@ module React =
                 []
 
     [<ImportAll "react">]
-    let private react : {| StrictMode: obj -> ReactElement |} = jsNative
+    let react : {| StrictMode: obj -> ReactElement |} = jsNative
 
     [<ImportAll "react-dom">]
-    let private reactDom : {| createRoot: HTMLElement -> {| render: ReactElement -> unit |} |} = jsNative
+    let reactDom : {| createRoot: HTMLElement -> {| render: ReactElement -> unit |} |} = jsNative
 
-    let bindComponent<'C, 'P> (props: 'P) (children: seq<ReactElement>) (cmp: 'C) =
+    let inline bindComponent<'C, 'P> (props: 'P) (children: seq<ReactElement>) (cmp: 'C) =
         ReactBindings.React.createElement (cmp, props, children)
 
-    let composeComponent<'C, 'P> (cmp: 'C) (props: 'P) (children: seq<ReactElement>) =
+    let inline composeComponent<'C, 'P> (cmp: 'C) (props: 'P) (children: seq<ReactElement>) =
         bindComponent<'C, 'P> props children cmp
 
-    let strictMode children =
+    let inline strictMode children =
         bindComponent {|  |} children react.StrictMode
 
 
     //    ReactDOM.render (appMain (), document.getElementById "root")
-    let render rootElement appComponent =
+    let inline render rootElement appComponent =
         reactDom
             .createRoot(rootElement)
             .render appComponent

@@ -216,7 +216,9 @@ module Store =
                 (Array.map
                     (fun (item: {| Fn: int64 * string -> JS.Promise<unit>
                                    Timestamp: int64
-                                   Data: string |}) -> item.Fn (item.Timestamp, item.Data))
+                                   Data: string |}) ->
+                        //                JS.consoleLog("batchData", item)
+                        item.Fn (item.Timestamp, item.Data))
                  >> Promise.Parallel
                  >> Promise.start)
                 {| interval = 1000 |}
@@ -229,6 +231,7 @@ module Store =
                         promise {
                             item.GunAtomNode.on
                                 (fun data _key ->
+                                    //                                    JS.consoleLog("batchSubscribe", item)
                                     batchData
                                         {|
                                             Timestamp = DateTime.Now.Ticks
@@ -255,11 +258,10 @@ module Store =
         let gunNodePath = getGunNodePath atomPath keyIdentifier
 
         Profiling.addCount $"{gunNodePath} constructor"
-        //                JS.log
-//                    (fun () ->
-//                        $"atomFamily constructor gunAtomPath={gunAtomPath} atomPath={atomPath} param={param} keyIdentifier={
-//                                                                                                                                keyIdentifier
-//                        }")
+
+        JS.log
+            (fun () ->
+                $"atomFamily constructor gunNodePath={gunNodePath} atomPath={atomPath} keyIdentifier={keyIdentifier}")
 
         let rec wrapper =
             selector (
@@ -272,10 +274,10 @@ module Store =
 
                     Profiling.addCount $"{gunNodePath} get"
 
-                    //                                JS.log
-//                                    (fun () ->
-//                                        $"atomFamily.get() atomPath={atomPath} keyIdentifier={keyIdentifier}
-//                                                param={param} result={result}")
+                    JS.log
+                        (fun () ->
+                            $"atomFamily.get() atomPath={atomPath} keyIdentifier={keyIdentifier}
+                                                result={result}")
 
                     lastValue <- Some (DateTime.Now.Ticks, result)
 
@@ -300,15 +302,16 @@ module Store =
 
                                     Profiling.addCount $"{gunNodePath} set"
 
-                                    //                                            JS.log
-//                                                (fun () ->
-//                                                    $"atomFamily.set()
-//                                                    atomPath={atomPath} keyIdentifier={keyIdentifier}
-//                                                    param={param} jsTypeof-newValue={jsTypeof newValue}
-//                                                    oldValue={oldValue} newValue={newValue}
-//                                                    newValueFn={newValueFn}
-//                                                    lastValue={lastValue}
-//                                                    ")
+                                    JS.log
+                                        (fun () ->
+                                            $"atomFamily.set()
+                                                    gunNodePath={gunNodePath}
+                                                    atomPath={atomPath} keyIdentifier={keyIdentifier}
+                                                    jsTypeof-newValue={jsTypeof newValue}
+                                                    oldValue={oldValue} newValue={newValue}
+                                                    newValueFn={newValueFn}
+                                                    lastValue={lastValue}
+                                                    ")
 
                                     promise {
                                         try
@@ -349,14 +352,43 @@ module Store =
                         || (unbox lastValue = null && unbox newValue = null) ->
 
                         Profiling.addCount $"{gunNodePath} on() skip"
-                    //                                printfn
-//                                    $"on() value. skipping. atomPath={atomPath} lastValue={lastValue} newValue={newValue}"
+
+                        JS.log
+                            (fun () ->
+                                $"on() value. skipping. atomPath={atomPath} lastValue={lastValue} newValue={newValue}")
                     | _ ->
                         Profiling.addCount $"{gunNodePath} on() assign"
-                        //                                printfn
-//                                    $"on() value. triggering. atomPath={atomPath} lastValue={lastValue} newValue={
-//                                                                                                                      newValue
-//                                    }"
+
+                        let _lastValue =
+                            match lastValue with
+                            | Some (_, b) -> b
+                            | _ -> unbox null
+
+                        JS.log
+                            (fun () ->
+                                if _lastValue.ToString () = newValue.ToString () then
+                                    Browser.Dom.console.error
+                                        $"should have skipped assign
+                                        atomPath={atomPath}
+                                        _lastValue={_lastValue}
+                                        typeof lastValue={jsTypeof _lastValue}
+                                        newValue={newValue}
+                                        typeof newValue={jsTypeof newValue}")
+
+                        JS.log
+                            (fun () ->
+                                $"on() value. triggering.
+                            atomPath={atomPath}
+                            _lastValue={_lastValue}
+                            typeof lastValue={jsTypeof _lastValue}
+                            newValue={newValue}
+                            typeof newValue={jsTypeof newValue}
+                            ")
+
+                        Browser.Dom.window?atomPath <- atomPath
+                        Browser.Dom.window?lastValue <- _lastValue
+                        Browser.Dom.window?newValue <- newValue
+                        Browser.Dom.window?deepEqual <- DeepEqual.deepEqual
 
                         setAtom newValue
                 with ex -> Browser.Dom.console.error ("[exception1]", ex)
@@ -370,7 +402,7 @@ module Store =
                     match lastGunAtomNode with
                     | Some gunAtomNode ->
                         Profiling.addCount $"{gunNodePath} subscribe"
-                        //                                JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath}")
+                        JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath}")
 
                         Gun.batchSubscribe
                             {|
@@ -434,7 +466,7 @@ module Store =
                 let guidHash = Crypto.getTextGuidHash atomPath
                 let pathHash = guidHash
 
-                printfn $"readWriteValueWrapper constructor. atomPath={atomPath} guidHash={guidHash}"
+                JS.log (fun () -> $"readWriteValueWrapper constructor. atomPath={atomPath} guidHash={guidHash}")
 
                 let wrapper =
                     jotai.atom (
@@ -442,8 +474,9 @@ module Store =
                             let value = Atoms.getAtomValue get (readWriteValue pathHash)
                             Profiling.addCount $"{atomPath} readWriteValue set"
 
-                            printfn
-                                $"readWriteValueWrapper.get(). atomPath={atomPath} guidHash={guidHash} value={value}"
+                            JS.log
+                                (fun () ->
+                                    $"readWriteValueWrapper.get(). atomPath={atomPath} guidHash={guidHash} value={value}")
 
                             match value with
                             | null -> null
@@ -455,10 +488,11 @@ module Store =
                             (fun _get set newValue ->
                                 Profiling.addCount $"{atomPath} readWriteValue set"
 
-                                printfn
-                                    $"readWriteValueWrapper.set(). atomPath={atomPath} guidHash={guidHash} newValue={
-                                                                                                                         newValue
-                                    }"
+                                JS.log
+                                    (fun () ->
+                                        $"readWriteValueWrapper.set(). atomPath={atomPath} guidHash={guidHash} newValue={
+                                                                                                                             newValue
+                                        }")
 
                                 let newValue =
                                     Gun.jsonEncode
@@ -467,7 +501,7 @@ module Store =
                                             Value = newValue |> Option.ofObj
                                         }
 
-                                printfn $"readWriteValueWrapper.set(). newValue2={newValue}"
+                                JS.log (fun () -> $"readWriteValueWrapper.set(). newValue2={newValue}")
 
                                 Atoms.setAtomValue set (readWriteValue pathHash) (newValue |> box |> unbox))
                     )
@@ -488,12 +522,13 @@ module Store =
                     | AtomPath.Atom atom -> Some atom
                     | _ -> Some (unbox emptyAtom)
                 ReadWrite =
-                    printfn
-                        $"getAtomField
+                    JS.log
+                        (fun () ->
+                            $"getAtomField
                     atomPath={atomPath}
                     queryAtomPath atomPath={queryAtomPath atomPath}
                     inputScope={inputScope}
-                    "
+                    ")
 
                     match queryAtomPath atomPath, inputScope with
                     | Some atomPath, AtomScope.ReadWrite -> Some (readWriteValue atomPath)
@@ -548,11 +583,12 @@ module Store =
                     | _, null -> readOnlyValue |> Option.defaultValue (unbox null)
                     | Some (InputScope.ReadWrite (_, jsonDecode)), readWriteValue ->
                         try
-                            printfn
-                                $"useAtomFieldOptins
+                            JS.log
+                                (fun () ->
+                                    $"useAtomFieldOptins
                             readOnlyValue={readOnlyValue}
                             atom={atom}
-                            readWriteValue={readWriteValue}"
+                            readWriteValue={readWriteValue}")
 
                             jsonDecode readWriteValue
                         with ex ->

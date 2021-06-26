@@ -71,13 +71,13 @@ module Icons =
     [<ImportAll "react-icons/wi">]
     let wi : __wi_index.IExports = jsNative
 
-    let render cmp = React.bindComponent () [] cmp
+    let inline render cmp = React.bindComponent () [] cmp
 
-    let renderChakra (props: IChakraProps -> unit) cmp =
+    let inline renderChakra (props: IChakraProps -> unit) cmp =
         box
             (fun x ->
                 props x
                 x.``as`` <- cmp)
             []
 
-    let wrap cmp = fun () -> render cmp
+    let inline wrap cmp = fun () -> render cmp

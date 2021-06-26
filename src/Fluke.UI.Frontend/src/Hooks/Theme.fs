@@ -8,7 +8,22 @@ open Fable.Core
 
 
 module Theme =
-    let rec private theme =
+    let private theme =
+        let colors =
+            {|
+                heliotrope = "#b586ff"
+                gray =
+                    {|
+                        ``10`` = "#1a1a1a" // grayDark
+                        ``13`` = "#212121" // grayLight
+                        ``16`` = "#292929" // grayLighter
+                        ``45`` = "#727272" // textDark
+                        ``77`` = "#b0bec5" // textLight
+                    |}
+            |}
+
+        let focusShadow = $"0 0 0 1px {colors.heliotrope} !important"
+
         {|
             config =
                 {|
@@ -22,18 +37,7 @@ module Theme =
                     lg = "1000px"
                     xl = "1900px"
                 |}
-            colors =
-                {|
-                    heliotrope = "#b586ff"
-                    gray =
-                        {|
-                            ``10`` = "#1a1a1a" // grayDark
-                            ``13`` = "#212121" // grayLight
-                            ``16`` = "#292929" // grayLighter
-                            ``45`` = "#727272" // textDark
-                            ``77`` = "#b0bec5" // textLight
-                        |}
-                |}
+            colors = colors
             fonts =
                 {|
                     main = "'Roboto Condensed', sans-serif"
@@ -59,7 +63,7 @@ module Theme =
                             {|
                                 ``:root`` =
                                     {|
-                                        ``--chakra-shadows-outline`` = $"0 0 0 1px {theme.colors.heliotrope} !important"
+                                        ``--chakra-shadows-outline`` = focusShadow
                                     |}
                                 ``*, *::before, *::after`` = {| wordWrap = "break-word" |}
                                 html =
@@ -116,8 +120,15 @@ module Theme =
                                         borderLeft = "3px solid transparent"
                                     |}
                                 ``#root`` = {| display = "flex" |}
-                                ``.rct-collapse-btn:focus`` = {| boxShadow = "none !important" |}
-                                ``.rct-disabled .rct-checkbox svg`` = {| opacity = "0" |}
+                                ``.rct-collapse-btn`` =
+                                    {|
+                                        padding = "0"
+                                        marginLeft = "5px"
+                                        marginRight = "15px"
+                                    |}
+                                ``.rct-collapse-btn:focus`` = {| boxShadow = focusShadow |}
+                                ``.rct-disabled .rct-checkbox svg`` = {| display = "none" |}
+                                ``.rct-disabled .rct-node-icon`` = {| marginLeft = "-10px" |}
                                 ``.rct-node label:hover, .rct-node label:active`` = {| background = "none" |}
                                 ``.rct-node-parent:not(:first-of-type)`` = {| marginTop = "7px" |}
                                 ``.rct-node:first-of-type`` = {| marginTop = "2px" |}

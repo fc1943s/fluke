@@ -125,7 +125,7 @@ module Chakra =
         abstract shouldWrapChildren : bool with get, set
         abstract size : string with get, set
         abstract spacing : string with get, set
-        abstract tabindex : int with get, set
+        abstract tabIndex : int with get, set
         abstract textAlign : string with get, set
         abstract textOverflow : string with get, set
         abstract textShadow : string with get, set
@@ -223,7 +223,23 @@ module Chakra =
     [<ImportAll "@chakra-ui/icons">]
     let icons : {| ExternalLinkIcon: obj |} = jsNative
 
-    let composeChakraComponent cmp (props: IChakraProps -> unit) = composeComponent cmp (JS.newObj props)
+    let chakraMemo =
+        React.memo
+            (fun (input: {| Props: IChakraProps
+                            Component: obj
+                            Children: seq<ReactElement> |}) ->
+                composeComponent input.Component input.Props input.Children)
+
+    let inline composeChakraComponent (cmp: obj) (props: IChakraProps -> unit) (children: seq<ReactElement>) =
+        let newProps = JS.newObj props
+
+        //        chakraMemo
+//            {|
+//                Props = newProps
+//                Component = cmp
+//                Children = children
+//            |}
+        composeComponent cmp newProps children
 
     type ChakraInput<'T> = 'T -> unit
 

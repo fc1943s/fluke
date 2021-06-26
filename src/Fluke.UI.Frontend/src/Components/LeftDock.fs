@@ -136,7 +136,7 @@ module LeftDock =
 
 
         Chakra.flex
-            (fun _ -> ())
+            (fun x -> x.overflow <- "scroll")
             [
                 Chakra.box
                     (fun x ->
@@ -153,8 +153,8 @@ module LeftDock =
                             [
                                 yield!
                                     items
-                                    |> List.map
-                                        (fun (dockType, item) ->
+                                    |> List.mapi
+                                        (fun i (dockType, item) ->
                                             DockButton.DockButton
                                                 {|
                                                     DockType = dockType
@@ -164,6 +164,7 @@ module LeftDock =
                                                         fun _ ->
                                                             promise { if deviceInfo.IsMobile then setRightDock None }
                                                     Atom = Atoms.leftDock
+                                                    Props = fun x -> x.tabIndex <- items.Length - i
                                                 |})
                             ]
                     ]

@@ -183,7 +183,7 @@ module RightDock =
         let itemsMap = items |> Map.ofSeq
 
         Chakra.flex
-            (fun _ -> ())
+            (fun x -> x.overflow <- "scroll")
             [
                 match rightDock with
                 | None -> nothing
@@ -268,6 +268,7 @@ module RightDock =
                                                         fun _ ->
                                                             promise { if deviceInfo.IsMobile then setLeftDock None }
                                                     Atom = Atoms.rightDock
+                                                    Props = fun _ -> ()
                                                 |})
                             ]
                     ]

@@ -8,7 +8,6 @@ open System
 open Fluke.Shared
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
-open Microsoft.FSharp.Core.Operators
 
 
 module DeepEqual =
@@ -18,8 +17,12 @@ module DeepEqual =
         //        if unbox a <> null && a?toString <> null && jsTypeof a <> "boolean" then
 //            a?toString <- emitJsExpr () "Object.prototype.toString"
 //            b?toString <- emitJsExpr () "Object.prototype.toString"
-
-        fastDeepEqual a b
+        if unbox a <> null
+           && unbox b <> null
+           && a?CompareTo <> null then
+            (a?CompareTo b) = 0
+        else
+            fastDeepEqual a b
 
 module JotaiTypes =
     type Atom<'TValue> =
@@ -150,7 +153,7 @@ module Jotai =
         atomPath
 
     let registerAtom atomPath keyIdentifier atom =
-        printfn $"registerAtom atomPath={atomPath} keyIdentifier={keyIdentifier} atom={atom}"
+        JS.log (fun () -> $"registerAtom atomPath={atomPath} keyIdentifier={keyIdentifier} atom={atom}")
 
         match keyIdentifier with
         | Some keyIdentifier ->
@@ -298,4 +301,4 @@ module JotaiUtilsMagic =
                 failwith
                     $"Invalid username. username={username} user.is={JS.JSON.stringify user.is} username={username} atomPath={
                                                                                                                                   atomPath
-                    }"
+                    } "

@@ -21,7 +21,8 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBox
-                        x.marginLeft <- "-51px"
+                        x.tabIndex <- 0
+                        x.marginLeft <- "-41px"
                         x.marginRight <- "2px"
                         x.height <- "19px"
                         x.width <- "19px"
@@ -31,7 +32,8 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdIndeterminateCheckBox
-                        x.marginLeft <- "-51px"
+                        x.tabIndex <- 0
+                        x.marginLeft <- "-41px"
                         x.marginRight <- "2px"
                         x.height <- "19px"
                         x.width <- "19px"
@@ -41,7 +43,8 @@ module Databases =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBoxOutlineBlank
-                        x.marginLeft <- "-51px"
+                        x.tabIndex <- 0
+                        x.marginLeft <- "-41px"
                         x.marginRight <- "2px"
                         x.height <- "19px"
                         x.width <- "19px"
@@ -54,7 +57,6 @@ module Databases =
                         x.height <- "16px"
                         x.width <- "16px"
                         x.fontSize <- "14px"
-                        x.transform <- Chakra.transformShiftBy (Some -10) None
                         x.color <- "white")
                     []
             expandClose =
@@ -64,7 +66,6 @@ module Databases =
                         x.height <- "16px"
                         x.width <- "16px"
                         x.fontSize <- "14px"
-                        x.transform <- Chakra.transformShiftBy (Some -10) None
                         x.color <- "white")
                     []
             parentClose =
@@ -166,11 +167,7 @@ module Databases =
                                                     ]
                                             | None -> nothing
 
-                                            DatabaseNodeMenu.DatabaseNodeMenu
-                                                {|
-                                                    DatabaseId = databaseId
-                                                    Disabled = disabled
-                                                |}
+                                            DatabaseNodeMenu.DatabaseNodeMenu (databaseId, disabled)
                                         ]
                                 | _ -> nothing
 
@@ -278,7 +275,7 @@ module Databases =
         let databaseList =
             databaseIdSet
             |> Set.toList
-            |> List.map (fun databaseId -> Selectors.Database.database databaseId)
+            |> List.map Selectors.Database.database
             |> List.toArray
             |> Store.waitForAll
             |> Store.useValue
@@ -302,7 +299,7 @@ module Databases =
 
         let selectedDatabaseIdSet, setSelectedDatabaseIdSet = Store.useState Atoms.selectedDatabaseIdSet
 
-        let nodes, newExpandedDatabaseIdSet =
+        let nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray =
             React.useMemo (
                 (fun () ->
                     let filteredDatabaseMap =
@@ -375,7 +372,7 @@ module Databases =
 
                             let icon =
                                 match database with
-                                | Some database -> DatabaseLeafIcon.DatabaseLeafIcon database.Id
+                                | Some database -> DatabaseLeafIcon.DatabaseLeafIcon {| DatabaseId = database.Id |}
                                 | _ -> JS.undefined
 
                             let disabled =
@@ -439,15 +436,20 @@ module Databases =
 
                     let nodes = loop nodes |> List.toArray
 
-                    let newExpandedDatabaseIdSet =
-                        if expandedDatabaseIdSet.IsEmpty then
-                            nodes
-                            |> Array.map (fun node -> node.value |> Guid |> DatabaseId)
-                            |> Set.ofSeq
-                        else
-                            expandedDatabaseIdSet
+                    let newExpandedDatabaseGuidArray =
+                        (if expandedDatabaseIdSet.IsEmpty then
+                             nodes
+                             |> Array.map (fun node -> node.value |> Guid |> DatabaseId)
+                         else
+                             expandedDatabaseIdSet |> Set.toArray)
+                        |> Array.map DatabaseId.Value
 
-                    nodes, newExpandedDatabaseIdSet),
+                    let newSelectedDatabaseGuidArray =
+                        selectedDatabaseIdSet
+                        |> Set.toArray
+                        |> Array.map DatabaseId.Value
+
+                    nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray),
                 [|
                     box databaseMap
                     box hideTemplates
@@ -462,6 +464,38 @@ module Databases =
         | Some window -> window?nodes <- nodes
         | None -> ()
 
+        let checkboxTreeProps =
+            React.useMemo (
+                (fun () ->
+                    {|
+                        ``checked`` = newSelectedDatabaseGuidArray
+                        expanded = newExpandedDatabaseGuidArray
+                        onCheck =
+                            (fun (x: string []) ->
+                                x
+                                |> Array.map (Guid >> DatabaseId)
+                                |> Set.ofSeq
+                                |> setSelectedDatabaseIdSet)
+                        onExpand =
+                            (fun (x: string []) ->
+                                x
+                                |> Array.map (Guid >> DatabaseId)
+                                |> Set.ofSeq
+                                |> setExpandedDatabaseIdSet)
+                        expandOnClick = true
+                        onlyLeafCheckboxes = true
+                        nodes = nodes
+                        icons = icons
+                    |}),
+                [|
+                    box newSelectedDatabaseGuidArray
+                    box newExpandedDatabaseGuidArray
+                    box setSelectedDatabaseIdSet
+                    box setExpandedDatabaseIdSet
+                    box nodes
+                |]
+            )
+
         Chakra.stack
             input.Props
             [
@@ -470,32 +504,6 @@ module Databases =
                         x.marginLeft <- "6px"
                         x.flex <- "1")
                     [
-                        CheckboxTree.render
-                            {|
-                                ``checked`` =
-                                    selectedDatabaseIdSet
-                                    |> Set.toArray
-                                    |> Array.map DatabaseId.Value
-                                expanded =
-                                    newExpandedDatabaseIdSet
-                                    |> Set.toArray
-                                    |> Array.map DatabaseId.Value
-                                onCheck =
-                                    (fun (x: string []) ->
-                                        x
-                                        |> Array.map (Guid >> DatabaseId)
-                                        |> Set.ofSeq
-                                        |> setSelectedDatabaseIdSet)
-                                onExpand =
-                                    (fun (x: string []) ->
-                                        x
-                                        |> Array.map (Guid >> DatabaseId)
-                                        |> Set.ofSeq
-                                        |> setExpandedDatabaseIdSet)
-                                expandOnClick = true
-                                onlyLeafCheckboxes = true
-                                nodes = nodes
-                                icons = icons
-                            |}
+                        CheckboxTree.render checkboxTreeProps
                     ]
             ]

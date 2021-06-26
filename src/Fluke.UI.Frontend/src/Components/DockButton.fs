@@ -1,8 +1,8 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fable.Core
 open Fable.React
 open Feliz
+open Fable.Core
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 
@@ -15,7 +15,8 @@ module DockButton =
                    Icon: obj
                    Atom: Store.Atom<TempUI.DockType option>
                    OnClick: TempUI.DockType option -> JS.Promise<unit>
-                   DockType: TempUI.DockType |})
+                   DockType: TempUI.DockType
+                   Props: Chakra.IChakraProps -> unit |})
         =
         let atom, setAtom = Store.useState input.Atom
 
@@ -34,7 +35,9 @@ module DockButton =
                             let newAtomValue = if atom = Some input.DockType then None else Some input.DockType
                             setAtom newAtomValue
                             do! input.OnClick newAtomValue
-                        })
+                        }
+
+                input.Props x)
             [
                 Chakra.icon
                     (fun x ->

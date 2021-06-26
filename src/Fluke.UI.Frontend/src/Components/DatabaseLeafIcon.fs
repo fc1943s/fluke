@@ -11,32 +11,44 @@ open Fluke.UI.Frontend.State
 
 module DatabaseLeafIcon =
     [<ReactComponent>]
-    let DatabaseLeafIcon (databaseId: DatabaseId) =
+    let DatabaseLeafIcon (input: {| DatabaseId: DatabaseId |}) =
         let username = Store.useValue Atoms.username
-        let owner = Store.useValue (Atoms.Database.owner databaseId)
-        let sharedWith = Store.useValue (Atoms.Database.sharedWith databaseId)
-        let position = Store.useValue (Atoms.Database.position databaseId)
+        let owner = Store.useValue (Atoms.Database.owner input.DatabaseId)
+        let sharedWith = Store.useValue (Atoms.Database.sharedWith input.DatabaseId)
+        let position = Store.useValue (Atoms.Database.position input.DatabaseId)
 
-        let newSharedWith =
-            if owner = Templates.templatesUser.Username then
-                [
-                    match username with
-                    | Some username -> yield username
-                    | _ -> ()
-                ]
-            else
-                match sharedWith with
-                | DatabaseAccess.Public -> []
-                | DatabaseAccess.Private accessList -> accessList |> List.map fst
+        let newSharedWith, isPrivate =
+            React.useMemo (
+                (fun () ->
+                    let newSharedWith =
+                        if owner = Templates.templatesUser.Username then
+                            [
+                                match username with
+                                | Some username -> yield username
+                                | _ -> ()
+                            ]
+                        else
+                            match sharedWith with
+                            | DatabaseAccess.Public -> []
+                            | DatabaseAccess.Private accessList -> accessList |> List.map fst
 
-        let isPrivate =
-            match username, sharedWith with
-            | _, DatabaseAccess.Public -> false
-            | Some username, _ ->
-                newSharedWith
-                |> List.exists (fun share -> share <> username)
-                |> not
-            | _ -> true
+                    let isPrivate =
+                        match username, sharedWith with
+                        | _, DatabaseAccess.Public -> false
+                        | Some username, _ ->
+                            newSharedWith
+                            |> List.exists (fun share -> share <> username)
+                            |> not
+                        | _ -> true
+
+                    newSharedWith, isPrivate),
+                [|
+                    box username
+                    box owner
+                    box sharedWith
+                |]
+            )
+
 
         Chakra.stack
             (fun x ->

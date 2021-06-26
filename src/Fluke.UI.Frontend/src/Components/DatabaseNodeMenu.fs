@@ -1,8 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fluke.Shared.Domain.Model
-open Fluke.Shared.Domain.State
-open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Bindings
@@ -11,14 +9,11 @@ open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
 
 
-module DatabaseNodeMenu =
+type DatabaseNodeMenu () =
     [<ReactComponent>]
-    let DatabaseNodeMenu
-        (input: {| DatabaseId: DatabaseId
-                   Disabled: bool |})
-        =
+    static member DatabaseNodeMenu (databaseId, disabled) =
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let isReadWrite = Store.useValue (Selectors.Database.isReadWrite input.DatabaseId)
+        let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
         let setLeftDock = Store.useSetState Atoms.leftDock
         let setRightDock = Store.useSetState Atoms.rightDock
         let setDatabaseUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Database)
@@ -37,7 +32,7 @@ module DatabaseNodeMenu =
                                     x.``as`` <- Chakra.react.MenuButton
                                     x.icon <- Icons.bs.BsThreeDots |> Icons.render
                                     x.fontSize <- "11px"
-                                    x.disabled <- input.Disabled
+                                    x.disabled <- disabled
                                     x.marginLeft <- "6px"
                         |}
                 Body =
@@ -58,10 +53,7 @@ module DatabaseNodeMenu =
 
                                                 setRightDock (Some DockType.Task)
 
-                                                setTaskUIFlag (
-                                                    (input.DatabaseId, Task.Default.Id)
-                                                    |> Atoms.UIFlag.Task
-                                                )
+                                                setTaskUIFlag ((databaseId, Task.Default.Id) |> Atoms.UIFlag.Task)
                                             })
                                 [
                                     str "Add Task"
@@ -80,7 +72,7 @@ module DatabaseNodeMenu =
                                             promise {
                                                 if deviceInfo.IsMobile then setLeftDock None
                                                 setRightDock (Some DockType.Database)
-                                                setDatabaseUIFlag (input.DatabaseId |> Atoms.UIFlag.Database)
+                                                setDatabaseUIFlag (databaseId |> Atoms.UIFlag.Database)
                                             })
                                 [
                                     str "Edit Database"
@@ -104,7 +96,7 @@ module DatabaseNodeMenu =
                                     Icons.bi.BiExport
                                     |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
-                                x.onClick <- fun _ -> exportDatabase input.DatabaseId)
+                                x.onClick <- fun _ -> exportDatabase databaseId)
                             [
                                 str "Export Database"
                             ]

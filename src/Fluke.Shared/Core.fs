@@ -104,16 +104,13 @@ module Set =
         if not condition then set else set |> Set.add item
 
     let inline seqAdd item seq =
-        seq
-        |> Set.ofSeq
-        |> Set.add item
-        |> Set.toSeq
+        seq |> Set.ofSeq |> Set.add item |> Set.toSeq
 
     let inline collect fn set =
         set
         |> Set.toSeq
-        |> Seq.map fn
         |> Seq.collect id
+        |> Seq.map fn
         |> Set.ofSeq
 
 
