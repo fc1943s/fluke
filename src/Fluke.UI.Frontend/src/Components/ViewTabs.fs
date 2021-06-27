@@ -10,7 +10,7 @@ open Fluke.Shared
 
 module ViewTabs =
     [<ReactComponent>]
-    let MenuOptionGroup (atom: Store.Atom<_>) label =
+    let MenuItemToggle (atom: Store.Atom<_>) label =
         let value, setValue = Store.useState atom
 
         let key = atom.toString ()
@@ -28,6 +28,7 @@ module ViewTabs =
             [
                 Chakra.menuItemOption
                     (fun x ->
+                        x.closeOnSelect <- true
                         x.value <- key
                         x.marginTop <- "2px"
                         x.marginBottom <- "2px")
@@ -127,6 +128,7 @@ module ViewTabs =
                                 x.borderColor <- "transparent"
                                 x.marginBottom <- "5px"
                                 x.padding <- "1px"
+                                x.alignItems <- "center"
                                 x.borderBottomWidth <- "1px"
                                 x.borderBottomColor <- "gray.16")
                             [
@@ -176,8 +178,8 @@ module ViewTabs =
                                                 |}
                                         Body =
                                             [
-                                                MenuOptionGroup Atoms.hideSchedulingOverlay "Hide Scheduling Overlay"
-                                                MenuOptionGroup Atoms.showViewOptions "Show View Options"
+                                                MenuItemToggle Atoms.hideSchedulingOverlay "Hide Scheduling Overlay"
+                                                MenuItemToggle Atoms.showViewOptions "Show View Options"
                                             ]
                                         MenuListProps = fun _ -> ()
                                     |}
@@ -207,8 +209,8 @@ module ViewTabs =
                                             x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Atoms.searchText))
                                     Props =
                                         fun x ->
+                                            x.autoFocus <- true
                                             x.placeholder <- "Search task or information"
-                                            x.isReadOnly <- true
                                 |}
                         ]
                 else
@@ -244,7 +246,11 @@ module ViewTabs =
                                                             str "No tasks found. Add tasks in the Databases panel."
                                                         ]
                                                 else
-                                                    LoadingSpinner.InlineLoadingSpinner ()
+                                                    Chakra.box
+                                                        (fun x -> x.padding <- "15px")
+                                                        [
+                                                            LoadingSpinner.InlineLoadingSpinner ()
+                                                        ]
                                             | _ -> tab.Content
                                         ])
                     ]

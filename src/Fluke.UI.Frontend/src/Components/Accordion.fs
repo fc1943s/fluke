@@ -28,7 +28,9 @@ module Accordion =
                 x.display <- "flex")
             [
                 Chakra.accordionButton
-                    (fun x -> x.backgroundColor <- "gray.16")
+                    (fun x ->
+                        x.backgroundColor <- "gray.16"
+                        x.tabIndex <- -1)
                     [
                         Chakra.box
                             (fun _ -> ())

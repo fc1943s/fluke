@@ -6967,13 +6967,13 @@ copyfiles@^2.3.0:
     untildify "^4.0.0"
     yargs "^16.1.0"
 
-cordova-android@~10.0.0-nightly.2021.6.22.6d803e2f:
-  version "10.0.0-nightly.2021.6.22.6d803e2f"
-  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-10.0.0-nightly.2021.6.22.6d803e2f.tgz#91d6a1f8cfa9f3eeebdd512c04670eac8c04ba98"
-  integrity sha512-li8kW1LCD34k9jrli4bqSOFgZfvBn4LD4uYXLDf5aP7oi+fJnTyEyL+fVfk+Vd3jtgpYOMFBZFJqDIOlh2VCUA==
+cordova-android@~10.0.0-nightly.2021.6.27.0f13f4a5:
+  version "10.0.0-nightly.2021.6.27.0f13f4a5"
+  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-10.0.0-nightly.2021.6.27.0f13f4a5.tgz#a1ddbc58e379fc553c4691b8bd085b3b20e36d27"
+  integrity sha512-2mKm/SsqmapPd4VGegV7VE3ftMGZNVqlu82sHKm6Yi1SEUQk5HhQfbdkJsE0z8v7pj1y8qD0/ULDf9ZF2dZjWQ==
   dependencies:
     android-versions "^1.6.0"
-    cordova-common "4.0.3-nightly.2021.6.22.3c9b9ffb"
+    cordova-common "4.0.3-nightly.2021.6.27.3c9b9ffb"
     execa "^5.0.0"
     fast-glob "^3.2.5"
     fs-extra "^9.1.0"
@@ -6988,10 +6988,10 @@ cordova-app-hello-world@^5.0.0:
   resolved "https://registry.yarnpkg.com/cordova-app-hello-world/-/cordova-app-hello-world-5.0.0.tgz#4a80460bf666c21a0fb0391d62ae9510f1ed86e9"
   integrity sha512-5My01wsYoeYwS0f/t5Ck52xPm0+2zYJ0SlvxG9vUsndDGtgiP6t/G8upPgWcyDRRz7Rs/50yZuOntmHqmJxccQ==
 
-cordova-common@4.0.3-nightly.2021.6.22.3c9b9ffb:
-  version "4.0.3-nightly.2021.6.22.3c9b9ffb"
-  resolved "https://registry.yarnpkg.com/cordova-common/-/cordova-common-4.0.3-nightly.2021.6.22.3c9b9ffb.tgz#1973c22bd4547072caf9704b0fcf9d6efa9d810f"
-  integrity sha512-7YTtSiwnxUVatSG47mQp6PdRCN0xOpFXg0oBE5MxCqXSvqY7jAwsiOeRdLjC5ibykjuQ99Q06QUVqWYdxvjP+g==
+cordova-common@4.0.3-nightly.2021.6.27.3c9b9ffb:
+  version "4.0.3-nightly.2021.6.27.3c9b9ffb"
+  resolved "https://registry.yarnpkg.com/cordova-common/-/cordova-common-4.0.3-nightly.2021.6.27.3c9b9ffb.tgz#173b77977dc22c68c7133463ffe9138b3d14234c"
+  integrity sha512-YftYkVIhwbwvWZ+NqPFZ0p/W2bAo/7b/i+79cYGFjcHt2iNk/u73+riuYlcp5b+CInwS5HTkXjhwY9+DerUSWA==
   dependencies:
     "@netflix/nerror" "^1.1.3"
     ansi "^0.3.1"
@@ -8515,10 +8515,10 @@ electron-window-state@~5.0:
     jsonfile "^4.0.0"
     mkdirp "^0.5.1"
 
-electron@~14.0.0-beta.8:
-  version "14.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-14.0.0-beta.8.tgz#55fb3d5146c55f08c23d0248b6f388e66dac9df3"
-  integrity sha512-vrHNeczkmO+kyi7yMlRVMbgp/GON1Qiit4YYDUdXk1AgsugxlFu3A7PHxekmdAlerZSfMB4hXOIz913timUhtw==
+electron@~14.0.0-beta.9:
+  version "14.0.0-beta.9"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-14.0.0-beta.9.tgz#93cea2bee5214649162a37e558be7b2331fcdfce"
+  integrity sha512-DxxWMDYhwmb1q2XK+PKBS13T4Dy3WxK3t/0kLemfzIfKYpX0WYfWrRNH6Jt07j/tjseT6qllmtXWzzkMTwGbBA==
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^14.6.2"

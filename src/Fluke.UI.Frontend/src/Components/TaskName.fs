@@ -6,7 +6,6 @@ open Feliz
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
-open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 
@@ -16,8 +15,8 @@ module TaskName =
 
     [<ReactComponent>]
     let TaskName (input: {| TaskId: TaskId |}) =
-        let ref = React.useElementRef ()
-        let hovered = Listener.useElementHover ref
+//        let ref = React.useElementRef ()
+//        let hovered = Listener.useElementHover ref
         let hasSelection = Store.useValue (Selectors.Task.hasSelection input.TaskId)
         let taskState = Store.useValue (Selectors.Task.taskState input.TaskId)
         let cellSize = Store.useValue Atoms.cellSize
@@ -69,15 +68,15 @@ module TaskName =
             (fun x ->
                 x.flex <- "1"
                 x.alignItems <- "center"
-                x.ref <- ref
+//                x.ref <- ref
                 x.position <- "relative"
                 x.height <- $"{cellSize}px")
             [
                 Chakra.box
                     (fun x ->
-                        x.backgroundColor <- if hovered then "#292929" else null
+//                        x.backgroundColor <- if hovered then "#292929" else null
                         x.color <- if hasSelection then "#ff5656" else null
-                        x.zIndex <- if hovered then 1 else 0
+//                        x.zIndex <- if hovered then 1 else 0
                         x.overflow <- "hidden"
                         x.paddingLeft <- "5px"
                         x.paddingRight <- "5px"
@@ -88,72 +87,72 @@ module TaskName =
                         //                        match taskState with
 //                        | Some taskState when taskState.Task.Name |> TaskName.Value <> "" ->
                         taskState.Task.Name |> TaskName.Value |> str
+
+                        if not isReadWrite then
+                            nothing
+                        else
+                            Menu.Menu
+                                {|
+                                    Tooltip = ""
+                                    Trigger =
+                                        InputLabelIconButton.InputLabelIconButton
+                                            {|
+                                                Props =
+                                                    fun x ->
+                                                        x.``as`` <- Chakra.react.MenuButton
+                                                        x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                                        x.fontSize <- "11px"
+                                                        x.height <- "15px"
+                                                        x.color <- "whiteAlpha.700"
+                                                        x.display <- if isReadWrite then null else "none"
+                                                        x.marginTop <- "-1px"
+                                                        x.marginLeft <- "6px"
+                                            |}
+                                    Body =
+                                        [
+                                            Chakra.menuItem
+                                                (fun x ->
+                                                    x.closeOnSelect <- true
+
+                                                    x.icon <-
+                                                        Icons.bs.BsPen
+                                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+
+                                                    x.onClick <- editTask)
+                                                [
+                                                    str "Edit Task"
+                                                ]
+
+                                            Chakra.menuItem
+                                                (fun x ->
+                                                    x.closeOnSelect <- true
+
+                                                    x.icon <-
+                                                        Icons.gi.GiHourglass
+                                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+
+                                                    x.onClick <- startSession)
+                                                [
+                                                    str "Start Session"
+                                                ]
+
+                                            Chakra.menuItem
+                                                (fun x ->
+                                                    x.closeOnSelect <- true
+                                                    x.isDisabled <- true
+
+                                                    x.icon <-
+                                                        Icons.bs.BsTrash
+                                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+
+                                                    x.onClick <- deleteTask)
+                                                [
+                                                    str "Delete Task"
+                                                ]
+                                        ]
+                                    MenuListProps = fun _ -> ()
+                                |}
                     ]
-
-                if not isReadWrite then
-                    nothing
-                else
-                    Menu.Menu
-                        {|
-                            Tooltip = ""
-                            Trigger =
-                                InputLabelIconButton.InputLabelIconButton
-                                    {|
-                                        Props =
-                                            fun x ->
-                                                x.``as`` <- Chakra.react.MenuButton
-                                                x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                                x.fontSize <- "11px"
-                                                x.height <- "15px"
-                                                x.color <- "whiteAlpha.700"
-                                                x.display <- if isReadWrite then null else "none"
-                                                x.marginTop <- "-1px"
-                                                x.marginLeft <- "6px"
-                                    |}
-                            Body =
-                                [
-                                    Chakra.menuItem
-                                        (fun x ->
-                                            x.closeOnSelect <- true
-
-                                            x.icon <-
-                                                Icons.bs.BsPen
-                                                |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                            x.onClick <- editTask)
-                                        [
-                                            str "Edit Task"
-                                        ]
-
-                                    Chakra.menuItem
-                                        (fun x ->
-                                            x.closeOnSelect <- true
-
-                                            x.icon <-
-                                                Icons.gi.GiHourglass
-                                                |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                            x.onClick <- startSession)
-                                        [
-                                            str "Start Session"
-                                        ]
-
-                                    Chakra.menuItem
-                                        (fun x ->
-                                            x.closeOnSelect <- true
-                                            x.isDisabled <- true
-
-                                            x.icon <-
-                                                Icons.bs.BsTrash
-                                                |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                            x.onClick <- deleteTask)
-                                        [
-                                            str "Delete Task"
-                                        ]
-                                ]
-                            MenuListProps = fun _ -> ()
-                        |}
 
 
                 //                match taskState.valueMaybe () with

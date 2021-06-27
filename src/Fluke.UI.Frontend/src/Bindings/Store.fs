@@ -79,18 +79,20 @@ module Store =
         setter (atom |> box |> unbox) value
 
     let inline selectAtom (atomPath: string, atom, selector) =
-            readSelector (atomPath, fun getter ->
-                let value = value getter atom
-                Profiling.addCount $"{atomPath} :selectAtom"
-                selector value
-                )
+//        readSelector (
+//            atomPath,
+//            fun getter ->
+//                let value = value getter atom
+//                Profiling.addCount $"{atomPath} :selectAtom"
+//                selector value
+//        )
 
-//            jotaiUtils.selectAtom
-//                atom
-//                (fun value ->
-//                    Profiling.addCount $"{atomPath} :selectAtom"
-//                    selector value)
-//                JS.undefined
+            jotaiUtils.selectAtom
+                atom
+                (fun value ->
+                    Profiling.addCount $"{atomPath} :selectAtom"
+                    selector value)
+                JS.undefined
 
     let inline selectAtomFamily (atomPath, atom, selector) =
         jotaiUtils.atomFamily (fun param -> selectAtom (atomPath, atom, selector param)) DeepEqual.compare
@@ -414,7 +416,7 @@ module Store =
                                 Fn = setInternalFromGun gunAtomNode setAtom
                             |}
 
-//                        Gun.subscribe
+                        //                        Gun.subscribe
 //                            gunAtomNode
 //                            (fun data ->
 //                                setInternalFromGun gunAtomNode setAtom (DateTime.Now.Ticks, data)

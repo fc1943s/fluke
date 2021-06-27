@@ -29,59 +29,70 @@ module Popover =
             )
 
         Chakra.box
-            (fun _ -> ())
+            (fun x ->
+                x.onClick <-
+                    fun _ ->
+                        promise {
+                            disclosure.onOpen ()
+                        })
             [
-                Chakra.popover
-                    (fun x ->
-                        x.isLazy <- true
+                if not disclosure.isOpen then
+                    input.Trigger
+                else
+                    Chakra.popover
+                        (fun x ->
+                            //                            x.isLazy <- true
 
-                        match input.Placement with
-                        | Some placement -> x.placement <- placement
-                        | None -> ()
+                            match input.Placement with
+                            | Some placement -> x.placement <- placement
+                            | None -> ()
 
-                        x.closeOnBlur <- true
-                        x.isOpen <- disclosure.isOpen
-                        x.onOpen <- disclosure.onOpen
-                        x.initialFocusRef <- initialFocusRef
-                        x.onClose <- fun x -> promise { disclosure.onClose x })
-                    [
-                        Chakra.popoverTrigger
-                            (fun _ -> ())
-                            [
-                                Chakra.box
-                                    (fun _ -> ())
-                                    [
-                                        input.Trigger
-                                    ]
-                            ]
-
-                        match content with
-                        | [ x ] when x = nothing -> nothing
-                        | content ->
-                            Chakra.popoverContent
-                                (fun x ->
-                                    x.width <- "auto"
-                                    x.borderRadius <- "0px")
+                            x.closeOnBlur <- true
+                            x.autoFocus <- true
+                            //                            x.computePositionOnMount <- false
+                            x.defaultIsOpen <- true
+                            x.initialFocusRef <- initialFocusRef
+                            x.isOpen <- disclosure.isOpen
+                            x.onOpen <- disclosure.onOpen
+                            x.onClose <- fun x -> promise { disclosure.onClose x })
+                        [
+                            Chakra.popoverTrigger
+                                (fun _ -> ())
                                 [
-                                    Chakra.popoverArrow (fun _ -> ()) []
-
-                                    if not input.CloseButton then
-                                        nothing
-                                    else
-                                        Chakra.popoverCloseButton (fun _ -> ()) []
-
-                                    Chakra.popoverBody
-                                        (fun x ->
-                                            x.padding <- input.Padding
-                                            x.backgroundColor <- "gray.13"
-                                            x.maxWidth <- "95vw"
-                                            x.maxHeight <- "95vh"
-                                            x.overflow <- "auto")
+                                    Chakra.box
+                                        (fun _ -> ())
                                         [
-                                            yield! content
+                                            input.Trigger
                                         ]
                                 ]
-                    ]
+
+                            match content with
+                            | [ x ] when x = nothing -> nothing
+                            | content ->
+                                Chakra.popoverContent
+                                    (fun x ->
+                                        x.width <- "auto"
+                                        x.borderRadius <- "0px")
+                                    [
+                                        Chakra.popoverArrow (fun _ -> ()) []
+
+                                        if not input.CloseButton then
+                                            nothing
+                                        else
+                                            Chakra.popoverCloseButton (fun _ -> ()) []
+
+                                        Chakra.popoverBody
+                                            (fun x ->
+                                                x.padding <- input.Padding
+                                                x.backgroundColor <- "gray.13"
+                                                x.maxWidth <- "95vw"
+                                                x.maxHeight <- "95vh"
+                                                x.overflow <- "auto")
+                                            [
+                                                yield! content
+                                            ]
+                                    ]
+                        ]
             ]
 
     let inline Popover

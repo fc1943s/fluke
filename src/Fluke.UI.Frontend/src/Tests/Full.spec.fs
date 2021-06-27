@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Tests
 
+open System
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 
 
@@ -56,6 +58,12 @@ module Full =
                 .click (Some {| force = false |})
             |> ignore
 
+        let clickSelectorChildFromText text selector =
+            (Cy.contains text None)
+                .find(selector)
+                .click (Some {| force = false |})
+            |> ignore
+
         let clickSelector selector = (Cy.get selector).click None |> ignore
 
         let waitForWithinSelector selector text options =
@@ -103,7 +111,7 @@ module Full =
                     Cy2.selectorFocusTypeText "input[placeholder='Confirm Password']" password
                     Cy2.clickText "Confirm"
 
-                    Cy.wait 500
+                    Cy.wait 1000
 
                     Cy2.waitFor "User registered successfully" None
 
@@ -119,18 +127,15 @@ module Full =
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
-                    (Cy.contains dbName None)
-                        .find(".chakra-button")
-                        .click (Some {| force = false |})
-                    |> ignore
+                    Cy2.clickSelectorChildFromText dbName ".chakra-button"
 
                     //                    Cy.wait 400
 
-                    Cy.wait 2000
+                    //                    Cy.wait 2000
 
                     Cy2.clickText "Add Task"
 
-//                    Cy.wait 5000
+                    //                    Cy.wait 5000
 
                     Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Select..."
 
@@ -156,7 +161,7 @@ module Full =
 
                     Cy2.clickTextWithinSelector "[data-testid=InformationSelector]" "Save"
 
-//                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" "Select..." (Some {| timeout = timeout |})
+                    //                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" "Select..." (Some {| timeout = timeout |})
 //                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" dbName (Some {| timeout = timeout |})
 //                    Cy.wait 3000
 //                    Cy.wait 3000
@@ -165,20 +170,17 @@ module Full =
 
                     Cy2.clickText "Save"
 
-                    Cy.wait 200
+                    //                    Cy.wait 200
 
-                    (Cy.contains dbName None)
-                        .find(".chakra-button")
-                        .click (Some {| force = false |})
-                    |> ignore
+                    Cy2.clickSelectorChildFromText dbName ".chakra-button"
 
-                    Cy.wait 2000
+                    //                    Cy.wait 2000
 
                     Cy2.clickText "Edit Database"
 
                     Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
 
-                    Cy.wait 200
+                    //                    Cy.wait 200
 
                     Cy2.clickText "Save"
 
@@ -188,16 +190,35 @@ module Full =
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})
 
+                    Cy2.clickSelectorChildFromText taskName ".chakra-button"
+                    Cy2.clickText "Start Session"
+                    Cy2.waitFor $"Session: 1 active ({taskName})" (Some {| timeout = timeout |})
+
                     Cy2.clickText "Habit Tracker View"
                     Cy.wait 200
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
+
+                    Cy2.clickSelectorChildFromText taskName ".chakra-button"
+                    Cy2.clickText "Edit Task"
+
+                    Cy2.clickSelectorChildFromText
+                        (DateTime.Now
+                         |> FlukeDate.FromDateTime
+                         |> FlukeDate.Stringify)
+                        ".chakra-button"
+
+                    Cy2.clickText "Delete Session"
+
                     Cy2.waitFor "0 of 1 visible" (Some {| timeout = timeout |})
 
                     Cy2.clickText "Priority View"
                     Cy.wait 200
+
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 
                     Cy2.clickText "Bullet Journal View"
                     Cy.wait 200
+
                     Cy2.waitFor "0 of 1 visible" (Some {| timeout = timeout |})
 
                     Cy.visit homeUrl))

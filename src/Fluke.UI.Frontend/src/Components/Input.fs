@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fable.Core.JsInterop
 open System
 open Browser.Types
 open Fable.React
@@ -126,11 +125,16 @@ module Input =
                 | _ ->
                     inputRef.current.value <- currentValueString
 
+                    if props.autoFocus then
+                        promise { inputRef.current.focus () }
+                        |> Promise.start
+
                     if not mounted then
                         setMounted true
                         if customProps.atom.IsSome then fireChange () |> Promise.start),
             [|
                 box fireChange
+                box props
                 box customProps
                 box inputRef
                 box currentValueString
@@ -209,6 +213,8 @@ module Input =
                                 x.onChange <- onChange
                                 x.ref <- inputRef
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
+
+                                if customProps.textarea then x.paddingTop <- "6px"
 
                                 x.onKeyDown <-
                                     fun (e: KeyboardEvent) ->
@@ -316,11 +322,17 @@ module Input =
                    CustomProps: IProps<'TValue, 'TKey> -> unit
                    Props: Chakra.IChakraProps -> unit |})
         =
-        Chakra.inputGroup
-            (fun x -> x.display <- "flex")
+        Chakra.flex
+            (fun x ->
+                x.flex <- "1"
+                x.position <- "relative")
             [
-                Chakra.inputLeftElement
-                    (fun x -> x.zIndex <- 0)
+                Chakra.box
+                    (fun x ->
+                        x.zIndex <- 0
+                        x.position <- "absolute"
+                        x.left <- "9px"
+                        x.top <- "9px")
                     [
                         input.Icon
                     ]

@@ -80,6 +80,8 @@ type DatabaseNodeMenu () =
 
                         Chakra.menuItem
                             (fun x ->
+                                x.closeOnSelect <- true
+
                                 x.icon <-
                                     Icons.fi.FiCopy
                                     |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
@@ -92,6 +94,8 @@ type DatabaseNodeMenu () =
 
                         Chakra.menuItem
                             (fun x ->
+                                x.closeOnSelect <- true
+
                                 x.icon <-
                                     Icons.bi.BiExport
                                     |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
@@ -103,6 +107,8 @@ type DatabaseNodeMenu () =
 
                         Chakra.menuItem
                             (fun x ->
+                                x.closeOnSelect <- true
+
                                 x.icon <-
                                     Icons.bs.BsTrash
                                     |> Icons.renderChakra (fun x -> x.fontSize <- "13px")

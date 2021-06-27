@@ -168,7 +168,7 @@ module CellForm =
                                             ]
 
                                         Chakra.flex
-                                            (fun _ -> ())
+                                            (fun x -> x.alignItems <- "flex-end")
                                             [
                                                 Input.LeftIconInput
                                                     {|
@@ -182,6 +182,7 @@ module CellForm =
                                                             fun x ->
                                                                 x.placeholder <- "Add Attachment"
                                                                 x.autoFocus <- true
+                                                                x.maxHeight <- "200px"
                                                                 x.borderBottomRightRadius <- "0"
                                                                 x.borderTopRightRadius <- "0"
 
@@ -225,9 +226,11 @@ module CellForm =
     let CellFormWrapper () =
         let cellUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Cell)
 
+        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
+
         let taskId, dateId =
             match cellUIFlag with
-            | Atoms.UIFlag.Cell (taskId, dateId) -> Some taskId, Some dateId
+            | Atoms.UIFlag.Cell (taskId, dateId) when selectedTaskIdSet.Contains taskId -> Some taskId, Some dateId
             | _ -> None, None
 
         match taskId, dateId with

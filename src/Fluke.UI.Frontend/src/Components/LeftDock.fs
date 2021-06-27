@@ -52,6 +52,7 @@ module LeftDock =
                                                 fun x ->
                                                     x.flex <- "1"
                                                     x.padding <- "10px"
+                                                    x.paddingLeft <- "0"
                                                     x.paddingTop <- "3px"
                                                     x.overflowY <- "auto"
                                                     x.flexBasis <- 0
@@ -110,7 +111,9 @@ module LeftDock =
                                                                 })
                                                     [
                                                         Chakra.menuItemOption
-                                                            (fun x -> x.value <- nameof Atoms.hideTemplates)
+                                                            (fun x ->
+                                                                x.closeOnSelect <- true
+                                                                x.value <- nameof Atoms.hideTemplates)
                                                             [
                                                                 str "Hide Templates"
                                                             ]
@@ -136,15 +139,18 @@ module LeftDock =
 
 
         Chakra.flex
-            (fun x -> x.overflow <- "auto")
+            (fun _ -> ())
             [
                 Chakra.box
                     (fun x ->
                         x.width <- "24px"
-                        x.position <- "relative")
+                        x.position <- "relative"
+                        x.margin <- "1px")
                     [
-                        Chakra.flex
+                        Chakra.stack
                             (fun x ->
+                                x.spacing <- "1px"
+                                x.direction <- "row"
                                 x.right <- "0"
                                 x.position <- "absolute"
                                 x.transform <- "rotate(-90deg) translate(0, -100%)"

@@ -55,9 +55,11 @@ module Chakra =
         abstract color : string with get, set
         abstract colorScheme : string with get, set
         abstract columns : int with get, set
+        abstract computePositionOnMount : bool with get, set
         abstract content : string with get, set
         abstract cursor : string with get, set
         abstract defaultIndex : int [] with get, set
+        abstract defaultIsOpen : bool with get, set
         abstract defaultValue : obj with get, set
         abstract direction : string with get, set
         abstract disabled : bool with get, set
@@ -102,7 +104,7 @@ module Chakra =
         abstract onClick : (MouseEvent -> JS.Promise<unit>) with get, set
         abstract onClose : (unit -> JS.Promise<unit>) with get, set
         abstract onKeyDown : (KeyboardEvent -> JS.Promise<unit>) with get, set
-        abstract onOpen : (unit -> JS.Promise<unit>) with get, set
+        abstract onOpen : (unit -> unit) with get, set
         abstract opacity : float with get, set
         abstract overflow : string with get, set
         abstract overflowX : string with get, set
@@ -115,6 +117,7 @@ module Chakra =
         abstract placeContent : string with get, set
         abstract placeholder : string with get, set
         abstract placement : string with get, set
+        abstract portalProps : {| appendToParentPortal: bool |} with get, set
         abstract position : string with get, set
         abstract preventOverflow : bool with get, set
         abstract ref : IRefValue<_> with get, set
@@ -148,7 +151,7 @@ module Chakra =
     type Disclosure =
         {
             isOpen: bool
-            onOpen: unit -> JS.Promise<unit>
+            onOpen: unit -> unit
             onClose: unit -> unit
         }
 

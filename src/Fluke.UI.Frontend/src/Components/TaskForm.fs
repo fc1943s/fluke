@@ -42,13 +42,18 @@ module TaskForm =
 
         let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.uiFlag Atoms.UIFlagType.Task)
 
+        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
+
         let taskDatabaseId =
             React.useMemo (
                 (fun () ->
                     match taskUIFlag with
-                    | Atoms.UIFlag.Task (databaseId, taskId) when taskId = input.TaskId -> databaseId
+                    | Atoms.UIFlag.Task (databaseId, taskId) when
+                        taskId = input.TaskId
+                        && selectedTaskIdSet.Contains taskId -> databaseId
                     | _ -> Database.Default.Id),
                 [|
+                    box selectedTaskIdSet
                     box taskUIFlag
                     box input.TaskId
                 |]
@@ -227,47 +232,52 @@ module TaskForm =
                                                         (fun _ -> ())
                                                         [
                                                             str (start |> FlukeDateTime.Stringify)
-                                                        ]
 
-                                                    Menu.Menu
-                                                        {|
-                                                            Tooltip = ""
-                                                            Trigger =
-                                                                InputLabelIconButton.InputLabelIconButton
-                                                                    {|
-                                                                        Props =
-                                                                            fun x ->
-                                                                                x.``as`` <- Chakra.react.MenuButton
+                                                            Menu.Menu
+                                                                {|
+                                                                    Tooltip = ""
+                                                                    Trigger =
+                                                                        InputLabelIconButton.InputLabelIconButton
+                                                                            {|
+                                                                                Props =
+                                                                                    fun x ->
+                                                                                        x.``as`` <-
+                                                                                            Chakra.react.MenuButton
 
-                                                                                x.icon <-
-                                                                                    Icons.bs.BsThreeDots |> Icons.render
+                                                                                        x.icon <-
+                                                                                            Icons.bs.BsThreeDots
+                                                                                            |> Icons.render
 
-                                                                                x.fontSize <- "11px"
-                                                                                x.height <- "15px"
-                                                                                x.color <- "whiteAlpha.700"
-                                                                                x.marginTop <- "-1px"
-                                                                                x.marginLeft <- "6px"
-                                                                    |}
-                                                            Body =
-                                                                [
-                                                                    Chakra.menuItem
-                                                                        (fun x ->
-                                                                            x.closeOnSelect <- true
-
-                                                                            x.icon <-
-                                                                                Icons.bs.BsTrash
-                                                                                |> Icons.renderChakra
-                                                                                    (fun x -> x.fontSize <- "13px")
-
-                                                                            x.onClick <-
-                                                                                fun _ ->
-                                                                                    promise { do! deleteSession start })
+                                                                                        x.fontSize <- "11px"
+                                                                                        x.height <- "15px"
+                                                                                        x.color <- "whiteAlpha.700"
+                                                                                        x.marginTop <- "-1px"
+                                                                                        x.marginLeft <- "6px"
+                                                                            |}
+                                                                    Body =
                                                                         [
-                                                                            str "Delete Session"
+                                                                            Chakra.menuItem
+                                                                                (fun x ->
+                                                                                    x.closeOnSelect <- true
+
+                                                                                    x.icon <-
+                                                                                        Icons.bs.BsTrash
+                                                                                        |> Icons.renderChakra
+                                                                                            (fun x ->
+                                                                                                x.fontSize <- "13px")
+
+                                                                                    x.onClick <-
+                                                                                        fun _ ->
+                                                                                            promise {
+                                                                                                do! deleteSession start
+                                                                                            })
+                                                                                [
+                                                                                    str "Delete Session"
+                                                                                ]
                                                                         ]
-                                                                ]
-                                                            MenuListProps = fun _ -> ()
-                                                        |}
+                                                                    MenuListProps = fun _ -> ()
+                                                                |}
+                                                        ]
                                                 ])
                         ]
             ]

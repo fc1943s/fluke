@@ -145,8 +145,8 @@ module CellMenu =
                                         (fun () ->
                                             promise {
                                                 setRightDock (Some TempUI.DockType.Cell)
-
                                                 setCellUIFlag (Atoms.UIFlag.Cell (input.TaskId, input.DateId))
+                                                input.OnClose ()
                                             }))
                             ]
 

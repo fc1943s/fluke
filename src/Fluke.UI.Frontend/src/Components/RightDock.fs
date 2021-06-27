@@ -25,9 +25,12 @@ module RightDock =
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
         let hydrateTaskState = Hydrate.useHydrateTaskState ()
 
+        let selectedDatabaseIdSet = Store.useValue Atoms.selectedDatabaseIdSet
+        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
+
         let taskDatabaseId =
             match taskUIFlag with
-            | Atoms.UIFlag.Task (databaseId, _) -> databaseId
+            | Atoms.UIFlag.Task (databaseId, _) when selectedDatabaseIdSet.Contains databaseId -> databaseId
             | _ -> Database.Default.Id
 
         let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
@@ -53,7 +56,8 @@ module RightDock =
                                         [
                                             let databaseId =
                                                 match databaseUIFlag with
-                                                | Atoms.UIFlag.Database databaseId -> databaseId
+                                                | Atoms.UIFlag.Database databaseId when
+                                                    selectedDatabaseIdSet.Contains databaseId -> databaseId
                                                 | _ -> Database.Default.Id
 
                                             DatabaseForm.DatabaseForm
@@ -112,7 +116,8 @@ module RightDock =
                                         [
                                             let taskId =
                                                 match taskUIFlag with
-                                                | Atoms.UIFlag.Task (_, taskId) -> taskId
+                                                | Atoms.UIFlag.Task (_, taskId) when selectedTaskIdSet.Contains taskId ->
+                                                    taskId
                                                 | _ -> Task.Default.Id
 
                                             TaskForm.TaskForm
@@ -172,6 +177,8 @@ module RightDock =
                     box databaseUIFlag
                     box hydrateDatabase
                     box hydrateTaskState
+                    box selectedTaskIdSet
+                    box selectedDatabaseIdSet
                     box setDatabaseIdSet
                     box setRightDock
                     box setTaskIdSet
@@ -245,10 +252,13 @@ module RightDock =
                 Chakra.box
                     (fun x ->
                         x.width <- "24px"
-                        x.position <- "relative")
+                        x.position <- "relative"
+                        x.margin <- "1px")
                     [
-                        Chakra.flex
+                        Chakra.stack
                             (fun x ->
+                                x.spacing <- "1px"
+                                x.direction <- "row"
                                 x.left <- "0"
                                 x.position <- "absolute"
                                 x.transform <- "rotate(90deg) translate(-24px, 0%)"

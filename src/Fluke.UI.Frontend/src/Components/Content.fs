@@ -41,15 +41,15 @@ module Content =
                                     (fun x ->
                                         x.spacing <- "0"
                                         x.flex <- "1"
-                                        x.borderWidth <- "1px"
-                                        x.borderColor <- "whiteAlpha.300"
                                         x.maxWidth <- "100vw")
                                     [
 
                                         TopBar.TopBar ()
 
                                         Chakra.flex
-                                            (fun x -> x.flex <- "1")
+                                            (fun x ->
+                                                x.flex <- "1"
+                                                x.overflow <- "auto")
                                             [
                                                 React.suspense (
                                                     [
