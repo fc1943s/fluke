@@ -23,15 +23,15 @@ module CellStatusUserIndicator =
                 x._after <-
                     (JS.newObj
                         (fun x ->
-                            x.borderBottomWidth <- "8px"
 
                             x.borderBottomColor <-
                                 match color with
                                 | String.ValidString color -> color
                                 | _ -> "#000000"
 
-                            x.borderLeftWidth <- "8px"
+                            x.borderBottomWidth <- $"{min (cellSize / 2) 10}px"
                             x.borderLeftColor <- "transparent"
+                            x.borderLeftWidth <- $"{min (cellSize / 2) 10}px"
                             x.position <- "absolute"
                             x.content <- "\"\""
                             x.bottom <- "0"

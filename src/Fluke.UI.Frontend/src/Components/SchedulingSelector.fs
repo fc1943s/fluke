@@ -46,7 +46,7 @@ module SchedulingSelector =
                     (fun x ->
                         x.colorScheme <- "purple"
                         x.size <- "lg"
-                        x.value <- value |> Gun.jsonEncode
+                        x.value <- value |> Json.encode
                         x.flexDirection <- flexDirection)
                     []
                 Chakra.box
@@ -517,7 +517,7 @@ module SchedulingSelector =
                                         x.onChange <-
                                             fun (radioValueSelected: string) ->
                                                 promise {
-                                                    let yearlySelected = radioValueSelected |> Gun.jsonDecode
+                                                    let yearlySelected = radioValueSelected |> Json.decode
 
                                                     match yearlySelected with
                                                     | Some (i, day, month) ->
@@ -549,7 +549,7 @@ module SchedulingSelector =
                                             match row with
                                             | Some yearly -> yearly
                                             | _ -> None
-                                            |> Gun.jsonEncode)
+                                            |> Json.encode)
                                     [
                                         Chakra.stack
                                             (fun _ -> ())
@@ -623,8 +623,8 @@ module SchedulingSelector =
         let weekStart = Store.useValue Atoms.weekStart
 
         let schedulingFieldOptions =
-            Store.useAtomFieldOptions
-                (Some (Store.InputAtom (Store.AtomPath.Atom (Atoms.Task.scheduling input.TaskId))))
+            Store.Hooks.useAtomFieldOptions
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling input.TaskId))))
                 (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
 
         Chakra.box
@@ -675,11 +675,11 @@ module SchedulingSelector =
                                                 fun (radioValueSelected: string) ->
                                                     promise {
                                                         schedulingFieldOptions.SetAtomValue (
-                                                            radioValueSelected |> Gun.jsonDecode
+                                                            radioValueSelected |> Json.decode
                                                         )
                                                     }
 
-                                            x.value <- schedulingFieldOptions.AtomValue |> Gun.jsonEncode)
+                                            x.value <- schedulingFieldOptions.AtomValue |> Json.encode)
                                         [
                                             Chakra.stack
                                                 (fun x ->

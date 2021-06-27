@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend
 
 #nowarn "40"
 
+open Fable.Core.JsInterop
 open System
 open Fluke.Shared
 open Fluke.Shared.Domain
@@ -48,7 +49,7 @@ module State =
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
 
-        let rec debug = Store.atomWithStorage $"{nameof debug}" (JS.isDebug ())
+        let rec debug = Store.atomWithStorage $"{nameof debug}" (JS.isDebug ()) id
 
         let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
         let rec initialPeerSkipped = Store.atom ($"{nameof initialPeerSkipped}", false)
@@ -367,14 +368,14 @@ module State =
         let rec dateSequence =
             Store.readSelector (
                 $"{nameof dateSequence}",
-                (fun get ->
-                    let position = Atoms.getAtomValue get Atoms.position
+                (fun getter ->
+                    let position = Store.value getter Atoms.position
 
                     match position with
                     | Some position ->
-                        let daysBefore = Atoms.getAtomValue get Atoms.daysBefore
-                        let daysAfter = Atoms.getAtomValue get Atoms.daysAfter
-                        let dayStart = Atoms.getAtomValue get Atoms.dayStart
+                        let daysBefore = Store.value getter Atoms.daysBefore
+                        let daysAfter = Store.value getter Atoms.daysAfter
+                        let dayStart = Store.value getter Atoms.dayStart
                         let dateId = dateId dayStart position
                         let (DateId referenceDay) = dateId
 
@@ -387,27 +388,27 @@ module State =
         let rec taskIdMap =
             Store.readSelector (
                 $"{nameof taskIdMap}",
-                (fun get ->
+                (fun getter ->
                     let databaseIdArray =
-                        Atoms.getAtomValue get Atoms.databaseIdSet
+                        Store.value getter Atoms.databaseIdSet
                         |> Set.toArray
 
                     databaseIdArray
                     |> Array.map Atoms.Database.taskIdSet
                     |> Store.waitForAll
-                    |> Atoms.getAtomValue get
+                    |> Store.value getter
                     |> Array.mapi (fun i taskIdSet -> databaseIdArray.[i], taskIdSet)
                     |> Map.ofArray)
             )
 
-        let rec deviceInfo = Store.readSelector ($"{nameof deviceInfo}", (fun _getter -> JS.deviceInfo))
+        let rec deviceInfo = Store.readSelector ($"{nameof deviceInfo}", (fun _ -> JS.deviceInfo))
 
 
         module rec Database =
             //            let rec taskIdSet =
 //                Store.readSelectorFamily (
 //                    $"{nameof Database}/{nameof taskIdSet}",
-//                    (fun (databaseId: DatabaseId) get ->
+//                    (fun (databaseId: DatabaseId) getter ->
 //                        //                        let taskIdSet = getter.get (Atoms.Session.taskIdSet username)
 ////
 ////                        taskIdSet
@@ -416,32 +417,32 @@ module State =
 ////                                let databaseId' = getter.get (Atoms.Task.databaseId taskId)
 ////                                databaseId' = databaseId)
 //
-//                        Atoms.getAtomValue get (Atoms.Database.taskIdSet databaseId))
+//                        Store.value getter (Atoms.Database.taskIdSet databaseId))
 //                )
 
             let rec database =
                 Store.readSelectorFamily (
                     $"{nameof Database}/{nameof database}",
-                    (fun (databaseId: DatabaseId) get ->
+                    (fun (databaseId: DatabaseId) getter ->
                         {
                             Id = databaseId
-                            Name = Atoms.getAtomValue get (Atoms.Database.name databaseId)
-                            Owner = Atoms.getAtomValue get (Atoms.Database.owner databaseId)
-                            SharedWith = Atoms.getAtomValue get (Atoms.Database.sharedWith databaseId)
-                            Position = Atoms.getAtomValue get (Atoms.Database.position databaseId)
+                            Name = Store.value getter (Atoms.Database.name databaseId)
+                            Owner = Store.value getter (Atoms.Database.owner databaseId)
+                            SharedWith = Store.value getter (Atoms.Database.sharedWith databaseId)
+                            Position = Store.value getter (Atoms.Database.position databaseId)
                         })
                 )
 
             let rec isReadWrite =
                 Store.readSelectorFamily (
                     $"{nameof Database}/{nameof isReadWrite}",
-                    (fun (databaseId: DatabaseId) get ->
-                        let username = Atoms.getAtomValue get Atoms.username
+                    (fun (databaseId: DatabaseId) getter ->
+                        let username = Store.value getter Store.Atoms.username
 
                         let access =
                             match username with
                             | Some username ->
-                                let database = Atoms.getAtomValue get (database databaseId)
+                                let database = Store.value getter (database databaseId)
 
                                 if username <> Templates.templatesUser.Username
                                    && database.Owner = Templates.templatesUser.Username then
@@ -458,9 +459,9 @@ module State =
             let rec attachment =
                 Store.readSelectorFamily (
                     $"{nameof Attachment}/{nameof attachment}",
-                    (fun (attachmentId: AttachmentId) get ->
-                        let timestamp = Atoms.getAtomValue get (Atoms.Attachment.timestamp attachmentId)
-                        let attachment = Atoms.getAtomValue get (Atoms.Attachment.attachment attachmentId)
+                    (fun (attachmentId: AttachmentId) getter ->
+                        let timestamp = Store.value getter (Atoms.Attachment.timestamp attachmentId)
+                        let attachment = Store.value getter (Atoms.Attachment.attachment attachmentId)
 
                         match timestamp, attachment with
                         | Some timestamp, Some attachment -> Some (timestamp, attachment)
@@ -472,14 +473,14 @@ module State =
             let rec attachments =
                 Store.readSelectorFamily (
                     $"{nameof Information}/{nameof attachments}",
-                    (fun (information: Information) get ->
-                        Atoms.getAtomValue get Atoms.informationAttachmentMap
+                    (fun (information: Information) getter ->
+                        Store.value getter Atoms.informationAttachmentMap
                         |> Map.tryFind information
                         |> Option.defaultValue Set.empty
                         |> Set.toArray
                         |> Array.map Attachment.attachment
                         |> Store.waitForAll
-                        |> Atoms.getAtomValue get
+                        |> Store.value getter
                         |> Array.toList
                         |> List.choose id)
                 )
@@ -487,10 +488,10 @@ module State =
             let rec informationState =
                 Store.readSelectorFamily (
                     $"{nameof Information}/{nameof informationState}",
-                    (fun (information: Information) get ->
+                    (fun (information: Information) getter ->
                         {
                             Information = information
-                            Attachments = Atoms.getAtomValue get (attachments information)
+                            Attachments = Store.value getter (attachments information)
                             SortList = []
                         })
                 )
@@ -500,42 +501,42 @@ module State =
             let rec task =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof task}",
-                    (fun (taskId: TaskId) get ->
+                    (fun (taskId: TaskId) getter ->
                         {
                             Id = taskId
-                            Name = Atoms.getAtomValue get (Atoms.Task.name taskId)
-                            Information = Atoms.getAtomValue get (Atoms.Task.information taskId)
-                            PendingAfter = Atoms.getAtomValue get (Atoms.Task.pendingAfter taskId)
-                            MissedAfter = Atoms.getAtomValue get (Atoms.Task.missedAfter taskId)
-                            Scheduling = Atoms.getAtomValue get (Atoms.Task.scheduling taskId)
-                            Priority = Atoms.getAtomValue get (Atoms.Task.priority taskId)
-                            Duration = Atoms.getAtomValue get (Atoms.Task.duration taskId)
+                            Name = Store.value getter (Atoms.Task.name taskId)
+                            Information = Store.value getter (Atoms.Task.information taskId)
+                            PendingAfter = Store.value getter (Atoms.Task.pendingAfter taskId)
+                            MissedAfter = Store.value getter (Atoms.Task.missedAfter taskId)
+                            Scheduling = Store.value getter (Atoms.Task.scheduling taskId)
+                            Priority = Store.value getter (Atoms.Task.priority taskId)
+                            Duration = Store.value getter (Atoms.Task.duration taskId)
                         })
                 )
 
             let rec taskState =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof taskState}",
-                    (fun (taskId: TaskId) get ->
-                        let task = Atoms.getAtomValue get (task taskId)
-                        let dateSequence = Atoms.getAtomValue get dateSequence
-                        let statusMap = Atoms.getAtomValue get (Atoms.Task.statusMap taskId)
-                        let sessions = Atoms.getAtomValue get (Atoms.Task.sessions taskId)
-                        let attachmentIdSet = Atoms.getAtomValue get (Atoms.Task.attachmentIdSet taskId)
-                        let cellAttachmentMap = Atoms.getAtomValue get (Atoms.Task.cellAttachmentMap taskId)
+                    (fun (taskId: TaskId) getter ->
+                        let task = Store.value getter (task taskId)
+                        let dateSequence = Store.value getter dateSequence
+                        let statusMap = Store.value getter (Atoms.Task.statusMap taskId)
+                        let sessions = Store.value getter (Atoms.Task.sessions taskId)
+                        let attachmentIdSet = Store.value getter (Atoms.Task.attachmentIdSet taskId)
+                        let cellAttachmentMap = Store.value getter (Atoms.Task.cellAttachmentMap taskId)
 
                         let attachments =
                             attachmentIdSet
                             |> Set.toArray
                             |> Array.map Attachment.attachment
                             |> Store.waitForAll
-                            |> Atoms.getAtomValue get
+                            |> Store.value getter
                             |> Array.toList
                             |> List.choose id
                             |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
 
                         let cellStateMapWithoutStatus =
-                            let dayStart = Atoms.getAtomValue get Atoms.dayStart
+                            let dayStart = Store.value getter Atoms.dayStart
 
                             dateSequence
                             |> List.map DateId
@@ -561,14 +562,14 @@ module State =
                                                 attachmentIdArray
                                                 |> Array.map Atoms.Attachment.timestamp
                                                 |> Store.waitForAll
-                                                |> Atoms.getAtomValue get
+                                                |> Store.value getter
                                                 |> Array.toList
 
                                             let attachmentArray =
                                                 attachmentIdArray
                                                 |> Array.map Atoms.Attachment.attachment
                                                 |> Store.waitForAll
-                                                |> Atoms.getAtomValue get
+                                                |> Store.value getter
 
                                             timestampList
                                             |> List.mapi
@@ -621,11 +622,11 @@ module State =
             let rec statusMap =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof statusMap}",
-                    (fun (taskId: TaskId) get ->
-                        let position = Atoms.getAtomValue get Atoms.position
-                        let taskState = Atoms.getAtomValue get (taskState taskId)
-                        let dateSequence = Atoms.getAtomValue get dateSequence
-                        let dayStart = Atoms.getAtomValue get Atoms.dayStart
+                    (fun (taskId: TaskId) getter ->
+                        let position = Store.value getter Atoms.position
+                        let taskState = Store.value getter (taskState taskId)
+                        let dateSequence = Store.value getter dateSequence
+                        let dayStart = Store.value getter Atoms.dayStart
 
                         match position with
                         | Some position when not dateSequence.IsEmpty ->
@@ -634,11 +635,10 @@ module State =
                 )
 
             let rec databaseId =
-                Store.selectorFamily (
+                Store.selectAtomFamily (
                     $"{nameof Task}/{nameof databaseId}",
-                    (fun (taskId: TaskId) get ->
-                        let taskIdMap = Atoms.getAtomValue get taskIdMap
-
+                    taskIdMap,
+                    (fun (taskId: TaskId) taskIdMap ->
                         let databaseIdList =
                             taskIdMap
                             |> Map.filter (fun _ taskIdSet -> taskIdSet.Contains taskId)
@@ -648,30 +648,23 @@ module State =
                         match databaseIdList with
                         | [] -> Database.Default.Id
                         | [ databaseId ] -> databaseId
-                        | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdList})"),
-                    (fun (taskId: TaskId) get set newValue ->
-                        let databaseId = Atoms.getAtomValue get (databaseId taskId)
-
-                        if databaseId <> newValue then
-                            Atoms.setAtomValuePrev set (Atoms.Database.taskIdSet databaseId) (Set.remove taskId)
-
-                        Atoms.setAtomValuePrev set (Atoms.Database.taskIdSet newValue) (Set.add taskId))
+                        | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdList})")
                 )
 
             let rec isReadWrite =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof isReadWrite}",
-                    (fun (taskId: TaskId) get ->
-                        let databaseId = Atoms.getAtomValue get (databaseId taskId)
-                        Atoms.getAtomValue get (Database.isReadWrite databaseId))
+                    (fun (taskId: TaskId) getter ->
+                        let databaseId = Store.value getter (databaseId taskId)
+                        Store.value getter (Database.isReadWrite databaseId))
                 )
 
             let rec lastSession =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof lastSession}",
-                    (fun (taskId: TaskId) get ->
-                        let dateSequence = Atoms.getAtomValue get dateSequence
-                        let taskState = Atoms.getAtomValue get (taskState taskId)
+                    (fun (taskId: TaskId) getter ->
+                        let dateSequence = Store.value getter dateSequence
+                        let taskState = Store.value getter (taskState taskId)
 
                         dateSequence
                         |> List.rev
@@ -688,14 +681,14 @@ module State =
             let rec activeSession =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof activeSession}",
-                    (fun (taskId: TaskId) get ->
-                        let position = Atoms.getAtomValue get Atoms.position
-                        let lastSession = Atoms.getAtomValue get (lastSession taskId)
+                    (fun (taskId: TaskId) getter ->
+                        let position = Store.value getter Atoms.position
+                        let lastSession = Store.value getter (lastSession taskId)
 
                         match position, lastSession with
                         | Some position, Some lastSession ->
-                            let sessionDuration = Atoms.getAtomValue get Atoms.sessionDuration
-                            let sessionBreakDuration = Atoms.getAtomValue get Atoms.sessionBreakDuration
+                            let sessionDuration = Store.value getter Atoms.sessionDuration
+                            let sessionBreakDuration = Store.value getter Atoms.sessionBreakDuration
 
                             let (Session start) = lastSession
 
@@ -718,8 +711,8 @@ module State =
             let rec showUser =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof showUser}",
-                    (fun (taskId: TaskId) get ->
-                        let taskState = Atoms.getAtomValue get (taskState taskId)
+                    (fun (taskId: TaskId) getter ->
+                        let taskState = Store.value getter (taskState taskId)
 
                         let usersCount =
                             taskState.CellStateMap
@@ -737,35 +730,36 @@ module State =
             let rec hasSelection =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof hasSelection}",
-                    (fun (taskId: TaskId) get ->
-                        let dateSequence = Atoms.getAtomValue get dateSequence
-                        let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet taskId)
+                    (fun (taskId: TaskId) getter ->
+                        let dateSequence = Store.value getter dateSequence
+                        let selectionSet = Store.value getter (Atoms.Task.selectionSet taskId)
 
                         dateSequence
                         |> List.exists (DateId >> selectionSet.Contains))
                 )
 
+
         module rec Cell =
             let rec sessionStatus =
                 Store.selectorFamily (
                     $"{nameof Cell}/{nameof sessionStatus}",
-                    (fun (taskId: TaskId, dateId: DateId) get ->
-                        let hideSchedulingOverlay = Atoms.getAtomValue get Atoms.hideSchedulingOverlay
+                    (fun (taskId: TaskId, dateId: DateId) getter ->
+                        let hideSchedulingOverlay = Store.value getter Atoms.hideSchedulingOverlay
 
                         if hideSchedulingOverlay then
-                            Atoms.getAtomValue get (Atoms.Task.statusMap taskId)
+                            Store.value getter (Atoms.Task.statusMap taskId)
                             |> Map.tryFind dateId
                             |> Option.map UserStatus
                             |> Option.defaultValue Disabled
                         else
-                            Atoms.getAtomValue get (Task.statusMap taskId)
+                            Store.value getter (Task.statusMap taskId)
                             |> Map.tryFind dateId
                             |> Option.defaultValue Disabled),
-                    (fun (taskId: TaskId, dateId: DateId) get set newValue ->
-                        let statusMap = Atoms.getAtomValue get (Atoms.Task.statusMap taskId)
+                    (fun (taskId: TaskId, dateId: DateId) getter setter newValue ->
+                        let statusMap = Store.value getter (Atoms.Task.statusMap taskId)
 
-                        Atoms.setAtomValue
-                            set
+                        Store.set
+                            setter
                             (Atoms.Task.statusMap taskId)
                             (match newValue with
                              | UserStatus (username, status) -> statusMap |> Map.add dateId (username, status)
@@ -775,12 +769,12 @@ module State =
             let rec selected =
                 Store.selectorFamily (
                     $"{nameof Cell}/{nameof selected}",
-                    (fun (taskId: TaskId, dateId: DateId) get ->
-                        let selectionSet = Atoms.getAtomValue get (Atoms.Task.selectionSet taskId)
+                    (fun (taskId: TaskId, dateId: DateId) getter ->
+                        let selectionSet = Store.value getter (Atoms.Task.selectionSet taskId)
                         selectionSet.Contains dateId),
-                    (fun (taskId: TaskId, dateId: DateId) _get set newValue ->
-                        Atoms.setAtomValuePrev
-                            set
+                    (fun (taskId: TaskId, dateId: DateId) _ setter newValue ->
+                        Store.change
+                            setter
                             (Atoms.Task.selectionSet taskId)
                             ((if newValue then Set.add else Set.remove) dateId))
                 )
@@ -788,8 +782,8 @@ module State =
             let rec sessions =
                 Store.readSelectorFamily (
                     $"{nameof Cell}/{nameof sessions}",
-                    (fun (taskId: TaskId, dateId: DateId) get ->
-                        let taskState = Atoms.getAtomValue get (Task.taskState taskId)
+                    (fun (taskId: TaskId, dateId: DateId) getter ->
+                        let taskState = Store.value getter (Task.taskState taskId)
 
                         taskState.CellStateMap
                         |> Map.tryFind dateId
@@ -800,8 +794,8 @@ module State =
             let rec attachments =
                 Store.readSelectorFamily (
                     $"{nameof Cell}/{nameof attachments}",
-                    (fun (taskId: TaskId, dateId: DateId) get ->
-                        let taskState = Atoms.getAtomValue get (Task.taskState taskId)
+                    (fun (taskId: TaskId, dateId: DateId) getter ->
+                        let taskState = Store.value getter (Task.taskState taskId)
 
                         taskState.CellStateMap
                         |> Map.tryFind dateId
@@ -814,8 +808,8 @@ module State =
             let rec taskIdSet =
                 Store.readSelector (
                     $"{nameof Session}/{nameof taskIdSet}",
-                    (fun get ->
-                        let taskIdMap = Atoms.getAtomValue get taskIdMap
+                    (fun getter ->
+                        let taskIdMap = Store.value getter taskIdMap
 
                         if taskIdMap.IsEmpty then
                             Set.empty
@@ -826,14 +820,14 @@ module State =
             let rec informationSet =
                 Store.readSelector (
                     $"{nameof Session}/{nameof informationSet}",
-                    (fun get ->
-                        let taskIdSet = Atoms.getAtomValue get taskIdSet
+                    (fun getter ->
+                        let taskIdSet = Store.value getter taskIdSet
 
                         taskIdSet
                         |> Set.toArray
                         |> Array.map Atoms.Task.information
                         |> Store.waitForAll
-                        |> Atoms.getAtomValue get
+                        |> Store.value getter
                         |> Array.filter
                             (fun information ->
                                 information
@@ -847,15 +841,15 @@ module State =
             let rec selectedTaskIdSet =
                 Store.readSelector (
                     $"{nameof Session}/{nameof selectedTaskIdSet}",
-                    (fun get ->
-                        let selectedDatabaseIdSet = Atoms.getAtomValue get Atoms.selectedDatabaseIdSet
+                    (fun getter ->
+                        let selectedDatabaseIdSet = Store.value getter Atoms.selectedDatabaseIdSet
 
-                        let taskIdArray = Atoms.getAtomValue get taskIdSet |> Set.toArray
+                        let taskIdArray = Store.value getter taskIdSet |> Set.toArray
 
                         taskIdArray
                         |> Array.map Task.databaseId
                         |> Store.waitForAll
-                        |> Atoms.getAtomValue get
+                        |> Store.value getter
                         |> Array.indexed
                         |> Array.filter (fun (_, databaseId) -> selectedDatabaseIdSet |> Set.contains databaseId)
                         |> Array.map (fun (i, _) -> taskIdArray.[i])
@@ -865,35 +859,35 @@ module State =
             let rec informationStateList =
                 Store.readSelector (
                     $"{nameof Session}/{nameof informationStateList}",
-                    (fun get ->
-                        let informationSet = Atoms.getAtomValue get informationSet
+                    (fun getter ->
+                        let informationSet = Store.value getter informationSet
 
                         informationSet
                         |> Set.toArray
                         |> Array.map Information.informationState
                         |> Store.waitForAll
-                        |> Atoms.getAtomValue get
+                        |> Store.value getter
                         |> Array.toList)
                 )
 
             let rec activeSessions =
                 Store.readSelector (
                     $"{nameof Session}/{nameof activeSessions}",
-                    (fun get ->
-                        let selectedTaskIdSet = Atoms.getAtomValue get selectedTaskIdSet
+                    (fun getter ->
+                        let selectedTaskIdSet = Store.value getter selectedTaskIdSet
                         let selectedTaskIdArray = selectedTaskIdSet |> Set.toArray
 
                         let durationArray =
                             selectedTaskIdArray
                             |> Array.map Task.activeSession
                             |> Store.waitForAll
-                            |> Atoms.getAtomValue get
+                            |> Store.value getter
 
                         let nameArray =
                             selectedTaskIdArray
                             |> Array.map Atoms.Task.name
                             |> Store.waitForAll
-                            |> Atoms.getAtomValue get
+                            |> Store.value getter
 
                         durationArray
                         |> Array.toList
@@ -909,22 +903,22 @@ module State =
             let rec filteredTaskIdSet =
                 Store.readSelector (
                     $"{nameof Session}/{nameof filteredTaskIdSet}",
-                    (fun get ->
+                    (fun getter ->
                         let filterTasksByView = true
                         // TODO: !!
                         //getter.get (Atoms.User.filterTasksByView username)
 
-                        let searchText = Atoms.getAtomValue get Atoms.searchText
-                        let view = Atoms.getAtomValue get Atoms.view
-                        let dateSequence = Atoms.getAtomValue get dateSequence
-                        let selectedTaskIdSet = Atoms.getAtomValue get selectedTaskIdSet
+                        let searchText = Store.value getter Atoms.searchText
+                        let view = Store.value getter Atoms.view
+                        let dateSequence = Store.value getter dateSequence
+                        let selectedTaskIdSet = Store.value getter selectedTaskIdSet
 
                         let selectedTaskList =
                             selectedTaskIdSet
                             |> Set.toArray
                             |> Array.map Task.task
                             |> Store.waitForAll
-                            |> Atoms.getAtomValue get
+                            |> Store.value getter
                             |> Array.toList
 
                         let selectedTaskListSearch =
@@ -948,7 +942,7 @@ module State =
                                 |> List.map (fun task -> Task.taskState task.Id)
                                 |> List.toArray
                                 |> Store.waitForAll
-                                |> Atoms.getAtomValue get
+                                |> Store.value getter
                                 |> filterTaskStateSeq view dateSequence
                                 |> Seq.toList
                                 |> List.map (fun taskState -> taskState.Task)
@@ -970,15 +964,12 @@ module State =
             let rec sortedTaskIdList =
                 Store.readSelector (
                     $"{nameof Session}/{nameof sortedTaskIdList}",
-                    (fun get ->
-                        let position = Atoms.getAtomValue get Atoms.position
+                    (fun getter ->
+                        let position = Store.value getter Atoms.position
 
                         match position with
                         | Some position ->
-                            let view = Atoms.getAtomValue get Atoms.view
-                            let dayStart = Atoms.getAtomValue get Atoms.dayStart
-                            let filteredTaskIdSet = Atoms.getAtomValue get filteredTaskIdSet
-                            let informationStateList = Atoms.getAtomValue get Session.informationStateList
+                            let filteredTaskIdSet = Store.value getter filteredTaskIdSet
 
                             JS.log (fun () -> $"sortedTaskIdList. filteredTaskIdSet.Count={filteredTaskIdSet.Count}")
 
@@ -988,18 +979,22 @@ module State =
                                 filteredTaskIdArray
                                 |> Array.map Task.statusMap
                                 |> Store.waitForAll
-                                |> Atoms.getAtomValue get
+                                |> Store.value getter
 
                             let taskStateArray =
                                 filteredTaskIdArray
                                 |> Array.map Task.taskState
                                 |> Store.waitForAll
-                                |> Atoms.getAtomValue get
+                                |> Store.value getter
 
                             let lanes =
                                 statusMapArray
                                 |> Array.zip taskStateArray
                                 |> Array.toList
+
+                            let view = Store.value getter Atoms.view
+                            let dayStart = Store.value getter Atoms.dayStart
+                            let informationStateList = Store.value getter Session.informationStateList
 
                             let result =
                                 sortLanes
@@ -1021,15 +1016,15 @@ module State =
             let rec tasksByInformationKind =
                 Store.readSelector (
                     $"{nameof Session}/{nameof tasksByInformationKind}",
-                    (fun get ->
-                        let sortedTaskIdList = Atoms.getAtomValue get sortedTaskIdList
+                    (fun getter ->
+                        let sortedTaskIdList = Store.value getter sortedTaskIdList
 
                         let informationArray =
                             sortedTaskIdList
                             |> List.toArray
                             |> Array.map Atoms.Task.information
                             |> Store.waitForAll
-                            |> Atoms.getAtomValue get
+                            |> Store.value getter
 
                         sortedTaskIdList
                         |> List.indexed
@@ -1040,32 +1035,41 @@ module State =
                         |> List.map (fun (a, b) -> a, b |> List.map (fun (c, d) -> c, d |> List.map snd)))
                 )
 
+            let rec selectionSetMap =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof selectionSetMap}",
+                    (fun getter ->
+                        let sortedTaskIdList = Store.value getter sortedTaskIdList
+
+                        sortedTaskIdList
+                        |> List.toArray
+                        |> Array.map Atoms.Task.selectionSet
+                        |> Store.waitForAll
+                        |> Store.value getter
+                        |> Array.mapi (fun i dates -> sortedTaskIdList.[i], dates)
+                        |> Map.ofArray)
+                )
+
             let rec cellSelectionMap =
                 Store.readSelector (
                     $"{nameof Session}/{nameof cellSelectionMap}",
-                    (fun get ->
-                        let sortedTaskIdList = Atoms.getAtomValue get sortedTaskIdList
-                        let dateSequence = Atoms.getAtomValue get dateSequence
+                    (fun getter ->
+                        let selectionSetMap = Store.value getter selectionSetMap
+                        let dateSequence = Store.value getter dateSequence
 
-                        let selectionSetArray =
-                            sortedTaskIdList
-                            |> List.toArray
-                            |> Array.map Atoms.Task.selectionSet
-                            |> Store.waitForAll
-                            |> Atoms.getAtomValue get
-
-                        sortedTaskIdList
-                        |> List.mapi
-                            (fun i taskId ->
+                        selectionSetMap
+                        |> Map.keys
+                        |> Seq.map
+                            (fun taskId ->
                                 let dates =
                                     dateSequence
-                                    |> List.map (fun date -> date, selectionSetArray.[i].Contains (DateId date))
+                                    |> List.map (fun date -> date, selectionSetMap.[taskId].Contains (DateId date))
                                     |> List.filter snd
                                     |> List.map fst
                                     |> Set.ofSeq
 
                                 taskId, dates)
-                        |> List.filter (fun (_, dates) -> Set.isEmpty dates |> not)
+                        |> Seq.filter (fun (_, dates) -> Set.isEmpty dates |> not)
                         |> Map.ofSeq)
                 )
 
@@ -1074,12 +1078,12 @@ module State =
             let isToday =
                 Store.readSelectorFamily (
                     $"{nameof FlukeDate}/{nameof isToday}",
-                    (fun (date: FlukeDate) get ->
-                        let position = Atoms.getAtomValue get Atoms.position
+                    (fun (date: FlukeDate) getter ->
+                        let position = Store.value getter Atoms.position
 
                         match position with
                         | Some position ->
-                            let dayStart = Atoms.getAtomValue get Atoms.dayStart
+                            let dayStart = Store.value getter Atoms.dayStart
 
                             Domain.UserInteraction.isToday dayStart position (DateId date)
                         | _ -> false)
@@ -1088,8 +1092,12 @@ module State =
             let rec hasCellSelection =
                 Store.readSelectorFamily (
                     $"{nameof FlukeDate}/{nameof hasCellSelection}",
-                    (fun (date: FlukeDate) get ->
-                        let cellSelectionMap = Atoms.getAtomValue get Session.cellSelectionMap
+                    (fun (date: FlukeDate) getter ->
+                        JS.log (fun () -> $"hasCellSelection date={date |> FlukeDate.Stringify}")
+
+                        Browser.Dom.window?lastDate <- date
+
+                        let cellSelectionMap = Store.value getter Session.cellSelectionMap
 
                         cellSelectionMap
                         |> Map.values
@@ -1101,16 +1109,16 @@ module State =
             let rec weekCellsMap =
                 Store.readSelector (
                     $"{nameof BulletJournalView}/{nameof weekCellsMap}",
-                    (fun get ->
-                        let position = Atoms.getAtomValue get Atoms.position
-                        let sortedTaskIdList = Atoms.getAtomValue get Session.sortedTaskIdList
+                    (fun getter ->
+                        let position = Store.value getter Atoms.position
+                        let sortedTaskIdList = Store.value getter Session.sortedTaskIdList
 
                         let taskStateArray =
                             sortedTaskIdList
                             |> List.map Task.taskState
                             |> List.toArray
                             |> Store.waitForAll
-                            |> Atoms.getAtomValue get
+                            |> Store.value getter
 
                         let taskStateMap =
                             sortedTaskIdList
@@ -1119,8 +1127,8 @@ module State =
 
                         match position with
                         | Some position ->
-                            let dayStart = Atoms.getAtomValue get Atoms.dayStart
-                            let weekStart = Atoms.getAtomValue get Atoms.weekStart
+                            let dayStart = Store.value getter Atoms.dayStart
+                            let weekStart = Store.value getter Atoms.weekStart
 
                             let weeks =
                                 [
@@ -1229,6 +1237,3 @@ module State =
                             weeks
                         | _ -> [])
                 )
-
-module X =
-    let a = 3

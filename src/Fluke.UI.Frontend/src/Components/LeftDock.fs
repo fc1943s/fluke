@@ -13,7 +13,7 @@ open Fluke.UI.Frontend.TempUI
 module LeftDock =
     [<ReactComponent>]
     let LeftDock () =
-        let isTesting = Store.useValue Atoms.isTesting
+        let isTesting = Store.useValue Store.Atoms.isTesting
         let leftDock, setLeftDock = Store.useState Atoms.leftDock
         let setRightDock = Store.useSetState Atoms.rightDock
         let deviceInfo = Store.useValue Selectors.deviceInfo
@@ -136,7 +136,7 @@ module LeftDock =
 
 
         Chakra.flex
-            (fun x -> x.overflow <- "scroll")
+            (fun x -> x.overflow <- "auto")
             [
                 Chakra.box
                     (fun x ->

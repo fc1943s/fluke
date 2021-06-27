@@ -32,7 +32,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.dayStart))
+                                                x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Atoms.dayStart))
 
                                                 x.inputFormat <- Some Input.InputFormat.Time
                                                 x.onFormat <- Some FlukeTime.Stringify
@@ -59,7 +59,7 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (Store.InputAtom (Store.AtomPath.Atom Atoms.sessionDuration))
+                                                    Some (Store.InputAtom (Store.AtomReference.Atom Atoms.sessionDuration))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                                 x.onFormat <- Some (Minute.Value >> string)
@@ -81,7 +81,7 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (Store.AtomPath.Atom Atoms.sessionBreakDuration)
+                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.sessionBreakDuration)
                                                     )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
@@ -114,7 +114,7 @@ module Settings =
                                                                         x.atom <-
                                                                             Some (
                                                                                 Store.InputAtom (
-                                                                                    Store.AtomPath.Atom Atoms.color
+                                                                                    Store.AtomReference.Atom Atoms.color
                                                                                 )
                                                                             )
                                                                 Props =
@@ -194,7 +194,7 @@ module Settings =
                                                                         x.atom <-
                                                                             Some (
                                                                                 Store.InputAtom (
-                                                                                    Store.AtomPath.Atom Atoms.weekStart
+                                                                                    Store.AtomReference.Atom Atoms.weekStart
                                                                                 )
                                                                             )
 
@@ -284,7 +284,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.daysBefore))
+                                                x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Atoms.daysBefore))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days Before"
@@ -295,7 +295,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.daysAfter))
+                                                x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Atoms.daysAfter))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days After"
@@ -306,7 +306,7 @@ module Settings =
                                     {|
                                         CustomProps =
                                             fun x ->
-                                                x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.cellSize))
+                                                x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Atoms.cellSize))
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Cell Size"
@@ -336,7 +336,7 @@ module Settings =
                                     (fun x ->
                                         x.label <- str "Gun peers"
 
-                                        x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.gunPeers)))
+                                        x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Store.Atoms.gunPeers)))
                             ])
                     ]
             |}

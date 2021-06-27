@@ -25,15 +25,15 @@ module TaskName =
 
         let editTask =
             Store.useCallback (
-                (fun get set _ ->
+                (fun getter setter _ ->
                     promise {
-                        let deviceInfo = Atoms.getAtomValue get Selectors.deviceInfo
-                        if deviceInfo.IsMobile then Atoms.setAtomValue set Atoms.leftDock None
-                        Atoms.setAtomValue set Atoms.rightDock (Some TempUI.DockType.Task)
-                        let databaseId = Atoms.getAtomValue get (Selectors.Task.databaseId input.TaskId)
+                        let deviceInfo = Store.value getter Selectors.deviceInfo
+                        if deviceInfo.IsMobile then Store.set setter Atoms.leftDock None
+                        Store.set setter Atoms.rightDock (Some TempUI.DockType.Task)
+                        let databaseId = Store.value getter (Selectors.Task.databaseId input.TaskId)
 
-                        Atoms.setAtomValue
-                            set
+                        Store.set
+                            setter
                             (Atoms.uiFlag Atoms.UIFlagType.Task)
                             (Atoms.UIFlag.Task (databaseId, input.TaskId))
 
@@ -45,12 +45,12 @@ module TaskName =
 
         let startSession =
             Store.useCallback (
-                (fun get set _ ->
+                (fun getter setter _ ->
                     promise {
-                        let sessions = Atoms.getAtomValue get (Atoms.Task.sessions input.TaskId)
+                        let sessions = Store.value getter (Atoms.Task.sessions input.TaskId)
 
-                        Atoms.setAtomValue
-                            set
+                        Store.set
+                            setter
                             (Atoms.Task.sessions input.TaskId)
                             (Session (
                                 (let now = DateTime.Now in if now.Second < 30 then now else now.AddMinutes 1.)
@@ -63,7 +63,7 @@ module TaskName =
                 |]
             )
 
-        let deleteTask = Store.useCallback ((fun _get _set _ -> promise { () }), [||])
+        let deleteTask = Store.useCallback ((fun _ _ _ -> promise { () }), [||])
 
         Chakra.flex
             (fun x ->

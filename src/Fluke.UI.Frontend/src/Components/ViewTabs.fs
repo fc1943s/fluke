@@ -40,6 +40,7 @@ module ViewTabs =
     let ViewTabs () =
         let showViewOptions = Store.useValue Atoms.showViewOptions
         let view, setView = Store.useState Atoms.view
+        let filteredTaskIdSet = Store.useValue Selectors.Session.filteredTaskIdSet
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
 
         let tabs, tabIndex =
@@ -202,7 +203,8 @@ module ViewTabs =
                                 {|
                                     Icon = Icons.bs.BsSearch |> Icons.render
                                     CustomProps =
-                                        fun x -> x.atom <- Some (Store.InputAtom (Store.AtomPath.Atom Atoms.searchText))
+                                        fun x ->
+                                            x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Atoms.searchText))
                                     Props =
                                         fun x ->
                                             x.placeholder <- "Search task or information"
@@ -233,13 +235,16 @@ module ViewTabs =
                                         [
                                             match sortedTaskIdList with
                                             | [] ->
-                                                Chakra.box
-                                                    (fun x ->
-                                                        x.padding <- "7px"
-                                                        x.whiteSpace <- "nowrap")
-                                                    [
-                                                        str "No tasks found. Add tasks in the Databases panel."
-                                                    ]
+                                                if filteredTaskIdSet.IsEmpty then
+                                                    Chakra.box
+                                                        (fun x ->
+                                                            x.padding <- "7px"
+                                                            x.whiteSpace <- "nowrap")
+                                                        [
+                                                            str "No tasks found. Add tasks in the Databases panel."
+                                                        ]
+                                                else
+                                                    LoadingSpinner.InlineLoadingSpinner ()
                                             | _ -> tab.Content
                                         ])
                     ]

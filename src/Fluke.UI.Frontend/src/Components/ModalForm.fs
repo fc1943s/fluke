@@ -14,7 +14,7 @@ module ModalForm =
         (input: {| UIFlagType: Atoms.UIFlagType
                    Content: Atoms.UIFlag * (unit -> JS.Promise<unit>) * (Store.GetFn * Store.SetFn) -> ReactElement |})
         =
-        let isTesting = Store.useValue Atoms.isTesting
+        let isTesting = Store.useValue Store.Atoms.isTesting
         let formIdFlag, setFormIdFlag = Store.useState (Atoms.uiFlag input.UIFlagType)
         let formVisibleFlag, setFormVisibleFlag = Store.useState (Atoms.uiVisibleFlag input.UIFlagType)
 

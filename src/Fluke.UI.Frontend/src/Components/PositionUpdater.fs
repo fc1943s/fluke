@@ -15,22 +15,22 @@ module PositionUpdater =
         Scheduling.useScheduling
             Scheduling.Interval
             1000
-            (fun get set ->
+            (fun getter setter ->
                 promise {
-                    let selectedDatabaseIdSet = Atoms.getAtomValue get Atoms.selectedDatabaseIdSet
+                    let selectedDatabaseIdSet = Store.value getter Atoms.selectedDatabaseIdSet
 
                     let selectedDatabasePositions =
                         selectedDatabaseIdSet
                         |> Set.toList
-                        |> List.map (fun databaseId -> Atoms.Database.position databaseId)
-                        |> List.map (Atoms.getAtomValue get)
+                        |> List.map Atoms.Database.position
+                        |> List.map (Store.value getter)
 
                     let pausedPosition =
                         selectedDatabasePositions
                         |> List.choose id
                         |> List.tryHead
 
-                    let position = Atoms.getAtomValue get Atoms.position
+                    let position = Store.value getter Atoms.position
 
                     let newPosition =
                         match selectedDatabasePositions, pausedPosition with
@@ -38,8 +38,8 @@ module PositionUpdater =
                         | _, None ->
                             let newPosition = FlukeDateTime.FromDateTime DateTime.Now
 
-                            let isTesting = Atoms.getAtomValue get Atoms.isTesting
-                            let position = Atoms.getAtomValue get Atoms.position
+                            let isTesting = Store.value getter Store.Atoms.isTesting
+                            let position = Store.value getter Atoms.position
 
                             if (not isTesting || position.IsNone)
                                && Some newPosition <> position then
@@ -48,9 +48,17 @@ module PositionUpdater =
                                 position
                         | _, Some _ -> pausedPosition
 
+//                    printfn $"PositionUpdater
+//                        selectedDatabaseIdSet={selectedDatabaseIdSet}
+//                        selectedDatabasePositions={selectedDatabasePositions}
+//                        pausedPosition={pausedPosition}
+//                        position={position}
+//                        newPosition={newPosition}
+//                    "
+
                     if position <> newPosition then
                         printfn $"Updating position newPosition={newPosition |> Option.map FlukeDateTime.Stringify}"
-                        Atoms.setAtomValue set Atoms.position newPosition
+                        Store.set setter Atoms.position newPosition
                 })
 
         nothing

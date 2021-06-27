@@ -117,7 +117,13 @@ module Databases =
             children = Some input.Children
             icon =
                 if input.IsEmptyNode then
-                    box (Chakra.box (fun x -> x.height <- "10px") [])
+                    box (
+                        Chakra.box
+                            (fun x ->
+                                x.marginLeft <- "-10px"
+                                x.height <- "10px")
+                            []
+                    )
                 else
                     input.Icon
             label =
@@ -246,8 +252,8 @@ module Databases =
 
     [<ReactComponent>]
     let rec Databases (input: {| Props: Chakra.IChakraProps -> unit |}) =
-        let username = Store.useValue Atoms.username
-        let isTesting = Store.useValue Atoms.isTesting
+        let username = Store.useValue Store.Atoms.username
+        let isTesting = Store.useValue Store.Atoms.isTesting
 
         let hideTemplates = Store.useValue Atoms.hideTemplates
         let hideTemplatesCache = React.useRef<bool option> None

@@ -4,7 +4,6 @@ open Fable.Core.JsInterop
 open System
 open Fable.React
 open Feliz
-open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
@@ -14,11 +13,7 @@ open Fluke.Shared
 module AreaSelector =
 
     [<ReactComponent>]
-    let AreaSelector
-        (input: {|
-                   Area: Area
-                   OnSelect: Area -> unit |})
-        =
+    let AreaSelector (input: {| Area: Area; OnSelect: Area -> unit |}) =
         let informationSet = Store.useValue Selectors.Session.informationSet
 
         let sortedAreaList =
@@ -56,7 +51,7 @@ module AreaSelector =
                 |]
             )
 
-        let isTesting = Store.useValue Atoms.isTesting
+        let isTesting = Store.useValue Store.Atoms.isTesting
 
         Chakra.box
             (fun x ->

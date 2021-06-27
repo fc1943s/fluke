@@ -26,7 +26,7 @@ module InputList =
                 |]
             )
 
-        let atomFieldOptions = Store.useAtomFieldOptions<'TValue []> props.atom props.inputScope
+        let atomFieldOptions = Store.Hooks.useAtomFieldOptions<'TValue []> props.atom props.inputScope
 
         Chakra.box
             (fun _ -> ())

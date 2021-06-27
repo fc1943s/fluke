@@ -23,29 +23,29 @@ module CellForm =
 
         let addAttachment =
             Store.useCallback (
-                (fun get set _ ->
+                (fun getter setter _ ->
                     promise {
                         match addAttachmentText with
                         | String.ValidString _ ->
                             let attachmentId = AttachmentId.NewId ()
 
-                            Atoms.setAtomValue
-                                set
+                            Store.set
+                                setter
                                 (Atoms.Attachment.timestamp attachmentId)
                                 (DateTime.Now |> FlukeDateTime.FromDateTime |> Some)
 
-                            Atoms.setAtomValue
-                                set
+                            Store.set
+                                setter
                                 (Atoms.Attachment.attachment attachmentId)
                                 (addAttachmentText
                                  |> Comment.Comment
                                  |> Attachment.Comment
                                  |> Some)
 
-                            let cellAttachmentMap = Atoms.getAtomValue get (Atoms.Task.cellAttachmentMap input.TaskId)
+                            let cellAttachmentMap = Store.value getter (Atoms.Task.cellAttachmentMap input.TaskId)
 
-                            Atoms.setAtomValue
-                                set
+                            Store.set
+                                setter
                                 (Atoms.Task.cellAttachmentMap input.TaskId)
                                 (cellAttachmentMap
                                  |> Map.add

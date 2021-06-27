@@ -13,7 +13,7 @@ module InitialPeers =
     [<ReactComponent>]
     let InitialPeers () =
         let gunPeer, setGunPeer = React.useState "https://flukegunpeer-test.herokuapp.com/gun"
-        let setGunPeers = Store.useSetState Atoms.gunPeers
+        let setGunPeers = Store.useSetState Store.Atoms.gunPeers
         let setInitialPeerSkipped = Store.useSetState Atoms.initialPeerSkipped
 
         let nextClick _ =

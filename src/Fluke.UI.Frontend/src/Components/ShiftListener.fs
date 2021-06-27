@@ -23,9 +23,9 @@ module ShiftListener =
                 "Shift"
                 "Control"
             |]
-            (fun get set e ->
+            (fun getter setter e ->
                 promise {
-                    let setView value = Atoms.setAtomValue set Atoms.view value
+                    let setView value = Store.set setter Atoms.view value
 
                     match e.ctrlKey, e.shiftKey, e.key with
                     | false, true, "I" ->
@@ -36,10 +36,10 @@ module ShiftListener =
                     | false, true, "B" -> setView View.View.BulletJournal
                     | _ -> ()
 
-                    let shiftPressed = Atoms.getAtomValue get Atoms.shiftPressed
+                    let shiftPressed = Store.value getter Atoms.shiftPressed
 
                     if e.shiftKey <> shiftPressed then
-                        Atoms.setAtomValue set Atoms.shiftPressed e.shiftKey
+                        Store.set setter Atoms.shiftPressed e.shiftKey
                 })
 
         nothing

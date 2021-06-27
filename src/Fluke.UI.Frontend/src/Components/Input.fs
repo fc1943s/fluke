@@ -62,7 +62,7 @@ module Input =
                 |]
             )
 
-        let atomFieldOptions = Store.useAtomFieldOptions<'TValue> customProps.atom customProps.inputScope
+        let atomFieldOptions = Store.Hooks.useAtomFieldOptions<'TValue> customProps.atom customProps.inputScope
 
 
         let mounted, setMounted = React.useState false
@@ -141,7 +141,7 @@ module Input =
 
         let onChange =
             Store.useCallback (
-                (fun _get _set (e: KeyboardEvent) ->
+                (fun _ _ (e: KeyboardEvent) ->
                     promise {
                         if inputRef.current <> null && e.target <> null then
                             match box props.onChange with

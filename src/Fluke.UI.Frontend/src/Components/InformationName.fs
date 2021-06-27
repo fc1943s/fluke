@@ -17,16 +17,16 @@ module InformationName =
 
         let detailsClick =
             Store.useCallback (
-                (fun get set _ ->
+                (fun getter setter _ ->
                     promise {
-                        let deviceInfo = Atoms.getAtomValue get Selectors.deviceInfo
+                        let deviceInfo = Store.value getter Selectors.deviceInfo
 
-                        if deviceInfo.IsMobile then Atoms.setAtomValue set Atoms.leftDock None
+                        if deviceInfo.IsMobile then Store.set setter Atoms.leftDock None
 
-                        Atoms.setAtomValue set Atoms.rightDock (Some TempUI.DockType.Information)
+                        Store.set setter Atoms.rightDock (Some TempUI.DockType.Information)
 
-                        Atoms.setAtomValue
-                            set
+                        Store.set
+                            setter
                             (Atoms.uiFlag Atoms.UIFlagType.Information)
                             (input.Information |> Atoms.UIFlag.Information)
                     }),

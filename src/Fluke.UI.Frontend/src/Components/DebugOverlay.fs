@@ -19,9 +19,9 @@ module DebugOverlay =
         Scheduling.useScheduling
             Scheduling.Interval
             1000
-            (fun get _ ->
+            (fun getter _ ->
                 promise {
-                    let isTesting = Atoms.getAtomValue get Atoms.isTesting
+                    let isTesting = Store.value getter Store.Atoms.isTesting
 
                     if isTesting || not debug then
                         ()

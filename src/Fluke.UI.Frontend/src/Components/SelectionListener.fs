@@ -19,16 +19,16 @@ module SelectionListener =
                 "Escape"
                 "R"
             |]
-            (fun get set e ->
+            (fun getter setter e ->
                 promise {
-                    let cellSelectionMap = Atoms.getAtomValue get Selectors.Session.cellSelectionMap
+                    let cellSelectionMap = Store.value getter Selectors.Session.cellSelectionMap
 
                     if e.key = "Escape" && e.``type`` = "keydown" then
                         if not cellSelectionMap.IsEmpty then
                             cellSelectionMap
                             |> Map.keys
                             |> Seq.iter
-                                (fun taskId -> Atoms.setAtomValue set (Atoms.Task.selectionSet taskId) Set.empty)
+                                (fun taskId -> Store.set setter (Atoms.Task.selectionSet taskId) Set.empty)
 
                     if e.key = "R" && e.``type`` = "keydown" then
                         if not cellSelectionMap.IsEmpty then
@@ -55,7 +55,7 @@ module SelectionListener =
                             newMap
                             |> Map.iter
                                 (fun taskId dates ->
-                                    Atoms.setAtomValue set (Atoms.Task.selectionSet taskId) (dates |> Set.map DateId))
+                                    Store.set setter (Atoms.Task.selectionSet taskId) (dates |> Set.map DateId))
                 })
 
         nothing

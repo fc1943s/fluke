@@ -18,7 +18,7 @@ module BoxSelection =
         promise {
             let! cellMapGetter, (get, setFn) = initialize ()
 
-            RTL.act (fun () -> Atoms.setAtomValue setFn Atoms.shiftPressed true)
+            RTL.act (fun () -> Store.set setFn Atoms.shiftPressed true)
 
             do! click (getCell (cellMapGetter, TaskName "2", FlukeDate.Create 2020 Month.January 9))
             do! click (getCell (cellMapGetter, TaskName "3", FlukeDate.Create 2020 Month.January 10))

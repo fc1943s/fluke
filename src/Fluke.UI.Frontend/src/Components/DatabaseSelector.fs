@@ -68,7 +68,7 @@ module DatabaseSelector =
                 |]
             )
 
-        let isTesting = Store.useValue Atoms.isTesting
+        let isTesting = Store.useValue Store.Atoms.isTesting
 
         Chakra.box
             (fun x -> if isTesting then x?``data-testid`` <- nameof DatabaseSelector)

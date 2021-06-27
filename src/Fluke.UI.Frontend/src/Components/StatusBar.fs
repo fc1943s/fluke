@@ -175,7 +175,7 @@ module StatusBar =
 
     [<ReactComponent>]
     let StatusBar () =
-        let username = Store.useValue Atoms.username
+        let username = Store.useValue Store.Atoms.username
         let position = Store.useValue Atoms.position
 
         Chakra.simpleGrid

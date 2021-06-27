@@ -16,10 +16,10 @@ module ModalFormTrigger =
         =
         let onTrigger =
             Store.useCallback (
-                (fun _get set _ ->
+                (fun _ setter _ ->
                     promise {
-                        Atoms.setAtomValue set (Atoms.uiFlag input.UIFlagType) input.UIFlagValue
-                        Atoms.setAtomValue set (Atoms.uiVisibleFlag input.UIFlagType) true
+                        Store.set setter (Atoms.uiFlag input.UIFlagType) input.UIFlagValue
+                        Store.set setter (Atoms.uiVisibleFlag input.UIFlagType) true
                     }),
                 [||]
             )

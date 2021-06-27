@@ -16,7 +16,7 @@ module Full =
             text
             |> Seq.iter
                 (fun letter ->
-//                    Cy.wait 250
+                    Cy.wait 50
 
                     fn().first().click (Some {| force = false |})
                     |> ignore

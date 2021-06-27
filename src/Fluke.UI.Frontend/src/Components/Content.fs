@@ -13,9 +13,9 @@ module Content =
 
         let sessionRestored = Store.useValue Atoms.sessionRestored
         let initialPeerSkipped = Store.useValue Atoms.initialPeerSkipped
-        let gunPeers = Store.useValue Atoms.gunPeers
+        let gunPeers = Store.useValue Store.Atoms.gunPeers
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let username = Store.useValue Atoms.username
+        let username = Store.useValue Store.Atoms.username
 
         Chakra.flex
             (fun x ->

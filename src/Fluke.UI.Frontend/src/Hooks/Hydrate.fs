@@ -14,40 +14,40 @@ open Fable.Core
 
 
 module Hydrate =
-    let hydrateDatabase _get set (atomScope, database: Database) =
+    let hydrateDatabase _ setter (atomScope, database: Database) =
         promise {
-            Store.scopedSet set atomScope (Atoms.Database.name, database.Id, database.Name)
-            Store.scopedSet set atomScope (Atoms.Database.owner, database.Id, database.Owner)
+            Store.scopedSet setter atomScope (Atoms.Database.name, database.Id, database.Name)
+            Store.scopedSet setter atomScope (Atoms.Database.owner, database.Id, database.Owner)
 
-            Store.scopedSet set atomScope (Atoms.Database.sharedWith, database.Id, database.SharedWith)
+            Store.scopedSet setter atomScope (Atoms.Database.sharedWith, database.Id, database.SharedWith)
 
-            Store.scopedSet set atomScope (Atoms.Database.position, database.Id, database.Position)
+            Store.scopedSet setter atomScope (Atoms.Database.position, database.Id, database.Position)
         }
 
     let useHydrateDatabase () =
         Store.useCallback (hydrateDatabase, [||])
 
-    let hydrateTask _get set (atomScope, _databaseId, task: Task) =
+    let hydrateTask _ setter (atomScope, _databaseId, task: Task) =
         promise {
             //            setter.scopedSet username atomScope (Atoms.Task.databaseId, task.Id, databaseId)
-            Store.scopedSet set atomScope (Atoms.Task.name, task.Id, task.Name)
-            Store.scopedSet set atomScope (Atoms.Task.information, task.Id, task.Information)
-            Store.scopedSet set atomScope (Atoms.Task.duration, task.Id, task.Duration)
-            Store.scopedSet set atomScope (Atoms.Task.pendingAfter, task.Id, task.PendingAfter)
-            Store.scopedSet set atomScope (Atoms.Task.missedAfter, task.Id, task.MissedAfter)
-            Store.scopedSet set atomScope (Atoms.Task.scheduling, task.Id, task.Scheduling)
-            Store.scopedSet set atomScope (Atoms.Task.priority, task.Id, task.Priority)
-            Store.scopedSet set atomScope (Atoms.Task.selectionSet, task.Id, Set.empty)
+            Store.scopedSet setter atomScope (Atoms.Task.name, task.Id, task.Name)
+            Store.scopedSet setter atomScope (Atoms.Task.information, task.Id, task.Information)
+            Store.scopedSet setter atomScope (Atoms.Task.duration, task.Id, task.Duration)
+            Store.scopedSet setter atomScope (Atoms.Task.pendingAfter, task.Id, task.PendingAfter)
+            Store.scopedSet setter atomScope (Atoms.Task.missedAfter, task.Id, task.MissedAfter)
+            Store.scopedSet setter atomScope (Atoms.Task.scheduling, task.Id, task.Scheduling)
+            Store.scopedSet setter atomScope (Atoms.Task.priority, task.Id, task.Priority)
+            Store.scopedSet setter atomScope (Atoms.Task.selectionSet, task.Id, Set.empty)
         }
 
     let useHydrateTask () = Store.useCallback (hydrateTask, [||])
 
-    let hydrateTaskState get set (atomScope, databaseId, taskState) =
+    let hydrateTaskState getter setter (atomScope, databaseId, taskState) =
         promise {
-            do! hydrateTask get set (atomScope, databaseId, taskState.Task)
+            do! hydrateTask getter setter (atomScope, databaseId, taskState.Task)
 
             Store.scopedSet
-                set
+                setter
                 atomScope
                 (Atoms.Task.statusMap,
                  taskState.Task.Id,
@@ -62,7 +62,7 @@ module Hydrate =
                   |> Map.ofSeq))
 
             Store.scopedSet
-                set
+                setter
                 atomScope
                 (Atoms.Task.attachmentIdSet,
                  taskState.Task.Id,
@@ -70,16 +70,13 @@ module Hydrate =
                  |> List.map
                      (fun (timestamp, attachment) ->
                          let attachmentId = AttachmentId.NewId ()
-
-                         Store.scopedSet set atomScope (Atoms.Attachment.timestamp, attachmentId, Some timestamp)
-
-                         Store.scopedSet set atomScope (Atoms.Attachment.attachment, attachmentId, Some attachment)
-
+                         Store.scopedSet setter atomScope (Atoms.Attachment.timestamp, attachmentId, Some timestamp)
+                         Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachment)
                          attachmentId)
                  |> Set.ofSeq)
 
             Store.scopedSet
-                set
+                setter
                 atomScope
                 (Atoms.Task.cellAttachmentMap,
                  taskState.Task.Id,
@@ -93,12 +90,12 @@ module Hydrate =
                                  let attachmentId = AttachmentId.NewId ()
 
                                  Store.scopedSet
-                                     set
+                                     setter
                                      atomScope
                                      (Atoms.Attachment.timestamp, attachmentId, Some timestamp)
 
                                  Store.scopedSet
-                                     set
+                                     setter
                                      atomScope
                                      (Atoms.Attachment.attachment, attachmentId, Some attachment)
 
@@ -106,7 +103,7 @@ module Hydrate =
                          |> Set.ofSeq)
                  |> Map.ofSeq)
 
-            Store.scopedSet set atomScope (Atoms.Task.sessions, taskState.Task.Id, taskState.Sessions)
+            Store.scopedSet setter atomScope (Atoms.Task.sessions, taskState.Task.Id, taskState.Sessions)
         }
 
     let useHydrateTaskState () =
@@ -118,7 +115,7 @@ module Hydrate =
         let hydrateTaskState = useHydrateTaskState ()
 
         Store.useCallback (
-            (fun _get set (atomScope, databaseState) ->
+            (fun _ setter (atomScope, databaseState) ->
                 promise {
                     do! hydrateDatabase (atomScope, databaseState.Database)
 
@@ -132,12 +129,12 @@ module Hydrate =
                                     let attachmentId = AttachmentId.NewId ()
 
                                     Store.scopedSet
-                                        set
+                                        setter
                                         atomScope
                                         (Atoms.Attachment.timestamp, attachmentId, Some timestamp)
 
                                     Store.scopedSet
-                                        set
+                                        setter
                                         atomScope
                                         (Atoms.Attachment.attachment, attachmentId, Some attachment)))
 
@@ -148,8 +145,8 @@ module Hydrate =
                         |> Promise.Parallel
                         |> Promise.ignore
 
-                    Atoms.setAtomValue
-                        set
+                    Store.set
+                        setter
                         (Atoms.Database.taskIdSet databaseState.Database.Id)
                         (databaseState.TaskStateMap
                          |> Map.keys
@@ -176,10 +173,7 @@ module Hydrate =
                         |> Promise.Parallel
                         |> Promise.ignore
 
-                    Atoms.setAtomValuePrev
-                        set
-                        Atoms.databaseIdSet
-                        (Set.union (databaseStateMap |> Map.keys |> Set.ofSeq))
+                    Store.change set Atoms.databaseIdSet (Set.union (databaseStateMap |> Map.keys |> Set.ofSeq))
                 }),
             [|
                 box hydrateDatabaseState
@@ -190,19 +184,19 @@ module Hydrate =
         let toast = Chakra.useToast ()
 
         Store.useCallback (
-            (fun get _set databaseId ->
+            (fun getter _ databaseId ->
                 promise {
-                    let database = Atoms.getAtomValue get (Selectors.Database.database databaseId)
+                    let database = Store.value getter (Selectors.Database.database databaseId)
 
-                    let taskIdSet = Atoms.getAtomValue get (Atoms.Database.taskIdSet databaseId)
+                    let taskIdSet = Store.value getter (Atoms.Database.taskIdSet databaseId)
 
                     let taskStateList =
                         taskIdSet
                         |> Set.toList
                         |> List.map Selectors.Task.taskState
-                        |> List.map (Atoms.getAtomValue get)
+                        |> List.map (Store.value getter)
 
-                    let informationStateList = Atoms.getAtomValue get Selectors.Session.informationStateList
+                    let informationStateList = Store.value getter Selectors.Session.informationStateList
 
                     let databaseState =
                         {
@@ -230,7 +224,7 @@ module Hydrate =
                         toast (fun x -> x.description <- "Database is not fully synced")
                     else
 
-                        let json = databaseState |> Gun.jsonEncode
+                        let json = databaseState |> Json.encode
 
                         let timestamp =
                             (FlukeDateTime.FromDateTime DateTime.Now)
@@ -254,9 +248,9 @@ module Hydrate =
         let toast = Chakra.useToast ()
 
         Store.useCallback (
-            (fun get set files ->
+            (fun getter setter files ->
                 promise {
-                    let username = Atoms.getAtomValue get Atoms.username
+                    let username = Store.value getter Store.Atoms.username
 
                     match username, files with
                     | Some username, Some (files: FileList) ->
@@ -278,7 +272,7 @@ module Hydrate =
                                 |> Array.map
                                     (fun content ->
                                         promise {
-                                            let databaseState = Gun.jsonDecode<DatabaseState> content
+                                            let databaseState = Json.decode<DatabaseState> content
 
                                             let database =
                                                 let databaseName =
@@ -314,12 +308,25 @@ module Hydrate =
                                                                     taskId,
                                                                     { taskState with
                                                                         Task = { taskState.Task with Id = taskId }
+                                                                        CellStateMap =
+                                                                            taskState.CellStateMap
+                                                                            |> Map.mapValues
+                                                                                (function
+                                                                                | { Status = UserStatus (_, status) } as cellState ->
+                                                                                    { cellState with
+                                                                                        Status =
+                                                                                            UserStatus (
+                                                                                                username,
+                                                                                                status
+                                                                                            )
+                                                                                    }
+                                                                                | cellState -> cellState)
                                                                     })
                                                             |> Map.ofSeq
                                                     }
                                                 )
 
-                                            Atoms.setAtomValuePrev set Atoms.databaseIdSet (Set.add database.Id)
+                                            Store.change setter Atoms.databaseIdSet (Set.add database.Id)
                                         })
                                 |> Promise.Parallel
                                 |> Promise.ignore

@@ -44,8 +44,8 @@ module InformationSelector =
                    TaskId: TaskId |})
         =
         let informationFieldOptions =
-            Store.useAtomFieldOptions
-                (Some (Store.InputAtom (Store.AtomPath.Atom (Atoms.Task.information input.TaskId))))
+            Store.Hooks.useAtomFieldOptions
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.information input.TaskId))))
                 (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
 
         let informationName, informationSelected =
@@ -107,7 +107,7 @@ module InformationSelector =
                 |]
             )
 
-        let isTesting = Store.useValue Atoms.isTesting
+        let isTesting = Store.useValue Store.Atoms.isTesting
 
         Chakra.box
             (fun x ->

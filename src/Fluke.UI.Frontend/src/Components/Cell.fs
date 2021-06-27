@@ -24,7 +24,7 @@ module Cell =
         Profiling.addCount "- CellComponent.render"
 
         let cellSize = Store.useValue Atoms.cellSize
-        let isTesting = Store.useValue Atoms.isTesting
+        let isTesting = Store.useValue Store.Atoms.isTesting
         let showUser = Store.useValue (Selectors.Task.showUser input.TaskId)
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (input.TaskId, input.DateId))
@@ -36,10 +36,10 @@ module Cell =
 
         let onCellClick =
             Store.useCallback (
-                (fun get _set _ ->
+                (fun getter _ _ ->
                     promise {
-                        let ctrlPressed = Atoms.getAtomValue get Atoms.ctrlPressed
-                        let shiftPressed = Atoms.getAtomValue get Atoms.shiftPressed
+                        let ctrlPressed = Store.value getter Atoms.ctrlPressed
+                        let shiftPressed = Store.value getter Atoms.shiftPressed
 
                         let newSelected =
                             if ctrlPressed || shiftPressed then

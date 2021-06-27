@@ -15,12 +15,12 @@ module CtrlListener =
             [|
                 "Control"
             |]
-            (fun get set e ->
+            (fun getter setter e ->
                 promise {
-                    let ctrlPressed = Atoms.getAtomValue get Atoms.ctrlPressed
+                    let ctrlPressed = Store.value getter Atoms.ctrlPressed
 
                     if e.ctrlKey <> ctrlPressed then
-                        Atoms.setAtomValue set Atoms.ctrlPressed e.ctrlKey
+                        Store.set setter Atoms.ctrlPressed e.ctrlKey
                 })
 
         nothing

@@ -1,10 +1,16 @@
 namespace Fluke.UI.Frontend.Bindings
 
+#nowarn "40"
+
+
+open System
 open Fable.Core
 open Fable.Core.JsInterop
+open Fluke.UI.Frontend.Bindings
+open Fluke.Shared
 
 
-module rec Gun =
+module Gun =
     type GunKeys =
         {
             pub: string
@@ -14,10 +20,10 @@ module rec Gun =
         }
         static member inline Default =
             {
-                Gun.pub = ""
-                Gun.epub = ""
-                Gun.priv = ""
-                Gun.epriv = ""
+                pub = ""
+                epub = ""
+                priv = ""
+                epriv = ""
             }
 
     type UserResult =
@@ -34,37 +40,39 @@ module rec Gun =
             pub: string option
         }
 
-    type IGunUser =
-        abstract create : alias: string * pass: string * cb: (UserResult -> unit) -> unit
-        abstract delete : alias: string * pass: string * cb: (UserResult -> unit) -> unit
-        abstract auth : alias: string * pass: string * cb: (UserResult -> unit) * ?opt: {| change: string |} -> unit
+    module rec Types =
+        type IGunUser =
+            abstract create : alias: string * pass: string * cb: (UserResult -> unit) -> unit
+            abstract delete : alias: string * pass: string * cb: (UserResult -> unit) -> unit
+            abstract auth : alias: string * pass: string * cb: (UserResult -> unit) * ?opt: {| change: string |} -> unit
 
-        [<Emit("$0._")>]
-        abstract __ : {| sea: GunKeys option |}
+            [<Emit("$0._")>]
+            abstract __ : {| sea: GunKeys option |}
 
-        abstract get : string -> IGunChainReference
-        abstract leave : unit -> unit
+            abstract get : string -> IGunChainReference
+            abstract leave : unit -> unit
 
-        abstract recall :
-            {| sessionStorage: bool |}
-            * System.Func<{| put: {| alias: string |} option
-                             sea: GunKeys |}, unit> ->
-            unit
+            abstract recall :
+                {| sessionStorage: bool |}
+                * System.Func<{| put: {| alias: string |} option
+                                 sea: GunKeys |}, unit> ->
+                unit
 
-        abstract is : IGunUserPub option
+            abstract is : IGunUserPub option
 
 
-    type IGunChainReference =
-        abstract get : string -> IGunChainReference
-        abstract map : unit -> IGunChainReference
-        abstract off : unit -> IGunChainReference
-        abstract on : ('T -> string -> unit) -> unit
-        abstract once : ('T -> string -> unit) -> unit
-        abstract on : event: string * (unit -> unit) -> unit
-        abstract put : string -> IGunChainReference
-        abstract user : unit -> IGunUser
+        type IGunChainReference =
+            abstract get : string -> IGunChainReference
+            abstract map : unit -> IGunChainReference
+            abstract off : unit -> IGunChainReference
+            abstract on : ('T -> string -> unit) -> unit
+            abstract once : ('T -> string -> unit) -> unit
+            abstract on : event: string * (unit -> unit) -> unit
+            abstract put : string -> IGunChainReference
+            abstract user : unit -> IGunUser
     //        abstract once : (string -> unit) -> unit
-//        abstract set : string -> IGunChainReference
+    //        abstract set : string -> IGunChainReference
+    open Types
 
 
     type ISEA =
@@ -140,14 +148,139 @@ module rec Gun =
                     printfn "deleteUser error: {ex}"
                     err ex)
 
-    let inline jsonEncode<'T> obj =
-        Thoth.Json.Encode.Auto.toString<'T> (0, obj)
 
-    let inline jsonDecode<'T> data =
-        Thoth.Json.Decode.Auto.unsafeFromString<'T> data
+    let inline userDecode<'TValue> (gun: IGunChainReference) data =
+        promise {
+            try
+                let user = gun.user ()
+                let keys = user.__.sea
+
+                match keys |> Option.ofObjUnbox with
+                | Some (Some keys) ->
+                    let! verified = sea.verify data keys.pub
+                    let! decrypted = sea.decrypt verified keys
+                    //
+//                    printfn
+//                        $"userDecode
+//                    decrypted={decrypted}
+//                    typeof decrypted={jsTypeof decrypted}"
+
+                    let decoded = decrypted |> Json.decode<'TValue option>
+
+                    //                    printfn $"userDecode decoded={decoded}"
+//
+                    return decoded
+                | _ -> return failwith $"No keys found for user {user.is}"
+            with ex ->
+                Browser.Dom.console.error ("[exception5]", ex)
+                return raise ex
+        }
+
+    let inline userEncode<'TValue> (gun: IGunChainReference) (value: 'TValue) =
+        promise {
+            try
+                let user = gun.user ()
+                let keys = user.__.sea
+
+                match keys with
+                | Some keys ->
+                    let json =
+                        value
+                        |> Json.encode<'TValue>
+                        |> Json.encode<string>
+
+                    //                    printfn $"userEncode value={value} json={json}"
+//
+                    let! encrypted = sea.encrypt json keys
+
+                    let! signed = sea.sign encrypted keys
+                    //                    JS.log (fun () -> $"userEncode. json={json} encrypted={encrypted} signed={signed}")
+                    return signed
+                | None -> return failwith $"No keys found for user {user.is}"
+            with ex ->
+                Browser.Dom.console.error ("[exception4]", ex)
+                return raise ex
+        }
 
     type Serializer<'T> = ('T -> string) * (string -> 'T)
 
-    let inline defaultSerializer<'T> : Serializer<'T> = jsonEncode<'T>, jsonDecode<'T>
+    let inline defaultSerializer<'T> : Serializer<'T> = Json.encode<'T>, Json.decode<'T>
 
     let inline put (gun: IGunChainReference) (value: string) = gun.put value |> ignore
+
+    let batchData =
+        Batcher.batcher
+            (Array.map
+                (fun (item: {| Fn: int64 * string -> JS.Promise<unit>
+                               Timestamp: int64
+                               Data: string |}) ->
+                    //                JS.consoleLog("batchData", item)
+                    item.Fn (item.Timestamp, item.Data))
+             >> Promise.Parallel
+             >> Promise.start)
+            {| interval = 500 |}
+
+    let subscribe (gun: IGunChainReference) fn =
+        gun.on
+            (fun data _key ->
+                //                                    JS.consoleLog("subscribe", item)
+                fn data)
+
+    let batchSubscribe =
+        Batcher.batcher
+            (Array.map
+                (fun (item: {| GunAtomNode: IGunChainReference
+                               Fn: int64 * string -> JS.Promise<unit> |}) ->
+                    promise {
+                        subscribe
+                            item.GunAtomNode
+                            (fun data ->
+                                batchData
+                                    {|
+                                        Timestamp = DateTime.Now.Ticks
+                                        Data = data
+                                        Fn = item.Fn
+                                    |})
+                    })
+             >> Promise.Parallel
+             >> Promise.start)
+            {| interval = 500 |}
+
+    let wrapAtomPath (atomPath: string) =
+        let header = $"{nameof Fluke}/"
+        let header = if atomPath.StartsWith header then "" else header
+        $"{header}{atomPath}"
+
+    let getGunNodePath (atomPath: string) (keyIdentifier: string list) =
+        let newAtomPath =
+            match keyIdentifier with
+            | [] -> atomPath
+            | keyIdentifier when keyIdentifier |> List.head |> Guid.TryParse |> fst ->
+                [
+                    match atomPath |> String.split "/" with
+                    | [| node |] ->
+                        yield node
+                        yield! keyIdentifier
+                    | nodes ->
+                        yield! nodes |> Array.take (nodes.Length - 2)
+
+                        let secondLast = nodes.[nodes.Length - 2]
+
+                        if secondLast |> Guid.TryParse |> fst then
+                            yield! keyIdentifier
+                            yield secondLast
+                        else
+                            yield secondLast
+                            yield! keyIdentifier
+
+                        yield nodes.[nodes.Length - 1]
+                ]
+                |> String.concat "/"
+            | keyIdentifier ->
+                ([
+                    atomPath
+                 ]
+                 @ keyIdentifier)
+                |> String.concat "/"
+
+        wrapAtomPath newAtomPath

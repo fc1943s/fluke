@@ -103,15 +103,15 @@ module Set =
     let inline addIf item condition set =
         if not condition then set else set |> Set.add item
 
-    let inline seqAdd item seq =
-        seq |> Set.ofSeq |> Set.add item |> Set.toSeq
+//    let inline seqAdd item seq =
+//        seq |> Set.ofSeq |> Set.add item |> Set.toSeq
 
-    let inline collect fn set =
-        set
-        |> Set.toSeq
-        |> Seq.collect id
-        |> Seq.map fn
-        |> Set.ofSeq
+//    let inline collect fn set =
+//        set
+//        |> Set.toSeq
+//        |> Seq.collect id
+//        |> Seq.map fn
+//        |> Set.ofSeq
 
 
 [<AutoOpen>]

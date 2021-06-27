@@ -17,7 +17,7 @@ module Scheduling =
         | Interval -> JS.setInterval, JS.clearInterval
 
     let useScheduling schedulingType duration (fn: Store.GetFn -> Store.SetFn -> JS.Promise<unit>) =
-        let fnCallback = React.useCallbackRef (fun (get, set) -> fn get set)
+        let fnCallback = React.useCallbackRef (fun (getter, setter) -> fn getter setter)
 
         let savedCallback = React.useRef fnCallback
 
@@ -33,7 +33,7 @@ module Scheduling =
 
         let fn =
             Store.useCallback (
-                (fun get set _ -> promise { if mounted then do! savedCallback.current (get, set) }),
+                (fun getter setter _ -> promise { if mounted then do! savedCallback.current (getter, setter) }),
                 [|
                     box mounted
                     box savedCallback

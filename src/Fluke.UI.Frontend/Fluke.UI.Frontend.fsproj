@@ -14,10 +14,11 @@
         <Compile Include="src\Bindings\Crypto.fs" />
         <Compile Include="src\Bindings\React.fs" />
         <Compile Include="src\Bindings\Chakra.fs" />
+        <Compile Include="src\Bindings\Batcher.fs" />
         <Compile Include="src\Bindings\Gun.fs" />
+        <Compile Include="src\Bindings\DeepEqual.fs" />
         <Compile Include="src\Bindings\Jotai.fs" />
         <Compile Include="src\Bindings\ColorPicker.fs" />
-        <Compile Include="src\Bindings\Batcher.fs" />
         <Compile Include="src\Bindings\Store.fs" />
         <Compile Include="src\Bindings\Svelte.fs" />
         <Compile Include="src\Bindings\Icons.fs" />

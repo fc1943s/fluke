@@ -12,10 +12,10 @@ module GunObserver =
 
     [<ReactComponent>]
     let GunObserver () =
-        let gun = Store.useValue Atoms.gun
-        let gunNamespace = Store.useValue Atoms.gunNamespace
+        let gun = Store.useValue Store.Selectors.gun
+        let gunNamespace = Store.useValue Store.Selectors.gunNamespace
         //        let appKeys = Gun.gunHooks.useGunKeys Browser.Dom.window?SEA (fun () -> null) false
-        let gunKeys, setGunKeys = Store.useState Atoms.gunKeys
+        let gunKeys, setGunKeys = Store.useState Store.Atoms.gunKeys
 
         //        let gunState =
 //            Gun.gunHooks.useGunState

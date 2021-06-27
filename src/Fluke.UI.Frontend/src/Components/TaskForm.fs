@@ -26,7 +26,7 @@ module TaskForm =
 
         let deleteSession =
             Store.useCallback (
-                (fun _get _set start ->
+                (fun _ _ start ->
                     promise {
                         let index =
                             sessions
@@ -56,13 +56,11 @@ module TaskForm =
 
         let onSave =
             Store.useCallback (
-                (fun get set _ ->
+                (fun getter setter _ ->
                     promise {
-                        let taskName = Store.getReadWrite get (Atoms.Task.name input.TaskId)
-
-                        let taskInformation = Store.getReadWrite get (Atoms.Task.information input.TaskId)
-
-                        let taskScheduling = Store.getReadWrite get (Atoms.Task.scheduling input.TaskId)
+                        let taskName = Store.getReadWrite getter (Atoms.Task.name input.TaskId)
+                        let taskInformation = Store.getReadWrite getter (Atoms.Task.information input.TaskId)
+                        let taskScheduling = Store.getReadWrite getter (Atoms.Task.scheduling input.TaskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -94,7 +92,7 @@ module TaskForm =
                                     |> Promise.lift
                                 else
                                     promise {
-                                        let task = Atoms.getAtomValue get (Selectors.Task.task input.TaskId)
+                                        let task = Store.value getter (Selectors.Task.task input.TaskId)
 
                                         return
                                             { task with
@@ -104,13 +102,10 @@ module TaskForm =
                                             }
                                     }
 
-                            Store.readWriteReset set (Atoms.Task.name input.TaskId)
-
-                            Store.readWriteReset set (Atoms.Task.information input.TaskId)
-
-                            Store.readWriteReset set (Atoms.Task.scheduling input.TaskId)
-
-                            Atoms.setAtomValue set (Atoms.uiFlag Atoms.UIFlagType.Task) Atoms.UIFlag.None
+                            Store.readWriteReset setter (Atoms.Task.name input.TaskId)
+                            Store.readWriteReset setter (Atoms.Task.information input.TaskId)
+                            Store.readWriteReset setter (Atoms.Task.scheduling input.TaskId)
+                            Store.set setter (Atoms.uiFlag Atoms.UIFlagType.Task) Atoms.UIFlag.None
 
                             do! input.OnSave task
                     }),
@@ -169,7 +164,7 @@ module TaskForm =
                                                 x.atom <-
                                                     Some (
                                                         Store.InputAtom (
-                                                            Store.AtomPath.Atom (Atoms.Task.name input.TaskId)
+                                                            Store.AtomReference.Atom (Atoms.Task.name input.TaskId)
                                                         )
                                                     )
 

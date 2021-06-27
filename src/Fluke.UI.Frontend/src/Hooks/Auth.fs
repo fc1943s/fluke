@@ -12,28 +12,28 @@ open Fluke.UI.Frontend.Hooks
 module Auth =
     let useLogout () =
         Store.useCallback (
-            (fun get set () ->
+            (fun getter setter () ->
                 promise {
-                    let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                    let gunNamespace = Store.value getter Store.Selectors.gunNamespace
                     printfn "before leave"
                     gunNamespace.leave ()
-                    Atoms.setAtomValue set Atoms.username None
-                    Atoms.setAtomValue set Atoms.gunKeys Gun.GunKeys.Default
+                    Store.set setter Store.Atoms.username None
+                    Store.set setter Store.Atoms.gunKeys Gun.GunKeys.Default
                 }),
             [||]
         )
 
     let usePostSignIn () =
         Store.useCallback (
-            (fun get set username ->
+            (fun getter setter username ->
                 promise {
-                    let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                    let gunNamespace = Store.value getter Store.Selectors.gunNamespace
                     let keys = gunNamespace.__.sea
 
                     match keys with
                     | Some keys ->
-                        Atoms.setAtomValue set Atoms.gunKeys keys
-                        Atoms.setAtomValue set Atoms.username (Some username)
+                        Store.set setter Store.Atoms.gunKeys keys
+                        Store.set setter Store.Atoms.username (Some username)
                         return Ok (username, keys)
                     | None -> return Error $"No keys found for user {gunNamespace.is}"
                 }),
@@ -44,9 +44,9 @@ module Auth =
         let postSignIn = usePostSignIn ()
 
         Store.useCallback (
-            (fun get _set (username, password) ->
+            (fun getter _ (username, password) ->
                 promise {
-                    let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                    let gunNamespace = Store.value getter Store.Selectors.gunNamespace
                     let! ack = Gun.authUser gunNamespace username password
 
                     match ack with
@@ -60,13 +60,13 @@ module Auth =
 
     let useChangePassword () =
         Store.useCallback (
-            (fun get _set (password, newPassword) ->
+            (fun getter _ (password, newPassword) ->
                 promise {
-                    let username = Atoms.getAtomValue get Atoms.username
+                    let username = Store.value getter Store.Atoms.username
 
                     match username with
                     | Some (Username username) ->
-                        let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                        let gunNamespace = Store.value getter Store.Selectors.gunNamespace
                         let! ack = Gun.changeUserPassword gunNamespace username password newPassword
 
                         return!
@@ -85,13 +85,13 @@ module Auth =
         let logout = useLogout ()
 
         Store.useCallback (
-            (fun get _set password ->
+            (fun getter _ password ->
                 promise {
-                    let username = Atoms.getAtomValue get Atoms.username
+                    let username = Store.value getter Store.Atoms.username
 
                     match username with
                     | Some (Username username) ->
-                        let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                        let gunNamespace = Store.value getter Store.Selectors.gunNamespace
                         let! ack = Gun.deleteUser gunNamespace username password
                         printfn $"ack={JS.JSON.stringify ack}"
 
@@ -116,14 +116,14 @@ module Auth =
         let hydrateTemplates = Hydrate.useHydrateTemplates ()
 
         Store.useCallback (
-            (fun get set (username, password) ->
+            (fun getter setter (username, password) ->
                 promise {
                     if username = "" || username = "" then
                         return Error "Required fields"
                     elif username = (Templates.templatesUser.Username |> Username.Value) then
                         return Error "Invalid username"
                     else
-                        let gunNamespace = Atoms.getAtomValue get Atoms.gunNamespace
+                        let gunNamespace = Store.value getter Store.Selectors.gunNamespace
 
                         printfn $"Auth.useSignUp. gunNamespace={JS.JSON.stringify gunNamespace}"
 
@@ -146,46 +146,28 @@ module Auth =
                                   } ->
                                     match! signIn (username, password) with
                                     | Ok (username, keys) ->
-                                        Atoms.setAtomValue
-                                            set
-                                            Atoms.expandedDatabaseIdSet
-                                            Atoms.expandedDatabaseIdSetDefault
+                                        Store.set setter Atoms.expandedDatabaseIdSet Atoms.expandedDatabaseIdSetDefault
+                                        Store.set setter Atoms.selectedDatabaseIdSet Atoms.selectedDatabaseIdSetDefault
+                                        Store.set setter Atoms.view Atoms.viewDefault
+                                        Store.set setter Atoms.language Atoms.languageDefault
+                                        Store.set setter Atoms.color Atoms.colorDefault
+                                        Store.set setter Atoms.weekStart Atoms.weekStartDefault
+                                        Store.set setter Atoms.dayStart Atoms.dayStartDefault
+                                        Store.set setter Atoms.sessionDuration Atoms.sessionDurationDefault
+                                        Store.set setter Atoms.sessionBreakDuration Atoms.sessionBreakDurationDefault
+                                        Store.set setter Atoms.daysBefore Atoms.daysBeforeDefault
+                                        Store.set setter Atoms.daysAfter Atoms.daysAfterDefault
+                                        Store.set setter Atoms.searchText Atoms.searchTextDefault
+                                        Store.set setter Atoms.cellSize Atoms.cellSizeDefault
+                                        Store.set setter Atoms.leftDock Atoms.leftDockDefault
+                                        Store.set setter Atoms.rightDock Atoms.rightDockDefault
+                                        Store.set setter Atoms.hideTemplates Atoms.hideTemplatesDefault
+                                        Store.set setter Atoms.hideSchedulingOverlay Atoms.hideSchedulingOverlayDefault
+                                        Store.set setter Atoms.showViewOptions Atoms.showViewOptionsDefault
+                                        Store.set setter Atoms.filterTasksByView Atoms.filterTasksByViewDefault
 
-                                        Atoms.setAtomValue
-                                            set
-                                            Atoms.selectedDatabaseIdSet
-                                            Atoms.selectedDatabaseIdSetDefault
-
-                                        Atoms.setAtomValue set Atoms.view Atoms.viewDefault
-                                        Atoms.setAtomValue set Atoms.language Atoms.languageDefault
-                                        Atoms.setAtomValue set Atoms.color Atoms.colorDefault
-                                        Atoms.setAtomValue set Atoms.weekStart Atoms.weekStartDefault
-                                        Atoms.setAtomValue set Atoms.dayStart Atoms.dayStartDefault
-                                        Atoms.setAtomValue set Atoms.sessionDuration Atoms.sessionDurationDefault
-
-                                        Atoms.setAtomValue
-                                            set
-                                            Atoms.sessionBreakDuration
-                                            Atoms.sessionBreakDurationDefault
-
-                                        Atoms.setAtomValue set Atoms.daysBefore Atoms.daysBeforeDefault
-                                        Atoms.setAtomValue set Atoms.daysAfter Atoms.daysAfterDefault
-                                        Atoms.setAtomValue set Atoms.searchText Atoms.searchTextDefault
-                                        Atoms.setAtomValue set Atoms.cellSize Atoms.cellSizeDefault
-                                        Atoms.setAtomValue set Atoms.leftDock Atoms.leftDockDefault
-                                        Atoms.setAtomValue set Atoms.rightDock Atoms.rightDockDefault
-                                        Atoms.setAtomValue set Atoms.hideTemplates Atoms.hideTemplatesDefault
-
-                                        Atoms.setAtomValue
-                                            set
-                                            Atoms.hideSchedulingOverlay
-                                            Atoms.hideSchedulingOverlayDefault
-
-                                        Atoms.setAtomValue set Atoms.showViewOptions Atoms.showViewOptionsDefault
-                                        Atoms.setAtomValue set Atoms.filterTasksByView Atoms.filterTasksByViewDefault
-
-                                        Atoms.setAtomValue
-                                            set
+                                        Store.set
+                                            setter
                                             Atoms.informationAttachmentMap
                                             Atoms.informationAttachmentMapDefault
 

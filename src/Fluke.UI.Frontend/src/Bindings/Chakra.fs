@@ -228,9 +228,9 @@ module Chakra =
             (fun (input: {| Props: IChakraProps
                             Component: obj
                             Children: seq<ReactElement> |}) ->
-                composeComponent input.Component input.Props input.Children)
+                renderComponent input.Component input.Props input.Children)
 
-    let inline composeChakraComponent (cmp: obj) (props: IChakraProps -> unit) (children: seq<ReactElement>) =
+    let inline renderChakraComponent (cmp: obj) (props: IChakraProps -> unit) (children: seq<ReactElement>) =
         let newProps = JS.newObj props
 
         //        chakraMemo
@@ -239,70 +239,70 @@ module Chakra =
 //                Component = cmp
 //                Children = children
 //            |}
-        composeComponent cmp newProps children
+        renderComponent cmp newProps children
 
     type ChakraInput<'T> = 'T -> unit
 
     module Icons =
-        let externalLinkIcon<'T> = composeChakraComponent icons.ExternalLinkIcon
+        let externalLinkIcon<'T> = renderChakraComponent icons.ExternalLinkIcon
 
-    let accordion<'T> = composeChakraComponent react.Accordion
-    let accordionItem<'T> = composeChakraComponent react.AccordionItem
-    let accordionButton<'T> = composeChakraComponent react.AccordionButton
-    let accordionIcon<'T> = composeChakraComponent react.AccordionIcon
-    let accordionPanel<'T> = composeChakraComponent react.AccordionPanel
-    let box<'T> = composeChakraComponent react.Box
-    let button<'T> = composeChakraComponent react.Button
-    let center<'T> = composeChakraComponent react.Center
-    let checkbox<'T> = composeChakraComponent react.Checkbox
-    let checkboxGroup<'T> = composeChakraComponent react.CheckboxGroup
-    let circle<'T> = composeChakraComponent react.Circle
-    let darkMode<'T> = composeChakraComponent react.DarkMode
-    let flex<'T> = composeChakraComponent react.Flex
-    let grid<'T> = composeChakraComponent react.Grid
-    let hStack<'T> = composeChakraComponent react.HStack
-    let icon<'T> = composeChakraComponent react.Icon
-    let iconButton<'T> = composeChakraComponent react.IconButton
-    let input<'T> = composeChakraComponent react.Input
-    let inputGroup<'T> = composeChakraComponent react.InputGroup
-    let inputLeftElement<'T> = composeChakraComponent react.InputLeftElement
-    let link<'T> = composeChakraComponent react.Link
-    let menu<'T> = composeChakraComponent react.Menu
-    let menuButton<'T> = composeChakraComponent react.MenuButton
-    let menuList<'T> = composeChakraComponent react.MenuList
-    let menuItem<'T> = composeChakraComponent react.MenuItem
-    let menuItemOption<'T> = composeChakraComponent react.MenuItemOption
-    let menuOptionGroup<'T> = composeChakraComponent react.MenuOptionGroup
-    let modal<'T> = composeChakraComponent react.Modal
-    let modalBody<'T> = composeChakraComponent react.ModalBody
-    let modalContent<'T> = composeChakraComponent react.ModalContent
-    let modalCloseButton<'T> = composeChakraComponent react.ModalCloseButton
-    let modalOverlay<'T> = composeChakraComponent react.ModalOverlay
-    let numberInput<'T> = composeChakraComponent react.NumberInput
-    let numberInputField<'T> = composeChakraComponent react.NumberInputField
-    let numberInputStepper<'T> = composeChakraComponent react.NumberInputStepper
-    let numberDecrementStepper<'T> = composeChakraComponent react.NumberDecrementStepper
-    let numberIncrementStepper<'T> = composeChakraComponent react.NumberIncrementStepper
-    let popover<'T> = composeChakraComponent react.Popover
-    let popoverArrow<'T> = composeChakraComponent react.PopoverArrow
-    let popoverBody<'T> = composeChakraComponent react.PopoverBody
-    let popoverCloseButton<'T> = composeChakraComponent react.PopoverCloseButton
-    let popoverContent<'T> = composeChakraComponent react.PopoverContent
-    let popoverTrigger<'T> = composeChakraComponent react.PopoverTrigger
-    let provider<'T> = composeChakraComponent react.ChakraProvider
-    let radio<'T> = composeChakraComponent react.Radio
-    let radioGroup<'T> = composeChakraComponent react.RadioGroup
-    let simpleGrid<'T> = composeChakraComponent react.SimpleGrid
-    let spacer<'T> = composeChakraComponent react.Spacer
-    let spinner<'T> = composeChakraComponent react.Spinner
-    let stack<'T> = composeChakraComponent react.Stack
-    let tabList<'T> = composeChakraComponent react.TabList
-    let tabPanel<'T> = composeChakraComponent react.TabPanel
-    let tabPanels<'T> = composeChakraComponent react.TabPanels
-    let tab<'T> = composeChakraComponent react.Tab
-    let tabs<'T> = composeChakraComponent react.Tabs
-    let textarea<'T> = composeChakraComponent react.Textarea
-    let tooltip<'T> = composeChakraComponent react.Tooltip
+    let accordion<'T> = renderChakraComponent react.Accordion
+    let accordionItem<'T> = renderChakraComponent react.AccordionItem
+    let accordionButton<'T> = renderChakraComponent react.AccordionButton
+    let accordionIcon<'T> = renderChakraComponent react.AccordionIcon
+    let accordionPanel<'T> = renderChakraComponent react.AccordionPanel
+    let box<'T> = renderChakraComponent react.Box
+    let button<'T> = renderChakraComponent react.Button
+    let center<'T> = renderChakraComponent react.Center
+    let checkbox<'T> = renderChakraComponent react.Checkbox
+    let checkboxGroup<'T> = renderChakraComponent react.CheckboxGroup
+    let circle<'T> = renderChakraComponent react.Circle
+    let darkMode<'T> = renderChakraComponent react.DarkMode
+    let flex<'T> = renderChakraComponent react.Flex
+    let grid<'T> = renderChakraComponent react.Grid
+    let hStack<'T> = renderChakraComponent react.HStack
+    let icon<'T> = renderChakraComponent react.Icon
+    let iconButton<'T> = renderChakraComponent react.IconButton
+    let input<'T> = renderChakraComponent react.Input
+    let inputGroup<'T> = renderChakraComponent react.InputGroup
+    let inputLeftElement<'T> = renderChakraComponent react.InputLeftElement
+    let link<'T> = renderChakraComponent react.Link
+    let menu<'T> = renderChakraComponent react.Menu
+    let menuButton<'T> = renderChakraComponent react.MenuButton
+    let menuList<'T> = renderChakraComponent react.MenuList
+    let menuItem<'T> = renderChakraComponent react.MenuItem
+    let menuItemOption<'T> = renderChakraComponent react.MenuItemOption
+    let menuOptionGroup<'T> = renderChakraComponent react.MenuOptionGroup
+    let modal<'T> = renderChakraComponent react.Modal
+    let modalBody<'T> = renderChakraComponent react.ModalBody
+    let modalContent<'T> = renderChakraComponent react.ModalContent
+    let modalCloseButton<'T> = renderChakraComponent react.ModalCloseButton
+    let modalOverlay<'T> = renderChakraComponent react.ModalOverlay
+    let numberInput<'T> = renderChakraComponent react.NumberInput
+    let numberInputField<'T> = renderChakraComponent react.NumberInputField
+    let numberInputStepper<'T> = renderChakraComponent react.NumberInputStepper
+    let numberDecrementStepper<'T> = renderChakraComponent react.NumberDecrementStepper
+    let numberIncrementStepper<'T> = renderChakraComponent react.NumberIncrementStepper
+    let popover<'T> = renderChakraComponent react.Popover
+    let popoverArrow<'T> = renderChakraComponent react.PopoverArrow
+    let popoverBody<'T> = renderChakraComponent react.PopoverBody
+    let popoverCloseButton<'T> = renderChakraComponent react.PopoverCloseButton
+    let popoverContent<'T> = renderChakraComponent react.PopoverContent
+    let popoverTrigger<'T> = renderChakraComponent react.PopoverTrigger
+    let provider<'T> = renderChakraComponent react.ChakraProvider
+    let radio<'T> = renderChakraComponent react.Radio
+    let radioGroup<'T> = renderChakraComponent react.RadioGroup
+    let simpleGrid<'T> = renderChakraComponent react.SimpleGrid
+    let spacer<'T> = renderChakraComponent react.Spacer
+    let spinner<'T> = renderChakraComponent react.Spinner
+    let stack<'T> = renderChakraComponent react.Stack
+    let tabList<'T> = renderChakraComponent react.TabList
+    let tabPanel<'T> = renderChakraComponent react.TabPanel
+    let tabPanels<'T> = renderChakraComponent react.TabPanels
+    let tab<'T> = renderChakraComponent react.Tab
+    let tabs<'T> = renderChakraComponent react.Tabs
+    let textarea<'T> = renderChakraComponent react.Textarea
+    let tooltip<'T> = renderChakraComponent react.Tooltip
 
 
     type IToastProps =
@@ -346,4 +346,4 @@ module Chakra =
         |> Option.map fn
 
     let transformShiftBy x y =
-        $"translate({x |> Option.defaultValue 0}px, {y |> Option.defaultValue 0}px)"
+        $"translate({x |> Option.defaultValue 0.}px, {y |> Option.defaultValue 0.}px)"

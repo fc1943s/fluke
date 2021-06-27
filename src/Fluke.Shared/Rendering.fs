@@ -52,6 +52,12 @@ module Rendering =
         let firstDateRange = FlukeDateTime.Create (dateSequence |> List.head, dayStart)
         let lastDateRange = FlukeDateTime.Create (dateSequence |> List.last, dayStart)
 
+//        printfn $"renderTaskStatusMap
+//        dayStart={dayStart|>FlukeTime.Stringify}
+//        dateSequence={dateSequence|>List.map FlukeDate.Stringify}
+//        taskState={taskState}
+//        "
+//
         let dateSequenceWithEntries =
             let dates =
                 taskState.CellStateMap
@@ -193,6 +199,11 @@ module Rendering =
                             |> FlukeDateTime.GreaterEqualThan dayStart dateId pendingAfter -> Pending
                         | _, None -> Pending
                         | _ -> Suggested
+
+//                printfn
+//                    $"dateId={referenceDay |> FlukeDate.Stringify} moment={moment |> FlukeDateTime.Stringify} status={
+//                                                                                                                          status
+//                    }"
 
                 (moment, status) :: loop renderState tail
             | [] -> []

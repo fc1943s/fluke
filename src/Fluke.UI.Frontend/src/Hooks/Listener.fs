@@ -9,12 +9,12 @@ open Feliz.UseListener
 
 module Listener =
     let useKeyPress keys (fn: Store.GetFn -> Store.SetFn -> KeyboardEvent -> JS.Promise<unit>) =
-        let fnCallback = React.useCallbackRef (fun (get, set, e) -> fn get set e)
+        let fnCallback = React.useCallbackRef (fun (getter, setter, e) -> fn getter setter e)
         Profiling.addTimestamp "useKeyPress.render"
 
         let keyEvent =
             Store.useCallback (
-                (fun get set e -> fnCallback (get, set, e)),
+                (fun getter setter e -> fnCallback (getter, setter, e)),
                 [|
                     box fnCallback
                 |]

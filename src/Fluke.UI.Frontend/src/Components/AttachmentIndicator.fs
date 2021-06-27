@@ -36,9 +36,9 @@ module AttachmentIndicator =
                         JS.newObj
                             (fun x ->
                                 x.content <- "\"\""
-                                x.borderTopWidth <- "8px"
+                                x.borderTopWidth <- $"{min (cellSize / 2) 10}px"
                                 x.borderTopColor <- color
-                                x.borderLeftWidth <- "8px"
+                                x.borderLeftWidth <- $"{min (cellSize / 2) 10}px"
                                 x.borderLeftColor <- "transparent"
                                 x.position <- "absolute"
                                 x.top <- "0"

@@ -27,15 +27,15 @@ module DatabaseForm =
 
         let onSave =
             Store.useCallback (
-                (fun get set _ ->
+                (fun getter setter _ ->
                     promise {
-                        let databaseName = Store.getReadWrite get (Atoms.Database.name input.DatabaseId)
-                        let username = Atoms.getAtomValue get Atoms.username
+                        let databaseName = Store.getReadWrite getter (Atoms.Database.name input.DatabaseId)
+                        let username = Store.value getter Store.Atoms.username
 
                         match databaseName with
                         | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let databaseIdSet = Atoms.getAtomValue get Atoms.databaseIdSet
+                            let databaseIdSet = Store.value getter Atoms.databaseIdSet
 
                             let databaseNames =
                                 databaseIdSet
@@ -45,7 +45,7 @@ module DatabaseForm =
                                         input.DatabaseId <> Database.Default.Id
                                         || input.DatabaseId <> databaseId)
                                 |> List.map Atoms.Database.name
-                                |> List.map (Atoms.getAtomValue get)
+                                |> List.map (Store.value getter)
 
                             match username with
                             | Some username ->
@@ -65,9 +65,7 @@ module DatabaseForm =
                                         else
                                             promise {
                                                 let database =
-                                                    Atoms.getAtomValue
-                                                        get
-                                                        (Selectors.Database.database input.DatabaseId)
+                                                    Store.value getter (Selectors.Database.database input.DatabaseId)
 
                                                 return { database with Name = databaseName }
                                             }
@@ -77,9 +75,9 @@ module DatabaseForm =
                                     //                                setter.set (Atoms.Events.events eventId, event)
                                     //                                printfn $"event {event}"
 
-                                    Store.readWriteReset set (Atoms.Database.name input.DatabaseId)
+                                    Store.readWriteReset setter (Atoms.Database.name input.DatabaseId)
 
-                                    Atoms.setAtomValue set (Atoms.uiFlag Atoms.UIFlagType.Database) Atoms.UIFlag.None
+                                    Store.set setter (Atoms.uiFlag Atoms.UIFlagType.Database) Atoms.UIFlag.None
 
                                     do! input.OnSave database
                             | None -> ()
@@ -123,7 +121,7 @@ module DatabaseForm =
                                         x.atom <-
                                             Some (
                                                 Store.InputAtom (
-                                                    Store.AtomPath.Atom (Atoms.Database.name input.DatabaseId)
+                                                    Store.AtomReference.Atom (Atoms.Database.name input.DatabaseId)
                                                 )
                                             )
 

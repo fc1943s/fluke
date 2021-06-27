@@ -17,6 +17,13 @@ module Operators =
 module Promise =
     let ignore (fn: JS.Promise<_>) = Promise.map ignore fn
 
+module Json =
+    let inline encode<'T> obj =
+        Thoth.Json.Encode.Auto.toString<'T> (0, obj)
+
+    let inline decode<'T> data =
+        Thoth.Json.Decode.Auto.unsafeFromString<'T> data
+
 module JS =
     [<Emit "process.env.JEST_WORKER_ID">]
     let private jestWorkerId : bool = jsNative

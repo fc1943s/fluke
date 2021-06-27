@@ -128,7 +128,7 @@ module Theme =
                                     |}
                                 ``.rct-collapse-btn:focus`` = {| boxShadow = focusShadow |}
                                 ``.rct-disabled .rct-checkbox svg`` = {| display = "none" |}
-                                ``.rct-disabled .rct-node-icon`` = {| marginLeft = "-10px" |}
+                                ``.rct-disabled .rct-node-icon`` = {| marginLeft = "-20px" |}
                                 ``.rct-node label:hover, .rct-node label:active`` = {| background = "none" |}
                                 ``.rct-node-parent:not(:first-of-type)`` = {| marginTop = "7px" |}
                                 ``.rct-node:first-of-type`` = {| marginTop = "2px" |}

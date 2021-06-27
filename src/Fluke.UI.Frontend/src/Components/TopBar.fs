@@ -14,11 +14,11 @@ module TopBar =
 
         let onLogoClick =
             Store.useCallback (
-                (fun _get set _ ->
+                (fun _ setter _ ->
                     promise {
-                        Atoms.setAtomValue set Atoms.leftDock None
-                        Atoms.setAtomValue set Atoms.rightDock None
-                        Atoms.setAtomValue set Atoms.view Atoms.viewDefault
+                        Store.set setter Atoms.leftDock None
+                        Store.set setter Atoms.rightDock None
+                        Store.set setter Atoms.view Atoms.viewDefault
                     }),
                 [||]
             )

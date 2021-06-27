@@ -183,7 +183,7 @@ module RightDock =
         let itemsMap = items |> Map.ofSeq
 
         Chakra.flex
-            (fun x -> x.overflow <- "scroll")
+            (fun x -> x.overflow <- "auto")
             [
                 match rightDock with
                 | None -> nothing

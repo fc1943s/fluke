@@ -20,7 +20,7 @@ module CellMenu =
                    DateId: DateId
                    OnClose: unit -> unit |})
         =
-        let username = Store.useValue Atoms.username
+        let username = Store.useValue Store.Atoms.username
         let toast = Chakra.useToast ()
         let cellSize = Store.useValue Atoms.cellSize
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (input.TaskId, input.DateId))
@@ -44,7 +44,7 @@ module CellMenu =
 
         let onClick =
             Store.useCallback (
-                (fun _get set (onClickStatus: CellStatus) ->
+                (fun _ setter (onClickStatus: CellStatus) ->
                     promise {
                         cellSelectionMap
                         |> Map.iter
@@ -52,16 +52,16 @@ module CellMenu =
                                 dates
                                 |> Set.iter
                                     (fun date ->
-                                        Atoms.setAtomValue
-                                            set
+                                        Store.set
+                                            setter
                                             (Selectors.Cell.sessionStatus (taskId, DateId date))
                                             onClickStatus))
 
-                        Atoms.setAtomValue set (Selectors.Cell.sessionStatus (input.TaskId, input.DateId)) onClickStatus
+                        Store.set setter (Selectors.Cell.sessionStatus (input.TaskId, input.DateId)) onClickStatus
 
                         cellSelectionMap
                         |> Map.keys
-                        |> Seq.iter (fun taskId -> Atoms.setAtomValue set (Atoms.Task.selectionSet taskId) Set.empty)
+                        |> Seq.iter (fun taskId -> Store.set setter (Atoms.Task.selectionSet taskId) Set.empty)
 
                         input.OnClose ()
                     }),

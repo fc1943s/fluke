@@ -58,7 +58,7 @@ module React =
     let inline bindComponent<'C, 'P> (props: 'P) (children: seq<ReactElement>) (cmp: 'C) =
         ReactBindings.React.createElement (cmp, props, children)
 
-    let inline composeComponent<'C, 'P> (cmp: 'C) (props: 'P) (children: seq<ReactElement>) =
+    let inline renderComponent<'C, 'P> (cmp: 'C) (props: 'P) (children: seq<ReactElement>) =
         bindComponent<'C, 'P> props children cmp
 
     let inline strictMode children =

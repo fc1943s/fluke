@@ -22,8 +22,8 @@ module CellSelectionSetup =
     let maxTimeout = 5 * 60 * 1000
 
     let getCellMap (subject: Bindings.render<_, _>) (getFn: Store.GetFn) =
-        let dateSequence = Atoms.getAtomValue getFn Selectors.dateSequence
-        let sortedTaskIdList = Atoms.getAtomValue getFn Selectors.Session.sortedTaskIdList
+        let dateSequence = Store.value getFn Selectors.dateSequence
+        let sortedTaskIdList = Store.value getFn Selectors.Session.sortedTaskIdList
 
         printfn $"sortedTaskIdList ={sortedTaskIdList}"
 
@@ -31,7 +31,7 @@ module CellSelectionSetup =
             sortedTaskIdList
             |> List.collect
                 (fun taskId ->
-                    let taskName = Atoms.getAtomValue getFn (Atoms.Task.name taskId)
+                    let taskName = Store.value getFn (Atoms.Task.name taskId)
 
                     dateSequence
                     |> List.map
@@ -63,7 +63,7 @@ module CellSelectionSetup =
         promise {
             do! RTL.waitFor id
 
-            let cellSelectionMap = Atoms.getAtomValue getFn Selectors.Session.cellSelectionMap
+            let cellSelectionMap = Store.value getFn Selectors.Session.cellSelectionMap
 
             Jest
                 .expect(toString cellSelectionMap)
@@ -101,7 +101,7 @@ module CellSelectionSetup =
 
     let initialSetter (getFn: Store.GetFn) (setFn: Store.SetFn) =
         promise {
-            let set atom value = Atoms.setAtomValue setFn atom value
+            let set atom value = Store.set setFn atom value
 
             let dslTemplate =
                 {
@@ -134,7 +134,7 @@ module CellSelectionSetup =
                 Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
 
 
-            set Atoms.username (Some Templates.templatesUser.Username)
+            set Store.Atoms.username (Some Templates.templatesUser.Username)
             set Atoms.view View.View.Priority
             set Atoms.daysBefore 2
             set Atoms.daysAfter 2
@@ -155,7 +155,7 @@ module CellSelectionSetup =
                                     setFn
                                     (Store.AtomScope.ReadOnly, databaseState.Database.Id, taskState)
 
-                            Atoms.setAtomValuePrev setFn (Atoms.Database.taskIdSet databaseId) (Set.add taskId)
+                            Store.change setFn (Atoms.Database.taskIdSet databaseId) (Set.add taskId)
                         })
                 |> Promise.Parallel
                 |> Promise.ignore
@@ -169,8 +169,8 @@ module CellSelectionSetup =
                 (fun () ->
                     printfn "$$$$$$$$$$$$$$$$$$$$$$$$$$$$$ BEFORE RENDER"
 
-                    let gunNamespace = Store.useValue Atoms.gunNamespace
-                    let username, setUsername = Store.useState Atoms.username
+                    let gunNamespace = Store.useValue Store.Selectors.gunNamespace
+                    let username, setUsername = Store.useState Store.Atoms.username
 
                     React.useEffect (
                         (fun () ->
@@ -207,7 +207,7 @@ module CellSelectionSetup =
             do! RTL.sleep 400
 
             let! username =
-                JS.waitForSome (fun () -> async { return Atoms.getAtomValue getFn Atoms.username })
+                JS.waitForSome (fun () -> async { return Store.value getFn Store.Atoms.username })
                 |> Async.StartAsPromise
 
             printfn $"! username={username}"
@@ -218,7 +218,7 @@ module CellSelectionSetup =
                 JS.waitForSome
                     (fun () ->
                         async {
-                            let sortedTaskIdList = Atoms.getAtomValue getFn Selectors.Session.sortedTaskIdList
+                            let sortedTaskIdList = Store.value getFn Selectors.Session.sortedTaskIdList
                             return if sortedTaskIdList.Length = 4 then Some sortedTaskIdList else None
                         })
                 |> Async.StartAsPromise
