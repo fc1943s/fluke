@@ -73,7 +73,8 @@ module Full =
                 .click (Some {| force = false |})
             |> ignore
 
-        let clickSelector selector = (Cy.get selector).click None |> ignore
+        let clickSelector selector =
+            (Cy.get selector).first().click None |> ignore
 
         let waitForWithinSelector selector text options =
             (Cy.get(selector).contains text options)
@@ -147,7 +148,7 @@ module Full =
 
                     //                    Cy.wait 400
 
-                    Cy2.clickText "Project"
+                    Cy2.clickSelector ".chakra-radio"
 
                     //                    Cy.wait 15000
 
