@@ -179,7 +179,6 @@ module CellForm =
                                                         CustomProps =
                                                             fun x ->
                                                                 x.textarea <- true
-                                                                x.onEnterPress <- Some addAttachment
                                                                 x.fixedValue <- Some addAttachmentText
                                                         Props =
                                                             fun x ->

@@ -137,7 +137,7 @@ module Full =
                     Cy2.clickText "Save"
 
 
-                    Cy.wait 200
+                    Cy.wait 1000
 
                     //                    Cy.wait 2000
 

@@ -60,10 +60,10 @@ module GunPeers =
                         "server.js", (File.ReadAllBytes $"../{projectDir}/server.js")
 
                         "cert.pem",
-                        (File.ReadAllBytes $"../{projectDir}/ssl/{containerId}.brazilsouth.azurecontainer.io.pem")
+                        (File.ReadAllBytes $"../{projectDir}/ssl/{containerId}.eastus.azurecontainer.io.pem")
 
                         "key.pem",
-                        (File.ReadAllBytes $"../{projectDir}/ssl/{containerId}.brazilsouth.azurecontainer.io-key.pem")
+                        (File.ReadAllBytes $"../{projectDir}/ssl/{containerId}.eastus.azurecontainer.io-key.pem")
                     ]
                 volume_mount.azureFile
                     fileShareId
