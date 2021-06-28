@@ -136,7 +136,7 @@ module Full =
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
-                    //                    Cy.wait 2000
+                    Cy.wait 2000
 
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Add Task"
@@ -235,6 +235,11 @@ module Full =
 
                     Cy2.clickText "Bullet Journal View"
                     Cy.wait 200
+
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
+
+                    Cy2.clickTestId "[data-testid^='cell-']"
+                    Cy2.clickTestId $"[data-testid='cell-button-{(TempUI.cellStatusColor Disabled)}']"
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 

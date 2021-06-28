@@ -18,10 +18,7 @@ module DatabaseForm =
     open State
 
     [<ReactComponent>]
-    let rec DatabaseForm
-        (input: {| DatabaseId: DatabaseId
-                   OnSave: Database -> JS.Promise<unit> |})
-        =
+    let rec DatabaseForm (databaseId: DatabaseId) (onSave: Database -> JS.Promise<unit>) =
         let toast = Chakra.useToast ()
         let debug = Store.useValue Atoms.debug
 
@@ -29,7 +26,7 @@ module DatabaseForm =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
-                        let databaseName = Store.getReadWrite getter (Atoms.Database.name input.DatabaseId)
+                        let databaseName = Store.getReadWrite getter (Atoms.Database.name databaseId)
                         let username = Store.value getter Store.Atoms.username
 
                         match databaseName with
@@ -41,9 +38,9 @@ module DatabaseForm =
                                 databaseIdSet
                                 |> Set.toList
                                 |> List.filter
-                                    (fun databaseId ->
-                                        input.DatabaseId <> Database.Default.Id
-                                        || input.DatabaseId <> databaseId)
+                                    (fun databaseId' ->
+                                        databaseId <> Database.Default.Id
+                                        || databaseId <> databaseId')
                                 |> List.map Atoms.Database.name
                                 |> List.map (Store.value getter)
 
@@ -53,7 +50,7 @@ module DatabaseForm =
                                     toast (fun x -> x.description <- "Database with this name already exists")
                                 else
                                     let! database =
-                                        if input.DatabaseId = Database.Default.Id then
+                                        if databaseId = Database.Default.Id then
                                             {
                                                 Id = DatabaseId.NewId ()
                                                 Name = databaseName
@@ -65,7 +62,7 @@ module DatabaseForm =
                                         else
                                             promise {
                                                 let database =
-                                                    Store.value getter (Selectors.Database.database input.DatabaseId)
+                                                    Store.value getter (Selectors.Database.database databaseId)
 
                                                 return { database with Name = databaseName }
                                             }
@@ -75,16 +72,17 @@ module DatabaseForm =
                                     //                                setter.set (Atoms.Events.events eventId, event)
                                     //                                printfn $"event {event}"
 
-                                    Store.readWriteReset setter (Atoms.Database.name input.DatabaseId)
+                                    Store.readWriteReset setter (Atoms.Database.name databaseId)
 
                                     Store.set setter (Atoms.uiFlag Atoms.UIFlagType.Database) Atoms.UIFlag.None
 
-                                    do! input.OnSave database
+                                    do! onSave database
                             | None -> ()
                     }),
                 [|
+                    box databaseId
+                    box onSave
                     box toast
-                    box input
                 |]
             )
 
@@ -102,7 +100,7 @@ module DatabaseForm =
                         Chakra.box
                             (fun x -> x.fontSize <- "15px")
                             [
-                                str $"""{if input.DatabaseId = Database.Default.Id then "Add" else "Edit"} Database"""
+                                str $"""{if databaseId = Database.Default.Id then "Add" else "Edit"} Database"""
                             ]
 
                         if not debug then
@@ -111,7 +109,7 @@ module DatabaseForm =
                             Chakra.box
                                 (fun _ -> ())
                                 [
-                                    str $"{input.DatabaseId}"
+                                    str $"{databaseId}"
                                 ]
 
                         Input.Input
@@ -121,7 +119,7 @@ module DatabaseForm =
                                         x.atom <-
                                             Some (
                                                 Store.InputAtom (
-                                                    Store.AtomReference.Atom (Atoms.Database.name input.DatabaseId)
+                                                    Store.AtomReference.Atom (Atoms.Database.name databaseId)
                                                 )
                                             )
 

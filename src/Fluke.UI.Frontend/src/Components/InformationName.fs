@@ -11,8 +11,8 @@ open Fluke.Shared.Domain.Model
 
 module InformationName =
     [<ReactComponent>]
-    let InformationName (input: {| Information: Information |}) =
-        let attachments = Store.useValue (Selectors.Information.attachments input.Information)
+    let InformationName information =
+        let attachments = Store.useValue (Selectors.Information.attachments information)
         let cellSize = Store.useValue Atoms.cellSize
 
         let detailsClick =
@@ -28,10 +28,10 @@ module InformationName =
                         Store.set
                             setter
                             (Atoms.uiFlag Atoms.UIFlagType.Information)
-                            (input.Information |> Atoms.UIFlag.Information)
+                            (information |> Atoms.UIFlag.Information)
                     }),
                 [|
-                    box input
+                    box information
                 |]
             )
 
@@ -44,10 +44,10 @@ module InformationName =
                 Chakra.box
                     (fun x ->
                         x.whiteSpace <- "nowrap"
-                        x.color <- TempUI.informationColor input.Information)
+                        x.color <- TempUI.informationColor information)
                     [
                         str (
-                            input.Information
+                            information
                             |> Information.Name
                             |> InformationName.Value
                             |> function
@@ -56,18 +56,15 @@ module InformationName =
                         )
 
                         InputLabelIconButton.InputLabelIconButton
-                            {|
-                                Props =
-                                    fun x ->
-                                        x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                        x.fontSize <- "11px"
-                                        x.height <- "15px"
-                                        x.color <- "whiteAlpha.700"
-                                        x.marginTop <- "-1px"
-                                        x.marginLeft <- "6px"
-                                        x.onClick <- detailsClick
-                            |}
+                            (fun x ->
+                                x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                x.fontSize <- "11px"
+                                x.height <- "15px"
+                                x.color <- "whiteAlpha.700"
+                                x.marginTop <- "-1px"
+                                x.marginLeft <- "6px"
+                                x.onClick <- detailsClick)
                     ]
 
-                AttachmentIndicator.AttachmentIndicator {| Attachments = attachments |}
+                AttachmentIndicator.AttachmentIndicator attachments
             ]

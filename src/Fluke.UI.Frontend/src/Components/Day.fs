@@ -10,9 +10,9 @@ module Day =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let Day (input: {| Date: FlukeDate; Label: string |}) =
-        let isToday = Store.useValue (Selectors.FlukeDate.isToday input.Date)
-        let hasCellSelection = Store.useValue (Selectors.FlukeDate.hasCellSelection input.Date)
+    let Day (date: FlukeDate) (label: string) =
+        let isToday = Store.useValue (Selectors.FlukeDate.isToday date)
+        let hasCellSelection = Store.useValue (Selectors.FlukeDate.hasCellSelection date)
         let weekStart = Store.useValue Atoms.weekStart
         let cellSize = Store.useValue Atoms.cellSize
 
@@ -24,13 +24,13 @@ module Day =
                     else null
 
                 x.borderLeftWidth <-
-                    match (weekStart, input.Date) with
+                    match (weekStart, date) with
                     | StartOfMonth
                     | StartOfWeek -> "1px"
                     | _ -> null
 
                 x.borderLeftColor <-
-                    match (weekStart, input.Date) with
+                    match (weekStart, date) with
                     | StartOfMonth -> "#ffffff3d"
                     | StartOfWeek -> "#222"
                     | _ -> null
@@ -41,5 +41,5 @@ module Day =
                 x.lineHeight <- $"{cellSize}px"
                 x.textAlign <- "center")
             [
-                str (String.toLower input.Label)
+                str (String.toLower label)
             ]

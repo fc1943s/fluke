@@ -5,33 +5,39 @@ open Feliz
 open Feliz.Router
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.State
 
 
 module RootWrapper =
     [<ReactComponent>]
-    let RootWrapper children =
+    let ThemeLoader children =
         let theme = Theme.useTheme ()
+        let darkMode = Store.useValue Atoms.darkMode
 
+        Chakra.provider
+            (fun x -> x.theme <- theme)
+            [
+                (if darkMode then Chakra.darkMode else Chakra.lightMode)
+                    (fun _ -> ())
+                    [
+                        React.router [
+                            router.children [ yield! children ]
+                        ]
+                    ]
+            ]
+
+    [<ReactComponent>]
+    let RootWrapper children =
         React.strictMode [
             Store.provider [
-                //                Recoil.root [
-//                    root.children [
                 React.ReactErrorBoundary.renderCatchFn
                     (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
                     (Html.div [
-                        prop.style [ style.color "white" ]
-                        prop.children [ str "error" ]
+                        prop.classes [ "static" ]
+                        prop.children [
+                            str "Unhandled Exception. Check the console log."
+                        ]
                      ])
-                    (Chakra.provider
-                        (fun x -> x.theme <- theme)
-                        [
-                            React.router [
-                                router.children [ yield! children ]
-                            ]
-                        ])
-            //                    ]
-//                ]
+                    (ThemeLoader children)
             ]
-        //                    ]
-//                ]
         ]

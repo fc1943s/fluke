@@ -46,21 +46,18 @@ module InputList =
                                             (str "Add row")
                                             [
                                                 InputLabelIconButton.InputLabelIconButton
-                                                    {|
-                                                        Props =
-                                                            fun x ->
-                                                                x.icon <- Icons.fa.FaPlus |> Icons.render
-                                                                x.marginLeft <- "5px"
+                                                    (fun x ->
+                                                        x.icon <- Icons.fa.FaPlus |> Icons.render
+                                                        x.marginLeft <- "5px"
 
-                                                                x.onClick <-
-                                                                    fun _ ->
-                                                                        promise {
-                                                                            atomFieldOptions.SetAtomValue (
-                                                                                atomFieldOptions.AtomValue
-                                                                                |> Array.append [| unbox "" |]
-                                                                            )
-                                                                        }
-                                                    |}
+                                                        x.onClick <-
+                                                            fun _ ->
+                                                                promise {
+                                                                    atomFieldOptions.SetAtomValue (
+                                                                        atomFieldOptions.AtomValue
+                                                                        |> Array.append [| unbox "" |]
+                                                                    )
+                                                                })
                                             ]
                                     ]
                             Hint = props.hint
@@ -111,29 +108,25 @@ module InputList =
                                                 (str "Remove row")
                                                 [
                                                     InputLabelIconButton.InputLabelIconButton
-                                                        {|
-                                                            Props =
-                                                                fun x ->
-                                                                    x.icon <- Icons.fa.FaMinus |> Icons.render
+                                                        (fun x ->
+                                                            x.icon <- Icons.fa.FaMinus |> Icons.render
 
-                                                                    x.onClick <-
-                                                                        fun _ ->
-                                                                            promise {
-                                                                                atomFieldOptions.SetAtomValue (
-                                                                                    atomFieldOptions.AtomValue
-                                                                                    |> Array.indexed
-                                                                                    |> Array.filter
-                                                                                        (fun (i', _) -> i' <> i)
-                                                                                    |> Array.map snd
-                                                                                )
-                                                                            }
+                                                            x.onClick <-
+                                                                fun _ ->
+                                                                    promise {
+                                                                        atomFieldOptions.SetAtomValue (
+                                                                            atomFieldOptions.AtomValue
+                                                                            |> Array.indexed
+                                                                            |> Array.filter (fun (i', _) -> i' <> i)
+                                                                            |> Array.map snd
+                                                                        )
+                                                                    }
 
-                                                                    x.position <- "absolute"
-                                                                    x.right <- "5px"
-                                                                    x.top <- "50%"
-                                                                    x.transform <- "translate(0, -50%)"
-                                                                    x.margin <- "0"
-                                                        |}
+                                                            x.position <- "absolute"
+                                                            x.right <- "5px"
+                                                            x.top <- "50%"
+                                                            x.transform <- "translate(0, -50%)"
+                                                            x.margin <- "0")
                                                 ]
                                     ])
                 | _ -> nothing

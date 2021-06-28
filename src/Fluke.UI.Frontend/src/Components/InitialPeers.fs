@@ -67,7 +67,6 @@ module InitialPeers =
                                                 x.flex <- "1"
                                                 x.autoFocus <- true
                                                 x.onClick <- skipClick
-                                                x.color <- "gray"
                                         Children =
                                             [
                                                 str "Skip"
@@ -82,7 +81,6 @@ module InitialPeers =
                                             fun x ->
                                                 x.flex <- "1"
                                                 x.onClick <- nextClick
-                                                x.color <- "gray"
                                                 x.disabled <- gunPeer.Length = 0
                                         Children =
                                             [

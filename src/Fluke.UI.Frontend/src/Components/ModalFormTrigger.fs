@@ -35,7 +35,7 @@ module ModalFormTrigger =
                 }
                 |> Promise.start),
             [|
-                box input
+                box input.Trigger
                 box onTrigger
                 box callbacks
             |]

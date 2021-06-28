@@ -59,23 +59,19 @@ module RightDock =
                                                 | _ -> Database.Default.Id
 
                                             DatabaseForm.DatabaseForm
-                                                {|
-                                                    DatabaseId = databaseId
-                                                    OnSave =
-                                                        fun database ->
-                                                            promise {
-                                                                do! hydrateDatabase (Store.AtomScope.ReadOnly, database)
+                                                databaseId
+                                                (fun database ->
+                                                    promise {
+                                                        do! hydrateDatabase (Store.AtomScope.ReadOnly, database)
 
-                                                                if database.Id <> databaseId then
-                                                                    JS.setTimeout
-                                                                        (fun () ->
-                                                                            setDatabaseIdSet (Set.add database.Id))
-                                                                        0
-                                                                    |> ignore
+                                                        if database.Id <> databaseId then
+                                                            JS.setTimeout
+                                                                (fun () -> setDatabaseIdSet (Set.add database.Id))
+                                                                0
+                                                            |> ignore
 
-                                                                setRightDock None
-                                                            }
-                                                |}
+                                                        setRightDock None
+                                                    })
                                         ]
                             RightIcons = []
                         |}
@@ -119,36 +115,31 @@ module RightDock =
                                                 | _ -> Task.Default.Id
 
                                             TaskForm.TaskForm
-                                                {|
-                                                    TaskId = taskId
-                                                    OnSave =
-                                                        fun task ->
-                                                            promise {
-                                                                let taskState =
-                                                                    {
-                                                                        Task = task
-                                                                        SortList = []
-                                                                        Sessions = []
-                                                                        Attachments = []
-                                                                        CellStateMap = Map.empty
-                                                                    }
-
-                                                                do!
-                                                                    hydrateTaskState (
-                                                                        Store.AtomScope.ReadOnly,
-                                                                        taskDatabaseId,
-                                                                        taskState
-                                                                    )
-
-                                                                if task.Id <> taskId then
-                                                                    JS.setTimeout
-                                                                        (fun () -> setTaskIdSet (Set.add task.Id))
-                                                                        0
-                                                                    |> ignore
-
-                                                                setRightDock None
+                                                taskId
+                                                (fun task ->
+                                                    promise {
+                                                        let taskState =
+                                                            {
+                                                                Task = task
+                                                                SortList = []
+                                                                Sessions = []
+                                                                Attachments = []
+                                                                CellStateMap = Map.empty
                                                             }
-                                                |}
+
+                                                        do!
+                                                            hydrateTaskState (
+                                                                Store.AtomScope.ReadOnly,
+                                                                taskDatabaseId,
+                                                                taskState
+                                                            )
+
+                                                        if task.Id <> taskId then
+                                                            JS.setTimeout (fun () -> setTaskIdSet (Set.add task.Id)) 0
+                                                            |> ignore
+
+                                                        setRightDock None
+                                                    })
                                         ]
                             RightIcons = []
                         |}

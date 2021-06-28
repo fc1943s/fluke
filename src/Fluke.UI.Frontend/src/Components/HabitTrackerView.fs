@@ -39,8 +39,7 @@ module HabitTrackerView =
 
                                                     React.suspense (
                                                         [
-                                                            TaskInformationName.TaskInformationName
-                                                                {| TaskId = taskId |}
+                                                            TaskInformationName.TaskInformationName taskId
                                                         ],
                                                         nothing
                                                     ))
@@ -58,7 +57,7 @@ module HabitTrackerView =
 
                                                     React.suspense (
                                                         [
-                                                            TaskPriority.TaskPriority {| TaskId = taskId |}
+                                                            TaskPriority.TaskPriority taskId
                                                         ],
                                                         nothing
                                                     ))
@@ -77,7 +76,7 @@ module HabitTrackerView =
 
                                                             React.suspense (
                                                                 [
-                                                                    TaskName.TaskName {| TaskId = taskId |}
+                                                                    TaskName.TaskName taskId
                                                                 ],
                                                                 LoadingSpinner.InlineLoadingSpinner ()
                                                             )
@@ -92,7 +91,7 @@ module HabitTrackerView =
                         GridHeader.GridHeader ()
                         React.suspense (
                             [
-                                Cells.Cells {| TaskIdList = sortedTaskIdList |}
+                                Cells.Cells sortedTaskIdList
                             ],
                             nothing
                         )

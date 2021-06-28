@@ -13,6 +13,7 @@ module Content =
 
         let sessionRestored = Store.useValue Atoms.sessionRestored
         let initialPeerSkipped = Store.useValue Atoms.initialPeerSkipped
+        let manualLoading = Store.useValue Atoms.manualLoading
         let gunPeers = Store.useValue Store.Atoms.gunPeers
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let username = Store.useValue Store.Atoms.username
@@ -46,32 +47,35 @@ module Content =
 
                                         TopBar.TopBar ()
 
-                                        Chakra.flex
-                                            (fun x ->
-                                                x.flex <- "1"
-                                                x.overflow <- "auto")
-                                            [
-                                                React.suspense (
-                                                    [
-                                                        LeftDock.LeftDock ()
-                                                    ],
-                                                    LoadingSpinner.LoadingSpinner ()
-                                                )
-                                                React.suspense (
-                                                    [
-                                                        ViewTabs.ViewTabs ()
-                                                    ],
-                                                    LoadingSpinner.LoadingSpinner ()
-                                                )
-                                                React.suspense (
-                                                    [
-                                                        RightDock.RightDock ()
-                                                    ],
-                                                    LoadingSpinner.LoadingSpinner ()
-                                                )
-                                            ]
+                                        if manualLoading then
+                                            LoadingSpinner.LoadingSpinner ()
+                                        else
+                                            Chakra.flex
+                                                (fun x ->
+                                                    x.flex <- "1"
+                                                    x.overflow <- "auto")
+                                                [
+                                                    React.suspense (
+                                                        [
+                                                            LeftDock.LeftDock ()
+                                                        ],
+                                                        LoadingSpinner.LoadingSpinner ()
+                                                    )
+                                                    React.suspense (
+                                                        [
+                                                            ViewTabs.ViewTabs ()
+                                                        ],
+                                                        LoadingSpinner.LoadingSpinner ()
+                                                    )
+                                                    React.suspense (
+                                                        [
+                                                            RightDock.RightDock ()
+                                                        ],
+                                                        LoadingSpinner.LoadingSpinner ()
+                                                    )
+                                                ]
 
-                                        StatusBar.StatusBar ()
+                                            StatusBar.StatusBar ()
                                     ]
 
                                 React.suspense (

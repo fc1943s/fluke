@@ -14,13 +14,14 @@ module TaskName =
     open Domain.Model
 
     [<ReactComponent>]
-    let TaskName (input: {| TaskId: TaskId |}) =
-//        let ref = React.useElementRef ()
+    let TaskName taskId =
+        //        let ref = React.useElementRef ()
 //        let hovered = Listener.useElementHover ref
-        let hasSelection = Store.useValue (Selectors.Task.hasSelection input.TaskId)
-        let taskState = Store.useValue (Selectors.Task.taskState input.TaskId)
+        let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
+
+        let taskState = Store.useValue (Selectors.Task.taskState taskId)
         let cellSize = Store.useValue Atoms.cellSize
-        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
+        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
 
         let editTask =
             Store.useCallback (
@@ -29,16 +30,13 @@ module TaskName =
                         let deviceInfo = Store.value getter Selectors.deviceInfo
                         if deviceInfo.IsMobile then Store.set setter Atoms.leftDock None
                         Store.set setter Atoms.rightDock (Some TempUI.DockType.Task)
-                        let databaseId = Store.value getter (Selectors.Task.databaseId input.TaskId)
+                        let databaseId = Store.value getter (Selectors.Task.databaseId taskId)
 
-                        Store.set
-                            setter
-                            (Atoms.uiFlag Atoms.UIFlagType.Task)
-                            (Atoms.UIFlag.Task (databaseId, input.TaskId))
+                        Store.set setter (Atoms.uiFlag Atoms.UIFlagType.Task) (Atoms.UIFlag.Task (databaseId, taskId))
 
                     }),
                 [|
-                    box input.TaskId
+                    box taskId
                 |]
             )
 
@@ -46,11 +44,11 @@ module TaskName =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
-                        let sessions = Store.value getter (Atoms.Task.sessions input.TaskId)
+                        let sessions = Store.value getter (Atoms.Task.sessions taskId)
 
                         Store.set
                             setter
-                            (Atoms.Task.sessions input.TaskId)
+                            (Atoms.Task.sessions taskId)
                             (Session (
                                 (let now = DateTime.Now in if now.Second < 30 then now else now.AddMinutes 1.)
                                 |> FlukeDateTime.FromDateTime
@@ -58,7 +56,7 @@ module TaskName =
                              :: sessions)
                     }),
                 [|
-                    box input.TaskId
+                    box taskId
                 |]
             )
 
@@ -68,15 +66,15 @@ module TaskName =
             (fun x ->
                 x.flex <- "1"
                 x.alignItems <- "center"
-//                x.ref <- ref
+                //                x.ref <- ref
                 x.position <- "relative"
                 x.height <- $"{cellSize}px")
             [
                 Chakra.box
                     (fun x ->
-//                        x.backgroundColor <- if hovered then "#292929" else null
+                        //                        x.backgroundColor <- if hovered then "#292929" else null
                         x.color <- if hasSelection then "#ff5656" else null
-//                        x.zIndex <- if hovered then 1 else 0
+                        //                        x.zIndex <- if hovered then 1 else 0
                         x.overflow <- "hidden"
                         x.paddingLeft <- "5px"
                         x.paddingRight <- "5px"
@@ -96,18 +94,15 @@ module TaskName =
                                     Tooltip = ""
                                     Trigger =
                                         InputLabelIconButton.InputLabelIconButton
-                                            {|
-                                                Props =
-                                                    fun x ->
-                                                        x.``as`` <- Chakra.react.MenuButton
-                                                        x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                                        x.fontSize <- "11px"
-                                                        x.height <- "15px"
-                                                        x.color <- "whiteAlpha.700"
-                                                        x.display <- if isReadWrite then null else "none"
-                                                        x.marginTop <- "-1px"
-                                                        x.marginLeft <- "6px"
-                                            |}
+                                            (fun x ->
+                                                x.``as`` <- Chakra.react.MenuButton
+                                                x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                                x.fontSize <- "11px"
+                                                x.height <- "15px"
+                                                x.color <- "whiteAlpha.700"
+                                                x.display <- if isReadWrite then null else "none"
+                                                x.marginTop <- "-3px"
+                                                x.marginLeft <- "6px")
                                     Body =
                                         [
                                             Chakra.menuItem
@@ -157,9 +152,6 @@ module TaskName =
 
                 //                match taskState.valueMaybe () with
 //                | Some taskState ->
-                AttachmentIndicator.AttachmentIndicator
-                    {|
-                        Attachments = taskState.Attachments
-                    |}
+                AttachmentIndicator.AttachmentIndicator taskState.Attachments
             //                | None -> nothing
             ]

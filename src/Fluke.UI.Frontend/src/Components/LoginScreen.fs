@@ -5,28 +5,44 @@ open Feliz
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fable.React
+open Fluke.UI.Frontend.State
+open Fable.Core.JsInterop
+open Fable.Core
 
 
 module LoginScreen =
+    let injectElectron (setter: Store.SetFn) =
+        match JS.window id with
+        | Some window ->
+            window?injectElectron <- fun value ->
+                                         printfn $"injectElectronFn value={value}"
+                                         Store.set setter Atoms.electron value
+                                         window?injectElectron <- JS.undefined
+        | None -> ()
+
     [<ReactComponent>]
     let LoginScreen () =
         let toast = Chakra.useToast ()
         let usernameField, setUsernameField = React.useState ""
         let passwordField, setPasswordField = React.useState ""
         let password2Field, setPassword2Field = React.useState ""
+        let deviceInfo = Store.useValue Selectors.deviceInfo
 
         let signIn = Auth.useSignIn ()
         let signUp = Auth.useSignUp ()
 
         let signInClick =
             Store.useCallback (
-                (fun _ _ _ ->
+                (fun _ setter _ ->
                     promise {
                         match! signIn (usernameField, passwordField) with
-                        | Ok _ -> printfn "logged"
+                        | Ok _ ->
+                            if deviceInfo.IsElectron then injectElectron setter
+                            printfn "logged"
                         | Error error -> toast (fun x -> x.description <- error)
                     }),
                 [|
+                    box deviceInfo.IsElectron
                     box signIn
                     box toast
                     box usernameField
@@ -36,14 +52,20 @@ module LoginScreen =
 
         let signUpClick =
             Store.useCallback (
-                (fun _ _ _ ->
+                (fun _ setter _ ->
                     promise {
                         if passwordField <> password2Field then
                             toast (fun x -> x.description <- "Passwords don't match")
                             return false
                         else
+                            Store.set setter Atoms.manualLoading true
+
                             match! signUp (usernameField, passwordField) with
                             | Ok _ ->
+                                if deviceInfo.IsElectron then injectElectron setter
+                                do! Promise.sleep 1000
+                                Store.set setter Atoms.manualLoading false
+
                                 toast
                                     (fun x ->
                                         x.title <- "Success"
@@ -56,6 +78,7 @@ module LoginScreen =
                                 return false
                     }),
                 [|
+                    box deviceInfo.IsElectron
                     box signUp
                     box toast
                     box usernameField
@@ -119,7 +142,6 @@ module LoginScreen =
                                                             fun x ->
                                                                 x.flex <- "1"
                                                                 x.onClick <- signInClick
-                                                                x.color <- "gray"
                                                         Children =
                                                             [
                                                                 str "Login"
@@ -143,7 +165,6 @@ module LoginScreen =
                                                                     fun _ -> promise { setVisible (not visible) }
 
                                                                 x.flex <- "1"
-                                                                x.color <- "gray"
                                                         Children =
                                                             [
                                                                 str "Register"

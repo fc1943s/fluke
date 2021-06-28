@@ -11,22 +11,19 @@ module CellSessionIndicator =
     open Domain.State
 
     [<ReactComponent>]
-    let CellSessionIndicator
-        (input: {| Status: CellStatus
-                   Sessions: Session list |})
-        =
+    let CellSessionIndicator (status: CellStatus) (sessions: Session list) =
         Chakra.box
             (fun x ->
                 x.fontSize <- "11px"
 
                 x.color <-
-                    match input.Status with
+                    match status with
                     | UserStatus (_, Completed) -> "#ccc"
                     | _ -> "#999"
 
                 x.textShadow <- "0 0 2px #000")
             [
-                match input.Sessions.Length with
+                match sessions.Length with
                 | x when x > 0 -> str (string x)
                 | _ -> nothing
             ]

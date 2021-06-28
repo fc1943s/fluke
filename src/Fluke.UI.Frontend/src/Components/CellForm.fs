@@ -15,13 +15,10 @@ open Fluke.UI.Frontend.State
 
 
 module CellForm =
-
     [<ReactComponent>]
-    let rec CellForm (input: {| TaskId: TaskId; DateId: DateId |}) =
+    let rec AddAttachmentInput taskId dateId =
         let isTesting = Store.useValue Store.Atoms.isTesting
-
-        let (TaskName taskName) = Store.useValue (Atoms.Task.name input.TaskId)
-
+        let ctrlPressed = Store.useValue Atoms.ctrlPressed
         let addAttachmentText, setAddAttachmentText = React.useState ""
 
         let addAttachment =
@@ -45,16 +42,16 @@ module CellForm =
                                  |> Attachment.Comment
                                  |> Some)
 
-                            let cellAttachmentMap = Store.value getter (Atoms.Task.cellAttachmentMap input.TaskId)
+                            let cellAttachmentMap = Store.value getter (Atoms.Task.cellAttachmentMap taskId)
 
                             Store.set
                                 setter
-                                (Atoms.Task.cellAttachmentMap input.TaskId)
+                                (Atoms.Task.cellAttachmentMap taskId)
                                 (cellAttachmentMap
                                  |> Map.add
-                                     input.DateId
+                                     dateId
                                      (cellAttachmentMap
-                                      |> Map.tryFind input.DateId
+                                      |> Map.tryFind dateId
                                       |> Option.defaultValue Set.empty
                                       |> Set.add attachmentId))
 
@@ -62,14 +59,132 @@ module CellForm =
                         | _ -> ()
                     }),
                 [|
+                    box taskId
+                    box dateId
                     box addAttachmentText
                     box setAddAttachmentText
-                    box input
                 |]
             )
 
-        let attachments = Store.useValue (Selectors.Cell.attachments (input.TaskId, input.DateId))
+        if true then
+            Chakra.flex
+                (fun x -> x.alignItems <- "flex-end")
+                [
+                    Input.LeftIconInput
+                        {|
+                            Icon = Icons.fi.FiPaperclip |> Icons.render
+                            CustomProps =
+                                fun x ->
+                                    x.textarea <- true
+                                    x.fixedValue <- Some addAttachmentText
 
+                                    x.onEnterPress <-
+                                        Some (fun _ -> promise { if ctrlPressed then do! addAttachment () })
+                            Props =
+                                fun x ->
+                                    x.placeholder <- "Add Attachment"
+                                    x.autoFocus <- true
+                                    x.maxHeight <- "200px"
+                                    x.borderBottomRightRadius <- "0"
+                                    x.borderTopRightRadius <- "0"
+
+                                    x.onChange <- (fun (e: KeyboardEvent) -> promise { setAddAttachmentText e.Value })
+                        |}
+
+
+                    Button.Button
+                        {|
+                            Hint = None
+                            Icon = Some (Icons.fa.FaPlus |> Icons.wrap, Button.IconPosition.Left)
+                            Props =
+                                fun x ->
+                                    if isTesting then x?``data-testid`` <- "Add Attachment"
+                                    x.borderBottomLeftRadius <- "0"
+                                    x.borderTopLeftRadius <- "0"
+                                    x.onClick <- fun _ -> addAttachment ()
+                            Children = []
+                        |}
+                ]
+        else
+            Vim.render
+                {|
+                    OnVimCreated = fun vim -> printfn $"vim {vim}"
+                    Props = fun x -> x.height <- "150px"
+                    Fallback = fun () -> str "wasm error"
+                |}
+
+    [<ReactComponent>]
+    let AttachmentList taskId dateId =
+        let attachments = Store.useValue (Selectors.Cell.attachments (taskId, dateId))
+
+        Chakra.stack
+            (fun x ->
+                x.spacing <- "15px"
+                x.flex <- "1")
+            [
+                Chakra.stack
+                    (fun x ->
+                        x.flex <- "1"
+                        x.overflowY <- "auto"
+                        x.flexBasis <- 0)
+                    [
+                        match attachments with
+                        //                                                | None -> LoadingSpinner.LoadingSpinner ()
+                        | [] ->
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    str "No attachments found"
+                                ]
+                        | attachments ->
+                            Chakra.stack
+                                (fun x -> x.spacing <- "10px")
+                                [
+                                    yield!
+                                        attachments
+                                        |> List.map
+                                            (fun (moment, attachment) ->
+                                                Chakra.stack
+                                                    (fun x -> x.flex <- "1")
+                                                    [
+                                                        match attachment with
+                                                        | Attachment.Comment (Comment.Comment comment) ->
+
+                                                            Chakra.flex
+                                                                (fun x ->
+                                                                    x.justifyContent <- "space-between"
+
+                                                                    x.color <- "whiteAlpha.600")
+                                                                [
+                                                                    Chakra.box
+                                                                        (fun _ -> ())
+                                                                        [
+                                                                            str "Comment"
+                                                                        ]
+
+                                                                    Chakra.box
+                                                                        (fun x -> x.lineHeight <- "16px")
+                                                                        [
+                                                                            str (moment |> FlukeDateTime.Stringify)
+                                                                        ]
+                                                                ]
+
+                                                            Chakra.box
+                                                                (fun _ -> ())
+                                                                [
+                                                                    str comment
+                                                                ]
+                                                        | _ -> str "???"
+                                                    ])
+                                ]
+                    ]
+
+                AddAttachmentInput taskId dateId
+            ]
+
+    [<ReactComponent>]
+    let rec CellForm (taskId: TaskId) (dateId: DateId) =
+        let (TaskName taskName) = Store.useValue (Atoms.Task.name taskId)
 
         Accordion.Accordion
             {|
@@ -89,12 +204,7 @@ module CellForm =
                                 Chakra.box
                                     (fun _ -> ())
                                     [
-                                        str
-                                            $"""Date: {
-                                                           input.DateId
-                                                           |> DateId.Value
-                                                           |> FlukeDate.Stringify
-                                            }"""
+                                        str $"""Date: {dateId |> DateId.Value |> FlukeDate.Stringify}"""
                                     ]
                             ])
 
@@ -104,123 +214,7 @@ module CellForm =
                                 x.spacing <- "10px"
                                 x.flex <- "1")
                             [
-                                Chakra.stack
-                                    (fun x ->
-                                        x.spacing <- "15px"
-                                        x.flex <- "1")
-                                    [
-                                        Chakra.stack
-                                            (fun x ->
-                                                x.flex <- "1"
-                                                x.overflowY <- "auto"
-                                                x.flexBasis <- 0)
-                                            [
-                                                match attachments with
-                                                //                                                | None -> LoadingSpinner.LoadingSpinner ()
-                                                | [] ->
-                                                    Chakra.box
-                                                        (fun _ -> ())
-                                                        [
-                                                            str "No attachments found"
-                                                        ]
-                                                | attachments ->
-                                                    Chakra.stack
-                                                        (fun x -> x.spacing <- "10px")
-                                                        [
-                                                            yield!
-                                                                attachments
-                                                                |> List.map
-                                                                    (fun (moment, attachment) ->
-                                                                        Chakra.stack
-                                                                            (fun x -> x.flex <- "1")
-                                                                            [
-                                                                                match attachment with
-                                                                                | Attachment.Comment (Comment.Comment comment) ->
-
-                                                                                    Chakra.flex
-                                                                                        (fun x ->
-                                                                                            x.justifyContent <-
-                                                                                                "space-between"
-
-                                                                                            x.color <- "whiteAlpha.600")
-                                                                                        [
-                                                                                            Chakra.box
-                                                                                                (fun _ -> ())
-                                                                                                [
-                                                                                                    str "Comment"
-                                                                                                ]
-
-                                                                                            Chakra.box
-                                                                                                (fun _ -> ())
-                                                                                                [
-                                                                                                    str (
-                                                                                                        moment
-                                                                                                        |> FlukeDateTime.Stringify
-                                                                                                    )
-                                                                                                ]
-                                                                                        ]
-
-                                                                                    Chakra.box
-                                                                                        (fun _ -> ())
-                                                                                        [
-                                                                                            str comment
-                                                                                        ]
-                                                                                | _ -> str "???"
-                                                                            ])
-                                                        ]
-                                            ]
-
-                                        Chakra.flex
-                                            (fun x -> x.alignItems <- "flex-end")
-                                            [
-                                                Input.LeftIconInput
-                                                    {|
-                                                        Icon = Icons.fi.FiPaperclip |> Icons.render
-                                                        CustomProps =
-                                                            fun x ->
-                                                                x.textarea <- true
-                                                                x.fixedValue <- Some addAttachmentText
-                                                        Props =
-                                                            fun x ->
-                                                                x.placeholder <- "Add Attachment"
-                                                                x.autoFocus <- true
-                                                                x.maxHeight <- "200px"
-                                                                x.borderBottomRightRadius <- "0"
-                                                                x.borderTopRightRadius <- "0"
-
-                                                                x.onChange <-
-                                                                    (fun (e: KeyboardEvent) ->
-                                                                        promise { setAddAttachmentText e.Value })
-                                                    |}
-
-
-                                                Button.Button
-                                                    {|
-                                                        Hint = None
-                                                        Icon =
-                                                            Some (
-                                                                Icons.fa.FaPlus |> Icons.wrap,
-                                                                Button.IconPosition.Left
-                                                            )
-                                                        Props =
-                                                            fun x ->
-                                                                if isTesting then x?``data-testid`` <- "Add Attachment"
-                                                                x.borderBottomLeftRadius <- "0"
-                                                                x.borderTopLeftRadius <- "0"
-                                                                x.onClick <- addAttachment
-                                                        Children = []
-                                                    |}
-                                            ]
-
-                                        if false then
-                                            Vim.render
-                                                {|
-                                                    OnVimCreated = fun vim -> printfn $"vim {vim}"
-                                                    Props = fun x -> x.height <- "150px"
-                                                    Fallback = fun () -> str "wasm error"
-                                                |}
-
-                                    ]
+                                AttachmentList taskId dateId
                             ])
                     ]
             |}
@@ -237,7 +231,7 @@ module CellForm =
             | _ -> None, None
 
         match taskId, dateId with
-        | Some taskId, Some dateId -> CellForm {| TaskId = taskId; DateId = dateId |}
+        | Some taskId, Some dateId -> CellForm taskId dateId
         | _ ->
             Chakra.box
                 (fun x -> x.padding <- "15px")

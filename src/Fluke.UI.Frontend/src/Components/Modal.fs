@@ -17,36 +17,34 @@ module Modal =
         | Closed
 
     [<ReactComponent>]
-    let Modal (input: {| Props: IProps |}) =
-        let localState, setLocalState =
-            React.useState (if input.Props.isOpen then LocalState.Rendered else LocalState.Closed)
+    let Modal (props: IProps) =
+        let localState, setLocalState = React.useState (if props.isOpen then LocalState.Rendered else LocalState.Closed)
 
         React.useEffect (
             (fun () ->
                 match localState with
-                | LocalState.Closed when input.Props.isOpen -> setLocalState LocalState.Rendered
-                | LocalState.Rendered when not input.Props.isOpen -> setLocalState LocalState.Closing
+                | LocalState.Closed when props.isOpen -> setLocalState LocalState.Rendered
+                | LocalState.Rendered when not props.isOpen -> setLocalState LocalState.Closing
                 | LocalState.Closing -> setLocalState LocalState.Closed
                 | _ -> ()),
             [|
-                box input.Props
+                box props
                 box localState
                 box setLocalState
             |]
         )
 
-        printfn $"input.input.Props.isOpen={input.Props.isOpen} localState={localState}"
+        printfn $"input.input.Props.isOpen={props.isOpen} localState={localState}"
 
-        if not input.Props.isOpen
-           && localState = LocalState.Closed then
+        if not props.isOpen && localState = LocalState.Closed then
             nothing
         else
             Chakra.modal
                 (fun x ->
                     //                x.isCentered <- true
                     x.isLazy <- true
-                    x.isOpen <- input.Props.isOpen
-                    x.onClose <- input.Props.onClose)
+                    x.isOpen <- props.isOpen
+                    x.onClose <- props.onClose)
                 [
                     Chakra.modalOverlay (fun _ -> ()) []
                     Chakra.modalContent
@@ -55,7 +53,7 @@ module Modal =
                             Chakra.modalBody
                                 (fun x -> x.padding <- "40px")
                                 [
-                                    yield! input.Props.children
+                                    yield! props.children
                                 ]
                             Chakra.modalCloseButton (fun _ -> ()) []
                         ]

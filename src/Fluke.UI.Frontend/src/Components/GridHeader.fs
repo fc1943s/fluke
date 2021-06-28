@@ -40,10 +40,8 @@ module GridHeader =
                                     let cellWidth = cellSize * dates.Length
 
                                     MonthResponsiveCell.MonthResponsiveCell
-                                        {|
-                                            Date = firstDate
-                                            Props = (fun x -> x.width <- $"{cellWidth}px")
-                                        |})
+                                        firstDate
+                                        (fun x -> x.width <- $"{cellWidth}px"))
                     ]
 
                 // Day of Week row
@@ -52,13 +50,7 @@ module GridHeader =
                     [
                         yield!
                             dateSequence
-                            |> List.map
-                                (fun date ->
-                                    Day.Day
-                                        {|
-                                            Date = date
-                                            Label = (date |> FlukeDate.DateTime).Format "EEEEEE"
-                                        |})
+                            |> List.map (fun date -> Day.Day date ((date |> FlukeDate.DateTime).Format "EEEEEE"))
                     ]
 
                 // Day row
@@ -70,11 +62,6 @@ module GridHeader =
                             |> List.map
                                 (fun date ->
                                     match date with
-                                    | { Day = Day day } as date ->
-                                        Day.Day
-                                            {|
-                                                Date = date
-                                                Label = day.ToString "D2"
-                                            |})
+                                    | { Day = Day day } as date -> Day.Day date (day.ToString "D2"))
                     ]
             ]

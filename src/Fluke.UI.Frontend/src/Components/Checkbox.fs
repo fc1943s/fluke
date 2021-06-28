@@ -7,17 +7,14 @@ open Fluke.UI.Frontend.Bindings
 
 module Checkbox =
     [<ReactComponent>]
-    let Checkbox
-        (input: {| Label: string option
-                   Props: Chakra.IChakraProps -> unit |})
-        =
+    let Checkbox (label: string option) (props: Chakra.IChakraProps -> unit) =
         Chakra.checkbox
             (fun x ->
                 x.colorScheme <- "purple"
                 x.size <- "lg"
-                input.Props x)
+                props x)
             [
-                match input.Label with
+                match label with
                 | Some label ->
                     Chakra.box
                         (fun x -> x.fontSize <- "main")

@@ -62,7 +62,7 @@ module InformationView =
                                                                             (fun x -> x.paddingLeft <- $"{cellSize}px")
                                                                             [
                                                                                 InformationName.InformationName
-                                                                                    {| Information = information |}
+                                                                                    information
 
                                                                                 // Task Name
                                                                                 Chakra.box
@@ -86,15 +86,9 @@ module InformationView =
                                                                                                                 }px")
                                                                                                         [
                                                                                                             TaskPriority.TaskPriority
-                                                                                                                {|
-                                                                                                                    TaskId =
-                                                                                                                        taskId
-                                                                                                                |}
+                                                                                                                taskId
                                                                                                             TaskName.TaskName
-                                                                                                                {|
-                                                                                                                    TaskId =
-                                                                                                                        taskId
-                                                                                                                |}
+                                                                                                                taskId
                                                                                                         ])
                                                                                     ]
                                                                             ])
@@ -137,7 +131,7 @@ module InformationView =
                                                                                 x.height <- $"{cellSize}px"
                                                                                 x.lineHeight <- $"{cellSize}px")
                                                                             []
-                                                                        Cells.Cells {| TaskIdList = taskIdList |}
+                                                                        Cells.Cells taskIdList
                                                                     ])
                                                 ])
                             ]

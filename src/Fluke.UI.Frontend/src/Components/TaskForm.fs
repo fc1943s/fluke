@@ -16,13 +16,10 @@ open Fluke.Shared
 
 module TaskForm =
     [<ReactComponent>]
-    let rec TaskForm
-        (input: {| TaskId: TaskId
-                   OnSave: Task -> JS.Promise<unit> |})
-        =
+    let rec TaskForm (taskId: TaskId) (onSave: Task -> JS.Promise<unit>) =
         let toast = Chakra.useToast ()
         let debug = Store.useValue Atoms.debug
-        let sessions, setSessions = Store.useState (Atoms.Task.sessions input.TaskId)
+        let sessions, setSessions = Store.useState (Atoms.Task.sessions taskId)
 
         let deleteSession =
             Store.useCallback (
@@ -46,11 +43,11 @@ module TaskForm =
             React.useMemo (
                 (fun () ->
                     match taskUIFlag with
-                    | Atoms.UIFlag.Task (databaseId, taskId) when taskId = input.TaskId -> databaseId
+                    | Atoms.UIFlag.Task (databaseId, taskId') when taskId' = taskId -> databaseId
                     | _ -> Database.Default.Id),
                 [|
                     box taskUIFlag
-                    box input.TaskId
+                    box taskId
                 |]
             )
 
@@ -58,9 +55,9 @@ module TaskForm =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
-                        let taskName = Store.getReadWrite getter (Atoms.Task.name input.TaskId)
-                        let taskInformation = Store.getReadWrite getter (Atoms.Task.information input.TaskId)
-                        let taskScheduling = Store.getReadWrite getter (Atoms.Task.scheduling input.TaskId)
+                        let taskName = Store.getReadWrite getter (Atoms.Task.name taskId)
+                        let taskInformation = Store.getReadWrite getter (Atoms.Task.information taskId)
+                        let taskScheduling = Store.getReadWrite getter (Atoms.Task.scheduling taskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -82,7 +79,7 @@ module TaskForm =
 //                            printfn $"event {event}"
 
                             let! task =
-                                if input.TaskId = Task.Default.Id then
+                                if taskId = Task.Default.Id then
                                     { Task.Default with
                                         Id = TaskId.NewId ()
                                         Name = taskName
@@ -92,7 +89,7 @@ module TaskForm =
                                     |> Promise.lift
                                 else
                                     promise {
-                                        let task = Store.value getter (Selectors.Task.task input.TaskId)
+                                        let task = Store.value getter (Selectors.Task.task taskId)
 
                                         return
                                             { task with
@@ -102,15 +99,16 @@ module TaskForm =
                                             }
                                     }
 
-                            Store.readWriteReset setter (Atoms.Task.name input.TaskId)
-                            Store.readWriteReset setter (Atoms.Task.information input.TaskId)
-                            Store.readWriteReset setter (Atoms.Task.scheduling input.TaskId)
+                            Store.readWriteReset setter (Atoms.Task.name taskId)
+                            Store.readWriteReset setter (Atoms.Task.information taskId)
+                            Store.readWriteReset setter (Atoms.Task.scheduling taskId)
                             Store.set setter (Atoms.uiFlag Atoms.UIFlagType.Task) Atoms.UIFlag.None
 
-                            do! input.OnSave task
+                            do! onSave task
                     }),
                 [|
-                    box input
+                    box taskId
+                    box onSave
                     box toast
                     box taskDatabaseId
                 |]
@@ -125,7 +123,7 @@ module TaskForm =
                         Chakra.box
                             (fun x -> x.fontSize <- "15px")
                             [
-                                str $"""{if input.TaskId = Task.Default.Id then "Add" else "Edit"} Task"""
+                                str $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task"""
                             ]
 
                         if not debug then
@@ -134,25 +132,22 @@ module TaskForm =
                             Chakra.box
                                 (fun _ -> ())
                                 [
-                                    str $"{input.TaskId}"
+                                    str $"{taskId}"
                                 ]
 
                         DatabaseSelector.DatabaseSelector
-                            {|
-                                TaskId = input.TaskId
-                                DatabaseId = taskDatabaseId
-                                OnChange =
-                                    fun databaseId -> setTaskUIFlag (Atoms.UIFlag.Task (databaseId, input.TaskId))
-                            |}
+                            taskDatabaseId
+                            taskId
+                            (fun databaseId -> setTaskUIFlag (Atoms.UIFlag.Task (databaseId, taskId)))
 
                         InformationSelector.InformationSelector
                             {|
                                 DisableResource = true
                                 SelectionType = InformationSelector.InformationSelectionType.Information
-                                TaskId = input.TaskId
+                                TaskId = taskId
                             |}
 
-                        SchedulingSelector.SchedulingSelector {| TaskId = input.TaskId |}
+                        SchedulingSelector.SchedulingSelector taskId
 
                         Chakra.stack
                             (fun x -> x.spacing <- "15px")
@@ -164,7 +159,7 @@ module TaskForm =
                                                 x.atom <-
                                                     Some (
                                                         Store.InputAtom (
-                                                            Store.AtomReference.Atom (Atoms.Task.name input.TaskId)
+                                                            Store.AtomReference.Atom (Atoms.Task.name taskId)
                                                         )
                                                     )
 
@@ -194,7 +189,7 @@ module TaskForm =
                     ]
 
 
-                if input.TaskId = Task.Default.Id then
+                if taskId = Task.Default.Id then
                     nothing
                 else
                     Html.hr []
@@ -233,22 +228,17 @@ module TaskForm =
                                                                     Tooltip = ""
                                                                     Trigger =
                                                                         InputLabelIconButton.InputLabelIconButton
-                                                                            {|
-                                                                                Props =
-                                                                                    fun x ->
-                                                                                        x.``as`` <-
-                                                                                            Chakra.react.MenuButton
+                                                                            (fun x ->
+                                                                                x.``as`` <- Chakra.react.MenuButton
 
-                                                                                        x.icon <-
-                                                                                            Icons.bs.BsThreeDots
-                                                                                            |> Icons.render
+                                                                                x.icon <-
+                                                                                    Icons.bs.BsThreeDots |> Icons.render
 
-                                                                                        x.fontSize <- "11px"
-                                                                                        x.height <- "15px"
-                                                                                        x.color <- "whiteAlpha.700"
-                                                                                        x.marginTop <- "-1px"
-                                                                                        x.marginLeft <- "6px"
-                                                                            |}
+                                                                                x.fontSize <- "11px"
+                                                                                x.height <- "15px"
+                                                                                x.color <- "whiteAlpha.700"
+                                                                                x.marginTop <- "-1px"
+                                                                                x.marginLeft <- "6px")
                                                                     Body =
                                                                         [
                                                                             Chakra.menuItem

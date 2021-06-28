@@ -7,13 +7,8 @@ open Fluke.UI.Frontend.Hooks
 
 
 module Tooltip =
-
     [<ReactComponent>]
-    let Tooltip
-        (input: {| Children: seq<ReactElement>
-                   WrapperProps: Chakra.IChakraProps -> unit
-                   Props: Chakra.IChakraProps -> unit |})
-        =
+    let Tooltip props wrapperProps children =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
 
@@ -21,7 +16,7 @@ module Tooltip =
             (fun x ->
                 x.ref <- ref
                 x.display <- "inline"
-                input.WrapperProps x)
+                wrapperProps x)
             [
                 Chakra.tooltip
                     (fun x ->
@@ -29,13 +24,13 @@ module Tooltip =
                         x.isOpen <- hovered
                         x.paddingTop <- "3px"
                         x.backgroundColor <- "gray.77"
-                        x.color <- "black"
                         x.zIndex <- 20000
+                        x.color <- "gray.13"
                         x.closeOnMouseDown <- true
                         x.portalProps <- {| appendToParentPortal = true |}
-//                        x.shouldWrapChildren <- true
-                        input.Props x)
-                    input.Children
+                        //                        x.shouldWrapChildren <- true
+                        props x)
+                    children
             ]
 
 
@@ -43,9 +38,4 @@ module Tooltip =
         if label = nothing then
             React.fragment children
         else
-            Tooltip
-                {|
-                    Children = children
-                    WrapperProps = (fun _ -> ())
-                    Props = (fun x -> x.label <- label)
-                |}
+            Tooltip (fun x -> x.label <- label) (fun _ -> ()) children

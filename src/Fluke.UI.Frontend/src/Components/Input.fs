@@ -7,6 +7,7 @@ open Feliz
 open Fluke.UI.Frontend.Bindings
 open Fable.Core
 open Fluke.Shared
+open Fluke.UI.Frontend.State
 
 
 module Input =
@@ -39,6 +40,8 @@ module Input =
         (input: {| CustomProps: IProps<'TValue, 'TKey> -> unit
                    Props: Chakra.IChakraProps -> unit |})
         =
+        let darkMode = Store.useValue Atoms.darkMode
+
         let props, customProps =
             React.useMemo (
                 (fun () -> JS.newObj input.Props, JS.newObj input.CustomProps),
@@ -254,7 +257,7 @@ module Input =
                                     x.top <- "0"
                                     x.height <- "100%"
                                     x.borderLeftWidth <- "1px"
-                                    x.borderLeftColor <- "#484848"
+                                    x.borderLeftColor <- if darkMode then "#484848" else "#b7b7b7"
                                     x.spacing <- "0")
                                 [
                                     let numberButtonClick (value: string) (op: float -> float) =

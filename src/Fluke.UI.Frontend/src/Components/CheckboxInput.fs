@@ -13,11 +13,8 @@ module CheckboxInput =
         let value, setValue = Store.useState input.Atom
 
         Checkbox.Checkbox
-            {|
-                Label = input.Label
-                Props =
-                    fun x ->
-                        x.isChecked <- value
-                        x.onChange <- fun _ -> promise { setValue (not value) }
-                        input.Props x
-            |}
+            input.Label
+            (fun x ->
+                x.isChecked <- value
+                x.onChange <- fun _ -> promise { setValue (not value) }
+                input.Props x)

@@ -178,6 +178,7 @@ module Chakra =
                    Input: obj
                    InputGroup: obj
                    InputLeftElement: obj
+                   LightMode: obj
                    Link: obj
                    Menu: obj
                    MenuButton: obj
@@ -269,6 +270,7 @@ module Chakra =
     let input<'T> = renderChakraComponent react.Input
     let inputGroup<'T> = renderChakraComponent react.InputGroup
     let inputLeftElement<'T> = renderChakraComponent react.InputLeftElement
+    let lightMode<'T> = renderChakraComponent react.LightMode
     let link<'T> = renderChakraComponent react.Link
     let menu<'T> = renderChakraComponent react.Menu
     let menuButton<'T> = renderChakraComponent react.MenuButton

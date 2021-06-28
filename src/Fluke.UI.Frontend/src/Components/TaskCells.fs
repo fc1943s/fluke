@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.UserInteraction
 open Feliz
 open Fluke.UI.Frontend.State
@@ -9,7 +8,7 @@ open Fluke.UI.Frontend.Bindings
 
 module TaskCells =
     [<ReactComponent>]
-    let TaskCells (input: {| TaskId: TaskId; Index: int |}) =
+    let TaskCells index taskId =
         let dateSequence = Store.useValue Selectors.dateSequence
 
         Chakra.flex
@@ -23,9 +22,9 @@ module TaskCells =
                                 [
                                     Cell.Cell
                                         {|
-                                            TaskId = input.TaskId
+                                            TaskId = taskId
                                             DateId = DateId date
-                                            SemiTransparent = input.Index % 2 <> 0
+                                            SemiTransparent = index % 2 <> 0
                                         |}
                                 ],
                                 LoadingSpinner.InlineLoadingSpinner ()

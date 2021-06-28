@@ -13,13 +13,13 @@ module AttachmentIndicator =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let AttachmentIndicator (input: {| Attachments: (FlukeDateTime * Attachment) list |}) =
+    let AttachmentIndicator (attachments: (FlukeDateTime * Attachment) list) =
         let cellSize = Store.useValue Atoms.cellSize
         let color = Store.useValue Atoms.color
 
         let tooltipContainerRef = React.useElementRef ()
 
-        match input.Attachments with
+        match attachments with
         | [] -> nothing
         | _ ->
             Chakra.box

@@ -16,16 +16,12 @@ module CellMenu =
     open State
 
     [<ReactComponent>]
-    let CellMenu
-        (input: {| TaskId: TaskId
-                   DateId: DateId
-                   OnClose: unit -> unit |})
-        =
+    let CellMenu (taskId: TaskId) (dateId: DateId) (onClose: unit -> unit) =
         let isTesting = Store.useValue Store.Atoms.isTesting
         let username = Store.useValue Store.Atoms.username
         let toast = Chakra.useToast ()
         let cellSize = Store.useValue Atoms.cellSize
-        let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (input.TaskId, input.DateId))
+        let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
         let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
         let dayStart = Store.useValue Atoms.dayStart
 
@@ -59,17 +55,19 @@ module CellMenu =
                                             (Selectors.Cell.sessionStatus (taskId, DateId date))
                                             onClickStatus))
 
-                        Store.set setter (Selectors.Cell.sessionStatus (input.TaskId, input.DateId)) onClickStatus
+                        Store.set setter (Selectors.Cell.sessionStatus (taskId, dateId)) onClickStatus
 
                         cellSelectionMap
                         |> Map.keys
                         |> Seq.iter (fun taskId -> Store.set setter (Atoms.Task.selectionSet taskId) Set.empty)
 
-                        input.OnClose ()
+                        onClose ()
                     }),
                 [|
+                    box onClose
+                    box taskId
+                    box dateId
                     box cellSelectionMap
-                    box input
                 |]
             )
 
@@ -80,14 +78,14 @@ module CellMenu =
                         match username, postponedUntil with
                         | Some username, Some postponedUntil ->
                             setSessionStatus (UserStatus (username, Postponed (Some postponedUntil)))
-                            input.OnClose ()
+                            onClose ()
                         | _ -> toast (fun x -> x.description <- "Invalid time")
                     }),
                 [|
+                    box onClose
                     box username
                     box postponedUntil
                     box setSessionStatus
-                    box input
                     box toast
                 |]
             )
@@ -148,8 +146,8 @@ module CellMenu =
                                         (fun () ->
                                             promise {
                                                 setRightDock (Some TempUI.DockType.Cell)
-                                                setCellUIFlag (Atoms.UIFlag.Cell (input.TaskId, input.DateId))
-                                                input.OnClose ()
+                                                setCellUIFlag (Atoms.UIFlag.Cell (taskId, dateId))
+                                                onClose ()
                                             }))
                             ]
 

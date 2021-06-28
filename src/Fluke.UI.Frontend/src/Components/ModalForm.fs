@@ -41,26 +41,24 @@ module ModalForm =
             [|
                 box onHide
                 box formIdFlag
-                box input
+                box input.Content
                 box callbacks
 
             |]
         )
 
-        Modal.Modal
-            {|
-                Props =
-                    JS.newObj
-                        (fun x ->
-                            x.isOpen <- formVisibleFlag
-                            x.onClose <- onHide
+        Modal.Modal (
+            JS.newObj
+                (fun x ->
+                    x.isOpen <- formVisibleFlag
+                    x.onClose <- onHide
 
-                            x.children <-
+                    x.children <-
+                        [
+                            Chakra.box
+                                (fun x -> if isTesting then x?``data-testid`` <- input.UIFlagType)
                                 [
-                                    Chakra.box
-                                        (fun x -> if isTesting then x?``data-testid`` <- input.UIFlagType)
-                                        [
-                                            content
-                                        ]
-                                ])
-            |}
+                                    content
+                                ]
+                        ])
+        )

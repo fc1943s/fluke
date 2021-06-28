@@ -26,7 +26,7 @@ module Databases =
                         x.marginRight <- "2px"
                         x.height <- "19px"
                         x.width <- "19px"
-                        x.color <- "white")
+                        x.color <- "gray.87")
                     []
             halfCheck =
                 Chakra.icon
@@ -37,7 +37,7 @@ module Databases =
                         x.marginRight <- "2px"
                         x.height <- "19px"
                         x.width <- "19px"
-                        x.color <- "white")
+                        x.color <- "gray.87")
                     []
             uncheck =
                 Chakra.icon
@@ -48,7 +48,7 @@ module Databases =
                         x.marginRight <- "2px"
                         x.height <- "19px"
                         x.width <- "19px"
-                        x.color <- "white")
+                        x.color <- "gray.87")
                     []
             expandOpen =
                 Chakra.icon
@@ -57,7 +57,7 @@ module Databases =
                         x.height <- "16px"
                         x.width <- "16px"
                         x.fontSize <- "14px"
-                        x.color <- "white")
+                        x.color <- "gray.87")
                     []
             expandClose =
                 Chakra.icon
@@ -66,21 +66,21 @@ module Databases =
                         x.height <- "16px"
                         x.width <- "16px"
                         x.fontSize <- "14px"
-                        x.color <- "white")
+                        x.color <- "gray.87")
                     []
             parentClose =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
                         x.marginLeft <- "-11px"
-                        x.color <- "white")
+                        x.color <- "gray.87")
                     []
             parentOpen =
                 Chakra.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
                         x.marginLeft <- "-11px"
-                        x.color <- "white")
+                        x.color <- "gray.87")
                     []
         |}
 
@@ -251,7 +251,7 @@ module Databases =
         | Shared
 
     [<ReactComponent>]
-    let rec Databases (input: {| Props: Chakra.IChakraProps -> unit |}) =
+    let rec Databases props =
         let username = Store.useValue Store.Atoms.username
         let isTesting = Store.useValue Store.Atoms.isTesting
 
@@ -378,7 +378,7 @@ module Databases =
 
                             let icon =
                                 match database with
-                                | Some database -> DatabaseLeafIcon.DatabaseLeafIcon {| DatabaseId = database.Id |}
+                                | Some database -> DatabaseLeafIcon.DatabaseLeafIcon database.Id
                                 | _ -> JS.undefined
 
                             let disabled =
@@ -503,7 +503,7 @@ module Databases =
             )
 
         Chakra.stack
-            input.Props
+            props
             [
                 Chakra.flex
                     (fun x ->

@@ -35,9 +35,7 @@ module PriorityView =
                                     [
                                         yield!
                                             sortedTaskIdList
-                                            |> List.map
-                                                (fun taskId ->
-                                                    TaskInformationName.TaskInformationName {| TaskId = taskId |})
+                                            |> List.map TaskInformationName.TaskInformationName
                                     ]
                                 // Column: Priority
                                 Chakra.box
@@ -47,15 +45,13 @@ module PriorityView =
                                     [
                                         yield!
                                             sortedTaskIdList
-                                            |> List.map (fun taskId -> TaskPriority.TaskPriority {| TaskId = taskId |})
+                                            |> List.map TaskPriority.TaskPriority
                                     ]
                                 // Column: Task Name
                                 Chakra.box
                                     (fun x -> x.flex <- "1")
                                     [
-                                        yield!
-                                            sortedTaskIdList
-                                            |> List.map (fun taskId -> TaskName.TaskName {| TaskId = taskId |})
+                                        yield! sortedTaskIdList |> List.map TaskName.TaskName
                                     ]
                             ]
                     ]
@@ -64,6 +60,6 @@ module PriorityView =
                     (fun _ -> ())
                     [
                         GridHeader.GridHeader ()
-                        Cells.Cells {| TaskIdList = sortedTaskIdList |}
+                        Cells.Cells sortedTaskIdList
                     ]
             ]

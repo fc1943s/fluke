@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Bindings
 
-open System.Collections.Generic
 open Fluke.Shared.Domain.UserInteraction
 
 #nowarn "40"
@@ -98,7 +97,7 @@ module Store =
     let inline selectAtomFamily (atomPath, atom, selector) =
         jotaiUtils.atomFamily (fun param -> selectAtom (atomPath, atom, selector param)) DeepEqual.compare
 
-    let atomWithStorage atomPath defaultValue (map: _ -> _) =
+    let atomWithStorage (atomPath, defaultValue, map: _ -> _) =
         let internalAtom = jotaiUtils.atomWithStorage atomPath defaultValue
 
         jotai.atom (
@@ -118,7 +117,7 @@ module Store =
 
     module Atoms =
         let rec gunPeers =
-            atomWithStorage $"{nameof gunPeers}" ([||]: string []) (Array.filter (String.IsNullOrWhiteSpace >> not))
+            atomWithStorage ($"{nameof gunPeers}", ([||]: string []), Array.filter (String.IsNullOrWhiteSpace >> not))
 
         let rec isTesting = atom ($"{nameof isTesting}", JS.deviceInfo.IsTesting)
         let rec username = atom ($"{nameof username}", (None: Username option))
@@ -188,20 +187,16 @@ module Store =
                         | Some gunNode -> Some (username, gunNode)
                         | None -> None
                     | _ ->
-                        match JS.window id with
-                        | Some window ->
-                            JS.setTimeout
-                                (fun () ->
-                                    window?lastToast (fun (x: Chakra.IToastProps) ->
-                                        x.description <- "Please log in again"))
-                                0
-                            |> ignore
-                        | None -> ()
+                        JS.log
+                            (fun () ->
+                                $"Invalid username.
+                                                                                atomPath={atomPath}
+                                                                                user.is={
+                                                                                             JS.JSON.stringify
+                                                                                                 gunNamespace.is
+                                }")
 
-                        failwith
-                            $"Invalid username.
-                                    atomPath={atomPath}
-                                    user.is={JS.JSON.stringify gunNamespace.is}")
+                        None)
             )
 
     //        let rec gunAtomNode =
@@ -249,9 +244,10 @@ module Store =
         let mutable lastGunValue = None
         let mutable lastAtomPath = None
 
-        let localSetHashes = HashSet<Guid> ()
+        //        let localSetHashes = HashSet<Guid> ()
 
         let assignLastGunAtomNode getter atom =
+            // TODO: remove if?
             if lastAtomPath.IsNone then
                 lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
 
@@ -303,7 +299,9 @@ module Store =
                                 JS.log (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #3. before put")
 
                                 if lastGunValue.IsNone
-                                   || lastGunValue |> DeepEqual.compare (unbox newValue) |> not
+                                   || lastGunValue
+                                      |> DeepEqual.compare (unbox newValue)
+                                      |> not
                                    || unbox newValue = null then
 
                                     let! putResult = Gun.put gunAtomNode newValueJson
@@ -331,10 +329,12 @@ module Store =
                                         (fun () ->
                                             $"atomFamily.wrapper.set() debounceGunPut promise.
                                                    put skipped
-                                                   newValue={newValue}
-                                                   ==lastGunValue
-                                                   ")
-                            | None -> Browser.Dom.console.error $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
+                                                   atomPath={atomPath}.
+                                                   newValue[{newValue}]==lastGunValue[] ")
+                            | None ->
+                                JS.log
+                                    (fun () ->
+                                        $"[gunEffect.debounceGunPut promise] atomPath={atomPath}. skipping gun put. no gun atom node.")
                         with ex -> Browser.Dom.console.error ("[exception2]", ex)
                     }
                     |> Promise.start)
@@ -485,24 +485,27 @@ module Store =
 //                                |> Promise.start)
 
                         lastSubscription <- Some DateTime.Now.Ticks
-                    | None -> Browser.Dom.console.error $"[gunEffect.get] Gun node not found: {atomPath}")
+                    | None ->
+                        JS.log
+                            (fun () -> $"[gunEffect.on()] atomPath={atomPath}. skipping subscribe, no gun atom node."))
 
         let unsubscribe =
             (fun _setAtom ->
                 match lastSubscription with
                 | Some ticks when DateTime.ticksDiff ticks < 1000. -> ()
                 | _ ->
-                    try
-                        match lastGunAtomNode with
-                        | Some gunAtomNode ->
+                    match lastGunAtomNode with
+                    | Some gunAtomNode ->
 
-                            Profiling.addCount $"{gunNodePath} unsubscribe"
-                            //                                    JS.log (fun () -> $"[atomFamily.unsubscribe()] atomPath={atomPath} param={param}")
+                        Profiling.addCount $"{gunNodePath} unsubscribe"
+                        //                                    JS.log (fun () -> $"[atomFamily.unsubscribe()] atomPath={atomPath} param={param}")
 
-                            gunAtomNode.off () |> ignore
-                            lastSubscription <- None
-                        | None -> Browser.Dom.console.error $"[gunEffect.off()] Gun node not found: {atomPath}"
-                    with ex -> Browser.Dom.console.error ("[exception3]", ex))
+                        gunAtomNode.off () |> ignore
+                        lastSubscription <- None
+                    | None ->
+                        JS.log
+                            (fun () ->
+                                $"[gunEffect.off()] atomPath={atomPath}. skipping unsubscribe, no gun atom node."))
 
         wrapper?onMount <- fun setAtom ->
                                subscribe setAtom

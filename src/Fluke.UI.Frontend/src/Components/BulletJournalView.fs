@@ -62,13 +62,13 @@ module BulletJournalView =
 
                                                                     x.marginBottom <- "3px"
                                                                     x.borderBottomWidth <- "1px"
-                                                                    x.borderBottomColor <- "#333"
+                                                                    x.borderBottomColor <- "gray.16"
                                                                     x.fontSize <- "14px"
                                                                     x.lineHeight <- "14px"
 
                                                                     x.color <-
                                                                         if cells |> List.forall (fun x -> x.IsToday) then
-                                                                            "#777"
+                                                                            "gray.45"
                                                                         else
                                                                             "")
                                                                 [
@@ -94,8 +94,7 @@ module BulletJournalView =
                                                                                 Chakra.box
                                                                                     (fun x -> x.paddingLeft <- "4px")
                                                                                     [
-                                                                                        TaskName.TaskName
-                                                                                            {| TaskId = cell.TaskId |}
+                                                                                        TaskName.TaskName cell.TaskId
                                                                                     ]
                                                                             ])
                                                         ])

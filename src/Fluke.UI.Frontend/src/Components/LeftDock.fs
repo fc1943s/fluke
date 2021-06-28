@@ -31,13 +31,10 @@ module LeftDock =
                                 Icon = Icons.md.MdSettings
                                 Content =
                                     Settings.Settings
-                                        {|
-                                            Props =
-                                                fun x ->
-                                                    x.flex <- "1"
-                                                    x.overflowY <- "auto"
-                                                    x.flexBasis <- 0
-                                        |}
+                                        (fun x ->
+                                            x.flex <- "1"
+                                            x.overflowY <- "auto"
+                                            x.flexBasis <- 0)
                                 RightIcons = []
                             |}
 
@@ -47,16 +44,13 @@ module LeftDock =
                                 Icon = Icons.fi.FiDatabase
                                 Content =
                                     Databases.Databases
-                                        {|
-                                            Props =
-                                                fun x ->
-                                                    x.flex <- "1"
-                                                    x.padding <- "10px"
-                                                    x.paddingLeft <- "0"
-                                                    x.paddingTop <- "3px"
-                                                    x.overflowY <- "auto"
-                                                    x.flexBasis <- 0
-                                        |}
+                                        (fun x ->
+                                            x.flex <- "1"
+                                            x.padding <- "10px"
+                                            x.paddingLeft <- "0"
+                                            x.paddingTop <- "3px"
+                                            x.overflowY <- "auto"
+                                            x.flexBasis <- 0)
                                 RightIcons =
                                     [
                                         DockPanel.DockPanelIcon.Component (

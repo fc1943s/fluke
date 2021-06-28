@@ -15,7 +15,7 @@ module LoadingSpinner =
                 Chakra.stack
                     (fun _ -> ())
                     [
-                        Spinner.Spinner {| Props = fun _ -> () |}
+                        Spinner.Spinner (fun _ -> ())
                         Chakra.box
                             (fun _ -> ())
                             [
@@ -30,10 +30,7 @@ module LoadingSpinner =
             (fun _ -> ())
             [
                 Spinner.Spinner
-                    {|
-                        Props =
-                            (fun x ->
-                                x.width <- "10px"
-                                x.height <- "10px")
-                    |}
+                    (fun x ->
+                        x.width <- "10px"
+                        x.height <- "10px")
             ]

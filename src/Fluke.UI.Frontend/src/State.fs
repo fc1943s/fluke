@@ -49,14 +49,16 @@ module State =
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
 
-        let rec debug = Store.atomWithStorage $"{nameof debug}" (JS.isDebug ()) id
+        let rec debug = Store.atomWithStorage ($"{nameof debug}", JS.isDebug (), id)
 
         let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
+        let rec manualLoading = Store.atom ($"{nameof manualLoading}", false)
         let rec initialPeerSkipped = Store.atom ($"{nameof initialPeerSkipped}", false)
         let rec position = Store.atom ($"{nameof position}", None)
         let rec ctrlPressed = Store.atom ($"{nameof ctrlPressed}", false)
         let rec shiftPressed = Store.atom ($"{nameof shiftPressed}", false)
 
+        let rec electron = Store.atom ($"{nameof electron}", (None: (obj * obj) option))
 
         let rec databaseIdSet = Store.atomWithSync ($"{nameof databaseIdSet}", (Set.empty: Set<DatabaseId>), [])
 
@@ -105,6 +107,9 @@ module State =
 
         let cellSizeDefault = 23
         let rec cellSize = Store.atomWithSync ($"{nameof cellSize}", cellSizeDefault, [])
+
+        let darkModeDefault = true
+        let rec darkMode = Store.atomWithStorage ($"{nameof darkMode}", darkModeDefault, id)
 
         let leftDockDefault : TempUI.DockType option = None
         let rec leftDock = Store.atomWithSync ($"{nameof leftDock}", leftDockDefault, [])
@@ -365,6 +370,10 @@ module State =
 
 
     module Selectors =
+        let rec electron =
+//            Store.selector ($"{nameof electron}", None, (fun _ -> (None: (obj * obj) option)), (fun _ _ _ -> ()))
+            Store.atom ($"{nameof electron}", (None: (obj * obj) option))
+
         let rec dateSequence =
             Store.readSelector (
                 $"{nameof dateSequence}",
@@ -904,10 +913,7 @@ module State =
                 Store.readSelector (
                     $"{nameof Session}/{nameof filteredTaskIdSet}",
                     (fun getter ->
-                        let filterTasksByView = true
-                        // TODO: !!
-                        //getter.get (Atoms.User.filterTasksByView username)
-
+                        let filterTasksByView = Store.value getter Atoms.filterTasksByView
                         let searchText = Store.value getter Atoms.searchText
                         let view = Store.value getter Atoms.view
                         let dateSequence = Store.value getter dateSequence

@@ -11,13 +11,10 @@ open Fluke.Shared
 
 module ProjectForm =
     [<ReactComponent>]
-    let ProjectForm
-        (input: {| Project: Project
-                   OnSave: Project -> JS.Promise<unit> |})
-        =
+    let ProjectForm (project: Project) (onSave: Project -> JS.Promise<unit>) =
         let toast = Chakra.useToast ()
-        let projectName, setProjectName = React.useState input.Project.Name
-        let area, setArea = React.useState input.Project.Area
+        let projectName, setProjectName = React.useState project.Name
+        let area, setArea = React.useState project.Area
 
         let onSave =
             Store.useCallback (
@@ -28,10 +25,10 @@ module ProjectForm =
                         | _, AreaName String.InvalidString -> toast (fun x -> x.description <- "Invalid area")
                         | _ ->
                             let project : Project = { Name = projectName; Area = area }
-                            do! input.OnSave project
+                            do! onSave project
                     }),
                 [|
-                    box input
+                    box onSave
                     box projectName
                     box area
                     box toast
@@ -49,7 +46,7 @@ module ProjectForm =
                         str "Add Project"
                     ]
 
-                AreaSelector.AreaSelector {| Area = area; OnSelect = setArea |}
+                AreaSelector.AreaSelector area setArea
 
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")

@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open Fable.React
 open Feliz
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.State
 
 
 module Dropdown =
@@ -14,6 +15,7 @@ module Dropdown =
                    Body: (unit -> unit) -> ReactElement list |})
         =
         let visible, setVisible = React.useState false
+        let darkMode = Store.useValue Atoms.darkMode
 
         Chakra.flex
             (fun x -> x.direction <- "column")
@@ -40,8 +42,14 @@ module Dropdown =
                             x.borderBottomWidth <- "1px"
                             x.borderColor <- "whiteAlpha.200"
 
+                            let n = if darkMode then "255" else "0"
+
                             x.background <-
-                                "linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.01) 20%, rgba(255,255,255,0.02) 100%);"
+                                $"""linear-gradient(
+                                    180deg,
+                                    rgba({n},{n},{n},0) 0%%,
+                                    rgba({n},{n},{n},0.01) 20%%,
+                                    rgba({n},{n},{n},0.02) 100%%);"""
 
                             x.padding <- "17px")
                         [

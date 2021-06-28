@@ -11,11 +11,11 @@ open Fluke.UI.Frontend.State
 
 module DatabaseLeafIcon =
     [<ReactComponent>]
-    let DatabaseLeafIcon (input: {| DatabaseId: DatabaseId |}) =
+    let DatabaseLeafIcon databaseId =
         let username = Store.useValue Store.Atoms.username
-        let owner = Store.useValue (Atoms.Database.owner input.DatabaseId)
-        let sharedWith = Store.useValue (Atoms.Database.sharedWith input.DatabaseId)
-        let position = Store.useValue (Atoms.Database.position input.DatabaseId)
+        let owner = Store.useValue (Atoms.Database.owner databaseId)
+        let sharedWith = Store.useValue (Atoms.Database.sharedWith databaseId)
+        let position = Store.useValue (Atoms.Database.position databaseId)
 
         let newSharedWith, isPrivate =
             React.useMemo (

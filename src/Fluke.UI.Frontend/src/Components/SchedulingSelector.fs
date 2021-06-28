@@ -235,48 +235,44 @@ module SchedulingSelector =
                                 [
 
                                     Checkbox.Checkbox
-                                        {|
-                                            Label = None
-                                            Props =
-                                                fun x ->
-                                                    x.isChecked <-
-                                                        match value with
-                                                        | Recurrency (Fixed fixedRecurrencyList) when
-                                                            fixedRecurrencyList
-                                                            |> List.contains (Weekly dayOfWeek) -> true
-                                                        | _ -> false
+                                        None
+                                        (fun x ->
+                                            x.isChecked <-
+                                                match value with
+                                                | Recurrency (Fixed fixedRecurrencyList) when
+                                                    fixedRecurrencyList
+                                                    |> List.contains (Weekly dayOfWeek) -> true
+                                                | _ -> false
 
-                                                    x.onChange <-
-                                                        fun _ ->
-                                                            promise {
-                                                                setValue (
-                                                                    match value with
-                                                                    | Recurrency (Fixed fixedRecurrencyList) ->
-                                                                        let tmp =
-                                                                            fixedRecurrencyList
-                                                                            |> List.map
-                                                                                (function
-                                                                                | Weekly weekly -> Some weekly, None
-                                                                                | recurrency -> None, Some recurrency)
+                                            x.onChange <-
+                                                fun _ ->
+                                                    promise {
+                                                        setValue (
+                                                            match value with
+                                                            | Recurrency (Fixed fixedRecurrencyList) ->
+                                                                let tmp =
+                                                                    fixedRecurrencyList
+                                                                    |> List.map
+                                                                        (function
+                                                                        | Weekly weekly -> Some weekly, None
+                                                                        | recurrency -> None, Some recurrency)
 
-                                                                        let weeklySet =
-                                                                            tmp |> List.choose fst |> Set.ofSeq
+                                                                let weeklySet = tmp |> List.choose fst |> Set.ofSeq
 
-                                                                        let otherRecurrencies = tmp |> List.choose snd
+                                                                let otherRecurrencies = tmp |> List.choose snd
 
-                                                                        let newSet = weeklySet |> Set.toggle dayOfWeek
+                                                                let newSet = weeklySet |> Set.toggle dayOfWeek
 
-                                                                        let newList =
-                                                                            otherRecurrencies
-                                                                            @ (newSet |> Set.map Weekly |> Set.toList)
+                                                                let newList =
+                                                                    otherRecurrencies
+                                                                    @ (newSet |> Set.map Weekly |> Set.toList)
 
-                                                                        match newList with
-                                                                        | [] -> Manual WithoutSuggestion
-                                                                        | newList -> Recurrency (Fixed newList)
-                                                                    | _ -> Recurrency (Fixed [ Weekly dayOfWeek ])
-                                                                )
-                                                            }
-                                        |}
+                                                                match newList with
+                                                                | [] -> Manual WithoutSuggestion
+                                                                | newList -> Recurrency (Fixed newList)
+                                                            | _ -> Recurrency (Fixed [ Weekly dayOfWeek ])
+                                                        )
+                                                    })
                                     Chakra.box
                                         (fun _ -> ())
                                         [
@@ -321,58 +317,49 @@ module SchedulingSelector =
                                                 x.spacing <- "2px")
                                             [
                                                 Checkbox.Checkbox
-                                                    {|
-                                                        Label = None
-                                                        Props =
-                                                            fun x ->
-                                                                x.isChecked <-
-                                                                    match value with
-                                                                    | Recurrency (Fixed fixedRecurrencyList) when
-                                                                        fixedRecurrencyList
-                                                                        |> List.contains (Monthly day) -> true
-                                                                    | _ -> false
+                                                    None
+                                                    (fun x ->
+                                                        x.isChecked <-
+                                                            match value with
+                                                            | Recurrency (Fixed fixedRecurrencyList) when
+                                                                fixedRecurrencyList |> List.contains (Monthly day) ->
+                                                                true
+                                                            | _ -> false
 
-                                                                x.onChange <-
-                                                                    fun _ ->
-                                                                        promise {
-                                                                            setValue (
-                                                                                match value with
-                                                                                | Recurrency (Fixed fixedRecurrencyList) ->
-                                                                                    let tmp =
-                                                                                        fixedRecurrencyList
-                                                                                        |> List.map
-                                                                                            (function
-                                                                                            | Monthly day ->
-                                                                                                Some day, None
-                                                                                            | recurrency ->
-                                                                                                None, Some recurrency)
+                                                        x.onChange <-
+                                                            fun _ ->
+                                                                promise {
+                                                                    setValue (
+                                                                        match value with
+                                                                        | Recurrency (Fixed fixedRecurrencyList) ->
+                                                                            let tmp =
+                                                                                fixedRecurrencyList
+                                                                                |> List.map
+                                                                                    (function
+                                                                                    | Monthly day -> Some day, None
+                                                                                    | recurrency ->
+                                                                                        None, Some recurrency)
 
-                                                                                    let monthlySet =
-                                                                                        tmp
-                                                                                        |> List.choose fst
-                                                                                        |> Set.ofSeq
+                                                                            let monthlySet =
+                                                                                tmp |> List.choose fst |> Set.ofSeq
 
-                                                                                    let otherRecurrencies =
-                                                                                        tmp |> List.choose snd
+                                                                            let otherRecurrencies =
+                                                                                tmp |> List.choose snd
 
-                                                                                    let newSet =
-                                                                                        monthlySet |> Set.toggle day
+                                                                            let newSet = monthlySet |> Set.toggle day
 
-                                                                                    let newList =
-                                                                                        otherRecurrencies
-                                                                                        @ (newSet
-                                                                                           |> Set.toList
-                                                                                           |> List.map Monthly)
+                                                                            let newList =
+                                                                                otherRecurrencies
+                                                                                @ (newSet
+                                                                                   |> Set.toList
+                                                                                   |> List.map Monthly)
 
-                                                                                    match newList with
-                                                                                    | [] -> Manual WithoutSuggestion
-                                                                                    | newList ->
-                                                                                        Recurrency (Fixed newList)
-                                                                                | _ ->
-                                                                                    Recurrency (Fixed [ Monthly day ])
-                                                                            )
-                                                                        }
-                                                    |}
+                                                                            match newList with
+                                                                            | [] -> Manual WithoutSuggestion
+                                                                            | newList -> Recurrency (Fixed newList)
+                                                                        | _ -> Recurrency (Fixed [ Monthly day ])
+                                                                    )
+                                                                })
                                                 Chakra.box
                                                     (fun _ -> ())
                                                     [
@@ -437,77 +424,66 @@ module SchedulingSelector =
                                                 (str "Add row")
                                                 [
                                                     InputLabelIconButton.InputLabelIconButton
-                                                        {|
-                                                            Props =
-                                                                fun x ->
-                                                                    x.margin <- "4px"
-                                                                    x.icon <- Icons.fa.FaPlus |> Icons.render
+                                                        (fun x ->
+                                                            x.margin <- "4px"
+                                                            x.icon <- Icons.fa.FaPlus |> Icons.render
 
-                                                                    x.onClick <-
-                                                                        fun _ ->
-                                                                            promise {
-                                                                                let fixedRecurrencyList =
-                                                                                    rows
-                                                                                    |> List.choose
-                                                                                        (function
-                                                                                        | Some (Some (_, day, month)), _ ->
-                                                                                            Some (Yearly (day, month))
-                                                                                        | _, Some fixedRecurrency ->
-                                                                                            Some fixedRecurrency
-                                                                                        | _ -> None)
+                                                            x.onClick <-
+                                                                fun _ ->
+                                                                    promise {
+                                                                        let fixedRecurrencyList =
+                                                                            rows
+                                                                            |> List.choose
+                                                                                (function
+                                                                                | Some (Some (_, day, month)), _ ->
+                                                                                    Some (Yearly (day, month))
+                                                                                | _, Some fixedRecurrency ->
+                                                                                    Some fixedRecurrency
+                                                                                | _ -> None)
 
-                                                                                setValue (
-                                                                                    Recurrency (
-                                                                                        Fixed (
-                                                                                            fixedRecurrencyList
-                                                                                            @ [
-                                                                                                Yearly (
-                                                                                                    Day 1,
-                                                                                                    Month.January
-                                                                                                )
-                                                                                            ]
-                                                                                        )
-                                                                                    )
+                                                                        setValue (
+                                                                            Recurrency (
+                                                                                Fixed (
+                                                                                    fixedRecurrencyList
+                                                                                    @ [
+                                                                                        Yearly (Day 1, Month.January)
+                                                                                    ]
                                                                                 )
-                                                                            }
-                                                        |}
+                                                                            )
+                                                                        )
+                                                                    })
                                                 ]
                                         | i, Some _ when i > 0 ->
                                             Tooltip.wrap
                                                 (str "Remove row")
                                                 [
                                                     InputLabelIconButton.InputLabelIconButton
-                                                        {|
-                                                            Props =
-                                                                fun x ->
-                                                                    x.margin <- "4px"
-                                                                    x.icon <- Icons.fa.FaMinus |> Icons.render
+                                                        (fun x ->
+                                                            x.margin <- "4px"
+                                                            x.icon <- Icons.fa.FaMinus |> Icons.render
 
-                                                                    x.onClick <-
-                                                                        fun _ ->
-                                                                            promise {
-                                                                                let fixedRecurrencyList =
-                                                                                    rows
-                                                                                    |> List.choose
-                                                                                        (function
-                                                                                        | Some (Some (i', _, _)), _ when
-                                                                                            i' = i -> None
-                                                                                        | Some (Some (_, day, month)), _ ->
-                                                                                            Some (Yearly (day, month))
-                                                                                        | _, Some fixedRecurrency ->
-                                                                                            Some fixedRecurrency
-                                                                                        | _ -> None)
+                                                            x.onClick <-
+                                                                fun _ ->
+                                                                    promise {
+                                                                        let fixedRecurrencyList =
+                                                                            rows
+                                                                            |> List.choose
+                                                                                (function
+                                                                                | Some (Some (i', _, _)), _ when i' = i ->
+                                                                                    None
+                                                                                | Some (Some (_, day, month)), _ ->
+                                                                                    Some (Yearly (day, month))
+                                                                                | _, Some fixedRecurrency ->
+                                                                                    Some fixedRecurrency
+                                                                                | _ -> None)
 
-                                                                                setValue (
-                                                                                    match fixedRecurrencyList with
-                                                                                    | [] -> Manual WithoutSuggestion
-                                                                                    | fixedRecurrencyList ->
-                                                                                        Recurrency (
-                                                                                            Fixed fixedRecurrencyList
-                                                                                        )
-                                                                                )
-                                                                            }
-                                                        |}
+                                                                        setValue (
+                                                                            match fixedRecurrencyList with
+                                                                            | [] -> Manual WithoutSuggestion
+                                                                            | fixedRecurrencyList ->
+                                                                                Recurrency (Fixed fixedRecurrencyList)
+                                                                        )
+                                                                    })
                                                 ]
                                         | _ -> nothing
                                     ]
@@ -619,12 +595,12 @@ module SchedulingSelector =
         ]
 
     [<ReactComponent>]
-    let SchedulingSelector (input: {| TaskId: TaskId |}) =
+    let SchedulingSelector taskId =
         let weekStart = Store.useValue Atoms.weekStart
 
         let schedulingFieldOptions =
             Store.Hooks.useAtomFieldOptions
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling input.TaskId))))
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling taskId))))
                 (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
 
         Chakra.box

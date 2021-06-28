@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Hooks
 
+open Fluke.UI.Frontend.State
+
 #nowarn "40"
 
 open Feliz
@@ -8,18 +10,38 @@ open Fable.Core
 
 
 module Theme =
-    let private theme =
+    let private theme darkMode =
+        let alphaColors dark =
+            let n = if dark then "0" else "255"
+
+            {|
+                ``50`` = $"rgba({n}, {n}, {n}, 0.04)"
+                ``100`` = $"rgba({n}, {n}, {n}, 0.06)"
+                ``200`` = $"rgba({n}, {n}, {n}, 0.08)"
+                ``300`` = $"rgba({n}, {n}, {n}, 0.16)"
+                ``400`` = $"rgba({n}, {n}, {n}, 0.24)"
+                ``500`` = $"rgba({n}, {n}, {n}, 0.36)"
+                ``600`` = $"rgba({n}, {n}, {n}, 0.48)"
+                ``700`` = $"rgba({n}, {n}, {n}, 0.64)"
+                ``800`` = $"rgba({n}, {n}, {n}, 0.80)"
+                ``900`` = $"rgba({n}, {n}, {n}, 0.92)"
+            |}
+
+
         let colors =
             {|
                 heliotrope = "#b586ff"
                 gray =
                     {|
-                        ``10`` = "#1a1a1a" // grayDark
-                        ``13`` = "#212121" // grayLight
-                        ``16`` = "#292929" // grayLighter
-                        ``45`` = "#727272" // textDark
-                        ``77`` = "#b0bec5" // textLight
+                        ``10`` = if darkMode then "#1a1a1a" else "#e5e5e5" // grayDark
+                        ``13`` = if darkMode then "#212121" else "#dedede" // grayLight
+                        ``16`` = if darkMode then "#292929" else "#d6d6d6" // grayLighter
+                        ``45`` = if darkMode then "#727272" else "#8d8d8d" // textDark
+                        ``77`` = if darkMode then "#b0bec5" else "#4f413a" // textLight
+                        ``87`` = if darkMode then "#dddddd" else "#222222" // text
                     |}
+                whiteAlpha = alphaColors (not darkMode)
+                blackAlpha = alphaColors darkMode
             |}
 
         let focusShadow = $"0 0 0 1px {colors.heliotrope} !important"
@@ -27,7 +49,7 @@ module Theme =
         {|
             config =
                 {|
-                    initialColorMode = "dark"
+                    initialColorMode = if darkMode then "dark" else "light"
                     useSystemColorMode = false
                 |}
             breakpoints =
@@ -59,7 +81,7 @@ module Theme =
             styles =
                 {|
                     ``global`` =
-                        fun (props: {| colorMode: string |}) ->
+                        fun (props: {| _colorMode: string |}) ->
                             {|
                                 ``:root`` =
                                     {|
@@ -74,8 +96,7 @@ module Theme =
                                 body =
                                     {|
                                         fontFamily = "main"
-                                        color = "gray.77"
-                                        backgroundColor = if props.colorMode = "dark" then "gray.13" else "gray.77"
+                                        backgroundColor = "gray.13"
                                         fontWeight = "light"
                                         letterSpacing = 0
                                         lineHeight = "main"
@@ -85,22 +106,22 @@ module Theme =
                                         padding = 0
                                         boxSizing = "border-box"
                                         fontSize = "main"
-                                        color = "#ddd"
+                                        color = "gray.87"
                                         userSelect = "none"
                                         touchAction = "pan-x pan-y"
                                         overflow = "hidden"
                                     |}
                                 ``input::-ms-reveal`` =
                                     {|
-                                        filter = if props.colorMode = "dark" then "invert(1)" else ""
+                                        filter = if darkMode then "invert(1)" else ""
                                     |}
                                 ``input::-ms-clear`` =
                                     {|
-                                        filter = if props.colorMode = "dark" then "invert(1)" else ""
+                                        filter = if darkMode then "invert(1)" else ""
                                     |}
                                 ``*::-webkit-calendar-picker-indicator`` =
                                     {|
-                                        filter = if props.colorMode = "dark" then "invert(1)" else ""
+                                        filter = if darkMode then "invert(1)" else ""
                                     |}
                                 ``*::-webkit-scrollbar`` = {| width = "9px" |}
                                 ``*::-webkit-scrollbar:horizontal`` = {| height = "6px" |}
@@ -136,13 +157,20 @@ module Theme =
                                 ``.rct-title`` = {| display = "contents" |}
                                 ``.sketch-picker`` =
                                     {|
-                                        backgroundColor = "#333 !important"
+                                        backgroundColor = if darkMode then "#333 !important" else "#CCC !important"
                                     |}
-                                ``.sketch-picker span`` = {| color = "#DDD !important" |}
-                                ``.sketch-picker input`` = {| color = "#333" |}
+                                ``.sketch-picker span`` =
+                                    {|
+                                        color = if darkMode then "#DDD" else "#222 !important"
+                                    |}
+                                ``.sketch-picker input`` =
+                                    {|
+                                        color = if darkMode then "#333 !important" else "#CCC !important"
+                                    |}
                                 ``.markdown-container h1`` =
                                     {|
-                                        borderBottom = "1px solid #777"
+                                        borderBottomColor = "#777"
+                                        borderBottomWidth = "1px"
                                         marginBottom = "3px"
                                     |}
                                 ``.markdown-container li`` = {| listStyleType = "square" |}
@@ -152,4 +180,11 @@ module Theme =
         |}
 
     let useTheme () =
-        React.useMemo ((fun () -> Chakra.react.extendTheme (JsInterop.toPlainJsObj theme)), [||])
+        let darkMode = Store.useValue Atoms.darkMode
+
+        React.useMemo (
+            (fun () -> Chakra.react.extendTheme (JsInterop.toPlainJsObj (theme darkMode))),
+            [|
+                box darkMode
+            |]
+        )

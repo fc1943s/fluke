@@ -50,7 +50,8 @@ module Cell =
                         do! setSelected newSelected
                     }),
                 [|
-                    box input
+                    box input.TaskId
+                    box input.DateId
                     box selected
                     box setSelected
                 |]
@@ -95,38 +96,25 @@ module Cell =
                                 x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
                         [
 
-                            CellSessionIndicator.CellSessionIndicator
-                                {|
-                                    Status = sessionStatus
-                                    Sessions = sessions
-                                |}
+                            CellSessionIndicator.CellSessionIndicator sessionStatus sessions
 
                             if selected then
                                 nothing
                             else
-                                CellBorder.CellBorder
-                                    {|
-                                        TaskId = input.TaskId
-                                        Date = input.DateId |> DateId.Value
-                                    |}
+                                CellBorder.CellBorder input.TaskId (input.DateId |> DateId.Value)
 
                             match showUser, sessionStatus with
                             | true, UserStatus (_username, _manualCellStatus) ->
                                 CellStatusUserIndicator.CellStatusUserIndicator ()
                             | _ -> nothing
 
-                            AttachmentIndicator.AttachmentIndicator {| Attachments = attachments |}
+                            AttachmentIndicator.AttachmentIndicator attachments
                         ]
                 Body =
                     fun (disclosure, _initialFocusRef) ->
                         [
                             if isReadWrite then
-                                CellMenu.CellMenu
-                                    {|
-                                        TaskId = input.TaskId
-                                        DateId = input.DateId
-                                        OnClose = disclosure.onClose
-                                    |}
+                                CellMenu.CellMenu input.TaskId input.DateId disclosure.onClose
                             else
                                 nothing
                         ]

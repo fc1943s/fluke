@@ -7,11 +7,9 @@ open Fluke.UI.Frontend.Bindings
 
 module Cells =
     [<ReactComponent>]
-    let Cells (input: {| TaskIdList: TaskId list |}) =
+    let Cells (taskIdList: TaskId list) =
         Chakra.box
             (fun _ -> ())
             [
-                yield!
-                    input.TaskIdList
-                    |> List.mapi (fun i taskId -> TaskCells.TaskCells {| TaskId = taskId; Index = i |})
+                yield! taskIdList |> List.mapi TaskCells.TaskCells
             ]

@@ -93,6 +93,10 @@ module JS =
         && not deviceInfo.IsElectron
         && not deviceInfo.IsMobile
 
+    match window id with
+    | None -> ()
+    | Some window -> window?Debug <- false
+
     let isDebug () =
         let debug =
             match window id with
@@ -101,7 +105,7 @@ module JS =
 
         debug <> false && (debug || isDebugStatic)
 
-        true
+    //        true
 
 
     let inline log fn =
@@ -122,7 +126,7 @@ module JS =
     [<Emit "$0($1,$2)">]
     let inline jsCall _fn _a _b = jsNative
 
-    let newObj fn = jsOptions<_> fn
+    let newObj<'T> fn = jsOptions<'T> fn
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"
     let debounce<'T, 'U> (_: 'T -> 'U) (_: int) : 'T -> 'U = importDefault "lodash.debounce"
     let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)

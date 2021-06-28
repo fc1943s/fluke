@@ -13,7 +13,7 @@ open Fluke.Shared
 module AreaSelector =
 
     [<ReactComponent>]
-    let AreaSelector (input: {| Area: Area; OnSelect: Area -> unit |}) =
+    let AreaSelector (area: Area) (onSelect: Area -> unit) =
         let informationSet = Store.useValue Selectors.Session.informationSet
 
         let sortedAreaList =
@@ -21,8 +21,8 @@ module AreaSelector =
                 (fun () ->
                     informationSet
                     |> Set.addIf
-                        (Area input.Area)
-                        (input.Area.Name
+                        (Area area)
+                        (area.Name
                          |> AreaName.Value
                          |> String.IsNullOrWhiteSpace
                          |> not)
@@ -34,7 +34,7 @@ module AreaSelector =
                     |> List.sortBy (fun area -> area.Name |> AreaName.Value)),
                 [|
                     box informationSet
-                    box input.Area
+                    box area
                 |]
             )
 
@@ -43,11 +43,11 @@ module AreaSelector =
                 (fun () ->
                     sortedAreaList
                     |> List.sort
-                    |> List.tryFindIndex ((=) input.Area)
+                    |> List.tryFindIndex ((=) area)
                     |> Option.defaultValue -1),
                 [|
                     box sortedAreaList
-                    box input.Area
+                    box area
                 |]
             )
 
@@ -92,7 +92,7 @@ module AreaSelector =
                                         Props = fun x -> x.onClick <- fun _ -> promise { setVisible (not visible) }
                                         Children =
                                             [
-                                                match input.Area.Name |> AreaName.Value with
+                                                match area.Name |> AreaName.Value with
                                                 | String.ValidString name -> str name
                                                 | _ -> str "Select..."
                                             ]
@@ -136,7 +136,7 @@ module AreaSelector =
                                                                         x.onClick <-
                                                                             fun _ ->
                                                                                 promise {
-                                                                                    input.OnSelect area
+                                                                                    onSelect area
                                                                                     onHide ()
                                                                                 }
 
@@ -183,16 +183,13 @@ module AreaSelector =
                                                 fun onHide2 ->
                                                     [
                                                         AreaForm.AreaForm
-                                                            {|
-                                                                Area = input.Area
-                                                                OnSave =
-                                                                    fun area ->
-                                                                        promise {
-                                                                            input.OnSelect area
-                                                                            onHide ()
-                                                                            onHide2 ()
-                                                                        }
-                                                            |}
+                                                            area
+                                                            (fun area ->
+                                                                promise {
+                                                                    onSelect area
+                                                                    onHide ()
+                                                                    onHide2 ()
+                                                                })
                                                     ]
                                         |}
                                 ]

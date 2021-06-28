@@ -300,92 +300,75 @@ module InformationSelector =
                                                                     |})
                                                 ]
 
-                                            Chakra.box
-                                                (fun x -> x.textAlign <- "center")
-                                                [
-                                                    Dropdown.Dropdown
-                                                        {|
-                                                            Tooltip = ""
-                                                            Left = true
-                                                            Trigger =
-                                                                fun visible setVisible ->
-                                                                    Button.Button
-                                                                        {|
-                                                                            Hint = None
-                                                                            Icon =
-                                                                                Some (
-                                                                                    (if visible then
-                                                                                         Icons.fi.FiChevronUp
-                                                                                     else
-                                                                                         Icons.fi.FiChevronDown)
-                                                                                    |> Icons.wrap,
-                                                                                    Button.IconPosition.Right
+                                            Dropdown.Dropdown
+                                                {|
+                                                    Tooltip = ""
+                                                    Left = true
+                                                    Trigger =
+                                                        fun visible setVisible ->
+                                                            Button.Button
+                                                                {|
+                                                                    Hint = None
+                                                                    Icon =
+                                                                        Some (
+                                                                            (if visible then
+                                                                                 Icons.fi.FiChevronUp
+                                                                             else
+                                                                                 Icons.fi.FiChevronDown)
+                                                                            |> Icons.wrap,
+                                                                            Button.IconPosition.Right
+                                                                        )
+                                                                    Props =
+                                                                        fun x ->
+                                                                            x.onClick <-
+                                                                                fun _ ->
+                                                                                    promise { setVisible (not visible) }
+                                                                    Children =
+                                                                        [
+                                                                            match informationSelected with
+                                                                            | nameof Project -> "Add Project"
+                                                                            | nameof Area -> "Add Area"
+                                                                            | nameof Resource -> "Add Resource"
+                                                                            | _ -> ""
+                                                                            |> str
+                                                                        ]
+                                                                |}
+                                                    Body =
+                                                        fun onHide2 ->
+                                                            [
+                                                                match informationSelected with
+                                                                | nameof Project ->
+                                                                    ProjectForm.ProjectForm
+                                                                        (match informationFieldOptions.AtomValue with
+                                                                         | Project project -> project
+                                                                         | _ -> Project.Default)
+                                                                        (fun project ->
+                                                                            promise {
+                                                                                informationFieldOptions.SetAtomValue (
+                                                                                    Project project
                                                                                 )
-                                                                            Props =
-                                                                                fun x ->
-                                                                                    x.onClick <-
-                                                                                        fun _ ->
-                                                                                            promise {
-                                                                                                setVisible (not visible)
-                                                                                            //                                                                    TextKey = formTextKey
-//                                                                    TextKeyValue = input.TaskId |> TaskId.Value |> Some
-                                                                                            }
-                                                                            Children =
-                                                                                [
-                                                                                    match informationSelected with
-                                                                                    | nameof Project -> "Add Project"
-                                                                                    | nameof Area -> "Add Area"
-                                                                                    | nameof Resource -> "Add Resource"
-                                                                                    | _ -> ""
-                                                                                    |> str
-                                                                                ]
-                                                                        |}
-                                                            Body =
-                                                                fun onHide2 ->
-                                                                    [
-                                                                        match informationSelected with
-                                                                        | nameof Project ->
-                                                                            ProjectForm.ProjectForm
-                                                                                {|
-                                                                                    Project =
-                                                                                        match informationFieldOptions.AtomValue with
-                                                                                        | Project project -> project
-                                                                                        | _ -> Project.Default
-                                                                                    OnSave =
-                                                                                        fun project ->
-                                                                                            promise {
-                                                                                                informationFieldOptions.SetAtomValue (
-                                                                                                    Project project
-                                                                                                )
 
-                                                                                                onHide ()
-                                                                                                onHide2 ()
-                                                                                            }
-                                                                                |}
-                                                                        | nameof Area ->
-                                                                            AreaForm.AreaForm
-                                                                                {|
-                                                                                    Area =
-                                                                                        match informationFieldOptions.AtomValue with
-                                                                                        | Area area -> area
-                                                                                        | _ -> Area.Default
-                                                                                    OnSave =
-                                                                                        fun area ->
-                                                                                            promise {
-                                                                                                informationFieldOptions.SetAtomValue (
-                                                                                                    Area area
-                                                                                                )
+                                                                                onHide ()
+                                                                                onHide2 ()
+                                                                            })
+                                                                | nameof Area ->
+                                                                    AreaForm.AreaForm
+                                                                        (match informationFieldOptions.AtomValue with
+                                                                         | Area area -> area
+                                                                         | _ -> Area.Default)
+                                                                        (fun area ->
+                                                                            promise {
+                                                                                informationFieldOptions.SetAtomValue (
+                                                                                    Area area
+                                                                                )
 
-                                                                                                onHide ()
-                                                                                                onHide2 ()
-                                                                                            }
-                                                                                |}
-                                                                        | nameof Resource -> nothing
-                                                                        | _ -> nothing
-                                                                    ]
-                                                        |}
-                                                ]
-
+                                                                                onHide ()
+                                                                                onHide2 ()
+                                                                            })
+                                                                | nameof Resource -> nothing
+                                                                | _ -> nothing
+                                                            ]
+                                                |}
                                         ]
                                     | _ -> nothing
                                 ]

@@ -165,6 +165,7 @@ module Auth =
                                         Store.set setter Atoms.hideSchedulingOverlay Atoms.hideSchedulingOverlayDefault
                                         Store.set setter Atoms.showViewOptions Atoms.showViewOptionsDefault
                                         Store.set setter Atoms.filterTasksByView Atoms.filterTasksByViewDefault
+                                        Store.set setter Atoms.darkMode Atoms.darkModeDefault
 
                                         Store.set
                                             setter

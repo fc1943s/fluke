@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
+open Fable.Core.JsInterop
 open Fable.React
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
@@ -10,6 +11,7 @@ open Fluke.UI.Frontend.Bindings
 module TopBar =
     [<ReactComponent>]
     let TopBar () =
+        let deviceInfo = Store.useValue Selectors.deviceInfo
         let logout = Auth.useLogout ()
 
         let onLogoClick =
@@ -93,5 +95,22 @@ module TopBar =
                                                 x.onClick <- fun _ -> promise { do! logout () }
                                     |}
                             ]
+
+                        if deviceInfo.IsElectron then
+                            Tooltip.wrap
+                                (str "Close")
+                                [
+                                    TransparentIconButton.TransparentIconButton
+                                        {|
+                                            Props =
+                                                fun x ->
+                                                    x.icon <- Icons.io.IoMdClose |> Icons.render
+                                                    x.height <- "27px"
+                                                    x.fontSize <- "17px"
+
+                                                    x.onClick <-
+                                                        fun _ -> promise { Electron.electron.ipcRenderer.send "close" }
+                                        |}
+                                ]
                     ]
             ]

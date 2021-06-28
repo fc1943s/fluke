@@ -26,15 +26,12 @@ type DatabaseNodeMenu () =
                 Tooltip = ""
                 Trigger =
                     InputLabelIconButton.InputLabelIconButton
-                        {|
-                            Props =
-                                fun x ->
-                                    x.``as`` <- Chakra.react.MenuButton
-                                    x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                    x.fontSize <- "11px"
-                                    x.disabled <- disabled
-                                    x.marginLeft <- "6px"
-                        |}
+                        (fun x ->
+                            x.``as`` <- Chakra.react.MenuButton
+                            x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                            x.fontSize <- "11px"
+                            x.disabled <- disabled
+                            x.marginLeft <- "6px")
                 Body =
                     [
                         if isReadWrite then

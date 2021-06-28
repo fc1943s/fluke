@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 
 let mainWindow;
@@ -27,6 +27,7 @@ async function createWindow() {
   mainWindow = new BrowserWindow({
     width: 900,
     height: 680,
+    frame: false,
     // show: false,
     // webPreferences: {
     //   nodeIntegration: true
@@ -52,3 +53,8 @@ app.on('activate', () => {
     createWindow().then();
   }
 });
+
+ipcMain.on('close', (evt, arg) => {
+  console.log('closing', evt, arg);
+  app.quit();
+})

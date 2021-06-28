@@ -28,12 +28,12 @@ module ShiftListener =
                     let setView value = Store.set setter Atoms.view value
 
                     match e.ctrlKey, e.shiftKey, e.key with
-                    | false, true, "I" ->
+                    | true, true, "I" ->
                         JS.log (fun () -> "RouterObserver.onKeyDown() View.Information")
                         setView View.View.Information
-                    | false, true, "H" -> setView View.View.HabitTracker
-                    | false, true, "P" -> setView View.View.Priority
-                    | false, true, "B" -> setView View.View.BulletJournal
+                    | true, true, "H" -> setView View.View.HabitTracker
+                    | true, true, "P" -> setView View.View.Priority
+                    | true, true, "B" -> setView View.View.BulletJournal
                     | _ -> ()
 
                     let shiftPressed = Store.value getter Atoms.shiftPressed

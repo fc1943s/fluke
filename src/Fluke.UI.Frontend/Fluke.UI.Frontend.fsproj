@@ -10,6 +10,7 @@
         <Compile Include="src\Bindings\CheckboxTree.fs" />
         <Compile Include="src\Bindings\Resizable.fs" />
         <Compile Include="src\Bindings\JS.fs" />
+        <Compile Include="src\Bindings\Electron.fs" />
         <Compile Include="src\Bindings\Profiling.fs" />
         <Compile Include="src\Bindings\Crypto.fs" />
         <Compile Include="src\Bindings\React.fs" />
@@ -40,10 +41,10 @@
         <Compile Include="src\Components\Empty.fs" />
         <Compile Include="src\Components\Tooltip.fs" />
         <Compile Include="src\Components\InputLabelIconButton.fs" />
+        <Compile Include="src\Components\Button.fs" />
         <Compile Include="src\Components\Popover.fs" />
         <Compile Include="src\Components\Hint.fs" />
         <Compile Include="src\Components\InputLabel.fs" />
-        <Compile Include="src\Components\Button.fs" />
         <Compile Include="src\Components\Input.fs" />
         <Compile Include="src\Components\MonthResponsiveCell.fs" />
         <Compile Include="src\Components\Day.fs" />
@@ -156,6 +157,7 @@
         <Content Include="jest.config.js" />
         <Content Include="jest-setup.ts" />
         <Content Include="cypress.json" />
+        <Content Include="src\electron.js" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />

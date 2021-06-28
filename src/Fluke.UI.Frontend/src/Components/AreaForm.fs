@@ -12,12 +12,9 @@ open Fluke.Shared
 module AreaForm =
 
     [<ReactComponent>]
-    let AreaForm
-        (input: {| Area: Area
-                   OnSave: Area -> JS.Promise<unit> |})
-        =
+    let AreaForm (area: Area) (onSave: Area -> JS.Promise<unit>) =
         let toast = Chakra.useToast ()
-        let areaName, setAreaName = React.useState input.Area.Name
+        let areaName, setAreaName = React.useState area.Name
 
         let onSave =
             Store.useCallback (
@@ -27,11 +24,11 @@ module AreaForm =
                         | String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
                             let area = { Name = areaName }
-                            do! input.OnSave area
+                            do! onSave area
                     }),
                 [|
                     box areaName
-                    box input
+                    box onSave
                     box toast
                 |]
             )

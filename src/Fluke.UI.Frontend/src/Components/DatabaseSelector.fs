@@ -14,12 +14,8 @@ open Fable.Core.JsInterop
 
 module DatabaseSelector =
     [<ReactComponent>]
-    let rec DatabaseSelector
-        (input: {| DatabaseId: DatabaseId
-                   OnChange: DatabaseId -> unit
-                   TaskId: TaskId |})
-        =
-        let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name input.DatabaseId)
+    let rec DatabaseSelector (databaseId: DatabaseId) (taskId: TaskId) (onChange: DatabaseId -> unit) =
+        let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name databaseId)
         let databaseIdSet = Store.useValue Atoms.databaseIdSet
         let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
@@ -60,11 +56,11 @@ module DatabaseSelector =
                 (fun () ->
                     filteredDatabaseIdList
                     |> List.sort
-                    |> List.tryFindIndex ((=) input.DatabaseId)
+                    |> List.tryFindIndex ((=) databaseId)
                     |> Option.defaultValue -1),
                 [|
                     box filteredDatabaseIdList
-                    box input.DatabaseId
+                    box databaseId
                 |]
             )
 
@@ -93,7 +89,7 @@ module DatabaseSelector =
                                         Props =
                                             fun x ->
                                                 x.onClick <- fun _ -> promise { setVisible (not visible) }
-                                                if input.TaskId <> Task.Default.Id then x.isDisabled <- true
+                                                if taskId <> Task.Default.Id then x.isDisabled <- true
                                         Children =
                                             [
                                                 match databaseName with
@@ -127,8 +123,7 @@ module DatabaseSelector =
                                                                     OnClick =
                                                                         fun () ->
                                                                             promise {
-                                                                                input.OnChange databaseId
-
+                                                                                onChange databaseId
                                                                                 onHide ()
                                                                             }
                                                                     Checked = index = i
@@ -171,28 +166,23 @@ module DatabaseSelector =
                                                 fun onHide ->
                                                     [
                                                         DatabaseForm.DatabaseForm
-                                                            {|
-                                                                DatabaseId = Database.Default.Id
-                                                                OnSave =
-                                                                    fun database ->
-                                                                        promise {
-                                                                            do!
-                                                                                hydrateDatabase (
-                                                                                    Store.AtomScope.ReadOnly,
-                                                                                    database
-                                                                                )
+                                                            Database.Default.Id
+                                                            (fun database ->
+                                                                promise {
+                                                                    do!
+                                                                        hydrateDatabase (
+                                                                            Store.AtomScope.ReadOnly,
+                                                                            database
+                                                                        )
 
-                                                                            JS.setTimeout
-                                                                                (fun () ->
-                                                                                    setDatabaseIdSet (
-                                                                                        Set.add database.Id
-                                                                                    ))
-                                                                                0
-                                                                            |> ignore
+                                                                    JS.setTimeout
+                                                                        (fun () ->
+                                                                            setDatabaseIdSet (Set.add database.Id))
+                                                                        0
+                                                                    |> ignore
 
-                                                                            onHide ()
-                                                                        }
-                                                            |}
+                                                                    onHide ()
+                                                                })
                                                     ]
                                         |}
                                 ]
