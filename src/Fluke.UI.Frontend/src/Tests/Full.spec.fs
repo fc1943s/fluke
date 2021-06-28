@@ -129,15 +129,12 @@ module Full =
                     Cy2.clickText (nameof Databases)
                     Cy2.waitFor "Lane Rendering" None
 
-                    Cy.wait 200
+                    Cy.wait 1000
 
                     Cy2.clickSelector "[data-testid='Add Database']"
 
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
-
-
-                    Cy.wait 1000
 
                     //                    Cy.wait 2000
 
