@@ -93,8 +93,6 @@ module JS =
         && not deviceInfo.IsElectron
         && not deviceInfo.IsMobile
 
-    Browser.Dom.window?Debug <- false
-
     let isDebug () =
         let debug =
             match window id with
@@ -102,6 +100,8 @@ module JS =
             | Some window -> window?Debug
 
         debug <> false && (debug || isDebugStatic)
+
+        true
 
 
     let inline log fn =
