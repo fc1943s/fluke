@@ -10,7 +10,11 @@ open Fable.Core
 
 
 module Theme =
-    let private theme darkMode =
+    let private theme
+        (input: {| DarkMode: bool
+                   SystemUiFont: bool
+                   FontSize: int |})
+        =
         let alphaColors dark =
             let n = if dark then "0" else "255"
 
@@ -33,15 +37,17 @@ module Theme =
                 heliotrope = "#b586ff"
                 gray =
                     {|
-                        ``10`` = if darkMode then "#1a1a1a" else "#e5e5e5" // grayDark
-                        ``13`` = if darkMode then "#212121" else "#dedede" // grayLight
-                        ``16`` = if darkMode then "#292929" else "#d6d6d6" // grayLighter
-                        ``45`` = if darkMode then "#727272" else "#8d8d8d" // textDark
-                        ``77`` = if darkMode then "#b0bec5" else "#4f413a" // textLight
-                        ``87`` = if darkMode then "#dddddd" else "#222222" // text
+                        ``10`` = if input.DarkMode then "#1a1a1a" else "#e5e5e5" // grayDark
+                        ``13`` = if input.DarkMode then "#212121" else "#dedede" // grayLight
+                        ``16`` = if input.DarkMode then "#292929" else "#d6d6d6" // grayLighter
+                        ``45`` = if input.DarkMode then "#727272" else "#8d8d8d" // textDark
+                        ``77`` = if input.DarkMode then "#b0bec5" else "#4f413a" // textLight
+                        ``87`` = if input.DarkMode then "#dddddd" else "#222222" // text
                     |}
-                whiteAlpha = alphaColors (not darkMode)
-                blackAlpha = alphaColors darkMode
+                whiteAlpha = alphaColors (not input.DarkMode)
+                blackAlpha = alphaColors input.DarkMode
+                orange = if input.DarkMode then "#ffb836" else "#AF750B"
+                green = if input.DarkMode then "#a4ff8d" else "#269309" //https://paletton.com/#uid=12K0u0kt+lZlOstrKqzzSiaJidt
             |}
 
         let focusShadow = $"0 0 0 1px {colors.heliotrope} !important"
@@ -49,7 +55,7 @@ module Theme =
         {|
             config =
                 {|
-                    initialColorMode = if darkMode then "dark" else "light"
+                    initialColorMode = if input.DarkMode then "dark" else "light"
                     useSystemColorMode = false
                 |}
             breakpoints =
@@ -62,7 +68,11 @@ module Theme =
             colors = colors
             fonts =
                 {|
-                    main = "'Roboto Condensed', sans-serif"
+                    main =
+                        if input.SystemUiFont then
+                            "system-ui"
+                        else
+                            "'Roboto Condensed', sans-serif"
                 |}
             fontWeights =
                 {|
@@ -76,12 +86,12 @@ module Theme =
                     extrabold = 800
                     black = 900
                 |}
-            fontSizes = {| main = "12px" |}
-            lineHeights = {| main = "12px" |}
+            fontSizes = {| main = $"{input.FontSize}px" |}
+            lineHeights = {| main = $"{input.FontSize}px" |}
             styles =
                 {|
                     ``global`` =
-                        fun (props: {| _colorMode: string |}) ->
+                        fun (_props: {| _colorMode: string |}) ->
                             {|
                                 ``:root`` =
                                     {|
@@ -113,15 +123,15 @@ module Theme =
                                     |}
                                 ``input::-ms-reveal`` =
                                     {|
-                                        filter = if darkMode then "invert(1)" else ""
+                                        filter = if input.DarkMode then "invert(1)" else ""
                                     |}
                                 ``input::-ms-clear`` =
                                     {|
-                                        filter = if darkMode then "invert(1)" else ""
+                                        filter = if input.DarkMode then "invert(1)" else ""
                                     |}
                                 ``*::-webkit-calendar-picker-indicator`` =
                                     {|
-                                        filter = if darkMode then "invert(1)" else ""
+                                        filter = if input.DarkMode then "invert(1)" else ""
                                     |}
                                 ``*::-webkit-scrollbar`` = {| width = "9px" |}
                                 ``*::-webkit-scrollbar:horizontal`` = {| height = "6px" |}
@@ -157,15 +167,16 @@ module Theme =
                                 ``.rct-title`` = {| display = "contents" |}
                                 ``.sketch-picker`` =
                                     {|
-                                        backgroundColor = if darkMode then "#333 !important" else "#CCC !important"
+                                        backgroundColor =
+                                            if input.DarkMode then "#333 !important" else "#CCC !important"
                                     |}
                                 ``.sketch-picker span`` =
                                     {|
-                                        color = if darkMode then "#DDD" else "#222 !important"
+                                        color = if input.DarkMode then "#DDD !important" else "#222 !important"
                                     |}
                                 ``.sketch-picker input`` =
                                     {|
-                                        color = if darkMode then "#333 !important" else "#CCC !important"
+                                        color = if input.DarkMode then "#333 !important" else "#CCC !important"
                                     |}
                                 ``.markdown-container h1`` =
                                     {|
@@ -181,10 +192,24 @@ module Theme =
 
     let useTheme () =
         let darkMode = Store.useValue Atoms.darkMode
+        let systemUiFont = Store.useValue Atoms.systemUiFont
+        let fontSize = Store.useValue Atoms.fontSize
 
         React.useMemo (
-            (fun () -> Chakra.react.extendTheme (JsInterop.toPlainJsObj (theme darkMode))),
+            (fun () ->
+                Chakra.react.extendTheme (
+                    JsInterop.toPlainJsObj (
+                        theme
+                            {|
+                                DarkMode = darkMode
+                                SystemUiFont = systemUiFont
+                                FontSize = fontSize
+                            |}
+                    )
+                )),
             [|
+                box fontSize
+                box systemUiFont
                 box darkMode
             |]
         )

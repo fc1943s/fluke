@@ -24,6 +24,7 @@ module CellMenu =
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
         let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
         let dayStart = Store.useValue Atoms.dayStart
+        let darkMode = Store.useValue Atoms.darkMode
 
         let postponedUntil, setPostponedUntil =
             React.useState (
@@ -94,13 +95,15 @@ module CellMenu =
             (fun x ->
                 x.spacing <- "0"
                 x.borderWidth <- "1px"
-                x.borderColor <- TempUI.cellStatusColor Disabled
-                x.boxShadow <- "0px 0px 2px 1px #262626")
+                x.borderColor <- if darkMode then TempUI.cellStatusColor Disabled else "gray.45"
+                x.boxShadow <- $"0px 0px 2px 1px #{if darkMode then 262626 else 777}"
+                )
             [
                 Chakra.simpleGrid
                     (fun x ->
                         x.columns <- 1
-                        x.backgroundColor <- "#636363"
+                        x.borderColor <- "gray.77"
+                        x.backgroundColor <- if darkMode then "#636363" else "gray.45"
                         x.spacing <- "1px"
                         x.width <- $"{cellSize (* * 2*) }px")
                     [
@@ -109,6 +112,7 @@ module CellMenu =
                                 (fun x ->
                                     if isTesting then x?``data-testid`` <- $"cell-button-{color}"
                                     x.icon <- icon
+                                    x.color <- "#dddddd"
                                     x._hover <- JS.newObj (fun x -> x.opacity <- 0.8)
                                     x.variant <- "outline"
                                     x.backgroundColor <- color

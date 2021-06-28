@@ -17,7 +17,6 @@ module Settings =
         let weekStart, setWeekStart = Store.useState Atoms.weekStart
         let color, setColor = Store.useState Atoms.color
         let debug = Store.useValue Atoms.debug
-        let darkMode = Store.useValue Atoms.darkMode
 
         Accordion.Accordion
             {|
@@ -123,6 +122,40 @@ module Settings =
                                                                                     Store.AtomReference.Atom Atoms.color
                                                                                 )
                                                                             )
+
+                                                                        x.rightButton <-
+                                                                            Some (
+
+                                                                                Button.Button
+                                                                                    {|
+                                                                                        Hint = None
+                                                                                        Icon =
+                                                                                            Some (
+                                                                                                Icons.io5.IoCaretDown
+                                                                                                |> Icons.wrap,
+                                                                                                Button.IconPosition.Left
+                                                                                            )
+                                                                                        Props =
+                                                                                            fun x ->
+                                                                                                x.borderRadius <-
+                                                                                                    "0 5px 5px 0"
+
+                                                                                                x.right <- "0"
+                                                                                                x.top <- "0"
+                                                                                                x.bottom <- "0"
+                                                                                                x.minWidth <- "26px"
+
+                                                                                                x.onClick <-
+                                                                                                    (fun _ ->
+                                                                                                        promise {
+                                                                                                            setVisible (
+                                                                                                                not
+                                                                                                                    visible
+                                                                                                            )
+                                                                                                        })
+                                                                                        Children = []
+                                                                                    |}
+                                                                            )
                                                                 Props =
                                                                     fun x ->
                                                                         x.label <- str "Color"
@@ -130,41 +163,6 @@ module Settings =
                                                                         x.fontWeight <- "bold"
                                                                         x.isReadOnly <- true
                                                             |}
-
-                                                        Chakra.stack
-                                                            (fun x ->
-                                                                x.position <- "absolute"
-                                                                x.right <- "1px"
-                                                                x.top <- "0"
-                                                                x.height <- "100%"
-                                                                x.placeContent <- "flex-end"
-                                                                x.spacing <- "0")
-                                                            [
-                                                                Button.Button
-                                                                    {|
-                                                                        Hint = None
-                                                                        Icon =
-                                                                            Some (
-                                                                                Icons.fi.FiChevronDown |> Icons.wrap,
-                                                                                Button.IconPosition.Left
-                                                                            )
-                                                                        Props =
-                                                                            fun x ->
-                                                                                x.borderRadius <- "0 5px 5px 0"
-                                                                                x.minWidth <- "26px"
-                                                                                x.height <- "28px"
-                                                                                x.marginBottom <- "1px"
-
-                                                                                x.borderLeftWidth <- "1px"
-                                                                                x.borderLeftColor <- if darkMode then "#484848" else "#b7b7b7"
-
-                                                                                x.onClick <-
-                                                                                    (fun _ ->
-                                                                                        promise {
-                                                                                            setVisible (not visible) })
-                                                                        Children = []
-                                                                    |}
-                                                            ]
                                                     ]
                                         Body =
                                             fun _onHide ->
@@ -206,46 +204,45 @@ module Settings =
                                                                             )
 
                                                                         x.onFormat <- Some Enum.name
+
+                                                                        x.rightButton <-
+                                                                            Some (
+
+                                                                                Button.Button
+                                                                                    {|
+                                                                                        Hint = None
+                                                                                        Icon =
+                                                                                            Some (
+                                                                                                Icons.io5.IoCaretDown
+                                                                                                |> Icons.wrap,
+                                                                                                Button.IconPosition.Left
+                                                                                            )
+                                                                                        Props =
+                                                                                            fun x ->
+                                                                                                x.borderRadius <-
+                                                                                                    "0 5px 5px 0"
+
+                                                                                                x.right <- "0"
+                                                                                                x.top <- "0"
+                                                                                                x.bottom <- "0"
+                                                                                                x.minWidth <- "26px"
+
+                                                                                                x.onClick <-
+                                                                                                    (fun _ ->
+                                                                                                        promise {
+                                                                                                            setVisible (
+                                                                                                                not
+                                                                                                                    visible
+                                                                                                            )
+                                                                                                        })
+                                                                                        Children = []
+                                                                                    |}
+                                                                            )
                                                                 Props =
                                                                     fun x ->
                                                                         x.label <- str "Week Start"
                                                                         x.isReadOnly <- true
                                                             |}
-
-                                                        Chakra.stack
-                                                            (fun x ->
-                                                                x.position <- "absolute"
-                                                                x.right <- "1px"
-                                                                x.top <- "0"
-                                                                x.height <- "100%"
-                                                                x.placeContent <- "flex-end"
-                                                                x.spacing <- "0")
-                                                            [
-                                                                Button.Button
-                                                                    {|
-                                                                        Hint = None
-                                                                        Icon =
-                                                                            Some (
-                                                                                Icons.fi.FiChevronDown |> Icons.wrap,
-                                                                                Button.IconPosition.Left
-                                                                            )
-                                                                        Props =
-                                                                            fun x ->
-                                                                                x.borderRadius <- "0 5px 5px 0"
-                                                                                x.minWidth <- "26px"
-                                                                                x.height <- "28px"
-                                                                                x.marginBottom <- "1px"
-
-                                                                                x.borderLeftWidth <- "1px"
-                                                                                x.borderLeftColor <- if darkMode then "#484848" else "#b7b7b7"
-
-                                                                                x.onClick <-
-                                                                                    (fun _ ->
-                                                                                        promise {
-                                                                                            setVisible (not visible) })
-                                                                        Children = []
-                                                                    |}
-                                                            ]
                                                     ]
                                         Body =
                                             fun onHide ->
@@ -322,11 +319,29 @@ module Settings =
                                         Props = fun x -> x.label <- str "Cell Size"
                                     |}
 
+                                Input.Input
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <-
+                                                    Some (Store.InputAtom (Store.AtomReference.Atom Atoms.fontSize))
+
+                                                x.inputFormat <- Some Input.InputFormat.Number
+                                        Props = fun x -> x.label <- str "Font Size"
+                                    |}
+
                                 CheckboxInput.CheckboxInput
                                     {|
                                         Atom = Atoms.darkMode
                                         Label = Some "Dark Mode"
-                                        Props = fun _ -> ()
+                                        Props = fun x -> x.alignSelf <- "flex-start"
+                                    |}
+
+                                CheckboxInput.CheckboxInput
+                                    {|
+                                        Atom = Atoms.systemUiFont
+                                        Label = Some "System UI Font"
+                                        Props = fun x -> x.alignSelf <- "flex-start"
                                     |}
 
                                 CheckboxInput.CheckboxInput
@@ -335,6 +350,8 @@ module Settings =
                                         Label = Some "Show Debug Information"
                                         Props =
                                             fun x ->
+                                                x.alignSelf <- "flex-start"
+
                                                 x.onClick <-
                                                     fun _ ->
                                                         promise {

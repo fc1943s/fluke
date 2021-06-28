@@ -80,7 +80,7 @@ module DatabaseLeafIcon =
                                     Chakra.icon
                                         (fun x ->
                                             x.``as`` <- Icons.hi.HiUsers
-                                            x.color <- "#ffb836"
+                                            x.color <- "orange"
                                             x.marginLeft <- "-3px")
                                         []
                                 ]
@@ -95,7 +95,7 @@ module DatabaseLeafIcon =
                                     Chakra.icon
                                         (fun x ->
                                             x.``as`` <- Icons.fa.FaUserShield
-                                            x.color <- "#a4ff8d"
+                                            x.color <- "green"
                                             x.marginLeft <- "-3px")
                                         []
                                 ]
@@ -112,7 +112,7 @@ module DatabaseLeafIcon =
                                     Chakra.icon
                                         (fun x ->
                                             x.``as`` <- Icons.bs.BsPauseFill
-                                            x.color <- "#ffb836"
+                                            x.color <- "orange"
                                             x.marginLeft <- "-3px")
                                         []
                                 ]
@@ -127,7 +127,7 @@ module DatabaseLeafIcon =
                                     Chakra.icon
                                         (fun x ->
                                             x.``as`` <- Icons.bs.BsPlayFill
-                                            x.color <- "#a4ff8d"
+                                            x.color <- "green"
                                             x.marginLeft <- "-3px")
                                         []
                                 ]

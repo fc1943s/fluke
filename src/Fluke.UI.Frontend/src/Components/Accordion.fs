@@ -23,6 +23,7 @@ module Accordion =
                            | _ -> false) then
                     x.flex <- "1"
 
+                x.borderColor <- "gray.45"
                 x.borderBottomWidth <- "0 !important"
                 x.flexDirection <- "column"
                 x.display <- "flex")

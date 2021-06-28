@@ -36,25 +36,11 @@ module SchedulingSelector =
             |}
 
     let inline radio flexDirection value children =
-        Chakra.stack
+        Radio.Radio
             (fun x ->
-                x.spacing <- "4px"
-                x.alignItems <- "center"
-                x.direction <- "row")
-            [
-                Chakra.radio
-                    (fun x ->
-                        x.colorScheme <- "purple"
-                        x.size <- "lg"
-                        x.value <- value |> Json.encode
-                        x.flexDirection <- flexDirection)
-                    []
-                Chakra.box
-                    (fun _ -> ())
-                    [
-                        yield! children
-                    ]
-            ]
+                x.value <- value |> Json.encode
+                x.flexDirection <- flexDirection)
+            children
 
     [<ReactComponent>]
     let ManualRadio value =

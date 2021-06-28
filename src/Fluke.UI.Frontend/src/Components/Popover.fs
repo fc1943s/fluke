@@ -60,7 +60,8 @@ module Popover =
                         Chakra.popoverContent
                             (fun x ->
                                 x.width <- "auto"
-                                x.borderRadius <- "0px")
+                                x.border <- "0"
+                                x.borderRadius <- "0")
                             [
                                 Chakra.popoverArrow (fun _ -> ()) []
 

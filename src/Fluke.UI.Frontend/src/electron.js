@@ -29,9 +29,10 @@ async function createWindow() {
     height: 680,
     frame: false,
     // show: false,
-    // webPreferences: {
-    //   nodeIntegration: true
-    // }
+    webPreferences: {
+      nodeIntegration: false,
+      preload: __dirname + '/electron-preload.js'
+    }
   });
 
   mainWindow.loadURL("https://localhost:" + port);

@@ -68,6 +68,7 @@
         <Compile Include="src\Components\LoadingSpinner.fs" />
         <Compile Include="src\Components\TaskCells.fs" />
         <Compile Include="src\Components\Cells.fs" />
+        <Compile Include="src\Components\Radio.fs" />
         <Compile Include="src\Components\Checkbox.fs" />
         <Compile Include="src\Components\CheckboxInput.fs" />
         <Compile Include="src\Components\DebugOverlay.fs" />
@@ -158,6 +159,7 @@
         <Content Include="jest-setup.ts" />
         <Content Include="cypress.json" />
         <Content Include="src\electron.js" />
+        <Content Include="src\electron-preload.js" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Fluke.Shared\Fluke.Shared.fsproj" />

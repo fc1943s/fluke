@@ -58,8 +58,6 @@ module State =
         let rec ctrlPressed = Store.atom ($"{nameof ctrlPressed}", false)
         let rec shiftPressed = Store.atom ($"{nameof shiftPressed}", false)
 
-        let rec electron = Store.atom ($"{nameof electron}", (None: (obj * obj) option))
-
         let rec databaseIdSet = Store.atomWithSync ($"{nameof databaseIdSet}", (Set.empty: Set<DatabaseId>), [])
 
         let expandedDatabaseIdSetDefault : Set<DatabaseId> = Set.empty
@@ -104,12 +102,17 @@ module State =
         let searchTextDefault = ""
         let rec searchText = Store.atomWithSync ($"{nameof searchText}", searchTextDefault, [])
 
-
         let cellSizeDefault = 23
         let rec cellSize = Store.atomWithSync ($"{nameof cellSize}", cellSizeDefault, [])
 
+        let fontSizeDefault = 12
+        let rec fontSize = Store.atomWithStorage ($"{nameof fontSize}", fontSizeDefault, id)
+
         let darkModeDefault = true
         let rec darkMode = Store.atomWithStorage ($"{nameof darkMode}", darkModeDefault, id)
+
+        let systemUiFontDefault = false
+        let rec systemUiFont = Store.atomWithStorage ($"{nameof systemUiFont}", systemUiFontDefault, id)
 
         let leftDockDefault : TempUI.DockType option = None
         let rec leftDock = Store.atomWithSync ($"{nameof leftDock}", leftDockDefault, [])
@@ -370,10 +373,6 @@ module State =
 
 
     module Selectors =
-        let rec electron =
-//            Store.selector ($"{nameof electron}", None, (fun _ -> (None: (obj * obj) option)), (fun _ _ _ -> ()))
-            Store.atom ($"{nameof electron}", (None: (obj * obj) option))
-
         let rec dateSequence =
             Store.readSelector (
                 $"{nameof dateSequence}",

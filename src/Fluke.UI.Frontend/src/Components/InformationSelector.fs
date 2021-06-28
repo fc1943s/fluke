@@ -201,27 +201,22 @@ module InformationSelector =
                                                                     str text
                                                                 ]
 
-                                                        Chakra.radio
-                                                            (fun x ->
-                                                                x.colorScheme <- "purple"
-                                                                x.value <- nameof Project)
+                                                        Radio.Radio
+                                                            (fun x -> x.value <- nameof Project)
                                                             [
                                                                 label "Project"
                                                             ]
 
-                                                        Chakra.radio
-                                                            (fun x ->
-                                                                x.colorScheme <- "purple"
-                                                                x.value <- nameof Area)
+                                                        Radio.Radio
+                                                            (fun x -> x.value <- nameof Area)
                                                             [
                                                                 label "Area"
                                                             ]
 
-                                                        Chakra.radio
+                                                        Radio.Radio
                                                             (fun x ->
-                                                                x.colorScheme <- "purple"
-                                                                x.isDisabled <- input.DisableResource
-                                                                x.value <- nameof Resource)
+                                                                x.value <- nameof Resource
+                                                                x.isDisabled <- input.DisableResource)
                                                             [
                                                                 Tooltip.wrap
                                                                     (if input.DisableResource then

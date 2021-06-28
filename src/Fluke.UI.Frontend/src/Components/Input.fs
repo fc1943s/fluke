@@ -24,7 +24,7 @@ module Input =
     type IProps<'TValue, 'TKey> =
         abstract hint : ReactElement option with get, set
         abstract textarea : bool with get, set
-        abstract autoFocusMountOnly : bool with get, set
+        abstract autoFocusOnAllMounts : bool with get, set
         abstract hintTitle : ReactElement option with get, set
         abstract atom : Store.InputAtom<'TValue> option with get, set
         abstract inputScope : Store.InputScope<'TValue> option with get, set
@@ -33,6 +33,7 @@ module Input =
         abstract onValidate : (string * 'TValue option -> 'TValue option) option with get, set
         abstract onEnterPress : (_ -> JS.Promise<unit>) option with get, set
         abstract inputFormat : InputFormat option with get, set
+        abstract rightButton : ReactElement option with get, set
 
 
     [<ReactComponent>]
@@ -130,7 +131,7 @@ module Input =
                     inputRef.current.value <- currentValueString
 
                     if props.autoFocus
-                       && (not mounted || not customProps.autoFocusMountOnly) then
+                       && (not mounted || customProps.autoFocusOnAllMounts) then
                         promise { inputRef.current.focus () }
                         |> Promise.start
 
@@ -218,6 +219,7 @@ module Input =
                                 x.onChange <- onChange
                                 x.ref <- inputRef
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
+                                x.borderColor <- if darkMode then "#484848" else "#b7b7b7"
 
                                 if customProps.textarea then x.paddingTop <- "6px"
 
@@ -248,33 +250,26 @@ module Input =
                                 input.Props x)
                             []
 
-                        match customProps.inputFormat with
-                        | Some InputFormat.Number ->
-                            Chakra.stack
-                                (fun x ->
-                                    x.position <- "absolute"
-                                    x.right <- "1px"
-                                    x.top <- "0"
-                                    x.height <- "100%"
-                                    x.borderLeftWidth <- "1px"
-                                    x.borderLeftColor <- if darkMode then "#484848" else "#b7b7b7"
-                                    x.spacing <- "0")
-                                [
-                                    let numberButtonClick (value: string) (op: float -> float) =
-                                        match Double.TryParse value with
-                                        | true, value ->
-                                            match customProps.onValidate with
-                                            | Some onValidate ->
-                                                match onValidate (string (op value), currentValue) with
-                                                | Some value ->
-                                                    inputRef.current.valueAsNumber <-
-                                                        match customProps.onFormat with
-                                                        | Some onFormat -> onFormat value |> unbox
-                                                        | None -> unbox value
-                                                | None -> ()
-                                            | None -> inputRef.current.valueAsNumber <- op value
-                                        | _ -> ()
+                        let rightButton =
+                            match customProps.rightButton, customProps.inputFormat with
+                            | Some rightButton, _ -> Some rightButton
+                            | _, Some InputFormat.Number ->
+                                let numberButtonClick (value: string) (op: float -> float) =
+                                    match Double.TryParse value with
+                                    | true, value ->
+                                        match customProps.onValidate with
+                                        | Some onValidate ->
+                                            match onValidate (string (op value), currentValue) with
+                                            | Some value ->
+                                                inputRef.current.valueAsNumber <-
+                                                    match customProps.onFormat with
+                                                    | Some onFormat -> onFormat value |> unbox
+                                                    | None -> unbox value
+                                            | None -> ()
+                                        | None -> inputRef.current.valueAsNumber <- op value
+                                    | _ -> ()
 
+                                React.fragment [
                                     Button.Button
                                         {|
                                             Hint = None
@@ -318,6 +313,23 @@ module Input =
                                             Children = []
                                         |}
                                 ]
+                                |> Some
+                            | _ -> None
+
+                        match rightButton with
+                        | Some rightButton ->
+                            Chakra.stack
+                                (fun x ->
+                                    x.position <- "absolute"
+                                    x.right <- "1px"
+                                    x.top <- "1px"
+                                    x.bottom <- "1px"
+                                    x.borderLeftWidth <- "1px"
+                                    x.borderLeftColor <- if darkMode then "#484848" else "#b7b7b7"
+                                    x.spacing <- "0")
+                                [
+                                    rightButton
+                                ]
                         | _ -> nothing
                     ]
             ]
@@ -332,12 +344,14 @@ module Input =
                 x.flex <- "1"
                 x.position <- "relative")
             [
-                Chakra.box
+                Chakra.flex
                     (fun x ->
                         x.zIndex <- 0
                         x.position <- "absolute"
                         x.left <- "9px"
-                        x.top <- "9px")
+                        x.top <- "0"
+                        x.bottom <- "0"
+                        x.alignItems <- "center")
                     [
                         input.Icon
                     ]

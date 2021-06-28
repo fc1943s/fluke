@@ -109,7 +109,12 @@ module TopBar =
                                                     x.fontSize <- "17px"
 
                                                     x.onClick <-
-                                                        fun _ -> promise { Electron.electron.ipcRenderer.send "close" }
+                                                        fun _ ->
+                                                            promise {
+                                                                match JS.window id with
+                                                                | Some window -> window?ipcRenderer?send "close"
+                                                                | None -> ()
+                                                            }
                                         |}
                                 ]
                     ]

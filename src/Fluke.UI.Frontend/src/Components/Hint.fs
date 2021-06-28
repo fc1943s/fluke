@@ -19,39 +19,35 @@ module Hint =
                 |]
             )
 
-        Chakra.darkMode
-            (fun _ -> ())
-            [
-                Popover.Popover
-                    {|
-                        Trigger =
-                            InputLabelIconButton.InputLabelIconButton
-                                (fun x ->
-                                    x.icon <- Icons.bs.BsQuestionCircle |> Icons.render
-                                    x.marginLeft <- "4px"
-                                    x.marginTop <- "-5px")
-                        Body =
-                            fun (_disclosure, _initialFocusRef) ->
-                                [
-                                    match props.hintTitle with
-                                    | Some hintTitle ->
-                                        Chakra.box
+        Popover.Popover
+            {|
+                Trigger =
+                    InputLabelIconButton.InputLabelIconButton
+                        (fun x ->
+                            x.icon <- Icons.bs.BsQuestionCircle |> Icons.render
+                            x.marginLeft <- "4px"
+                            x.marginTop <- "-5px")
+                Body =
+                    fun (_disclosure, _initialFocusRef) ->
+                        [
+                            match props.hintTitle with
+                            | Some hintTitle ->
+                                Chakra.box
+                                    (fun x ->
+                                        x.paddingBottom <- "12px"
+                                        x.fontSize <- "15px")
+                                    [
+                                        Chakra.icon
                                             (fun x ->
-                                                x.paddingBottom <- "12px"
-                                                x.fontSize <- "15px")
-                                            [
-                                                Chakra.icon
-                                                    (fun x ->
-                                                        x.``as`` <- Icons.bs.BsQuestionCircle
-                                                        x.marginTop <- "-3px"
-                                                        x.marginRight <- "5px"
-                                                        x.color <- "heliotrope")
-                                                    []
+                                                x.``as`` <- Icons.bs.BsQuestionCircle
+                                                x.marginTop <- "-3px"
+                                                x.marginRight <- "5px"
+                                                x.color <- "heliotrope")
+                                            []
 
-                                                hintTitle
-                                            ]
-                                    | None -> ()
-                                    props.hint
-                                ]
-                    |}
-            ]
+                                        hintTitle
+                                    ]
+                            | None -> ()
+                            props.hint
+                        ]
+            |}

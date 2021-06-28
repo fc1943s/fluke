@@ -24,59 +24,55 @@ module Button =
             | Some (icon, iconPosition) -> Some icon, Some iconPosition
             | _ -> None, None
 
-        Chakra.darkMode
-            (fun _ -> ())
+        Tooltip.wrap
+            (input.Hint |> Option.defaultValue null)
             [
-                Tooltip.wrap
-                    (input.Hint |> Option.defaultValue null)
-                    [
-                        match icon, input.Children |> Seq.toList with
-                        | Some icon, [] ->
-                            Chakra.iconButton
-                                (fun x ->
-                                    x.icon <- icon ()
-                                    input.Props x)
-                                []
-                        | icon, children ->
-                            let icon () =
-                                match icon with
-                                | Some icon ->
-                                    Chakra.box
-                                        (fun x -> x.transform <- Chakra.transformShiftBy None (Some 1.))
-                                        [
-                                            icon ()
-                                        ]
-                                | None -> nothing
-
-                            Chakra.button
-                                (fun x ->
-                                    x.height <- "auto"
-                                    x.alignSelf <- "flex-start"
-                                    x.color <- "gray"
-                                    x.paddingTop <- "4px"
-                                    x.paddingBottom <- "4px"
-                                    x.borderRadius <- "3px"
-                                    input.Props x)
+                match icon, input.Children |> Seq.toList with
+                | Some icon, [] ->
+                    Chakra.iconButton
+                        (fun x ->
+                            x.icon <- icon ()
+                            input.Props x)
+                        []
+                | icon, children ->
+                    let icon () =
+                        match icon with
+                        | Some icon ->
+                            Chakra.box
+                                (fun x -> x.transform <- Chakra.transformShiftBy None (Some 1.))
                                 [
-                                    Chakra.stack
-                                        (fun x ->
-                                            x.direction <- "row"
-                                            x.spacing <- "7px")
-                                        [
-                                            match iconPosition with
-                                            | Some IconPosition.Left -> icon ()
-                                            | _ -> nothing
-
-                                            Chakra.box
-                                                (fun _ -> ())
-                                                [
-                                                    yield! children
-                                                ]
-
-                                            match iconPosition with
-                                            | Some IconPosition.Right -> icon ()
-                                            | _ -> nothing
-                                        ]
+                                    icon ()
                                 ]
-                    ]
+                        | None -> nothing
+
+                    Chakra.button
+                        (fun x ->
+                            x.height <- "auto"
+                            x.alignSelf <- "flex-start"
+                            x.color <- "gray"
+                            x.paddingTop <- "4px"
+                            x.paddingBottom <- "4px"
+                            x.borderRadius <- "3px"
+                            input.Props x)
+                        [
+                            Chakra.stack
+                                (fun x ->
+                                    x.direction <- "row"
+                                    x.spacing <- "7px")
+                                [
+                                    match iconPosition with
+                                    | Some IconPosition.Left -> icon ()
+                                    | _ -> nothing
+
+                                    Chakra.box
+                                        (fun _ -> ())
+                                        [
+                                            yield! children
+                                        ]
+
+                                    match iconPosition with
+                                    | Some IconPosition.Right -> icon ()
+                                    | _ -> nothing
+                                ]
+                        ]
             ]
