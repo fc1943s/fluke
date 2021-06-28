@@ -42,18 +42,13 @@ module TaskForm =
 
         let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.uiFlag Atoms.UIFlagType.Task)
 
-        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
-
         let taskDatabaseId =
             React.useMemo (
                 (fun () ->
                     match taskUIFlag with
-                    | Atoms.UIFlag.Task (databaseId, taskId) when
-                        taskId = input.TaskId
-                        && selectedTaskIdSet.Contains taskId -> databaseId
+                    | Atoms.UIFlag.Task (databaseId, taskId) when taskId = input.TaskId -> databaseId
                     | _ -> Database.Default.Id),
                 [|
-                    box selectedTaskIdSet
                     box taskUIFlag
                     box input.TaskId
                 |]

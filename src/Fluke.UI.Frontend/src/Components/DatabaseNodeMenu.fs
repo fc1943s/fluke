@@ -47,13 +47,12 @@ type DatabaseNodeMenu () =
                                         |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                     x.onClick <-
-                                        fun _ ->
+                                        fun e ->
                                             promise {
                                                 if deviceInfo.IsMobile then setLeftDock None
-
                                                 setRightDock (Some DockType.Task)
-
                                                 setTaskUIFlag ((databaseId, Task.Default.Id) |> Atoms.UIFlag.Task)
+                                                e.preventDefault ()
                                             })
                                 [
                                     str "Add Task"
@@ -68,11 +67,12 @@ type DatabaseNodeMenu () =
                                         |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                     x.onClick <-
-                                        fun _ ->
+                                        fun e ->
                                             promise {
                                                 if deviceInfo.IsMobile then setLeftDock None
                                                 setRightDock (Some DockType.Database)
                                                 setDatabaseUIFlag (databaseId |> Atoms.UIFlag.Database)
+                                                e.preventDefault ()
                                             })
                                 [
                                     str "Edit Database"
@@ -100,7 +100,10 @@ type DatabaseNodeMenu () =
                                     Icons.bi.BiExport
                                     |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
-                                x.onClick <- fun _ -> exportDatabase databaseId)
+                                x.onClick <-
+                                    fun e ->
+                                        e.preventDefault ()
+                                        exportDatabase databaseId)
                             [
                                 str "Export Database"
                             ]

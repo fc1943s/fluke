@@ -76,6 +76,7 @@ module LoginScreen =
                                     fun x ->
                                         x.fixedValue <- Some usernameField
                                         x.onEnterPress <- Some signInClick
+                                        x.autoFocusMountOnly <- true
                                 Props =
                                     fun x ->
                                         x.autoFocus <- true

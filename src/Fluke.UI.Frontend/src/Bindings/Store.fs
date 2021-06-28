@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Bindings
 
+open System.Collections.Generic
 open Fluke.Shared.Domain.UserInteraction
 
 #nowarn "40"
@@ -79,7 +80,7 @@ module Store =
         setter (atom |> box |> unbox) value
 
     let inline selectAtom (atomPath: string, atom, selector) =
-//        readSelector (
+        //        readSelector (
 //            atomPath,
 //            fun getter ->
 //                let value = value getter atom
@@ -87,12 +88,12 @@ module Store =
 //                selector value
 //        )
 
-            jotaiUtils.selectAtom
-                atom
-                (fun value ->
-                    Profiling.addCount $"{atomPath} :selectAtom"
-                    selector value)
-                JS.undefined
+        jotaiUtils.selectAtom
+            atom
+            (fun value ->
+                Profiling.addCount $"{atomPath} :selectAtom"
+                selector value)
+            JS.undefined
 
     let inline selectAtomFamily (atomPath, atom, selector) =
         jotaiUtils.atomFamily (fun param -> selectAtom (atomPath, atom, selector param)) DeepEqual.compare
@@ -240,13 +241,23 @@ module Store =
 //                                    user.is={JS.JSON.stringify gunNamespace.is}")
 //            )
 
+    // https://i.imgur.com/GB8trpT.png        :~ still trash
     let inline atomWithSync<'TKey, 'TValue> (atomPath, defaultValue: 'TValue, keyIdentifier: string list) =
         let mutable lastGunAtomNode = None
         let mutable lastUsername = None
         let mutable lastValue = None
+        let mutable lastGunValue = None
+        let mutable lastAtomPath = None
+
+        let localSetHashes = HashSet<Guid> ()
 
         let assignLastGunAtomNode getter atom =
-            match queryAtomPath (AtomReference.Atom (unbox atom)) with
+            if lastAtomPath.IsNone then
+                lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
+
+            JS.log (fun () -> $"assignLastGunAtomNode atom={atom}")
+
+            match lastAtomPath with
             | Some atomPath ->
                 match value getter (Selectors.gunAtomNode atomPath) with
                 | Some (username, gunAtomNode) ->
@@ -259,6 +270,7 @@ module Store =
                 lastUsername <- None
                 lastGunAtomNode <- None
 
+
         let internalAtom = jotaiUtils.atomFamily (fun _username -> jotai.atom defaultValue) DeepEqual.compare
 
         let gunNodePath = Gun.getGunNodePath atomPath keyIdentifier
@@ -270,6 +282,63 @@ module Store =
                 $"atomFamily constructor gunNodePath={gunNodePath} atomPath={atomPath} keyIdentifier={keyIdentifier} lastUsername={
                                                                                                                                        lastUsername
                 }")
+
+        let debounceGunPut =
+            JS.debounce
+                (fun newValue ->
+                    promise {
+                        JS.log (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #1")
+
+                        try
+                            match lastGunAtomNode with
+                            | Some gunAtomNode ->
+                                JS.log (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #2 before encode")
+
+                                let! newValueJson =
+                                    if newValue |> JS.ofNonEmptyObj |> Option.isNone then
+                                        null |> Promise.lift
+                                    else
+                                        Gun.userEncode<'TValue> gunAtomNode newValue
+
+                                JS.log (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #3. before put")
+
+                                if lastGunValue.IsNone
+                                   || lastGunValue |> DeepEqual.compare (unbox newValue) |> not
+                                   || unbox newValue = null then
+
+                                    let! putResult = Gun.put gunAtomNode newValueJson
+
+
+                                    match putResult with
+                                    | Some (ack, node) ->
+                                        Browser.Dom.window?lastAck <- ack
+                                        Browser.Dom.window?lastNode <- node
+
+                                        JS.log
+                                            (fun () ->
+                                                $"atomFamily.wrapper.set() debounceGunPut promise.
+                                                   newValue={newValue}
+                                                   ack=%A{ack}
+                                                   node=%A{node}
+                                                   ")
+
+                                    | None ->
+                                        Browser.Dom.console.error
+                                            $"atomFamily.wrapper.set() debounceGunPut promise put error.
+                                                lastAtomPath={lastAtomPath} newValue={newValue}"
+                                else
+                                    JS.log
+                                        (fun () ->
+                                            $"atomFamily.wrapper.set() debounceGunPut promise.
+                                                   put skipped
+                                                   newValue={newValue}
+                                                   ==lastGunValue
+                                                   ")
+                            | None -> Browser.Dom.console.error $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
+                        with ex -> Browser.Dom.console.error ("[exception2]", ex)
+                    }
+                    |> Promise.start)
+                1000
 
         let rec wrapper =
             selector (
@@ -284,7 +353,7 @@ module Store =
 
                     JS.log
                         (fun () ->
-                            $"atomFamily.get() atomPath={atomPath} keyIdentifier={keyIdentifier}
+                            $"atomFamily.wrapper.get() atomPath={atomPath} keyIdentifier={keyIdentifier}
                                                 result={result} lastUsername={lastUsername}")
 
                     lastValue <- Some (DateTime.Now.Ticks, result)
@@ -312,7 +381,7 @@ module Store =
 
                                     JS.log
                                         (fun () ->
-                                            $"atomFamily.set()
+                                            $"atomFamily.wrapper.set()
                                                     gunNodePath={gunNodePath}
                                                     atomPath={atomPath} keyIdentifier={keyIdentifier}
                                                     jsTypeof-newValue={jsTypeof newValue}
@@ -322,26 +391,15 @@ module Store =
                                                     lastUsername={lastUsername}
                                                     ")
 
-                                    promise {
-                                        try
-                                            match lastGunAtomNode with
-                                            | Some gunAtomNode ->
-
-                                                let! newValueJson =
-                                                    if newValue |> JS.ofNonEmptyObj |> Option.isNone then
-                                                        null |> Promise.lift
-                                                    else
-                                                        Gun.userEncode<'TValue> gunAtomNode newValue
-
-                                                Gun.put gunAtomNode newValueJson
-                                            | None ->
-                                                Browser.Dom.console.error
-                                                    $"[gunEffect.onRecoilSet] Gun node not found: {atomPath}"
-                                        with ex -> Browser.Dom.console.error ("[exception2]", ex)
-                                    }
-                                    |> Promise.start
+                                    debounceGunPut newValue
 
                                 lastValue <- Some (DateTime.Now.Ticks, newValue)
+
+                                JS.log
+                                    (fun () ->
+                                        $"atomFamily.wrapper.set()
+                                                    lastValue setted. returning
+                                                    ")
 
                                 newValue)))
             )
@@ -354,6 +412,8 @@ module Store =
                         | null -> unbox null |> Promise.lift
                         | _ -> Gun.userDecode<'TValue> gunAtomNode data
 
+                    lastGunValue <- newValue
+
                     match lastValue with
                     | Some (lastValueTicks, lastValue) when
                         lastValueTicks > ticks
@@ -364,7 +424,7 @@ module Store =
 
                         JS.log
                             (fun () ->
-                                $"on() value. skipping. atomPath={atomPath} lastValue={lastValue} newValue={newValue}")
+                                $"gun.on() value. skipping. atomPath={atomPath} lastValue={lastValue} newValue={newValue}")
                     | _ ->
                         Profiling.addCount $"{gunNodePath} on() assign"
 
@@ -384,7 +444,7 @@ module Store =
                                         newValue={newValue}
                                         typeof newValue={jsTypeof newValue}"
 
-                                $"on() value. triggering.
+                                $"gun.on() value. triggering.
                             atomPath={atomPath}
                             _lastValue={_lastValue}
                             typeof lastValue={jsTypeof _lastValue}
@@ -395,6 +455,8 @@ module Store =
 //                        Browser.Dom.window?lastValue <- _lastValue
 //                        Browser.Dom.window?newValue <- newValue
 //                        Browser.Dom.window?deepEqual <- DeepEqual.compare
+
+                        // setAtom internalAtom
 
                         setAtom newValue
                 with ex -> Browser.Dom.console.error ("[exception1]", ex)
@@ -684,13 +746,8 @@ module Store =
                     | AtomReference.Atom atom -> Some atom
                     | _ -> Some (unbox emptyAtom)
                 ReadWrite =
-                    JS.log
-                        (fun () ->
-                            $"getAtomField
-                    atomPath={atomPath}
-                    queryAtomPath atomPath={queryAtomPath atomPath}
-                    inputScope={inputScope}
-                    ")
+                    //                    JS.log
+//                        (fun () -> $"getAtomField atomPath={atomPath} queryAtomPath atomPath={queryAtomPath atomPath}")
 
                     match queryAtomPath atomPath, inputScope with
                     | Some atomPath, AtomScope.ReadWrite -> Some (readWriteValue atomPath)

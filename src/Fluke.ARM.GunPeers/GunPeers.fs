@@ -91,7 +91,7 @@ module GunPeers =
                         uint16 port
                     ]
                     cpu_cores 1
-                    memory 0.5<Gb>
+                    memory 0.1<Gb>
                     // It needs a couple cores or the world may lag with a few players
                     //                    cpu_cores 2
                     // Give it enough memory for the JVM
@@ -117,7 +117,7 @@ module GunPeers =
         let fileShareId = FileShareId $"share-{nameof gunstorage1}"
 
         arm {
-            location Location.BrazilSouth
+            location Location.EastUS
 
             add_resources [
                 gunstorage1 fileShareId

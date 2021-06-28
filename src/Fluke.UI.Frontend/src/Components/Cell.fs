@@ -120,7 +120,7 @@ module Cell =
                 Body =
                     fun (disclosure, _initialFocusRef) ->
                         [
-                            if isReadWrite && not isTesting then
+                            if isReadWrite then
                                 CellMenu.CellMenu
                                     {|
                                         TaskId = input.TaskId

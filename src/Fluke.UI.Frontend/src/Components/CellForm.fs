@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open System
+open Fable.Core.JsInterop
 open Browser.Types
 open Feliz
 open Fable.React
@@ -17,6 +18,8 @@ module CellForm =
 
     [<ReactComponent>]
     let rec CellForm (input: {| TaskId: TaskId; DateId: DateId |}) =
+        let isTesting = Store.useValue Store.Atoms.isTesting
+
         let (TaskName taskName) = Store.useValue (Atoms.Task.name input.TaskId)
 
         let addAttachmentText, setAddAttachmentText = React.useState ""
@@ -202,6 +205,7 @@ module CellForm =
                                                             )
                                                         Props =
                                                             fun x ->
+                                                                if isTesting then x?``data-testid`` <- "Add Attachment"
                                                                 x.borderBottomLeftRadius <- "0"
                                                                 x.borderTopLeftRadius <- "0"
                                                                 x.onClick <- addAttachment

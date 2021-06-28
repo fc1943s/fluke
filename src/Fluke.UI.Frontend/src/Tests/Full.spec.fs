@@ -1,7 +1,9 @@
 namespace Fluke.UI.Frontend.Tests
 
 open System
+open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
+open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 
 
@@ -43,6 +45,13 @@ module Full =
         let selectorFocusTypeText selector text =
             Cy.get(selector).first().focus ()
             typeText (fun () -> Cy.get selector) text
+
+        let clickTestId selector =
+            Cy
+                .get(selector)
+                .first()
+                .click (Some {| force = false |})
+            |> ignore
 
         let selectorFocusTypeTextWithinSelector parent selector text =
             Cy.get(parent).get(selector).first().focus ()
@@ -127,12 +136,12 @@ module Full =
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
-                    Cy2.clickSelectorChildFromText dbName ".chakra-button"
 
-                    //                    Cy.wait 400
+                    Cy.wait 200
 
                     //                    Cy.wait 2000
 
+                    Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Add Task"
 
                     //                    Cy.wait 5000
@@ -165,17 +174,14 @@ module Full =
 //                    Cy2.waitForWithinSelector "[data-testid=DatabaseSelector]" dbName (Some {| timeout = timeout |})
 //                    Cy.wait 3000
 //                    Cy.wait 3000
-//
+
                     Cy2.selectorFocusTypeText "input[placeholder^=new-task-]" taskName
 
                     Cy2.clickText "Save"
 
-                    //                    Cy.wait 200
+                    Cy.wait 1000
 
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
-
-                    //                    Cy.wait 2000
-
                     Cy2.clickText "Edit Database"
 
                     Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
@@ -216,9 +222,23 @@ module Full =
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 
+                    Cy2.clickTestId "[data-testid^='cell-']"
+
+                    Cy2.clickTestId
+                        $"[data-testid='cell-button-{TempUI.cellStatusColor (UserStatus (unbox null, Completed))}']"
+
+                    Cy2.clickTestId "[data-testid^='cell-']"
+                    Cy2.clickTestId $"[data-testid='cell-button-{(TempUI.cellStatusColor Pending)}']"
+
+                    Cy2.selectorTypeText "textarea[placeholder='Add Attachment']" "newcomment" None
+
+                    Cy2.clickTestId "[data-testid='Add Attachment']"
+
+                    Cy2.waitFor "newcomment" (Some {| timeout = timeout |})
+
                     Cy2.clickText "Bullet Journal View"
                     Cy.wait 200
 
-                    Cy2.waitFor "0 of 1 visible" (Some {| timeout = timeout |})
+                    Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 
                     Cy.visit homeUrl))

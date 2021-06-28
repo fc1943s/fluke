@@ -50,7 +50,6 @@ module InitialPeers =
                                         x.onEnterPress <- Some nextClick
                                 Props =
                                     fun x ->
-                                        x.autoFocus <- true
                                         x.label <- str "Gun peer"
                                         x.placeholder <- "https://??????.herokuapp.com/gun"
                                         x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value })

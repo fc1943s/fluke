@@ -60,6 +60,19 @@ module Gun =
 
             abstract is : IGunUserPub option
 
+        type PutAck =
+            {
+                err: int option
+                ``#``: string option
+                [<Emit("@")>]
+                at: string option
+            }
+
+        type PutNode =
+            {
+                err: int option
+                off: (unit -> unit) option
+            }
 
         type IGunChainReference =
             abstract get : string -> IGunChainReference
@@ -68,7 +81,7 @@ module Gun =
             abstract on : ('T -> string -> unit) -> unit
             abstract once : ('T -> string -> unit) -> unit
             abstract on : event: string * (unit -> unit) -> unit
-            abstract put : string -> IGunChainReference
+            abstract put : string -> (PutAck -> PutNode -> unit) -> IGunChainReference
             abstract user : unit -> IGunUser
     //        abstract once : (string -> unit) -> unit
     //        abstract set : string -> IGunChainReference
@@ -206,7 +219,17 @@ module Gun =
 
     let inline defaultSerializer<'T> : Serializer<'T> = Json.encode<'T>, Json.decode<'T>
 
-    let inline put (gun: IGunChainReference) (value: string) = gun.put value |> ignore
+    let inline put (gun: IGunChainReference) (value: string) =
+        Promise.create
+            (fun res _err ->
+                gun.put
+                    value
+                    (fun ack node ->
+                        match ack with
+                        | { err = Some _ } -> res None
+                        | _ -> res (Some (ack, node)))
+                |> ignore)
+
 
     let batchData =
         Batcher.batcher
@@ -218,12 +241,12 @@ module Gun =
                     item.Fn (item.Timestamp, item.Data))
              >> Promise.Parallel
              >> Promise.start)
-            {| interval = 500 |}
+            {| interval = 1000 |}
 
     let subscribe (gun: IGunChainReference) fn =
         gun.on
             (fun data _key ->
-                //                                    JS.consoleLog("subscribe", item)
+                JS.log (fun () -> $"subscribe.on() data. batching...data={data} key={_key}")
                 fn data)
 
     let batchSubscribe =
@@ -244,7 +267,7 @@ module Gun =
                     })
              >> Promise.Parallel
              >> Promise.start)
-            {| interval = 100 |}
+            {| interval = 1000 |}
 
     let wrapAtomPath (atomPath: string) =
         let header = $"{nameof Fluke}/"

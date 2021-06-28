@@ -23,6 +23,7 @@ module Input =
     type IProps<'TValue, 'TKey> =
         abstract hint : ReactElement option with get, set
         abstract textarea : bool with get, set
+        abstract autoFocusMountOnly : bool with get, set
         abstract hintTitle : ReactElement option with get, set
         abstract atom : Store.InputAtom<'TValue> option with get, set
         abstract inputScope : Store.InputScope<'TValue> option with get, set
@@ -125,7 +126,8 @@ module Input =
                 | _ ->
                     inputRef.current.value <- currentValueString
 
-                    if props.autoFocus then
+                    if props.autoFocus
+                       && (not mounted || not customProps.autoFocusMountOnly) then
                         promise { inputRef.current.focus () }
                         |> Promise.start
 

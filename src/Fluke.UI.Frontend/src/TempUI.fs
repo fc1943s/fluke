@@ -48,4 +48,4 @@ module TempUI =
         | Pending -> "#262626"
         | Missed -> "#990022"
         | MissedToday -> "#530011"
-        | UserStatus (_user, manualCellStatus) -> manualCellStatusColor manualCellStatus
+        | UserStatus (_, manualCellStatus) -> manualCellStatusColor manualCellStatus
