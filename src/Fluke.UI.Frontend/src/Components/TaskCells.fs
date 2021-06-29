@@ -12,7 +12,7 @@ module TaskCells =
         let dateSequence = Store.useValue Selectors.dateSequence
 
         Chakra.flex
-            (fun _ -> ())
+            (fun x -> x.backgroundColor <- "#212121")
             [
                 yield!
                     dateSequence

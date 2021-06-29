@@ -36,7 +36,7 @@ module DeleteUserButton =
                     Button.Button
                         {|
                             Hint = None
-                            Icon = Some (Icons.bs.BsTrash |> Icons.wrap, Button.IconPosition.Left)
+                            Icon = Some (Icons.bi.BiTrash |> Icons.wrap, Button.IconPosition.Left)
                             Props = fun _ -> ()
                             Children =
                                 [
@@ -68,6 +68,7 @@ module DeleteUserButton =
                                                 fun x ->
                                                     x.ref <- initialFocusRef
                                                     x.placeholder <- "Password"
+
                                                     x.onChange <-
                                                         (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
                                         |}
@@ -79,7 +80,7 @@ module DeleteUserButton =
                                                 {|
                                                     Hint = None
                                                     Icon =
-                                                        Some (Icons.bs.BsTrash |> Icons.wrap, Button.IconPosition.Left)
+                                                        Some (Icons.bi.BiTrash |> Icons.wrap, Button.IconPosition.Left)
                                                     Props = fun x -> x.onClick <- confirmClick disclosure
                                                     Children =
                                                         [
@@ -89,4 +90,5 @@ module DeleteUserButton =
                                         ]
                                 ]
                         ]
+                Props = fun _ -> ()
             |}

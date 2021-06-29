@@ -364,33 +364,32 @@ module Store =
 
         let subscribe =
             (fun setAtom ->
-                if lastSubscription.IsNone then
-                    match lastGunAtomNode with
-                    | Some (key, gunAtomNode) ->
-                        Profiling.addCount $"{gunNodePath} subscribe"
-                        JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath} {key}")
+                match lastGunAtomNode with
+                | Some (key, gunAtomNode) ->
+                    Profiling.addCount $"{gunNodePath} subscribe"
+                    JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath} {key}")
 
-                        Gun.batchSubscribe
-                            {|
-                                GunAtomNode = gunAtomNode
-                                Fn = setInternalFromGun gunAtomNode setAtom
-                            |}
+                    Gun.batchSubscribe
+                        {|
+                            GunAtomNode = gunAtomNode
+                            Fn = setInternalFromGun gunAtomNode setAtom
+                        |}
 
-                        //                        Gun.subscribe
+                    //                        Gun.subscribe
 //                            gunAtomNode
 //                            (fun data ->
 //                                setInternalFromGun gunAtomNode setAtom (DateTime.Now.Ticks, data)
 //                                |> Promise.start)
 
-                        lastSubscription <- Some DateTime.Now.Ticks
-                    | None ->
-                        JS.log
-                            (fun () ->
-                                $"[gunEffect.on()]
+                    lastSubscription <- Some DateTime.Now.Ticks
+                | None ->
+                    JS.log
+                        (fun () ->
+                            $"[gunEffect.on()]
                                 {baseInfo ()}
                              skipping subscribe, no gun atom node.")
 
-                        lastWrapperSet <- Some setAtom)
+                    lastWrapperSet <- Some setAtom)
 
         let unsubscribe =
             (fun _setAtom ->
@@ -521,21 +520,21 @@ module Store =
 
                         match lastWrapperSet with
                         | Some lastWrapperSet ->
-                            printfn
-                                $"subscribing
+                            JS.log
+                                (fun () ->
+                                    $"subscribing
                                 wrapper={wrapper}
                                 userAtom={userAtom}
-                                {baseInfo ()}
-                            "
+                                {baseInfo ()} ")
 
                             subscribe lastWrapperSet
                         | None ->
-                            printfn
-                                $"skipping subscribe
+                            JS.log
+                                (fun () ->
+                                    $"skipping subscribe
                                 wrapper={wrapper}
                                 userAtom={userAtom}
-                                {baseInfo ()}
-                        "
+                                {baseInfo ()} ")
 
                     lastValue <- Some (DateTime.Now.Ticks, result)
 
@@ -611,18 +610,46 @@ module Store =
         let storageAtom = atomWithStorage (atomPath, defaultValue, map)
         let syncAtom = atomWithSync<'TKey, 'TValue> (atomPath, defaultValue, [])
 
+        let mutable lastSetAtom = None
+        let mutable lastValue = None
+
         let rec wrapper =
             selector (
                 atomPath,
                 None,
                 (fun getter ->
-                    match value getter syncAtom with
-                    | syncValue when syncValue |> DeepEqual.compare defaultValue -> value getter storageAtom
-                    | syncValue -> syncValue),
+                    match value getter syncAtom, value getter storageAtom with
+                    | syncValue, storageValue when
+                        syncValue |> DeepEqual.compare defaultValue
+                        && (storageValue |> DeepEqual.compare defaultValue
+                            || (value getter Atoms.username).IsNone
+                            || lastValue.IsNone) -> value getter storageAtom
+                    | syncValue, _ ->
+                        match lastSetAtom with
+                        | Some lastSetAtom when
+                            lastValue.IsNone
+                            || lastValue
+                               |> DeepEqual.compare (Some syncValue)
+                               |> not ->
+                            lastValue <- Some syncValue
+                            lastSetAtom syncValue
+                        | _ -> ()
+
+                        syncValue),
                 (fun _get setter newValue ->
-                    set setter storageAtom newValue
-                    set setter syncAtom newValue)
+                    if lastValue.IsNone
+                       || lastValue
+                          |> DeepEqual.compare (Some newValue)
+                          |> not then
+                        lastValue <- Some newValue
+                        set setter syncAtom newValue
+
+                    set setter storageAtom newValue)
             )
+
+        wrapper?onMount <- fun setAtom ->
+                               lastSetAtom <- setAtom
+                               fun () -> lastSetAtom <- None
 
         wrapper
 

@@ -8,6 +8,36 @@ open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
 
+module MenuItem =
+    [<ReactComponent>]
+    let MenuItem icon label fn props =
+        Chakra.menuItem
+            (fun x ->
+                x.closeOnSelect <- true
+                x.paddingLeft <- "15px"
+                x.paddingRight <- "10px"
+                x.paddingTop <- "5px"
+                x.paddingBottom <- "5px"
+                x._hover <- JS.newObj (fun x -> x.backgroundColor <- "gray.10")
+
+                x.icon <-
+                    icon
+                    |> Icons.renderChakra
+                        (fun x ->
+                            x.fontSize <- "13px"
+                            x.marginBottom <- "-1px")
+
+                x.onClick <-
+                    fun e ->
+                        promise {
+                            do! fn ()
+                            e.preventDefault ()
+                        }
+
+                props x)
+            [
+                str label
+            ]
 
 type DatabaseNodeMenu () =
     [<ReactComponent>]
@@ -20,6 +50,7 @@ type DatabaseNodeMenu () =
         let setTaskUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Task)
 
         let exportDatabase = Hydrate.useExportDatabase ()
+        let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
 
         Menu.Menu
             {|
@@ -35,90 +66,107 @@ type DatabaseNodeMenu () =
                 Body =
                     [
                         if isReadWrite then
-                            Chakra.menuItem
-                                (fun x ->
-                                    x.closeOnSelect <- true
+                            MenuItem.MenuItem
+                                Icons.bs.BsPlus
+                                "Add Task"
+                                (fun () ->
+                                    promise {
+                                        if deviceInfo.IsMobile then setLeftDock None
+                                        setRightDock (Some DockType.Task)
+                                        setTaskUIFlag ((databaseId, Task.Default.Id) |> Atoms.UIFlag.Task)
+                                    })
+                                (fun _ -> ())
 
-                                    x.icon <-
-                                        Icons.bs.BsPlus
-                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+                            MenuItem.MenuItem
+                                Icons.bs.BsPen
+                                "Edit Database"
+                                (fun () ->
+                                    promise {
+                                        if deviceInfo.IsMobile then setLeftDock None
+                                        setRightDock (Some DockType.Database)
+                                        setDatabaseUIFlag (databaseId |> Atoms.UIFlag.Database)
+                                    })
+                                (fun _ -> ())
 
-                                    x.onClick <-
-                                        fun e ->
-                                            promise {
-                                                if deviceInfo.IsMobile then setLeftDock None
-                                                setRightDock (Some DockType.Task)
-                                                setTaskUIFlag ((databaseId, Task.Default.Id) |> Atoms.UIFlag.Task)
-                                                e.preventDefault ()
-                                            })
-                                [
-                                    str "Add Task"
-                                ]
+                            MenuItem.MenuItem
+                                Icons.fi.FiCopy
+                                "Clone Database"
+                                (fun () -> promise { () })
+                                (fun x -> x.isDisabled <- true)
 
-                            Chakra.menuItem
-                                (fun x ->
-                                    x.closeOnSelect <- true
+                            MenuItem.MenuItem
+                                Icons.bi.BiExport
+                                "Export Database"
+                                (fun () -> exportDatabase databaseId)
+                                (fun _ -> ())
 
-                                    x.icon <-
-                                        Icons.bs.BsPen
-                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+                        Popover.CustomPopover
+                            {|
+                                CloseButton = true
+                                RenderOnHover = true
+                                Props = fun x -> x.closeOnBlur <- false
+                                Padding = "10px"
+                                Trigger =
+                                    MenuItem.MenuItem
+                                        Icons.bi.BiTrash
+                                        "Delete Database"
+                                        (fun () -> promise { () })
+                                        (fun x -> x.closeOnSelect <- false)
+                                Body =
+                                    fun (disclosure, initialFocusRef) ->
+                                        [
+                                            Chakra.box
+                                                (fun _ -> ())
+                                                [
+                                                    Chakra.stack
+                                                        (fun x -> x.spacing <- "10px")
+                                                        [
+                                                            Chakra.box
+                                                                (fun x ->
+                                                                    x.paddingBottom <- "5px"
+                                                                    x.marginRight <- "24px"
+                                                                    x.fontSize <- "15px")
+                                                                [
+                                                                    str "Delete Database"
+                                                                ]
 
-                                    x.onClick <-
-                                        fun e ->
-                                            promise {
-                                                if deviceInfo.IsMobile then setLeftDock None
-                                                setRightDock (Some DockType.Database)
-                                                setDatabaseUIFlag (databaseId |> Atoms.UIFlag.Database)
-                                                e.preventDefault ()
-                                            })
-                                [
-                                    str "Edit Database"
-                                ]
+                                                            Chakra.box
+                                                                (fun _ -> ())
+                                                                [
+                                                                    Button.Button
+                                                                        {|
+                                                                            Hint = None
+                                                                            Icon =
+                                                                                Some (
+                                                                                    Icons.bi.BiTrash |> Icons.wrap,
+                                                                                    Button.IconPosition.Left
+                                                                                )
+                                                                            Props =
+                                                                                fun x ->
+                                                                                    x.ref <- initialFocusRef
 
-                        Chakra.menuItem
-                            (fun x ->
-                                x.closeOnSelect <- true
+                                                                                    x.onClick <-
+                                                                                        fun e ->
+                                                                                            promise {
+                                                                                                setDatabaseIdSet (
+                                                                                                    Set.remove
+                                                                                                        databaseId
+                                                                                                )
 
-                                x.icon <-
-                                    Icons.fi.FiCopy
-                                    |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+                                                                                                disclosure.onClose ()
 
-                                x.isDisabled <- true
-                                x.onClick <- fun e -> promise { e.preventDefault () })
-                            [
-                                str "Clone Database"
-                            ]
-
-                        Chakra.menuItem
-                            (fun x ->
-                                x.closeOnSelect <- true
-
-                                x.icon <-
-                                    Icons.bi.BiExport
-                                    |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                x.onClick <-
-                                    fun e ->
-                                        e.preventDefault ()
-                                        exportDatabase databaseId)
-                            [
-                                str "Export Database"
-                            ]
-
-                        Chakra.menuItem
-                            (fun x ->
-                                x.closeOnSelect <- true
-
-                                x.icon <-
-                                    Icons.bs.BsTrash
-                                    |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                x.isDisabled <- true
-
-                                x.onClick <- fun e -> promise { e.preventDefault () })
-                            [
-                                str "Delete Database"
-                            ]
+                                                                                                e.preventDefault ()
+                                                                                            }
+                                                                            Children =
+                                                                                [
+                                                                                    str "Confirm"
+                                                                                ]
+                                                                        |}
+                                                                ]
+                                                        ]
+                                                ]
+                                        ]
+                            |}
                     ]
                 MenuListProps = fun _ -> ()
             |}

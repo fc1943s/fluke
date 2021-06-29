@@ -50,4 +50,5 @@ module Hint =
                             | None -> ()
                             props.hint
                         ]
+                Props = fun _ -> ()
             |}

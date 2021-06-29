@@ -135,6 +135,7 @@ module CellSelectionSetup =
 
 
             set Store.Atoms.username (Some Templates.templatesUser.Username)
+            set Atoms.color (Some "#000000")
             set Atoms.view View.View.Priority
             set Atoms.daysBefore 2
             set Atoms.daysAfter 2
@@ -226,6 +227,8 @@ module CellSelectionSetup =
             printfn $"! sortedTaskIdList={sortedTaskIdList}"
 
             let cellMapGetter = fun () -> getCellMap subject getFn
+
+            do! RTL.sleep 1000
 
             return cellMapGetter, (getFn, setFn)
         }

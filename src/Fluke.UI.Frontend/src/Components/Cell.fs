@@ -60,8 +60,9 @@ module Cell =
         Popover.CustomPopover
             {|
                 CloseButton = false
+                RenderOnHover = false
                 Padding = "3px"
-                Placement = Some "right-start"
+                Props = fun x -> x.placement <- "right-start"
                 Trigger =
                     Chakra.center
                         (fun x ->

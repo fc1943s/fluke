@@ -23,7 +23,7 @@ module Tooltip =
                         x.isLazy <- true
                         x.isOpen <- hovered
                         x.paddingTop <- "3px"
-                        x.paddingBottom <- "3px"
+                        x.paddingBottom <- "4px"
                         x.backgroundColor <- "gray.77"
                         x.zIndex <- 20000
                         x.color <- "gray.13"

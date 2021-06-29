@@ -147,6 +147,7 @@ module StatusBar =
                                                                 ])
                                             ]
                                     ]
+                            Props = fun _ -> ()
                         |}
 
             //                        | _ -> str "Sessions: Loading sessions"
@@ -171,6 +172,8 @@ module StatusBar =
 
         let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
+
+        let lastTotal = Store.useValue Atoms.lastTotal
 
         let detailsText, total =
             React.useMemo (
@@ -233,8 +236,8 @@ module StatusBar =
                             $"Task Session: {taskSession}"
                             $"Cell Status: {cellStatus}"
                             $"Cell Attachment: {cellAttachment}"
-
                             $"Total: {total}"
+                            $"Last Total: {lastTotal}"
                         ]
                         |> List.map str
                         |> List.intersperse (br [])
@@ -242,6 +245,7 @@ module StatusBar =
 
                     detailsText, total),
                 [|
+                    box lastTotal
                     box cellAttachmentMapArray
                     box informationSet
                     box informationStateList
@@ -265,8 +269,7 @@ module StatusBar =
                 Tooltip.wrap
                     detailsText
                     [
-                        str
-                            $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdSet.Count} visible (Data total: {total})"
+                        str $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdSet.Count} visible (Total: {total})"
                     ]
             //                        | _ -> str "Tasks: Loading tasks"
             ]

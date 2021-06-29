@@ -10,6 +10,7 @@ module Content =
     [<ReactComponent>]
     let LoggedContent () =
         let color = Store.useValue Atoms.color
+        let lastTotal = Store.useValue Atoms.lastTotal
 
         React.suspense (
             [
@@ -24,7 +25,7 @@ module Content =
 
                         TopBar.TopBar ()
 
-                        if color.IsNone then
+                        if color.IsNone || lastTotal.IsNone then
                             LoadingSpinner.LoadingSpinner ()
                         else
                             Chakra.flex

@@ -96,8 +96,7 @@ module CellMenu =
                 x.spacing <- "0"
                 x.borderWidth <- "1px"
                 x.borderColor <- if darkMode then TempUI.cellStatusColor Disabled else "gray.45"
-                x.boxShadow <- $"0px 0px 2px 1px #{if darkMode then 262626 else 777}"
-                )
+                x.boxShadow <- $"0px 0px 2px 1px #{if darkMode then 262626 else 777}")
             [
                 Chakra.simpleGrid
                     (fun x ->
@@ -285,6 +284,7 @@ module CellMenu =
                                                         ]
                                                 ]
                                         ]
+                                Props = fun _ -> ()
                             |}
 
                         Chakra.box

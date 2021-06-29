@@ -51,6 +51,8 @@ module State =
 
         let rec debug = Store.atomWithStorageSync ($"{nameof debug}", JS.isDebug (), id)
 
+        let rec lastTotal = Store.atomWithSync ($"{nameof lastTotal}", (Some -1: int option), [])
+
         let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
         let rec initialPeerSkipped = Store.atom ($"{nameof initialPeerSkipped}", false)
         let rec position = Store.atom ($"{nameof position}", None)

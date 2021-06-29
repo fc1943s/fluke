@@ -252,7 +252,7 @@ module TaskForm =
                                                                                          x.closeOnSelect <- true
 
                                                                                          x.icon <-
-                                                                                             Icons.bs.BsTrash
+                                                                                             Icons.bi.BiTrash
                                                                                              |> Icons.renderChakra
                                                                                                  (fun x ->
                                                                                                      x.fontSize <-

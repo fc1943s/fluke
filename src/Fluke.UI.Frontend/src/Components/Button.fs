@@ -39,7 +39,7 @@ module Button =
                         match icon with
                         | Some icon ->
                             Chakra.box
-                                (fun x -> x.transform <- Chakra.transformShiftBy None (Some 1.))
+                                (fun x -> x.transform <- Chakra.transformShiftBy None (Some 2.))
                                 [
                                     icon ()
                                 ]

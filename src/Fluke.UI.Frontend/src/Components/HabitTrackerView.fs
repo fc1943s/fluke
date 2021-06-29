@@ -86,7 +86,7 @@ module HabitTrackerView =
                     ]
 
                 Chakra.box
-                    (fun x -> x.flex <- "1")
+                    (fun _ -> ())
                     [
                         GridHeader.GridHeader ()
                         React.suspense (
