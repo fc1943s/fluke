@@ -8,12 +8,69 @@ open Fluke.UI.Frontend.State
 
 module Content =
     [<ReactComponent>]
+    let LoggedContent () =
+        let color = Store.useValue Atoms.color
+
+        React.suspense (
+            [
+                PositionUpdater.PositionUpdater ()
+
+                Chakra.stack
+                    (fun x ->
+                        x.spacing <- "0"
+                        x.flex <- "1"
+                        x.maxWidth <- "100vw")
+                    [
+
+                        TopBar.TopBar ()
+
+                        if color.IsNone then
+                            LoadingSpinner.LoadingSpinner ()
+                        else
+                            Chakra.flex
+                                (fun x ->
+                                    x.flex <- "1"
+                                    x.overflow <- "auto")
+                                [
+                                    React.suspense (
+                                        [
+                                            LeftDock.LeftDock ()
+                                        ],
+                                        LoadingSpinner.LoadingSpinner ()
+                                    )
+                                    React.suspense (
+                                        [
+                                            ViewTabs.ViewTabs ()
+                                        ],
+                                        LoadingSpinner.LoadingSpinner ()
+                                    )
+                                    React.suspense (
+                                        [
+                                            RightDock.RightDock ()
+                                        ],
+                                        LoadingSpinner.LoadingSpinner ()
+                                    )
+                                ]
+
+                            StatusBar.StatusBar ()
+                    ]
+
+                React.suspense (
+                    [
+                        SoundPlayer.SoundPlayer ()
+                    ],
+                    nothing
+                )
+            ],
+            LoadingSpinner.LoadingSpinner ()
+        )
+
+    [<ReactComponent>]
     let Content () =
         Profiling.addTimestamp "mainComponent.render"
 
         let sessionRestored = Store.useValue Atoms.sessionRestored
         let initialPeerSkipped = Store.useValue Atoms.initialPeerSkipped
-        let manualLoading = Store.useValue Atoms.manualLoading
         let gunPeers = Store.useValue Store.Atoms.gunPeers
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let username = Store.useValue Store.Atoms.username
@@ -33,58 +90,5 @@ module Content =
                         match gunPeers, initialPeerSkipped with
                         | [||], false -> InitialPeers.InitialPeers ()
                         | _ -> LoginScreen.LoginScreen ()
-                    | Some _ ->
-                        React.suspense (
-                            [
-                                PositionUpdater.PositionUpdater ()
-
-                                Chakra.stack
-                                    (fun x ->
-                                        x.spacing <- "0"
-                                        x.flex <- "1"
-                                        x.maxWidth <- "100vw")
-                                    [
-
-                                        TopBar.TopBar ()
-
-                                        if manualLoading then
-                                            LoadingSpinner.LoadingSpinner ()
-                                        else
-                                            Chakra.flex
-                                                (fun x ->
-                                                    x.flex <- "1"
-                                                    x.overflow <- "auto")
-                                                [
-                                                    React.suspense (
-                                                        [
-                                                            LeftDock.LeftDock ()
-                                                        ],
-                                                        LoadingSpinner.LoadingSpinner ()
-                                                    )
-                                                    React.suspense (
-                                                        [
-                                                            ViewTabs.ViewTabs ()
-                                                        ],
-                                                        LoadingSpinner.LoadingSpinner ()
-                                                    )
-                                                    React.suspense (
-                                                        [
-                                                            RightDock.RightDock ()
-                                                        ],
-                                                        LoadingSpinner.LoadingSpinner ()
-                                                    )
-                                                ]
-
-                                            StatusBar.StatusBar ()
-                                    ]
-
-                                React.suspense (
-                                    [
-                                        SoundPlayer.SoundPlayer ()
-                                    ],
-                                    nothing
-                                )
-                            ],
-                            LoadingSpinner.LoadingSpinner ()
-                        )
+                    | Some _ -> LoggedContent ()
             ]

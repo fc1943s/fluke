@@ -10,6 +10,7 @@ open Fluke.UI.Frontend.Bindings
 open System
 open Fable.DateFunctions
 open Fable.Core
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.Shared
 
@@ -47,6 +48,17 @@ module TaskForm =
                     | _ -> Database.Default.Id),
                 [|
                     box taskUIFlag
+                    box taskId
+                |]
+            )
+
+        let taskState = Store.useValue (Selectors.Task.taskState taskId)
+
+        let onAttachmentAdd =
+            Store.useCallback (
+                (fun _ setter attachmentId ->
+                    promise { Store.change setter (Atoms.Task.attachmentIdSet taskId) (Set.add attachmentId) }),
+                [|
                     box taskId
                 |]
             )
@@ -114,155 +126,204 @@ module TaskForm =
                 |]
             )
 
-        Chakra.stack
-            (fun x -> x.spacing <- "30px")
-            [
-                Chakra.stack
-                    (fun x -> x.spacing <- "15px")
+        Accordion.Accordion
+            {|
+                Props =
+                    fun x ->
+                        x.flex <- "1"
+                        x.overflowY <- "auto"
+                        x.flexBasis <- 0
+                Atom = Atoms.accordionFlag (TextKey (nameof TaskForm))
+                Items =
                     [
-                        Chakra.box
-                            (fun x -> x.fontSize <- "15px")
-                            [
-                                str $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task"""
-                            ]
-
-                        if not debug then
-                            nothing
-                        else
-                            Chakra.box
-                                (fun _ -> ())
-                                [
-                                    str $"{taskId}"
-                                ]
-
-                        DatabaseSelector.DatabaseSelector
-                            taskDatabaseId
-                            taskId
-                            (fun databaseId -> setTaskUIFlag (Atoms.UIFlag.Task (databaseId, taskId)))
-
-                        InformationSelector.InformationSelector
-                            {|
-                                DisableResource = true
-                                SelectionType = InformationSelector.InformationSelectionType.Information
-                                TaskId = taskId
-                            |}
-
-                        SchedulingSelector.SchedulingSelector taskId
-
-                        Chakra.stack
+                        $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task""",
+                        (Chakra.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                Input.Input
+                                if not debug then
+                                    nothing
+                                else
+                                    Chakra.box
+                                        (fun _ -> ())
+                                        [
+                                            str $"{taskId}"
+                                        ]
+
+                                DatabaseSelector.DatabaseSelector
+                                    taskDatabaseId
+                                    taskId
+                                    (fun databaseId -> setTaskUIFlag (Atoms.UIFlag.Task (databaseId, taskId)))
+
+                                InformationSelector.InformationSelector
                                     {|
-                                        CustomProps =
-                                            fun x ->
-                                                x.atom <-
-                                                    Some (
-                                                        Store.InputAtom (
-                                                            Store.AtomReference.Atom (Atoms.Task.name taskId)
-                                                        )
-                                                    )
-
-                                                x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
-
-                                                x.onFormat <- Some (fun (TaskName name) -> name)
-                                                x.onEnterPress <- Some onSave
-                                                x.onValidate <- Some (fst >> TaskName >> Some)
-                                        Props =
-                                            fun x ->
-                                                x.autoFocus <- true
-                                                x.label <- str "Name"
-                                                x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
+                                        DisableResource = true
+                                        SelectionType = InformationSelector.InformationSelectionType.Information
+                                        TaskId = taskId
                                     |}
-                            ]
 
-                        Button.Button
-                            {|
-                                Hint = None
-                                Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
-                                Props = fun x -> x.onClick <- onSave
-                                Children =
+                                SchedulingSelector.SchedulingSelector taskId
+
+                                Chakra.stack
+                                    (fun x -> x.spacing <- "15px")
                                     [
-                                        str "Save"
+                                        Input.Input
+                                            {|
+                                                CustomProps =
+                                                    fun x ->
+                                                        x.atom <-
+                                                            Some (
+                                                                Store.InputAtom (
+                                                                    Store.AtomReference.Atom (Atoms.Task.name taskId)
+                                                                )
+                                                            )
+
+                                                        x.inputScope <-
+                                                            Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
+
+                                                        x.onFormat <- Some (fun (TaskName name) -> name)
+                                                        x.onEnterPress <- Some onSave
+                                                        x.onValidate <- Some (fst >> TaskName >> Some)
+                                                Props =
+                                                    fun x ->
+                                                        x.autoFocus <- true
+                                                        x.label <- str "Name"
+
+                                                        x.placeholder <-
+                                                            $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
+                                            |}
                                     ]
-                            |}
-                    ]
 
+                                Button.Button
+                                    {|
+                                        Hint = None
+                                        Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
+                                        Props = fun x -> x.onClick <- onSave
+                                        Children =
+                                            [
+                                                str "Save"
+                                            ]
+                                    |}
+                            ])
 
-                if taskId = Task.Default.Id then
-                    nothing
-                else
-                    Html.hr []
+                        if taskId <> Task.Default.Id then
+                            "Sessions",
+                            (match sessions with
+                             | [] ->
+                                 Chakra.box
+                                     (fun _ -> ())
+                                     [
+                                         str "No sessions found"
+                                     ]
+                             | sessions ->
+                                 React.fragment [
+                                     yield!
+                                         sessions
+                                         |> List.map
+                                             (fun (Session start) ->
+                                                 Chakra.flex
+                                                     (fun _ -> ())
+                                                     [
+                                                         Chakra.box
+                                                             (fun _ -> ())
+                                                             [
+                                                                 str (start |> FlukeDateTime.Stringify)
 
-                    Chakra.stack
-                        (fun x -> x.spacing <- "15px")
-                        [
-                            Chakra.box
-                                (fun x -> x.fontSize <- "15px")
+                                                                 Menu.Menu
+                                                                     {|
+                                                                         Tooltip = ""
+                                                                         Trigger =
+                                                                             InputLabelIconButton.InputLabelIconButton
+                                                                                 (fun x ->
+                                                                                     x.``as`` <- Chakra.react.MenuButton
+
+                                                                                     x.icon <-
+                                                                                         Icons.bs.BsThreeDots
+                                                                                         |> Icons.render
+
+                                                                                     x.fontSize <- "11px"
+                                                                                     x.height <- "15px"
+                                                                                     x.color <- "whiteAlpha.700"
+                                                                                     x.marginTop <- "-1px"
+                                                                                     x.marginLeft <- "6px")
+                                                                         Body =
+                                                                             [
+                                                                                 Chakra.menuItem
+                                                                                     (fun x ->
+                                                                                         x.closeOnSelect <- true
+
+                                                                                         x.icon <-
+                                                                                             Icons.bs.BsTrash
+                                                                                             |> Icons.renderChakra
+                                                                                                 (fun x ->
+                                                                                                     x.fontSize <-
+                                                                                                         "13px")
+
+                                                                                         x.onClick <-
+                                                                                             fun _ ->
+                                                                                                 promise {
+                                                                                                     do!
+                                                                                                         deleteSession
+                                                                                                             start
+                                                                                                 })
+                                                                                     [
+                                                                                         str "Delete Session"
+                                                                                     ]
+                                                                             ]
+                                                                         MenuListProps = fun _ -> ()
+                                                                     |}
+                                                             ]
+                                                     ])
+                                 ])
+
+                            "Attachments",
+                            (Chakra.stack
+                                (fun x ->
+                                    x.spacing <- "10px"
+                                    x.flex <- "1")
                                 [
-                                    str "Sessions"
-                                ]
+                                    AttachmentPanel.AttachmentPanel taskState.Attachments onAttachmentAdd
+                                ])
+                    ]
+            |}
 
-                            match sessions with
-                            | [] ->
-                                Chakra.box
-                                    (fun _ -> ())
-                                    [
-                                        str "No sessions found"
-                                    ]
-                            | sessions ->
-                                yield!
-                                    sessions
-                                    |> List.map
-                                        (fun (Session start) ->
-                                            Chakra.flex
-                                                (fun _ -> ())
-                                                [
-                                                    Chakra.box
-                                                        (fun _ -> ())
-                                                        [
-                                                            str (start |> FlukeDateTime.Stringify)
+    [<ReactComponent>]
+    let TaskFormWrapper () =
+        let hydrateTaskState = Hydrate.useHydrateTaskState ()
+        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
+        let setRightDock = Store.useSetState Atoms.rightDock
 
-                                                            Menu.Menu
-                                                                {|
-                                                                    Tooltip = ""
-                                                                    Trigger =
-                                                                        InputLabelIconButton.InputLabelIconButton
-                                                                            (fun x ->
-                                                                                x.``as`` <- Chakra.react.MenuButton
+        let taskUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Task)
 
-                                                                                x.icon <-
-                                                                                    Icons.bs.BsThreeDots |> Icons.render
+        let taskDatabaseId =
+            match taskUIFlag with
+            | Atoms.UIFlag.Task (databaseId, _) -> databaseId
+            | _ -> Database.Default.Id
 
-                                                                                x.fontSize <- "11px"
-                                                                                x.height <- "15px"
-                                                                                x.color <- "whiteAlpha.700"
-                                                                                x.marginTop <- "-1px"
-                                                                                x.marginLeft <- "6px")
-                                                                    Body =
-                                                                        [
-                                                                            Chakra.menuItem
-                                                                                (fun x ->
-                                                                                    x.closeOnSelect <- true
+        let setTaskIdSet = Store.useSetStatePrev (Atoms.Database.taskIdSet taskDatabaseId)
 
-                                                                                    x.icon <-
-                                                                                        Icons.bs.BsTrash
-                                                                                        |> Icons.renderChakra
-                                                                                            (fun x ->
-                                                                                                x.fontSize <- "13px")
+        let taskId =
+            match taskUIFlag with
+            | Atoms.UIFlag.Task (_, taskId) when selectedTaskIdSet.Contains taskId -> taskId
+            | _ -> Task.Default.Id
 
-                                                                                    x.onClick <-
-                                                                                        fun _ ->
-                                                                                            promise {
-                                                                                                do! deleteSession start
-                                                                                            })
-                                                                                [
-                                                                                    str "Delete Session"
-                                                                                ]
-                                                                        ]
-                                                                    MenuListProps = fun _ -> ()
-                                                                |}
-                                                        ]
-                                                ])
-                        ]
-            ]
+        TaskForm
+            taskId
+            (fun task ->
+                promise {
+                    let taskState =
+                        {
+                            Task = task
+                            SortList = []
+                            Sessions = []
+                            Attachments = []
+                            CellStateMap = Map.empty
+                        }
+
+                    do! hydrateTaskState (Store.AtomScope.ReadOnly, taskDatabaseId, taskState)
+
+                    if task.Id <> taskId then
+                        JS.setTimeout (fun () -> setTaskIdSet (Set.add task.Id)) 0
+                        |> ignore
+
+                    setRightDock None
+                })

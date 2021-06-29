@@ -5,7 +5,6 @@ open Feliz
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fable.React
-open Fluke.UI.Frontend.State
 
 
 module LoginScreen =
@@ -24,8 +23,7 @@ module LoginScreen =
                 (fun _ _ _ ->
                     promise {
                         match! signIn (usernameField, passwordField) with
-                        | Ok _ ->
-                            printfn "logged"
+                        | Ok _ -> printfn "logged"
                         | Error error -> toast (fun x -> x.description <- error)
                     }),
                 [|
@@ -38,19 +36,14 @@ module LoginScreen =
 
         let signUpClick =
             Store.useCallback (
-                (fun _ setter _ ->
+                (fun _ _ _ ->
                     promise {
                         if passwordField <> password2Field then
                             toast (fun x -> x.description <- "Passwords don't match")
                             return false
                         else
-                            Store.set setter Atoms.manualLoading true
-
                             match! signUp (usernameField, passwordField) with
                             | Ok _ ->
-                                do! Promise.sleep 1000
-                                Store.set setter Atoms.manualLoading false
-
                                 toast
                                     (fun x ->
                                         x.title <- "Success"

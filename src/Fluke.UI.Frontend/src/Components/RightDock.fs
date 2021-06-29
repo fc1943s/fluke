@@ -3,8 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Fable.Core
 open Feliz
 open Fable.React
-open Fluke.Shared.Domain.Model
-open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
@@ -19,21 +17,7 @@ module RightDock =
     let RightDock () =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let setLeftDock = Store.useSetState Atoms.leftDock
-        let rightDock, setRightDock = Store.useState Atoms.rightDock
-        let databaseUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Database)
-        let taskUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Task)
-        let hydrateDatabase = Hydrate.useHydrateDatabase ()
-        let hydrateTaskState = Hydrate.useHydrateTaskState ()
-
-        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
-
-        let taskDatabaseId =
-            match taskUIFlag with
-            | Atoms.UIFlag.Task (databaseId, _) -> databaseId
-            | _ -> Database.Default.Id
-
-        let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
-        let setTaskIdSet = Store.useSetStatePrev (Atoms.Database.taskIdSet taskDatabaseId)
+        let rightDock = Store.useValue Atoms.rightDock
 
         let items =
             React.useMemo (
@@ -47,31 +31,11 @@ module RightDock =
                                 fun () ->
                                     Chakra.flex
                                         (fun x ->
-                                            x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
-                                            x.padding <- "15px"
                                             x.flexBasis <- 0)
                                         [
-                                            let databaseId =
-                                                match databaseUIFlag with
-                                                | Atoms.UIFlag.Database databaseId -> databaseId
-                                                | _ -> Database.Default.Id
-
-                                            DatabaseForm.DatabaseForm
-                                                databaseId
-                                                (fun database ->
-                                                    promise {
-                                                        do! hydrateDatabase (Store.AtomScope.ReadOnly, database)
-
-                                                        if database.Id <> databaseId then
-                                                            JS.setTimeout
-                                                                (fun () -> setDatabaseIdSet (Set.add database.Id))
-                                                                0
-                                                            |> ignore
-
-                                                        setRightDock None
-                                                    })
+                                            DatabaseForm.DatabaseFormWrapper ()
                                         ]
                             RightIcons = []
                         |}
@@ -84,12 +48,11 @@ module RightDock =
                                 fun () ->
                                     Chakra.flex
                                         (fun x ->
-                                            x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
                                             x.flexBasis <- 0)
                                         [
-                                            InformationForm.InformationForm ()
+                                            InformationForm.InformationFormWrapper ()
                                         ]
                             RightIcons = []
                         |}
@@ -102,44 +65,12 @@ module RightDock =
                                 fun () ->
                                     Chakra.flex
                                         (fun x ->
-                                            x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
-                                            x.padding <- "15px"
-                                            x.flexBasis <- 0)
+                                            x.flexBasis <- 0
+                                            )
                                         [
-                                            let taskId =
-                                                match taskUIFlag with
-                                                | Atoms.UIFlag.Task (_, taskId) when selectedTaskIdSet.Contains taskId ->
-                                                    taskId
-                                                | _ -> Task.Default.Id
-
-                                            TaskForm.TaskForm
-                                                taskId
-                                                (fun task ->
-                                                    promise {
-                                                        let taskState =
-                                                            {
-                                                                Task = task
-                                                                SortList = []
-                                                                Sessions = []
-                                                                Attachments = []
-                                                                CellStateMap = Map.empty
-                                                            }
-
-                                                        do!
-                                                            hydrateTaskState (
-                                                                Store.AtomScope.ReadOnly,
-                                                                taskDatabaseId,
-                                                                taskState
-                                                            )
-
-                                                        if task.Id <> taskId then
-                                                            JS.setTimeout (fun () -> setTaskIdSet (Set.add task.Id)) 0
-                                                            |> ignore
-
-                                                        setRightDock None
-                                                    })
+                                            TaskForm.TaskFormWrapper ()
                                         ]
                             RightIcons = []
                         |}
@@ -152,7 +83,6 @@ module RightDock =
                                 fun () ->
                                     Chakra.flex
                                         (fun x ->
-                                            x.direction <- "column"
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
                                             x.flexBasis <- 0)
@@ -162,17 +92,7 @@ module RightDock =
                             RightIcons = []
                         |}
                     ]),
-                [|
-                    box databaseUIFlag
-                    box hydrateDatabase
-                    box hydrateTaskState
-                    box selectedTaskIdSet
-                    box setDatabaseIdSet
-                    box setRightDock
-                    box setTaskIdSet
-                    box taskDatabaseId
-                    box taskUIFlag
-                |]
+                [||]
             )
 
         let itemsMap = items |> Map.ofSeq

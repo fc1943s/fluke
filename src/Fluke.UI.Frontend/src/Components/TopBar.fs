@@ -30,27 +30,33 @@ module TopBar =
                 x.height <- "29px"
                 x.alignItems <- "center"
                 x.backgroundColor <- "gray.10"
-                x.padding <- "7px"
-                x.paddingRight <- "1px"
-                x.paddingBottom <- "8px")
+                x.padding <- "1px"
+                //                x.paddingTop <- "7px"
+//                x.paddingRight <- "1px"
+//                x.paddingBottom <- "8px"
+//                x.paddingLeft <- "7px"
+                )
             [
 
                 Chakra.flex
                     (fun x ->
                         x.cursor <- "pointer"
+                        x.paddingLeft <- "7px"
+                        x.paddingTop <- "6px"
+                        x.paddingBottom <- "7px"
                         x.alignItems <- "center"
                         x.onClick <- onLogoClick)
                     [
                         Logo.Logo ()
 
                         Chakra.box
-                            (fun x -> x.marginLeft <- "4px")
+                            (fun x -> x.marginLeft <- "5px")
                             [
                                 str "Fluke"
                             ]
                     ]
 
-                Chakra.spacer (fun _ -> ()) []
+                Chakra.spacer (fun x -> x.style <- JS.newObj (fun x -> x.WebkitAppRegion <- "drag")) []
 
                 Chakra.stack
                     (fun x ->
@@ -76,7 +82,6 @@ module TopBar =
                                                     fun x ->
                                                         x.tabIndex <- -1
                                                         x.icon <- Icons.ai.AiOutlineGithub |> Icons.render
-                                                        x.height <- "27px"
                                                         x.fontSize <- "17px"
                                             |}
                                     ]
@@ -90,32 +95,33 @@ module TopBar =
                                         Props =
                                             fun x ->
                                                 x.icon <- Icons.fi.FiLogOut |> Icons.render
-                                                x.height <- "27px"
                                                 x.fontSize <- "17px"
                                                 x.onClick <- fun _ -> promise { do! logout () }
                                     |}
                             ]
 
-                        if deviceInfo.IsElectron then
-                            Tooltip.wrap
-                                (str "Close")
-                                [
-                                    TransparentIconButton.TransparentIconButton
-                                        {|
-                                            Props =
-                                                fun x ->
-                                                    x.icon <- Icons.io.IoMdClose |> Icons.render
-                                                    x.height <- "27px"
-                                                    x.fontSize <- "17px"
+                        Tooltip.wrap
+                            (str "Close")
+                            [
+                                TransparentIconButton.TransparentIconButton
+                                    {|
+                                        Props =
+                                            fun x ->
+                                                x.icon <- Icons.vsc.VscChromeClose |> Icons.render
+                                                x.fontSize <- "17px"
 
-                                                    x.onClick <-
-                                                        fun _ ->
-                                                            promise {
-                                                                match JS.window id with
-                                                                | Some window -> window?ipcRenderer?send "close"
-                                                                | None -> ()
-                                                            }
-                                        |}
-                                ]
+                                                x.onClick <-
+                                                    fun _ ->
+                                                        promise {
+                                                            match JS.window id with
+                                                            | Some window ->
+                                                                if deviceInfo.IsElectron then
+                                                                    window?ipcRenderer?send "close"
+                                                                else
+                                                                    window.close ()
+                                                            | None -> ()
+                                                        }
+                                    |}
+                            ]
                     ]
             ]

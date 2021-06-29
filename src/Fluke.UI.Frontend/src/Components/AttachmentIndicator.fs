@@ -37,7 +37,7 @@ module AttachmentIndicator =
                             (fun x ->
                                 x.content <- "\"\""
                                 x.borderTopWidth <- $"{min (cellSize / 2) 10}px"
-                                x.borderTopColor <- color
+                                x.borderTopColor <- color |> Option.defaultValue "#000"
                                 x.borderLeftWidth <- $"{min (cellSize / 2) 10}px"
                                 x.borderLeftColor <- "transparent"
                                 x.position <- "absolute"

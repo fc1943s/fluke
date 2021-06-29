@@ -128,6 +128,7 @@ module Chakra =
         abstract shouldWrapChildren : bool with get, set
         abstract size : string with get, set
         abstract spacing : string with get, set
+        abstract style : IChakraProps with get, set
         abstract tabIndex : int with get, set
         abstract textAlign : string with get, set
         abstract textOverflow : string with get, set
@@ -140,6 +141,7 @@ module Chakra =
         abstract value : obj with get, set
         abstract variant : string with get, set
         abstract visibility : string with get, set
+        abstract WebkitAppRegion : string with get, set
         abstract width : string with get, set
         abstract whiteSpace : string with get, set
         abstract zIndex : int with get, set

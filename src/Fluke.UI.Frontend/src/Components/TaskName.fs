@@ -31,9 +31,7 @@ module TaskName =
                         if deviceInfo.IsMobile then Store.set setter Atoms.leftDock None
                         Store.set setter Atoms.rightDock (Some TempUI.DockType.Task)
                         let databaseId = Store.value getter (Selectors.Task.databaseId taskId)
-
                         Store.set setter (Atoms.uiFlag Atoms.UIFlagType.Task) (Atoms.UIFlag.Task (databaseId, taskId))
-
                     }),
                 [|
                     box taskId

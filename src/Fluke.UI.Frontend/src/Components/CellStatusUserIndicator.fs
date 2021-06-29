@@ -26,7 +26,7 @@ module CellStatusUserIndicator =
 
                             x.borderBottomColor <-
                                 match color with
-                                | String.ValidString color -> color
+                                | Some (String.ValidString color) -> color
                                 | _ -> "#000000"
 
                             x.borderBottomWidth <- $"{min (cellSize / 2) 10}px"

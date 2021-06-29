@@ -159,7 +159,7 @@ module Settings =
                                                                 Props =
                                                                     fun x ->
                                                                         x.label <- str "Color"
-                                                                        x.color <- color
+                                                                        x.color <- color |> Option.defaultValue ""
                                                                         x.fontWeight <- "bold"
                                                                         x.isReadOnly <- true
                                                             |}
@@ -169,8 +169,9 @@ module Settings =
                                                 [
                                                     ColorPicker.render
                                                         {|
-                                                            color = color
-                                                            onChange = fun color -> setColor (color.hex.ToUpper ())
+                                                            color = color |> Option.defaultValue ""
+                                                            onChange =
+                                                                fun color -> setColor (Some (color.hex.ToUpper ()))
                                                         |}
                                                 ]
                                     |}

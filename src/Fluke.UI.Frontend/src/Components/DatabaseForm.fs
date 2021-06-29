@@ -194,3 +194,29 @@ module DatabaseForm =
                             ]
                     ]
             ]
+
+    [<ReactComponent>]
+    let DatabaseFormWrapper () =
+        let hydrateDatabase = Hydrate.useHydrateDatabase ()
+        let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
+        let setRightDock = Store.useSetState Atoms.rightDock
+
+        let databaseUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Database)
+
+        let databaseId =
+            match databaseUIFlag with
+            | Atoms.UIFlag.Database databaseId -> databaseId
+            | _ -> Database.Default.Id
+
+        DatabaseForm
+            databaseId
+            (fun database ->
+                promise {
+                    do! hydrateDatabase (Store.AtomScope.ReadOnly, database)
+
+                    if database.Id <> databaseId then
+                        JS.setTimeout (fun () -> setDatabaseIdSet (Set.add database.Id)) 0
+                        |> ignore
+
+                    setRightDock None
+                })

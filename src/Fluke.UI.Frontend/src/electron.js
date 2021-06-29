@@ -31,7 +31,7 @@ async function createWindow() {
     // show: false,
     webPreferences: {
       nodeIntegration: false,
-      preload: __dirname + '/electron-preload.js'
+      preload: path.join(__dirname, 'electron-preload.js')
     }
   });
 

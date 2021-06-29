@@ -323,10 +323,10 @@ module Input =
                                     x.position <- "absolute"
                                     x.right <- "1px"
                                     x.top <- "1px"
-                                    x.bottom <- "1px"
+                                    x.bottom <- "2px"
                                     x.borderLeftWidth <- "1px"
                                     x.borderLeftColor <- if darkMode then "#484848" else "#b7b7b7"
-                                    x.spacing <- "0")
+                                    x.spacing <- "1px")
                                 [
                                     rightButton
                                 ]
@@ -349,8 +349,7 @@ module Input =
                         x.zIndex <- 0
                         x.position <- "absolute"
                         x.left <- "9px"
-                        x.top <- "0"
-                        x.bottom <- "0"
+                        x.height <- "calc(var(--chakra-fontSizes-main) * 2.45)"
                         x.alignItems <- "center")
                     [
                         input.Icon

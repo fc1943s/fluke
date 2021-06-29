@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Hooks
 
+open System
 open Fable.Core.JsInterop
 open Fable.Core
 open Fluke.Shared
@@ -146,11 +147,17 @@ module Auth =
                                   } ->
                                     match! signIn (username, password) with
                                     | Ok (username, keys) ->
+                                        do! hydrateTemplates ()
+
+                                        Store.set
+                                            setter
+                                            Atoms.informationAttachmentMap
+                                            Atoms.informationAttachmentMapDefault
+
                                         Store.set setter Atoms.expandedDatabaseIdSet Atoms.expandedDatabaseIdSetDefault
                                         Store.set setter Atoms.selectedDatabaseIdSet Atoms.selectedDatabaseIdSetDefault
                                         Store.set setter Atoms.view Atoms.viewDefault
                                         Store.set setter Atoms.language Atoms.languageDefault
-                                        Store.set setter Atoms.color Atoms.colorDefault
                                         Store.set setter Atoms.weekStart Atoms.weekStartDefault
                                         Store.set setter Atoms.dayStart Atoms.dayStartDefault
                                         Store.set setter Atoms.sessionDuration Atoms.sessionDurationDefault
@@ -167,12 +174,15 @@ module Auth =
                                         Store.set setter Atoms.filterTasksByView Atoms.filterTasksByViewDefault
                                         Store.set setter Atoms.darkMode Atoms.darkModeDefault
 
-                                        Store.set
-                                            setter
-                                            Atoms.informationAttachmentMap
-                                            Atoms.informationAttachmentMapDefault
+                                        JS.setTimeout
+                                            (fun () ->
+                                                Store.set
+                                                    setter
+                                                    Atoms.color
+                                                    (Some (String.Format ("#{0:X6}", Random().Next 0x1000000))))
+                                            0
+                                        |> ignore
 
-                                        do! hydrateTemplates ()
 
                                         //                                        gunNamespace
                                         //                                            .ref

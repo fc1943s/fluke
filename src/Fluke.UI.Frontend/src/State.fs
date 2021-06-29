@@ -52,7 +52,6 @@ module State =
         let rec debug = Store.atomWithStorage ($"{nameof debug}", JS.isDebug (), id)
 
         let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
-        let rec manualLoading = Store.atom ($"{nameof manualLoading}", false)
         let rec initialPeerSkipped = Store.atom ($"{nameof initialPeerSkipped}", false)
         let rec position = Store.atom ($"{nameof position}", None)
         let rec ctrlPressed = Store.atom ($"{nameof ctrlPressed}", false)
@@ -76,8 +75,7 @@ module State =
         let languageDefault = Language.English
         let rec language = Store.atomWithSync ($"{nameof language}", languageDefault, [])
 
-        let colorDefault = String.Format ("#{0:X6}", Random().Next 0x1000000)
-        let rec color = Store.atomWithSync ($"{nameof color}", colorDefault, [])
+        let rec color = Store.atomWithSync ($"{nameof color}", (None: string option), [])
 
         let weekStartDefault = DayOfWeek.Sunday
         let rec weekStart = Store.atomWithSync ($"{nameof weekStart}", weekStartDefault, [])
@@ -1036,7 +1034,12 @@ module State =
                         |> List.groupBy (fun (i, _) -> informationArray.[i])
                         |> List.sortBy (fun (information, _) -> information |> Information.Name)
                         |> List.groupBy (fun (information, _) -> Information.toString information)
-                        |> List.sortBy (snd >> List.head >> fst >> Information.toTag)
+                        |> List.sortBy (
+                            snd
+                            >> List.tryHead
+                            >> Option.map (fst >> Information.toTag)
+                            >> Option.defaultValue -1
+                        )
                         |> List.map (fun (a, b) -> a, b |> List.map (fun (c, d) -> c, d |> List.map snd)))
                 )
 

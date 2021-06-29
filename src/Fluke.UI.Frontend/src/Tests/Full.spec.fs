@@ -121,23 +121,21 @@ module Full =
                     Cy2.selectorFocusTypeText "input[placeholder='Confirm Password']" password
                     Cy2.clickText "Confirm"
 
-                    Cy.wait 1000
+                    Cy2.waitFor "User registered successfully" (Some {| timeout = timeout |})
 
-                    Cy2.waitFor "User registered successfully" None
-
-                    Cy.wait 1000
+                    Cy2.waitFor "Databases" (Some {| timeout = timeout |})
 
                     Cy2.clickText (nameof Databases)
                     Cy2.waitFor "Lane Rendering" None
 
-                    Cy.wait 1000
+                    Cy.wait 4000
 
                     Cy2.clickSelector "[data-testid='Add Database']"
 
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
-                    Cy.wait 2000
+//                    Cy.wait 2000
 
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Add Task"
