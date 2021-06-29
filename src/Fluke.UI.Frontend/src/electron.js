@@ -10,14 +10,19 @@ const port = 33929;
 let listen = false;
 
 app.commandLine.appendSwitch('disable-features', 'SpareRendererForSitePerProcess,WebRtcHideLocalIpsWithMdns');
-app.setPath('userData', process.env.FLUKE_USER_DATA_PATH || path.resolve(app.getAppPath() + '/../../userData'));
+app.setPath('userData', process.env.FLUKE_USER_DATA_PATH || path.resolve(`${app.getAppPath()}/../../userData`));
+
+function forceExit () {
+  mainWindow = null;
+  app.quit();
+}
 
 async function createWindow() {
   (async () => {
     if (!listen) {
       listen = true;
       const serveApp = require('https-localhost')();
-      serveApp.serve(app.getAppPath() + '/cra_output', port)
+      serveApp.serve(`${app.getAppPath()}/cra_output`, port)
       console.log('userData', app.getPath('userData'));
     }
   })().then();
@@ -31,21 +36,23 @@ async function createWindow() {
     // show: false,
     webPreferences: {
       nodeIntegration: false,
+      contextIsolation: true,
+      enableRemoteModule: false,
       preload: path.join(__dirname, 'electron-preload.js')
     }
   });
 
-  mainWindow.loadURL("https://localhost:" + port);
+  mainWindow.loadURL(`https://localhost:${port}`);
 
   mainWindow.once('ready-to-show', () => mainWindow.show());
-  mainWindow.on('closed', () => mainWindow = null);
+  mainWindow.on('closed', forceExit);
 }
 
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
-    app.quit();
+    forceExit();
   }
 });
 
@@ -57,5 +64,5 @@ app.on('activate', () => {
 
 ipcMain.on('close', (evt, arg) => {
   console.log('closing', evt, arg);
-  app.quit();
+  forceExit();
 })

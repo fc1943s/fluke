@@ -78,9 +78,17 @@ module CellForm =
         let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
 
         let taskId, dateId =
-            match cellUIFlag with
-            | Atoms.UIFlag.Cell (taskId, dateId) when selectedTaskIdSet.Contains taskId -> Some taskId, Some dateId
-            | _ -> None, None
+            React.useMemo (
+                (fun () ->
+                    match cellUIFlag with
+                    | Atoms.UIFlag.Cell (taskId, dateId) when selectedTaskIdSet.Contains taskId ->
+                        Some taskId, Some dateId
+                    | _ -> None, None),
+                [|
+                    box cellUIFlag
+                    box selectedTaskIdSet
+                |]
+            )
 
         match taskId, dateId with
         | Some taskId, Some dateId -> CellForm taskId dateId

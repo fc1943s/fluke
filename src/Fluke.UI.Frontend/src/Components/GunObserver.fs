@@ -94,9 +94,7 @@ module GunObserver =
                 gun.on (
                     "auth",
                     (fun () ->
-                        match disposed.current with
-                        | false ->
-
+                        if not disposed then
                             match gunNamespace.is with
                             | Some { alias = Some username } ->
                                 printfn $"GunObserver.render: .on(auth) effect. setUsername. username={username}"
@@ -111,11 +109,12 @@ module GunObserver =
 //                                |> Promise.start
                             //                                setUsername (Some (UserInteraction.Username username))
                             | _ -> printfn $"GunObserver.render: Auth occurred without username: {gunNamespace.is}"
-                        | true -> ())
+                        else
+                            printfn $"GunObserver.render: already disposed gunNamespace={gunNamespace}")
                 )),
             [|
-                box gun
-                box gunNamespace
+            //                box gun
+//                box gunNamespace
             |]
         )
 

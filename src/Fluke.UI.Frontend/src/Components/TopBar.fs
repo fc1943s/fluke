@@ -30,7 +30,6 @@ module TopBar =
                 x.height <- "29px"
                 x.alignItems <- "center"
                 x.backgroundColor <- "gray.10"
-                x.padding <- "1px"
                 //                x.paddingTop <- "7px"
 //                x.paddingRight <- "1px"
 //                x.paddingBottom <- "8px"
@@ -60,6 +59,7 @@ module TopBar =
 
                 Chakra.stack
                     (fun x ->
+                        x.margin <- "1px"
                         x.spacing <- "1px"
                         x.alignItems <- "center"
                         x.direction <- "row")
@@ -83,6 +83,7 @@ module TopBar =
                                                         x.tabIndex <- -1
                                                         x.icon <- Icons.ai.AiOutlineGithub |> Icons.render
                                                         x.fontSize <- "17px"
+                                                        x.height <- "27px"
                                             |}
                                     ]
                             ]
@@ -96,6 +97,7 @@ module TopBar =
                                             fun x ->
                                                 x.icon <- Icons.fi.FiLogOut |> Icons.render
                                                 x.fontSize <- "17px"
+                                                x.height <- "27px"
                                                 x.onClick <- fun _ -> promise { do! logout () }
                                     |}
                             ]
@@ -108,6 +110,7 @@ module TopBar =
                                         Props =
                                             fun x ->
                                                 x.icon <- Icons.vsc.VscChromeClose |> Icons.render
+                                                x.height <- "27px"
                                                 x.fontSize <- "17px"
 
                                                 x.onClick <-
@@ -116,9 +119,9 @@ module TopBar =
                                                             match JS.window id with
                                                             | Some window ->
                                                                 if deviceInfo.IsElectron then
-                                                                    window?ipcRenderer?send "close"
+                                                                    window?api?send "close"
                                                                 else
-                                                                    window.close ()
+                                                                    window?close "" "_parent" ""
                                                             | None -> ()
                                                         }
                                     |}

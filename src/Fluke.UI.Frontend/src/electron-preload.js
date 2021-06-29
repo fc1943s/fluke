@@ -1,2 +1,10 @@
-window.ipcRenderer = require('electron').ipcRenderer;
-console.log('ipcRenderer', ipcRenderer);
+const {
+  contextBridge,
+  ipcRenderer
+} = require("electron");
+
+contextBridge.exposeInMainWorld(
+  "api", {
+    send: ipcRenderer.send
+  }
+);

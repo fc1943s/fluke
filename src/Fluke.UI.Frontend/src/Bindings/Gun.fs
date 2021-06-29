@@ -28,9 +28,13 @@ module Gun =
 
     type UserResult =
         {
+
             err: string option
             ok: int option
             pub: string option
+            ``#``: string option
+            [<Emit("@")>]
+            at: string option
             wait: bool
         }
 
@@ -63,6 +67,7 @@ module Gun =
         type PutAck =
             {
                 err: int option
+                ok: int option
                 ``#``: string option
                 [<Emit("@")>]
                 at: string option

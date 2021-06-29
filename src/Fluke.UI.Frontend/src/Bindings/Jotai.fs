@@ -35,10 +35,7 @@ module Jotai =
             registerAtomIdByPath atom gunNodePath |> ignore
             let atom = registerAtomPathById gunNodePath atom
             atom, Some gunNodePath
-        | None ->
-            registerAtomIdByPath atom atomPath |> ignore
-            let atom = registerAtomPathById atomPath atom
-            atom, None
+        | None -> atom, None
 
     [<RequireQualifiedAccess>]
     type AtomReference<'T> =
@@ -46,7 +43,9 @@ module Jotai =
         | Path of string
 
     [<Erase>]
-    type AtomPath = AtomPath of atomPath: string
+    type AtomPath =
+        | AtomPath of atomPath: string
+        static member inline Value (AtomPath atomPath) = atomPath
 
     let queryAtomPath atomReference =
         match atomReference with

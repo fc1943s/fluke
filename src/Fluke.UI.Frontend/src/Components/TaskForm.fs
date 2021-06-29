@@ -302,9 +302,16 @@ module TaskForm =
         let setTaskIdSet = Store.useSetStatePrev (Atoms.Database.taskIdSet taskDatabaseId)
 
         let taskId =
-            match taskUIFlag with
-            | Atoms.UIFlag.Task (_, taskId) when selectedTaskIdSet.Contains taskId -> taskId
-            | _ -> Task.Default.Id
+            React.useMemo (
+                (fun () ->
+                    match taskUIFlag with
+                    | Atoms.UIFlag.Task (_, taskId) when selectedTaskIdSet.Contains taskId -> taskId
+                    | _ -> Task.Default.Id),
+                [|
+                    box taskUIFlag
+                    box selectedTaskIdSet
+                |]
+            )
 
         TaskForm
             taskId

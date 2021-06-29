@@ -109,7 +109,7 @@ module InputList =
                                                 [
                                                     InputLabelIconButton.InputLabelIconButton
                                                         (fun x ->
-                                                            x.icon <- Icons.fa.FaMinus |> Icons.render
+                                                            x.icon <- Icons.fi.FiMinus |> Icons.render
 
                                                             x.onClick <-
                                                                 fun _ ->

@@ -3,18 +3,32 @@ namespace Fluke.UI.Frontend.Hooks
 open System
 open Feliz
 open Fluke.UI.Frontend.Bindings
+open Fable.Core.JsInterop
 
 
 module React =
-    let useDisposableEffect (effect, dependencies) =
+    let shadowedEffectFn (fn, deps) =
+        (emitJsExpr (React.useEffect, fn, deps) "$0($1,$2)")
+
+    let useDisposableEffect (effect, deps) =
         let disposed = React.useRef false
 
-        React.useEffect (
+        shadowedEffectFn (
             (fun () ->
-                effect disposed
+                if disposed.current then
+                    printfn $"calling effect after dispose. {effect}"
+
+                effect disposed.current
 
                 { new IDisposable with
-                    member _.Dispose () = disposed.current <- true
+                    member _.Dispose () =
+                        disposed.current <- true
+                        effect disposed.current
                 }),
-            dependencies
+            Array.concat [
+                deps
+                [|
+                    box effect
+                |]
+            ]
         )

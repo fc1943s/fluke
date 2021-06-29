@@ -39,7 +39,7 @@ module.exports = {
     //   json: 'never',
     // }],
     'react/jsx-filename-extension': [1, { extensions: ['.js', '.jsx', '.ts', '.tsx'] }],
-    'react-hooks/exhaustive-deps': ['warn', { additionalHooks: '(.*?_useRecoilCallback.*?|.*?_useCallback.*?|.*?_useEffect.*?|.*?_useMemo.*?)' }],
+    'react-hooks/exhaustive-deps': ['warn', { additionalHooks: '(.*?useRecoilCallback.*?|.*?useCallback.*?|.*?useDisposableEffect.*?|.*?useEffect.*?|.*?useMemo.*?)' }],
     'react-hooks/rules-of-hooks': 'off',
 
     'react/display-name': 'off',

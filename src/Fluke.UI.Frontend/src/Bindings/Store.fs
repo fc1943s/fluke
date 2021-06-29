@@ -171,21 +171,20 @@ module Store =
             selectAtomFamily (
                 $"{nameof gunAtomNode}",
                 gunNamespace,
-                (fun (AtomPath atomPath) gunNamespace ->
+                (fun (username, atomPath) gunNamespace ->
                     match gunNamespace.is with
-                    | Some { alias = Some username } ->
-                        let nodes = atomPath |> String.split "/" |> Array.toList
+                    | Some { alias = Some username' } when username' = (username |> Username.Value) ->
+                        let nodes =
+                            atomPath
+                            |> AtomPath.Value
+                            |> String.split "/"
+                            |> Array.toList
 
-                        let gunNode =
-                            (Some (gunNamespace.get nodes.Head), nodes.Tail)
-                            ||> List.fold
-                                    (fun result node ->
-                                        result
-                                        |> Option.map (fun result -> result.get node))
-
-                        match gunNode with
-                        | Some gunNode -> Some (username, gunNode)
-                        | None -> None
+                        (Some (gunNamespace.get nodes.Head), nodes.Tail)
+                        ||> List.fold
+                                (fun result node ->
+                                    result
+                                    |> Option.map (fun result -> result.get node))
                     | _ ->
                         JS.log
                             (fun () ->
@@ -243,6 +242,8 @@ module Store =
         let mutable lastValue = None
         let mutable lastGunValue = None
         let mutable lastAtomPath = None
+        let mutable lastUserAtomId = None
+        let mutable lastWrapperSet = None
 
         //        let localSetHashes = HashSet<Guid> ()
 
@@ -251,20 +252,24 @@ module Store =
             if lastAtomPath.IsNone then
                 lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
 
-            JS.log (fun () -> $"assignLastGunAtomNode atom={atom}")
+            JS.log (fun () -> $"assignLastGunAtomNode atom={atom} lastAtomPath={lastAtomPath}")
 
-            match lastAtomPath with
-            | Some atomPath ->
-                match value getter (Selectors.gunAtomNode atomPath) with
-                | Some (username, gunAtomNode) ->
+            let username = value getter Atoms.username
+
+            match username, lastAtomPath with
+            | Some username, Some atomPath ->
+                match value getter (Selectors.gunAtomNode (username, atomPath)) with
+                | Some gunAtomNode ->
                     lastUsername <- Some username
-                    lastGunAtomNode <- Some gunAtomNode
+                    lastGunAtomNode <- Some ($"atom={atom} atomPath={atomPath} username={username}", gunAtomNode)
                 | _ ->
                     lastUsername <- None
                     lastGunAtomNode <- None
-            | None ->
+            | _ ->
                 lastUsername <- None
                 lastGunAtomNode <- None
+
+            username
 
 
         let internalAtom = jotaiUtils.atomFamily (fun _username -> jotai.atom defaultValue) DeepEqual.compare
@@ -273,136 +278,22 @@ module Store =
 
         Profiling.addCount $"{gunNodePath} constructor"
 
+        let baseInfo () =
+            $"""gunNodePath={gunNodePath}
+                atomPath={atomPath}
+                keyIdentifier={keyIdentifier}
+                lastValue={lastValue}
+                lastUsername={lastUsername}
+                lastGunAtomNode={lastGunAtomNode}
+                lastAtomPath={lastAtomPath}
+                lastUserAtomId={lastUserAtomId}
+                """
+
+
         JS.log
             (fun () ->
-                $"atomFamily constructor gunNodePath={gunNodePath} atomPath={atomPath} keyIdentifier={keyIdentifier} lastUsername={
-                                                                                                                                       lastUsername
-                }")
-
-        let debounceGunPut =
-            JS.debounce
-                (fun newValue ->
-                    promise {
-                        JS.log (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #1")
-
-                        try
-                            match lastGunAtomNode with
-                            | Some gunAtomNode ->
-                                JS.log (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #2 before encode")
-
-                                let! newValueJson =
-                                    if newValue |> JS.ofNonEmptyObj |> Option.isNone then
-                                        null |> Promise.lift
-                                    else
-                                        Gun.userEncode<'TValue> gunAtomNode newValue
-
-                                JS.log (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #3. before put")
-
-                                if lastGunValue.IsNone
-                                   || lastGunValue
-                                      |> DeepEqual.compare (unbox newValue)
-                                      |> not
-                                   || unbox newValue = null then
-
-                                    let! putResult = Gun.put gunAtomNode newValueJson
-
-
-                                    match putResult with
-                                    | Some (ack, node) ->
-                                        Browser.Dom.window?lastAck <- ack
-                                        Browser.Dom.window?lastNode <- node
-
-                                        JS.log
-                                            (fun () ->
-                                                $"atomFamily.wrapper.set() debounceGunPut promise.
-                                                   newValue={newValue}
-                                                   ack=%A{ack}
-                                                   node=%A{node}
-                                                   ")
-
-                                    | None ->
-                                        Browser.Dom.console.error
-                                            $"atomFamily.wrapper.set() debounceGunPut promise put error.
-                                                lastAtomPath={lastAtomPath} newValue={newValue}"
-                                else
-                                    JS.log
-                                        (fun () ->
-                                            $"atomFamily.wrapper.set() debounceGunPut promise.
-                                                   put skipped
-                                                   atomPath={atomPath}.
-                                                   newValue[{newValue}]==lastGunValue[] ")
-                            | None ->
-                                JS.log
-                                    (fun () ->
-                                        $"[gunEffect.debounceGunPut promise] atomPath={atomPath}. skipping gun put. no gun atom node.")
-                        with ex -> Browser.Dom.console.error ("[exception2]", ex)
-                    }
-                    |> Promise.start)
-                1000
-
-        let rec wrapper =
-            selector (
-                atomPath,
-                (Some keyIdentifier),
-                (fun getter ->
-                    assignLastGunAtomNode getter wrapper
-
-                    let result = value getter (internalAtom lastUsername)
-
-                    Profiling.addCount $"{gunNodePath} get"
-
-                    JS.log
-                        (fun () ->
-                            $"atomFamily.wrapper.get() atomPath={atomPath} keyIdentifier={keyIdentifier}
-                                                result={result} lastUsername={lastUsername}")
-
-                    lastValue <- Some (DateTime.Now.Ticks, result)
-
-                    result),
-                (fun get setter newValueFn ->
-                    assignLastGunAtomNode get wrapper
-
-                    set
-                        setter
-                        (internalAtom lastUsername)
-                        (unbox
-                            (fun oldValue ->
-                                let newValue =
-                                    match jsTypeof newValueFn with
-                                    | "function" -> (unbox newValueFn) oldValue |> unbox
-                                    | _ -> newValueFn
-
-                                if true
-                                   || oldValue |> DeepEqual.compare newValue |> not
-                                   || (lastValue.IsNone
-                                       && newValue |> DeepEqual.compare defaultValue) then
-
-                                    Profiling.addCount $"{gunNodePath} set"
-
-                                    JS.log
-                                        (fun () ->
-                                            $"atomFamily.wrapper.set()
-                                                    gunNodePath={gunNodePath}
-                                                    atomPath={atomPath} keyIdentifier={keyIdentifier}
-                                                    jsTypeof-newValue={jsTypeof newValue}
-                                                    oldValue={oldValue} newValue={newValue}
-                                                    newValue={newValue}
-                                                    lastValue={lastValue}
-                                                    lastUsername={lastUsername}
-                                                    ")
-
-                                    debounceGunPut newValue
-
-                                lastValue <- Some (DateTime.Now.Ticks, newValue)
-
-                                JS.log
-                                    (fun () ->
-                                        $"atomFamily.wrapper.set()
-                                                    lastValue setted. returning
-                                                    ")
-
-                                newValue)))
-            )
+                $"atomFamily constructor
+                {baseInfo ()}")
 
         let setInternalFromGun gunAtomNode setAtom (ticks, data) =
             promise {
@@ -424,7 +315,12 @@ module Store =
 
                         JS.log
                             (fun () ->
-                                $"gun.on() value. skipping. atomPath={atomPath} lastValue={lastValue} newValue={newValue}")
+                                $"gun.on() value. skipping.
+                                                    jsTypeof-newValue={jsTypeof newValue}
+                                                    newValue={newValue}
+                                                    lastValue={lastValue}
+                                                    {baseInfo ()}
+                                 ")
                     | _ ->
                         Profiling.addCount $"{gunNodePath} on() assign"
 
@@ -438,18 +334,20 @@ module Store =
                                 if _lastValue.ToString () = newValue.ToString () then
                                     Browser.Dom.console.error
                                         $"should have skipped assign
-                                        atomPath={atomPath}
                                         _lastValue={_lastValue}
                                         typeof lastValue={jsTypeof _lastValue}
                                         newValue={newValue}
-                                        typeof newValue={jsTypeof newValue}"
+                                        typeof newValue={jsTypeof newValue}
+                                        {baseInfo ()}
+                                        "
 
                                 $"gun.on() value. triggering.
-                            atomPath={atomPath}
                             _lastValue={_lastValue}
                             typeof lastValue={jsTypeof _lastValue}
                             newValue={newValue}
-                            typeof newValue={jsTypeof newValue}")
+                            typeof newValue={jsTypeof newValue}
+                            {baseInfo ()}
+                            ")
 
                         //                        Browser.Dom.window?atomPath <- atomPath
 //                        Browser.Dom.window?lastValue <- _lastValue
@@ -468,9 +366,9 @@ module Store =
             (fun setAtom ->
                 if lastSubscription.IsNone then
                     match lastGunAtomNode with
-                    | Some gunAtomNode ->
+                    | Some (key, gunAtomNode) ->
                         Profiling.addCount $"{gunNodePath} subscribe"
-                        JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath}")
+                        JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath} {key}")
 
                         Gun.batchSubscribe
                             {|
@@ -487,7 +385,12 @@ module Store =
                         lastSubscription <- Some DateTime.Now.Ticks
                     | None ->
                         JS.log
-                            (fun () -> $"[gunEffect.on()] atomPath={atomPath}. skipping subscribe, no gun atom node."))
+                            (fun () ->
+                                $"[gunEffect.on()]
+                                {baseInfo ()}
+                             skipping subscribe, no gun atom node.")
+
+                        lastWrapperSet <- Some setAtom)
 
         let unsubscribe =
             (fun _setAtom ->
@@ -495,17 +398,198 @@ module Store =
                 | Some ticks when DateTime.ticksDiff ticks < 1000. -> ()
                 | _ ->
                     match lastGunAtomNode with
-                    | Some gunAtomNode ->
+                    | Some (key, gunAtomNode) ->
 
                         Profiling.addCount $"{gunNodePath} unsubscribe"
-                        //                                    JS.log (fun () -> $"[atomFamily.unsubscribe()] atomPath={atomPath} param={param}")
+
+                        JS.log
+                            (fun () ->
+                                $"[atomFamily.unsubscribe()]
+                                {key}
+                                {baseInfo ()}
+                                ")
 
                         gunAtomNode.off () |> ignore
                         lastSubscription <- None
                     | None ->
                         JS.log
                             (fun () ->
-                                $"[gunEffect.off()] atomPath={atomPath}. skipping unsubscribe, no gun atom node."))
+                                $"[gunEffect.off()]
+                                {baseInfo ()}
+                                skipping unsubscribe, no gun atom node."))
+
+        let debounceGunPut =
+            JS.debounce
+                (fun newValue ->
+                    promise {
+                        JS.log (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #1")
+
+                        try
+                            match lastGunAtomNode with
+                            | Some (key, gunAtomNode) ->
+                                JS.log
+                                    (fun () ->
+                                        $"atomFamily.wrapper.set() debounceGunPut promise. #2 before encode {key}")
+
+                                let! newValueJson =
+                                    if newValue |> JS.ofNonEmptyObj |> Option.isNone then
+                                        null |> Promise.lift
+                                    else
+                                        Gun.userEncode<'TValue> gunAtomNode newValue
+
+                                JS.log
+                                    (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #3. before put {key}")
+
+                                if lastGunValue.IsNone
+                                   || lastGunValue
+                                      |> DeepEqual.compare (unbox newValue)
+                                      |> not
+                                   || unbox newValue = null then
+
+                                    let! putResult = Gun.put gunAtomNode newValueJson
+
+
+                                    match putResult with
+                                    | Some (ack, node) when ack.ok = Some 1 ->
+                                        Browser.Dom.window?lastAck <- ack
+                                        Browser.Dom.window?lastNode <- node
+
+                                        JS.log
+                                            (fun () ->
+                                                $"atomFamily.wrapper.set() debounceGunPut promise result.
+                                                   ack={JS.JSON.stringify ack}
+                                                   node=%A{node}
+                                                   newValue={newValue}
+                                                   {key}
+                                                   {baseInfo ()}
+                                                   ")
+
+                                    | _ ->
+                                        Browser.Dom.window?lastPutResult <- putResult
+
+                                        Browser.Dom.console.error
+                                            $"atomFamily.wrapper.set() debounceGunPut promise put error.
+                                                 newValue={newValue} putResult={putResult}
+                                                   {key}
+                                                {baseInfo ()}"
+                                else
+                                    JS.log
+                                        (fun () ->
+                                            $"atomFamily.wrapper.set() debounceGunPut promise.
+                                                   put skipped
+                                                   newValue[{newValue}]==lastGunValue[]
+                                                   {key}
+                                                   {baseInfo ()}
+                                                   ")
+                            | None ->
+                                JS.log
+                                    (fun () ->
+                                        $"[gunEffect.debounceGunPut promise]
+                                        skipping gun put. no gun atom node.
+                                        {baseInfo ()}
+                                        ")
+                        with ex -> Browser.Dom.console.error ("[exception2]", ex)
+                    }
+                    |> Promise.start)
+                1000
+
+        let rec wrapper =
+            selector (
+                atomPath,
+                (Some keyIdentifier),
+                (fun getter ->
+                    let username = assignLastGunAtomNode getter wrapper
+                    let userAtom = internalAtom username
+
+                    let result = value getter userAtom
+
+                    Profiling.addCount $"{gunNodePath} get"
+
+                    JS.log
+                        (fun () ->
+                            $"atomFamily.wrapper.get()
+                                wrapper={wrapper}
+                                userAtom={userAtom}
+                                result={result}
+                                {baseInfo ()}
+                                ")
+
+                    let userAtomId = Some (userAtom.toString ())
+
+                    if userAtomId <> lastUserAtomId then
+                        lastUserAtomId <- userAtomId
+
+                        match lastWrapperSet with
+                        | Some lastWrapperSet ->
+                            printfn
+                                $"subscribing
+                                wrapper={wrapper}
+                                userAtom={userAtom}
+                                {baseInfo ()}
+                            "
+
+                            subscribe lastWrapperSet
+                        | None ->
+                            printfn
+                                $"skipping subscribe
+                                wrapper={wrapper}
+                                userAtom={userAtom}
+                                {baseInfo ()}
+                        "
+
+                    lastValue <- Some (DateTime.Now.Ticks, result)
+
+                    result),
+                (fun get setter newValueFn ->
+                    let username = assignLastGunAtomNode get wrapper
+                    let userAtom = internalAtom username
+
+                    set
+                        setter
+                        userAtom
+                        (unbox
+                            (fun oldValue ->
+                                let newValue =
+                                    match jsTypeof newValueFn with
+                                    | "function" -> (unbox newValueFn) oldValue |> unbox
+                                    | _ -> newValueFn
+
+                                if true
+                                   || oldValue |> DeepEqual.compare newValue |> not
+                                   || (lastValue.IsNone
+                                       && newValue |> DeepEqual.compare defaultValue) then
+
+                                    Profiling.addCount $"{gunNodePath} set"
+
+                                    JS.log
+                                        (fun () ->
+                                            $"atomFamily.wrapper.set()
+                                                    wrapper={wrapper}
+                                                    userAtom={userAtom}
+                                                    jsTypeof-newValue={jsTypeof newValue}
+                                                    oldValue={oldValue}
+                                                    newValue={newValue}
+                                                    {baseInfo ()}
+                                                    ")
+
+                                    debounceGunPut newValue
+
+                                lastValue <- Some (DateTime.Now.Ticks, newValue)
+
+                                JS.log
+                                    (fun () ->
+                                        $"atomFamily.wrapper.set()
+                                                    ##### lastValue setted. returning #####
+                                                    wrapper={wrapper}
+                                                    userAtom={userAtom}
+                                                    jsTypeof-newValue={jsTypeof newValue}
+                                                    oldValue={oldValue}
+                                                    newValue={newValue}
+                                                    {baseInfo ()}
+                                                    ")
+
+                                newValue)))
+            )
 
         wrapper?onMount <- fun setAtom ->
                                subscribe setAtom
@@ -522,6 +606,26 @@ module Store =
         jotaiUtils.atomFamily
             (fun param -> atomWithSync (atomPath, defaultValueFn param, persist param))
             DeepEqual.compare
+
+    let inline atomWithStorageSync<'TKey, 'TValue> (atomPath, defaultValue, map: _ -> _) =
+        let storageAtom = atomWithStorage (atomPath, defaultValue, map)
+        let syncAtom = atomWithSync<'TKey, 'TValue> (atomPath, defaultValue, [])
+
+        let rec wrapper =
+            selector (
+                atomPath,
+                None,
+                (fun getter ->
+                    match value getter syncAtom with
+                    | syncValue when syncValue |> DeepEqual.compare defaultValue -> value getter storageAtom
+                    | syncValue -> syncValue),
+                (fun _get setter newValue ->
+                    set setter storageAtom newValue
+                    set setter syncAtom newValue)
+            )
+
+        wrapper
+
 
     let readWriteValue =
         let rec readWriteValue =
@@ -593,7 +697,7 @@ module Store =
                 Array.concat [
                     deps
                     [|
-                        fnCallback
+                        box fnCallback
                     |]
                 ]
             )

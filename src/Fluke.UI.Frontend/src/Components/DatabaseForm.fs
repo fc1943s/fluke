@@ -90,110 +90,108 @@ module DatabaseForm =
 
         let importDatabase = Hydrate.useImportDatabase ()
 
-        Chakra.stack
-            (fun x -> x.spacing <- "30px")
-            [
-                Chakra.stack
-                    (fun x -> x.spacing <- "15px")
+        Accordion.Accordion
+            {|
+                Props =
+                    fun x ->
+                        x.flex <- "1"
+                        x.overflowY <- "auto"
+                        x.flexBasis <- 0
+                Atom = Atoms.accordionFlag (TextKey (nameof DatabaseForm))
+                Items =
                     [
-
-                        Chakra.box
-                            (fun x -> x.fontSize <- "15px")
+                        $"""{if databaseId = Database.Default.Id then "Add" else "Edit"} Database""",
+                        (Chakra.stack
+                            (fun x -> x.spacing <- "15px")
                             [
-                                str $"""{if databaseId = Database.Default.Id then "Add" else "Edit"} Database"""
-                            ]
+                                if not debug then
+                                    nothing
+                                else
+                                    Chakra.box
+                                        (fun _ -> ())
+                                        [
+                                            str $"{databaseId}"
+                                        ]
 
-                        if not debug then
-                            nothing
-                        else
-                            Chakra.box
-                                (fun _ -> ())
-                                [
-                                    str $"{databaseId}"
-                                ]
+                                Input.Input
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <-
+                                                    Some (
+                                                        Store.InputAtom (
+                                                            Store.AtomReference.Atom (Atoms.Database.name databaseId)
+                                                        )
+                                                    )
 
-                        Input.Input
-                            {|
-                                CustomProps =
-                                    fun x ->
-                                        x.atom <-
-                                            Some (
-                                                Store.InputAtom (
-                                                    Store.AtomReference.Atom (Atoms.Database.name databaseId)
-                                                )
-                                            )
+                                                x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
+                                                x.onFormat <- Some (fun (DatabaseName name) -> name)
+                                                x.onValidate <- Some (fst >> DatabaseName >> Some)
+                                                x.onEnterPress <- Some onSave
+                                        Props =
+                                            fun x ->
+                                                x.autoFocus <- true
+                                                x.label <- str "Name"
 
-                                        x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
-                                        x.onFormat <- Some (fun (DatabaseName name) -> name)
-                                        x.onValidate <- Some (fst >> DatabaseName >> Some)
-                                        x.onEnterPress <- Some onSave
-                                Props =
-                                    fun x ->
-                                        x.autoFocus <- true
-                                        x.label <- str "Name"
-                                        x.placeholder <- $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
-                            |}
+                                                x.placeholder <-
+                                                    $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
+                                    |}
 
-                        Chakra.stack
-                            (fun x ->
-                                x.direction <- "row"
-                                x.alignItems <- "center")
-                            [
-                                Chakra.box
-                                    (fun _ -> ())
+                                Chakra.stack
+                                    (fun x ->
+                                        x.direction <- "row"
+                                        x.alignItems <- "center")
                                     [
-                                        str "Access:"
+                                        Chakra.box
+                                            (fun _ -> ())
+                                            [
+                                                str "Access:"
+                                            ]
+
+                                        DatabaseAccessIndicator.DatabaseAccessIndicator ()
                                     ]
 
-                                DatabaseAccessIndicator.DatabaseAccessIndicator ()
-                            ]
-
-                        Button.Button
-                            {|
-                                Hint = None
-                                Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
-                                Props = fun x -> x.onClick <- onSave
-                                Children =
-                                    [
-                                        str "Save"
-                                    ]
-                            |}
-                    ]
-
-                Html.hr []
-
-                Chakra.stack
-                    (fun x -> x.spacing <- "15px")
-                    [
-                        Chakra.box
-                            (fun x -> x.fontSize <- "15px")
-                            [
-                                str "Import Database"
-                            ]
-
-                        Chakra.input
-                            (fun x ->
-                                x.``type`` <- "file"
-                                x.padding <- "5px"
-                                x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
-                            []
-
-                        Chakra.box
-                            (fun _ -> ())
-                            [
                                 Button.Button
                                     {|
                                         Hint = None
-                                        Icon = Some (Icons.bi.BiImport |> Icons.wrap, Button.IconPosition.Left)
-                                        Props = fun x -> x.onClick <- fun _ -> importDatabase files
+                                        Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
+                                        Props = fun x -> x.onClick <- onSave
                                         Children =
                                             [
-                                                str "Confirm"
+                                                str "Save"
                                             ]
                                     |}
-                            ]
+                            ])
+
+                        "Import Database",
+                        (Chakra.stack
+                            (fun x -> x.spacing <- "15px")
+                            [
+                                Chakra.input
+                                    (fun x ->
+                                        x.``type`` <- "file"
+                                        x.padding <- "5px"
+                                        x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
+                                    []
+
+                                Chakra.box
+                                    (fun _ -> ())
+                                    [
+                                        Button.Button
+                                            {|
+                                                Hint = None
+                                                Icon = Some (Icons.bi.BiImport |> Icons.wrap, Button.IconPosition.Left)
+                                                Props = fun x -> x.onClick <- fun _ -> importDatabase files
+                                                Children =
+                                                    [
+                                                        str "Confirm"
+                                                    ]
+                                            |}
+                                    ]
+                            ])
                     ]
-            ]
+            |}
+
 
     [<ReactComponent>]
     let DatabaseFormWrapper () =

@@ -49,7 +49,7 @@ module State =
 //                    (fun (_eventId: EventId) -> Event.NoOp)
 //                )
 
-        let rec debug = Store.atomWithStorage ($"{nameof debug}", JS.isDebug (), id)
+        let rec debug = Store.atomWithStorageSync ($"{nameof debug}", JS.isDebug (), id)
 
         let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
         let rec initialPeerSkipped = Store.atom ($"{nameof initialPeerSkipped}", false)
@@ -104,13 +104,13 @@ module State =
         let rec cellSize = Store.atomWithSync ($"{nameof cellSize}", cellSizeDefault, [])
 
         let fontSizeDefault = 12
-        let rec fontSize = Store.atomWithStorage ($"{nameof fontSize}", fontSizeDefault, id)
+        let rec fontSize = Store.atomWithStorageSync ($"{nameof fontSize}", fontSizeDefault, id)
 
         let darkModeDefault = true
-        let rec darkMode = Store.atomWithStorage ($"{nameof darkMode}", darkModeDefault, id)
+        let rec darkMode = Store.atomWithStorageSync ($"{nameof darkMode}", darkModeDefault, id)
 
         let systemUiFontDefault = false
-        let rec systemUiFont = Store.atomWithStorage ($"{nameof systemUiFont}", systemUiFontDefault, id)
+        let rec systemUiFont = Store.atomWithStorageSync ($"{nameof systemUiFont}", systemUiFontDefault, id)
 
         let leftDockDefault : TempUI.DockType option = None
         let rec leftDock = Store.atomWithSync ($"{nameof leftDock}", leftDockDefault, [])
@@ -821,6 +821,20 @@ module State =
                             Set.empty
                         else
                             taskIdMap |> Map.values |> Seq.reduce Set.union)
+                )
+
+            let rec taskStateList =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof taskStateList}",
+                    (fun getter ->
+                        let taskIdSet = Store.value getter taskIdSet
+
+                        taskIdSet
+                        |> Set.toArray
+                        |> Array.map Task.taskState
+                        |> Store.waitForAll
+                        |> Store.value getter
+                        |> Array.toList)
                 )
 
             let rec informationSet =

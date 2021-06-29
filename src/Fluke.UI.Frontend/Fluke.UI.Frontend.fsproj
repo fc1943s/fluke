@@ -73,6 +73,7 @@
         <Compile Include="src\Components\CheckboxInput.fs" />
         <Compile Include="src\Components\DebugOverlay.fs" />
         <Compile Include="src\Components\Logo.fs" />
+        <Compile Include="src\Components\Accordion.fs" />
         <Compile Include="src\Components\AreaForm.fs" />
         <Compile Include="src\Components\DatabaseAccessIndicator.fs" />
         <Compile Include="src\Components\DatabaseForm.fs" />
@@ -82,7 +83,6 @@
         <Compile Include="src\Components\ProjectForm.fs" />
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\DatabaseSelector.fs" />
-        <Compile Include="src\Components\Accordion.fs" />
         <Compile Include="src\Components\AddAttachmentInput.fs" />
         <Compile Include="src\Components\AttachmentPanel.fs" />
         <Compile Include="src\Components\TaskForm.fs" />
@@ -113,9 +113,7 @@
         <Compile Include="src\Components\SoundPlayer.fs" />
         <Compile Include="src\Components\PositionUpdater.fs" />
         <Compile Include="src\Components\RouterObserver.fs" />
-        <Compile Include="src\Components\SelectionListener.fs" />
-        <Compile Include="src\Components\CtrlListener.fs" />
-        <Compile Include="src\Components\ShiftListener.fs" />
+        <Compile Include="src\Components\KeyboardListener.fs" />
         <Compile Include="src\Components\GunObserver.fs" />
         <Compile Include="src\Components\Content.fs" />
         <Compile Include="src\Components\RootWrapper.fs" />

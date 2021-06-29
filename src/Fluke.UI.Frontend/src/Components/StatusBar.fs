@@ -3,6 +3,7 @@ namespace Fluke.UI.Frontend.Components
 open System
 open Fable.React
 open Feliz
+open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Hooks
@@ -155,8 +156,99 @@ module StatusBar =
 
     [<ReactComponent>]
     let TasksIndicator () =
+        let databaseIdSet = Store.useValue Atoms.databaseIdSet
+        let informationSet = Store.useValue Selectors.Session.informationSet
+        let informationStateList = Store.useValue Selectors.Session.informationStateList
+        let taskStateList = Store.useValue Selectors.Session.taskStateList
+
+        let cellAttachmentMapArray =
+            taskStateList
+            |> List.map (fun taskState -> taskState.Task.Id)
+            |> List.map Atoms.Task.cellAttachmentMap
+            |> List.toArray
+            |> Store.waitForAll
+            |> Store.useValue
+
         let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
+
+        let detailsText, total =
+            React.useMemo (
+                (fun () ->
+                    let database = databaseIdSet.Count
+                    let information = informationSet.Count
+
+                    let informationAttachment =
+                        informationStateList
+                        |> List.map (fun informationState -> informationState.Attachments.Length)
+                        |> List.sum
+
+                    let tasks = taskStateList.Length
+
+                    let taskAttachment =
+                        taskStateList
+                        |> List.map (fun taskState -> taskState.Attachments.Length)
+                        |> List.sum
+
+                    let taskSession =
+                        taskStateList
+                        |> List.map (fun taskState -> taskState.Sessions.Length)
+                        |> List.sum
+
+                    let cellStatus =
+                        taskStateList
+                        |> List.map
+                            (fun taskState ->
+                                taskState.CellStateMap
+                                |> Map.values
+                                |> Seq.filter
+                                    (function
+                                    | { Status = UserStatus _ } -> true
+                                    | _ -> false)
+                                |> Seq.length)
+                        |> List.sum
+
+                    let cellAttachment =
+                        cellAttachmentMapArray
+                        |> Array.map (Map.values >> Seq.map Set.count >> Seq.sum)
+                        |> Array.sum
+
+                    let total =
+                        database
+                        + information
+                        + informationAttachment
+                        + tasks
+                        + taskAttachment
+                        + taskSession
+                        + cellStatus
+                        + cellAttachment
+
+                    let detailsText =
+                        [
+                            $"Database: {database}"
+                            $"Information: {information}"
+                            $"Information Attachment: {informationAttachment}"
+                            $"Task: {tasks}"
+                            $"Task Attachment: {taskAttachment}"
+                            $"Task Session: {taskSession}"
+                            $"Cell Status: {cellStatus}"
+                            $"Cell Attachment: {cellAttachment}"
+
+                            $"Total: {total}"
+                        ]
+                        |> List.map str
+                        |> List.intersperse (br [])
+                        |> React.fragment
+
+                    detailsText, total),
+                [|
+                    box cellAttachmentMapArray
+                    box informationSet
+                    box informationStateList
+                    box taskStateList
+                    box databaseIdSet
+                |]
+            )
 
         Chakra.flex
             (fun _ -> ())
@@ -169,7 +261,13 @@ module StatusBar =
 
                 //                        match sortedTaskIdList with
 //                        | sortedTaskIdList ->
-                str $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdSet.Count} visible"
+
+                Tooltip.wrap
+                    detailsText
+                    [
+                        str
+                            $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdSet.Count} visible (Data total: {total})"
+                    ]
             //                        | _ -> str "Tasks: Loading tasks"
             ]
 
