@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
+open Browser.Types
+open Fable.Core.JsInterop
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.State
@@ -119,6 +121,31 @@ module SelectionListener =
 
 
 module PasteListener =
+    type Browser.Types.Clipboard with
+        [<Emit "$0.read()">]
+        member _.read () = jsNative
+
+//    const blobToBase64 = (blob) => {
+//  return new Promise((resolve) => {
+//    const reader = new FileReader();
+//    reader.readAsDataURL(blob);
+//    reader.onloadend = function () {
+//      resolve(reader.result);
+//    };
+//  });
+//};
+    let blobToBase64 blob =
+        Fable.SimpleHttp.FileReader.readBlobAsText blob|>Async.StartAsPromise
+//        Promise.create
+//            (fun res err ->
+//                let str = Fable.SimpleHttp.FileReader.readBlobAsText blob|>Async.StartAsPromise
+//                res (str|>Async.StartAsPromise)
+//
+////                reader.readAsDataURL blob
+////                reader.onload <- fun () -> res reader.result
+//                )
+
+
     [<ReactComponent>]
     let PasteListener () =
 
@@ -151,8 +178,31 @@ module PasteListener =
                     promise {
                         match Browser.Navigator.navigator.clipboard with
                         | Some clipboard ->
-                            let! text = clipboard.readText ()
-                            printfn $"text={text}"
+                            let! read = clipboard.read ()
+                            printfn $"read={read}"
+
+                            Browser.Dom.window?read <- read
+
+                            let! blobs =
+                                read
+                                |> Array.collect
+                                    (fun (clipboardItem: {| types: string []
+                                                            getType: string -> JS.Promise<Blob> |}) ->
+                                        clipboardItem.types
+                                        |> Array.filter (fun t -> t.StartsWith "image/")
+                                        |> Array.map (fun x -> clipboardItem.getType (unbox x)))
+                                |> Promise.Parallel
+
+                            let imageObjectUrls =
+                                blobs |> Array.map Browser.Url.URL.createObjectURL
+
+                            printfn $"blobs={blobs} urls={blobs |> Array.map Browser.Url.URL.createObjectURL}"
+
+                            let! str = blobToBase64 blobs.[0]
+
+                            printfn $"img! result={str}"
+
+                            Browser.Dom.window?blobs <- blobs
 
                         | None -> toast (fun x -> x.description <- "Clipboard not available")
 
@@ -186,6 +236,6 @@ module PasteListener =
             [|
                 "V"
             |]
-            (fun _ setter e -> promise { if e.ctrlKey then () })
+            (fun _ _setter e -> promise { if e.ctrlKey then () })
 
         nothing

@@ -289,6 +289,7 @@ module TaskForm =
     [<ReactComponent>]
     let TaskFormWrapper () =
         let hydrateTaskState = Hydrate.useHydrateTaskState ()
+        let hydrateTask = Hydrate.useHydrateTask ()
         let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
         let setRightDock = Store.useSetState Atoms.rightDock
 
@@ -317,20 +318,22 @@ module TaskForm =
             taskId
             (fun task ->
                 promise {
-                    let taskState =
-                        {
-                            Task = task
-                            SortList = []
-                            Sessions = []
-                            Attachments = []
-                            CellStateMap = Map.empty
-                        }
-
-                    do! hydrateTaskState (Store.AtomScope.ReadOnly, taskDatabaseId, taskState)
-
                     if task.Id <> taskId then
+                        let taskState =
+                            {
+                                Task = task
+                                SortList = []
+                                Sessions = []
+                                Attachments = []
+                                CellStateMap = Map.empty
+                            }
+
+                        do! hydrateTaskState (Store.AtomScope.ReadOnly, taskDatabaseId, taskState)
+
                         JS.setTimeout (fun () -> setTaskIdSet (Set.add task.Id)) 0
                         |> ignore
+                    else
+                        do! hydrateTask (Store.AtomScope.ReadOnly, taskDatabaseId, task)
 
                     setRightDock None
                 })
