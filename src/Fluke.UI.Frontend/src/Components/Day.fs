@@ -13,8 +13,8 @@ module Day =
     let Day (date: FlukeDate) (label: string) =
         let isToday = Store.useValue (Selectors.FlukeDate.isToday date)
         let hasCellSelection = Store.useValue (Selectors.FlukeDate.hasCellSelection date)
-        let weekStart = Store.useValue Atoms.weekStart
-        let cellSize = Store.useValue Atoms.cellSize
+        let weekStart = Store.useValue Atoms.User.weekStart
+        let cellSize = Store.useValue Atoms.User.cellSize
 
         Chakra.box
             (fun x ->

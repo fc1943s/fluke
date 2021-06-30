@@ -19,7 +19,7 @@ module InformationForm =
                     promise {
                         Store.change
                             setter
-                            Atoms.informationAttachmentMap
+                            Atoms.User.informationAttachmentMap
                             (fun informationAttachmentMap ->
                                 informationAttachmentMap
                                 |> Map.add
@@ -41,7 +41,7 @@ module InformationForm =
                         x.flex <- "1"
                         x.overflowY <- "auto"
                         x.flexBasis <- 0
-                Atom = Atoms.accordionFlag (TextKey (nameof InformationForm))
+                Atom = Atoms.User.accordionFlag (TextKey (nameof InformationForm))
                 Items =
                     [
                         "Info",
@@ -73,11 +73,11 @@ module InformationForm =
 
     [<ReactComponent>]
     let InformationFormWrapper () =
-        let informationUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Information)
+        let informationUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Information)
 
         let information =
             match informationUIFlag with
-            | Atoms.UIFlag.Information information -> Some information
+            | UIFlag.Information information -> Some information
             | _ -> None
 
         match information with

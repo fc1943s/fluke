@@ -10,7 +10,7 @@ module PriorityView =
     [<ReactComponent>]
     let PriorityView () =
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
-        let cellSize = Store.useValue Atoms.cellSize
+        let cellSize = Store.useValue Atoms.User.cellSize
 
         Chakra.flex
             (fun x -> x.flex <- "1")

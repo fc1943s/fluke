@@ -1,6 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fluke.Shared.Domain.Model
+open Fable.Core
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Bindings
@@ -39,18 +40,26 @@ module MenuItem =
                 str label
             ]
 
+
 type DatabaseNodeMenu () =
     [<ReactComponent>]
     static member DatabaseNodeMenu (databaseId, disabled) =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
-        let setLeftDock = Store.useSetState Atoms.leftDock
-        let setRightDock = Store.useSetState Atoms.rightDock
-        let setDatabaseUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Database)
-        let setTaskUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Task)
+        let setLeftDock = Store.useSetState Atoms.User.leftDock
+        let setRightDock = Store.useSetState Atoms.User.rightDock
+        let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Database)
+        let setTaskUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Task)
 
         let exportDatabase = Hydrate.useExportDatabase ()
-        let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
+
+        let deleteDatabase =
+            Store.useCallback (
+                (fun getter _ _ -> Store.deleteRoot getter (Atoms.Database.name databaseId)),
+                [|
+                    box databaseId
+                |]
+            )
 
         Menu.Menu
             {|
@@ -73,7 +82,7 @@ type DatabaseNodeMenu () =
                                     promise {
                                         if deviceInfo.IsMobile then setLeftDock None
                                         setRightDock (Some DockType.Task)
-                                        setTaskUIFlag ((databaseId, Task.Default.Id) |> Atoms.UIFlag.Task)
+                                        setTaskUIFlag ((databaseId, Task.Default.Id) |> UIFlag.Task)
                                     })
                                 (fun _ -> ())
 
@@ -84,7 +93,7 @@ type DatabaseNodeMenu () =
                                     promise {
                                         if deviceInfo.IsMobile then setLeftDock None
                                         setRightDock (Some DockType.Database)
-                                        setDatabaseUIFlag (databaseId |> Atoms.UIFlag.Database)
+                                        setDatabaseUIFlag (databaseId |> UIFlag.Database)
                                     })
                                 (fun _ -> ())
 
@@ -148,13 +157,8 @@ type DatabaseNodeMenu () =
                                                                                     x.onClick <-
                                                                                         fun e ->
                                                                                             promise {
-                                                                                                setDatabaseIdSet (
-                                                                                                    Set.remove
-                                                                                                        databaseId
-                                                                                                )
-
+                                                                                                do! deleteDatabase ()
                                                                                                 disclosure.onClose ()
-
                                                                                                 e.preventDefault ()
                                                                                             }
                                                                             Children =

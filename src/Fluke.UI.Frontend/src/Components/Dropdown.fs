@@ -15,7 +15,7 @@ module Dropdown =
                    Body: (unit -> unit) -> ReactElement list |})
         =
         let visible, setVisible = React.useState false
-        let darkMode = Store.useValue Atoms.darkMode
+        let darkMode = Store.useValue Atoms.User.darkMode
 
         Chakra.flex
             (fun x -> x.direction <- "column")

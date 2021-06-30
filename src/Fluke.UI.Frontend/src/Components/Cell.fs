@@ -23,7 +23,7 @@ module Cell =
         =
         Profiling.addCount "- CellComponent.render"
 
-        let cellSize = Store.useValue Atoms.cellSize
+        let cellSize = Store.useValue Atoms.User.cellSize
         let isTesting = Store.useValue Store.Atoms.isTesting
         let showUser = Store.useValue (Selectors.Task.showUser input.TaskId)
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)

@@ -28,6 +28,88 @@ module State =
         | Database of DatabaseId
         | Task of DatabaseId * TaskId
 
+
+    [<RequireQualifiedAccess>]
+    type UIFlag =
+        | None
+        | Database of DatabaseId
+        | Information of Information
+        | Task of DatabaseId * TaskId
+        | Cell of TaskId * DateId
+
+    [<RequireQualifiedAccess>]
+    type UIFlagType =
+        | Database
+        | Information
+        | Task
+        | Cell
+
+    let uiFlagDefault = UIFlag.None
+    let uiVisibleFlagDefault = false
+    let accordionFlagDefault : string [] = [||]
+
+    type UserState =
+        {
+            AccordionFlagMap: Map<string, string []>
+            CellSize: int
+            Color: string option
+            DarkMode: bool
+            DaysAfter: int
+            DaysBefore: int
+            DayStart: FlukeTime
+            ExpandedDatabaseIdSet: Set<DatabaseId>
+            FilterTasksByView: bool
+            FontSize: int
+            HideSchedulingOverlay: bool
+            HideTemplates: bool
+            InformationAttachmentMap: Map<Information, Set<AttachmentId>>
+            Language: Language
+            LeftDock: TempUI.DockType option
+            RightDock: TempUI.DockType option
+            SearchText: string
+            SelectedDatabaseIdSet: Set<DatabaseId>
+            SessionBreakDuration: Minute
+            SessionDuration: Minute
+            ShowViewOptions: bool
+            SystemUiFont: bool
+            UIFlagMap: Map<UIFlagType, UIFlag>
+            UIVisibleFlagMap: Map<UIFlagType, bool>
+            View: View
+            WeekStart: DayOfWeek
+        }
+
+    type UserState with
+        static member inline Default =
+            {
+                AccordionFlagMap = Map.empty
+                CellSize = 19
+                Color = None
+                DarkMode = false
+                DaysAfter = 7
+                DaysBefore = 7
+                DayStart = FlukeTime.Create 0 0
+                ExpandedDatabaseIdSet = Set.empty
+                FilterTasksByView = true
+                FontSize = 15
+                HideSchedulingOverlay = false
+                HideTemplates = false
+                InformationAttachmentMap = Map.empty
+                Language = Language.English
+                LeftDock = None
+                RightDock = None
+                SearchText = ""
+                SelectedDatabaseIdSet = Set.empty
+                SessionBreakDuration = Minute 5
+                SessionDuration = Minute 25
+                ShowViewOptions = false
+                SystemUiFont = true
+                UIFlagMap = Map.empty
+                UIVisibleFlagMap = Map.empty
+                View = View.View.Information
+                WeekStart = DayOfWeek.Sunday
+            }
+
+
     module Atoms =
 
 
@@ -51,136 +133,120 @@ module State =
 
         let rec debug = Store.atomWithStorageSync ($"{nameof debug}", JS.isDebug (), id)
 
-        let rec lastTotal = Store.atomWithSync ($"{nameof lastTotal}", (Some -1: int option), [])
-
         let rec sessionRestored = Store.atom ($"{nameof sessionRestored}", false)
         let rec initialPeerSkipped = Store.atom ($"{nameof initialPeerSkipped}", false)
         let rec position = Store.atom ($"{nameof position}", None)
         let rec ctrlPressed = Store.atom ($"{nameof ctrlPressed}", false)
         let rec shiftPressed = Store.atom ($"{nameof shiftPressed}", false)
 
-        let rec databaseIdSet = Store.atomWithSync ($"{nameof databaseIdSet}", (Set.empty: Set<DatabaseId>), [])
+        module User =
+            let rec expandedDatabaseIdSet =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof expandedDatabaseIdSet}",
+                    UserState.Default.ExpandedDatabaseIdSet,
+                    []
+                )
 
-        let expandedDatabaseIdSetDefault : Set<DatabaseId> = Set.empty
+            let rec selectedDatabaseIdSet =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof selectedDatabaseIdSet}",
+                    UserState.Default.SelectedDatabaseIdSet,
+                    []
+                )
 
-        let rec expandedDatabaseIdSet =
-            Store.atomWithSync ($"{nameof expandedDatabaseIdSet}", expandedDatabaseIdSetDefault, [])
+            let rec view = Store.atomWithSync ($"{nameof User}/{nameof view}", UserState.Default.View, [])
+            let rec language = Store.atomWithSync ($"{nameof User}/{nameof language}", UserState.Default.Language, [])
+            let rec color = Store.atomWithSync ($"{nameof User}/{nameof color}", (None: string option), [])
 
-        let selectedDatabaseIdSetDefault : Set<DatabaseId> = Set.empty
+            let rec weekStart =
+                Store.atomWithSync ($"{nameof User}/{nameof weekStart}", UserState.Default.WeekStart, [])
 
-        let rec selectedDatabaseIdSet =
-            Store.atomWithSync ($"{nameof selectedDatabaseIdSet}", selectedDatabaseIdSetDefault, [])
+            let rec dayStart = Store.atomWithSync ($"{nameof User}/{nameof dayStart}", UserState.Default.DayStart, [])
 
-        let viewDefault = View.View.Information
-        let rec view = Store.atomWithSync ($"{nameof view}", viewDefault, [])
+            let rec sessionDuration =
+                Store.atomWithSync ($"{nameof User}/{nameof sessionDuration}", UserState.Default.SessionDuration, [])
 
-        let languageDefault = Language.English
-        let rec language = Store.atomWithSync ($"{nameof language}", languageDefault, [])
+            let rec sessionBreakDuration =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof sessionBreakDuration}",
+                    UserState.Default.SessionBreakDuration,
+                    []
+                )
 
-        let rec color = Store.atomWithSync ($"{nameof color}", (None: string option), [])
+            let rec daysBefore =
+                Store.atomWithSync ($"{nameof User}/{nameof daysBefore}", UserState.Default.DaysBefore, [])
 
-        let weekStartDefault = DayOfWeek.Sunday
-        let rec weekStart = Store.atomWithSync ($"{nameof weekStart}", weekStartDefault, [])
+            let rec daysAfter =
+                Store.atomWithSync ($"{nameof User}/{nameof daysAfter}", UserState.Default.DaysAfter, [])
 
-        let dayStartDefault = FlukeTime.Create 0 0
-        let rec dayStart = Store.atomWithSync ($"{nameof dayStart}", dayStartDefault, [])
+            let rec searchText =
+                Store.atomWithSync ($"{nameof User}/{nameof searchText}", UserState.Default.SearchText, [])
 
-        let sessionDurationDefault = Minute 25
-        let rec sessionDuration = Store.atomWithSync ($"{nameof sessionDuration}", sessionDurationDefault, [])
+            let rec cellSize = Store.atomWithSync ($"{nameof User}/{nameof cellSize}", UserState.Default.CellSize, [])
 
-        let sessionBreakDurationDefault = Minute 5
+            let rec fontSize =
+                Store.atomWithStorageSync ($"{nameof User}/{nameof fontSize}", UserState.Default.FontSize, id)
 
-        let rec sessionBreakDuration =
-            Store.atomWithSync ($"{nameof sessionBreakDuration}", sessionBreakDurationDefault, [])
+            let rec darkMode =
+                Store.atomWithStorageSync ($"{nameof User}/{nameof darkMode}", UserState.Default.DarkMode, id)
 
-        let daysBeforeDefault = 7
-        let rec daysBefore = Store.atomWithSync ($"{nameof daysBefore}", daysBeforeDefault, [])
+            let rec systemUiFont =
+                Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont, id)
 
-        let daysAfterDefault = 7
-        let rec daysAfter = Store.atomWithSync ($"{nameof daysAfter}", daysAfterDefault, [])
+            let rec leftDock = Store.atomWithSync ($"{nameof User}/{nameof leftDock}", UserState.Default.LeftDock, [])
 
-        let searchTextDefault = ""
-        let rec searchText = Store.atomWithSync ($"{nameof searchText}", searchTextDefault, [])
+            let rec rightDock =
+                Store.atomWithSync ($"{nameof User}/{nameof rightDock}", UserState.Default.RightDock, [])
 
-        let cellSizeDefault = 19
-        let rec cellSize = Store.atomWithSync ($"{nameof cellSize}", cellSizeDefault, [])
+            let rec hideTemplates =
+                Store.atomWithSync ($"{nameof User}/{nameof hideTemplates}", UserState.Default.HideTemplates, [])
 
-        let fontSizeDefault = 15
-        let rec fontSize = Store.atomWithStorageSync ($"{nameof fontSize}", fontSizeDefault, id)
+            let rec hideSchedulingOverlay =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof hideSchedulingOverlay}",
+                    UserState.Default.HideSchedulingOverlay,
+                    []
+                )
 
-        let darkModeDefault = false
-        let rec darkMode = Store.atomWithStorageSync ($"{nameof darkMode}", darkModeDefault, id)
+            let rec showViewOptions =
+                Store.atomWithSync ($"{nameof User}/{nameof showViewOptions}", UserState.Default.ShowViewOptions, [])
 
-        let systemUiFontDefault = true
-        let rec systemUiFont = Store.atomWithStorageSync ($"{nameof systemUiFont}", systemUiFontDefault, id)
+            let rec filterTasksByView =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof filterTasksByView}",
+                    UserState.Default.FilterTasksByView,
+                    []
+                )
 
-        let leftDockDefault : TempUI.DockType option = None
-        let rec leftDock = Store.atomWithSync ($"{nameof leftDock}", leftDockDefault, [])
+            let rec informationAttachmentMap =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof informationAttachmentMap}",
+                    UserState.Default.InformationAttachmentMap,
+                    []
+                )
 
-        let rightDockDefault : TempUI.DockType option = None
-        let rec rightDock = Store.atomWithSync ($"{nameof rightDock}", rightDockDefault, [])
-
-        let hideTemplatesDefault = false
-        let rec hideTemplates = Store.atomWithSync ($"{nameof hideTemplates}", hideTemplatesDefault, [])
-
-        let hideSchedulingOverlayDefault = false
-
-        let rec hideSchedulingOverlay =
-            Store.atomWithSync ($"{nameof hideSchedulingOverlay}", hideSchedulingOverlayDefault, [])
-
-        let showViewOptionsDefault = false
-        let rec showViewOptions = Store.atomWithSync ($"{nameof showViewOptions}", showViewOptionsDefault, [])
-
-        let filterTasksByViewDefault = true
-        let rec filterTasksByView = Store.atomWithSync ($"{nameof filterTasksByView}", filterTasksByViewDefault, [])
-
-        let informationAttachmentMapDefault : Map<Information, Set<AttachmentId>> = Map.empty
-
-        let rec informationAttachmentMap =
-            Store.atomWithSync ($"{nameof informationAttachmentMap}", informationAttachmentMapDefault, [])
+            let rec uiFlag =
+                Store.atomFamilyWithSync (
+                    $"{nameof User}/{nameof uiFlag}",
+                    (fun (_uiFlagType: UIFlagType) -> uiFlagDefault),
+                    (fun (uiFlagType: UIFlagType) -> uiFlagType |> string |> List.singleton)
+                )
 
 
-        [<RequireQualifiedAccess>]
-        type UIFlag =
-            | None
-            | Database of DatabaseId
-            | Information of Information
-            | Task of DatabaseId * TaskId
-            | Cell of TaskId * DateId
+            let rec uiVisibleFlag =
+                Store.atomFamilyWithSync (
+                    $"{nameof User}/{nameof uiVisibleFlag}",
+                    (fun (_uiFlagType: UIFlagType) -> uiVisibleFlagDefault),
+                    (fun (uiFlagType: UIFlagType) -> uiFlagType |> string |> List.singleton)
+                )
 
-        [<RequireQualifiedAccess>]
-        type UIFlagType =
-            | Database
-            | Information
-            | Task
-            | Cell
 
-        let uiFlagDefault = UIFlag.None
-
-        let rec uiFlag =
-            Store.atomFamilyWithSync (
-                $"{nameof uiFlag}",
-                (fun (_uiFlagType: UIFlagType) -> uiFlagDefault),
-                (fun (uiFlagType: UIFlagType) -> uiFlagType |> string |> List.singleton)
-            )
-
-        let uiVisibleFlagDefault = false
-
-        let rec uiVisibleFlag =
-            Store.atomFamilyWithSync (
-                $"{nameof uiVisibleFlag}",
-                (fun (_uiFlagType: UIFlagType) -> uiVisibleFlagDefault),
-                (fun (uiFlagType: UIFlagType) -> uiFlagType |> string |> List.singleton)
-            )
-
-        let accordionFlagDefault : string [] = [||]
-
-        let rec accordionFlag =
-            Store.atomFamilyWithSync (
-                $"{nameof accordionFlag}",
-                (fun (_key: TextKey) -> accordionFlagDefault),
-                (fun (key: TextKey) -> key |> TextKey.Value |> List.singleton)
-            )
+            let rec accordionFlag =
+                Store.atomFamilyWithSync (
+                    $"{nameof User}/{nameof accordionFlag}",
+                    (fun (_key: TextKey) -> accordionFlagDefault),
+                    (fun (key: TextKey) -> key |> TextKey.Value |> List.singleton)
+                )
 
 
         module rec Database =
@@ -190,12 +256,12 @@ module State =
                 |> string
                 |> List.singleton
 
-            let rec taskIdSet =
-                Store.atomFamilyWithSync (
-                    $"{nameof Database}/{nameof taskIdSet}",
-                    (fun (_databaseId: DatabaseId) -> Set.empty: Set<TaskId>),
-                    databaseIdIdentifier
-                )
+            //            let rec taskIdSet =
+//                Store.atomFamilyWithSync (
+//                    $"{nameof Database}/{nameof taskIdSet}",
+//                    (fun (_databaseId: DatabaseId) -> Set.empty: Set<TaskId>),
+//                    databaseIdIdentifier
+//                )
 
             let rec name =
                 Store.atomFamilyWithSync (
@@ -259,17 +325,12 @@ module State =
                     taskIdIdentifier
                 )
 
-            //            let rec databaseId =
-//                Store.atomFamilyWithSync (
-//                    $"{nameof Task}/{nameof databaseId}",
-//                    (fun (_taskId: TaskId) -> Database.Default.Id),
-//                    (fun (username: Username) ->
-//                        [
-//                            Store.gunEffect
-//                                (Store.InputAtom.Atom
-//                               (askIdIdentifier taskId)
-//                        ])
-//                )
+            let rec databaseId =
+                Store.atomFamilyWithSync (
+                    $"{nameof Task}/{nameof databaseId}",
+                    (fun (_taskId: TaskId) -> Database.Default.Id),
+                    taskIdIdentifier
+                )
 
             let rec sessions =
                 Store.atomFamilyWithSync (
@@ -381,9 +442,9 @@ module State =
 
                     match position with
                     | Some position ->
-                        let daysBefore = Store.value getter Atoms.daysBefore
-                        let daysAfter = Store.value getter Atoms.daysAfter
-                        let dayStart = Store.value getter Atoms.dayStart
+                        let daysBefore = Store.value getter Atoms.User.daysBefore
+                        let daysAfter = Store.value getter Atoms.User.daysAfter
+                        let dayStart = Store.value getter Atoms.User.dayStart
                         let dateId = dateId dayStart position
                         let (DateId referenceDay) = dateId
 
@@ -393,23 +454,39 @@ module State =
                     | _ -> [])
             )
 
-        let rec taskIdMap =
-            Store.readSelector (
-                $"{nameof taskIdMap}",
-                (fun getter ->
-                    let databaseIdArray =
-                        Store.value getter Atoms.databaseIdSet
-                        |> Set.toArray
-
-                    databaseIdArray
-                    |> Array.map Atoms.Database.taskIdSet
-                    |> Store.waitForAll
-                    |> Store.value getter
-                    |> Array.mapi (fun i taskIdSet -> databaseIdArray.[i], taskIdSet)
-                    |> Map.ofArray)
-            )
+        //        let rec taskIdMap =
+//            Store.readSelector (
+//                $"{nameof taskIdMap}",
+//                (fun getter ->
+//                    let databaseIdArray =
+//                        Store.value getter Atoms.databaseIdSet
+//                        |> Set.toArray
+//
+//                    databaseIdArray
+//                    |> Array.map Atoms.Database.taskIdSet
+//                    |> Store.waitForAll
+//                    |> Store.value getter
+//                    |> Array.mapi (fun i taskIdSet -> databaseIdArray.[i], taskIdSet)
+//                    |> Map.ofArray)
+//            )
 
         let rec deviceInfo = Store.readSelector ($"{nameof deviceInfo}", (fun _ -> JS.deviceInfo))
+
+        let rec asyncDatabaseIdAtoms : Store.Atom<Store.Atom<DatabaseId> []> =
+            Store.selectAtomSyncKeys (
+                $"{nameof asyncDatabaseIdAtoms}",
+                Atoms.Database.name,
+                Database.Default.Id,
+                (Guid >> DatabaseId)
+            )
+
+        let rec asyncTaskIdAtoms : Store.Atom<Store.Atom<TaskId> []> =
+            Store.selectAtomSyncKeys (
+                $"{nameof asyncTaskIdAtoms}",
+                Atoms.Task.databaseId,
+                Task.Default.Id,
+                (Guid >> TaskId)
+            )
 
 
         module rec Database =
@@ -462,6 +539,19 @@ module State =
                         access = Some Access.ReadWrite)
                 )
 
+            let rec taskIdAtoms =
+                Store.readSelectorFamily (
+                    $"{nameof Database}/{nameof taskIdAtoms}",
+                    (fun databaseId getter ->
+                        asyncTaskIdAtoms
+                        |> Store.value getter
+                        |> Array.filter
+                            (fun taskIdAtom ->
+                                let taskId = Store.value getter taskIdAtom
+                                let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
+                                databaseId = databaseId'))
+                )
+
 
         module rec Attachment =
             let rec attachment =
@@ -482,7 +572,7 @@ module State =
                 Store.readSelectorFamily (
                     $"{nameof Information}/{nameof attachments}",
                     (fun (information: Information) getter ->
-                        Store.value getter Atoms.informationAttachmentMap
+                        Store.value getter Atoms.User.informationAttachmentMap
                         |> Map.tryFind information
                         |> Option.defaultValue Set.empty
                         |> Set.toArray
@@ -544,7 +634,7 @@ module State =
                             |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
 
                         let cellStateMapWithoutStatus =
-                            let dayStart = Store.value getter Atoms.dayStart
+                            let dayStart = Store.value getter Atoms.User.dayStart
 
                             dateSequence
                             |> List.map DateId
@@ -634,7 +724,7 @@ module State =
                         let position = Store.value getter Atoms.position
                         let taskState = Store.value getter (taskState taskId)
                         let dateSequence = Store.value getter dateSequence
-                        let dayStart = Store.value getter Atoms.dayStart
+                        let dayStart = Store.value getter Atoms.User.dayStart
 
                         match position with
                         | Some position when not dateSequence.IsEmpty ->
@@ -642,28 +732,28 @@ module State =
                         | _ -> Map.empty)
                 )
 
-            let rec databaseId =
-                Store.selectAtomFamily (
-                    $"{nameof Task}/{nameof databaseId}",
-                    taskIdMap,
-                    (fun (taskId: TaskId) taskIdMap ->
-                        let databaseIdList =
-                            taskIdMap
-                            |> Map.filter (fun _ taskIdSet -> taskIdSet.Contains taskId)
-                            |> Map.keys
-                            |> Seq.toList
-
-                        match databaseIdList with
-                        | [] -> Database.Default.Id
-                        | [ databaseId ] -> databaseId
-                        | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdList})")
-                )
+            //            let rec databaseId =
+//                Store.selectAtomFamily (
+//                    $"{nameof Task}/{nameof databaseId}",
+//                    taskIdMap,
+//                    (fun (taskId: TaskId) taskIdMap ->
+//                        let databaseIdList =
+//                            taskIdMap
+//                            |> Map.filter (fun _ taskIdSet -> taskIdSet.Contains taskId)
+//                            |> Map.keys
+//                            |> Seq.toList
+//
+//                        match databaseIdList with
+//                        | [] -> Database.Default.Id
+//                        | [ databaseId ] -> databaseId
+//                        | _ -> failwith $"Error: task {taskId} exists in two databases ({databaseIdList})")
+//                )
 
             let rec isReadWrite =
                 Store.readSelectorFamily (
                     $"{nameof Task}/{nameof isReadWrite}",
                     (fun (taskId: TaskId) getter ->
-                        let databaseId = Store.value getter (databaseId taskId)
+                        let databaseId = Store.value getter (Atoms.Task.databaseId taskId)
                         Store.value getter (Database.isReadWrite databaseId))
                 )
 
@@ -695,8 +785,8 @@ module State =
 
                         match position, lastSession with
                         | Some position, Some lastSession ->
-                            let sessionDuration = Store.value getter Atoms.sessionDuration
-                            let sessionBreakDuration = Store.value getter Atoms.sessionBreakDuration
+                            let sessionDuration = Store.value getter Atoms.User.sessionDuration
+                            let sessionBreakDuration = Store.value getter Atoms.User.sessionBreakDuration
 
                             let (Session start) = lastSession
 
@@ -752,7 +842,7 @@ module State =
                 Store.selectorFamily (
                     $"{nameof Cell}/{nameof sessionStatus}",
                     (fun (taskId: TaskId, dateId: DateId) getter ->
-                        let hideSchedulingOverlay = Store.value getter Atoms.hideSchedulingOverlay
+                        let hideSchedulingOverlay = Store.value getter Atoms.User.hideSchedulingOverlay
 
                         if hideSchedulingOverlay then
                             Store.value getter (Atoms.Task.statusMap taskId)
@@ -813,26 +903,42 @@ module State =
 
 
         module rec Session =
-            let rec taskIdSet =
-                Store.readSelector (
-                    $"{nameof Session}/{nameof taskIdSet}",
-                    (fun getter ->
-                        let taskIdMap = Store.value getter taskIdMap
+            //            let rec taskIdSet =
+//                Store.readSelector (
+//                    $"{nameof Session}/{nameof taskIdSet}",
+//                    (fun getter ->
+//                        let taskIdMap = Store.value getter taskIdMap
+//
+//                        if taskIdMap.IsEmpty then
+//                            Set.empty
+//                        else
+//                            taskIdMap |> Map.values |> Seq.reduce Set.union)
+//                )
 
-                        if taskIdMap.IsEmpty then
-                            Set.empty
-                        else
-                            taskIdMap |> Map.values |> Seq.reduce Set.union)
+
+
+            let rec selectedTaskIdAtoms =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof selectedTaskIdAtoms}",
+                    (fun getter ->
+                        let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+
+                        selectedDatabaseIdSet
+                        |> Set.toArray
+                        |> Array.map Database.taskIdAtoms
+                        |> Store.waitForAll
+                        |> Store.value getter
+                        |> Array.collect id)
                 )
 
             let rec taskStateList =
                 Store.readSelector (
                     $"{nameof Session}/{nameof taskStateList}",
                     (fun getter ->
-                        let taskIdSet = Store.value getter taskIdSet
+                        let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
 
-                        taskIdSet
-                        |> Set.toArray
+                        selectedTaskIdAtoms
+                        |> Array.map (Store.value getter)
                         |> Array.map Task.taskState
                         |> Store.waitForAll
                         |> Store.value getter
@@ -843,10 +949,10 @@ module State =
                 Store.readSelector (
                     $"{nameof Session}/{nameof informationSet}",
                     (fun getter ->
-                        let taskIdSet = Store.value getter taskIdSet
+                        let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
 
-                        taskIdSet
-                        |> Set.toArray
+                        selectedTaskIdAtoms
+                        |> Array.map (Store.value getter)
                         |> Array.map Atoms.Task.information
                         |> Store.waitForAll
                         |> Store.value getter
@@ -857,24 +963,6 @@ module State =
                                 |> InformationName.Value
                                 |> String.IsNullOrWhiteSpace
                                 |> not)
-                        |> Set.ofSeq)
-                )
-
-            let rec selectedTaskIdSet =
-                Store.readSelector (
-                    $"{nameof Session}/{nameof selectedTaskIdSet}",
-                    (fun getter ->
-                        let selectedDatabaseIdSet = Store.value getter Atoms.selectedDatabaseIdSet
-
-                        let taskIdArray = Store.value getter taskIdSet |> Set.toArray
-
-                        taskIdArray
-                        |> Array.map Task.databaseId
-                        |> Store.waitForAll
-                        |> Store.value getter
-                        |> Array.indexed
-                        |> Array.filter (fun (_, databaseId) -> selectedDatabaseIdSet |> Set.contains databaseId)
-                        |> Array.map (fun (i, _) -> taskIdArray.[i])
                         |> Set.ofSeq)
                 )
 
@@ -896,8 +984,11 @@ module State =
                 Store.readSelector (
                     $"{nameof Session}/{nameof activeSessions}",
                     (fun getter ->
-                        let selectedTaskIdSet = Store.value getter selectedTaskIdSet
-                        let selectedTaskIdArray = selectedTaskIdSet |> Set.toArray
+                        let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
+
+                        let selectedTaskIdArray =
+                            selectedTaskIdAtoms
+                            |> Array.map (Store.value getter)
 
                         let durationArray =
                             selectedTaskIdArray
@@ -926,15 +1017,19 @@ module State =
                 Store.readSelector (
                     $"{nameof Session}/{nameof filteredTaskIdSet}",
                     (fun getter ->
-                        let filterTasksByView = Store.value getter Atoms.filterTasksByView
-                        let searchText = Store.value getter Atoms.searchText
-                        let view = Store.value getter Atoms.view
+                        let filterTasksByView = Store.value getter Atoms.User.filterTasksByView
+                        let searchText = Store.value getter Atoms.User.searchText
+                        let view = Store.value getter Atoms.User.view
                         let dateSequence = Store.value getter dateSequence
-                        let selectedTaskIdSet = Store.value getter selectedTaskIdSet
+
+                        let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
+
+                        let selectedTaskIdArray =
+                            selectedTaskIdAtoms
+                            |> Array.map (Store.value getter)
 
                         let selectedTaskList =
-                            selectedTaskIdSet
-                            |> Set.toArray
+                            selectedTaskIdArray
                             |> Array.map Task.task
                             |> Store.waitForAll
                             |> Store.value getter
@@ -1011,8 +1106,8 @@ module State =
                                 |> Array.zip taskStateArray
                                 |> Array.toList
 
-                            let view = Store.value getter Atoms.view
-                            let dayStart = Store.value getter Atoms.dayStart
+                            let view = Store.value getter Atoms.User.view
+                            let dayStart = Store.value getter Atoms.User.dayStart
                             let informationStateList = Store.value getter Session.informationStateList
 
                             let result =
@@ -1107,7 +1202,7 @@ module State =
 
                         match position with
                         | Some position ->
-                            let dayStart = Store.value getter Atoms.dayStart
+                            let dayStart = Store.value getter Atoms.User.dayStart
 
                             Domain.UserInteraction.isToday dayStart position (DateId date)
                         | _ -> false)
@@ -1151,8 +1246,8 @@ module State =
 
                         match position with
                         | Some position ->
-                            let dayStart = Store.value getter Atoms.dayStart
-                            let weekStart = Store.value getter Atoms.weekStart
+                            let dayStart = Store.value getter Atoms.User.dayStart
+                            let weekStart = Store.value getter Atoms.User.weekStart
 
                             let weeks =
                                 [

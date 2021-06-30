@@ -14,7 +14,7 @@ module GridHeader =
 
     [<ReactComponent>]
     let GridHeader () =
-        let cellSize = Store.useValue Atoms.cellSize
+        let cellSize = Store.useValue Atoms.User.cellSize
         let dateSequence = Store.useValue Selectors.dateSequence
 
         let datesByMonth =

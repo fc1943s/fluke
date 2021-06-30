@@ -158,8 +158,8 @@ module Theme =
                                         marginRight = "15px"
                                     |}
                                 ``.rct-collapse-btn:focus`` = {| boxShadow = focusShadow |}
-                                ``.rct-disabled .rct-checkbox svg`` = {| display = "none" |}
-                                ``.rct-disabled .rct-node-icon`` = {| marginLeft = "-20px" |}
+                                ``.rct-disabled .rct-checkbox svg`` = {| visibility = "hidden" |}
+//                                ``.rct-disabled .rct-node-icon`` = {| marginLeft = "-20px" |}
                                 ``.rct-node label:hover, .rct-node label:active`` = {| background = "none" |}
                                 ``.rct-node-parent:not(:first-of-type)`` = {| marginTop = "7px" |}
                                 ``.rct-node:first-of-type`` = {| marginTop = "2px" |}
@@ -191,9 +191,9 @@ module Theme =
         |}
 
     let useTheme () =
-        let darkMode = Store.useValue Atoms.darkMode
-        let systemUiFont = Store.useValue Atoms.systemUiFont
-        let fontSize = Store.useValue Atoms.fontSize
+        let darkMode = Store.useValue Atoms.User.darkMode
+        let systemUiFont = Store.useValue Atoms.User.systemUiFont
+        let fontSize = Store.useValue Atoms.User.fontSize
 
         React.useMemo (
             (fun () ->

@@ -8,7 +8,6 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.Shared
-open Fable.Core
 open Fable.Core.JsInterop
 
 
@@ -16,22 +15,17 @@ module DatabaseSelector =
     [<ReactComponent>]
     let rec DatabaseSelector (databaseId: DatabaseId) (taskId: TaskId) (onChange: DatabaseId -> unit) =
         let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name databaseId)
-        let databaseIdSet = Store.useValue Atoms.databaseIdSet
-        let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
+        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
         let databaseIdList =
-            React.useMemo (
-                (fun () -> databaseIdSet |> Set.toList),
-                [|
-                    databaseIdSet
-                |]
-            )
+            databaseIdAtoms
+            |> Store.waitForAll
+            |> Store.useValue
 
         let filteredDatabaseIdList =
             databaseIdList
-            |> List.map Selectors.Database.isReadWrite
-            |> List.toArray
+            |> Array.map Selectors.Database.isReadWrite
             |> Store.waitForAll
             |> Store.useValue
             |> Array.toList
@@ -174,12 +168,6 @@ module DatabaseSelector =
                                                                             Store.AtomScope.ReadOnly,
                                                                             database
                                                                         )
-
-                                                                    JS.setTimeout
-                                                                        (fun () ->
-                                                                            setDatabaseIdSet (Set.add database.Id))
-                                                                        0
-                                                                    |> ignore
 
                                                                     onHide ()
                                                                 })

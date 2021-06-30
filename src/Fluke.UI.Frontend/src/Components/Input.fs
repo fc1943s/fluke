@@ -41,7 +41,7 @@ module Input =
         (input: {| CustomProps: IProps<'TValue, 'TKey> -> unit
                    Props: Chakra.IChakraProps -> unit |})
         =
-        let darkMode = Store.useValue Atoms.darkMode
+        let darkMode = Store.useValue Atoms.User.darkMode
 
         let props, customProps =
             React.useMemo (

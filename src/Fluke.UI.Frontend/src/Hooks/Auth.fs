@@ -149,41 +149,39 @@ module Auth =
                                     | Ok (username, keys) ->
                                         do! hydrateTemplates ()
 
-                                        Store.set
-                                            setter
-                                            Atoms.informationAttachmentMap
-                                            Atoms.informationAttachmentMapDefault
+                                        Store.set setter Atoms.User.cellSize UserState.Default.CellSize
+                                        Store.set setter Atoms.User.darkMode UserState.Default.DarkMode
+                                        Store.set setter Atoms.User.daysAfter UserState.Default.DaysAfter
+                                        Store.set setter Atoms.User.daysBefore UserState.Default.DaysBefore
+                                        Store.set setter Atoms.User.dayStart UserState.Default.DayStart
+                                        Store.set setter Atoms.User.expandedDatabaseIdSet UserState.Default.ExpandedDatabaseIdSet
+                                        Store.set setter Atoms.User.filterTasksByView UserState.Default.FilterTasksByView
+                                        Store.set setter Atoms.User.fontSize UserState.Default.FontSize
+                                        Store.set setter Atoms.User.hideSchedulingOverlay UserState.Default.HideSchedulingOverlay
+                                        Store.set setter Atoms.User.hideTemplates UserState.Default.HideTemplates
+                                        Store.set setter Atoms.User.informationAttachmentMap UserState.Default.InformationAttachmentMap
+                                        Store.set setter Atoms.User.language UserState.Default.Language
+                                        Store.set setter Atoms.User.leftDock UserState.Default.LeftDock
+                                        Store.set setter Atoms.User.rightDock UserState.Default.RightDock
+                                        Store.set setter Atoms.User.searchText UserState.Default.SearchText
+                                        Store.set setter Atoms.User.selectedDatabaseIdSet UserState.Default.SelectedDatabaseIdSet
+                                        Store.set setter Atoms.User.sessionBreakDuration UserState.Default.SessionBreakDuration
+                                        Store.set setter Atoms.User.sessionDuration UserState.Default.SessionDuration
+                                        Store.set setter Atoms.User.showViewOptions UserState.Default.ShowViewOptions
+                                        Store.set setter Atoms.User.systemUiFont UserState.Default.SystemUiFont
+                                        Store.set setter Atoms.User.view UserState.Default.View
+                                        Store.set setter Atoms.User.weekStart UserState.Default.WeekStart
 
-                                        Store.set setter Atoms.expandedDatabaseIdSet Atoms.expandedDatabaseIdSetDefault
-                                        Store.set setter Atoms.selectedDatabaseIdSet Atoms.selectedDatabaseIdSetDefault
-                                        Store.set setter Atoms.view Atoms.viewDefault
-                                        Store.set setter Atoms.language Atoms.languageDefault
-                                        Store.set setter Atoms.weekStart Atoms.weekStartDefault
-                                        Store.set setter Atoms.dayStart Atoms.dayStartDefault
-                                        Store.set setter Atoms.sessionDuration Atoms.sessionDurationDefault
-                                        Store.set setter Atoms.sessionBreakDuration Atoms.sessionBreakDurationDefault
-                                        Store.set setter Atoms.daysBefore Atoms.daysBeforeDefault
-                                        Store.set setter Atoms.daysAfter Atoms.daysAfterDefault
-                                        Store.set setter Atoms.searchText Atoms.searchTextDefault
-                                        Store.set setter Atoms.cellSize Atoms.cellSizeDefault
-                                        Store.set setter Atoms.fontSize Atoms.fontSizeDefault
-                                        Store.set setter Atoms.systemUiFont Atoms.systemUiFontDefault
-                                        Store.set setter Atoms.darkMode Atoms.darkModeDefault
-                                        Store.set setter Atoms.leftDock Atoms.leftDockDefault
-                                        Store.set setter Atoms.rightDock Atoms.rightDockDefault
-                                        Store.set setter Atoms.hideTemplates Atoms.hideTemplatesDefault
-                                        Store.set setter Atoms.hideSchedulingOverlay Atoms.hideSchedulingOverlayDefault
-                                        Store.set setter Atoms.showViewOptions Atoms.showViewOptionsDefault
-                                        Store.set setter Atoms.filterTasksByView Atoms.filterTasksByViewDefault
 
                                         JS.setTimeout
                                             (fun () ->
                                                 Store.set
                                                     setter
-                                                    Atoms.color
+                                                    Atoms.User.color
                                                     (Some (String.Format ("#{0:X6}", Random().Next 0x1000000))))
                                             0
                                         |> ignore
+
 
 
                                         //                                        gunNamespace

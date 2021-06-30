@@ -20,7 +20,7 @@ module TaskName =
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
 
         let taskState = Store.useValue (Selectors.Task.taskState taskId)
-        let cellSize = Store.useValue Atoms.cellSize
+        let cellSize = Store.useValue Atoms.User.cellSize
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
 
         let editTask =
@@ -28,10 +28,10 @@ module TaskName =
                 (fun getter setter _ ->
                     promise {
                         let deviceInfo = Store.value getter Selectors.deviceInfo
-                        if deviceInfo.IsMobile then Store.set setter Atoms.leftDock None
-                        Store.set setter Atoms.rightDock (Some TempUI.DockType.Task)
-                        let databaseId = Store.value getter (Selectors.Task.databaseId taskId)
-                        Store.set setter (Atoms.uiFlag Atoms.UIFlagType.Task) (Atoms.UIFlag.Task (databaseId, taskId))
+                        if deviceInfo.IsMobile then Store.set setter Atoms.User.leftDock None
+                        Store.set setter Atoms.User.rightDock (Some TempUI.DockType.Task)
+                        let databaseId = Store.value getter (Atoms.Task.databaseId taskId)
+                        Store.set setter (Atoms.User.uiFlag UIFlagType.Task) (UIFlag.Task (databaseId, taskId))
                     }),
                 [|
                     box taskId

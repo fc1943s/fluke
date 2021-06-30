@@ -14,8 +14,8 @@ module AttachmentIndicator =
 
     [<ReactComponent>]
     let AttachmentIndicator (attachments: (FlukeDateTime * Attachment) list) =
-        let cellSize = Store.useValue Atoms.cellSize
-        let color = Store.useValue Atoms.color
+        let cellSize = Store.useValue Atoms.User.cellSize
+        let color = Store.useValue Atoms.User.color
 
         let tooltipContainerRef = React.useElementRef ()
 

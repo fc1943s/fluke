@@ -12,7 +12,7 @@ module RootWrapper =
     [<ReactComponent>]
     let ThemeLoader children =
         let theme = Theme.useTheme ()
-        let darkMode = Store.useValue Atoms.darkMode
+        let darkMode = Store.useValue Atoms.User.darkMode
 
         Chakra.provider
             (fun x -> x.theme <- theme)

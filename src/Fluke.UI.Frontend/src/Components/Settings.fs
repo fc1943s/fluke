@@ -14,14 +14,14 @@ open Fluke.Shared
 module Settings =
     [<ReactComponent>]
     let rec Settings props =
-        let weekStart, setWeekStart = Store.useState Atoms.weekStart
-        let color, setColor = Store.useState Atoms.color
+        let weekStart, setWeekStart = Store.useState Atoms.User.weekStart
+        let color, setColor = Store.useState Atoms.User.color
         let debug = Store.useValue Atoms.debug
 
         Accordion.Accordion
             {|
                 Props = props
-                Atom = Atoms.accordionFlag (TextKey (nameof Settings))
+                Atom = Atoms.User.accordionFlag (TextKey (nameof Settings))
                 Items =
                     [
                         "User",
@@ -33,7 +33,9 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (Store.InputAtom (Store.AtomReference.Atom Atoms.dayStart))
+                                                    Some (
+                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.dayStart)
+                                                    )
 
                                                 x.inputFormat <- Some Input.InputFormat.Time
                                                 x.onFormat <- Some FlukeTime.Stringify
@@ -61,7 +63,9 @@ module Settings =
                                             fun x ->
                                                 x.atom <-
                                                     Some (
-                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.sessionDuration)
+                                                        Store.InputAtom (
+                                                            Store.AtomReference.Atom Atoms.User.sessionDuration
+                                                        )
                                                     )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
@@ -85,7 +89,7 @@ module Settings =
                                                 x.atom <-
                                                     Some (
                                                         Store.InputAtom (
-                                                            Store.AtomReference.Atom Atoms.sessionBreakDuration
+                                                            Store.AtomReference.Atom Atoms.User.sessionBreakDuration
                                                         )
                                                     )
 
@@ -119,7 +123,8 @@ module Settings =
                                                                         x.atom <-
                                                                             Some (
                                                                                 Store.InputAtom (
-                                                                                    Store.AtomReference.Atom Atoms.color
+                                                                                    Store.AtomReference.Atom
+                                                                                        Atoms.User.color
                                                                                 )
                                                                             )
 
@@ -200,7 +205,7 @@ module Settings =
                                                                             Some (
                                                                                 Store.InputAtom (
                                                                                     Store.AtomReference.Atom
-                                                                                        Atoms.weekStart
+                                                                                        Atoms.User.weekStart
                                                                                 )
                                                                             )
 
@@ -290,7 +295,9 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (Store.InputAtom (Store.AtomReference.Atom Atoms.daysBefore))
+                                                    Some (
+                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.daysBefore)
+                                                    )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days Before"
@@ -302,7 +309,9 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (Store.InputAtom (Store.AtomReference.Atom Atoms.daysAfter))
+                                                    Some (
+                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.daysAfter)
+                                                    )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days After"
@@ -314,7 +323,9 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (Store.InputAtom (Store.AtomReference.Atom Atoms.cellSize))
+                                                    Some (
+                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.cellSize)
+                                                    )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Cell Size"
@@ -325,7 +336,9 @@ module Settings =
                                         CustomProps =
                                             fun x ->
                                                 x.atom <-
-                                                    Some (Store.InputAtom (Store.AtomReference.Atom Atoms.fontSize))
+                                                    Some (
+                                                        Store.InputAtom (Store.AtomReference.Atom Atoms.User.fontSize)
+                                                    )
 
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Font Size"
@@ -333,14 +346,14 @@ module Settings =
 
                                 CheckboxInput.CheckboxInput
                                     {|
-                                        Atom = Atoms.darkMode
+                                        Atom = Atoms.User.darkMode
                                         Label = Some "Dark Mode"
                                         Props = fun x -> x.alignSelf <- "flex-start"
                                     |}
 
                                 CheckboxInput.CheckboxInput
                                     {|
-                                        Atom = Atoms.systemUiFont
+                                        Atom = Atoms.User.systemUiFont
                                         Label = Some "System UI Font"
                                         Props = fun x -> x.alignSelf <- "flex-start"
                                     |}

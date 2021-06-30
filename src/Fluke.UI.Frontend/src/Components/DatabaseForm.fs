@@ -32,11 +32,12 @@ module DatabaseForm =
                         match databaseName with
                         | DatabaseName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let databaseIdSet = Store.value getter Atoms.databaseIdSet
+                            let databaseIdAtoms = Store.value getter Selectors.asyncDatabaseIdAtoms
 
                             let databaseNames =
-                                databaseIdSet
-                                |> Set.toList
+                                databaseIdAtoms
+                                |> Array.toList
+                                |> List.map (Store.value getter)
                                 |> List.filter
                                     (fun databaseId' ->
                                         databaseId <> Database.Default.Id
@@ -74,7 +75,7 @@ module DatabaseForm =
 
                                     Store.readWriteReset setter (Atoms.Database.name databaseId)
 
-                                    Store.set setter (Atoms.uiFlag Atoms.UIFlagType.Database) Atoms.UIFlag.None
+                                    Store.set setter (Atoms.User.uiFlag UIFlagType.Database) UIFlag.None
 
                                     do! onSave database
                             | None -> ()
@@ -97,7 +98,7 @@ module DatabaseForm =
                         x.flex <- "1"
                         x.overflowY <- "auto"
                         x.flexBasis <- 0
-                Atom = Atoms.accordionFlag (TextKey (nameof DatabaseForm))
+                Atom = Atoms.User.accordionFlag (TextKey (nameof DatabaseForm))
                 Items =
                     [
                         $"""{if databaseId = Database.Default.Id then "Add" else "Edit"} Database""",
@@ -196,14 +197,13 @@ module DatabaseForm =
     [<ReactComponent>]
     let DatabaseFormWrapper () =
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
-        let setDatabaseIdSet = Store.useSetStatePrev Atoms.databaseIdSet
-        let setRightDock = Store.useSetState Atoms.rightDock
+        let setRightDock = Store.useSetState Atoms.User.rightDock
 
-        let databaseUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Database)
+        let databaseUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Database)
 
         let databaseId =
             match databaseUIFlag with
-            | Atoms.UIFlag.Database databaseId -> databaseId
+            | UIFlag.Database databaseId -> databaseId
             | _ -> Database.Default.Id
 
         DatabaseForm
@@ -211,10 +211,5 @@ module DatabaseForm =
             (fun database ->
                 promise {
                     do! hydrateDatabase (Store.AtomScope.ReadOnly, database)
-
-                    if database.Id <> databaseId then
-                        JS.setTimeout (fun () -> setDatabaseIdSet (Set.add database.Id)) 0
-                        |> ignore
-
                     setRightDock None
                 })

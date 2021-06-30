@@ -13,7 +13,7 @@ module InformationView =
         let groupIndentationLength = 20
 
         let tasksByInformationKind = Store.useValue Selectors.Session.tasksByInformationKind
-        let cellSize = Store.useValue Atoms.cellSize
+        let cellSize = Store.useValue Atoms.User.cellSize
 
         Chakra.flex
             (fun x -> x.flex <- "1")

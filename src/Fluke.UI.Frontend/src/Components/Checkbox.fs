@@ -9,7 +9,7 @@ open Fluke.UI.Frontend.State
 module Checkbox =
     [<ReactComponent>]
     let Checkbox (label: string option) (props: Chakra.IChakraProps -> unit) =
-        let darkMode = Store.useValue Atoms.darkMode
+        let darkMode = Store.useValue Atoms.User.darkMode
 
         Chakra.checkbox
             (fun x ->

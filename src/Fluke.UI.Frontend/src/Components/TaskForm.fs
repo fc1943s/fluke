@@ -38,13 +38,13 @@ module TaskForm =
                 |]
             )
 
-        let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.uiFlag Atoms.UIFlagType.Task)
+        let taskUIFlag, setTaskUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Task)
 
         let taskDatabaseId =
             React.useMemo (
                 (fun () ->
                     match taskUIFlag with
-                    | Atoms.UIFlag.Task (databaseId, taskId') when taskId' = taskId -> databaseId
+                    | UIFlag.Task (databaseId, taskId') when taskId' = taskId -> databaseId
                     | _ -> Database.Default.Id),
                 [|
                     box taskUIFlag
@@ -114,7 +114,7 @@ module TaskForm =
                             Store.readWriteReset setter (Atoms.Task.name taskId)
                             Store.readWriteReset setter (Atoms.Task.information taskId)
                             Store.readWriteReset setter (Atoms.Task.scheduling taskId)
-                            Store.set setter (Atoms.uiFlag Atoms.UIFlagType.Task) Atoms.UIFlag.None
+                            Store.set setter (Atoms.User.uiFlag UIFlagType.Task) UIFlag.None
 
                             do! onSave task
                     }),
@@ -133,7 +133,7 @@ module TaskForm =
                         x.flex <- "1"
                         x.overflowY <- "auto"
                         x.flexBasis <- 0
-                Atom = Atoms.accordionFlag (TextKey (nameof TaskForm))
+                Atom = Atoms.User.accordionFlag (TextKey (nameof TaskForm))
                 Items =
                     [
                         $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task""",
@@ -152,7 +152,7 @@ module TaskForm =
                                 DatabaseSelector.DatabaseSelector
                                     taskDatabaseId
                                     taskId
-                                    (fun databaseId -> setTaskUIFlag (Atoms.UIFlag.Task (databaseId, taskId)))
+                                    (fun databaseId -> setTaskUIFlag (UIFlag.Task (databaseId, taskId)))
 
                                 InformationSelector.InformationSelector
                                     {|
@@ -290,27 +290,31 @@ module TaskForm =
     let TaskFormWrapper () =
         let hydrateTaskState = Hydrate.useHydrateTaskState ()
         let hydrateTask = Hydrate.useHydrateTask ()
-        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
-        let setRightDock = Store.useSetState Atoms.rightDock
 
-        let taskUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Task)
+        let selectedTaskIdArray =
+            Selectors.Session.selectedTaskIdAtoms
+            |> Store.useValue
+            |> Store.waitForAll
+            |> Store.useValue
+
+        let setRightDock = Store.useSetState Atoms.User.rightDock
+
+        let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
 
         let taskDatabaseId =
             match taskUIFlag with
-            | Atoms.UIFlag.Task (databaseId, _) -> databaseId
+            | UIFlag.Task (databaseId, _) -> databaseId
             | _ -> Database.Default.Id
-
-        let setTaskIdSet = Store.useSetStatePrev (Atoms.Database.taskIdSet taskDatabaseId)
 
         let taskId =
             React.useMemo (
                 (fun () ->
                     match taskUIFlag with
-                    | Atoms.UIFlag.Task (_, taskId) when selectedTaskIdSet.Contains taskId -> taskId
+                    | UIFlag.Task (_, taskId) when selectedTaskIdArray |> Array.contains taskId -> taskId
                     | _ -> Task.Default.Id),
                 [|
                     box taskUIFlag
-                    box selectedTaskIdSet
+                    box selectedTaskIdArray
                 |]
             )
 
@@ -329,9 +333,6 @@ module TaskForm =
                             }
 
                         do! hydrateTaskState (Store.AtomScope.ReadOnly, taskDatabaseId, taskState)
-
-                        JS.setTimeout (fun () -> setTaskIdSet (Set.add task.Id)) 0
-                        |> ignore
                     else
                         do! hydrateTask (Store.AtomScope.ReadOnly, taskDatabaseId, task)
 

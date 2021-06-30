@@ -13,8 +13,8 @@ module CellBorder =
 
     [<ReactComponent>]
     let CellBorder (taskId: TaskId) (date: FlukeDate) =
-        let weekStart = Store.useValue Atoms.weekStart
-        let cellSize = Store.useValue Atoms.cellSize
+        let weekStart = Store.useValue Atoms.User.weekStart
+        let cellSize = Store.useValue Atoms.User.cellSize
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
 
         match (weekStart, date) with

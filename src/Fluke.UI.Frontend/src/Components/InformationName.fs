@@ -13,22 +13,16 @@ module InformationName =
     [<ReactComponent>]
     let InformationName information =
         let attachments = Store.useValue (Selectors.Information.attachments information)
-        let cellSize = Store.useValue Atoms.cellSize
+        let cellSize = Store.useValue Atoms.User.cellSize
 
         let detailsClick =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
                         let deviceInfo = Store.value getter Selectors.deviceInfo
-
-                        if deviceInfo.IsMobile then Store.set setter Atoms.leftDock None
-
-                        Store.set setter Atoms.rightDock (Some TempUI.DockType.Information)
-
-                        Store.set
-                            setter
-                            (Atoms.uiFlag Atoms.UIFlagType.Information)
-                            (information |> Atoms.UIFlag.Information)
+                        if deviceInfo.IsMobile then Store.set setter Atoms.User.leftDock None
+                        Store.set setter Atoms.User.rightDock (Some TempUI.DockType.Information)
+                        Store.set setter (Atoms.User.uiFlag UIFlagType.Information) (information |> UIFlag.Information)
                     }),
                 [|
                     box information

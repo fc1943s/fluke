@@ -55,7 +55,7 @@ module ShiftListener =
             |]
             (fun _ setter e ->
                 promise {
-                    let setView value = Store.set setter Atoms.view value
+                    let setView value = Store.set setter Atoms.User.view value
 
                     match e.ctrlKey, e.altKey, e.key with
                     | true, true, "I" ->
@@ -121,7 +121,7 @@ module SelectionListener =
 
 
 module PasteListener =
-    type Browser.Types.Clipboard with
+    type Clipboard with
         [<Emit "$0.read()">]
         member _.read () = jsNative
 

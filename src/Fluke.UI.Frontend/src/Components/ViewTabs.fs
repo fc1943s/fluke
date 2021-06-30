@@ -12,8 +12,8 @@ module ViewTabs =
 
     [<ReactComponent>]
     let ViewTabs () =
-        let showViewOptions = Store.useValue Atoms.showViewOptions
-        let view, setView = Store.useState Atoms.view
+        let showViewOptions = Store.useValue Atoms.User.showViewOptions
+        let view, setView = Store.useState Atoms.User.view
         let filteredTaskIdSet = Store.useValue Selectors.Session.filteredTaskIdSet
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
 
@@ -152,10 +152,10 @@ module ViewTabs =
                                         Body =
                                             [
                                                 MenuItemToggle.MenuItemToggle
-                                                    Atoms.hideSchedulingOverlay
+                                                    Atoms.User.hideSchedulingOverlay
                                                     "Hide Scheduling Overlay"
 
-                                                MenuItemToggle.MenuItemToggle Atoms.showViewOptions "Show View Options"
+                                                MenuItemToggle.MenuItemToggle Atoms.User.showViewOptions "Show View Options"
                                             ]
                                         MenuListProps = fun _ -> ()
                                     |}
@@ -171,7 +171,7 @@ module ViewTabs =
                                 [
                                     CheckboxInput.CheckboxInput
                                         {|
-                                            Atom = Atoms.filterTasksByView
+                                            Atom = Atoms.User.filterTasksByView
                                             Label = Some "Filter tasks by view"
                                             Props = (fun _ -> ())
                                         |}
@@ -182,7 +182,7 @@ module ViewTabs =
                                     Icon = Icons.bs.BsSearch |> Icons.render
                                     CustomProps =
                                         fun x ->
-                                            x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Atoms.searchText))
+                                            x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Atoms.User.searchText))
                                     Props =
                                         fun x ->
                                             x.autoFocus <- true

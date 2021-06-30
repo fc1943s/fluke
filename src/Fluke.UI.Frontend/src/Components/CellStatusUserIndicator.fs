@@ -9,8 +9,8 @@ open Fluke.Shared
 module CellStatusUserIndicator =
     [<ReactComponent>]
     let CellStatusUserIndicator () =
-        let color = Store.useValue Atoms.color
-        let cellSize = Store.useValue Atoms.cellSize
+        let color = Store.useValue Atoms.User.color
+        let cellSize = Store.useValue Atoms.User.cellSize
 
         Chakra.box
             (fun x ->

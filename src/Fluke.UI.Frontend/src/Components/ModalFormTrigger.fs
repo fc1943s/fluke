@@ -10,16 +10,16 @@ open Fable.React
 module ModalFormTrigger =
     [<ReactComponent>]
     let ModalFormTrigger
-        (input: {| UIFlagType: Atoms.UIFlagType
-                   UIFlagValue: Atoms.UIFlag
+        (input: {| UIFlagType: UIFlagType
+                   UIFlagValue: UIFlag
                    Trigger: (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement |})
         =
         let onTrigger =
             Store.useCallback (
                 (fun _ setter _ ->
                     promise {
-                        Store.set setter (Atoms.uiFlag input.UIFlagType) input.UIFlagValue
-                        Store.set setter (Atoms.uiVisibleFlag input.UIFlagType) true
+                        Store.set setter (Atoms.User.uiFlag input.UIFlagType) input.UIFlagValue
+                        Store.set setter (Atoms.User.uiVisibleFlag input.UIFlagType) true
                     }),
                 [||]
             )

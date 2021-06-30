@@ -83,6 +83,7 @@ module Gun =
             abstract get : string -> IGunChainReference
             abstract map : unit -> IGunChainReference
             abstract off : unit -> IGunChainReference
+            abstract back : unit -> IGunChainReference
             abstract on : ('T -> string -> unit) -> unit
             abstract once : ('T -> string -> unit) -> unit
             abstract on : event: string * (unit -> unit) -> unit
@@ -229,10 +230,12 @@ module Gun =
             (fun res _err ->
                 gun.put
                     value
-                    (fun ack node ->
-                        match ack with
-                        | { err = Some _ } -> res None
-                        | _ -> res (Some (ack, node)))
+                    (fun ack _node ->
+                        if ack.ok = Some 1 && ack.err.IsNone then
+                            res true
+                        else
+                            Browser.Dom.console.error $"Gun.put error. value={value} ack={JS.JSON.stringify ack} "
+                            res false)
                 |> ignore)
 
 

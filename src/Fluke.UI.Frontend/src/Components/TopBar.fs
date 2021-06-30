@@ -18,9 +18,9 @@ module TopBar =
             Store.useCallback (
                 (fun _ setter _ ->
                     promise {
-                        Store.set setter Atoms.leftDock None
-                        Store.set setter Atoms.rightDock None
-                        Store.set setter Atoms.view Atoms.viewDefault
+                        Store.set setter Atoms.User.leftDock None
+                        Store.set setter Atoms.User.rightDock None
+                        Store.set setter Atoms.User.view UserState.Default.View
                     }),
                 [||]
             )

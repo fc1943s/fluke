@@ -17,7 +17,7 @@ module PositionUpdater =
             1000
             (fun getter setter ->
                 promise {
-                    let selectedDatabaseIdSet = Store.value getter Atoms.selectedDatabaseIdSet
+                    let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
                     let selectedDatabasePositions =
                         selectedDatabaseIdSet

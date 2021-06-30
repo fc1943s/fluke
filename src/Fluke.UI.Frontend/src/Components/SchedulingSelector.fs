@@ -582,7 +582,7 @@ module SchedulingSelector =
 
     [<ReactComponent>]
     let SchedulingSelector taskId =
-        let weekStart = Store.useValue Atoms.weekStart
+        let weekStart = Store.useValue Atoms.User.weekStart
 
         let schedulingFieldOptions =
             Store.Hooks.useAtomFieldOptions

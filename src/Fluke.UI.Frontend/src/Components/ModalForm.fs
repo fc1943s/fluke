@@ -1,28 +1,28 @@
 namespace Fluke.UI.Frontend.Components
 
+open Fable.Core.JsInterop
 open Feliz
 open Fable.Core
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fable.React
-open Fable.Core.JsInterop
 
 
 module ModalForm =
     [<ReactComponent>]
     let ModalForm
-        (input: {| UIFlagType: Atoms.UIFlagType
-                   Content: Atoms.UIFlag * (unit -> JS.Promise<unit>) * (Store.GetFn * Store.SetFn) -> ReactElement |})
+        (input: {| UIFlagType: UIFlagType
+                   Content: UIFlag * (unit -> JS.Promise<unit>) * (Store.GetFn * Store.SetFn) -> ReactElement |})
         =
         let isTesting = Store.useValue Store.Atoms.isTesting
-        let formIdFlag, setFormIdFlag = Store.useState (Atoms.uiFlag input.UIFlagType)
-        let formVisibleFlag, setFormVisibleFlag = Store.useState (Atoms.uiVisibleFlag input.UIFlagType)
+        let formIdFlag, setFormIdFlag = Store.useState (Atoms.User.uiFlag input.UIFlagType)
+        let formVisibleFlag, setFormVisibleFlag = Store.useState (Atoms.User.uiVisibleFlag input.UIFlagType)
 
         let onHide =
             Store.useCallback (
                 (fun _ _ _ ->
                     promise {
-                        setFormIdFlag Atoms.UIFlag.None
+                        setFormIdFlag UIFlag.None
                         setFormVisibleFlag false
                     }),
                 [||]

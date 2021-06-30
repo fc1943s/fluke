@@ -23,11 +23,30 @@ module StatusBar =
         str $"Now: {now.ToString ()}"
 
     [<ReactComponent>]
+    let UserIndicator () =
+        let username = Store.useValue Store.Atoms.username
+
+        Chakra.flex
+            (fun _ -> ())
+            [
+                Chakra.icon
+                    (fun x ->
+                        x.``as`` <- Icons.fa.FaRegUser
+                        x.marginRight <- "4px")
+                    []
+
+                match username with
+                | Some (Username username) -> str $"User: {username}"
+                | _ -> nothing
+            ]
+
+
+    [<ReactComponent>]
     let SessionIndicator () =
         let activeSessions = Store.useValue Selectors.Session.activeSessions
 
-        let (Minute sessionDuration) = Store.useValue Atoms.sessionDuration
-        let (Minute sessionBreakDuration) = Store.useValue Atoms.sessionBreakDuration
+        let (Minute sessionDuration) = Store.useValue Atoms.User.sessionDuration
+        let (Minute sessionBreakDuration) = Store.useValue Atoms.User.sessionBreakDuration
 
         Chakra.flex
             (fun _ -> ())
@@ -157,7 +176,6 @@ module StatusBar =
 
     [<ReactComponent>]
     let TasksIndicator () =
-        let databaseIdSet = Store.useValue Atoms.databaseIdSet
         let informationSet = Store.useValue Selectors.Session.informationSet
         let informationStateList = Store.useValue Selectors.Session.informationStateList
         let taskStateList = Store.useValue Selectors.Session.taskStateList
@@ -170,15 +188,14 @@ module StatusBar =
             |> Store.waitForAll
             |> Store.useValue
 
-        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
+        let selectedTaskIdAtoms = Store.useValue Selectors.Session.selectedTaskIdAtoms
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
-
-        let lastTotal = Store.useValue Atoms.lastTotal
+        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
 
         let detailsText, total =
             React.useMemo (
                 (fun () ->
-                    let database = databaseIdSet.Count
+                    let database = databaseIdAtoms.Length
                     let information = informationSet.Count
 
                     let informationAttachment =
@@ -237,7 +254,6 @@ module StatusBar =
                             $"Cell Status: {cellStatus}"
                             $"Cell Attachment: {cellAttachment}"
                             $"Total: {total}"
-                            $"Last Total: {lastTotal}"
                         ]
                         |> List.map str
                         |> List.intersperse (br [])
@@ -245,12 +261,11 @@ module StatusBar =
 
                     detailsText, total),
                 [|
-                    box lastTotal
                     box cellAttachmentMapArray
                     box informationSet
                     box informationStateList
                     box taskStateList
-                    box databaseIdSet
+                    box databaseIdAtoms
                 |]
             )
 
@@ -269,14 +284,13 @@ module StatusBar =
                 Tooltip.wrap
                     detailsText
                     [
-                        str $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdSet.Count} visible (Total: {total})"
+                        str $"Tasks: {sortedTaskIdList.Length} of {selectedTaskIdAtoms.Length} visible (Total: {total})"
                     ]
             //                        | _ -> str "Tasks: Loading tasks"
             ]
 
     [<ReactComponent>]
     let StatusBar () =
-        let username = Store.useValue Store.Atoms.username
         let position = Store.useValue Atoms.position
 
         Chakra.simpleGrid
@@ -297,19 +311,12 @@ module StatusBar =
                 x.padding <- "7px"
                 x.spacing <- "6px")
             [
-                Chakra.flex
-                    (fun _ -> ())
+                React.suspense (
                     [
-                        Chakra.icon
-                            (fun x ->
-                                x.``as`` <- Icons.fa.FaRegUser
-                                x.marginRight <- "4px")
-                            []
-
-                        match username with
-                        | Some (Username username) -> str $"User: {username}"
-                        | _ -> nothing
-                    ]
+                        UserIndicator ()
+                    ],
+                    LoadingSpinner.InlineLoadingSpinner ()
+                )
 
                 React.suspense (
                     [

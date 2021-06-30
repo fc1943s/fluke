@@ -11,7 +11,7 @@ module TaskPriority =
     [<ReactComponent>]
     let TaskPriority taskId =
         let priority = Store.useValue (Atoms.Task.priority taskId)
-        let cellSize = Store.useValue Atoms.cellSize
+        let cellSize = Store.useValue Atoms.User.cellSize
 
         let priorityText =
             priority

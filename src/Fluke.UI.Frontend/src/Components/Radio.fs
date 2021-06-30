@@ -8,7 +8,7 @@ open Fluke.UI.Frontend.State
 module Radio =
     [<ReactComponent>]
     let Radio (props: Chakra.IChakraProps -> unit) children =
-        let darkMode = Store.useValue Atoms.darkMode
+        let darkMode = Store.useValue Atoms.User.darkMode
 
         Chakra.stack
             (fun x ->

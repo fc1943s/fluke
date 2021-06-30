@@ -255,10 +255,10 @@ module Databases =
         let username = Store.useValue Store.Atoms.username
         let isTesting = Store.useValue Store.Atoms.isTesting
 
-        let hideTemplates = Store.useValue Atoms.hideTemplates
+        let hideTemplates = Store.useValue Atoms.User.hideTemplates
         let hideTemplatesCache = React.useRef<bool option> None
 
-        let expandedDatabaseIdSet, setExpandedDatabaseIdSet = Store.useState Atoms.expandedDatabaseIdSet
+        let expandedDatabaseIdSet, setExpandedDatabaseIdSet = Store.useState Atoms.User.expandedDatabaseIdSet
 
         React.useEffect (
             (fun () ->
@@ -276,13 +276,16 @@ module Databases =
             |]
         )
 
-        let databaseIdSet = Store.useValue Atoms.databaseIdSet
+        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
+
+        let databaseIdList =
+            databaseIdAtoms
+            |> Store.waitForAll
+            |> Store.useValue
 
         let databaseList =
-            databaseIdSet
-            |> Set.toList
-            |> List.map Selectors.Database.database
-            |> List.toArray
+            databaseIdList
+            |> Array.map Selectors.Database.database
             |> Store.waitForAll
             |> Store.useValue
 
@@ -303,7 +306,7 @@ module Databases =
                 |]
             )
 
-        let selectedDatabaseIdSet, setSelectedDatabaseIdSet = Store.useState Atoms.selectedDatabaseIdSet
+        let selectedDatabaseIdSet, setSelectedDatabaseIdSet = Store.useState Atoms.User.selectedDatabaseIdSet
 
         let nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray =
             React.useMemo (

@@ -13,8 +13,8 @@ module SoundPlayer =
     [<ReactComponent>]
     let SoundPlayer () =
         let oldActiveSessions = React.useRef []
-        let sessionDuration = Store.useValue Atoms.sessionDuration
-        let sessionBreakDuration = Store.useValue Atoms.sessionBreakDuration
+        let sessionDuration = Store.useValue Atoms.User.sessionDuration
+        let sessionBreakDuration = Store.useValue Atoms.User.sessionBreakDuration
         let activeSessions = Store.useValue Selectors.Session.activeSessions
 
         React.useEffect (

@@ -20,11 +20,11 @@ module CellMenu =
         let isTesting = Store.useValue Store.Atoms.isTesting
         let username = Store.useValue Store.Atoms.username
         let toast = Chakra.useToast ()
-        let cellSize = Store.useValue Atoms.cellSize
+        let cellSize = Store.useValue Atoms.User.cellSize
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
         let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
-        let dayStart = Store.useValue Atoms.dayStart
-        let darkMode = Store.useValue Atoms.darkMode
+        let dayStart = Store.useValue Atoms.User.dayStart
+        let darkMode = Store.useValue Atoms.User.darkMode
 
         let postponedUntil, setPostponedUntil =
             React.useState (
@@ -38,8 +38,8 @@ module CellMenu =
             | UserStatus (_, Postponed (Some until)) -> until |> FlukeTime.Stringify
             | _ -> "later"
 
-        let setRightDock = Store.useSetState Atoms.rightDock
-        let setCellUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Cell)
+        let setRightDock = Store.useSetState Atoms.User.rightDock
+        let setCellUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Cell)
 
         let onClick =
             Store.useCallback (
@@ -149,7 +149,7 @@ module CellMenu =
                                         (fun () ->
                                             promise {
                                                 setRightDock (Some TempUI.DockType.Cell)
-                                                setCellUIFlag (Atoms.UIFlag.Cell (taskId, dateId))
+                                                setCellUIFlag (UIFlag.Cell (taskId, dateId))
                                                 onClose ()
                                             }))
                             ]

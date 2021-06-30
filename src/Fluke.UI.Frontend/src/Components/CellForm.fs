@@ -41,7 +41,7 @@ module CellForm =
         Accordion.Accordion
             {|
                 Props = fun _ -> ()
-                Atom = Atoms.accordionFlag (TextKey (nameof CellForm))
+                Atom = Atoms.User.accordionFlag (TextKey (nameof CellForm))
                 Items =
                     [
                         "Info",
@@ -73,20 +73,24 @@ module CellForm =
 
     [<ReactComponent>]
     let CellFormWrapper () =
-        let cellUIFlag = Store.useValue (Atoms.uiFlag Atoms.UIFlagType.Cell)
+        let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
 
-        let selectedTaskIdSet = Store.useValue Selectors.Session.selectedTaskIdSet
+        let selectedTaskIdArray =
+            Selectors.Session.selectedTaskIdAtoms
+            |> Store.useValue
+            |> Store.waitForAll
+            |> Store.useValue
 
         let taskId, dateId =
             React.useMemo (
                 (fun () ->
                     match cellUIFlag with
-                    | Atoms.UIFlag.Cell (taskId, dateId) when selectedTaskIdSet.Contains taskId ->
+                    | UIFlag.Cell (taskId, dateId) when selectedTaskIdArray |> Array.contains taskId ->
                         Some taskId, Some dateId
                     | _ -> None, None),
                 [|
                     box cellUIFlag
-                    box selectedTaskIdSet
+                    box selectedTaskIdArray
                 |]
             )
 

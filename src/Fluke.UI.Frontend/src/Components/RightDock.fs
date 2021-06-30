@@ -16,8 +16,8 @@ module RightDock =
     [<ReactComponent>]
     let RightDock () =
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let setLeftDock = Store.useSetState Atoms.leftDock
-        let rightDock = Store.useValue Atoms.rightDock
+        let setLeftDock = Store.useSetState Atoms.User.leftDock
+        let rightDock = Store.useValue Atoms.User.rightDock
 
         let items =
             React.useMemo (
@@ -143,7 +143,7 @@ module RightDock =
                                         Name = item.Name
                                         Icon = item.Icon
                                         RightIcons = item.RightIcons
-                                        Atom = Atoms.rightDock
+                                        Atom = Atoms.User.rightDock
                                         children =
                                             [
                                                 React.suspense (
@@ -185,7 +185,7 @@ module RightDock =
                                                     OnClick =
                                                         fun _ ->
                                                             promise { if deviceInfo.IsMobile then setLeftDock None }
-                                                    Atom = Atoms.rightDock
+                                                    Atom = Atoms.User.rightDock
                                                     Props = fun _ -> ()
                                                 |})
                             ]

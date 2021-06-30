@@ -14,10 +14,10 @@ module LeftDock =
     [<ReactComponent>]
     let LeftDock () =
         let isTesting = Store.useValue Store.Atoms.isTesting
-        let leftDock, setLeftDock = Store.useState Atoms.leftDock
-        let setRightDock = Store.useSetState Atoms.rightDock
+        let leftDock, setLeftDock = Store.useState Atoms.User.leftDock
+        let setRightDock = Store.useSetState Atoms.User.rightDock
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let setDatabaseUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Database)
+        let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Database)
 
         let items, itemsMap =
             React.useMemo (
@@ -75,7 +75,7 @@ module LeftDock =
 
                                                                                 setRightDock (Some DockType.Database)
 
-                                                                                setDatabaseUIFlag Atoms.UIFlag.None
+                                                                                setDatabaseUIFlag UIFlag.None
                                                                             }
                                                         |}
                                                 ]
@@ -85,7 +85,7 @@ module LeftDock =
                                             "Options",
                                             Icons.bs.BsThreeDotsVertical |> Icons.render,
                                             [
-                                                MenuItemToggle.MenuItemToggle Atoms.hideTemplates "Hide Templates"
+                                                MenuItemToggle.MenuItemToggle Atoms.User.hideTemplates "Hide Templates"
                                             ]
                                         )
                                     ]
@@ -135,7 +135,7 @@ module LeftDock =
                                                     OnClick =
                                                         fun _ ->
                                                             promise { if deviceInfo.IsMobile then setRightDock None }
-                                                    Atom = Atoms.leftDock
+                                                    Atom = Atoms.User.leftDock
                                                     Props = fun x -> x.tabIndex <- items.Length - i
                                                 |})
                             ]
@@ -184,7 +184,7 @@ module LeftDock =
                                         Name = item.Name
                                         Icon = item.Icon
                                         RightIcons = item.RightIcons
-                                        Atom = Atoms.leftDock
+                                        Atom = Atoms.User.leftDock
                                         children =
                                             [
                                                 React.suspense (

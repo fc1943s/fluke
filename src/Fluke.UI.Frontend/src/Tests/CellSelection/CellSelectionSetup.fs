@@ -135,33 +135,29 @@ module CellSelectionSetup =
 
 
             set Store.Atoms.username (Some Templates.templatesUser.Username)
-            set Atoms.color (Some "#000000")
-            set Atoms.view View.View.Priority
-            set Atoms.daysBefore 2
-            set Atoms.daysAfter 2
+            set Atoms.User.color (Some "#000000")
+            set Atoms.User.view View.View.Priority
+            set Atoms.User.daysBefore 2
+            set Atoms.User.daysAfter 2
             set Atoms.position (Some dslTemplate.Position)
 
             do! Hydrate.hydrateDatabase getFn setFn (Store.AtomScope.ReadOnly, databaseState.Database)
 
-            set Atoms.databaseIdSet (Set.singleton databaseId)
-
             do!
                 databaseState.TaskStateMap
                 |> Seq.map
-                    (fun (KeyValue (taskId, taskState)) ->
+                    (fun (KeyValue (_taskId, taskState)) ->
                         promise {
                             do!
                                 Hydrate.hydrateTaskState
                                     getFn
                                     setFn
                                     (Store.AtomScope.ReadOnly, databaseState.Database.Id, taskState)
-
-                            Store.change setFn (Atoms.Database.taskIdSet databaseId) (Set.add taskId)
                         })
                 |> Promise.Parallel
                 |> Promise.ignore
 
-            set Atoms.selectedDatabaseIdSet (Set.singleton databaseId)
+            set Atoms.User.selectedDatabaseIdSet (Set.singleton databaseId)
         }
 
     let getApp () =

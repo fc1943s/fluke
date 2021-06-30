@@ -27,9 +27,9 @@ module Hydrate =
     let useHydrateDatabase () =
         Store.useCallback (hydrateDatabase, [||])
 
-    let hydrateTask _ setter (atomScope, _databaseId, task: Task) =
+    let hydrateTask _ setter (atomScope, databaseId, task: Task) =
         promise {
-            //            setter.scopedSet username atomScope (Atoms.Task.databaseId, task.Id, databaseId)
+            Store.scopedSet setter atomScope (Atoms.Task.databaseId, task.Id, databaseId)
             Store.scopedSet setter atomScope (Atoms.Task.name, task.Id, task.Name)
             Store.scopedSet setter atomScope (Atoms.Task.information, task.Id, task.Information)
             Store.scopedSet setter atomScope (Atoms.Task.duration, task.Id, task.Duration)
@@ -144,13 +144,13 @@ module Hydrate =
                         |> Seq.map (fun taskState -> hydrateTaskState (atomScope, databaseState.Database.Id, taskState))
                         |> Promise.Parallel
                         |> Promise.ignore
-
-                    Store.set
-                        setter
-                        (Atoms.Database.taskIdSet databaseState.Database.Id)
-                        (databaseState.TaskStateMap
-                         |> Map.keys
-                         |> Set.ofSeq)
+                //
+//                    Store.set
+//                        setter
+//                        (Atoms.Database.taskIdSet databaseState.Database.Id)
+//                        (databaseState.TaskStateMap
+//                         |> Map.keys
+//                         |> Set.ofSeq)
                 }),
             [|
                 box hydrateDatabase
@@ -162,7 +162,7 @@ module Hydrate =
         let hydrateDatabaseState = useHydrateDatabaseState ()
 
         Store.useCallback (
-            (fun _ set () ->
+            (fun _ _ () ->
                 promise {
                     let databaseStateMap = TestUser.fetchTemplatesDatabaseStateMap ()
 
@@ -173,7 +173,7 @@ module Hydrate =
                         |> Promise.Parallel
                         |> Promise.ignore
 
-                    Store.change set Atoms.databaseIdSet (Set.union (databaseStateMap |> Map.keys |> Set.ofSeq))
+                //                    Store.change set Atoms.databaseIdSet (Set.union (databaseStateMap |> Map.keys |> Set.ofSeq))
                 }),
             [|
                 box hydrateDatabaseState
@@ -188,11 +188,12 @@ module Hydrate =
                 promise {
                     let database = Store.value getter (Selectors.Database.database databaseId)
 
-                    let taskIdSet = Store.value getter (Atoms.Database.taskIdSet databaseId)
+                    let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
 
                     let taskStateList =
-                        taskIdSet
-                        |> Set.toList
+                        taskIdAtoms
+                        |> Array.toList
+                        |> List.map (Store.value getter)
                         |> List.map Selectors.Task.taskState
                         |> List.map (Store.value getter)
 
@@ -248,7 +249,7 @@ module Hydrate =
         let toast = Chakra.useToast ()
 
         Store.useCallback (
-            (fun getter setter files ->
+            (fun getter _ files ->
                 promise {
                     let username = Store.value getter Store.Atoms.username
 
@@ -325,8 +326,7 @@ module Hydrate =
                                                             |> Map.ofSeq
                                                     }
                                                 )
-
-                                            Store.change setter Atoms.databaseIdSet (Set.add database.Id)
+                                        //                                            Store.change setter Atoms.databaseIdSet (Set.add database.Id)
                                         })
                                 |> Promise.Parallel
                                 |> Promise.ignore
@@ -338,6 +338,7 @@ module Hydrate =
                                     x.status <- "success")
                         with ex -> toast (fun x -> x.description <- $"Error importing database: ${ex.Message}")
                     | _ -> toast (fun x -> x.description <- "No files selected")
+                //                                            Store.change setter Atoms.databaseIdSet (Set.add database.Id)
                 }),
             [|
                 box toast
