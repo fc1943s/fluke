@@ -30,7 +30,7 @@ module AttachmentIndicator =
                     x.position <- "absolute"
                     x.top <- "0px"
                     x.right <- "0px"
-                    x.width <- "100%"
+//                    x.width <- "100%"
 
                     x._after <-
                         JS.newObj

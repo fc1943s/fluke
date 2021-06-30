@@ -105,6 +105,7 @@
         <Compile Include="src\Components\InformationForm.fs" />
         <Compile Include="src\Components\CellForm.fs" />
         <Compile Include="src\Components\RightDock.fs" />
+        <Compile Include="src\Components\MenuItemToggle.fs" />
         <Compile Include="src\Components\LeftDock.fs" />
         <Compile Include="src\Components\StatusBar.fs" />
         <Compile Include="src\Components\ViewTabs.fs" />

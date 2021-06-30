@@ -13,7 +13,7 @@ module LoadingSpinner =
             (fun x -> x.flex <- "1")
             [
                 Chakra.stack
-                    (fun _ -> ())
+                    (fun x -> x.alignItems <- "center")
                     [
                         Spinner.Spinner (fun _ -> ())
                         Chakra.box

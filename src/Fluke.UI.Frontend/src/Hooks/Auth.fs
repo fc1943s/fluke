@@ -166,13 +166,15 @@ module Auth =
                                         Store.set setter Atoms.daysAfter Atoms.daysAfterDefault
                                         Store.set setter Atoms.searchText Atoms.searchTextDefault
                                         Store.set setter Atoms.cellSize Atoms.cellSizeDefault
+                                        Store.set setter Atoms.fontSize Atoms.fontSizeDefault
+                                        Store.set setter Atoms.systemUiFont Atoms.systemUiFontDefault
+                                        Store.set setter Atoms.darkMode Atoms.darkModeDefault
                                         Store.set setter Atoms.leftDock Atoms.leftDockDefault
                                         Store.set setter Atoms.rightDock Atoms.rightDockDefault
                                         Store.set setter Atoms.hideTemplates Atoms.hideTemplatesDefault
                                         Store.set setter Atoms.hideSchedulingOverlay Atoms.hideSchedulingOverlayDefault
                                         Store.set setter Atoms.showViewOptions Atoms.showViewOptionsDefault
                                         Store.set setter Atoms.filterTasksByView Atoms.filterTasksByViewDefault
-                                        Store.set setter Atoms.darkMode Atoms.darkModeDefault
 
                                         JS.setTimeout
                                             (fun () ->

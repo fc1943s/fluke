@@ -46,8 +46,8 @@ module Theme =
                     |}
                 whiteAlpha = alphaColors (not input.DarkMode)
                 blackAlpha = alphaColors input.DarkMode
-                orange = if input.DarkMode then "#ffb836" else "#AF750B"
-                green = if input.DarkMode then "#a4ff8d" else "#269309" //https://paletton.com/#uid=12K0u0kt+lZlOstrKqzzSiaJidt
+                _orange = if input.DarkMode then "#ffb836" else "#AF750B"
+                _green = if input.DarkMode then "#a4ff8d" else "#269309" //https://paletton.com/#uid=12K0u0kt+lZlOstrKqzzSiaJidt
             |}
 
         let focusShadow = $"0 0 0 1px {colors.heliotrope} !important"

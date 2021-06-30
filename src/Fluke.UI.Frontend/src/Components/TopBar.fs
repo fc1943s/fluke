@@ -64,6 +64,29 @@ module TopBar =
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
+                        if deviceInfo.IsElectron then
+                            Tooltip.wrap
+                                (str "Refresh")
+                                [
+                                    TransparentIconButton.TransparentIconButton
+                                        {|
+                                            Props =
+                                                fun x ->
+                                                    x.icon <- Icons.vsc.VscRefresh |> Icons.render
+                                                    x.height <- "27px"
+                                                    x.fontSize <- "17px"
+
+                                                    x.onClick <-
+                                                        fun _ ->
+                                                            promise {
+                                                                match JS.window id with
+                                                                | Some window ->
+                                                                    window.location.href <- window.location.href
+                                                                | None -> ()
+                                                            }
+                                        |}
+                                ]
+
                         Tooltip.wrap
                             (React.fragment [
                                 str "GitHub repository"
@@ -95,36 +118,37 @@ module TopBar =
                                     {|
                                         Props =
                                             fun x ->
-                                                x.icon <- Icons.fi.FiLogOut |> Icons.render
+                                                x.icon <- Icons.hi.HiLogout |> Icons.render
                                                 x.fontSize <- "17px"
                                                 x.height <- "27px"
                                                 x.onClick <- fun _ -> promise { do! logout () }
                                     |}
                             ]
 
-                        Tooltip.wrap
-                            (str "Close")
-                            [
-                                TransparentIconButton.TransparentIconButton
-                                    {|
-                                        Props =
-                                            fun x ->
-                                                x.icon <- Icons.vsc.VscChromeClose |> Icons.render
-                                                x.height <- "27px"
-                                                x.fontSize <- "17px"
+                        if deviceInfo.IsElectron then
+                            Tooltip.wrap
+                                (str "Close")
+                                [
+                                    TransparentIconButton.TransparentIconButton
+                                        {|
+                                            Props =
+                                                fun x ->
+                                                    x.icon <- Icons.vsc.VscChromeClose |> Icons.render
+                                                    x.height <- "27px"
+                                                    x.fontSize <- "17px"
 
-                                                x.onClick <-
-                                                    fun _ ->
-                                                        promise {
-                                                            match JS.window id with
-                                                            | Some window ->
-                                                                if deviceInfo.IsElectron then
-                                                                    window?api?send "close"
-                                                                else
-                                                                    window?close "" "_parent" ""
-                                                            | None -> ()
-                                                        }
-                                    |}
-                            ]
+                                                    x.onClick <-
+                                                        fun _ ->
+                                                            promise {
+                                                                match JS.window id with
+                                                                | Some window ->
+                                                                    if deviceInfo.IsElectron then
+                                                                        window?api?send "close"
+                                                                    else
+                                                                        window?close "" "_parent" ""
+                                                                | None -> ()
+                                                            }
+                                        |}
+                                ]
                     ]
             ]

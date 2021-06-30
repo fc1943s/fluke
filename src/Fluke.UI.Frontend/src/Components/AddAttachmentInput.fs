@@ -64,7 +64,7 @@ module AddAttachmentInput =
                                 fun x ->
                                     x.textarea <- true
                                     x.fixedValue <- Some addAttachmentText
-
+                                    x.autoFocusOnAllMounts <- true
                                     x.onEnterPress <-
                                         Some (fun _ -> promise { if ctrlPressed then do! addAttachment () })
                             Props =

@@ -362,37 +362,8 @@ module Store =
 
         let mutable lastSubscription = None
 
-        let subscribe =
-            (fun setAtom ->
-                match lastGunAtomNode with
-                | Some (key, gunAtomNode) ->
-                    Profiling.addCount $"{gunNodePath} subscribe"
-                    JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath} {key}")
-
-                    Gun.batchSubscribe
-                        {|
-                            GunAtomNode = gunAtomNode
-                            Fn = setInternalFromGun gunAtomNode setAtom
-                        |}
-
-                    //                        Gun.subscribe
-//                            gunAtomNode
-//                            (fun data ->
-//                                setInternalFromGun gunAtomNode setAtom (DateTime.Now.Ticks, data)
-//                                |> Promise.start)
-
-                    lastSubscription <- Some DateTime.Now.Ticks
-                | None ->
-                    JS.log
-                        (fun () ->
-                            $"[gunEffect.on()]
-                                {baseInfo ()}
-                             skipping subscribe, no gun atom node.")
-
-                    lastWrapperSet <- Some setAtom)
-
         let unsubscribe =
-            (fun _setAtom ->
+            (fun () ->
                 match lastSubscription with
                 | Some ticks when DateTime.ticksDiff ticks < 1000. -> ()
                 | _ ->
@@ -416,6 +387,37 @@ module Store =
                                 $"[gunEffect.off()]
                                 {baseInfo ()}
                                 skipping unsubscribe, no gun atom node."))
+
+        let subscribe =
+            (fun setAtom ->
+                lastWrapperSet <- Some setAtom
+
+                match lastGunAtomNode with
+                | Some (key, gunAtomNode) ->
+                    Profiling.addCount $"{gunNodePath} subscribe"
+                    JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath} {key}")
+
+//                    gunAtomNode.off () |> ignore
+
+                    Gun.batchSubscribe
+                        {|
+                            GunAtomNode = gunAtomNode
+                            Fn = setInternalFromGun gunAtomNode setAtom
+                        |}
+
+                    //                        Gun.subscribe
+//                            gunAtomNode
+//                            (fun data ->
+//                                setInternalFromGun gunAtomNode setAtom (DateTime.Now.Ticks, data)
+//                                |> Promise.start)
+
+                    lastSubscription <- Some DateTime.Now.Ticks
+                | None ->
+                    JS.log
+                        (fun () ->
+                            $"[gunEffect.on()]
+                                {baseInfo ()}
+                             skipping subscribe, no gun atom node."))
 
         let debounceGunPut =
             JS.debounce
@@ -592,7 +594,7 @@ module Store =
 
         wrapper?onMount <- fun setAtom ->
                                subscribe setAtom
-                               fun () -> unsubscribe setAtom
+                               fun () -> unsubscribe ()
 
         wrapper
 

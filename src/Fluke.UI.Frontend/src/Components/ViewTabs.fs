@@ -9,33 +9,6 @@ open Fluke.Shared
 
 
 module ViewTabs =
-    [<ReactComponent>]
-    let MenuItemToggle (atom: Store.Atom<_>) label =
-        let value, setValue = Store.useState atom
-
-        let key = atom.toString ()
-
-        Chakra.menuOptionGroup
-            (fun x ->
-                x.``type`` <- "checkbox"
-
-                x.value <-
-                    [|
-                        if value then yield key
-                    |]
-
-                x.onChange <- fun (checks: string []) -> promise { setValue (checks |> Array.contains key) })
-            [
-                Chakra.menuItemOption
-                    (fun x ->
-                        x.closeOnSelect <- true
-                        x.value <- key
-                        x.marginTop <- "2px"
-                        x.marginBottom <- "2px")
-                    [
-                        str label
-                    ]
-            ]
 
     [<ReactComponent>]
     let ViewTabs () =
@@ -178,8 +151,11 @@ module ViewTabs =
                                                 |}
                                         Body =
                                             [
-                                                MenuItemToggle Atoms.hideSchedulingOverlay "Hide Scheduling Overlay"
-                                                MenuItemToggle Atoms.showViewOptions "Show View Options"
+                                                MenuItemToggle.MenuItemToggle
+                                                    Atoms.hideSchedulingOverlay
+                                                    "Hide Scheduling Overlay"
+
+                                                MenuItemToggle.MenuItemToggle Atoms.showViewOptions "Show View Options"
                                             ]
                                         MenuListProps = fun _ -> ()
                                     |}

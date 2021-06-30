@@ -102,16 +102,16 @@ module State =
         let searchTextDefault = ""
         let rec searchText = Store.atomWithSync ($"{nameof searchText}", searchTextDefault, [])
 
-        let cellSizeDefault = 23
+        let cellSizeDefault = 19
         let rec cellSize = Store.atomWithSync ($"{nameof cellSize}", cellSizeDefault, [])
 
-        let fontSizeDefault = 12
+        let fontSizeDefault = 15
         let rec fontSize = Store.atomWithStorageSync ($"{nameof fontSize}", fontSizeDefault, id)
 
-        let darkModeDefault = true
+        let darkModeDefault = false
         let rec darkMode = Store.atomWithStorageSync ($"{nameof darkMode}", darkModeDefault, id)
 
-        let systemUiFontDefault = false
+        let systemUiFontDefault = true
         let rec systemUiFont = Store.atomWithStorageSync ($"{nameof systemUiFont}", systemUiFontDefault, id)
 
         let leftDockDefault : TempUI.DockType option = None

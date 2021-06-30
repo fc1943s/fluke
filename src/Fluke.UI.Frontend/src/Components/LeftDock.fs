@@ -17,7 +17,6 @@ module LeftDock =
         let leftDock, setLeftDock = Store.useState Atoms.leftDock
         let setRightDock = Store.useSetState Atoms.rightDock
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let hideTemplates, setHideTemplates = Store.useState Atoms.hideTemplates
         let setDatabaseUIFlag = Store.useSetState (Atoms.uiFlag Atoms.UIFlagType.Database)
 
         let items, itemsMap =
@@ -86,32 +85,7 @@ module LeftDock =
                                             "Options",
                                             Icons.bs.BsThreeDotsVertical |> Icons.render,
                                             [
-                                                Chakra.menuOptionGroup
-                                                    (fun x ->
-                                                        x.``type`` <- "checkbox"
-
-                                                        x.value <-
-                                                            [|
-                                                                if hideTemplates then yield nameof Atoms.hideTemplates
-                                                            |]
-
-                                                        x.onChange <-
-                                                            fun (checks: string []) ->
-                                                                promise {
-                                                                    setHideTemplates (
-                                                                        checks
-                                                                        |> Array.contains (nameof Atoms.hideTemplates)
-                                                                    )
-                                                                })
-                                                    [
-                                                        Chakra.menuItemOption
-                                                            (fun x ->
-                                                                x.closeOnSelect <- true
-                                                                x.value <- nameof Atoms.hideTemplates)
-                                                            [
-                                                                str "Hide Templates"
-                                                            ]
-                                                    ]
+                                                MenuItemToggle.MenuItemToggle Atoms.hideTemplates "Hide Templates"
                                             ]
                                         )
                                     ]
@@ -125,9 +99,7 @@ module LeftDock =
                     box setRightDock
                     box deviceInfo
                     box isTesting
-                    box hideTemplates
                     box setDatabaseUIFlag
-                    box setHideTemplates
                 |]
             )
 

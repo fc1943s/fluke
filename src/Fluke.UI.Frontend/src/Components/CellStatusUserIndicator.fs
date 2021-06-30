@@ -18,7 +18,7 @@ module CellStatusUserIndicator =
                 x.lineHeight <- $"{cellSize}px"
                 x.position <- "absolute"
                 x.top <- "0"
-                x.width <- "100%"
+//                x.width <- "100%"
 
                 x._after <-
                     (JS.newObj
