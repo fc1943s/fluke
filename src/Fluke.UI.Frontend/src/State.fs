@@ -1334,7 +1334,7 @@ module State =
                                                                     |> Map.ofSeq)
                                                             |> Sorting.sortLanesByTimeOfDay
                                                                 dayStart
-                                                                (FlukeDateTime.Create (referenceDay, dayStart))
+                                                                (FlukeDateTime.Create (referenceDay, dayStart, Second 0))
                                                             |> List.indexed
                                                             |> List.map
                                                                 (fun (i, (taskState, _)) -> taskState.Task.Id, i)

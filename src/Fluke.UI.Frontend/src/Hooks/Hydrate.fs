@@ -254,7 +254,7 @@ module Hydrate =
                     let username = Store.value getter Store.Atoms.username
 
                     match username, files with
-                    | Some username, Some (files: FileList) ->
+                    | Some username, Some (files: FileList) when files.length > 0 ->
                         let! files =
                             files
                             |> Seq.ofItems

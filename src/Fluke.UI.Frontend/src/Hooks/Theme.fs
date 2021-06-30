@@ -180,12 +180,15 @@ module Theme =
                                     |}
                                 ``.markdown-container h1`` =
                                     {|
-                                        borderBottomColor = "#777"
+
+                                        borderBottomColor = "#999"
                                         borderBottomWidth = "1px"
-                                        marginBottom = "3px"
+                                        marginTop = "3px"
+                                        marginBottom = "7px"
+                                        paddingBottom = "7px"
                                     |}
-                                ``.markdown-container li`` = {| listStyleType = "square" |}
-                                ``.markdown-container ul, .tooltip-popup p`` = {| padding = "5px 0" |}
+//                                ``.markdown-container li`` = {| listStyleType = "square" |}
+//                                ``.markdown-container ul, .tooltip-popup p`` = {| padding = "5px 0" |}
                             |}
                 |}
         |}

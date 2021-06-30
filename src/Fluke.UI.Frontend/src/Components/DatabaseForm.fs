@@ -87,6 +87,8 @@ module DatabaseForm =
                 |]
             )
 
+        let inputRef = React.useRef<HTMLInputElement> null
+
         let files, setFiles = React.useState (None: FileList option)
 
         let importDatabase = Hydrate.useImportDatabase ()
@@ -172,6 +174,7 @@ module DatabaseForm =
                                     (fun x ->
                                         x.``type`` <- "file"
                                         x.padding <- "5px"
+                                        x.ref <- inputRef
                                         x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
                                     []
 
@@ -182,7 +185,14 @@ module DatabaseForm =
                                             {|
                                                 Hint = None
                                                 Icon = Some (Icons.bi.BiImport |> Icons.wrap, Button.IconPosition.Left)
-                                                Props = fun x -> x.onClick <- fun _ -> importDatabase files
+                                                Props =
+                                                    fun x ->
+                                                        x.onClick <-
+                                                            fun _ ->
+                                                                promise {
+                                                                    do! importDatabase files
+                                                                    inputRef.current.value <- ""
+                                                                }
                                                 Children =
                                                     [
                                                         str "Confirm"

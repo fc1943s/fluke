@@ -54,20 +54,32 @@ module AttachmentPanel =
                                                                     Chakra.box
                                                                         (fun _ -> ())
                                                                         [
-                                                                            str "Comment"
+                                                                            str ""
                                                                         ]
 
                                                                     Chakra.box
                                                                         (fun x -> x.lineHeight <- "16px")
                                                                         [
                                                                             str (moment |> FlukeDateTime.Stringify)
+
+                                                                            InputLabelIconButton.InputLabelIconButton
+                                                                                (fun x ->
+                                                                                    x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                                                                    x.fontSize <- "11px"
+                                                                                    x.height <- "15px"
+                                                                                    x.color <- "whiteAlpha.700"
+                                                                                    x.marginTop <- "-1px"
+                                                                                    x.marginLeft <- "6px"
+                                                                                    x.onClick <- fun _ -> promise {
+                                                                                        ()
+                                                                                    })
                                                                         ]
                                                                 ]
 
                                                             Chakra.box
                                                                 (fun _ -> ())
                                                                 [
-                                                                    str comment
+                                                                    Markdown.render comment
                                                                 ]
                                                         | _ -> str "???"
                                                     ])

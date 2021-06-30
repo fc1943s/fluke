@@ -97,17 +97,17 @@ type DatabaseNodeMenu () =
                                     })
                                 (fun _ -> ())
 
-                            MenuItem.MenuItem
-                                Icons.fi.FiCopy
-                                "Clone Database"
-                                (fun () -> promise { () })
-                                (fun x -> x.isDisabled <- true)
+                        MenuItem.MenuItem
+                            Icons.fi.FiCopy
+                            "Clone Database"
+                            (fun () -> promise { () })
+                            (fun x -> x.isDisabled <- true)
 
-                            MenuItem.MenuItem
-                                Icons.bi.BiExport
-                                "Export Database"
-                                (fun () -> exportDatabase databaseId)
-                                (fun _ -> ())
+                        MenuItem.MenuItem
+                            Icons.bi.BiExport
+                            "Export Database"
+                            (fun () -> exportDatabase databaseId)
+                            (fun _ -> ())
 
                         Popover.CustomPopover
                             {|

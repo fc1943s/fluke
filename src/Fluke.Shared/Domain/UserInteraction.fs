@@ -9,9 +9,16 @@ module UserInteraction =
 
     type UserInteraction = UserInteraction of moment: FlukeDateTime * username: Username * interaction: Interaction
 
-    and FlukeDateTime = { Date: FlukeDate; Time: FlukeTime }
+    and FlukeDateTime =
+        {
+            Date: FlukeDate
+            Time: FlukeTime
+            Second: Second
+        }
 
     and FlukeDate = { Year: Year; Month: Month; Day: Day }
+
+    and Second = Second of int
 
     and TempSchedule =
         | TimeSchedule1 of date: FlukeDate * Schedulings: (FlukeTime * Task) list
@@ -35,7 +42,7 @@ module UserInteraction =
         | Link of url: string
         | Video of url: string
         | Image of url: string
-        | Attachment of username:Username * Attachment:Attachment
+        | Attachment of username: Username * Attachment: Attachment
 
     and [<RequireQualifiedAccess>] Comment = Comment of comment: string
 
@@ -50,7 +57,8 @@ module UserInteraction =
         }
 
     and Username = Username of username: string
-    and Color = Color of hex:string
+
+    and Color = Color of hex: string
 
     and [<RequireQualifiedAccess>] Language =
         | English
@@ -87,6 +95,7 @@ module UserInteraction =
 
     and DateId with
         static member inline Value (DateId referenceDay) = referenceDay
+
     and Color with
         static member inline Value (Color hex) = hex
 
@@ -126,8 +135,14 @@ module UserInteraction =
         static member inline MinValue = FlukeDate.FromDateTime DateTime.MinValue
 
     and FlukeDateTime with
-        static member inline Stringify{ Date = date; Time = time } =
-            $"{date |> FlukeDate.Stringify} {time |> FlukeTime.Stringify}"
+        static member inline Stringify
+            {
+                Date = date
+                Time = time
+                Second = Second second
+            }
+            =
+            $"{date |> FlukeDate.Stringify} {time |> FlukeTime.Stringify}:%02d{second}"
 
         static member inline DateTime
             {
@@ -140,9 +155,10 @@ module UserInteraction =
                            Hour = Hour hour
                            Minute = Minute minute
                        }
+                Second = Second second
             }
             =
-            DateTime (year, int month, day, int hour, int minute, 0)
+            DateTime (year, int month, day, int hour, int minute, second)
 
         static member inline GreaterEqualThan (dayStart: FlukeTime) (DateId (referenceDay: FlukeDate)) time position =
             let testingAfterMidnight = dayStart |> FlukeTime.GreaterEqualThan time
@@ -158,26 +174,34 @@ module UserInteraction =
                 else
                     referenceDay
 
-            let dateToCompare : FlukeDateTime = { Date = newDate; Time = time }
+            let dateToCompare : FlukeDateTime =
+                {
+                    Date = newDate
+                    Time = time
+                    Second = Second 0
+                }
 
             (position |> FlukeDateTime.DateTime)
             >= (dateToCompare |> FlukeDateTime.DateTime)
 
-        static member inline Create (year, month, day, hour, minute) : FlukeDateTime =
+
+        static member inline Create (date, time, second) : FlukeDateTime =
             {
-                Date = FlukeDate.Create year month day
-                Time = FlukeTime.Create hour minute
+                Date = date
+                Time = time
+                Second = second
             }
 
-        static member inline Create (date, time) : FlukeDateTime = { Date = date; Time = time }
+        static member inline Create (year, month, day, hour, minute, second) =
+            FlukeDateTime.Create (FlukeDate.Create year month day, FlukeTime.Create hour minute, second)
 
         static member inline FromDateTime (date: DateTime) : FlukeDateTime =
-            FlukeDateTime.Create (FlukeDate.FromDateTime date, FlukeTime.FromDateTime date)
+            FlukeDateTime.Create (FlukeDate.FromDateTime date, FlukeTime.FromDateTime date, Second date.Second)
 
 
     let inline (|BeforeToday|Today|AfterToday|) (dayStart: FlukeTime, position: FlukeDateTime, DateId referenceDay) =
         let dateStart =
-            FlukeDateTime.Create (referenceDay, dayStart)
+            FlukeDateTime.Create (referenceDay, dayStart, Second 0)
             |> FlukeDateTime.DateTime
 
         let dateEnd = dateStart.AddDays 1.

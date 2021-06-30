@@ -111,6 +111,7 @@ module ViewTabs =
                                         (fun tab ->
                                             Chakra.tab
                                                 (fun x ->
+                                                    x.alignSelf <- "stretch"
                                                     x.padding <- "12px"
                                                     x.color <- "gray.45"
 

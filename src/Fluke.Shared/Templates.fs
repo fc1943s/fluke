@@ -62,7 +62,8 @@ module Templates =
                 [
                     "All task types mixed",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, FlukeTime.Create 14 0)
+                        Position =
+                            FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, FlukeTime.Create 14 0, Second 0)
                         Tasks =
                             [
                                 {
@@ -298,7 +299,7 @@ module Templates =
                 [
                     "Empty manual task",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -337,7 +338,7 @@ module Templates =
 
                     "ManualPending task scheduled for today after missing",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -383,7 +384,12 @@ module Templates =
 
                     "Manual Suggested task Suggested before PendingAfter",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, FlukeTime.Create 19 30)
+                        Position =
+                            FlukeDateTime.Create (
+                                FlukeDate.Create 2020 Month.March 10,
+                                FlukeTime.Create 19 30,
+                                Second 0
+                            )
                         Tasks =
                             [
                                 {
@@ -415,7 +421,12 @@ module Templates =
 
                     "Manual Suggested task Pending after PendingAfter",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.January 1, FlukeTime.Create 21 0)
+                        Position =
+                            FlukeDateTime.Create (
+                                FlukeDate.Create 2020 Month.January 1,
+                                FlukeTime.Create 21 0,
+                                Second 0
+                            )
                         Tasks =
                             [
                                 {
@@ -447,7 +458,7 @@ module Templates =
 
                     "Manual Suggested task: Missed ManualPending propagates until today",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 28, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 28, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -498,7 +509,7 @@ module Templates =
 
                     "Manual Suggested task: Suggested mode restored after completing a forgotten ManualPending event",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 28, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 28, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -545,7 +556,7 @@ module Templates =
 
                     "Manual Suggested task: Pending today after missing a ManualPending event",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 28, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 28, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -592,7 +603,7 @@ module Templates =
                 [
                     "Start scheduling today without any events",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 9, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 9, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -635,7 +646,7 @@ module Templates =
 
                     "Disabled today after a Completed event yesterday",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 9, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 9, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -689,7 +700,7 @@ module Templates =
 
                     "Postponing today should schedule for tomorrow",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -731,7 +742,7 @@ module Templates =
 
                     "Postponing today should schedule for tomorrow with PendingAfter",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -774,7 +785,7 @@ module Templates =
 
                     "(Postponed None) yesterday schedules for today",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -815,7 +826,7 @@ module Templates =
 
                     "Pending today after missing yesterday, then resetting the schedule with a future Completed event",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -870,7 +881,12 @@ module Templates =
 
                     "Recurring task only Suggested before PendingAfter",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, FlukeTime.Create 19 30)
+                        Position =
+                            FlukeDateTime.Create (
+                                FlukeDate.Create 2020 Month.March 10,
+                                FlukeTime.Create 19 30,
+                                Second 0
+                            )
                         Tasks =
                             [
                                 {
@@ -902,7 +918,8 @@ module Templates =
 
                     "Recurring task Pending after PendingAfter",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, FlukeTime.Create 21 0)
+                        Position =
+                            FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, FlukeTime.Create 21 0, Second 0)
                         Tasks =
                             [
                                 {
@@ -934,7 +951,8 @@ module Templates =
 
                     "Recurrency for the next days should work normally while today is still suggested (before PendingAfter)",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 27, FlukeTime.Create 17 0)
+                        Position =
+                            FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 27, FlukeTime.Create 17 0, Second 0)
                         Tasks =
                             [
                                 {
@@ -978,7 +996,7 @@ module Templates =
 
                     "Reset counting after a future ManualPending event",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 28, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 28, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1034,7 +1052,7 @@ module Templates =
                 [
                     "Weekly task, pending today, initialized by past completion",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 21, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 21, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1067,7 +1085,7 @@ module Templates =
 
                     "Weekly task, missed until today, initialized by past completion",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 20, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 20, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1102,7 +1120,7 @@ module Templates =
 
                     "Weekly task, (Postponed None) then missed until today, pending tomorrow",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 20, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 20, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1137,7 +1155,7 @@ module Templates =
 
                     "Weekly task, without past events, pending in a few days",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 20, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 20, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1165,7 +1183,7 @@ module Templates =
 
                     "Fixed weekly task, without past events, pending tomorrow",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 20, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 20, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1194,7 +1212,7 @@ module Templates =
 
                     "Fixed weekly task only Suggested before PendingAfter",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.August 26, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.August 26, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1236,7 +1254,7 @@ module Templates =
                 [
                     "Postponed until later",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1277,7 +1295,7 @@ module Templates =
                     }
                     "Postponed until after midnight",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1318,7 +1336,8 @@ module Templates =
                     }
                     "Pending after expiration of Postponed (before midnight)",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, FlukeTime.Create 2 0)
+                        Position =
+                            FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, FlukeTime.Create 2 0, Second 0)
                         Tasks =
                             [
                                 {
@@ -1359,7 +1378,8 @@ module Templates =
 
                     "Pending after expiration of Postponed (after midnight)",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, FlukeTime.Create 2 0)
+                        Position =
+                            FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 11, FlukeTime.Create 2 0, Second 0)
                         Tasks =
                             [
                                 {
@@ -1400,7 +1420,8 @@ module Templates =
 
                     "Past PostponedUntil events are shown",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 13, FlukeTime.Create 2 0)
+                        Position =
+                            FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 13, FlukeTime.Create 2 0, Second 0)
                         Tasks =
                             [
                                 {
@@ -1456,7 +1477,7 @@ module Templates =
 
                     "Future PostponedUntil events are shown",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 10, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1507,7 +1528,7 @@ module Templates =
                 [
                     "Respect dayStart on session events",
                     {
-                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 4, user.DayStart)
+                        Position = FlukeDateTime.Create (FlukeDate.Create 2020 Month.March 4, user.DayStart, Second 0)
                         Tasks =
                             [
                                 {
@@ -1517,10 +1538,10 @@ module Templates =
                                         }
                                     Events =
                                         [
-                                            DslSession (FlukeDateTime.Create (2020, Month.March, 1, 11, 0))
-                                            DslSession (FlukeDateTime.Create (2020, Month.March, 1, 13, 0))
-                                            DslSession (FlukeDateTime.Create (2020, Month.March, 8, 11, 0))
-                                            DslSession (FlukeDateTime.Create (2020, Month.March, 8, 13, 0))
+                                            DslSession (FlukeDateTime.Create (2020, Month.March, 1, 11, 0, Second 0))
+                                            DslSession (FlukeDateTime.Create (2020, Month.March, 1, 13, 0, Second 0))
+                                            DslSession (FlukeDateTime.Create (2020, Month.March, 8, 11, 0, Second 0))
+                                            DslSession (FlukeDateTime.Create (2020, Month.March, 8, 13, 0, Second 0))
                                         ]
                                     Expected =
                                         [
@@ -1618,7 +1639,7 @@ module Templates =
         let cellInteraction = CellInteraction.StatusChange cellStatusChange
         let dateId = DateId date
         let interaction = Interaction.Cell (task.Id, dateId, cellInteraction)
-        let moment = FlukeDateTime.Create (date, user.DayStart)
+        let moment = FlukeDateTime.Create (date, user.DayStart, Second 0)
         let userInteraction = UserInteraction (moment, user.Username, interaction)
         userInteraction
 

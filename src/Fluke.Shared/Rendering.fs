@@ -49,10 +49,10 @@ module Rendering =
         | TodayCell
 
     let renderTaskStatusMap dayStart position dateSequence taskState =
-        let firstDateRange = FlukeDateTime.Create (dateSequence |> List.head, dayStart)
-        let lastDateRange = FlukeDateTime.Create (dateSequence |> List.last, dayStart)
+        let firstDateRange = FlukeDateTime.Create (dateSequence |> List.head, dayStart, Second 0)
+        let lastDateRange = FlukeDateTime.Create (dateSequence |> List.last, dayStart, Second 0)
 
-//        printfn $"renderTaskStatusMap
+        //        printfn $"renderTaskStatusMap
 //        dayStart={dayStart|>FlukeTime.Stringify}
 //        dateSequence={dateSequence|>List.map FlukeDate.Stringify}
 //        taskState={taskState}
@@ -87,7 +87,7 @@ module Rendering =
                         firstDate
                         lastDate
                     ]
-            |> List.map (fun date -> FlukeDateTime.Create (date, dayStart))
+            |> List.map (fun date -> FlukeDateTime.Create (date, dayStart, Second 0))
 
         let rec loop renderState =
             function
@@ -200,7 +200,7 @@ module Rendering =
                         | _, None -> Pending
                         | _ -> Suggested
 
-//                printfn
+                //                printfn
 //                    $"dateId={referenceDay |> FlukeDate.Stringify} moment={moment |> FlukeDateTime.Stringify} status={
 //                                                                                                                          status
 //                    }"

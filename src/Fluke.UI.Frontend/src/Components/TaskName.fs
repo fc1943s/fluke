@@ -135,7 +135,7 @@ module TaskName =
                                                     x.isDisabled <- true
 
                                                     x.icon <-
-                                                        Icons.bs.BsTrash
+                                                        Icons.bi.BiTrash
                                                         |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
 
                                                     x.onClick <- deleteTask)

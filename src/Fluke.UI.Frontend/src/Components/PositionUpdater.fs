@@ -36,7 +36,10 @@ module PositionUpdater =
                         match selectedDatabasePositions, pausedPosition with
                         | [], _ -> if position <> None then None else position
                         | _, None ->
-                            let newPosition = FlukeDateTime.FromDateTime DateTime.Now
+                            let newPosition =
+                                { FlukeDateTime.FromDateTime DateTime.Now with
+                                    Second = Second 0
+                                }
 
                             let isTesting = Store.value getter Store.Atoms.isTesting
                             let position = Store.value getter Atoms.position
@@ -48,7 +51,7 @@ module PositionUpdater =
                                 position
                         | _, Some _ -> pausedPosition
 
-//                    printfn $"PositionUpdater
+                    //                    printfn $"PositionUpdater
 //                        selectedDatabaseIdSet={selectedDatabaseIdSet}
 //                        selectedDatabasePositions={selectedDatabasePositions}
 //                        pausedPosition={pausedPosition}

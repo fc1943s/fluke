@@ -106,7 +106,11 @@ module CellSelectionSetup =
             let dslTemplate =
                 {
                     Templates.Position =
-                        FlukeDateTime.Create (FlukeDate.Create 2020 Month.January 10, Templates.templatesUser.DayStart)
+                        FlukeDateTime.Create (
+                            FlukeDate.Create 2020 Month.January 10,
+                            Templates.templatesUser.DayStart,
+                            Second 0
+                        )
                     Templates.Tasks =
                         [
                             1 .. 4

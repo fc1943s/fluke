@@ -86,7 +86,9 @@ module DockPanel =
                 Chakra.flex
                     (fun x ->
                         x.direction <- "column"
-                        x.flex <- "1")
+                        x.flex <- "1"
+                        x.overflow <- "auto"
+                        x.flexBasis <- 0)
                     [
                         yield! input.children
                     ]
