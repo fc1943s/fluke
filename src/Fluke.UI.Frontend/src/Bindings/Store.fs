@@ -664,7 +664,7 @@ module Store =
             let debouncedSet =
                 JS.debounce
                     (fun data ->
-//                        Browser.Dom.window?lastData <- data
+                        //                        Browser.Dom.window?lastData <- data
 
                         let result =
                             JS.Constructors.Object.entries data

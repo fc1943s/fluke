@@ -28,6 +28,7 @@
     "test-parallel": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --rootDir . --testNamePattern=",
     "test-sequential": "yarn test-parallel --runInBand --detectOpenHandles",
     "test": "yarn test-parallel",
+    "test-gun-jest": "concurrently \"cd ../Fluke.GunPeer && yarn install && yarn start\" \"yarn:test\"",
     "cypress-install": "cypress install --force",
     "cypress": "cypress open",
     "cypress-watch": "concurrently \"yarn:watch\" \"yarn:cypress\"",
@@ -84,6 +85,7 @@
     "rooks": "~5.0",
     "react-color": "~3.0.0-beta.3",
     "react-markdown": "~6.0",
+    "remark-gfm": "~1.0",
     "re-resizable": "~6.9",
     "date-fns": "~2.22",
     "jssha": "~3.2"

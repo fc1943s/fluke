@@ -125,7 +125,7 @@ module PasteListener =
         [<Emit "$0.read()">]
         member _.read () = jsNative
 
-//    const blobToBase64 = (blob) => {
+    //    const blobToBase64 = (blob) => {
 //  return new Promise((resolve) => {
 //    const reader = new FileReader();
 //    reader.readAsDataURL(blob);
@@ -135,8 +135,9 @@ module PasteListener =
 //  });
 //};
     let blobToBase64 blob =
-        Fable.SimpleHttp.FileReader.readBlobAsText blob|>Async.StartAsPromise
-//        Promise.create
+        Fable.SimpleHttp.FileReader.readBlobAsText blob
+        |> Async.StartAsPromise
+    //        Promise.create
 //            (fun res err ->
 //                let str = Fable.SimpleHttp.FileReader.readBlobAsText blob|>Async.StartAsPromise
 //                res (str|>Async.StartAsPromise)
@@ -179,9 +180,9 @@ module PasteListener =
                         match Browser.Navigator.navigator.clipboard with
                         | Some clipboard ->
                             let! read = clipboard.read ()
-                            printfn $"read={read}"
-
-                            Browser.Dom.window?read <- read
+//                            printfn $"read={read}"
+//
+//                            Browser.Dom.window?read <- read
 
                             let! blobs =
                                 read
@@ -193,16 +194,16 @@ module PasteListener =
                                         |> Array.map (fun x -> clipboardItem.getType (unbox x)))
                                 |> Promise.Parallel
 
-                            let imageObjectUrls =
-                                blobs |> Array.map Browser.Url.URL.createObjectURL
+//                            let imageObjectUrls = blobs |> Array.map Browser.Url.URL.createObjectURL
 
-                            printfn $"blobs={blobs} urls={blobs |> Array.map Browser.Url.URL.createObjectURL}"
+//                            printfn $"blobs={blobs} urls={blobs |> Array.map Browser.Url.URL.createObjectURL}"
 
-                            let! str = blobToBase64 blobs.[0]
+//                            let! str = blobToBase64 blobs.[0]
+//
+//                            printfn $"img! result={str}"
 
-                            printfn $"img! result={str}"
-
-                            Browser.Dom.window?blobs <- blobs
+//                            Browser.Dom.window?blobs <- blobs
+                            ()
 
                         | None -> toast (fun x -> x.description <- "Clipboard not available")
 

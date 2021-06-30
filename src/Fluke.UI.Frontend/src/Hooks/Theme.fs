@@ -180,7 +180,7 @@ module Theme =
                                     |}
                                 ``.markdown-container h1`` =
                                     {|
-
+                                        display = "inline-flex"
                                         borderBottomColor = "#999"
                                         borderBottomWidth = "1px"
                                         marginTop = "3px"

@@ -26,7 +26,7 @@ module Json =
 
 module JS =
     [<Emit "process.env.JEST_WORKER_ID">]
-    let private jestWorkerId : bool = jsNative
+    let jestWorkerId : bool = jsNative
 
     let window fn =
         if jsTypeof Browser.Dom.window <> "undefined" then

@@ -11,6 +11,19 @@ module AttachmentPanel =
     [<ReactComponent>]
     let AttachmentPanel attachments onAdd =
 
+        let deleteAttachment =
+            Store.useCallback (
+                (fun getter _ _ ->
+                    promise {
+                        ()
+                    }
+                    //                Store.deleteRoot getter (Atoms.Task.databaseId taskId)
+                    ),
+                [|
+                //                    box taskId
+                |]
+            )
+
         Chakra.stack
             (fun x ->
                 x.spacing <- "15px"
@@ -46,33 +59,58 @@ module AttachmentPanel =
                                                         | Attachment.Comment (Comment.Comment comment) ->
 
                                                             Chakra.flex
-                                                                (fun x ->
-                                                                    x.justifyContent <- "space-between"
-
-                                                                    x.color <- "whiteAlpha.600")
+                                                                (fun x -> x.color <- "whiteAlpha.600")
                                                                 [
-                                                                    Chakra.box
-                                                                        (fun _ -> ())
-                                                                        [
-                                                                            str ""
-                                                                        ]
-
                                                                     Chakra.box
                                                                         (fun x -> x.lineHeight <- "16px")
                                                                         [
                                                                             str (moment |> FlukeDateTime.Stringify)
 
-                                                                            InputLabelIconButton.InputLabelIconButton
-                                                                                (fun x ->
-                                                                                    x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                                                                    x.fontSize <- "11px"
-                                                                                    x.height <- "15px"
-                                                                                    x.color <- "whiteAlpha.700"
-                                                                                    x.marginTop <- "-1px"
-                                                                                    x.marginLeft <- "6px"
-                                                                                    x.onClick <- fun _ -> promise {
-                                                                                        ()
-                                                                                    })
+
+                                                                            Menu.Menu
+                                                                                {|
+                                                                                    Tooltip = ""
+                                                                                    Trigger =
+                                                                                        InputLabelIconButton.InputLabelIconButton
+                                                                                            (fun x ->
+                                                                                                x.``as`` <-
+                                                                                                    Chakra.react.MenuButton
+
+                                                                                                x.icon <-
+                                                                                                    Icons.bs.BsThreeDots
+                                                                                                    |> Icons.render
+
+                                                                                                x.fontSize <- "11px"
+                                                                                                x.height <- "15px"
+
+                                                                                                x.color <-
+                                                                                                    "whiteAlpha.700"
+
+                                                                                                x.marginTop <- "-5px"
+                                                                                                x.marginLeft <- "6px")
+                                                                                    Body =
+                                                                                        [
+                                                                                            Chakra.menuItem
+                                                                                                (fun x ->
+                                                                                                    x.closeOnSelect <-
+                                                                                                        true
+
+                                                                                                    x.icon <-
+                                                                                                        Icons.bi.BiTrash
+                                                                                                        |> Icons.renderChakra
+                                                                                                            (fun x ->
+                                                                                                                x.fontSize <-
+                                                                                                                    "13px")
+
+                                                                                                    x.onClick <-
+                                                                                                        deleteAttachment)
+                                                                                                [
+                                                                                                    str
+                                                                                                        "Delete Attachment"
+                                                                                                ]
+                                                                                        ]
+                                                                                    MenuListProps = fun _ -> ()
+                                                                                |}
                                                                         ]
                                                                 ]
 

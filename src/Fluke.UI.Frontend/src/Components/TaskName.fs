@@ -58,7 +58,13 @@ module TaskName =
                 |]
             )
 
-        let deleteTask = Store.useCallback ((fun _ _ _ -> promise { () }), [||])
+        let deleteTask =
+            Store.useCallback (
+                (fun getter _ _ -> Store.deleteRoot getter (Atoms.Task.databaseId taskId)),
+                [|
+                    box taskId
+                |]
+            )
 
         Chakra.flex
             (fun x ->
