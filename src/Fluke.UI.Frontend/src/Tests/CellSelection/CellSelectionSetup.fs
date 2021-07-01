@@ -138,7 +138,7 @@ module CellSelectionSetup =
                 Templates.databaseStateFromDslTemplate Templates.templatesUser databaseId databaseName dslTemplate
 
 
-            set Store.Atoms.username (Some Templates.templatesUser.Username)
+//            set Store.Atoms.username (Some Templates.templatesUser.Username)
             set Atoms.User.color (Some "#000000")
             set Atoms.User.view View.View.Priority
             set Atoms.User.daysBefore 2

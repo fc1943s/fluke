@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Bindings
 
+open System.Collections.Generic
+open Fable.Extras
 open Fluke.Shared.Domain.UserInteraction
 
 #nowarn "40"
@@ -202,9 +204,24 @@ module Store =
         match username, atomPath with
         | Some username, Some atomPath ->
             match value getter (Selectors.gunAtomNode (username, atomPath)) with
-            | Some gunAtomNode -> Some ($"@@ atom={atom} atomPath={atomPath} username={username}", gunAtomNode)
+            | Some gunAtomNode -> Some ($">> atomPath={atomPath} username={username}", gunAtomNode)
             | _ -> None
         | _ -> None
+
+    let testKeysCache = Dictionary<string, Set<string>> ()
+
+    let splitAtomPath atomPath =
+        let matches =
+            (JSe.RegExp @"(.*?)\/([\w-]{36})\/\w+.*?")
+                .Match atomPath
+            |> Option.ofObj
+            |> Option.defaultValue Seq.empty
+            |> Seq.toList
+
+        match matches with
+        | _match :: root :: guid :: _key -> Some (root, guid)
+        | _ -> None
+
 
     // https://i.imgur.com/GB8trpT.png        :~ still trash
     let inline atomWithSync<'TKey, 'TValue> (atomPath, defaultValue: 'TValue, keyIdentifier: string list) =
@@ -239,8 +256,7 @@ module Store =
                 lastValue={lastValue}
                 lastGunAtomNode={lastGunAtomNode}
                 lastAtomPath={lastAtomPath}
-                lastUserAtomId={lastUserAtomId}
-                """
+                lastUserAtomId={lastUserAtomId} """
 
 
         JS.log
@@ -272,8 +288,7 @@ module Store =
                                                     jsTypeof-newValue={jsTypeof newValue}
                                                     newValue={newValue}
                                                     lastValue={lastValue}
-                                                    {baseInfo ()}
-                                 ")
+                                                    {baseInfo ()} ")
                     | _ ->
                         Profiling.addCount $"{gunNodePath} on() assign"
 
@@ -291,16 +306,14 @@ module Store =
                                         typeof lastValue={jsTypeof _lastValue}
                                         newValue={newValue}
                                         typeof newValue={jsTypeof newValue}
-                                        {baseInfo ()}
-                                        "
+                                        {baseInfo ()} "
 
                                 $"gun.on() value. triggering.
                             _lastValue={_lastValue}
                             typeof lastValue={jsTypeof _lastValue}
                             newValue={newValue}
                             typeof newValue={jsTypeof newValue}
-                            {baseInfo ()}
-                            ")
+                            {baseInfo ()} ")
 
                         //                        Browser.Dom.window?atomPath <- atomPath
 //                        Browser.Dom.window?lastValue <- _lastValue
@@ -329,8 +342,7 @@ module Store =
                             (fun () ->
                                 $"[atomFamily.unsubscribe()]
                                 {key}
-                                {baseInfo ()}
-                                ")
+                                {baseInfo ()} ")
 
                         gunAtomNode.off () |> ignore
                         lastSubscription <- None
@@ -409,8 +421,7 @@ module Store =
                                                 $"atomFamily.wrapper.set() debounceGunPut promise result.
                                                    newValue={newValue}
                                                    {key}
-                                                   {baseInfo ()}
-                                                   ")
+                                                   {baseInfo ()} ")
                                     else
                                         Browser.Dom.window?lastPutResult <- putResult
 
@@ -426,15 +437,13 @@ module Store =
                                                    put skipped
                                                    newValue[{newValue}]==lastGunValue[]
                                                    {key}
-                                                   {baseInfo ()}
-                                                   ")
+                                                   {baseInfo ()} ")
                             | None ->
                                 JS.log
                                     (fun () ->
                                         $"[gunEffect.debounceGunPut promise]
                                         skipping gun put. no gun atom node.
-                                        {baseInfo ()}
-                                        ")
+                                        {baseInfo ()} ")
                         with ex -> Browser.Dom.console.error ("[exception2]", ex)
                     }
                     |> Promise.start)
@@ -461,8 +470,7 @@ module Store =
                                 wrapper={wrapper}
                                 userAtom={userAtom}
                                 result={result}
-                                {baseInfo ()}
-                                ")
+                                {baseInfo ()} ")
 
                     let userAtomId = Some (userAtom.toString ())
 
@@ -519,8 +527,7 @@ module Store =
                                                     jsTypeof-newValue={jsTypeof newValue}
                                                     oldValue={oldValue}
                                                     newValue={newValue}
-                                                    {baseInfo ()}
-                                                    ")
+                                                    {baseInfo ()} ")
 
                                     debounceGunPut newValue
 
@@ -535,8 +542,18 @@ module Store =
                                                     jsTypeof-newValue={jsTypeof newValue}
                                                     oldValue={oldValue}
                                                     newValue={newValue}
-                                                    {baseInfo ()}
-                                                    ")
+                                                    {baseInfo ()} ")
+
+                                if JS.jestWorkerId then
+                                    match splitAtomPath gunNodePath with
+                                    | Some (root, guid) ->
+                                        let newSet =
+                                            match testKeysCache.TryGetValue root with
+                                            | true, guids -> guids |> Set.add guid
+                                            | _ -> Set.singleton guid
+
+                                        testKeysCache.[root] <- newSet
+                                    | None -> ()
 
                                 newValue)))
             )
@@ -633,10 +650,20 @@ module Store =
                 atomPath,
                 None,
                 (fun getter ->
-                    let username = assignLastGunAtomNode getter
-                    let userAtom = internalAtom username
-                    let result = value getter userAtom
-                    result),
+                    if not JS.jestWorkerId then
+                        let username = assignLastGunAtomNode getter
+                        let userAtom = internalAtom username
+                        value getter userAtom
+                    else
+                        match lastAtomPath with
+                        | Some (AtomPath atomPath) ->
+                            match splitAtomPath atomPath with
+                            | Some (root, _guid) ->
+                                match testKeysCache.TryGetValue root with
+                                | true, guids -> guids |> Set.toArray |> Array.map onFormat
+                                | _ -> [||]
+                            | None -> [||]
+                        | None -> [||]),
                 (fun getter setter newValueFn ->
                     let username = assignLastGunAtomNode getter
                     let userAtom = internalAtom username
@@ -714,8 +741,7 @@ module Store =
                         (fun () ->
                             $"@@  [atomFamily.unsubscribe()]
                                                                {key}
-                                                               {baseInfo ()}
-                                                               ")
+                                                               {baseInfo ()} ")
 
                     gunAtomNode.off () |> ignore
                     lastSubscription <- None
@@ -832,9 +858,8 @@ module Store =
 
                                 JS.log
                                     (fun () ->
-                                        $"readWriteValueWrapper.set(). atomPath={atomPath} guidHash={guidHash} newValue={
-                                                                                                                             newValue
-                                        }")
+                                        $"readWriteValueWrapper.set(). atomPath={atomPath}
+                                        guidHash={guidHash} newValue={newValue}")
 
                                 let newValue = Json.encode (atomPath, newValue |> Option.ofObj)
 

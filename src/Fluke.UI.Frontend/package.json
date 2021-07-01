@@ -28,7 +28,6 @@
     "test-parallel": "cross-env NODE_OPTIONS=--experimental-vm-modules jest --rootDir . --testNamePattern=",
     "test-sequential": "yarn test-parallel --runInBand --detectOpenHandles",
     "test": "yarn test-parallel",
-    "test-gun-jest": "concurrently \"cd ../Fluke.GunPeer && yarn install && yarn start\" \"yarn:test\"",
     "cypress-install": "cypress install --force",
     "cypress": "cypress open",
     "cypress-watch": "concurrently \"yarn:watch\" \"yarn:cypress\"",
@@ -52,8 +51,8 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "~18.0.0-alpha-73ffce1b6-20210624",
-    "react-dom": "~18.0.0-alpha-73ffce1b6-20210624",
+    "react": "~18.0.0-alpha-3e8c86c1c-20210630",
+    "react-dom": "~18.0.0-alpha-3e8c86c1c-20210630",
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
 
