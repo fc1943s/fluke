@@ -650,9 +650,10 @@ module Store =
                 atomPath,
                 None,
                 (fun getter ->
+                    let username = assignLastGunAtomNode getter
+                    let userAtom = internalAtom username
+
                     if not JS.jestWorkerId then
-                        let username = assignLastGunAtomNode getter
-                        let userAtom = internalAtom username
                         value getter userAtom
                     else
                         match lastAtomPath with

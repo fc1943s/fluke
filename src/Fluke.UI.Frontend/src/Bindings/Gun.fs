@@ -178,12 +178,9 @@ module Gun =
                 | Some (Some keys) ->
                     let! decrypted =
                         promise {
-                            if not JS.jestWorkerId then
-                                let! verified = sea.verify data keys.pub
-                                let! decrypted = sea.decrypt verified keys
-                                return decrypted
-                            else
-                                return data
+                            let! verified = sea.verify data keys.pub
+                            let! decrypted = sea.decrypt verified keys
+                            return decrypted
                         }
                     //
 //                    printfn
@@ -217,13 +214,11 @@ module Gun =
 
                     //                    printfn $"userEncode value={value} json={json}"
 //
-                    if not JS.jestWorkerId then
-                        let! encrypted = sea.encrypt json keys
-                        let! signed = sea.sign encrypted keys
-                        //                    JS.log (fun () -> $"userEncode. json={json} encrypted={encrypted} signed={signed}")
-                        return signed
-                    else
-                        return json
+                    let! encrypted = sea.encrypt json keys
+
+                    let! signed = sea.sign encrypted keys
+                    //                    JS.log (fun () -> $"userEncode. json={json} encrypted={encrypted} signed={signed}")
+                    return signed
                 | None -> return failwith $"No keys found for user {user.is}"
             with ex ->
                 Browser.Dom.console.error ("[exception4]", ex)
