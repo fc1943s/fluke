@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Browser.Types
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.State
@@ -17,9 +16,9 @@ module PasteListener =
     let PasteListener () =
         let onFilePasted =
             Store.useCallback (
-                (fun getter setter (attachment, chunkCount) ->
+                (fun getter setter attachment ->
                     promise {
-                        JS.log (fun () -> $"pasted image fileId={(attachment, chunkCount)}")
+                        JS.log (fun () -> $"pasted image attachment={attachment}")
 
                         let attachmentId =
                             Hydrate.hydrateAttachment
@@ -36,7 +35,7 @@ module PasteListener =
 
         let handlePasteEvent =
             Store.useCallback (
-                (fun _getter setter (event: Browser.Types.Event) ->
+                (fun getter setter (event: Browser.Types.Event) ->
                     promise {
                         let! blobs =
                             match Browser.Navigator.navigator.clipboard with
@@ -71,39 +70,12 @@ module PasteListener =
                                     promise {
                                         let! bytes = JS.blobToUint8Array blob
                                         let hexString = JS.byteArrayToHexString (bytes.Values () |> Seq.toArray)
-                                        let chunkSize = 16000
-                                        let chunkCount = int (Math.Ceiling (float hexString.Length / float chunkSize))
 
-                                        let chunks =
-                                            JS.chunkString
-                                                hexString
-                                                {|
-                                                    size = chunkSize
-                                                    unicodeAware = false
-                                                |}
-
-                                        //                                        Browser.Dom.window?writeBlob <- blob
-//                                        Browser.Dom.window?writeHexString <- hexString
-//                                        Browser.Dom.window?writeBytes <- bytes
-//
-                                        JS.log
-                                            (fun () ->
-                                                $"PasteListener.
-                                        blob.size={blob.size}
-                                        base64.Length={hexString.Length}
-                                        bytes.Length={bytes.Length}
-                                        chunkCount={chunkCount}
-                                        chunks.[0].Length={chunks.[0].Length}
-                                        ")
-
-                                        let fileId = FileId.NewId ()
-                                        Store.set setter (Atoms.File.chunkCount fileId) chunkCount
-
-                                        chunks
-                                        |> Array.iteri (fun i -> Store.set setter (Atoms.File.chunk (fileId, i)))
+                                        let fileId =
+                                            Hydrate.hydrateFile getter setter (Store.AtomScope.ReadOnly, hexString)
 
                                         let attachment = Attachment.Image fileId
-                                        do! onFilePasted (attachment, chunkCount)
+                                        do! onFilePasted attachment
                                     })
                             |> Promise.Parallel
                             |> Promise.ignore

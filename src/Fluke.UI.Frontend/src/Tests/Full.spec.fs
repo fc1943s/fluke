@@ -128,7 +128,7 @@ module Full =
                     Cy2.clickText (nameof Databases)
                     Cy2.waitFor "Lane Rendering" (Some {| timeout = timeout |})
 
-                    Cy.wait 4000
+                    Cy.wait 6000
 
                     Cy2.clickSelector "[data-testid='Add Database']"
 

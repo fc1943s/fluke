@@ -634,9 +634,9 @@ module State =
 
 
         module rec File =
-            let rec blob =
+            let rec hexString =
                 Store.readSelectorFamily (
-                    $"{nameof File}/{nameof blob}",
+                    $"{nameof File}/{nameof hexString}",
                     (fun (fileId: FileId) getter ->
                         let chunkCount = Store.value getter (Atoms.File.chunkCount fileId)
 
@@ -663,22 +663,27 @@ module State =
 
                                 None
                             else
-                                let hexString = chunks |> String.concat ""
-                                let bytes = JS.hexStringToByteArray hexString
-                                let blob = JS.uint8ArrayToBlob (JSe.Uint8Array (unbox<uint8 []> bytes)) "image/png"
-
                                 JS.log
                                     (fun () ->
                                         $"File.blob
                                     chunkCount={chunkCount}
-                                    text.Length={hexString.Length}
-                                    bytes.Length={bytes.Length}
                                     chunks.Length={chunks.Length}
                                     chunks.[0].Length={if chunks.Length = 0 then unbox null else chunks.[0].Length}
-                                    blob.size={blob.size}
                                     ")
 
-                                Some blob)
+                                Some (chunks |> String.concat ""))
+                )
+
+            let rec blob =
+                Store.readSelectorFamily (
+                    $"{nameof File}/{nameof blob}",
+                    (fun (fileId: FileId) getter ->
+                        let hexString = Store.value getter (hexString fileId)
+
+                        hexString
+                        |> Option.map JS.hexStringToByteArray
+                        |> Option.map
+                            (fun bytes -> JS.uint8ArrayToBlob (JSe.Uint8Array (unbox<uint8 []> bytes)) "image/png"))
                 )
 
             let rec objectUrl =

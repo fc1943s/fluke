@@ -46,6 +46,35 @@ module Hydrate =
         Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachment)
         attachmentId
 
+    let hydrateFile _getter setter (atomScope: Store.AtomScope, hexString: string) =
+        let chunkSize = 16000
+        let chunkCount = int (Math.Ceiling (float hexString.Length / float chunkSize))
+
+        let chunks =
+            JS.chunkString
+                hexString
+                {|
+                    size = chunkSize
+                    unicodeAware = false
+                |}
+
+        JS.log
+            (fun () ->
+                $"hydrateFile.
+        base64.Length={hexString.Length}
+        chunkCount={chunkCount}
+        chunks.[0].Length={chunks.[0].Length}
+        ")
+
+        let fileId = FileId.NewId ()
+        Store.set setter (Atoms.File.chunkCount fileId) chunkCount
+
+        chunks
+        |> Array.iteri (fun i chunk -> Store.scopedSet setter atomScope (Atoms.File.chunk, (fileId, i), chunk))
+
+        fileId
+
+
     let hydrateTaskState getter setter (atomScope, databaseId, taskState) =
         promise {
             do! hydrateTask getter setter (atomScope, databaseId, taskState.Task)
@@ -118,12 +147,34 @@ module Hydrate =
                                     hydrateAttachment getter setter (atomScope, (timestamp, attachment))
                                     |> ignore))
 
+                    let newFileIdMap =
+                        databaseState.FileMap
+                        |> Map.toList
+                        |> List.map
+                            (fun (fileId, hexString) -> fileId, hydrateFile getter setter (atomScope, hexString))
+                        |> Map.ofList
+
                     do!
                         databaseState.TaskStateMap
                         |> Map.values
-                        |> Seq.map (fun taskState -> hydrateTaskState (atomScope, databaseState.Database.Id, taskState))
+                        |> Seq.map
+                            (fun taskState ->
+                                let newTaskState =
+                                    { taskState with
+                                        Attachments =
+                                            taskState.Attachments
+                                            |> List.map
+                                                (fun (moment, attachment) ->
+                                                    moment,
+                                                    match attachment with
+                                                    | Attachment.Image fileId -> Attachment.Image newFileIdMap.[fileId]
+                                                    | _ -> attachment)
+                                    }
+
+                                hydrateTaskState (atomScope, databaseState.Database.Id, newTaskState))
                         |> Promise.Parallel
                         |> Promise.ignore
+
                 //
 //                    Store.set
 //                        setter
@@ -179,45 +230,79 @@ module Hydrate =
 
                     let informationStateList = Store.value getter Selectors.Session.informationStateList
 
-                    let databaseState =
-                        {
-                            Database = database
-                            InformationStateMap =
-                                informationStateList
-                                |> List.map (fun informationState -> informationState.Information, informationState)
-                                |> Map.ofSeq
-                            TaskStateMap =
-                                taskStateList
-                                |> List.map (fun taskState -> taskState.Task.Id, taskState)
-                                |> Map.ofSeq
-                        }
+                    let fileIdList =
+                        taskStateList
+                        |> List.collect
+                            (fun taskState ->
+                                taskState.Attachments
+                                |> List.choose
+                                    (fun (_, attachment) ->
+                                        match attachment with
+                                        | Attachment.Image fileId -> Some fileId
+                                        | _ -> None))
 
-                    if databaseState.TaskStateMap
-                       |> Map.exists
-                           (fun _ taskState ->
-                               taskState.Task.Name
-                               |> TaskName.Value
-                               |> String.IsNullOrWhiteSpace
-                               || taskState.Task.Information
-                                  |> Information.Name
-                                  |> InformationName.Value
-                                  |> String.IsNullOrWhiteSpace) then
-                        toast (fun x -> x.description <- "Database is not fully synced")
+                    let hexStringList =
+                        fileIdList
+                        |> List.map Selectors.File.hexString
+                        |> List.toArray
+                        |> Store.waitForAll
+                        |> Store.value getter
+
+                    if hexStringList |> Array.contains None then
+                        toast (fun x -> x.description <- "Invalid files present")
                     else
+                        let fileMap =
+                            fileIdList
+                            |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
+                            |> Map.ofList
 
-                        let json = databaseState |> Json.encode
+                        let informationStateMap =
+                            informationStateList
+                            |> List.map (fun informationState -> informationState.Information, informationState)
+                            |> Map.ofSeq
 
-                        let timestamp =
-                            (FlukeDateTime.FromDateTime DateTime.Now)
-                            |> FlukeDateTime.Stringify
+                        let taskStateMap =
+                            taskStateList
+                            |> List.map (fun taskState -> taskState.Task.Id, taskState)
+                            |> Map.ofSeq
 
-                        JS.download json $"{database.Name |> DatabaseName.Value}-{timestamp}.json" "application/json"
+                        let databaseState =
+                            {
+                                Database = database
+                                InformationStateMap = informationStateMap
+                                TaskStateMap = taskStateMap
+                                FileMap = fileMap
+                            }
 
-                        toast
-                            (fun x ->
-                                x.description <- "Database exported successfully"
-                                x.title <- "Success"
-                                x.status <- "success")
+                        if databaseState.TaskStateMap
+                           |> Map.exists
+                               (fun _ taskState ->
+                                   taskState.Task.Name
+                                   |> TaskName.Value
+                                   |> String.IsNullOrWhiteSpace
+                                   || taskState.Task.Information
+                                      |> Information.Name
+                                      |> InformationName.Value
+                                      |> String.IsNullOrWhiteSpace) then
+                            toast (fun x -> x.description <- "Database is not fully synced")
+                        else
+
+                            let json = databaseState |> Json.encode
+
+                            let timestamp =
+                                (FlukeDateTime.FromDateTime DateTime.Now)
+                                |> FlukeDateTime.Stringify
+
+                            JS.download
+                                json
+                                $"{database.Name |> DatabaseName.Value}-{timestamp}.json"
+                                "application/json"
+
+                            toast
+                                (fun x ->
+                                    x.description <- "Database exported successfully"
+                                    x.title <- "Success"
+                                    x.status <- "success")
                 }),
             [|
                 box toast

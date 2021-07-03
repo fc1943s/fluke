@@ -36,12 +36,6 @@ module AreaForm =
         Chakra.stack
             (fun x -> x.spacing <- "18px")
             [
-                Chakra.box
-                    (fun x -> x.fontSize <- "15px")
-                    [
-                        str "Add Area"
-                    ]
-
                 Chakra.stack
                     (fun x -> x.spacing <- "15px")
                     [

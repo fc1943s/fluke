@@ -123,7 +123,7 @@ module Input =
                 |]
             )
 
-        let alreadyFocused, setAlreadyFocused = React.useState true
+        let alreadyFocused, setAlreadyFocused = React.useState false
 
         React.useEffect (
             (fun () ->

@@ -10,7 +10,6 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
-open Fable.Core
 open Feliz
 
 

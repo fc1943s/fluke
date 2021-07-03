@@ -27,16 +27,7 @@ module RightDock =
                         {|
                             Name = "Database"
                             Icon = Icons.fi.FiDatabase
-                            Content =
-                                fun () ->
-                                    Chakra.flex
-                                        (fun x ->
-                                            x.flex <- "1"
-                                            x.overflowY <- "auto"
-                                            x.flexBasis <- 0)
-                                        [
-                                            DatabaseForm.DatabaseFormWrapper ()
-                                        ]
+                            Content = DatabaseForm.DatabaseFormWrapper
                             RightIcons = []
                         |}
 
@@ -44,16 +35,7 @@ module RightDock =
                         {|
                             Name = "Information"
                             Icon = Icons.bs.BsListNested
-                            Content =
-                                fun () ->
-                                    Chakra.flex
-                                        (fun x ->
-                                            x.flex <- "1"
-                                            x.overflowY <- "auto"
-                                            x.flexBasis <- 0)
-                                        [
-                                            InformationForm.InformationFormWrapper ()
-                                        ]
+                            Content = InformationForm.InformationFormWrapper
                             RightIcons = []
                         |}
 
@@ -61,17 +43,7 @@ module RightDock =
                         {|
                             Name = "Task"
                             Icon = Icons.bs.BsListTask
-                            Content =
-                                fun () ->
-                                    Chakra.flex
-                                        (fun x ->
-                                            x.flex <- "1"
-                                            x.overflowY <- "auto"
-                                            x.flexBasis <- 0
-                                            )
-                                        [
-                                            TaskForm.TaskFormWrapper ()
-                                        ]
+                            Content = TaskForm.TaskFormWrapper
                             RightIcons = []
                         |}
 
@@ -79,16 +51,7 @@ module RightDock =
                         {|
                             Name = "Cell"
                             Icon = Icons.fa.FaCalendarCheck
-                            Content =
-                                fun () ->
-                                    Chakra.flex
-                                        (fun x ->
-                                            x.flex <- "1"
-                                            x.overflowY <- "auto"
-                                            x.flexBasis <- 0)
-                                        [
-                                            CellForm.CellFormWrapper ()
-                                        ]
+                            Content = CellForm.CellFormWrapper
                             RightIcons = []
                         |}
                     ]),

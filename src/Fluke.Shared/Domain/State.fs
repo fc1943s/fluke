@@ -41,6 +41,7 @@ module State =
             Database: Database
             InformationStateMap: Map<Information, InformationState>
             TaskStateMap: Map<TaskId, TaskState>
+            FileMap: Map<FileId, string>
         }
 
     and [<RequireQualifiedAccess>] DatabaseAccess =
@@ -129,6 +130,7 @@ module State =
                     }
                 InformationStateMap = Map.empty
                 TaskStateMap = Map.empty
+                FileMap = Map.empty
             }
 
     let inline informationListToStateMap informationList =

@@ -38,14 +38,6 @@ module ProjectForm =
         Chakra.stack
             (fun x -> x.spacing <- "18px")
             [
-                Chakra.box
-                    (fun x ->
-                        x.fontSize <- "15px"
-                        x.textAlign <- "left")
-                    [
-                        str "Add Project"
-                    ]
-
                 AreaSelector.AreaSelector area setArea
 
                 Chakra.stack
