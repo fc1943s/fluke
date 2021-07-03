@@ -66,6 +66,27 @@ module TopBar =
                     [
                         if deviceInfo.IsElectron then
                             Tooltip.wrap
+                                (str "Minimize")
+                                [
+                                    TransparentIconButton.TransparentIconButton
+                                        {|
+                                            Props =
+                                                fun x ->
+                                                    x.icon <- Icons.fi.FiMinus |> Icons.render
+                                                    x.height <- "27px"
+                                                    x.fontSize <- "17px"
+
+                                                    x.onClick <-
+                                                        fun _ ->
+                                                            promise {
+                                                                match JS.window id with
+                                                                | Some window -> window?api?send "minimize"
+                                                                | None -> ()
+                                                            }
+                                        |}
+                                ]
+
+                            Tooltip.wrap
                                 (str "Refresh")
                                 [
                                     TransparentIconButton.TransparentIconButton

@@ -14,9 +14,7 @@ module AttachmentPanel =
         let deleteAttachment =
             Store.useCallback (
                 (fun getter _ _ ->
-                    promise {
-                        ()
-                    }
+                    promise { () }
                     //                Store.deleteRoot getter (Atoms.Task.databaseId taskId)
                     ),
                 [|
@@ -64,8 +62,16 @@ module AttachmentPanel =
                                                                     Chakra.box
                                                                         (fun x -> x.lineHeight <- "16px")
                                                                         [
-                                                                            str (moment |> FlukeDateTime.Stringify)
-
+                                                                            Chakra.box
+                                                                                (fun x ->
+                                                                                    x.userSelect <- "text"
+                                                                                    x.display <- "inline")
+                                                                                [
+                                                                                    str (
+                                                                                        moment
+                                                                                        |> FlukeDateTime.Stringify
+                                                                                    )
+                                                                                ]
 
                                                                             Menu.Menu
                                                                                 {|
@@ -115,7 +121,7 @@ module AttachmentPanel =
                                                                 ]
 
                                                             Chakra.box
-                                                                (fun _ -> ())
+                                                                (fun x -> x.userSelect <- "text")
                                                                 [
                                                                     Markdown.render comment
                                                                 ]

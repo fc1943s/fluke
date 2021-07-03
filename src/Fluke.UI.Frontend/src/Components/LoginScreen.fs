@@ -153,14 +153,6 @@ module LoginScreen =
                                             Chakra.stack
                                                 (fun x -> x.spacing <- "10px")
                                                 [
-                                                    Chakra.box
-                                                        (fun x ->
-                                                            x.paddingBottom <- "5px"
-                                                            x.fontSize <- "15px")
-                                                        [
-                                                            str "Register"
-                                                        ]
-
                                                     Input.Input
                                                         {|
                                                             CustomProps =

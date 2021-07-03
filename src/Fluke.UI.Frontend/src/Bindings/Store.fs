@@ -236,7 +236,12 @@ module Store =
             if lastAtomPath.IsNone then
                 lastAtomPath <- queryAtomPath (AtomReference.Atom (unbox atom))
 
-            JS.log (fun () -> $"assignLastGunAtomNode atom={atom} lastAtomPath={lastAtomPath}")
+            JS.log
+                (fun () ->
+                    match lastAtomPath with
+                    | Some (AtomPath atomPath) when atomPath.Contains "devicePing" |> not ->
+                        $"assignLastGunAtomNode atom={atom} lastAtomPath={atomPath}"
+                    | _ -> null)
 
             let username = value getter Atoms.username
             lastGunAtomNode <- gunAtomNodeFromAtomPath getter username lastAtomPath
@@ -284,7 +289,10 @@ module Store =
 
                         JS.log
                             (fun () ->
-                                $"gun.on() value. skipping.
+                                if (string newValue).StartsWith "Ping " then
+                                    null
+                                else
+                                    $"gun.on() value. skipping.
                                                     jsTypeof-newValue={jsTypeof newValue}
                                                     newValue={newValue}
                                                     lastValue={lastValue}
@@ -308,12 +316,15 @@ module Store =
                                         typeof newValue={jsTypeof newValue}
                                         {baseInfo ()} "
 
-                                $"gun.on() value. triggering.
-                            _lastValue={_lastValue}
-                            typeof lastValue={jsTypeof _lastValue}
-                            newValue={newValue}
-                            typeof newValue={jsTypeof newValue}
-                            {baseInfo ()} ")
+                                if (string newValue).StartsWith "Ping " then
+                                    null
+                                else
+                                    $"gun.on() value. triggering.
+                                _lastValue={_lastValue}
+                                typeof lastValue={jsTypeof _lastValue}
+                                newValue={newValue}
+                                typeof newValue={jsTypeof newValue}
+                                {baseInfo ()} ")
 
                         //                        Browser.Dom.window?atomPath <- atomPath
 //                        Browser.Dom.window?lastValue <- _lastValue
@@ -388,14 +399,22 @@ module Store =
             JS.debounce
                 (fun newValue ->
                     promise {
-                        JS.log (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #1")
+                        JS.log
+                            (fun () ->
+                                if (string newValue).StartsWith "Ping " then
+                                    null
+                                else
+                                    "atomFamily.wrapper.set() debounceGunPut promise. #1")
 
                         try
                             match lastGunAtomNode with
                             | Some (key, gunAtomNode) ->
                                 JS.log
                                     (fun () ->
-                                        $"atomFamily.wrapper.set() debounceGunPut promise. #2 before encode {key}")
+                                        if (string newValue).StartsWith "Ping " then
+                                            null
+                                        else
+                                            $"atomFamily.wrapper.set() debounceGunPut promise. #2 before encode {key}")
 
                                 let! newValueJson =
                                     if newValue |> JS.ofNonEmptyObj |> Option.isNone then
@@ -404,7 +423,11 @@ module Store =
                                         Gun.userEncode<'TValue> gunAtomNode newValue
 
                                 JS.log
-                                    (fun () -> $"atomFamily.wrapper.set() debounceGunPut promise. #3. before put {key}")
+                                    (fun () ->
+                                        if (string newValue).StartsWith "Ping " then
+                                            null
+                                        else
+                                            $"atomFamily.wrapper.set() debounceGunPut promise. #3. before put {key}")
 
                                 if lastGunValue.IsNone
                                    || lastGunValue
@@ -418,10 +441,13 @@ module Store =
                                     if putResult then
                                         JS.log
                                             (fun () ->
-                                                $"atomFamily.wrapper.set() debounceGunPut promise result.
-                                                   newValue={newValue}
-                                                   {key}
-                                                   {baseInfo ()} ")
+                                                if (string newValue).StartsWith "Ping " then
+                                                    null
+                                                else
+                                                    $"atomFamily.wrapper.set() debounceGunPut promise result.
+                                                       newValue={newValue}
+                                                       {key}
+                                                       {baseInfo ()} ")
                                     else
                                         Browser.Dom.window?lastPutResult <- putResult
 
@@ -433,7 +459,10 @@ module Store =
                                 else
                                     JS.log
                                         (fun () ->
-                                            $"atomFamily.wrapper.set() debounceGunPut promise.
+                                            if (string newValue).StartsWith "Ping " then
+                                                null
+                                            else
+                                                $"atomFamily.wrapper.set() debounceGunPut promise.
                                                    put skipped
                                                    newValue[{newValue}]==lastGunValue[]
                                                    {key}
@@ -466,7 +495,10 @@ module Store =
 
                     JS.log
                         (fun () ->
-                            $"atomFamily.wrapper.get()
+                            if (string result).StartsWith "Ping " then
+                                null
+                            else
+                                $"atomFamily.wrapper.get()
                                 wrapper={wrapper}
                                 userAtom={userAtom}
                                 result={result}
@@ -521,7 +553,10 @@ module Store =
 
                                     JS.log
                                         (fun () ->
-                                            $"atomFamily.wrapper.set()
+                                            if (string newValue).StartsWith "Ping " then
+                                                null
+                                            else
+                                                $"atomFamily.wrapper.set()
                                                     wrapper={wrapper}
                                                     userAtom={userAtom}
                                                     jsTypeof-newValue={jsTypeof newValue}
@@ -535,7 +570,10 @@ module Store =
 
                                 JS.log
                                     (fun () ->
-                                        $"atomFamily.wrapper.set()
+                                        if (string newValue).StartsWith "Ping " then
+                                            null
+                                        else
+                                            $"atomFamily.wrapper.set()
                                                     ##### lastValue setted. returning #####
                                                     wrapper={wrapper}
                                                     userAtom={userAtom}
@@ -596,13 +634,22 @@ module Store =
             (fun _ _ _newValue -> promise { failwith $"readonly selector {atomPath}" })
         )
 
+    let inline selectAtomSyncValues
+        (
+            atomPath: string,
+            atomFamily: 'TKey -> Atom<_>,
+            key: 'TKey,
+            onFormat: string -> 'TKey
+        ) : Atom<Atom<'TKey> []> =
+        JS.undefined
+
     let inline selectAtomSyncKeys
         (
             atomPath: string,
             atomFamily: 'TKey -> Atom<_>,
             key: 'TKey,
             onFormat: string -> 'TKey
-        ) : Atom<Atom<'Key> []> =
+        ) : Atom<Atom<'TKey> []> =
         Profiling.addCount $"{atomPath} :selectAtomSyncKeys"
 
         let atom = atomFamily key
@@ -645,7 +692,7 @@ module Store =
                 $"@@ atomFamily constructor
                 {baseInfo ()}")
 
-        let wrapper =
+        let rec wrapper =
             selector (
                 atomPath,
                 None,
@@ -653,8 +700,22 @@ module Store =
                     let username = assignLastGunAtomNode getter
                     let userAtom = internalAtom username
 
+                    Profiling.addCount $"{gunNodePath} get"
+
+
                     if not JS.jestWorkerId then
-                        value getter userAtom
+
+                        let result = value getter userAtom
+
+                        JS.log
+                            (fun () ->
+                                $"@@ atomFamily.wrapper.get()
+                                    wrapper={wrapper}
+                                    userAtom={userAtom}
+                                    result={result}
+                                    {baseInfo ()} ")
+
+                        result
                     else
                         match lastAtomPath with
                         | Some (AtomPath atomPath) ->
@@ -934,9 +995,9 @@ module Store =
 
     let inline useSetState atom = jotaiUtils.useUpdateAtom atom
 
-    let inline useSetStatePrev<'T> atom =
-        let setter = jotaiUtils.useUpdateAtom<'T> atom
-        fun (value: 'T -> 'T) -> setter (unbox value)
+    //    let inline useSetStatePrev<'T> atom =
+//        let setter = jotaiUtils.useUpdateAtom<'T> atom
+//        fun (value: 'T -> 'T) -> setter (unbox value)
 
     let provider = jotai.provider
 

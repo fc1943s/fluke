@@ -19,7 +19,6 @@ module App =
                 CtrlListener.CtrlListener ()
                 ShiftListener.ShiftListener ()
                 SelectionListener.SelectionListener ()
-                PasteListener.PasteListener ()
 
                 Content.Content ()
 

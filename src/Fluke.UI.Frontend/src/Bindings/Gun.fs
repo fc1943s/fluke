@@ -258,7 +258,13 @@ module Gun =
     let subscribe (gun: IGunChainReference) fn =
         gun.on
             (fun data _key ->
-                JS.log (fun () -> $"subscribe.on() data. batching...data={data} key={_key}")
+                JS.log
+                    (fun () ->
+                        if _key = "devicePing" then
+                            null
+                        else
+                            $"subscribe.on() data. batching...data={data} key={_key}")
+
                 fn data)
 
     let batchSubscribe =

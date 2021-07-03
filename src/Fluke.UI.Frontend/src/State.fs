@@ -2,6 +2,7 @@ namespace Fluke.UI.Frontend
 
 #nowarn "40"
 
+open Fable.Extras
 open Fable.Core.JsInterop
 open System
 open Fluke.Shared
@@ -17,6 +18,7 @@ module State =
     open Domain.UserInteraction
     open Domain.State
     open View
+
 
     type TextKey = TextKey of key: string
 
@@ -36,6 +38,7 @@ module State =
         | Information of Information
         | Task of DatabaseId * TaskId
         | Cell of TaskId * DateId
+        | File of FileId
 
     [<RequireQualifiedAccess>]
     type UIFlagType =
@@ -43,6 +46,30 @@ module State =
         | Information
         | Task
         | Cell
+        | File
+
+    type DeviceId = DeviceId of guid: Guid
+
+    and DeviceId with
+        static member inline NewId () = DeviceId (Guid.NewGuid ())
+        static member inline Value (DeviceId guid) = guid
+
+    type Ping = Ping of ticksText: string
+
+    and Ping with
+        static member inline Value (Ping ticks) = int64 ticks
+
+    let deviceId =
+        match JS.window id with
+        | Some window ->
+            match window.localStorage.getItem "deviceId" with
+            | String.ValidString deviceId -> DeviceId (Guid deviceId)
+            | _ ->
+                let deviceId = DeviceId.NewId ()
+                window.localStorage.setItem ("deviceId", deviceId |> DeviceId.Value |> string)
+                deviceId
+        | None -> DeviceId.NewId ()
+
 
     let uiFlagDefault = UIFlag.None
     let uiVisibleFlagDefault = false
@@ -52,6 +79,8 @@ module State =
         {
             AccordionFlagMap: Map<string, string []>
             CellSize: int
+            ClipboardAttachmentSet: Set<AttachmentId>
+            ClipboardVisible: bool
             Color: string option
             DarkMode: bool
             DaysAfter: int
@@ -83,6 +112,8 @@ module State =
             {
                 AccordionFlagMap = Map.empty
                 CellSize = 19
+                ClipboardAttachmentSet = Set.empty
+                ClipboardVisible = false
                 Color = None
                 DarkMode = false
                 DaysAfter = 7
@@ -225,11 +256,21 @@ module State =
                     []
                 )
 
+            let rec clipboardAttachmentSet =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof clipboardAttachmentSet}",
+                    UserState.Default.ClipboardAttachmentSet,
+                    []
+                )
+
+            let rec clipboardVisible =
+                Store.atomWithSync ($"{nameof User}/{nameof clipboardVisible}", UserState.Default.ClipboardVisible, [])
+
             let rec uiFlag =
                 Store.atomFamilyWithSync (
                     $"{nameof User}/{nameof uiFlag}",
                     (fun (_uiFlagType: UIFlagType) -> uiFlagDefault),
-                    (fun (uiFlagType: UIFlagType) -> uiFlagType |> string |> List.singleton)
+                    (string >> List.singleton)
                 )
 
 
@@ -237,15 +278,23 @@ module State =
                 Store.atomFamilyWithSync (
                     $"{nameof User}/{nameof uiVisibleFlag}",
                     (fun (_uiFlagType: UIFlagType) -> uiVisibleFlagDefault),
-                    (fun (uiFlagType: UIFlagType) -> uiFlagType |> string |> List.singleton)
+                    (string >> List.singleton)
                 )
-
 
             let rec accordionFlag =
                 Store.atomFamilyWithSync (
                     $"{nameof User}/{nameof accordionFlag}",
                     (fun (_key: TextKey) -> accordionFlagDefault),
-                    (fun (key: TextKey) -> key |> TextKey.Value |> List.singleton)
+                    (TextKey.Value >> List.singleton)
+
+                )
+
+        module rec Device =
+            let rec devicePing =
+                Store.atomFamilyWithSync (
+                    $"{nameof Device}/{nameof devicePing}",
+                    (fun (_deviceId: DeviceId) -> Ping "0"),
+                    (DeviceId.Value >> string >> List.singleton)
                 )
 
 
@@ -291,6 +340,29 @@ module State =
                     databaseIdIdentifier
                 )
 
+
+        module rec File =
+            let fileIdIdentifier (fileId: FileId) =
+                fileId |> FileId.Value |> string |> List.singleton
+
+
+            let rec chunkCount =
+                Store.atomFamilyWithSync (
+                    $"{nameof File}/{nameof chunkCount}",
+                    (fun (_fileId: FileId) -> 0),
+                    fileIdIdentifier
+                )
+
+            let rec chunk =
+                Store.atomFamilyWithSync (
+                    $"{nameof File}/{nameof chunk}",
+                    (fun (_fileId: FileId, _index: int) -> ""),
+                    (fun (fileId: FileId, index: int) ->
+                        fileIdIdentifier fileId
+                        @ [
+                            string index
+                        ])
+                )
 
         module rec Attachment =
             let attachmentIdIdentifier (attachmentId: AttachmentId) =
@@ -472,7 +544,7 @@ module State =
 
         let rec deviceInfo = Store.readSelector ($"{nameof deviceInfo}", (fun _ -> JS.deviceInfo))
 
-        let rec asyncDatabaseIdAtoms : Store.Atom<Store.Atom<DatabaseId> []> =
+        let rec asyncDatabaseIdAtoms =
             Store.selectAtomSyncKeys (
                 $"{nameof asyncDatabaseIdAtoms}",
                 Atoms.Database.name,
@@ -480,12 +552,20 @@ module State =
                 (Guid >> DatabaseId)
             )
 
-        let rec asyncTaskIdAtoms : Store.Atom<Store.Atom<TaskId> []> =
+        let rec asyncTaskIdAtoms =
             Store.selectAtomSyncKeys (
                 $"{nameof asyncTaskIdAtoms}",
                 Atoms.Task.databaseId,
                 Task.Default.Id,
                 (Guid >> TaskId)
+            )
+
+        let rec asyncDeviceIdAtoms =
+            Store.selectAtomSyncKeys (
+                $"{nameof asyncDeviceIdAtoms}",
+                Atoms.Device.devicePing,
+                deviceId,
+                (Guid >> DeviceId)
             )
 
 
@@ -550,6 +630,63 @@ module State =
                                 let taskId = Store.value getter taskIdAtom
                                 let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
                                 databaseId = databaseId'))
+                )
+
+
+        module rec File =
+            let rec blob =
+                Store.readSelectorFamily (
+                    $"{nameof File}/{nameof blob}",
+                    (fun (fileId: FileId) getter ->
+                        let chunkCount = Store.value getter (Atoms.File.chunkCount fileId)
+
+                        match chunkCount with
+                        | 0 -> None
+                        | _ ->
+                            let chunks =
+                                [|
+                                    0 .. chunkCount - 1
+                                |]
+                                |> Array.map (fun i -> Atoms.File.chunk (fileId, i))
+                                |> Store.waitForAll
+                                |> Store.value getter
+
+                            if chunks |> Array.contains "" then
+                                JS.log
+                                    (fun () ->
+                                        $"File.blob
+                                        incomplete blob. skipping
+                                    chunkCount={chunkCount}
+                                    chunks.Length={chunks.Length}
+                                    chunks.[0].Length={if chunks.Length = 0 then unbox null else chunks.[0].Length}
+                                    ")
+
+                                None
+                            else
+                                let hexString = chunks |> String.concat ""
+                                let bytes = JS.hexStringToByteArray hexString
+                                let blob = JS.uint8ArrayToBlob (JSe.Uint8Array (unbox<uint8 []> bytes)) "image/png"
+
+                                JS.log
+                                    (fun () ->
+                                        $"File.blob
+                                    chunkCount={chunkCount}
+                                    text.Length={hexString.Length}
+                                    bytes.Length={bytes.Length}
+                                    chunks.Length={chunks.Length}
+                                    chunks.[0].Length={if chunks.Length = 0 then unbox null else chunks.[0].Length}
+                                    blob.size={blob.size}
+                                    ")
+
+                                Some blob)
+                )
+
+            let rec objectUrl =
+                Store.readSelectorFamily (
+                    $"{nameof File}/{nameof objectUrl}",
+                    (fun (fileId: FileId) getter ->
+                        let blob = Store.value getter (blob fileId)
+                        blob |> Option.map Browser.Url.URL.createObjectURL)
                 )
 
 
@@ -915,7 +1052,26 @@ module State =
 //                            taskIdMap |> Map.values |> Seq.reduce Set.union)
 //                )
 
+            let rec devicePingList =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof devicePingList}",
+                    (fun getter ->
+                        let deviceIdArray =
+                            asyncDeviceIdAtoms
+                            |> Store.value getter
+                            |> Store.waitForAll
+                            |> Store.value getter
 
+                        let pingArray =
+                            deviceIdArray
+                            |> Array.map Atoms.Device.devicePing
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        deviceIdArray
+                        |> Array.toList
+                        |> List.mapi (fun i deviceId -> deviceId, pingArray.[i]))
+                )
 
             let rec selectedTaskIdAtoms =
                 Store.readSelector (
@@ -929,6 +1085,18 @@ module State =
                         |> Store.waitForAll
                         |> Store.value getter
                         |> Array.collect id)
+                )
+
+            let rec selectedTaskIdList =
+                Store.readSelector (
+                    $"{nameof Session}/{nameof selectedTaskIdList}",
+                    (fun getter ->
+                        let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
+
+                        selectedTaskIdAtoms
+                        |> Store.waitForAll
+                        |> Store.value getter
+                        |> Array.toList)
                 )
 
             let rec taskStateList =

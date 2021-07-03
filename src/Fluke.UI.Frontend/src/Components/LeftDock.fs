@@ -19,6 +19,39 @@ module LeftDock =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Database)
 
+        let deleteTemplates =
+            Store.useCallback (
+                (fun getter _ _ ->
+                    promise {
+                        let asyncDatabaseIdAtoms = Store.value getter Selectors.asyncDatabaseIdAtoms
+
+                        let databaseIdArray =
+                            asyncDatabaseIdAtoms
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        let owners =
+                            databaseIdArray
+                            |> Array.map Atoms.Database.owner
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        do!
+                            owners
+                            |> Array.indexed
+                            |> Array.choose
+                                (fun (i, owner) ->
+                                    if owner = Templates.templatesUser.Username then
+                                        Some databaseIdArray.[i]
+                                    else
+                                        None)
+                            |> Array.map (fun databaseId -> Store.deleteRoot getter (Atoms.Database.name databaseId))
+                            |> Promise.Parallel
+                            |> Promise.ignore
+                    }),
+                [||]
+            )
+
         let items, itemsMap =
             React.useMemo (
                 (fun () ->
@@ -86,6 +119,19 @@ module LeftDock =
                                             Icons.bs.BsThreeDotsVertical |> Icons.render,
                                             [
                                                 MenuItemToggle.MenuItemToggle Atoms.User.hideTemplates "Hide Templates"
+
+                                                Chakra.menuItem
+                                                    (fun x ->
+                                                        x.closeOnSelect <- true
+
+                                                        x.icon <-
+                                                            Icons.bi.BiTrash
+                                                            |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+
+                                                        x.onClick <- deleteTemplates)
+                                                    [
+                                                        str "Delete Templates"
+                                                    ]
                                             ]
                                         )
                                     ]
@@ -100,6 +146,7 @@ module LeftDock =
                     box deviceInfo
                     box isTesting
                     box setDatabaseUIFlag
+                    box deleteTemplates
                 |]
             )
 

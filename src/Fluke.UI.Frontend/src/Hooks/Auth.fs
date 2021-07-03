@@ -149,28 +149,33 @@ module Auth =
                                     | Ok (username, keys) ->
                                         do! hydrateTemplates ()
 
-                                        Store.set setter Atoms.User.cellSize UserState.Default.CellSize
-                                        Store.set setter Atoms.User.darkMode UserState.Default.DarkMode
-                                        Store.set setter Atoms.User.daysAfter UserState.Default.DaysAfter
-                                        Store.set setter Atoms.User.daysBefore UserState.Default.DaysBefore
-                                        Store.set setter Atoms.User.dayStart UserState.Default.DayStart
-                                        Store.set setter Atoms.User.expandedDatabaseIdSet UserState.Default.ExpandedDatabaseIdSet
-                                        Store.set setter Atoms.User.filterTasksByView UserState.Default.FilterTasksByView
-                                        Store.set setter Atoms.User.fontSize UserState.Default.FontSize
-                                        Store.set setter Atoms.User.hideSchedulingOverlay UserState.Default.HideSchedulingOverlay
-                                        Store.set setter Atoms.User.hideTemplates UserState.Default.HideTemplates
-                                        Store.set setter Atoms.User.informationAttachmentMap UserState.Default.InformationAttachmentMap
-                                        Store.set setter Atoms.User.language UserState.Default.Language
-                                        Store.set setter Atoms.User.leftDock UserState.Default.LeftDock
-                                        Store.set setter Atoms.User.rightDock UserState.Default.RightDock
-                                        Store.set setter Atoms.User.searchText UserState.Default.SearchText
-                                        Store.set setter Atoms.User.selectedDatabaseIdSet UserState.Default.SelectedDatabaseIdSet
-                                        Store.set setter Atoms.User.sessionBreakDuration UserState.Default.SessionBreakDuration
-                                        Store.set setter Atoms.User.sessionDuration UserState.Default.SessionDuration
-                                        Store.set setter Atoms.User.showViewOptions UserState.Default.ShowViewOptions
-                                        Store.set setter Atoms.User.systemUiFont UserState.Default.SystemUiFont
-                                        Store.set setter Atoms.User.view UserState.Default.View
-                                        Store.set setter Atoms.User.weekStart UserState.Default.WeekStart
+                                        let set atom value = Store.set setter atom value
+                                        let def = UserState.Default
+
+                                        set Atoms.User.cellSize def.CellSize
+                                        set Atoms.User.clipboardAttachmentSet def.ClipboardAttachmentSet
+                                        set Atoms.User.clipboardVisible def.ClipboardVisible
+                                        set Atoms.User.darkMode def.DarkMode
+                                        set Atoms.User.daysAfter def.DaysAfter
+                                        set Atoms.User.daysBefore def.DaysBefore
+                                        set Atoms.User.dayStart def.DayStart
+                                        set Atoms.User.expandedDatabaseIdSet def.ExpandedDatabaseIdSet
+                                        set Atoms.User.filterTasksByView def.FilterTasksByView
+                                        set Atoms.User.fontSize def.FontSize
+                                        set Atoms.User.hideSchedulingOverlay def.HideSchedulingOverlay
+                                        set Atoms.User.hideTemplates def.HideTemplates
+                                        set Atoms.User.informationAttachmentMap def.InformationAttachmentMap
+                                        set Atoms.User.language def.Language
+                                        set Atoms.User.leftDock def.LeftDock
+                                        set Atoms.User.rightDock def.RightDock
+                                        set Atoms.User.searchText def.SearchText
+                                        set Atoms.User.selectedDatabaseIdSet def.SelectedDatabaseIdSet
+                                        set Atoms.User.sessionBreakDuration def.SessionBreakDuration
+                                        set Atoms.User.sessionDuration def.SessionDuration
+                                        set Atoms.User.showViewOptions def.ShowViewOptions
+                                        set Atoms.User.systemUiFont def.SystemUiFont
+                                        set Atoms.User.view def.View
+                                        set Atoms.User.weekStart def.WeekStart
 
 
                                         JS.setTimeout

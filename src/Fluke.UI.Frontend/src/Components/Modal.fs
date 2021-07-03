@@ -34,7 +34,7 @@ module Modal =
             |]
         )
 
-        printfn $"input.input.Props.isOpen={props.isOpen} localState={localState}"
+        //        printfn $"input.input.Props.isOpen={props.isOpen} localState={localState}"
 
         if not props.isOpen && localState = LocalState.Closed then
             nothing
@@ -48,7 +48,11 @@ module Modal =
                 [
                     Chakra.modalOverlay (fun _ -> ()) []
                     Chakra.modalContent
-                        (fun x -> x.backgroundColor <- "gray.13")
+                        (fun x ->
+                            x.backgroundColor <- "gray.13"
+                            x.maxWidth <- "95vw"
+                            x.maxHeight <- "80vh"
+                            x.overflow <- "auto")
                         [
                             Chakra.modalBody
                                 (fun x -> x.padding <- "40px")

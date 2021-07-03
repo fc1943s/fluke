@@ -55,8 +55,8 @@
         <Compile Include="src\Components\AttachmentIndicator.fs" />
         <Compile Include="src\Components\Menu.fs" />
         <Compile Include="src\Components\Modal.fs" />
-        <Compile Include="src\Components\ModalFormTrigger.fs" />
-        <Compile Include="src\Components\ModalForm.fs" />
+        <Compile Include="src\Components\ModalFlagTrigger.fs" />
+        <Compile Include="src\Components\ModalFlag.fs" />
         <Compile Include="src\Components\InformationName.fs" />
         <Compile Include="src\Components\TaskInformationName.fs" />
         <Compile Include="src\Components\TaskPriority.fs" />
@@ -83,6 +83,7 @@
         <Compile Include="src\Components\ProjectForm.fs" />
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\DatabaseSelector.fs" />
+        <Compile Include="src\Components\PasteListener.fs" />
         <Compile Include="src\Components\AddAttachmentInput.fs" />
         <Compile Include="src\Components\AttachmentPanel.fs" />
         <Compile Include="src\Components\TaskForm.fs" />

@@ -290,15 +290,8 @@ module TaskForm =
     let TaskFormWrapper () =
         let hydrateTaskState = Hydrate.useHydrateTaskState ()
         let hydrateTask = Hydrate.useHydrateTask ()
-
-        let selectedTaskIdArray =
-            Selectors.Session.selectedTaskIdAtoms
-            |> Store.useValue
-            |> Store.waitForAll
-            |> Store.useValue
-
+        let selectedTaskIdList = Store.useValue Selectors.Session.selectedTaskIdList
         let setRightDock = Store.useSetState Atoms.User.rightDock
-
         let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
 
         let taskDatabaseId =
@@ -310,11 +303,11 @@ module TaskForm =
             React.useMemo (
                 (fun () ->
                     match taskUIFlag with
-                    | UIFlag.Task (_, taskId) when selectedTaskIdArray |> Array.contains taskId -> taskId
+                    | UIFlag.Task (_, taskId) when selectedTaskIdList |> List.contains taskId -> taskId
                     | _ -> Task.Default.Id),
                 [|
                     box taskUIFlag
-                    box selectedTaskIdArray
+                    box selectedTaskIdList
                 |]
             )
 

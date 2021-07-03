@@ -23,6 +23,7 @@ module Content =
                         x.flex <- "1"
                         x.maxWidth <- "100vw")
                     [
+                        PasteListener.PasteListener ()
 
                         TopBar.TopBar ()
 

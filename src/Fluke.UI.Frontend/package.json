@@ -51,8 +51,8 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.4",
 
-    "react": "~18.0.0-alpha-3e8c86c1c-20210630",
-    "react-dom": "~18.0.0-alpha-3e8c86c1c-20210630",
+    "react": "~18.0.0-alpha-ed6c091fe-20210701",
+    "react-dom": "~18.0.0-alpha-ed6c091fe-20210701",
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
 
@@ -84,7 +84,9 @@
     "rooks": "~5.0",
     "react-color": "~3.0.0-beta.3",
     "react-markdown": "~6.0",
+    "binconv": "~0.2",
     "remark-gfm": "~1.0",
+    "@shelf/fast-chunk-string": "~1.1",
     "re-resizable": "~6.9",
     "date-fns": "~2.22",
     "jssha": "~3.2"
@@ -103,13 +105,13 @@
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "electron": "~14.0.0-beta.10",
+    "electron": "beta",
     "electron-builder": "~22.11",
     "electronmon": "~2.0",
 
     "@typescript-eslint/eslint-plugin": "~4.28",
     "@typescript-eslint/parser": "~4.28",
-    "eslint": "~7.29",
+    "eslint": "~7.30",
     "eslint-plugin-react": "~7.24",
     "eslint-plugin-import": "~2.23",
     "eslint-plugin-jsx-a11y": "~6.4",

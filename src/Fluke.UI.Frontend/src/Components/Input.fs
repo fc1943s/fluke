@@ -123,6 +123,8 @@ module Input =
                 |]
             )
 
+        let alreadyFocused, setAlreadyFocused = React.useState true
+
         React.useEffect (
             (fun () ->
                 match inputRef.current with
@@ -130,15 +132,21 @@ module Input =
                 | _ ->
                     inputRef.current.value <- currentValueString
 
-                    if props.autoFocus
-                       && (not mounted || customProps.autoFocusOnAllMounts) then
-                        promise { inputRef.current.focus () }
-                        |> Promise.start
+                    if not alreadyFocused then
+                        if props.autoFocus
+                           && (not mounted || customProps.autoFocusOnAllMounts) then
+                            promise {
+                                inputRef.current.focus ()
+                                setAlreadyFocused true
+                            }
+                            |> Promise.start
 
                     if not mounted then
                         setMounted true
                         if customProps.atom.IsSome then fireChange () |> Promise.start),
             [|
+                box alreadyFocused
+                box setAlreadyFocused
                 box fireChange
                 box props
                 box customProps

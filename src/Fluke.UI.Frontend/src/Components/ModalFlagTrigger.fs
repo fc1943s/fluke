@@ -7,9 +7,9 @@ open Fluke.UI.Frontend.State
 open Fable.React
 
 
-module ModalFormTrigger =
+module ModalFlagTrigger =
     [<ReactComponent>]
-    let ModalFormTrigger
+    let ModalFlagTrigger
         (input: {| UIFlagType: UIFlagType
                    UIFlagValue: UIFlag
                    Trigger: (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement |})
@@ -21,7 +21,10 @@ module ModalFormTrigger =
                         Store.set setter (Atoms.User.uiFlag input.UIFlagType) input.UIFlagValue
                         Store.set setter (Atoms.User.uiVisibleFlag input.UIFlagType) true
                     }),
-                [||]
+                [|
+                    box input.UIFlagType
+                    box input.UIFlagValue
+                |]
             )
 
         let callbacks = Store.useCallbacks ()
@@ -35,7 +38,8 @@ module ModalFormTrigger =
                 }
                 |> Promise.start),
             [|
-                box input.Trigger
+                box setContent
+                box input
                 box onTrigger
                 box callbacks
             |]

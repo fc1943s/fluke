@@ -21,13 +21,19 @@ module Sorting =
                         | _ -> false)
                     |> Seq.length
 
+                let taskAttachmentsCount =
+                    taskState.CellStateMap
+                    |> Map.values
+                    |> Seq.collect (fun cellState -> cellState.Attachments)
+                    |> Seq.length
+
                 let taskSessionsCount =
                     taskState.CellStateMap
                     |> Map.values
                     |> Seq.collect (fun cellState -> cellState.Sessions)
                     |> Seq.length
 
-                disabledCellsCount - taskSessionsCount)
+                (disabledCellsCount * 2) - taskSessionsCount - taskAttachmentsCount)
 
     let sortLanesByIncomingRecurrency dayStart position lanes =
         lanes

@@ -67,6 +67,4 @@ module React =
 
     //    ReactDOM.render (appMain (), document.getElementById "root")
     let inline render rootElement appComponent =
-        reactDom
-            .createRoot(rootElement)
-            .render appComponent
+        (reactDom.createRoot rootElement).render appComponent

@@ -68,3 +68,7 @@ ipcMain.on('close', (evt, arg) => {
   console.log('closing', evt, arg);
   forceExit();
 })
+
+ipcMain.on('minimize', (evt, arg) => {
+  mainWindow.minimize();
+})

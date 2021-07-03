@@ -15,9 +15,9 @@ module DatabaseSelector =
     [<ReactComponent>]
     let rec DatabaseSelector (databaseId: DatabaseId) (taskId: TaskId) (onChange: DatabaseId -> unit) =
         let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name databaseId)
-        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
+        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
         let databaseIdList =
             databaseIdAtoms
             |> Store.waitForAll

@@ -49,12 +49,12 @@ module CellForm =
                             (fun x -> x.spacing <- "10px")
                             [
                                 Chakra.box
-                                    (fun _ -> ())
+                                    (fun x -> x.userSelect <- "text")
                                     [
                                         str $"""Task: {taskName}"""
                                     ]
                                 Chakra.box
-                                    (fun _ -> ())
+                                    (fun x -> x.userSelect <- "text")
                                     [
                                         str $"""Date: {dateId |> DateId.Value |> FlukeDate.Stringify}"""
                                     ]
@@ -75,22 +75,18 @@ module CellForm =
     let CellFormWrapper () =
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
 
-        let selectedTaskIdArray =
-            Selectors.Session.selectedTaskIdAtoms
-            |> Store.useValue
-            |> Store.waitForAll
-            |> Store.useValue
+        let selectedTaskIdList = Store.useValue Selectors.Session.selectedTaskIdList
 
         let taskId, dateId =
             React.useMemo (
                 (fun () ->
                     match cellUIFlag with
-                    | UIFlag.Cell (taskId, dateId) when selectedTaskIdArray |> Array.contains taskId ->
+                    | UIFlag.Cell (taskId, dateId) when selectedTaskIdList |> List.contains taskId ->
                         Some taskId, Some dateId
                     | _ -> None, None),
                 [|
                     box cellUIFlag
-                    box selectedTaskIdArray
+                    box selectedTaskIdList
                 |]
             )
 

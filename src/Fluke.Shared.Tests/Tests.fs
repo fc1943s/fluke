@@ -280,7 +280,8 @@ module Tests =
                                     Position =
                                         FlukeDateTime.Create (
                                             FlukeDate.Create 2020 Month.March 10,
-                                            FlukeTime.Create 14 0
+                                            FlukeTime.Create 14 0,
+                                            Second 0
                                         )
                                     Data =
                                         dslTemplate.Tasks
@@ -316,7 +317,8 @@ module Tests =
                                     Position =
                                         FlukeDateTime.Create (
                                             FlukeDate.Create 2020 Month.March 10,
-                                            FlukeTime.Create 14 0
+                                            FlukeTime.Create 14 0,
+                                            Second 0
                                         )
                                     Data =
                                         dslTemplate.Tasks
@@ -352,7 +354,8 @@ module Tests =
                                     Position =
                                         FlukeDateTime.Create (
                                             FlukeDate.Create 2020 Month.March 10,
-                                            FlukeTime.Create 14 0
+                                            FlukeTime.Create 14 0,
+                                            Second 0
                                         )
                                     Data =
                                         dslTemplate.Tasks
@@ -388,7 +391,8 @@ module Tests =
                                     Position =
                                         FlukeDateTime.Create (
                                             FlukeDate.Create 2020 Month.March 10,
-                                            FlukeTime.Create 14 0
+                                            FlukeTime.Create 14 0,
+                                            Second 0
                                         )
                                     Data =
                                         dslTemplate.Tasks

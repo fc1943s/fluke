@@ -42,6 +42,12 @@ module Hydrate =
 
     let useHydrateTask () = Store.useCallback (hydrateTask, [||])
 
+    let hydrateAttachment _getter setter (atomScope, (timestamp, attachment)) =
+        let attachmentId = AttachmentId.NewId ()
+        Store.scopedSet setter atomScope (Atoms.Attachment.timestamp, attachmentId, Some timestamp)
+        Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachment)
+        attachmentId
+
     let hydrateTaskState getter setter (atomScope, databaseId, taskState) =
         promise {
             do! hydrateTask getter setter (atomScope, databaseId, taskState.Task)
@@ -69,10 +75,7 @@ module Hydrate =
                  taskState.Attachments
                  |> List.map
                      (fun (timestamp, attachment) ->
-                         let attachmentId = AttachmentId.NewId ()
-                         Store.scopedSet setter atomScope (Atoms.Attachment.timestamp, attachmentId, Some timestamp)
-                         Store.scopedSet setter atomScope (Atoms.Attachment.attachment, attachmentId, Some attachment)
-                         attachmentId)
+                         hydrateAttachment getter setter (atomScope, (timestamp, attachment)))
                  |> Set.ofSeq)
 
             Store.scopedSet
@@ -87,19 +90,7 @@ module Hydrate =
                          attachments
                          |> List.choose
                              (fun (timestamp, attachment) ->
-                                 let attachmentId = AttachmentId.NewId ()
-
-                                 Store.scopedSet
-                                     setter
-                                     atomScope
-                                     (Atoms.Attachment.timestamp, attachmentId, Some timestamp)
-
-                                 Store.scopedSet
-                                     setter
-                                     atomScope
-                                     (Atoms.Attachment.attachment, attachmentId, Some attachment)
-
-                                 Some attachmentId)
+                                 Some (hydrateAttachment getter setter (atomScope, (timestamp, attachment))))
                          |> Set.ofSeq)
                  |> Map.ofSeq)
 
@@ -115,7 +106,7 @@ module Hydrate =
         let hydrateTaskState = useHydrateTaskState ()
 
         Store.useCallback (
-            (fun _ setter (atomScope, databaseState) ->
+            (fun getter setter (atomScope, databaseState) ->
                 promise {
                     do! hydrateDatabase (atomScope, databaseState.Database)
 
@@ -126,17 +117,8 @@ module Hydrate =
                             informationState.Attachments
                             |> List.iter
                                 (fun (timestamp, attachment) ->
-                                    let attachmentId = AttachmentId.NewId ()
-
-                                    Store.scopedSet
-                                        setter
-                                        atomScope
-                                        (Atoms.Attachment.timestamp, attachmentId, Some timestamp)
-
-                                    Store.scopedSet
-                                        setter
-                                        atomScope
-                                        (Atoms.Attachment.attachment, attachmentId, Some attachment)))
+                                    hydrateAttachment getter setter (atomScope, (timestamp, attachment))
+                                    |> ignore))
 
                     do!
                         databaseState.TaskStateMap

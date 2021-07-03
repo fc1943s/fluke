@@ -83,7 +83,7 @@ module Jotai =
         abstract atomWithReducer : 'TValue -> ('TValue -> 'TValue -> 'TValue) -> Atom<'TValue>
         abstract atomWithStorage : string -> 'TValue -> Atom<'TValue>
         abstract selectAtom : Atom<'TValue> -> ('TValue -> 'U) -> CompareFn<'TValue> -> Atom<'U>
-        abstract splitAtom : Atom<'TValue []> -> Atom<Atom<'U> []>
+        abstract splitAtom : Atom<'TValue []> -> Atom<Atom<'TValue> []>
         abstract useAtomValue : Atom<'TValue> -> 'TValue
         abstract useUpdateAtom : Atom<'TValue> -> ('TValue -> unit)
         abstract useAtomCallback : (GetFn * SetFn * 'TArg -> JS.Promise<'TValue>) -> ('TArg -> JS.Promise<'TValue>)

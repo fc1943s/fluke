@@ -128,6 +128,7 @@ module Chakra =
         abstract shouldWrapChildren : bool with get, set
         abstract size : string with get, set
         abstract spacing : string with get, set
+        abstract src : string with get, set
         abstract style : IChakraProps with get, set
         abstract tabIndex : int with get, set
         abstract textAlign : string with get, set
@@ -138,6 +139,7 @@ module Chakra =
         abstract transform : string with get, set
         abstract transformOrigin : string with get, set
         abstract ``type`` : string with get, set
+        abstract userSelect : string with get, set
         abstract value : obj with get, set
         abstract variant : string with get, set
         abstract visibility : string with get, set
@@ -177,6 +179,7 @@ module Chakra =
                    HStack: obj
                    Icon: obj
                    IconButton: obj
+                   Image: obj
                    Input: obj
                    InputGroup: obj
                    InputLeftElement: obj
@@ -269,6 +272,7 @@ module Chakra =
     let hStack<'T> = renderChakraComponent react.HStack
     let icon<'T> = renderChakraComponent react.Icon
     let iconButton<'T> = renderChakraComponent react.IconButton
+    let image<'T> = renderChakraComponent react.Image
     let input<'T> = renderChakraComponent react.Input
     let inputGroup<'T> = renderChakraComponent react.InputGroup
     let inputLeftElement<'T> = renderChakraComponent react.InputLeftElement

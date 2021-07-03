@@ -19,8 +19,55 @@ module StatusBar =
     [<ReactComponent>]
     let NowIndicator () =
         let now, setNow = React.useState DateTime.Now
+
         Scheduling.useScheduling Scheduling.Interval 1000 (fun _ _ -> promise { setNow DateTime.Now })
-        str $"Now: {now.ToString ()}"
+
+        let devicePingList = Store.useValue Selectors.Session.devicePingList
+
+        Chakra.box
+            (fun _ -> ())
+            [
+                str $"Now: {now.ToString ()}"
+                br []
+                yield!
+                    devicePingList
+                    |> List.map
+                        (fun (deviceId, ping) ->
+                            let diff = ping |> Ping.Value |> DateTime.ticksDiff |> int
+
+                            let diffSeconds = diff / 1000
+                            let diffMinutes = diffSeconds / 60
+
+                            //                            printfn
+//                                $"
+//                            i={i}
+//                            deviceId={deviceId}
+//                            diff={diff}
+//                            diffSeconds={diffSeconds}
+//                            diffMinutes={diffMinutes} "
+//
+                            if diffMinutes <= 60 then
+                                React.fragment [
+                                    br []
+
+                                    str
+                                        $"""Device {
+                                                        deviceId
+                                                        |> DeviceId.Value
+                                                        |> string
+                                                        |> Seq.takeWhile ((<>) '-')
+                                                        |> Seq.map string
+                                                        |> String.concat ""
+                                        }: {
+                                                if diffMinutes >= 2 then
+                                                    $"{diffMinutes} minutes"
+                                                else
+                                                    $"{diffSeconds} seconds"
+                                        }"""
+                                ]
+                            else
+                                nothing)
+            ]
 
     [<ReactComponent>]
     let UserIndicator () =
@@ -292,6 +339,12 @@ module StatusBar =
     [<ReactComponent>]
     let StatusBar () =
         let position = Store.useValue Atoms.position
+
+        Scheduling.useScheduling
+            Scheduling.Interval
+            2000
+            (fun _ setter ->
+                promise { Store.set setter (Atoms.Device.devicePing deviceId) (Ping (string DateTime.Now.Ticks)) })
 
         Chakra.simpleGrid
             (fun x ->

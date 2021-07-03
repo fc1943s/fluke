@@ -1,9 +1,10 @@
 namespace Fluke.UI.Frontend.Bindings
 
+open Browser.Types
 open Fable.Core
 open Fable.Core.JsInterop
-open Fluke.Shared
 open Fable.Extras
+open Fluke.Shared
 
 
 [<AutoOpen>]
@@ -13,6 +14,16 @@ module Operators =
 
     [<Emit("Object.assign($0, $1)")>]
     let (<+) _o1 _o2 : unit = jsNative
+
+[<AutoOpen>]
+module JSMagic =
+    type Clipboard with
+        [<Emit "$0.read()">]
+        member _.read
+            ()
+            : JS.Promise<{| getType: string -> JS.Promise<Blob>
+                            types: string [] |} []> =
+            jsNative
 
 module Promise =
     let ignore (fn: JS.Promise<_>) = Promise.map ignore fn
@@ -109,7 +120,9 @@ module JS =
 
 
     let inline log fn =
-        if isDebug () then printfn $"[log] {fn ()}"
+        if isDebug () then
+            let result = fn ()
+            if result <> null then printfn $"[log] {result}"
 
     let inline consoleLog x = Browser.Dom.console.log x
 
@@ -129,7 +142,53 @@ module JS =
     let newObj<'T> fn = jsOptions<'T> fn
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"
     let debounce<'T, 'U> (_: 'T -> 'U) (_: int) : 'T -> 'U = importDefault "lodash.debounce"
-    let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
+
+    let blobToUint8Array (_blob: Blob) : JS.Promise<JSe.Uint8Array> =
+        import "blobToUint8Array" "binconv/dist/src/blobToUint8Array"
+
+    let uint8ArrayToBlob (_arr: JSe.Uint8Array) (_type: string) : Blob =
+        //        let x = JSe.Uint8Array(_arr)
+//        new Blob([new Uint8Array(BYTEARRAY)], { type: 'video/mp4' })
+        import "uint8ArrayToBlob" "binconv/dist/src/uint8ArrayToBlob"
+
+
+
+    //    let uint8ArrayToBlob (_arr: int []) (_type: string) : Blob =
+//        emitJsExpr (_arr, _type) "new Blob($0, {type: $1})"
+
+    //    let base64ToUint8Array (_str: string) : int [] =
+//        import "base64ToUint8Array" "binconv/dist/src/base64ToUint8Array"
+//
+//    let uint8ArrayToBase64 (_arr: int []) : string =
+//        import "uint8ArrayToBase64" "binconv/dist/src/uint8ArrayToBase64"
+
+    let byteArrayToHexString byteArray =
+        byteArray
+        |> Array.map (fun b -> ("0" + (b &&& 0xFFuy)?toString 16).Substring -2)
+        |> String.concat ""
+
+
+    [<Emit "parseInt($0, $1)">]
+    let parseInt (_a: string) (_n: int) : int = jsNative
+
+    let hexStringToByteArray (text: string) =
+        let rec loop acc =
+            function
+            | a :: b :: tail -> loop (parseInt $"{a}{b}" 16 :: acc) tail
+            | [ _ ] -> failwith "invalid string length"
+            | [] -> acc
+
+        text
+        |> Seq.map string
+        |> Seq.toList
+        |> loop []
+        |> List.rev
+        |> List.toArray
+
+    let chunkString (_str: string) (_options: {| size: int; unicodeAware: bool |}) : string [] =
+        importDefault "@shelf/fast-chunk-string"
+
+    //    let cloneObj<'T> (obj: 'T) (fn: 'T -> 'T) = fn (cloneDeep obj)
     let toJsArray a = a |> Array.toList |> List.toArray
 
     let inline sleep (ms: int) = Async.Sleep ms
@@ -212,9 +271,9 @@ module JS =
                 [|
                     content
                 |],
-                { new Browser.Types.BlobPropertyBag with
+                { new BlobPropertyBag with
                     member _.``type`` = contentType
-                    member _.endings = Browser.Types.BlobEndings.Transparent
+                    member _.endings = BlobEndings.Transparent
 
                     member _.``type``
                         with set value = ()

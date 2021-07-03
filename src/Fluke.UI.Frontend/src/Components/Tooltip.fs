@@ -31,7 +31,9 @@ module Tooltip =
                         x.portalProps <- {| appendToParentPortal = true |}
                         //                        x.shouldWrapChildren <- true
                         props x)
-                    children
+                    [
+                        yield! children
+                    ]
             ]
 
 

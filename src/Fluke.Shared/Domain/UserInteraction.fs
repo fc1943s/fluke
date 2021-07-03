@@ -41,8 +41,10 @@ module UserInteraction =
         | Comment of comment: Comment
         | Link of url: string
         | Video of url: string
-        | Image of url: string
+        | Image of fileId: FileId
         | Attachment of username: Username * Attachment: Attachment
+
+    and FileId = FileId of guid: Guid
 
     and [<RequireQualifiedAccess>] Comment = Comment of comment: string
 
@@ -89,6 +91,10 @@ module UserInteraction =
     and AttachmentId with
         static member inline NewId () = AttachmentId (Guid.NewGuid ())
         static member inline Value (AttachmentId guid) = guid
+
+    and FileId with
+        static member inline NewId () = FileId (Guid.NewGuid ())
+        static member inline Value (FileId guid) = guid
 
     and Username with
         static member inline Value (Username username) = username
