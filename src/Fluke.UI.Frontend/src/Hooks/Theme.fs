@@ -159,7 +159,6 @@ module Theme =
                                     |}
                                 ``.rct-collapse-btn:focus`` = {| boxShadow = focusShadow |}
                                 ``.rct-disabled .rct-checkbox svg`` = {| visibility = "hidden" |}
-//                                ``.rct-disabled .rct-node-icon`` = {| marginLeft = "-20px" |}
                                 ``.rct-node label:hover, .rct-node label:active`` = {| background = "none" |}
                                 ``.rct-node-parent:not(:first-of-type)`` = {| marginTop = "7px" |}
                                 ``.rct-node:first-of-type`` = {| marginTop = "2px" |}
@@ -187,11 +186,12 @@ module Theme =
                                         marginBottom = "7px"
                                         paddingBottom = "7px"
                                     |}
-//                                ``.markdown-container li`` = {| listStyleType = "square" |}
-//                                ``.markdown-container ul, .tooltip-popup p`` = {| padding = "5px 0" |}
+                                ``.markdown-container a`` = {| textDecoration = "underline" |}
                             |}
                 |}
         |}
+    //                                ``.markdown-container li`` = {| listStyleType = "square" |}
+//                                ``.markdown-container ul, .tooltip-popup p`` = {| padding = "5px 0" |}
 
     let useTheme () =
         let darkMode = Store.useValue Atoms.User.darkMode

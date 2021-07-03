@@ -139,12 +139,7 @@ module Store =
                             Gun.gun
                                 {
                                     Gun.GunProps.peers = None
-                                    Gun.GunProps.radisk =
-                                        Some (
-                                            match JS.window id with
-                                            | Some window -> window?Cypress <> null
-                                            | None -> false
-                                        )
+                                    Gun.GunProps.radisk = Some false
                                     Gun.GunProps.localStorage = Some false
                                     Gun.GunProps.multicast = None
                                 }
@@ -456,11 +451,16 @@ module Store =
                                     else
                                         Browser.Dom.window?lastPutResult <- putResult
 
-                                        Browser.Dom.console.error
-                                            $"atomFamily.wrapper.set() debounceGunPut promise put error.
-                                                 newValue={newValue} putResult={putResult}
-                                                   {key}
-                                                {baseInfo ()}"
+
+                                        match JS.window id with
+                                        | Some window ->
+                                            if window?Cypress = null then
+                                                Browser.Dom.console.error
+                                                    $"atomFamily.wrapper.set() debounceGunPut promise put error.
+                                                         newValue={newValue} putResult={putResult}
+                                                           {key}
+                                                        {baseInfo ()}"
+                                        | None -> ()
                                 else
                                     JS.log
                                         (fun () ->

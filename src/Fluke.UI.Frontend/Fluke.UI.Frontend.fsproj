@@ -27,6 +27,7 @@
         <Compile Include="src\Bindings\Cypress.fs" />
         <Compile Include="src\Bindings\Vim.fs" />
         <Compile Include="src\Bindings\Rooks.fs" />
+        <Compile Include="src\Bindings\DragDrop.fs" />
         <Compile Include="src\TempAudio.fs" />
         <Compile Include="src\TempUI.fs" />
         <Compile Include="src\Templates.fs" />

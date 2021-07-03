@@ -238,7 +238,14 @@ module Gun =
                         if ack.ok = Some 1 && ack.err.IsNone then
                             res true
                         else
-                            Browser.Dom.console.error $"Gun.put error. value={value} ack={JS.JSON.stringify ack} "
+
+                            match JS.window id with
+                            | Some window ->
+                                if window?Cypress = null then
+                                    Browser.Dom.console.error
+                                        $"Gun.put error. value={value} ack={JS.JSON.stringify ack} "
+                            | None -> ()
+
                             res false)
                 |> ignore)
 
