@@ -139,11 +139,13 @@ module Store =
                             Gun.gun
                                 {
                                     Gun.GunProps.peers = None
-                                    Gun.GunProps.radisk = Some false
-                                    Gun.GunProps.localStorage =
-                                        match JS.window id with
-                                        | Some window -> if window?Cypress <> null then Some true else None
-                                        | None -> None
+                                    Gun.GunProps.radisk =
+                                        Some (
+                                            match JS.window id with
+                                            | Some window -> window?Cypress <> null
+                                            | None -> false
+                                        )
+                                    Gun.GunProps.localStorage = Some false
                                     Gun.GunProps.multicast = None
                                 }
                         else
@@ -636,15 +638,6 @@ module Store =
             getFn,
             (fun _ _ _newValue -> promise { failwith $"readonly selector {atomPath}" })
         )
-
-    let inline selectAtomSyncValues
-        (
-            atomPath: string,
-            atomFamily: 'TKey -> Atom<_>,
-            key: 'TKey,
-            onFormat: string -> 'TKey
-        ) : Atom<Atom<'TKey> []> =
-        JS.undefined
 
     let inline selectAtomSyncKeys
         (
