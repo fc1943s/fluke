@@ -126,7 +126,7 @@ module Full =
                     Cy2.waitFor "Databases" (Some {| timeout = timeout |})
 
                     Cy2.clickText (nameof Databases)
-                    Cy2.waitFor "Lane Rendering" None
+                    Cy2.waitFor "Lane Rendering" (Some {| timeout = timeout |})
 
                     Cy.wait 4000
 
