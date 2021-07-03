@@ -153,7 +153,7 @@ module Auth =
                                         let def = UserState.Default
 
                                         set Atoms.User.cellSize def.CellSize
-                                        set Atoms.User.clipboardAttachmentSet def.ClipboardAttachmentSet
+                                        set Atoms.User.clipboardAttachmentMap def.ClipboardAttachmentMap
                                         set Atoms.User.clipboardVisible def.ClipboardVisible
                                         set Atoms.User.darkMode def.DarkMode
                                         set Atoms.User.daysAfter def.DaysAfter

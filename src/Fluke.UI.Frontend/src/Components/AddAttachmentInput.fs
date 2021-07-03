@@ -109,11 +109,38 @@ module AddAttachmentInput =
             | _ -> nothing
         | _ -> nothing
 
+
+    [<ReactComponent>]
+    let rec AttachmentList onDelete attachmentIdList =
+
+        Chakra.stack
+            (fun x ->
+                x.direction <- "row"
+                x.marginBottom <- "5px"
+                x.overflow <- "auto")
+            [
+                yield!
+                    attachmentIdList
+                    |> List.map (fun attachmentId -> AttachmentThumbnail (fun () -> onDelete attachmentId) attachmentId)
+            ]
+
     [<ReactComponent>]
     let rec AddAttachmentInput onAdd =
         let isTesting = Store.useValue Store.Atoms.isTesting
         let ctrlPressed = Store.useValue Atoms.ctrlPressed
         let addAttachmentText, setAddAttachmentText = React.useState ""
+
+        let deleteAttachment =
+            Store.useCallback (
+                (fun _getter setter attachmentId ->
+                    promise {
+                        Store.change setter Atoms.User.clipboardAttachmentMap (Map.remove attachmentId)
+                        ()
+                    }
+                    //                Store.deleteRoot getter (Atoms.Task.databaseId taskId)
+                    ),
+                [||]
+            )
 
         let addAttachment =
             Store.useCallback (
@@ -149,21 +176,7 @@ module AddAttachmentInput =
             )
 
         let clipboardVisible, setClipboardVisible = Store.useState Atoms.User.clipboardVisible
-        let clipboardAttachmentSet = Store.useValue Atoms.User.clipboardAttachmentSet
-
-
-        let deleteAttachment =
-            Store.useCallback (
-                (fun _getter setter attachmentId ->
-                    promise {
-                        Store.change setter Atoms.User.clipboardAttachmentSet (Set.remove attachmentId)
-                        ()
-                    }
-                    //                Store.deleteRoot getter (Atoms.Task.databaseId taskId)
-                    ),
-                [||]
-            )
-
+        let clipboardAttachmentMap = Store.useValue Atoms.User.clipboardAttachmentMap
 
         if true then
             React.fragment [
@@ -176,27 +189,16 @@ module AddAttachmentInput =
                             Chakra.box
                                 (fun _ -> ())
                                 [
-                                    if clipboardAttachmentSet.Count = 0 then
+                                    if clipboardAttachmentMap.Count = 0 then
                                         Chakra.box
                                             (fun x -> x.padding <- "10px")
                                             [
                                                 str "Empty clipboard"
                                             ]
                                     else
-                                        Chakra.stack
-                                            (fun x ->
-                                                x.direction <- "row"
-                                                x.marginBottom <- "5px")
-                                            [
-                                                yield!
-                                                    clipboardAttachmentSet
-                                                    |> Set.toList
-                                                    |> List.map
-                                                        (fun attachmentId ->
-                                                            AttachmentThumbnail
-                                                                (fun () -> deleteAttachment attachmentId)
-                                                                attachmentId)
-                                            ]
+                                        AttachmentList
+                                            deleteAttachment
+                                            (clipboardAttachmentMap |> Map.keys |> Seq.toList)
                                 ]
 
                         Chakra.flex
@@ -229,7 +231,7 @@ module AddAttachmentInput =
                                     (fun x -> x.spacing <- "0")
                                     [
                                         Tooltip.wrap
-                                            (if clipboardAttachmentSet.Count = 0 then str "Clipboard" else nothing)
+                                            (str "Clipboard")
                                             [
                                                 Chakra.box
                                                     (fun _ -> ())
@@ -261,7 +263,7 @@ module AddAttachmentInput =
                                                                             (fun _ -> ())
                                                                             [
                                                                                 str (
-                                                                                    string clipboardAttachmentSet.Count
+                                                                                    string clipboardAttachmentMap.Count
                                                                                 )
                                                                             ]
                                                                     ]

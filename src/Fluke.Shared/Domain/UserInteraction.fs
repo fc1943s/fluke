@@ -2,8 +2,20 @@ namespace Fluke.Shared.Domain
 
 open System
 open Fluke.Shared
+open Myriad.Plugins
 
 module UserInteraction =
+#if !FABLE_COMPILER
+    open Myriad.Plugins
+#else
+    module Generator =
+        type DuCases (_configGroup: string) =
+            inherit Attribute ()
+
+        type Fields (_configGroup: string) =
+            inherit Attribute ()
+#endif
+
     open Model
 
 
@@ -37,12 +49,12 @@ module UserInteraction =
 
     // Link: Auto:[Title, Favicon, Screenshot]
     // Image: Embed
-    and [<RequireQualifiedAccess>] Attachment =
+    and [<RequireQualifiedAccess; Generator.DuCases "Domain">] Attachment =
         | Comment of comment: Comment
         | Link of url: string
         | Video of url: string
         | Image of fileId: FileId
-        | Attachment of username: Username * Attachment: Attachment
+        | List of list: Attachment list
 
     and FileId = FileId of guid: Guid
 
@@ -89,11 +101,11 @@ module UserInteraction =
     and AttachmentId = AttachmentId of guid: Guid
 
     and AttachmentId with
-        static member inline NewId () = AttachmentId (Guid.NewGuid ())
+        static member inline NewId () = AttachmentId (Guid.NewTicksGuid ())
         static member inline Value (AttachmentId guid) = guid
 
     and FileId with
-        static member inline NewId () = FileId (Guid.NewGuid ())
+        static member inline NewId () = FileId (Guid.NewTicksGuid ())
         static member inline Value (FileId guid) = guid
 
     and Username with

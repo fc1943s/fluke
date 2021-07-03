@@ -140,7 +140,10 @@ module Store =
                                 {
                                     Gun.GunProps.peers = None
                                     Gun.GunProps.radisk = Some false
-                                    Gun.GunProps.localStorage = None
+                                    Gun.GunProps.localStorage =
+                                        match JS.window id with
+                                        | Some window -> if window?Cypress <> null then Some true else None
+                                        | None -> None
                                     Gun.GunProps.multicast = None
                                 }
                         else

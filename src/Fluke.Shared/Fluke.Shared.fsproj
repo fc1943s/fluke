@@ -11,6 +11,9 @@
             <MyriadFile>Domain\Model.fs</MyriadFile>
         </Compile>
         <Compile Include="Domain\UserInteraction.fs" />
+        <Compile Include="Domain\UserInteractionGenerated.fs">
+            <MyriadFile>Domain\UserInteraction.fs</MyriadFile>
+        </Compile>
         <Compile Include="Domain\State.fs" />
         <Compile Include="Old.fs" />
         <Compile Include="Rendering.fs" />

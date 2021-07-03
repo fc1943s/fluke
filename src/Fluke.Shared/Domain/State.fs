@@ -91,7 +91,7 @@ module State =
 
 
     and DatabaseId with
-        static member inline NewId () = DatabaseId (Guid.NewGuid ())
+        static member inline NewId () = DatabaseId (Guid.NewTicksGuid ())
         static member inline Value (DatabaseId guid) = guid
 
     and DatabaseName with

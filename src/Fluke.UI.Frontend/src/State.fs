@@ -51,7 +51,7 @@ module State =
     type DeviceId = DeviceId of guid: Guid
 
     and DeviceId with
-        static member inline NewId () = DeviceId (Guid.NewGuid ())
+        static member inline NewId () = DeviceId (Guid.NewTicksGuid ())
         static member inline Value (DeviceId guid) = guid
 
     type Ping = Ping of ticksText: string
@@ -79,7 +79,7 @@ module State =
         {
             AccordionFlagMap: Map<string, string []>
             CellSize: int
-            ClipboardAttachmentSet: Set<AttachmentId>
+            ClipboardAttachmentMap: Map<AttachmentId, bool>
             ClipboardVisible: bool
             Color: string option
             DarkMode: bool
@@ -112,7 +112,7 @@ module State =
             {
                 AccordionFlagMap = Map.empty
                 CellSize = 19
-                ClipboardAttachmentSet = Set.empty
+                ClipboardAttachmentMap = Map.empty
                 ClipboardVisible = false
                 Color = None
                 DarkMode = false
@@ -148,7 +148,7 @@ module State =
 //            type EventId = EventId of position: float * guid: Guid
 //
 //            let newEventId () =
-//                EventId (JS.Constructors.Date.now (), Guid.NewGuid ())
+//                EventId (JS.Constructors.Date.now (), Guid.NewTicksGuid ())
 //
 //            [<RequireQualifiedAccess>]
 //            type Event =
@@ -256,10 +256,10 @@ module State =
                     []
                 )
 
-            let rec clipboardAttachmentSet =
+            let rec clipboardAttachmentMap =
                 Store.atomWithSync (
-                    $"{nameof User}/{nameof clipboardAttachmentSet}",
-                    UserState.Default.ClipboardAttachmentSet,
+                    $"{nameof User}/{nameof clipboardAttachmentMap}",
+                    UserState.Default.ClipboardAttachmentMap,
                     []
                 )
 

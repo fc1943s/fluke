@@ -26,7 +26,7 @@ module PasteListener =
                                 setter
                                 (Store.AtomScope.ReadOnly, (FlukeDateTime.FromDateTime DateTime.Now, attachment))
 
-                        Store.change setter Atoms.User.clipboardAttachmentSet (Set.add attachmentId)
+                        Store.change setter Atoms.User.clipboardAttachmentMap (Map.add attachmentId false)
                     }),
                 [||]
             )

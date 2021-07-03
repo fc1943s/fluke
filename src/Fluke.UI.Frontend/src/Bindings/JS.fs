@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Bindings
 
+open System
 open Browser.Types
 open Fable.Core
 open Fable.Core.JsInterop
@@ -138,6 +139,7 @@ module JS =
 
     [<Emit "$0($1,$2)">]
     let inline jsCall _fn _a _b = jsNative
+
 
     let newObj<'T> fn = jsOptions<'T> fn
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"

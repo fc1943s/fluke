@@ -3,6 +3,14 @@ namespace Fluke.Shared
 open System.IO
 open System
 
+[<AutoOpen>]
+module CoreMagic =
+    type Guid with
+        static member inline NewTicksGuid () =
+            let ticks = string DateTime.Now.Ticks
+            let guid = Guid.NewGuid () |> string
+
+            Guid $"{ticks.[0..7]}-{ticks.[8..11]}-{ticks.[12..15]}-{guid.[19..]}"
 
 module private ListIter =
     let inline length (target: ^X when ^X: (member length : int)) = (^X: (member length : int) target)
