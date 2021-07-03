@@ -113,7 +113,7 @@ module Full =
                     Cy2.selectorTypeText "input[placeholder=Username]" username None
                     Cy2.selectorFocusTypeText "input[placeholder=Password]" password
                     Cy2.clickText "Login"
-                    Cy2.waitFor "Wrong user or password" None
+                    Cy2.waitFor "Wrong user or password" (Some {| timeout = timeout |})
 
                     //                    Cy.wait 250
 
