@@ -106,7 +106,7 @@ module Full =
                     let taskName = "task1"
 
                     Cy2.expectLocation $"{homeUrl}/"
-                    Cy.get("body").should "have.css" "background-color" "rgb(33, 33, 33)"
+                    Cy.get("body").should "have.css" "background-color" "rgb(222, 222, 222)"
 
                     Cy.focused().click None |> ignore
 
@@ -188,6 +188,8 @@ module Full =
 
                     Cy2.waitFor $"{dbName}_edit" (Some {| timeout = timeout |})
                     Cy2.clickText $"{dbName}_edit"
+
+                    Cy2.clickText (nameof Databases)
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})

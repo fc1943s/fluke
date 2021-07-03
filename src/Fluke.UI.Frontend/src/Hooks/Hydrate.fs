@@ -18,9 +18,7 @@ module Hydrate =
         promise {
             Store.scopedSet setter atomScope (Atoms.Database.name, database.Id, database.Name)
             Store.scopedSet setter atomScope (Atoms.Database.owner, database.Id, database.Owner)
-
             Store.scopedSet setter atomScope (Atoms.Database.sharedWith, database.Id, database.SharedWith)
-
             Store.scopedSet setter atomScope (Atoms.Database.position, database.Id, database.Position)
         }
 
