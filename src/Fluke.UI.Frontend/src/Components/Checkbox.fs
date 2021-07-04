@@ -16,6 +16,7 @@ module Checkbox =
                 x.colorScheme <- "purple"
                 x.borderColor <- if darkMode then "#484848" else "#b7b7b7"
                 x.size <- "lg"
+                x.alignSelf <- "flex-start"
                 props x)
             [
                 match label with

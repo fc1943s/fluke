@@ -348,21 +348,21 @@ module Settings =
                                     {|
                                         Atom = Atoms.User.enableCellPopover
                                         Label = Some "Enable Cell Click Popup"
-                                        Props = fun x -> x.alignSelf <- "flex-start"
+                                        Props = fun _ -> ()
                                     |}
 
                                 CheckboxInput.CheckboxInput
                                     {|
                                         Atom = Atoms.User.darkMode
                                         Label = Some "Dark Mode"
-                                        Props = fun x -> x.alignSelf <- "flex-start"
+                                        Props = fun _ -> ()
                                     |}
 
                                 CheckboxInput.CheckboxInput
                                     {|
                                         Atom = Atoms.User.systemUiFont
                                         Label = Some "System UI Font"
-                                        Props = fun x -> x.alignSelf <- "flex-start"
+                                        Props = fun _ -> ()
                                     |}
 
                                 CheckboxInput.CheckboxInput
@@ -371,8 +371,6 @@ module Settings =
                                         Label = Some "Show Debug Information"
                                         Props =
                                             fun x ->
-                                                x.alignSelf <- "flex-start"
-
                                                 x.onClick <-
                                                     fun _ ->
                                                         promise {

@@ -150,9 +150,10 @@ module Full =
 
                     Cy2.clickSelector ".chakra-radio"
 
-                    //                    Cy.wait 15000
 
                     Cy2.clickText "Add Project"
+
+                    Cy.wait 15000
 
                     Cy2.selectorFocusTypeText "input[placeholder^='e.g. home renovation']" "p1"
 

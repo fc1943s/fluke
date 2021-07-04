@@ -17,6 +17,106 @@ open Fluke.Shared
 
 module TaskForm =
     [<ReactComponent>]
+    let PrioritySelector taskId =
+        let priorityFieldOptions =
+            Store.Hooks.useAtomFieldOptions
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.priority taskId))))
+                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
+
+        let priorityNumber =
+            React.useMemo (
+                (fun () ->
+                    match priorityFieldOptions.AtomValue with
+                    | Some priority ->
+                        let priorityNumber = (priority |> Priority.toTag) + 1
+                        Some priorityNumber
+                    | None -> None),
+                [|
+                    box priorityFieldOptions.AtomValue
+                |]
+            )
+
+        Chakra.box
+            (fun x -> x.display <- "inline")
+            [
+                InputLabel.InputLabel
+                    {|
+                        Hint = None
+                        HintTitle = None
+                        Label = str "Priority"
+                        Props = fun x -> x.marginBottom <- "5px"
+                    |}
+
+                Chakra.stack
+                    (fun x ->
+                        x.direction <- "row"
+                        x.spacing <- "15px")
+                    [
+                        Checkbox.Checkbox
+                            (if priorityNumber.IsNone then Some "Enable" else None)
+                            (fun x ->
+                                x.isChecked <- priorityNumber.IsSome
+
+                                x.onChange <-
+                                    fun _ ->
+                                        promise {
+                                            priorityFieldOptions.SetAtomValue (
+                                                if priorityNumber.IsSome then None else (Some Medium5)
+                                            )
+                                        })
+
+                        match priorityNumber with
+                        | Some priorityNumber ->
+                            Chakra.slider
+                                (fun x ->
+                                    x.min <- 1
+                                    x.max <- 10
+                                    x.value <- priorityNumber
+
+                                    x.onChange <-
+                                        fun x ->
+                                            promise {
+                                                priorityFieldOptions.SetAtomValue (
+                                                    match x with
+                                                    | 1 -> Some Low1
+                                                    | 2 -> Some Low2
+                                                    | 3 -> Some Low3
+                                                    | 4 -> Some Medium4
+                                                    | 5 -> Some Medium5
+                                                    | 6 -> Some Medium6
+                                                    | 7 -> Some High7
+                                                    | 8 -> Some High8
+                                                    | 9 -> Some High9
+                                                    | 10 -> Some Critical10
+                                                    | _ -> None
+                                                )
+                                            })
+                                [
+                                    let bgColor =
+                                        if priorityNumber <= 3 then "#68d638"
+                                        elif priorityNumber <= 6 then "#f5ec13"
+                                        elif priorityNumber <= 9 then "#e44c07"
+                                        else "#a13c0e"
+
+                                    Chakra.sliderTrack
+                                        (fun x -> x.backgroundColor <- $"{bgColor}55")
+                                        [
+                                            Chakra.sliderFilledTrack (fun x -> x.backgroundColor <- bgColor) []
+                                        ]
+
+                                    Chakra.sliderThumb (fun _ -> ()) []
+                                ]
+
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    str (string priorityNumber)
+                                ]
+                        | None -> nothing
+                    ]
+            ]
+
+    [<ReactComponent>]
     let rec TaskForm (taskId: TaskId) (onSave: Task -> JS.Promise<unit>) =
         let toast = Chakra.useToast ()
         let debug = Store.useValue Atoms.debug
@@ -70,6 +170,7 @@ module TaskForm =
                         let taskName = Store.getReadWrite getter (Atoms.Task.name taskId)
                         let taskInformation = Store.getReadWrite getter (Atoms.Task.information taskId)
                         let taskScheduling = Store.getReadWrite getter (Atoms.Task.scheduling taskId)
+                        let taskPriority = Store.getReadWrite getter (Atoms.Task.priority taskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -97,6 +198,7 @@ module TaskForm =
                                         Name = taskName
                                         Information = taskInformation
                                         Scheduling = taskScheduling
+                                        Priority = taskPriority
                                     }
                                     |> Promise.lift
                                 else
@@ -108,12 +210,14 @@ module TaskForm =
                                                 Name = taskName
                                                 Information = taskInformation
                                                 Scheduling = taskScheduling
+                                                Priority = taskPriority
                                             }
                                     }
 
                             Store.readWriteReset setter (Atoms.Task.name taskId)
                             Store.readWriteReset setter (Atoms.Task.information taskId)
                             Store.readWriteReset setter (Atoms.Task.scheduling taskId)
+                            Store.readWriteReset setter (Atoms.Task.priority taskId)
                             Store.set setter (Atoms.User.uiFlag UIFlagType.Task) UIFlag.None
 
                             do! onSave task
@@ -163,35 +267,31 @@ module TaskForm =
 
                                 SchedulingSelector.SchedulingSelector taskId
 
-                                Chakra.stack
-                                    (fun x -> x.spacing <- "15px")
-                                    [
-                                        Input.Input
-                                            {|
-                                                CustomProps =
-                                                    fun x ->
-                                                        x.atom <-
-                                                            Some (
-                                                                Store.InputAtom (
-                                                                    Store.AtomReference.Atom (Atoms.Task.name taskId)
-                                                                )
-                                                            )
+                                PrioritySelector taskId
 
-                                                        x.inputScope <-
-                                                            Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
+                                Input.Input
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.atom <-
+                                                    Some (
+                                                        Store.InputAtom (
+                                                            Store.AtomReference.Atom (Atoms.Task.name taskId)
+                                                        )
+                                                    )
 
-                                                        x.onFormat <- Some (fun (TaskName name) -> name)
-                                                        x.onEnterPress <- Some onSave
-                                                        x.onValidate <- Some (fst >> TaskName >> Some)
-                                                Props =
-                                                    fun x ->
-                                                        x.autoFocus <- true
-                                                        x.label <- str "Name"
+                                                x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
 
-                                                        x.placeholder <-
-                                                            $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
-                                            |}
-                                    ]
+                                                x.onFormat <- Some (fun (TaskName name) -> name)
+                                                x.onEnterPress <- Some onSave
+                                                x.onValidate <- Some (fst >> TaskName >> Some)
+                                        Props =
+                                            fun x ->
+                                                x.autoFocus <- true
+                                                x.label <- str "Name"
+
+                                                x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
+                                    |}
 
                                 Button.Button
                                     {|

@@ -96,8 +96,10 @@ module Chakra =
         abstract marginLeft : string with get, set
         abstract marginRight : string with get, set
         abstract marginTop : string with get, set
+        abstract max : int with get, set
         abstract maxHeight : string with get, set
         abstract maxWidth : string with get, set
+        abstract min : int with get, set
         abstract minChildWidth : string with get, set
         abstract minHeight : string with get, set
         abstract minWidth : string with get, set
@@ -213,6 +215,10 @@ module Chakra =
                    Radio: obj
                    RadioGroup: obj
                    SimpleGrid: obj
+                   Slider: obj
+                   SliderTrack: obj
+                   SliderFilledTrack: obj
+                   SliderThumb: obj
                    Spacer: obj
                    Spinner: obj
                    Stack: obj
@@ -305,6 +311,11 @@ module Chakra =
     let radio<'T> = renderChakraComponent react.Radio
     let radioGroup<'T> = renderChakraComponent react.RadioGroup
     let simpleGrid<'T> = renderChakraComponent react.SimpleGrid
+
+    let slider<'T> = renderChakraComponent react.Slider
+    let sliderTrack<'T> = renderChakraComponent react.SliderTrack
+    let sliderFilledTrack<'T> = renderChakraComponent react.SliderFilledTrack
+    let sliderThumb<'T> = renderChakraComponent react.SliderThumb
     let spacer<'T> = renderChakraComponent react.Spacer
     let spinner<'T> = renderChakraComponent react.Spinner
     let stack<'T> = renderChakraComponent react.Stack
