@@ -208,6 +208,8 @@ module Full =
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})
 
+                    Cy.wait 6000
+
                     Cy2.clickSelectorChildFromText taskName ".chakra-button"
                     Cy2.clickText "Start Session"
                     Cy2.waitFor $"Session: 1 active ({taskName})" (Some {| timeout = timeout |})
