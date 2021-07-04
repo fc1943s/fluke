@@ -1129,11 +1129,23 @@ module State =
                     (fun getter ->
                         let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
 
-                        selectedTaskIdAtoms
-                        |> Array.map (Store.value getter)
-                        |> Array.map Atoms.Task.information
-                        |> Store.waitForAll
-                        |> Store.value getter
+                        let informationArray =
+                            selectedTaskIdAtoms
+                            |> Array.map (Store.value getter)
+                            |> Array.map Atoms.Task.information
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        let projectAreas =
+                            informationArray
+                            |> Array.choose
+                                (fun information ->
+                                    match information with
+                                    | Project project -> Some (Area project.Area)
+                                    | _ -> None)
+
+                        informationArray
+                        |> Array.append projectAreas
                         |> Array.filter
                             (fun information ->
                                 information

@@ -184,7 +184,7 @@ module Full =
 
                     Cy2.clickText "Save"
 
-                    Cy.wait 1000
+                    Cy.wait 6000
 
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Edit Database"
