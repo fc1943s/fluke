@@ -137,7 +137,8 @@ module Full =
 
                     Cy2.waitFor dbName (Some {| timeout = timeout |})
 
-                    Cy.wait 400
+//                    Cy.wait 400
+                    Cy.wait 15000
 
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Add Task"
@@ -153,7 +154,7 @@ module Full =
 
                     Cy2.clickText "Add Project"
 
-                    Cy.wait 15000
+//                    Cy.wait 15000
 
                     Cy2.selectorFocusTypeText "input[placeholder^='e.g. home renovation']" "p1"
 
