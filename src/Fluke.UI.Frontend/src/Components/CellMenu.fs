@@ -16,7 +16,7 @@ module CellMenu =
     open State
 
     [<ReactComponent>]
-    let CellMenu (taskId: TaskId) (dateId: DateId) (onClose: unit -> unit) =
+    let CellMenu (taskId: TaskId) (dateId: DateId) (onClose: (unit -> unit) option) (vertical: bool) =
         let isTesting = Store.useValue Store.Atoms.isTesting
         let username = Store.useValue Store.Atoms.username
         let toast = Chakra.useToast ()
@@ -62,7 +62,9 @@ module CellMenu =
                         |> Map.keys
                         |> Seq.iter (fun taskId -> Store.set setter (Atoms.Task.selectionSet taskId) Set.empty)
 
-                        onClose ()
+                        match onClose with
+                        | Some onClose -> onClose ()
+                        | None -> ()
                     }),
                 [|
                     box onClose
@@ -79,7 +81,10 @@ module CellMenu =
                         match username, postponedUntil with
                         | Some username, Some postponedUntil ->
                             setSessionStatus (UserStatus (username, Postponed (Some postponedUntil)))
-                            onClose ()
+
+                            match onClose with
+                            | Some onClose -> onClose ()
+                            | None -> ()
                         | _ -> toast (fun x -> x.description <- "Invalid time")
                     }),
                 [|
@@ -150,7 +155,10 @@ module CellMenu =
                                             promise {
                                                 setRightDock (Some TempUI.DockType.Cell)
                                                 setCellUIFlag (UIFlag.Cell (taskId, dateId))
-                                                onClose ()
+
+                                                match onClose with
+                                                | Some onClose -> onClose ()
+                                                | None -> ()
                                             }))
                             ]
 

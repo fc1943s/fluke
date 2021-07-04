@@ -25,6 +25,8 @@ module TopBar =
                 [||]
             )
 
+        let onRandom = Store.useCallback ((fun _ setter _ -> promise { () }), [||])
+
         Chakra.flex
             (fun x ->
                 x.height <- "29px"
@@ -107,6 +109,21 @@ module TopBar =
                                                             }
                                         |}
                                 ]
+
+                        Tooltip.wrap
+                            (str "Random")
+                            [
+                                TransparentIconButton.TransparentIconButton
+                                    {|
+                                        Props =
+                                            fun x ->
+                                                x.icon <- Icons.io5.IoShuffle |> Icons.render
+                                                x.height <- "27px"
+                                                x.fontSize <- "17px"
+
+                                                x.onClick <- fun _ -> onRandom ()
+                                    |}
+                            ]
 
                         Tooltip.wrap
                             (React.fragment [

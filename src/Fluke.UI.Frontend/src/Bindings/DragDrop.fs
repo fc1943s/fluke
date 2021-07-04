@@ -1,8 +1,8 @@
 namespace Fluke.UI.Frontend.Bindings
 
-open Feliz
 open Fable.React
 open Fable.Core.JsInterop
+open Fable.Core
 
 
 module DragDrop =
@@ -14,13 +14,52 @@ module DragDrop =
     let dragDropContext onDragEnd children =
         ReactBindings.React.createElement (reactDnd.DragDropContext, {| onDragEnd = onDragEnd |}, children)
 
-    let droppable props children =
+    let droppable props containerProps children =
         let content =
-            fun provided snapshot ->
-                printfn $"provided={provided} snapshot={snapshot}"
-                React.fragment [ yield! children ]
+            [
+                JS.invoke
+                    (fun provided snapshot ->
+                        Browser.Dom.window?provided <- provided
+                        Browser.Dom.window?snapshot <- snapshot
 
-        ReactBindings.React.createElement (reactDnd.Droppable, props, unbox content)
+                        printfn $"provided={provided} snapshot={snapshot}"
 
-    let draggable () =
-        ReactBindings.React.createElement (reactDnd.Draggable, {|  |}, [])
+                        Chakra.box
+                            (fun x ->
+                                x.ref <- provided?innerRef
+                                x <+ provided?droppableProps
+                                containerProps x)
+                            [
+                                yield! children
+                                yield provided?placeholder
+                            ])
+            ]
+            |> box
+            |> unbox
+
+        ReactBindings.React.createElement (reactDnd.Droppable, props, content)
+
+    let draggable props containerProps children =
+        let content =
+            [
+                JS.invoke
+                    (fun provided snapshot ->
+                        Browser.Dom.window?provided2 <- provided
+                        Browser.Dom.window?snapshot2 <- snapshot
+
+                        printfn $"@ provided={provided} snapshot={snapshot}"
+
+                        Chakra.box
+                            (fun x ->
+                                x.ref <- provided?innerRef
+                                x <+ provided?draggableProps
+                                x <+ provided?dragHandleProps
+                                containerProps x)
+                            [
+                                yield! children
+                            ])
+            ]
+            |> box
+            |> unbox
+
+        ReactBindings.React.createElement (reactDnd.Draggable, props, content)

@@ -115,7 +115,7 @@ module Cell =
                     fun (disclosure, _initialFocusRef) ->
                         [
                             if isReadWrite then
-                                CellMenu.CellMenu input.TaskId input.DateId disclosure.onClose
+                                CellMenu.CellMenu input.TaskId input.DateId (Some disclosure.onClose) true
                             else
                                 nothing
                         ]

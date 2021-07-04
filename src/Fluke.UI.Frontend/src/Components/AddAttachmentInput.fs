@@ -113,16 +113,36 @@ module AddAttachmentInput =
     [<ReactComponent>]
     let rec AttachmentList onDelete attachmentIdList =
 
-        Chakra.stack
+        //        DragDrop.droppable
+//            {|
+//                droppableId = nameof AttachmentList
+//                direction = "horizontal"
+//            |}
+        Chakra.flex
             (fun x ->
-                x.direction <- "row"
+                //                x.display <- "flex"
+//                x.flexDirection <- "row"
                 x.marginBottom <- "5px"
+
                 x.overflow <- "auto")
             [
                 yield!
                     attachmentIdList
-                    |> List.map (fun attachmentId -> AttachmentThumbnail (fun () -> onDelete attachmentId) attachmentId)
+                    |> List.mapi
+                        (fun i attachmentId ->
+                            //                            DragDrop.draggable
+//                                {|
+//                                    draggableId = string attachmentId
+//                                    index = i
+//                                |}
+//                                (fun x -> ())
+                            Chakra.box
+                                (fun _ -> ())
+                                [
+                                    AttachmentThumbnail (fun () -> onDelete attachmentId) attachmentId
+                                ])
             ]
+
 
     [<ReactComponent>]
     let rec AddAttachmentInput onAdd =

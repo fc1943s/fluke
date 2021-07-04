@@ -135,7 +135,7 @@ module Full =
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
 
-                    Cy.wait 2000
+                    Cy2.waitFor dbName (Some {| timeout = timeout |})
 
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Add Task"

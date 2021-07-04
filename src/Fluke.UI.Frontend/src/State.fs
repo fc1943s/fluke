@@ -1104,9 +1104,9 @@ module State =
                         |> Array.toList)
                 )
 
-            let rec taskStateList =
+            let rec selectedTaskStateList =
                 Store.readSelector (
-                    $"{nameof Session}/{nameof taskStateList}",
+                    $"{nameof Session}/{nameof selectedTaskStateList}",
                     (fun getter ->
                         let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
 

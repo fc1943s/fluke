@@ -58,6 +58,12 @@ module CellForm =
                                     [
                                         str $"""Date: {dateId |> DateId.Value |> FlukeDate.Stringify}"""
                                     ]
+                                Chakra.box
+                                    (fun x -> x.userSelect <- "text")
+                                    [
+                                        str "Status: "
+                                        CellMenu.CellMenu taskId dateId None false
+                                    ]
                             ])
 
                         "Attachments",

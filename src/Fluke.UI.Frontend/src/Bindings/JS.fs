@@ -140,6 +140,8 @@ module JS =
     [<Emit "$0($1,$2)">]
     let inline jsCall _fn _a _b = jsNative
 
+    let inline invoke fn p =
+        emitJsExpr (fn, p) "((...p) => $0(...p))($1)"
 
     let newObj<'T> fn = jsOptions<'T> fn
     let cloneDeep<'T> (_: 'T) : 'T = importDefault "lodash.clonedeep"

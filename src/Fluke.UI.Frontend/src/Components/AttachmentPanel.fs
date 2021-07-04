@@ -103,7 +103,7 @@ module AttachmentPanel =
                                     | Attachment.Comment (Comment.Comment comment) -> AttachmentComment comment
                                     | _ -> nothing)
 
-                        ]
+                    ]
 
                     nothing
                 | _ -> str "???"
@@ -111,6 +111,11 @@ module AttachmentPanel =
 
     [<ReactComponent>]
     let AttachmentPanel attachments onAdd =
+        //        let onDragEnd = Store.useCallback ((fun _ _ x -> promise { printfn $"x={x}" }), [||])
+//
+//        DragDrop.dragDropContext
+//            onDragEnd
+//            [
         Chakra.stack
             (fun x ->
                 x.spacing <- "15px"

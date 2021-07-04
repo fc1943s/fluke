@@ -225,10 +225,10 @@ module StatusBar =
     let TasksIndicator () =
         let informationSet = Store.useValue Selectors.Session.informationSet
         let informationStateList = Store.useValue Selectors.Session.informationStateList
-        let taskStateList = Store.useValue Selectors.Session.taskStateList
+        let selectedTaskStateList = Store.useValue Selectors.Session.selectedTaskStateList
 
         let cellAttachmentMapArray =
-            taskStateList
+            selectedTaskStateList
             |> List.map (fun taskState -> taskState.Task.Id)
             |> List.map Atoms.Task.cellAttachmentMap
             |> List.toArray
@@ -250,20 +250,20 @@ module StatusBar =
                         |> List.map (fun informationState -> informationState.Attachments.Length)
                         |> List.sum
 
-                    let tasks = taskStateList.Length
+                    let tasks = selectedTaskStateList.Length
 
                     let taskAttachment =
-                        taskStateList
+                        selectedTaskStateList
                         |> List.map (fun taskState -> taskState.Attachments.Length)
                         |> List.sum
 
                     let taskSession =
-                        taskStateList
+                        selectedTaskStateList
                         |> List.map (fun taskState -> taskState.Sessions.Length)
                         |> List.sum
 
                     let cellStatus =
-                        taskStateList
+                        selectedTaskStateList
                         |> List.map
                             (fun taskState ->
                                 taskState.CellStateMap
@@ -311,7 +311,7 @@ module StatusBar =
                     box cellAttachmentMapArray
                     box informationSet
                     box informationStateList
-                    box taskStateList
+                    box selectedTaskStateList
                     box databaseIdAtoms
                 |]
             )
