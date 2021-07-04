@@ -346,6 +346,13 @@ module Settings =
 
                                 CheckboxInput.CheckboxInput
                                     {|
+                                        Atom = Atoms.User.enableCellPopover
+                                        Label = Some "Enable Cell Click Popup"
+                                        Props = fun x -> x.alignSelf <- "flex-start"
+                                    |}
+
+                                CheckboxInput.CheckboxInput
+                                    {|
                                         Atom = Atoms.User.darkMode
                                         Label = Some "Dark Mode"
                                         Props = fun x -> x.alignSelf <- "flex-start"

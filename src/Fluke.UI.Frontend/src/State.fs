@@ -86,6 +86,7 @@ module State =
             DaysAfter: int
             DaysBefore: int
             DayStart: FlukeTime
+            EnableCellPopover: bool
             ExpandedDatabaseIdSet: Set<DatabaseId>
             FilterTasksByView: bool
             FontSize: int
@@ -119,6 +120,7 @@ module State =
                 DaysAfter = 7
                 DaysBefore = 7
                 DayStart = FlukeTime.Create 0 0
+                EnableCellPopover = true
                 ExpandedDatabaseIdSet = Set.empty
                 FilterTasksByView = true
                 FontSize = 15
@@ -231,6 +233,9 @@ module State =
 
             let rec hideTemplates =
                 Store.atomWithSync ($"{nameof User}/{nameof hideTemplates}", UserState.Default.HideTemplates, [])
+
+            let rec enableCellPopover =
+                Store.atomWithSync ($"{nameof User}/{nameof hideTemplates}", UserState.Default.EnableCellPopover, [])
 
             let rec hideSchedulingOverlay =
                 Store.atomWithSync (

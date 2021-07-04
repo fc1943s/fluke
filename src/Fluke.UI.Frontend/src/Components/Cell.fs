@@ -15,6 +15,7 @@ module Cell =
     open UserInteraction
     open State
 
+
     [<ReactComponent>]
     let Cell
         (input: {| TaskId: TaskId
@@ -33,6 +34,8 @@ module Cell =
         let isToday = Store.useValue (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value))
         let selected = Store.useValue (Selectors.Cell.selected (input.TaskId, input.DateId))
         let setSelected = Setters.useSetSelected ()
+        let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
+        let rightDock = Store.useValue Atoms.User.rightDock
 
         let onCellClick =
             Store.useCallback (
@@ -57,66 +60,99 @@ module Cell =
                 |]
             )
 
-        Popover.CustomPopover
-            {|
-                CloseButton = false
-                RenderOnHover = false
-                Padding = "3px"
-                Props = fun x -> x.placement <- "right-start"
-                Trigger =
-                    Chakra.center
+        Chakra.center
+            (fun x ->
+                if isTesting then
+                    x?``data-testid`` <- $"cell-{input.TaskId}-{
+                                                                    (input.DateId |> DateId.Value |> FlukeDate.DateTime)
+                                                                        .ToShortDateString ()
+                    }"
+
+                if isReadWrite then x.onClick <- onCellClick
+                x.width <- $"{cellSize}px"
+                x.height <- $"{cellSize}px"
+                x.lineHeight <- $"{cellSize}px"
+                x.position <- "relative"
+
+                x.backgroundColor <-
+                    (TempUI.cellStatusColor sessionStatus)
+                    + (if isToday then "aa"
+                       elif input.SemiTransparent then "d9"
+                       else "")
+
+                x.textAlign <- "center"
+
+                x.borderColor <- if selected then "#ffffffAA" else "transparent"
+
+                x.borderWidth <- "1px"
+
+                if isReadWrite then
+                    x.cursor <- "pointer"
+                    x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
+            [
+
+                match rightDock, cellUIFlag with
+                | Some TempUI.DockType.Cell, UIFlag.Cell (taskId, dateId) when
+                    taskId = input.TaskId && dateId = input.DateId ->
+                    Chakra.icon
                         (fun x ->
-                            if isTesting then
-                                x?``data-testid`` <- $"cell-{input.TaskId}-{
-                                                                                (input.DateId
-                                                                                 |> DateId.Value
-                                                                                 |> FlukeDate.DateTime)
-                                                                                    .ToShortDateString ()
-                                }"
+                            x.``as`` <- Icons.ti.TiPin
+                            x.fontSize <- $"{cellSize - 4}px"
+                            x.color <- "white")
+                        []
+                | _ -> nothing
 
-                            if isReadWrite then x.onClick <- onCellClick
-                            x.width <- $"{cellSize}px"
-                            x.height <- $"{cellSize}px"
-                            x.lineHeight <- $"{cellSize}px"
-                            x.position <- "relative"
+                CellSessionIndicator.CellSessionIndicator sessionStatus sessions
 
-                            x.backgroundColor <-
-                                (TempUI.cellStatusColor sessionStatus)
-                                + (if isToday then "aa"
-                                   elif input.SemiTransparent then "d9"
-                                   else "")
+                if selected then
+                    nothing
+                else
+                    CellBorder.CellBorder input.TaskId (input.DateId |> DateId.Value)
 
-                            x.textAlign <- "center"
+                match showUser, sessionStatus with
+                | true, UserStatus (_username, _manualCellStatus) -> CellStatusUserIndicator.CellStatusUserIndicator ()
+                | _ -> nothing
 
-                            x.borderColor <- if selected then "#ffffffAA" else "transparent"
+                AttachmentIndicator.AttachmentIndicator attachments
+            ]
 
-                            x.borderWidth <- "1px"
+    [<ReactComponent>]
+    let CellWrapper
+        (input: {| TaskId: TaskId
+                   DateId: DateId
+                   SemiTransparent: bool |})
+        =
+        let enableCellPopover = Store.useValue Atoms.User.enableCellPopover
+        let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
+        let setRightDock = Store.useSetState Atoms.User.rightDock
+        let setCellUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Cell)
 
-                            if isReadWrite then
-                                x.cursor <- "pointer"
-                                x._hover <- JS.newObj (fun x -> x.borderColor <- "#ffffff55"))
-                        [
-
-                            CellSessionIndicator.CellSessionIndicator sessionStatus sessions
-
-                            if selected then
-                                nothing
-                            else
-                                CellBorder.CellBorder input.TaskId (input.DateId |> DateId.Value)
-
-                            match showUser, sessionStatus with
-                            | true, UserStatus (_username, _manualCellStatus) ->
-                                CellStatusUserIndicator.CellStatusUserIndicator ()
-                            | _ -> nothing
-
-                            AttachmentIndicator.AttachmentIndicator attachments
-                        ]
-                Body =
-                    fun (disclosure, _initialFocusRef) ->
-                        [
-                            if isReadWrite then
-                                CellMenu.CellMenu input.TaskId input.DateId (Some disclosure.onClose) true
-                            else
-                                nothing
-                        ]
-            |}
+        if enableCellPopover then
+            Popover.CustomPopover
+                {|
+                    CloseButton = false
+                    RenderOnHover = false
+                    Padding = "3px"
+                    Props = fun x -> x.placement <- "right-start"
+                    Trigger = Cell input
+                    Body =
+                        fun (disclosure, _initialFocusRef) ->
+                            [
+                                if isReadWrite then
+                                    CellMenu.CellMenu input.TaskId input.DateId (Some disclosure.onClose) true
+                                else
+                                    nothing
+                            ]
+                |}
+        else
+            Chakra.box
+                (fun x ->
+                    x.onClick <-
+                        fun _ ->
+                            promise {
+                                setRightDock (Some TempUI.DockType.Cell)
+                                setCellUIFlag (UIFlag.Cell (input.TaskId, input.DateId))
+                            })
+                [
+                    Cell input
+                ]

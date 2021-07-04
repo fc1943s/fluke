@@ -18,6 +18,7 @@ module Chakra =
         abstract xl : 'T with get, set
 
     type IChakraProps =
+        abstract _active : IChakraProps with get, set
         abstract _after : IChakraProps with get, set
         abstract _focus : IChakraProps with get, set
         abstract _hover : IChakraProps with get, set

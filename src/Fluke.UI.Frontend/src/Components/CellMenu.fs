@@ -16,7 +16,7 @@ module CellMenu =
     open State
 
     [<ReactComponent>]
-    let CellMenu (taskId: TaskId) (dateId: DateId) (onClose: (unit -> unit) option) (vertical: bool) =
+    let CellMenu (taskId: TaskId) (dateId: DateId) (onClose: (unit -> unit) option) (floating: bool) =
         let isTesting = Store.useValue Store.Atoms.isTesting
         let username = Store.useValue Store.Atoms.username
         let toast = Chakra.useToast ()
@@ -99,13 +99,15 @@ module CellMenu =
         Chakra.stack
             (fun x ->
                 x.spacing <- "0"
-                x.borderWidth <- "1px"
-                x.borderColor <- if darkMode then TempUI.cellStatusColor Disabled else "gray.45"
-                x.boxShadow <- $"0px 0px 2px 1px #{if darkMode then 262626 else 777}")
+
+                if floating then
+                    x.borderWidth <- "1px"
+                    x.borderColor <- if darkMode then TempUI.cellStatusColor Disabled else "gray.45"
+                    x.boxShadow <- $"0px 0px 2px 1px #{if darkMode then 262626 else 777}")
             [
-                Chakra.simpleGrid
+                Chakra.stack
                     (fun x ->
-                        x.columns <- 1
+                        x.direction <- if floating then "column" else "row"
                         x.borderColor <- "gray.77"
                         x.backgroundColor <- if darkMode then "#636363" else "gray.45"
                         x.spacing <- "1px"
@@ -116,8 +118,10 @@ module CellMenu =
                                 (fun x ->
                                     if isTesting then x?``data-testid`` <- $"cell-button-{color}"
                                     x.icon <- icon
+                                    x.display <- "block"
                                     x.color <- "#dddddd"
                                     x._hover <- JS.newObj (fun x -> x.opacity <- 0.8)
+                                    x._active <- JS.newObj (fun x -> x.opacity <- 0.5)
                                     x.variant <- "outline"
                                     x.backgroundColor <- color
                                     x.border <- "0"
@@ -140,39 +144,37 @@ module CellMenu =
                                 tooltipLabel
                                 [
                                     match username with
-                                    | Some username -> wrapButtonStatus None color (UserStatus (username, status))
+                                    | Some username ->
+                                        wrapButtonStatus
+                                            (match sessionStatus with
+                                             | UserStatus (_, sessionStatus) when sessionStatus = status ->
+                                                 Icons.hi.HiOutlineCheck |> Icons.render |> Some
+                                             | _ -> None)
+                                            color
+                                            (UserStatus (username, status))
                                     | _ -> nothing
                                 ]
 
-                        Tooltip.wrap
-                            (str "Details")
-                            [
-                                wrapButton
-                                    (Icons.fi.FiArrowRight |> Icons.render |> Some)
-                                    (TempUI.cellStatusColor Pending)
-                                    (Some
-                                        (fun () ->
-                                            promise {
-                                                setRightDock (Some TempUI.DockType.Cell)
-                                                setCellUIFlag (UIFlag.Cell (taskId, dateId))
-
-                                                match onClose with
-                                                | Some onClose -> onClose ()
-                                                | None -> ()
-                                            }))
-                            ]
-
-                        match sessionStatus with
-                        | UserStatus _ ->
+                        if not floating then
+                            nothing
+                        else
                             Tooltip.wrap
-                                (str "Clear")
+                                (str "Details")
                                 [
-                                    wrapButtonStatus
-                                        (Icons.md.MdClear |> Icons.render |> Some)
-                                        (TempUI.cellStatusColor Disabled)
-                                        Disabled
+                                    wrapButton
+                                        (Icons.fi.FiArrowRight |> Icons.render |> Some)
+                                        (TempUI.cellStatusColor Pending)
+                                        (Some
+                                            (fun () ->
+                                                promise {
+                                                    setRightDock (Some TempUI.DockType.Cell)
+                                                    setCellUIFlag (UIFlag.Cell (taskId, dateId))
+
+                                                    match onClose with
+                                                    | Some onClose -> onClose ()
+                                                    | None -> ()
+                                                }))
                                 ]
-                        | _ -> nothing
 
                         Chakra.box
                             (fun _ -> ())
@@ -313,5 +315,17 @@ overriding any other behavior.
                                     ]
                             ]
                         |> wrapButtonTooltip Scheduled
+
+                        match sessionStatus with
+                        | UserStatus _ ->
+                            Tooltip.wrap
+                                (str "Clear")
+                                [
+                                    wrapButtonStatus
+                                        (Icons.md.MdClear |> Icons.render |> Some)
+                                        (TempUI.cellStatusColor Disabled)
+                                        Disabled
+                                ]
+                        | _ -> nothing
                     ]
             ]

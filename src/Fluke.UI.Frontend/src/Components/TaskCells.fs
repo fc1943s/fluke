@@ -20,7 +20,7 @@ module TaskCells =
                         (fun date ->
                             React.suspense (
                                 [
-                                    Cell.Cell
+                                    Cell.CellWrapper
                                         {|
                                             TaskId = taskId
                                             DateId = DateId date

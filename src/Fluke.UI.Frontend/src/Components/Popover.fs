@@ -23,6 +23,8 @@ module Popover =
         if not disclosure.isOpen then
             Chakra.box
                 (fun x ->
+                    x.display <- "inline"
+
                     x.onClick <-
                         fun e ->
                             promise {
@@ -34,7 +36,7 @@ module Popover =
                 ]
         else
             Chakra.box
-                (fun _ -> ())
+                (fun x -> x.display <- "inline")
                 [
                     Chakra.popover
                         (fun x ->
@@ -55,7 +57,7 @@ module Popover =
                                 (fun _ -> ())
                                 [
                                     Chakra.box
-                                        (fun _ -> ())
+                                        (fun x -> x.display <- "inline")
                                         [
                                             input.Trigger
                                         ]

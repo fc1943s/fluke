@@ -159,6 +159,7 @@ module Auth =
                                         set Atoms.User.daysAfter def.DaysAfter
                                         set Atoms.User.daysBefore def.DaysBefore
                                         set Atoms.User.dayStart def.DayStart
+                                        set Atoms.User.enableCellPopover def.EnableCellPopover
                                         set Atoms.User.expandedDatabaseIdSet def.ExpandedDatabaseIdSet
                                         set Atoms.User.filterTasksByView def.FilterTasksByView
                                         set Atoms.User.fontSize def.FontSize
