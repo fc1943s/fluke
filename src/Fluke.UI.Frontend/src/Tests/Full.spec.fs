@@ -189,6 +189,11 @@ module Full =
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Edit Database"
 
+                    Cy.wait 6000
+
+                    Cy2.clickSelectorChildFromText dbName ".chakra-button"
+                    Cy2.clickText "Edit Database"
+
                     Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
 
                     //                    Cy.wait 200

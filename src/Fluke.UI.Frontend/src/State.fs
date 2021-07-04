@@ -1323,12 +1323,16 @@ module State =
                     (fun getter ->
                         let sortedTaskIdList = Store.value getter sortedTaskIdList
 
+                        let informationSet = Store.value getter informationSet
+
                         let informationArray =
                             sortedTaskIdList
                             |> List.toArray
                             |> Array.map Atoms.Task.information
                             |> Store.waitForAll
                             |> Store.value getter
+
+                        Browser.Dom.window?informationArray <- informationArray
 
                         sortedTaskIdList
                         |> List.indexed
@@ -1338,7 +1342,14 @@ module State =
                         |> List.sortBy (
                             snd
                             >> List.tryHead
-                            >> Option.map (fst >> Information.toTag)
+                            >> Option.map (
+                                fst
+                                >> fun information ->
+                                    if informationSet.Contains information then
+                                        information |> Information.toTag
+                                    else
+                                        -1
+                            )
                             >> Option.defaultValue -1
                         )
                         |> List.map (fun (a, b) -> a, b |> List.map (fun (c, d) -> c, d |> List.map snd)))
