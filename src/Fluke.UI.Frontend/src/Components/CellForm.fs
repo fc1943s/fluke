@@ -46,9 +46,7 @@ module CellForm =
                     [
                         "Info",
                         (Chakra.stack
-                            (fun x ->
-                                x.spacing <- "10px"
-                                x.alignItems <- "center")
+                            (fun x -> x.spacing <- "10px")
                             [
                                 Chakra.box
                                     (fun x -> x.userSelect <- "text")
@@ -61,7 +59,9 @@ module CellForm =
                                         str $"""Date: {dateId |> DateId.Value |> FlukeDate.Stringify}"""
                                     ]
                                 Chakra.stack
-                                    (fun x -> x.direction <- "row")
+                                    (fun x ->
+                                        x.direction <- "row"
+                                        x.alignItems <- "center")
                                     [
                                         Chakra.box
                                             (fun _ -> ())
