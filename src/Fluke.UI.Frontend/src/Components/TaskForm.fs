@@ -245,6 +245,20 @@ module TaskForm =
                 |]
             )
 
+
+        let onAttachmentDelete =
+            Store.useCallback (
+                (fun getter setter attachmentId ->
+                    promise {
+                        Store.change setter (Atoms.Task.attachmentIdSet taskId) (Set.remove attachmentId)
+
+                        do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                    }),
+                [|
+                    box taskId
+                |]
+            )
+
         let onSave =
             Store.useCallback (
                 (fun getter setter _ ->
@@ -435,27 +449,11 @@ module TaskForm =
                                                                                      x.marginLeft <- "6px")
                                                                          Body =
                                                                              [
-                                                                                 Chakra.menuItem
-                                                                                     (fun x ->
-                                                                                         x.closeOnSelect <- true
-
-                                                                                         x.icon <-
-                                                                                             Icons.bi.BiTrash
-                                                                                             |> Icons.renderChakra
-                                                                                                 (fun x ->
-                                                                                                     x.fontSize <-
-                                                                                                         "13px")
-
-                                                                                         x.onClick <-
-                                                                                             fun _ ->
-                                                                                                 promise {
-                                                                                                     do!
-                                                                                                         deleteSession
-                                                                                                             start
-                                                                                                 })
-                                                                                     [
-                                                                                         str "Delete Session"
-                                                                                     ]
+                                                                                 ConfirmPopover.ConfirmPopover
+                                                                                     ConfirmPopover.ConfirmPopoverType.MenuItem
+                                                                                     Icons.bi.BiTrash
+                                                                                     "Delete Session"
+                                                                                     (fun () -> deleteSession start)
                                                                              ]
                                                                          MenuListProps = fun _ -> ()
                                                                      |}
@@ -469,7 +467,10 @@ module TaskForm =
                                     x.spacing <- "10px"
                                     x.flex <- "1")
                                 [
-                                    AttachmentPanel.AttachmentPanel (attachmentIdSet |>Set.toList) onAttachmentAdd
+                                    AttachmentPanel.AttachmentPanel
+                                        onAttachmentAdd
+                                        onAttachmentDelete
+                                        (attachmentIdSet |> Set.toList)
                                 ])
                     ]
             |}

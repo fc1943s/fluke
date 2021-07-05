@@ -110,45 +110,19 @@ module TaskName =
                                                 x.marginLeft <- "6px")
                                     Body =
                                         [
-                                            Chakra.menuItem
-                                                (fun x ->
-                                                    x.closeOnSelect <- true
+                                            MenuItem.MenuItem Icons.bs.BsPen "Edit Task" editTask (fun _ -> ())
 
-                                                    x.icon <-
-                                                        Icons.bs.BsPen
-                                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
+                                            MenuItem.MenuItem
+                                                Icons.gi.GiHourglass
+                                                "Start Session"
+                                                startSession
+                                                (fun _ -> ())
 
-                                                    x.onClick <- editTask)
-                                                [
-                                                    str "Edit Task"
-                                                ]
-
-                                            Chakra.menuItem
-                                                (fun x ->
-                                                    x.closeOnSelect <- true
-
-                                                    x.icon <-
-                                                        Icons.gi.GiHourglass
-                                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                                    x.onClick <- startSession)
-                                                [
-                                                    str "Start Session"
-                                                ]
-
-                                            Chakra.menuItem
-                                                (fun x ->
-                                                    x.closeOnSelect <- true
-                                                    x.isDisabled <- true
-
-                                                    x.icon <-
-                                                        Icons.bi.BiTrash
-                                                        |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                                    x.onClick <- deleteTask)
-                                                [
-                                                    str "Delete Task"
-                                                ]
+                                            ConfirmPopover.ConfirmPopover
+                                                ConfirmPopover.ConfirmPopoverType.MenuItem
+                                                Icons.bi.BiTrash
+                                                "Delete Task"
+                                                deleteTask
                                         ]
                                     MenuListProps = fun _ -> ()
                                 |}

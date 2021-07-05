@@ -34,6 +34,29 @@ module InformationForm =
                 |]
             )
 
+        let onAttachmentDelete =
+            Store.useCallback (
+                (fun getter setter attachmentId ->
+                    promise {
+                        Store.change
+                            setter
+                            Atoms.User.informationAttachmentMap
+                            (fun informationAttachmentMap ->
+                                informationAttachmentMap
+                                |> Map.add
+                                    information
+                                    (informationAttachmentMap
+                                     |> Map.tryFind information
+                                     |> Option.defaultValue Set.empty
+                                     |> Set.remove attachmentId))
+
+                        do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                    }),
+                [|
+                    box information
+                |]
+            )
+
         Accordion.Accordion
             {|
                 Props =
@@ -66,7 +89,10 @@ module InformationForm =
                                 x.spacing <- "10px"
                                 x.flex <- "1")
                             [
-                                AttachmentPanel.AttachmentPanel (attachmentIdSet |> Set.toList) onAttachmentAdd
+                                AttachmentPanel.AttachmentPanel
+                                    onAttachmentAdd
+                                    onAttachmentDelete
+                                    (attachmentIdSet |> Set.toList)
                             ])
                     ]
             |}

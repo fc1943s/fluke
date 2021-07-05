@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open Fluke.Shared.Domain.Model
-open Fable.Core
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Bindings
@@ -9,41 +8,10 @@ open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
 
-module MenuItem =
+
+module DatabaseNodeMenu =
     [<ReactComponent>]
-    let MenuItem icon label fn props =
-        Chakra.menuItem
-            (fun x ->
-                x.closeOnSelect <- true
-                x.paddingLeft <- "15px"
-                x.paddingRight <- "10px"
-                x.paddingTop <- "5px"
-                x.paddingBottom <- "5px"
-                x._hover <- JS.newObj (fun x -> x.backgroundColor <- "gray.10")
-
-                x.icon <-
-                    icon
-                    |> Icons.renderChakra
-                        (fun x ->
-                            x.fontSize <- "13px"
-                            x.marginBottom <- "-1px")
-
-                x.onClick <-
-                    fun e ->
-                        promise {
-                            do! fn ()
-                            e.preventDefault ()
-                        }
-
-                props x)
-            [
-                str label
-            ]
-
-
-type DatabaseNodeMenu () =
-    [<ReactComponent>]
-    static member DatabaseNodeMenu (databaseId, disabled) =
+    let DatabaseNodeMenu databaseId disabled =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let isReadWrite = Store.useValue (Selectors.Database.isReadWrite databaseId)
         let setLeftDock = Store.useSetState Atoms.User.leftDock
@@ -55,7 +23,9 @@ type DatabaseNodeMenu () =
 
         let deleteDatabase =
             Store.useCallback (
-                (fun getter _ _ -> Store.deleteRoot getter (Atoms.Database.name databaseId)),
+                (fun getter setter _ ->
+                    Store.change setter Atoms.User.selectedDatabaseIdSet (Set.remove databaseId)
+                    Store.deleteRoot getter (Atoms.Database.name databaseId)),
                 [|
                     box databaseId
                 |]
@@ -109,68 +79,11 @@ type DatabaseNodeMenu () =
                             (fun () -> exportDatabase databaseId)
                             (fun _ -> ())
 
-                        Popover.CustomPopover
-                            {|
-                                CloseButton = true
-                                RenderOnHover = true
-                                Props = fun x -> x.closeOnBlur <- false
-                                Padding = "10px"
-                                Trigger =
-                                    MenuItem.MenuItem
-                                        Icons.bi.BiTrash
-                                        "Delete Database"
-                                        (fun () -> promise { () })
-                                        (fun x -> x.closeOnSelect <- false)
-                                Body =
-                                    fun (disclosure, initialFocusRef) ->
-                                        [
-                                            Chakra.box
-                                                (fun _ -> ())
-                                                [
-                                                    Chakra.stack
-                                                        (fun x -> x.spacing <- "10px")
-                                                        [
-                                                            Chakra.box
-                                                                (fun x ->
-                                                                    x.paddingBottom <- "5px"
-                                                                    x.marginRight <- "24px"
-                                                                    x.fontSize <- "15px")
-                                                                [
-                                                                    str "Delete Database"
-                                                                ]
-
-                                                            Chakra.box
-                                                                (fun _ -> ())
-                                                                [
-                                                                    Button.Button
-                                                                        {|
-                                                                            Hint = None
-                                                                            Icon =
-                                                                                Some (
-                                                                                    Icons.bi.BiTrash |> Icons.wrap,
-                                                                                    Button.IconPosition.Left
-                                                                                )
-                                                                            Props =
-                                                                                fun x ->
-                                                                                    x.ref <- initialFocusRef
-
-                                                                                    x.onClick <-
-                                                                                        fun e ->
-                                                                                            promise {
-                                                                                                do! deleteDatabase ()
-                                                                                                disclosure.onClose ()
-                                                                                                e.preventDefault ()
-                                                                                            }
-                                                                            Children =
-                                                                                [
-                                                                                    str "Confirm"
-                                                                                ]
-                                                                        |}
-                                                                ]
-                                                        ]
-                                                ]
-                                        ]
-                            |}
+                        ConfirmPopover.ConfirmPopover
+                            ConfirmPopover.ConfirmPopoverType.MenuItem
+                            Icons.bi.BiTrash
+                            "Delete Database"
+                            deleteDatabase
                     ]
                 MenuListProps = fun _ -> ()
             |}

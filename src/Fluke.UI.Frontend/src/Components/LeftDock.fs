@@ -120,18 +120,11 @@ module LeftDock =
                                             [
                                                 MenuItemToggle.MenuItemToggle Atoms.User.hideTemplates "Hide Templates"
 
-                                                Chakra.menuItem
-                                                    (fun x ->
-                                                        x.closeOnSelect <- true
-
-                                                        x.icon <-
-                                                            Icons.bi.BiTrash
-                                                            |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                                        x.onClick <- deleteTemplates)
-                                                    [
-                                                        str "Delete Templates"
-                                                    ]
+                                                ConfirmPopover.ConfirmPopover
+                                                    ConfirmPopover.ConfirmPopoverType.MenuItem
+                                                    Icons.bi.BiTrash
+                                                    "Delete Templates"
+                                                    deleteTemplates
                                             ]
                                         )
                                     ]

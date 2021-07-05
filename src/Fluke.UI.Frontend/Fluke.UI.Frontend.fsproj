@@ -85,6 +85,8 @@
         <Compile Include="src\Components\InformationSelector.fs" />
         <Compile Include="src\Components\DatabaseSelector.fs" />
         <Compile Include="src\Components\PasteListener.fs" />
+        <Compile Include="src\Components\MenuItem.fs" />
+        <Compile Include="src\Components\ConfirmPopover.fs" />
         <Compile Include="src\Components\AddAttachmentInput.fs" />
         <Compile Include="src\Components\AttachmentPanel.fs" />
         <Compile Include="src\Components\TaskForm.fs" />

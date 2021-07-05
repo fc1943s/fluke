@@ -173,7 +173,7 @@ module Databases =
                                                     ]
                                             | None -> nothing
 
-                                            DatabaseNodeMenu.DatabaseNodeMenu (databaseId, disabled)
+                                            DatabaseNodeMenu.DatabaseNodeMenu databaseId disabled
                                         ]
                                 | _ -> nothing
 

@@ -38,6 +38,30 @@ module CellForm =
                 |]
             )
 
+        let onAttachmentDelete =
+            Store.useCallback (
+                (fun getter setter attachmentId ->
+                    promise {
+                        Store.change
+                            setter
+                            (Atoms.Task.cellAttachmentMap taskId)
+                            (fun cellAttachmentMap ->
+                                cellAttachmentMap
+                                |> Map.add
+                                    dateId
+                                    (cellAttachmentMap
+                                     |> Map.tryFind dateId
+                                     |> Option.defaultValue Set.empty
+                                     |> Set.remove attachmentId))
+
+                        do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                    }),
+                [|
+                    box taskId
+                    box dateId
+                |]
+            )
+
         Accordion.Accordion
             {|
                 Props = fun _ -> ()
@@ -78,7 +102,10 @@ module CellForm =
                                 x.spacing <- "10px"
                                 x.flex <- "1")
                             [
-                                AttachmentPanel.AttachmentPanel (attachmentIdSet |> Set.toList) onAttachmentAdd
+                                AttachmentPanel.AttachmentPanel
+                                    onAttachmentAdd
+                                    onAttachmentDelete
+                                    (attachmentIdSet |> Set.toList)
                             ])
                     ]
             |}

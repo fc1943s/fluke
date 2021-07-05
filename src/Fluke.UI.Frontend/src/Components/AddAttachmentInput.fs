@@ -80,18 +80,11 @@ module AddAttachmentInput =
                                             x.color <- "whiteAlpha.700")
                                 Body =
                                     [
-                                        Chakra.menuItem
-                                            (fun x ->
-                                                x.closeOnSelect <- true
-
-                                                x.icon <-
-                                                    Icons.bi.BiTrash
-                                                    |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                                x.onClick <- fun _ -> promise { do! onDelete () })
-                                            [
-                                                str "Delete Attachment"
-                                            ]
+                                        ConfirmPopover.ConfirmPopover
+                                            ConfirmPopover.ConfirmPopoverType.MenuItem
+                                            Icons.bi.BiTrash
+                                            "Delete Attachment"
+                                            onDelete
                                     ]
                                 MenuListProps = fun _ -> ()
                             |}
@@ -128,8 +121,8 @@ module AddAttachmentInput =
             [
                 yield!
                     attachmentIdList
-                    |> List.mapi
-                        (fun i attachmentId ->
+                    |> List.map
+                        (fun attachmentId ->
                             //                            DragDrop.draggable
 //                                {|
 //                                    draggableId = string attachmentId

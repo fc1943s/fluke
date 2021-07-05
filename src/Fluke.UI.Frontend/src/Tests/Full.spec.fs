@@ -200,7 +200,7 @@ module Full =
 
                     Cy2.waitFor $"{dbName}_edit" (Some {| timeout = timeout |})
 
-                    Cy.wait 3000
+                    Cy.wait 9000
 
                     Cy2.clickText $"{dbName}_edit"
 

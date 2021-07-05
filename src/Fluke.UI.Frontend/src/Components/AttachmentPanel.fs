@@ -20,50 +20,40 @@ module AttachmentPanel =
                 Chakra.box
                     (fun x -> x.lineHeight <- "16px")
                     [
-                        Chakra.box
-                            (fun x ->
-                                x.userSelect <- "text"
-                                x.display <- "inline")
-                            [
-                                timestamp
-                                |> Option.map (FlukeDateTime.Stringify >> str)
-                                |> Option.defaultValue (LoadingSpinner.InlineLoadingSpinner ())
-                            ]
+                        match timestamp with
+                        | Some timestamp ->
+                            Chakra.box
+                                (fun x ->
+                                    x.userSelect <- "text"
+                                    x.display <- "inline")
+                                [
+                                    str (timestamp |> FlukeDateTime.Stringify)
+                                ]
 
-                        Menu.Menu
-                            {|
-                                Tooltip = ""
-                                Trigger =
-                                    InputLabelIconButton.InputLabelIconButton
-                                        (fun x ->
-                                            x.``as`` <- Chakra.react.MenuButton
-
-                                            x.icon <- Icons.bs.BsThreeDots |> Icons.render
-
-                                            x.fontSize <- "11px"
-                                            x.height <- "15px"
-
-                                            x.color <- "whiteAlpha.700"
-
-                                            x.marginTop <- "-5px"
-                                            x.marginLeft <- "6px")
-                                Body =
-                                    [
-                                        Chakra.menuItem
+                            Menu.Menu
+                                {|
+                                    Tooltip = ""
+                                    Trigger =
+                                        InputLabelIconButton.InputLabelIconButton
                                             (fun x ->
-                                                x.closeOnSelect <- true
-
-                                                x.icon <-
-                                                    Icons.bi.BiTrash
-                                                    |> Icons.renderChakra (fun x -> x.fontSize <- "13px")
-
-                                                x.onClick <- onDelete)
-                                            [
-                                                str "Delete Attachment"
-                                            ]
-                                    ]
-                                MenuListProps = fun _ -> ()
-                            |}
+                                                x.``as`` <- Chakra.react.MenuButton
+                                                x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                                x.fontSize <- "11px"
+                                                x.height <- "15px"
+                                                x.color <- "whiteAlpha.700"
+                                                x.marginTop <- "-5px"
+                                                x.marginLeft <- "6px")
+                                    Body =
+                                        [
+                                            ConfirmPopover.ConfirmPopover
+                                                ConfirmPopover.ConfirmPopoverType.MenuItem
+                                                Icons.bi.BiTrash
+                                                "Delete Attachment"
+                                                onDelete
+                                        ]
+                                    MenuListProps = fun _ -> ()
+                                |}
+                        | None -> LoadingSpinner.InlineLoadingSpinner ()
                     ]
             ]
 
@@ -80,26 +70,15 @@ module AttachmentPanel =
             ]
 
     [<ReactComponent>]
-    let Attachment attachmentId =
+    let Attachment onDelete attachmentId =
         let attachment = Store.useValue (Atoms.Attachment.attachment attachmentId)
-
-        let deleteAttachment =
-            Store.useCallback (
-                (fun getter _ _ ->
-                    promise { () }
-                    //                Store.deleteRoot getter (Atoms.Task.databaseId taskId)
-                    ),
-                [|
-                //                    box taskId
-                |]
-            )
 
         Chakra.stack
             (fun x ->
                 x.flex <- "1"
                 x.spacing <- "6px")
             [
-                AttachmentHeader deleteAttachment attachmentId
+                AttachmentHeader onDelete attachmentId
 
                 match attachment with
                 | Some (Attachment.Comment (Comment.Comment comment)) -> AttachmentComment comment
@@ -123,7 +102,7 @@ module AttachmentPanel =
             ]
 
     [<ReactComponent>]
-    let AttachmentPanel attachmentIdList onAdd =
+    let AttachmentPanel onAdd onDelete attachmentIdList =
         //        let onDragEnd = Store.useCallback ((fun _ _ x -> promise { printfn $"x={x}" }), [||])
 //
 //        DragDrop.dragDropContext
@@ -153,7 +132,11 @@ module AttachmentPanel =
                             Chakra.stack
                                 (fun x -> x.spacing <- "10px")
                                 [
-                                    yield! attachmentIdList |> List.map Attachment
+                                    yield!
+                                        attachmentIdList
+                                        |> List.map
+                                            (fun attachmentId ->
+                                                Attachment (fun () -> onDelete attachmentId) attachmentId)
                                 ]
                     ]
 
