@@ -11,7 +11,7 @@ open Fluke.UI.Frontend.State
 module InformationForm =
     [<ReactComponent>]
     let rec InformationForm information =
-        let attachments = Store.useValue (Selectors.Information.attachments information)
+        let attachmentIdSet = Store.useValue (Selectors.Information.attachmentIdSet information)
 
         let onAttachmentAdd =
             Store.useCallback (
@@ -66,7 +66,7 @@ module InformationForm =
                                 x.spacing <- "10px"
                                 x.flex <- "1")
                             [
-                                AttachmentPanel.AttachmentPanel attachments onAttachmentAdd
+                                AttachmentPanel.AttachmentPanel (attachmentIdSet |> Set.toList) onAttachmentAdd
                             ])
                     ]
             |}

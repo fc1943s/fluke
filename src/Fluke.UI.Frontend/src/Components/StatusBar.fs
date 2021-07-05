@@ -224,56 +224,77 @@ module StatusBar =
     [<ReactComponent>]
     let TasksIndicator () =
         let informationSet = Store.useValue Selectors.Session.informationSet
-        let informationStateList = Store.useValue Selectors.Session.informationStateList
-        let selectedTaskStateList = Store.useValue Selectors.Session.selectedTaskStateList
+        let selectedTaskIdList = Store.useValue Selectors.Session.selectedTaskIdList
+
+        let taskAttachments =
+            selectedTaskIdList
+            |> List.toArray
+            |> Array.map Atoms.Task.attachmentIdSet
+            |> Store.waitForAll
+            |> Store.useValue
+            |> Array.map Set.toArray
+            |> Array.collect id
 
         let cellAttachmentMapArray =
-            selectedTaskStateList
-            |> List.map (fun taskState -> taskState.Task.Id)
+            selectedTaskIdList
             |> List.map Atoms.Task.cellAttachmentMap
             |> List.toArray
             |> Store.waitForAll
             |> Store.useValue
 
+        let informationAttachments =
+            informationSet
+            |> Set.toArray
+            |> Array.map Selectors.Information.attachmentIdSet
+            |> Store.waitForAll
+            |> Store.useValue
+            |> Array.map Set.toArray
+            |> Array.collect id
+
+        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
+
         let selectedTaskIdAtoms = Store.useValue Selectors.Session.selectedTaskIdAtoms
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
-        let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
+
+        let taskIdArray =
+            selectedTaskIdAtoms
+            |> Store.waitForAll
+            |> Store.useValue
+
+        let taskSessionLength =
+            taskIdArray
+            |> Array.map Atoms.Task.sessions
+            |> Store.waitForAll
+            |> Store.useValue
+            |> Seq.collect id
+            |> Seq.length
+
+        let cellStateMapArray =
+            taskIdArray
+            |> Array.map Selectors.Task.cellStateMap
+            |> Store.waitForAll
+            |> Store.useValue
 
         let detailsText, total =
             React.useMemo (
                 (fun () ->
                     let database = databaseIdAtoms.Length
                     let information = informationSet.Count
-
-                    let informationAttachment =
-                        informationStateList
-                        |> List.map (fun informationState -> informationState.Attachments.Length)
-                        |> List.sum
-
-                    let tasks = selectedTaskStateList.Length
-
-                    let taskAttachment =
-                        selectedTaskStateList
-                        |> List.map (fun taskState -> taskState.Attachments.Length)
-                        |> List.sum
-
-                    let taskSession =
-                        selectedTaskStateList
-                        |> List.map (fun taskState -> taskState.Sessions.Length)
-                        |> List.sum
+                    let tasks = selectedTaskIdList.Length
+                    let informationAttachment = informationAttachments.Length
+                    let taskAttachment = taskAttachments.Length
 
                     let cellStatus =
-                        selectedTaskStateList
-                        |> List.map
-                            (fun taskState ->
-                                taskState.CellStateMap
-                                |> Map.values
-                                |> Seq.filter
-                                    (function
-                                    | { Status = UserStatus _ } -> true
-                                    | _ -> false)
-                                |> Seq.length)
-                        |> List.sum
+                        cellStateMapArray
+                        |> Array.map (
+                            Map.values
+                            >> Seq.filter
+                                (function
+                                | { Status = UserStatus _ } -> true
+                                | _ -> false)
+                            >> Seq.length
+                        )
+                        |> Array.sum
 
                     let cellAttachment =
                         cellAttachmentMapArray
@@ -286,7 +307,7 @@ module StatusBar =
                         + informationAttachment
                         + tasks
                         + taskAttachment
-                        + taskSession
+                        + taskSessionLength
                         + cellStatus
                         + cellAttachment
 
@@ -297,7 +318,7 @@ module StatusBar =
                             $"Information Attachment: {informationAttachment}"
                             $"Task: {tasks}"
                             $"Task Attachment: {taskAttachment}"
-                            $"Task Session: {taskSession}"
+                            $"Task Session: {taskSessionLength}"
                             $"Cell Status: {cellStatus}"
                             $"Cell Attachment: {cellAttachment}"
                             $"Total: {total}"
@@ -308,10 +329,11 @@ module StatusBar =
 
                     detailsText, total),
                 [|
+                    box cellStateMapArray
+                    box informationAttachments
                     box cellAttachmentMapArray
                     box informationSet
-                    box informationStateList
-                    box selectedTaskStateList
+                    box taskSessionLength
                     box databaseIdAtoms
                 |]
             )

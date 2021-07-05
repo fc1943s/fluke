@@ -12,7 +12,7 @@ open Fluke.Shared.Domain.Model
 module InformationName =
     [<ReactComponent>]
     let InformationName information =
-        let attachments = Store.useValue (Selectors.Information.attachments information)
+        let attachmentIdSet = Store.useValue (Selectors.Information.attachmentIdSet information)
         let cellSize = Store.useValue Atoms.User.cellSize
 
         let detailsClick =
@@ -60,5 +60,5 @@ module InformationName =
                                 x.onClick <- detailsClick)
                     ]
 
-                AttachmentIndicator.AttachmentIndicator attachments
+                AttachmentIndicator.AttachmentIndicator (attachmentIdSet |> Set.toList)
             ]

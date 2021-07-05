@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open Browser.Types
 open Fable.Core
 open Fable.React
 open Fable.Core.JsInterop
@@ -30,29 +31,37 @@ module Cell =
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (input.TaskId, input.DateId))
         let sessions = Store.useValue (Selectors.Cell.sessions (input.TaskId, input.DateId))
-        let attachments = Store.useValue (Selectors.Cell.attachments (input.TaskId, input.DateId))
+        let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (input.TaskId, input.DateId))
         let isToday = Store.useValue (Selectors.FlukeDate.isToday (input.DateId |> DateId.Value))
         let selected = Store.useValue (Selectors.Cell.selected (input.TaskId, input.DateId))
         let setSelected = Setters.useSetSelected ()
         let cellUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Cell)
         let rightDock = Store.useValue Atoms.User.rightDock
+        let deviceInfo = Store.useValue Selectors.deviceInfo
 
         let onCellClick =
             Store.useCallback (
-                (fun getter _ _ ->
+                (fun getter _ (e: MouseEvent) ->
                     promise {
-                        let ctrlPressed = Store.value getter Atoms.ctrlPressed
-                        let shiftPressed = Store.value getter Atoms.shiftPressed
+                        if deviceInfo.IsTesting then
+                            let ctrlPressed = Store.value getter Atoms.ctrlPressed
+                            let shiftPressed = Store.value getter Atoms.shiftPressed
 
-                        let newSelected =
-                            if ctrlPressed || shiftPressed then
-                                input.TaskId, input.DateId, not selected
-                            else
-                                input.TaskId, input.DateId, false
+                            let newSelected =
+                                if ctrlPressed || shiftPressed then
+                                    input.TaskId, input.DateId, not selected
+                                else
+                                    input.TaskId, input.DateId, false
 
-                        do! setSelected newSelected
+                            do! setSelected newSelected
+                        else
+                            let newSelected = if e.ctrlKey || e.shiftKey then not selected else false
+
+                            if selected <> newSelected then
+                                do! setSelected (input.TaskId, input.DateId, newSelected)
                     }),
                 [|
+                    box deviceInfo
                     box input.TaskId
                     box input.DateId
                     box selected
@@ -113,7 +122,7 @@ module Cell =
                 | true, UserStatus (_username, _manualCellStatus) -> CellStatusUserIndicator.CellStatusUserIndicator ()
                 | _ -> nothing
 
-                AttachmentIndicator.AttachmentIndicator attachments
+                AttachmentIndicator.AttachmentIndicator (attachmentIdSet |> Set.toList)
             ]
 
     [<ReactComponent>]

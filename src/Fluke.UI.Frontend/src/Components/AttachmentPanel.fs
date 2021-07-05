@@ -6,11 +6,14 @@ open Fluke.Shared.Domain
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Fluke.UI.Frontend.State
 
 
 module AttachmentPanel =
     [<ReactComponent>]
-    let AttachmentHeader onDelete moment =
+    let AttachmentHeader onDelete attachmentId =
+        let timestamp = Store.useValue (Atoms.Attachment.timestamp attachmentId)
+
         Chakra.flex
             (fun x -> x.color <- "whiteAlpha.600")
             [
@@ -22,7 +25,9 @@ module AttachmentPanel =
                                 x.userSelect <- "text"
                                 x.display <- "inline")
                             [
-                                str (moment |> FlukeDateTime.Stringify)
+                                timestamp
+                                |> Option.map (FlukeDateTime.Stringify >> str)
+                                |> Option.defaultValue (LoadingSpinner.InlineLoadingSpinner ())
                             ]
 
                         Menu.Menu
@@ -73,7 +78,9 @@ module AttachmentPanel =
             ]
 
     [<ReactComponent>]
-    let Attachment moment attachment =
+    let Attachment attachmentId =
+        let attachment = Store.useValue (Atoms.Attachment.attachment attachmentId)
+
         let deleteAttachment =
             Store.useCallback (
                 (fun getter _ _ ->
@@ -88,11 +95,11 @@ module AttachmentPanel =
         Chakra.stack
             (fun x -> x.flex <- "1")
             [
-                AttachmentHeader deleteAttachment moment
+                AttachmentHeader deleteAttachment attachmentId
 
                 match attachment with
-                | Attachment.Comment (Comment.Comment comment) -> AttachmentComment comment
-                | Attachment.List list ->
+                | Some (Attachment.Comment (Comment.Comment comment)) -> AttachmentComment comment
+                | Some (Attachment.List list) ->
                     let comments, list = list |> List.partition Attachment.isComment
                     let _images, _list = list |> List.partition Attachment.isImage
 
@@ -112,7 +119,7 @@ module AttachmentPanel =
             ]
 
     [<ReactComponent>]
-    let AttachmentPanel attachments onAdd =
+    let AttachmentPanel attachmentIdList onAdd =
         //        let onDragEnd = Store.useCallback ((fun _ _ x -> promise { printfn $"x={x}" }), [||])
 //
 //        DragDrop.dragDropContext
@@ -130,7 +137,7 @@ module AttachmentPanel =
                         x.overflowY <- "auto"
                         x.flexBasis <- 0)
                     [
-                        match attachments with
+                        match attachmentIdList with
                         //                                                | None -> LoadingSpinner.LoadingSpinner ()
                         | [] ->
                             Chakra.box
@@ -138,13 +145,11 @@ module AttachmentPanel =
                                 [
                                     str "No attachments found"
                                 ]
-                        | attachments ->
+                        | attachmentIdList ->
                             Chakra.stack
                                 (fun x -> x.spacing <- "10px")
                                 [
-                                    yield!
-                                        attachments
-                                        |> List.map (fun (moment, attachment) -> Attachment moment attachment)
+                                    yield! attachmentIdList |> List.map Attachment
                                 ]
                     ]
 

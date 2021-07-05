@@ -234,7 +234,7 @@ module TaskForm =
                 |]
             )
 
-        let taskState = Store.useValue (Selectors.Task.taskState taskId)
+        let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
 
         let onAttachmentAdd =
             Store.useCallback (
@@ -469,7 +469,7 @@ module TaskForm =
                                     x.spacing <- "10px"
                                     x.flex <- "1")
                                 [
-                                    AttachmentPanel.AttachmentPanel taskState.Attachments onAttachmentAdd
+                                    AttachmentPanel.AttachmentPanel (attachmentIdSet |>Set.toList) onAttachmentAdd
                                 ])
                     ]
             |}

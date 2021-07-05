@@ -9,17 +9,14 @@ open Fluke.UI.Frontend.State
 
 
 module AttachmentIndicator =
-
-    open Domain.UserInteraction
-
     [<ReactComponent>]
-    let AttachmentIndicator (attachments: (FlukeDateTime * Attachment) list) =
+    let AttachmentIndicator attachmentIdList =
         let cellSize = Store.useValue Atoms.User.cellSize
         let color = Store.useValue Atoms.User.color
 
         let tooltipContainerRef = React.useElementRef ()
 
-        match attachments with
+        match attachmentIdList with
         | [] -> nothing
         | _ ->
             Chakra.box
@@ -30,8 +27,6 @@ module AttachmentIndicator =
                     x.position <- "absolute"
                     x.top <- "0px"
                     x.right <- "0px"
-//                    x.width <- "100%"
-
                     x._after <-
                         JS.newObj
                             (fun x ->

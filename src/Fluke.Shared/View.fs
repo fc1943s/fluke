@@ -98,7 +98,7 @@ module View =
         (input: {| View: View
                    DayStart: FlukeTime
                    Position: FlukeDateTime
-                   InformationStateList: InformationState list // TaskOrderList: TaskOrderEntry list
+                   InformationSet: Set<Information>
                    Lanes: (TaskState * Map<DateId, CellStatus>) list |})
         =
         let lanes =
@@ -113,15 +113,16 @@ module View =
                 |> List.groupBy (fun (taskState, _) -> taskState.Task.Information)
                 |> Map.ofSeq
 
-            input.InformationStateList
+            input.InformationSet
+            |> Set.toList
             |> List.map
-                (fun informationState ->
+                (fun information ->
                     let lanes =
                         lanes
-                        |> Map.tryFind informationState.Information
+                        |> Map.tryFind information
                         |> Option.defaultValue []
 
-                    informationState.Information, lanes)
+                    information, lanes)
             |> List.collect snd
         | View.HabitTracker ->
             lanes

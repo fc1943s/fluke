@@ -228,8 +228,6 @@ module Hydrate =
                         |> List.map Selectors.Task.taskState
                         |> List.map (Store.value getter)
 
-                    let informationStateList = Store.value getter Selectors.Session.informationStateList
-
                     let fileIdList =
                         taskStateList
                         |> List.collect
@@ -256,9 +254,31 @@ module Hydrate =
                             |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
                             |> Map.ofList
 
+                        let informationSet = Store.value getter Selectors.Session.informationSet
+
                         let informationStateMap =
-                            informationStateList
-                            |> List.map (fun informationState -> informationState.Information, informationState)
+                            informationSet
+                            |> Set.toList
+                            |> List.map
+                                (fun information ->
+                                    let attachmentIdSet =
+                                        Store.value getter (Selectors.Information.attachmentIdSet information)
+
+                                    let attachments =
+                                        attachmentIdSet
+                                        |> Set.toArray
+                                        |> Array.map Selectors.Attachment.attachment
+                                        |> Store.waitForAll
+                                        |> Store.value getter
+                                        |> Array.toList
+                                        |> List.choose id
+
+                                    information,
+                                    {
+                                        Information = information
+                                        Attachments = attachments
+                                        SortList = []
+                                    })
                             |> Map.ofSeq
 
                         let taskStateMap =
@@ -303,6 +323,7 @@ module Hydrate =
                                     x.description <- "Database exported successfully"
                                     x.title <- "Success"
                                     x.status <- "success")
+
                 }),
             [|
                 box toast

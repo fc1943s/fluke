@@ -19,7 +19,8 @@ module TaskName =
 //        let hovered = Listener.useElementHover ref
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
 
-        let taskState = Store.useValue (Selectors.Task.taskState taskId)
+        let name = Store.useValue (Atoms.Task.name taskId)
+        let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
         let cellSize = Store.useValue Atoms.User.cellSize
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
 
@@ -88,7 +89,7 @@ module TaskName =
                     [
                         //                        match taskState with
 //                        | Some taskState when taskState.Task.Name |> TaskName.Value <> "" ->
-                        taskState.Task.Name |> TaskName.Value |> str
+                        name |> TaskName.Value |> str
 
                         if not isReadWrite then
                             nothing
@@ -156,6 +157,6 @@ module TaskName =
 
                 //                match taskState.valueMaybe () with
 //                | Some taskState ->
-                AttachmentIndicator.AttachmentIndicator taskState.Attachments
+                AttachmentIndicator.AttachmentIndicator (attachmentIdSet |> Set.toList)
             //                | None -> nothing
             ]

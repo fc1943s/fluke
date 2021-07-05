@@ -14,7 +14,7 @@ module CellForm =
     let rec CellForm (taskId: TaskId) (dateId: DateId) =
         let (TaskName taskName) = Store.useValue (Atoms.Task.name taskId)
 
-        let attachments = Store.useValue (Selectors.Cell.attachments (taskId, dateId))
+        let attachmentIdSet = Store.useValue (Selectors.Cell.attachmentIdSet (taskId, dateId))
 
         let onAttachmentAdd =
             Store.useCallback (
@@ -78,7 +78,7 @@ module CellForm =
                                 x.spacing <- "10px"
                                 x.flex <- "1")
                             [
-                                AttachmentPanel.AttachmentPanel attachments onAttachmentAdd
+                                AttachmentPanel.AttachmentPanel (attachmentIdSet |> Set.toList) onAttachmentAdd
                             ])
                     ]
             |}
