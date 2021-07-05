@@ -244,6 +244,8 @@ module Full =
                     Cy2.clickTestId "[data-testid^='cell-']"
                     Cy2.clickTestId $"[data-testid='cell-button-{(TempUI.cellStatusColor Pending)}']"
 
+                    Cy.wait 200
+
                     Cy2.selectorTypeText "textarea[placeholder='Add Attachment']" "newcomment" None
 
                     Cy2.clickTestId "[data-testid='Add Attachment']"
