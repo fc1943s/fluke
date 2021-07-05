@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
+open Browser.Types
+open Fable.DateFunctions
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain
@@ -8,7 +10,6 @@ open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open System
-open Fable.DateFunctions
 open Fable.Core
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
@@ -17,22 +18,103 @@ open Fluke.Shared
 
 module TaskForm =
     [<ReactComponent>]
+    let DurationSelector taskId =
+        let tempDuration =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.duration taskId))))
+                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
+
+        Chakra.box
+            (fun x -> x.display <- "inline")
+            [
+                InputLabel.InputLabel
+                    {|
+                        Hint = None
+                        HintTitle = None
+                        Label = str "Duration (minutes)"
+                        Props = fun x -> x.marginBottom <- "5px"
+                    |}
+
+                Chakra.stack
+                    (fun x ->
+                        x.direction <- "row"
+                        x.spacing <- "15px")
+                    [
+                        Checkbox.Checkbox
+                            (if tempDuration.Value.IsNone then Some "Enable" else None)
+                            (fun x ->
+                                x.isChecked <- tempDuration.Value.IsSome
+                                x.alignSelf <- "center"
+
+                                x.onChange <-
+                                    fun _ ->
+                                        promise {
+                                            tempDuration.SetValue (
+                                                if tempDuration.Value.IsSome then None else (Some (Minute 1))
+                                            )
+                                        })
+
+                        match tempDuration.Value with
+                        | Some duration ->
+                            Input.Input
+                                {|
+                                    CustomProps =
+                                        fun x ->
+                                            x.fixedValue <- Some duration
+                                            x.onFormat <- Some (Minute.Value >> string)
+
+                                            //                                            x.atom <-
+//                                                Some (
+//                                                    Store.InputAtom (
+//                                                        Store.AtomReference.Atom (Atoms.Task.duration taskId)
+//                                                    )
+//                                                )
+//
+//                                            x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
+
+                                            x.onValidate <-
+                                                Some (
+                                                    fst
+                                                    >> String.parseIntMin 1
+                                                    >> Option.defaultValue 1
+                                                    >> Minute
+                                                    >> Some
+                                                )
+
+                                            x.inputFormat <- Some Input.InputFormat.Number
+                                    Props =
+                                        fun x ->
+                                            x.onChange <-
+                                                (fun (e: KeyboardEvent) ->
+                                                    promise {
+                                                        e.Value
+                                                        |> int
+                                                        |> Minute
+                                                        |> Some
+                                                        |> tempDuration.SetValue
+                                                    })
+                                |}
+                        | None -> nothing
+                    ]
+            ]
+
+    [<ReactComponent>]
     let PrioritySelector taskId =
-        let priorityFieldOptions =
-            Store.Hooks.useAtomFieldOptions
+        let tempPriority =
+            Store.Hooks.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.priority taskId))))
                 (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
 
         let priorityNumber =
             React.useMemo (
                 (fun () ->
-                    match priorityFieldOptions.AtomValue with
+                    match tempPriority.Value with
                     | Some priority ->
                         let priorityNumber = (priority |> Priority.toTag) + 1
                         Some priorityNumber
                     | None -> None),
                 [|
-                    box priorityFieldOptions.AtomValue
+                    box tempPriority.Value
                 |]
             )
 
@@ -60,7 +142,7 @@ module TaskForm =
                                 x.onChange <-
                                     fun _ ->
                                         promise {
-                                            priorityFieldOptions.SetAtomValue (
+                                            tempPriority.SetValue (
                                                 if priorityNumber.IsSome then None else (Some Medium5)
                                             )
                                         })
@@ -76,7 +158,7 @@ module TaskForm =
                                     x.onChange <-
                                         fun x ->
                                             promise {
-                                                priorityFieldOptions.SetAtomValue (
+                                                tempPriority.SetValue (
                                                     match x with
                                                     | 1 -> Some Low1
                                                     | 2 -> Some Low2
@@ -171,6 +253,7 @@ module TaskForm =
                         let taskInformation = Store.getReadWrite getter (Atoms.Task.information taskId)
                         let taskScheduling = Store.getReadWrite getter (Atoms.Task.scheduling taskId)
                         let taskPriority = Store.getReadWrite getter (Atoms.Task.priority taskId)
+                        let taskDuration = Store.getReadWrite getter (Atoms.Task.duration taskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -199,6 +282,7 @@ module TaskForm =
                                         Information = taskInformation
                                         Scheduling = taskScheduling
                                         Priority = taskPriority
+                                        Duration = taskDuration
                                     }
                                     |> Promise.lift
                                 else
@@ -211,6 +295,7 @@ module TaskForm =
                                                 Information = taskInformation
                                                 Scheduling = taskScheduling
                                                 Priority = taskPriority
+                                                Duration = taskDuration
                                             }
                                     }
 
@@ -218,6 +303,7 @@ module TaskForm =
                             Store.readWriteReset setter (Atoms.Task.information taskId)
                             Store.readWriteReset setter (Atoms.Task.scheduling taskId)
                             Store.readWriteReset setter (Atoms.Task.priority taskId)
+                            Store.readWriteReset setter (Atoms.Task.duration taskId)
                             Store.set setter (Atoms.User.uiFlag UIFlagType.Task) UIFlag.None
 
                             do! onSave task
@@ -268,6 +354,8 @@ module TaskForm =
                                 SchedulingSelector.SchedulingSelector taskId
 
                                 PrioritySelector taskId
+
+                                DurationSelector taskId
 
                                 Input.Input
                                     {|

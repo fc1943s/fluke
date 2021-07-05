@@ -584,8 +584,8 @@ module SchedulingSelector =
     let SchedulingSelector taskId =
         let weekStart = Store.useValue Atoms.User.weekStart
 
-        let schedulingFieldOptions =
-            Store.Hooks.useAtomFieldOptions
+        let tempScheduling =
+            Store.Hooks.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling taskId))))
                 (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
 
@@ -620,7 +620,7 @@ module SchedulingSelector =
                                                 x.onClick <- fun _ -> promise { setVisible (not visible) }
                                         Children =
                                             [
-                                                schedulingFieldOptions.AtomValue
+                                                tempScheduling.Value
                                                 |> Scheduling.Label
                                                 |> str
                                             ]
@@ -636,39 +636,35 @@ module SchedulingSelector =
                                             x.onChange <-
                                                 fun (radioValueSelected: string) ->
                                                     promise {
-                                                        schedulingFieldOptions.SetAtomValue (
-                                                            radioValueSelected |> Json.decode
-                                                        )
+                                                        tempScheduling.SetValue (radioValueSelected |> Json.decode)
                                                     }
 
-                                            x.value <- schedulingFieldOptions.AtomValue |> Json.encode)
+                                            x.value <- tempScheduling.Value |> Json.encode)
                                         [
                                             Chakra.stack
                                                 (fun x ->
                                                     x.spacing <- "18px"
                                                     x.padding <- "5px")
                                                 [
-                                                    ManualRadio schedulingFieldOptions.AtomValue
-                                                    SuggestedRadio schedulingFieldOptions.AtomValue
-                                                    OffsetDaysRadio
-                                                        schedulingFieldOptions.AtomValue
-                                                        schedulingFieldOptions.SetAtomValue
+                                                    ManualRadio tempScheduling.Value
+                                                    SuggestedRadio tempScheduling.Value
+                                                    OffsetDaysRadio tempScheduling.Value tempScheduling.SetValue
                                                     OffsetWeeksRadio
-                                                        schedulingFieldOptions.AtomValue
-                                                        schedulingFieldOptions.SetAtomValue
+                                                        tempScheduling.Value
+                                                        tempScheduling.SetValue
                                                     OffsetMonthsRadio
-                                                        schedulingFieldOptions.AtomValue
-                                                        schedulingFieldOptions.SetAtomValue
+                                                        tempScheduling.Value
+                                                        tempScheduling.SetValue
                                                     FixedWeeklyRadio
-                                                        schedulingFieldOptions.AtomValue
-                                                        schedulingFieldOptions.SetAtomValue
+                                                        tempScheduling.Value
+                                                        tempScheduling.SetValue
                                                         weekStart
                                                     FixedMonthlyRadio
-                                                        schedulingFieldOptions.AtomValue
-                                                        schedulingFieldOptions.SetAtomValue
+                                                        tempScheduling.Value
+                                                        tempScheduling.SetValue
                                                     FixedYearlyRadio
-                                                        schedulingFieldOptions.AtomValue
-                                                        schedulingFieldOptions.SetAtomValue
+                                                        tempScheduling.Value
+                                                        tempScheduling.SetValue
 
                                                 ]
                                         ]

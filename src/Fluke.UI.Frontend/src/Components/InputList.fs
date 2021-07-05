@@ -26,7 +26,7 @@ module InputList =
                 |]
             )
 
-        let atomFieldOptions = Store.Hooks.useAtomFieldOptions<'TValue []> props.atom props.inputScope
+        let tempAtom = Store.Hooks.useTempAtom<'TValue []> props.atom props.inputScope
 
         Chakra.box
             (fun _ -> ())
@@ -53,9 +53,8 @@ module InputList =
                                                         x.onClick <-
                                                             fun _ ->
                                                                 promise {
-                                                                    atomFieldOptions.SetAtomValue (
-                                                                        atomFieldOptions.AtomValue
-                                                                        |> Array.append [| unbox "" |]
+                                                                    tempAtom.SetValue (
+                                                                        tempAtom.Value |> Array.append [| unbox "" |]
                                                                     )
                                                                 })
                                             ]
@@ -68,7 +67,7 @@ module InputList =
                 match props.atom with
                 | Some _ ->
                     let inputList =
-                        match atomFieldOptions.AtomValue with
+                        match tempAtom.Value with
                         | [||] ->
                             [|
                                 unbox ""
@@ -91,8 +90,8 @@ module InputList =
                                                         x.onChange <-
                                                             fun (e: Browser.Types.KeyboardEvent) ->
                                                                 promise {
-                                                                    atomFieldOptions.SetAtomValue (
-                                                                        atomFieldOptions.AtomValue
+                                                                    tempAtom.SetValue (
+                                                                        tempAtom.Value
                                                                         |> Array.mapi
                                                                             (fun i' v ->
                                                                                 if i' = i then unbox e.Value else v)
@@ -114,8 +113,8 @@ module InputList =
                                                             x.onClick <-
                                                                 fun _ ->
                                                                     promise {
-                                                                        atomFieldOptions.SetAtomValue (
-                                                                            atomFieldOptions.AtomValue
+                                                                        tempAtom.SetValue (
+                                                                            tempAtom.Value
                                                                             |> Array.indexed
                                                                             |> Array.filter (fun (i', _) -> i' <> i)
                                                                             |> Array.map snd

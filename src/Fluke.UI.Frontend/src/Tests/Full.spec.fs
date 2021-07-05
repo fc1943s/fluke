@@ -137,7 +137,7 @@ module Full =
 
                     Cy2.waitFor dbName (Some {| timeout = timeout |})
 
-                    //                    Cy.wait 400
+                    Cy.wait 2000
 
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Add Task"

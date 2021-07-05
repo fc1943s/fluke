@@ -187,6 +187,7 @@ module Theme =
                                         paddingBottom = "7px"
                                     |}
                                 ``.markdown-container a`` = {| textDecoration = "underline" |}
+                                ``.markdown-container ul`` = {| listStylePosition = "inside" |}
                             |}
                 |}
         |}

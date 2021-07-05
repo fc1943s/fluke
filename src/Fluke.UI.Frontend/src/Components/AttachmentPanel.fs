@@ -65,7 +65,9 @@ module AttachmentPanel =
     [<ReactComponent>]
     let AttachmentComment text =
         Chakra.box
-            (fun x -> x.userSelect <- "text")
+            (fun x ->
+                x.userSelect <- "text"
+                x.overflow <- "auto")
             [
                 Markdown.render text
             ]

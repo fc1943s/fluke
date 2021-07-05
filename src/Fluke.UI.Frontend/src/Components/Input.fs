@@ -66,8 +66,7 @@ module Input =
                 |]
             )
 
-        let atomFieldOptions = Store.Hooks.useAtomFieldOptions<'TValue> customProps.atom customProps.inputScope
-
+        let tempAtom = Store.Hooks.useTempAtom<'TValue> customProps.atom customProps.inputScope
 
         let mounted, setMounted = React.useState false
 
@@ -79,16 +78,15 @@ module Input =
                         | _, Some value -> Some value
                         | false, None -> None
                         | true, None ->
-                            match inputRef.current, box atomFieldOptions.AtomValue with
+                            match inputRef.current, box tempAtom.Value with
                             | null, _ -> None
                             | _, null ->
                                 match customProps.onValidate with
-                                | Some onValidate ->
-                                    onValidate (inputRef.current.value, Some atomFieldOptions.AtomValue)
+                                | Some onValidate -> onValidate (inputRef.current.value, Some tempAtom.Value)
                                 | None -> None
                             | _ ->
                                 match customProps.atom with
-                                | Some _ -> Some atomFieldOptions.AtomValue
+                                | Some _ -> Some tempAtom.Value
                                 | None -> None
 
                     let valueString =
@@ -107,7 +105,7 @@ module Input =
                     box customProps.onFormat
                     box customProps.atom
                     box inputRef
-                    box atomFieldOptions.AtomValue
+                    box tempAtom.Value
                 |]
             )
 
@@ -186,12 +184,12 @@ module Input =
 
                             if customProps.atom.IsSome then
                                 match validValue with
-                                | Some value -> atomFieldOptions.SetAtomValue value
-                                | None -> atomFieldOptions.SetAtomValue atomFieldOptions.ReadOnlyValue
+                                | Some value -> tempAtom.SetValue value
+                                | None -> tempAtom.SetValue tempAtom.ReadOnlyValue
                     }),
                 [|
                     box props
-                    box atomFieldOptions
+                    box tempAtom
                     box currentValue
                     box currentValueString
                     box inputRef

@@ -43,22 +43,22 @@ module InformationSelector =
                    SelectionType: InformationSelectionType
                    TaskId: TaskId |})
         =
-        let informationFieldOptions =
-            Store.Hooks.useAtomFieldOptions
+        let tempInformation =
+            Store.Hooks.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.information input.TaskId))))
                 (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
 
         let informationName, informationSelected =
             React.useMemo (
                 (fun () ->
-                    informationFieldOptions.AtomValue
+                    tempInformation.Value
                     |> Information.Name
                     |> InformationName.Value,
 
-                    informationFieldOptions.AtomValue
+                    tempInformation.Value
                     |> Information.toString),
                 [|
-                    box informationFieldOptions.AtomValue
+                    box tempInformation.Value
                 |]
             )
 
@@ -84,13 +84,13 @@ module InformationSelector =
             React.useMemo (
                 (fun () ->
                     informationSet
-                    |> Set.add informationFieldOptions.AtomValue
+                    |> Set.add tempInformation.Value
                     |> Set.filter (isVisibleInformation informationSelected)
                     |> Set.toList),
                 [|
                     box informationSelected
                     box informationSet
-                    box informationFieldOptions.AtomValue
+                    box tempInformation.Value
                 |]
             )
 
@@ -99,11 +99,11 @@ module InformationSelector =
                 (fun () ->
                     sortedInformationList
                     |> List.sort
-                    |> List.tryFindIndex ((=) informationFieldOptions.AtomValue)
+                    |> List.tryFindIndex ((=) tempInformation.Value)
                     |> Option.defaultValue -1),
                 [|
                     box sortedInformationList
-                    box informationFieldOptions.AtomValue
+                    box tempInformation.Value
                 |]
             )
 
@@ -164,20 +164,20 @@ module InformationSelector =
                                                 x.onChange <-
                                                     fun (radioValueSelected: string) ->
                                                         promise {
-                                                            if informationFieldOptions.AtomValue
+                                                            if tempInformation.Value
                                                                |> isVisibleInformation radioValueSelected
                                                                |> not then
                                                                 match radioValueSelected with
                                                                 | nameof Project ->
-                                                                    informationFieldOptions.SetAtomValue (
+                                                                    tempInformation.SetValue (
                                                                         Project Project.Default
                                                                     )
                                                                 | nameof Area ->
-                                                                    informationFieldOptions.SetAtomValue (
+                                                                    tempInformation.SetValue (
                                                                         Area Area.Default
                                                                     )
                                                                 | nameof Resource ->
-                                                                    informationFieldOptions.SetAtomValue (
+                                                                    tempInformation.SetValue (
                                                                         Resource Resource.Default
                                                                     )
                                                                 | _ -> ()
@@ -276,7 +276,7 @@ module InformationSelector =
                                                                                 x.onClick <-
                                                                                     fun _ ->
                                                                                         promise {
-                                                                                            informationFieldOptions.SetAtomValue
+                                                                                            tempInformation.SetValue
                                                                                                 information
 
                                                                                             onHide ()
@@ -334,12 +334,12 @@ module InformationSelector =
                                                                 match informationSelected with
                                                                 | nameof Project ->
                                                                     ProjectForm.ProjectForm
-                                                                        (match informationFieldOptions.AtomValue with
+                                                                        (match tempInformation.Value with
                                                                          | Project project -> project
                                                                          | _ -> Project.Default)
                                                                         (fun project ->
                                                                             promise {
-                                                                                informationFieldOptions.SetAtomValue (
+                                                                                tempInformation.SetValue (
                                                                                     Project project
                                                                                 )
 
@@ -348,12 +348,12 @@ module InformationSelector =
                                                                             })
                                                                 | nameof Area ->
                                                                     AreaForm.AreaForm
-                                                                        (match informationFieldOptions.AtomValue with
+                                                                        (match tempInformation.Value with
                                                                          | Area area -> area
                                                                          | _ -> Area.Default)
                                                                         (fun area ->
                                                                             promise {
-                                                                                informationFieldOptions.SetAtomValue (
+                                                                                tempInformation.SetValue (
                                                                                     Area area
                                                                                 )
 

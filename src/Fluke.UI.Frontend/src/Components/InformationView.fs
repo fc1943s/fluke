@@ -9,6 +9,43 @@ open Fluke.Shared
 
 module InformationView =
     [<ReactComponent>]
+    let InformationTree information taskIdList =
+        let cellSize = Store.useValue Atoms.User.cellSize
+
+        Chakra.box
+            (fun x -> x.paddingLeft <- $"{cellSize}px")
+            [
+                InformationName.InformationName information
+
+                // Task Name
+                Chakra.box
+                    (fun x -> x.flex <- "1")
+                    [
+                        yield!
+                            taskIdList
+                            |> List.map
+                                (fun taskId ->
+                                    Chakra.stack
+                                        (fun x ->
+                                            x.position <- "relative"
+                                            x.direction <- "row"
+                                            x.spacing <- "10px"
+                                            x.paddingLeft <- $"{cellSize}px")
+                                        [
+                                            Chakra.box
+                                                (fun x ->
+                                                    x.position <- "absolute"
+                                                    x.left <- "10px"
+                                                    x.top <- "0")
+                                                [
+                                                    TaskPriority.TaskPriority taskId
+                                                ]
+                                            TaskName.TaskName taskId
+                                        ])
+                    ]
+            ]
+
+    [<ReactComponent>]
     let InformationView () =
         let groupIndentationLength = 20
 
@@ -58,40 +95,7 @@ module InformationView =
                                                                 groups
                                                                 |> List.map
                                                                     (fun (information, taskIdList) ->
-                                                                        Chakra.box
-                                                                            (fun x -> x.paddingLeft <- $"{cellSize}px")
-                                                                            [
-                                                                                InformationName.InformationName
-                                                                                    information
-
-                                                                                // Task Name
-                                                                                Chakra.box
-                                                                                    (fun x -> x.flex <- "1")
-                                                                                    [
-                                                                                        yield!
-                                                                                            taskIdList
-                                                                                            |> List.map
-                                                                                                (fun taskId ->
-                                                                                                    Chakra.stack
-                                                                                                        (fun x ->
-                                                                                                            x.direction <-
-                                                                                                                "row"
-
-                                                                                                            x.spacing <-
-                                                                                                                "10px"
-
-                                                                                                            x.paddingLeft <-
-                                                                                                                $"{
-                                                                                                                    cellSize
-                                                                                                                }px")
-                                                                                                        [
-                                                                                                            TaskPriority.TaskPriority
-                                                                                                                taskId
-                                                                                                            TaskName.TaskName
-                                                                                                                taskId
-                                                                                                        ])
-                                                                                    ]
-                                                                            ])
+                                                                        InformationTree information taskIdList)
                                                         ]
                                                 ])
                             ]

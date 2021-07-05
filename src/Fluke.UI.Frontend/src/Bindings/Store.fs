@@ -300,14 +300,14 @@ module Store =
                     | _ ->
                         Profiling.addCount $"{gunNodePath} on() assign"
 
-                        let _lastValue =
-                            match lastValue with
-                            | Some (_, b) -> b
-                            | _ -> unbox null
-
                         JS.log
                             (fun () ->
-                                if _lastValue.ToString () = newValue.ToString () then
+                                let _lastValue =
+                                    match unbox lastValue with
+                                    | Some (_, b) -> b
+                                    | _ -> null
+
+                                if string _lastValue = string newValue then
                                     Browser.Dom.console.error
                                         $"should have skipped assign
                                         _lastValue={_lastValue}
@@ -1110,6 +1110,8 @@ module Store =
         | Some atom -> set setter atom null
         | _ -> ()
 
+    let rec ___emptyTempAtom = nameof ___emptyTempAtom
+
     let inline getReadWrite<'TValue11, 'TKey> getter (atom: Jotai.Atom<'TValue11>) =
         let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.ReadWrite
 
@@ -1118,6 +1120,7 @@ module Store =
             let result = value getter readWriteAtom
 
             match result with
+            | result when result = ___emptyTempAtom -> unbox null
             | null -> value getter atom
             | _ -> Json.decode<'TValue11> result
         | _ -> value getter atom
@@ -1160,7 +1163,7 @@ module Store =
                 |]
             )
 
-        let useAtomFieldOptions<'TValue7> (atom: InputAtom<'TValue7> option) (inputScope: InputScope<'TValue7> option) =
+        let useTempAtom<'TValue7> (atom: InputAtom<'TValue7> option) (inputScope: InputScope<'TValue7> option) =
             let atomField =
                 React.useMemo (
                     (fun () -> getAtomField atom (InputScope.AtomScope inputScope)),
@@ -1179,12 +1182,13 @@ module Store =
 
                     let newReadWriteValue =
                         match inputScope, readWriteValue |> Option.defaultValue null with
+                        | _, readWriteValue when readWriteValue = ___emptyTempAtom -> unbox null
                         | _, null -> readOnlyValue |> Option.defaultValue (unbox null)
                         | Some (InputScope.ReadWrite (_, jsonDecode)), readWriteValue ->
                             try
                                 JS.log
                                     (fun () ->
-                                        $"useAtomFieldOptins
+                                        $"useTempAtom
                                 readOnlyValue={readOnlyValue}
                                 atom={atom}
                                 readWriteValue={readWriteValue}")
@@ -1205,7 +1209,7 @@ module Store =
                             (fun newValue ->
                                 setReadWriteValue (
                                     match box newValue with
-                                    | null -> null
+                                    | null -> ___emptyTempAtom
                                     | _ ->
                                         match inputScope with
                                         | Some (InputScope.ReadWrite (jsonEncode, _)) -> jsonEncode newValue
@@ -1222,11 +1226,11 @@ module Store =
                         ReadOnlyValue = readOnlyValue |> Option.defaultValue (unbox null)
                         SetReadOnlyValue = setReadOnlyValue
                         AtomField = atomField
-                        AtomValue =
+                        Value =
                             match inputScope with
                             | Some (InputScope.ReadWrite _) -> newReadWriteValue
                             | _ -> readOnlyValue |> Option.defaultValue (unbox null)
-                        SetAtomValue =
+                        SetValue =
                             match inputScope with
                             | Some (InputScope.ReadWrite _) -> setReadWriteValue
                             | _ -> setReadOnlyValue
