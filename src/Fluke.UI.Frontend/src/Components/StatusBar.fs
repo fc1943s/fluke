@@ -329,6 +329,8 @@ module StatusBar =
 
                     detailsText, total),
                 [|
+                    box taskAttachments
+                    box selectedTaskIdList
                     box cellStateMapArray
                     box informationAttachments
                     box cellAttachmentMapArray

@@ -72,7 +72,9 @@ module AttachmentPanel =
         Chakra.box
             (fun x ->
                 x.userSelect <- "text"
-                x.overflow <- "auto")
+                x.overflow <- "auto"
+                x.paddingTop <- "2px"
+                x.paddingBottom <- "2px")
             [
                 Markdown.render text
             ]
@@ -93,7 +95,9 @@ module AttachmentPanel =
             )
 
         Chakra.stack
-            (fun x -> x.flex <- "1")
+            (fun x ->
+                x.flex <- "1"
+                x.spacing <- "6px")
             [
                 AttachmentHeader deleteAttachment attachmentId
 
