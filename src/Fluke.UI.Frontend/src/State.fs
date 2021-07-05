@@ -1332,8 +1332,6 @@ module State =
                             |> Store.waitForAll
                             |> Store.value getter
 
-                        Browser.Dom.window?informationArray <- informationArray
-
                         sortedTaskIdList
                         |> List.indexed
                         |> List.groupBy (fun (i, _) -> informationArray.[i])

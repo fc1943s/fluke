@@ -22,7 +22,7 @@ module Listener =
 
         Rooks.useKey
             keys
-            (fun e -> keyEvent e |> Promise.start)
+            (keyEvent >> Promise.start)
             {|
                 eventTypes =
                     [|

@@ -118,7 +118,7 @@ module CellMenu =
                                 (fun x ->
                                     if isTesting then x?``data-testid`` <- $"cell-button-{color}"
                                     x.icon <- icon
-                                    x.display <- "block"
+                                    x.display <- "flex"
                                     x.color <- "#dddddd"
                                     x._hover <- JS.newObj (fun x -> x.opacity <- 0.8)
                                     x._active <- JS.newObj (fun x -> x.opacity <- 0.5)

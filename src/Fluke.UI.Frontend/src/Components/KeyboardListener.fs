@@ -1,7 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Browser.Types
-open Fable.Core.JsInterop
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.State
@@ -20,12 +18,12 @@ module CtrlListener =
             [|
                 "Control"
             |]
-            (fun getter setter e ->
+            (fun _getter setter e ->
                 promise {
-                    let ctrlPressed = Store.value getter Atoms.ctrlPressed
-
-                    if e.ctrlKey <> ctrlPressed then
-                        Store.set setter Atoms.ctrlPressed e.ctrlKey
+                    //                    let ctrlPressed = Store.value getter Atoms.ctrlPressed
+//
+//                    if e.ctrlKey <> ctrlPressed then
+                    Store.set setter Atoms.ctrlPressed e.ctrlKey
                 })
 
         nothing
@@ -38,12 +36,12 @@ module ShiftListener =
             [|
                 "Shift"
             |]
-            (fun getter setter e ->
+            (fun _getter setter e ->
                 promise {
-                    let shiftPressed = Store.value getter Atoms.shiftPressed
-
-                    if e.shiftKey <> shiftPressed then
-                        Store.set setter Atoms.shiftPressed e.shiftKey
+                    //                    let shiftPressed = Store.value getter Atoms.shiftPressed
+//
+//                    if e.shiftKey <> shiftPressed then
+                    Store.set setter Atoms.shiftPressed e.shiftKey
                 })
 
         Listener.useKeyPress
@@ -55,7 +53,7 @@ module ShiftListener =
             |]
             (fun _ setter e ->
                 promise {
-                    let setView value = Store.set setter Atoms.User.view value
+                    let setView = Store.set setter Atoms.User.view
 
                     match e.ctrlKey, e.altKey, e.key with
                     | true, true, "I" ->

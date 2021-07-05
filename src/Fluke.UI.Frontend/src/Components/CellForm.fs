@@ -46,7 +46,9 @@ module CellForm =
                     [
                         "Info",
                         (Chakra.stack
-                            (fun x -> x.spacing <- "10px")
+                            (fun x ->
+                                x.spacing <- "10px"
+                                x.alignItems <- "center")
                             [
                                 Chakra.box
                                     (fun x -> x.userSelect <- "text")
