@@ -184,15 +184,12 @@ module Full =
 
                     Cy2.clickText "Save"
 
-                    Cy.wait 6000
+                    Cy.wait 3000
 
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Edit Database"
 
-                    Cy.wait 6000
-
-                    Cy2.clickSelectorChildFromText dbName ".chakra-button"
-                    Cy2.clickText "Edit Database"
+                    Cy.wait 3000
 
                     Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
 
@@ -202,6 +199,8 @@ module Full =
 
                     Cy2.waitFor $"{dbName}_edit" (Some {| timeout = timeout |})
 
+                    Cy.wait 3000
+
                     Cy2.clickText $"{dbName}_edit"
 
                     Cy.wait 6000
@@ -210,6 +209,8 @@ module Full =
                     Cy2.waitFor taskName (Some {| timeout = timeout |})
 
                     Cy2.clickText (nameof Databases)
+
+                    Cy.wait 6000
 
                     Cy2.clickSelectorChildFromText taskName ".chakra-button"
                     Cy2.clickText "Start Session"
