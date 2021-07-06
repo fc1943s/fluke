@@ -39,7 +39,7 @@ module Button =
                         match icon with
                         | Some icon ->
                             Chakra.box
-                                (fun x -> x.transform <- Chakra.transformShiftBy None (Some 2.))
+                                (fun _ -> ())
                                 [
                                     icon ()
                                 ]
@@ -50,15 +50,16 @@ module Button =
                             x.height <- "auto"
                             x.alignSelf <- "flex-start"
                             x.color <- "gray"
-                            x.paddingTop <- "4px"
-                            x.paddingBottom <- "4px"
+                            x.paddingTop <- "5px"
+                            x.paddingBottom <- "5px"
                             x.borderRadius <- "3px"
                             input.Props x)
                         [
                             Chakra.stack
                                 (fun x ->
                                     x.direction <- "row"
-                                    x.spacing <- "7px")
+                                    x.spacing <- "7px"
+                                    x.alignItems <- "center")
                                 [
                                     match iconPosition with
                                     | Some IconPosition.Left -> icon ()

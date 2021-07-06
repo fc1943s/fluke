@@ -117,7 +117,7 @@ module TopBar =
                                     {|
                                         Props =
                                             fun x ->
-                                                x.icon <- Icons.io5.IoShuffle |> Icons.render
+                                                x.icon <- Icons.bi.BiShuffle |> Icons.render
                                                 x.height <- "27px"
                                                 x.fontSize <- "17px"
 

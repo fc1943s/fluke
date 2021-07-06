@@ -151,6 +151,7 @@ module Theme =
                                         borderLeft = "3px solid transparent"
                                     |}
                                 ``#root`` = {| display = "flex" |}
+                                ``[data-popper-placement][style*="visibility: visible"]`` = {| zIndex = 2 |}
                                 ``.rct-collapse-btn`` =
                                     {|
                                         padding = "0"

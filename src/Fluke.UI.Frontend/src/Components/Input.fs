@@ -252,7 +252,7 @@ module Input =
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
                                 x.borderColor <- if darkMode then "#484848" else "#b7b7b7"
                                 x.backgroundColor <- "gray.10"
-                                x.paddingBottom <- "2px"
+                                x.paddingBottom <- "1px"
 
                                 match variableHeight with
                                 | Some variableHeight -> x.height <- variableHeight
@@ -381,23 +381,23 @@ module Input =
                 x.flex <- "1"
                 x.position <- "relative")
             [
-                Chakra.flex
-                    (fun x ->
-                        x.zIndex <- 1
-                        x.position <- "absolute"
-                        x.left <- "9px"
-                        x.height <- "calc(var(--chakra-fontSizes-main) * 2.45)"
-                        x.alignItems <- "center")
-                    [
-                        input.Icon
-                    ]
-
                 Input
                     {|
                         CustomProps = input.CustomProps
                         Props =
                             fun x ->
-                                x.paddingLeft <- "28px"
+                                x.paddingLeft <- "34px"
                                 input.Props x
                     |}
+
+                Chakra.flex
+                    (fun x ->
+                        x.position <- "absolute"
+                        x.left <- "12px"
+                        x.height <- "calc(var(--chakra-fontSizes-main) * 2.45)"
+                        x.zIndex <- 1
+                        x.alignItems <- "center")
+                    [
+                        input.Icon
+                    ]
             ]
