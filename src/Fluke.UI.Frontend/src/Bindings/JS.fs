@@ -30,6 +30,8 @@ module Promise =
     let ignore (fn: JS.Promise<_>) = Promise.map ignore fn
 
 module Json =
+    let inline encodeFormatted<'T> obj =
+        Thoth.Json.Encode.Auto.toString<'T> (4, obj)
     let inline encode<'T> obj =
         Thoth.Json.Encode.Auto.toString<'T> (0, obj)
 

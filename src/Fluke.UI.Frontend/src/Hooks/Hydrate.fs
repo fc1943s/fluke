@@ -307,7 +307,7 @@ module Hydrate =
                             toast (fun x -> x.description <- "Database is not fully synced")
                         else
 
-                            let json = databaseState |> Json.encode
+                            let json = databaseState |> Json.encodeFormatted
 
                             let timestamp =
                                 (FlukeDateTime.FromDateTime DateTime.Now)

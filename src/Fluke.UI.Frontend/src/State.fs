@@ -763,21 +763,25 @@ module State =
 
             let rec cellStateMap =
                 Store.readSelectorFamily (
-                    $"{nameof Task}/{nameof taskState}",
+                    $"{nameof Task}/{nameof cellStateMap}",
                     (fun (taskId: TaskId) getter ->
-                        let dateSequence = Store.value getter dateSequence
                         let statusMap = Store.value getter (Atoms.Task.statusMap taskId)
+                        let cellAttachmentMap = Store.value getter (Atoms.Task.cellAttachmentMap taskId)
 
-                        let cellStateMapWithoutStatus =
-                            dateSequence
-                            |> List.map DateId
-                            |> List.map
-                                (fun dateId ->
-                                    let sessions = Store.value getter (Selectors.Cell.sessions (taskId, dateId))
+                        let sessions = Store.value getter (Atoms.Task.sessions taskId)
+                        let dayStart = Store.value getter Atoms.User.dayStart
 
-                                    let attachmentIdSet =
-                                        Store.value getter (Selectors.Cell.attachmentIdSet (taskId, dateId))
+                        let sessionMap =
+                            sessions
+                            |> List.map (fun (Session start as session) -> dateId dayStart start, session)
+                            |> List.groupBy fst
+                            |> Map.ofList
+                            |> Map.mapValues (List.map snd)
 
+                        let newAttachmentMap =
+                            cellAttachmentMap
+                            |> Map.mapValues
+                                (fun attachmentIdSet ->
                                     let attachments =
                                         attachmentIdSet
                                         |> Set.toArray
@@ -788,25 +792,60 @@ module State =
                                         |> List.choose id
                                         |> List.sortByDescending (fst >> FlukeDateTime.DateTime)
 
-                                    let cellState =
+                                    {
+                                        Status = Disabled
+                                        Sessions = []
+                                        Attachments = attachments
+                                    })
+
+                        let newSessionMap =
+                            sessionMap
+                            |> Map.mapValues
+                                (fun sessions ->
+                                    {
+                                        Status = Disabled
+                                        Sessions = sessions
+                                        Attachments = []
+                                    })
+
+                        let newStatusMap =
+                            statusMap
+                            |> Map.mapValues
+                                (fun status ->
+                                    {
+                                        Status = UserStatus status
+                                        Sessions = []
+                                        Attachments = []
+                                    })
+
+                        newStatusMap
+                        |> mergeCellStateMap newSessionMap
+                        |> mergeCellStateMap newAttachmentMap)
+                )
+
+            let rec filteredCellStateMap =
+                Store.readSelectorFamily (
+                    $"{nameof Task}/{nameof filteredCellStateMap}",
+                    (fun (taskId: TaskId) getter ->
+                        let dateSequence = Store.value getter dateSequence
+                        let cellStateMap = Store.value getter (cellStateMap taskId)
+
+                        dateSequence
+                        |> List.map DateId
+                        |> List.map
+                            (fun dateId ->
+                                let cellState =
+                                    cellStateMap
+                                    |> Map.tryFind dateId
+                                    |> Option.defaultValue
                                         {
                                             Status = Disabled
-                                            Sessions = sessions
-                                            Attachments = attachments
+                                            Sessions = []
+                                            Attachments = []
                                         }
 
-                                    dateId, cellState)
-                            |> Map.ofSeq
-
-                        statusMap
-                        |> Map.mapValues
-                            (fun manualCellStatus ->
-                                {
-                                    Status = UserStatus manualCellStatus
-                                    Attachments = []
-                                    Sessions = []
-                                })
-                        |> mergeCellStateMap cellStateMapWithoutStatus
+                                dateId, cellState)
+                        |> Map.ofSeq
                         |> Map.filter
                             (fun _ cellState ->
                                 match cellState with

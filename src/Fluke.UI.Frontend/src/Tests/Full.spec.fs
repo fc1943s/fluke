@@ -211,11 +211,9 @@ module Full =
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})
 
-                    Cy.wait 6000
-
                     Cy2.clickText (nameof Databases)
 
-                    Cy.wait 6000
+                    Cy.wait 3000
 
                     Cy2.clickSelectorChildFromText taskName ".chakra-button"
                     Cy2.clickText "Start Session"
@@ -235,6 +233,7 @@ module Full =
                         ".chakra-button"
 
                     Cy2.clickText "Delete Session"
+                    Cy2.clickText "Confirm"
 
                     Cy2.waitFor "0 of 1 visible" (Some {| timeout = timeout |})
 

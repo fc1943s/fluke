@@ -201,6 +201,29 @@ module Input =
                 |]
             )
 
+        let variableHeight =
+            React.useMemo (
+                (fun () ->
+                    if not customProps.variableHeight then
+                        None
+                    else
+                        currentValueString
+                        |> Seq.map string
+                        |> Seq.filter ((=) Environment.NewLine)
+                        |> Seq.length
+                        |> (+) 2
+                        |> (*) fontSize
+                        |> float
+                        |> (*) 1.35
+                        |> fun n -> $"{int n}px"
+                        |> Some),
+                [|
+                    box customProps.variableHeight
+                    box currentValueString
+                    box fontSize
+                |]
+            )
+
         Chakra.stack
             (fun x ->
                 x.spacing <- "5px"
@@ -229,18 +252,11 @@ module Input =
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
                                 x.borderColor <- if darkMode then "#484848" else "#b7b7b7"
                                 x.backgroundColor <- "gray.10"
+                                x.paddingBottom <- "2px"
 
-                                if customProps.variableHeight then
-                                    x.height <-
-                                        currentValueString
-                                        |> Seq.map string
-                                        |> Seq.filter ((=) Environment.NewLine)
-                                        |> Seq.length
-                                        |> (+) 2
-                                        |> (*) fontSize
-                                        |> float
-                                        |> (*) 1.35
-                                        |> fun n -> $"{int n}px"
+                                match variableHeight with
+                                | Some variableHeight -> x.height <- variableHeight
+                                | None -> ()
 
                                 if customProps.textarea then x.paddingTop <- "6px"
 

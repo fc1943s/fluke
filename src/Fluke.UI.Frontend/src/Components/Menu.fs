@@ -16,7 +16,8 @@ module Menu =
         Chakra.menu
             (fun x ->
                 x.isLazy <- true
-                x.closeOnSelect <- false)
+                x.closeOnSelect <- false
+                x.zIndex <- 2)
             [
                 Tooltip.wrap
                     (str input.Tooltip)
