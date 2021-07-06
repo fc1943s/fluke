@@ -156,7 +156,9 @@ module ViewTabs =
                                                     Atoms.User.hideSchedulingOverlay
                                                     "Hide Scheduling Overlay"
 
-                                                MenuItemToggle.MenuItemToggle Atoms.User.showViewOptions "Show View Options"
+                                                MenuItemToggle.MenuItemToggle
+                                                    Atoms.User.showViewOptions
+                                                    "Show View Options"
                                             ]
                                         MenuListProps = fun _ -> ()
                                     |}
@@ -165,7 +167,11 @@ module ViewTabs =
 
                 if showViewOptions then
                     Chakra.stack
-                        (fun x -> x.padding <- "4px")
+                        (fun x ->
+                            x.paddingTop <- "4px"
+                            x.paddingRight <- "10px"
+                            x.paddingBottom <- "4px"
+                            x.paddingLeft <- "10px")
                         [
                             Chakra.box
                                 (fun x -> x.marginLeft <- "2px")
@@ -183,7 +189,8 @@ module ViewTabs =
                                     Icon = Icons.bs.BsSearch |> Icons.render
                                     CustomProps =
                                         fun x ->
-                                            x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Atoms.User.searchText))
+                                            x.atom <-
+                                                Some (Store.InputAtom (Store.AtomReference.Atom Atoms.User.searchText))
                                     Props =
                                         fun x ->
                                             x.autoFocus <- true
