@@ -260,7 +260,7 @@ module Gun =
                     item.Fn (item.Timestamp, item.Data))
              >> Promise.Parallel
              >> Promise.start)
-            {| interval = 750 |}
+            {| interval = 1000 |}
 
     let subscribe (gun: IGunChainReference) fn =
         gun.on
@@ -292,7 +292,7 @@ module Gun =
                     })
              >> Promise.Parallel
              >> Promise.start)
-            {| interval = 750 |}
+            {| interval = 1000 |}
 
     let wrapAtomPath (atomPath: string) =
         let header = $"{nameof Fluke}/"
