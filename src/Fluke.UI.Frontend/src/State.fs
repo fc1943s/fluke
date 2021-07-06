@@ -820,7 +820,14 @@ module State =
 
                         newStatusMap
                         |> mergeCellStateMap newSessionMap
-                        |> mergeCellStateMap newAttachmentMap)
+                        |> mergeCellStateMap newAttachmentMap
+                        |> Map.filter
+                            (fun _ cellState ->
+                                match cellState with
+                                | { Status = UserStatus _ } -> true
+                                | { Sessions = _ :: _ } -> true
+                                | { Attachments = _ :: _ } -> true
+                                | _ -> false))
                 )
 
             let rec filteredCellStateMap =
