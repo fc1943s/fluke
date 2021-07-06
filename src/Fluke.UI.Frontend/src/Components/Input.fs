@@ -24,6 +24,7 @@ module Input =
     type IProps<'TValue, 'TKey> =
         abstract hint : ReactElement option with get, set
         abstract textarea : bool with get, set
+        abstract variableHeight : bool with get, set
         abstract autoFocusOnAllMounts : bool with get, set
         abstract hintTitle : ReactElement option with get, set
         abstract atom : Store.InputAtom<'TValue> option with get, set
@@ -42,6 +43,7 @@ module Input =
                    Props: Chakra.IChakraProps -> unit |})
         =
         let darkMode = Store.useValue Atoms.User.darkMode
+        let fontSize = Store.useValue Atoms.User.fontSize
 
         let props, customProps =
             React.useMemo (
@@ -226,6 +228,19 @@ module Input =
                                 x.ref <- inputRef
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
                                 x.borderColor <- if darkMode then "#484848" else "#b7b7b7"
+                                x.backgroundColor <- "gray.10"
+
+                                if customProps.variableHeight then
+                                    x.height <-
+                                        currentValueString
+                                        |> Seq.map string
+                                        |> Seq.filter ((=) Environment.NewLine)
+                                        |> Seq.length
+                                        |> (+) 2
+                                        |> (*) fontSize
+                                        |> float
+                                        |> (*) 1.35
+                                        |> fun n -> $"{int n}px"
 
                                 if customProps.textarea then x.paddingTop <- "6px"
 
@@ -237,7 +252,7 @@ module Input =
                                             | _ -> do! props.onKeyDown e
 
                                             match customProps.onEnterPress with
-                                            | Some onEnterPress -> if e.key = "Enter" then do! onEnterPress ()
+                                            | Some onEnterPress -> if e.key = "Enter" then do! onEnterPress e
                                             | None -> ()
                                         }
 
@@ -352,7 +367,7 @@ module Input =
             [
                 Chakra.flex
                     (fun x ->
-                        x.zIndex <- 0
+                        x.zIndex <- 1
                         x.position <- "absolute"
                         x.left <- "9px"
                         x.height <- "calc(var(--chakra-fontSizes-main) * 2.45)"
