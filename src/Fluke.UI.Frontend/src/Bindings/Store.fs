@@ -481,7 +481,7 @@ module Store =
                         with ex -> Browser.Dom.console.error ("[exception2]", ex)
                     }
                     |> Promise.start)
-                1500
+                750
 
         let rec wrapper =
             selector (
@@ -769,7 +769,7 @@ module Store =
                                                    {key} ")
 
                         setAtom result)
-                    1500
+                    750
 
             match lastGunAtomNode with
             | Some (key, gunAtomNode) ->
