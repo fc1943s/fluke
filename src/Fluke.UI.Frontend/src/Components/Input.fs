@@ -214,7 +214,7 @@ module Input =
                         |> (+) 2
                         |> (*) fontSize
                         |> float
-                        |> (*) 1.35
+                        |> (*) 1.4
                         |> fun n -> $"{int n}px"
                         |> Some),
                 [|

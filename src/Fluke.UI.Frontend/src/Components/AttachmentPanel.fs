@@ -179,7 +179,7 @@ module AttachmentPanel =
                                                         x.onEnterPress <-
                                                             Some
                                                                 (fun (x: KeyboardEvent) ->
-                                                                    promise { if x.ctrlKey then () })
+                                                                    promise { if x.ctrlKey then do! onSave () })
                                                 Props = fun x -> x.autoFocus <- true
                                             |}
 
