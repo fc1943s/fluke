@@ -49,7 +49,7 @@
     "run-android": "cordova run android --device"
   },
   "dependencies": {
-    "@fontsource/roboto-condensed": "~4.4",
+    "@fontsource/roboto-condensed": "~4.5",
 
     "react": "~18.0.0-alpha-ed6c091fe-20210701",
     "react-dom": "~18.0.0-alpha-ed6c091fe-20210701",
@@ -119,7 +119,7 @@
     "eslint-plugin-react-hooks": "~4.2",
     "eslint-plugin-jest-dom": "~3.9",
 
-    "gatsby": "~3.8",
+    "gatsby": "~3.9",
     "@chakra-ui/gatsby-plugin": "~2.0",
     "postcss": "~8.3",
 
@@ -139,7 +139,7 @@
     "file-loader": "~6.2",
     "babel-jest": "~27.0",
 
-    "cypress": "~7.6",
+    "cypress": "~7.7",
     "cypress-terminal-report": "~3.2",
 
     "patch-package": "~6.4",
