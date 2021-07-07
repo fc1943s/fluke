@@ -116,7 +116,12 @@ module JS =
             | None -> false
             | Some window -> window?Debug
 
-        debug <> false && (debug || isDebugStatic)
+        let cypress =
+            match window id with
+            | None -> null
+            | Some window -> window?Cypress
+
+        cypress <> null || debug <> false && (debug || isDebugStatic)
 
     //        true
 

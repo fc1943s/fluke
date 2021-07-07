@@ -7,8 +7,6 @@ open Fluke.UI.Frontend.Hooks
 open Fable.Core
 open Fluke.Shared
 open Fluke.UI.Frontend.Bindings
-open System
-open Fluke.Shared.Domain.UserInteraction
 
 
 module CtrlListener =
@@ -75,7 +73,6 @@ module SelectionListener =
         Listener.useKeyPress
             [|
                 "Escape"
-                "R"
             |]
             (fun getter setter e ->
                 promise {
@@ -86,33 +83,6 @@ module SelectionListener =
                             cellSelectionMap
                             |> Map.keys
                             |> Seq.iter (fun taskId -> Store.set setter (Atoms.Task.selectionSet taskId) Set.empty)
-
-                    if e.key = "R" && e.``type`` = "keydown" then
-                        if not cellSelectionMap.IsEmpty then
-                            let newMap =
-                                if cellSelectionMap.Count = 1 then
-                                    cellSelectionMap
-                                    |> Map.toList
-                                    |> List.map
-                                        (fun (taskId, dates) ->
-                                            let date =
-                                                dates
-                                                |> Seq.item (Random().Next (0, dates.Count - 1))
-
-                                            taskId, Set.singleton date)
-                                    |> Map.ofSeq
-                                else
-                                    let key =
-                                        cellSelectionMap
-                                        |> Map.keys
-                                        |> Seq.item (Random().Next (0, cellSelectionMap.Count - 1))
-
-                                    Map.singleton key cellSelectionMap.[key]
-
-                            newMap
-                            |> Map.iter
-                                (fun taskId dates ->
-                                    Store.set setter (Atoms.Task.selectionSet taskId) (dates |> Set.map DateId))
                 })
 
         nothing
