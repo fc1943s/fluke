@@ -139,7 +139,7 @@ module Store =
                             Gun.gun
                                 {
                                     Gun.GunProps.peers = None
-                                    Gun.GunProps.radisk = Some true
+                                    Gun.GunProps.radisk = Some false
                                     Gun.GunProps.localStorage = Some false
                                     Gun.GunProps.multicast = None
                                 }
