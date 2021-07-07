@@ -19,9 +19,9 @@ module DropdownMenuButton =
                 Icon =
                     Some (
                         (if input.Checked then
-                             Icons.fi.FiCheck |> Icons.wrap
+                             Icons.fi.FiCheck |> Icons.render
                          else
-                             fun () -> (Chakra.box (fun x -> x.width <- "11px") [])),
+                             Chakra.box (fun x -> x.width <- "11px") []),
                         Button.IconPosition.Left
                     )
                 Props =

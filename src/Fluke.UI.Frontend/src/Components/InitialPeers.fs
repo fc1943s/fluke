@@ -61,7 +61,8 @@ module InitialPeers =
                                 Button.Button
                                     {|
                                         Hint = None
-                                        Icon = Some (Icons.cg.CgCornerDownRight |> Icons.wrap, Button.IconPosition.Left)
+                                        Icon =
+                                            Some (Icons.cg.CgCornerDownRight |> Icons.render, Button.IconPosition.Left)
                                         Props =
                                             fun x ->
                                                 x.flex <- "1"
@@ -76,7 +77,7 @@ module InitialPeers =
                                 Button.Button
                                     {|
                                         Hint = None
-                                        Icon = Some (Icons.hi.HiArrowRight |> Icons.wrap, Button.IconPosition.Right)
+                                        Icon = Some (Icons.hi.HiArrowRight |> Icons.render, Button.IconPosition.Right)
                                         Props =
                                             fun x ->
                                                 x.flex <- "1"

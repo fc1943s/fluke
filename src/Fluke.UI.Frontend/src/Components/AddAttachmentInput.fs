@@ -277,7 +277,7 @@ module AddAttachmentInput =
                                     Button.Button
                                         {|
                                             Hint = None
-                                            Icon = Some (Icons.fa.FaPlus |> Icons.wrap, Button.IconPosition.Left)
+                                            Icon = Some (Icons.fa.FaPlus |> Icons.render, Button.IconPosition.Left)
                                             Props =
                                                 fun x ->
                                                     Chakra.setTestId x "Add Attachment"
@@ -300,7 +300,7 @@ module AddAttachmentInput =
                                                             Hint = None
                                                             Icon =
                                                                 Some (
-                                                                    Icons.io5.IoDocumentAttachOutline |> Icons.wrap,
+                                                                    Icons.io5.IoDocumentAttachOutline |> Icons.render,
                                                                     Button.IconPosition.Left
                                                                 )
                                                             Props =

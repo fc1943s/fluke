@@ -46,7 +46,7 @@ module ConfirmPopover =
                                                     Button.Button
                                                         {|
                                                             Hint = None
-                                                            Icon = Some (icon |> Icons.wrap, Button.IconPosition.Left)
+                                                            Icon = Some (icon |> Icons.render, Button.IconPosition.Left)
                                                             Props =
                                                                 fun x ->
                                                                     x.ref <- initialFocusRef

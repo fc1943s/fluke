@@ -157,7 +157,7 @@ module DatabaseForm =
                                 Button.Button
                                     {|
                                         Hint = None
-                                        Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
+                                        Icon = Some (Icons.fi.FiSave |> Icons.render, Button.IconPosition.Left)
                                         Props = fun x -> x.onClick <- onSave
                                         Children =
                                             [
@@ -184,7 +184,8 @@ module DatabaseForm =
                                         Button.Button
                                             {|
                                                 Hint = None
-                                                Icon = Some (Icons.bi.BiImport |> Icons.wrap, Button.IconPosition.Left)
+                                                Icon =
+                                                    Some (Icons.bi.BiImport |> Icons.render, Button.IconPosition.Left)
                                                 Props =
                                                     fun x ->
                                                         x.onClick <-

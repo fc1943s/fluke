@@ -259,6 +259,11 @@ module TaskForm =
                 |]
             )
 
+        let tempInformation =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.information taskId))))
+                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
+
         let onSave =
             Store.useCallback (
                 (fun getter setter _ ->
@@ -362,7 +367,8 @@ module TaskForm =
                                     {|
                                         DisableResource = true
                                         SelectionType = InformationSelector.InformationSelectionType.Information
-                                        TaskId = taskId
+                                        Information = tempInformation.Value
+                                        OnSelect = tempInformation.SetValue
                                     |}
 
                                 SchedulingSelector.SchedulingSelector taskId
@@ -398,7 +404,7 @@ module TaskForm =
                                 Button.Button
                                     {|
                                         Hint = None
-                                        Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
+                                        Icon = Some (Icons.fi.FiSave |> Icons.render, Button.IconPosition.Left)
                                         Props = fun x -> x.onClick <- onSave
                                         Children =
                                             [

@@ -137,7 +137,7 @@ module Settings =
                                                                                         Icon =
                                                                                             Some (
                                                                                                 Icons.io5.IoCaretDown
-                                                                                                |> Icons.wrap,
+                                                                                                |> Icons.render,
                                                                                                 Button.IconPosition.Left
                                                                                             )
                                                                                         Props =
@@ -220,7 +220,7 @@ module Settings =
                                                                                         Icon =
                                                                                             Some (
                                                                                                 Icons.io5.IoCaretDown
-                                                                                                |> Icons.wrap,
+                                                                                                |> Icons.render,
                                                                                                 Button.IconPosition.Left
                                                                                             )
                                                                                         Props =

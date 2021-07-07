@@ -83,7 +83,7 @@ module AreaSelector =
                                         Icon =
                                             Some (
                                                 (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
-                                                |> Icons.wrap,
+                                                |> Icons.render,
                                                 Button.IconPosition.Right
                                             )
                                         Props = fun x -> x.onClick <- fun _ -> promise { setVisible (not visible) }
@@ -120,12 +120,11 @@ module AreaSelector =
                                                                 Icon =
                                                                     Some (
                                                                         (if index = i then
-                                                                             Icons.fi.FiCheck |> Icons.wrap
+                                                                             Icons.fi.FiCheck
+                                                                             |> Icons.renderChakra
+                                                                                 (fun x -> x.marginTop <- "3px")
                                                                          else
-                                                                             fun () ->
-                                                                                 (Chakra.box
-                                                                                     (fun x -> x.width <- "11px")
-                                                                                     [])),
+                                                                             Chakra.box (fun x -> x.width <- "11px") []),
                                                                         Button.IconPosition.Left
                                                                     )
                                                                 Props =
@@ -164,7 +163,7 @@ module AreaSelector =
                                                                          Icons.fi.FiChevronUp
                                                                      else
                                                                          Icons.fi.FiChevronDown)
-                                                                    |> Icons.wrap,
+                                                                    |> Icons.render,
                                                                     Button.IconPosition.Right
                                                                 )
                                                             Props =

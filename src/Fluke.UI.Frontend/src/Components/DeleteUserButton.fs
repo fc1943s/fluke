@@ -36,7 +36,7 @@ module DeleteUserButton =
                     Button.Button
                         {|
                             Hint = None
-                            Icon = Some (Icons.bi.BiTrash |> Icons.wrap, Button.IconPosition.Left)
+                            Icon = Some (Icons.bi.BiTrash |> Icons.render, Button.IconPosition.Left)
                             Props = fun _ -> ()
                             Children =
                                 [
@@ -80,7 +80,10 @@ module DeleteUserButton =
                                                 {|
                                                     Hint = None
                                                     Icon =
-                                                        Some (Icons.bi.BiTrash |> Icons.wrap, Button.IconPosition.Left)
+                                                        Some (
+                                                            Icons.bi.BiTrash |> Icons.render,
+                                                            Button.IconPosition.Left
+                                                        )
                                                     Props = fun x -> x.onClick <- confirmClick disclosure
                                                     Children =
                                                         [

@@ -23,7 +23,7 @@ module Popover =
         if not disclosure.isOpen then
             Chakra.box
                 (fun x ->
-                    x.display <- "inline-flex"
+                    x.display <- "inline"
 
                     x.onClick <-
                         fun e ->
@@ -82,7 +82,7 @@ module Popover =
                                                     Hint = None
                                                     Icon =
                                                         Some (
-                                                            Icons.io.IoMdClose |> Icons.wrap,
+                                                            Icons.io.IoMdClose |> Icons.render,
                                                             Button.IconPosition.Left
                                                         )
                                                     Props =

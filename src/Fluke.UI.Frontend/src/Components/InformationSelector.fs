@@ -40,23 +40,19 @@ module InformationSelector =
     let InformationSelector
         (input: {| DisableResource: bool
                    SelectionType: InformationSelectionType
-                   TaskId: TaskId |})
+                   Information: Information
+                   OnSelect: Information -> unit |})
         =
-        let tempInformation =
-            Store.Hooks.useTempAtom
-                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.information input.TaskId))))
-                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
-
         let informationName, informationSelected =
             React.useMemo (
                 (fun () ->
-                    tempInformation.Value
+                    input.Information
                     |> Information.Name
                     |> InformationName.Value,
 
-                    tempInformation.Value |> Information.toString),
+                    input.Information |> Information.toString),
                 [|
-                    box tempInformation.Value
+                    box input.Information
                 |]
             )
 
@@ -82,13 +78,13 @@ module InformationSelector =
             React.useMemo (
                 (fun () ->
                     informationSet
-                    |> Set.add tempInformation.Value
+                    |> Set.add input.Information
                     |> Set.filter (isVisibleInformation informationSelected)
                     |> Set.toList),
                 [|
                     box informationSelected
                     box informationSet
-                    box tempInformation.Value
+                    box input.Information
                 |]
             )
 
@@ -97,11 +93,11 @@ module InformationSelector =
                 (fun () ->
                     sortedInformationList
                     |> List.sort
-                    |> List.tryFindIndex ((=) tempInformation.Value)
+                    |> List.tryFindIndex ((=) input.Information)
                     |> Option.defaultValue -1),
                 [|
                     box sortedInformationList
-                    box tempInformation.Value
+                    box input.Information
                 |]
             )
 
@@ -138,7 +134,7 @@ module InformationSelector =
                                         Icon =
                                             Some (
                                                 (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
-                                                |> Icons.wrap,
+                                                |> Icons.render,
                                                 Button.IconPosition.Right
                                             )
                                         Props = fun x -> x.onClick <- fun _ -> promise { setVisible (not visible) }
@@ -160,16 +156,15 @@ module InformationSelector =
                                                 x.onChange <-
                                                     fun (radioValueSelected: string) ->
                                                         promise {
-                                                            if tempInformation.Value
+                                                            if input.Information
                                                                |> isVisibleInformation radioValueSelected
                                                                |> not then
                                                                 match radioValueSelected with
                                                                 | nameof Project ->
-                                                                    tempInformation.SetValue (Project Project.Default)
-                                                                | nameof Area ->
-                                                                    tempInformation.SetValue (Area Area.Default)
+                                                                    input.OnSelect (Project Project.Default)
+                                                                | nameof Area -> input.OnSelect (Area Area.Default)
                                                                 | nameof Resource ->
-                                                                    tempInformation.SetValue (Resource Resource.Default)
+                                                                    input.OnSelect (Resource Resource.Default)
                                                                 | _ -> ()
 
                                                             setSelected true
@@ -223,12 +218,12 @@ module InformationSelector =
 
                                     match selected, informationSelected with
                                     | false, _ -> None
-                                    | _, nameof Project -> Some (TextKey (nameof ProjectForm))
-                                    | _, nameof Area -> Some (TextKey (nameof AreaForm))
-                                    | _, nameof Resource -> Some (TextKey (nameof AreaForm))
+                                    | _, nameof Project -> Some ()
+                                    | _, nameof Area -> Some ()
+                                    | _, nameof Resource -> Some ()
                                     | _ -> None
                                     |> function
-                                    | Some formTextKey ->
+                                    | Some () ->
                                         React.fragment [
                                             Chakra.stack
                                                 (fun x ->
@@ -252,13 +247,13 @@ module InformationSelector =
                                                                         Icon =
                                                                             Some (
                                                                                 (if index = i then
-                                                                                     Icons.fi.FiCheck |> Icons.wrap
+                                                                                     Icons.fi.FiCheck
+                                                                                     |> Icons.renderChakra
+                                                                                         (fun x -> x.marginTop <- "3px")
                                                                                  else
-                                                                                     fun () ->
-                                                                                         (Chakra.box
-                                                                                             (fun x ->
-                                                                                                 x.width <- "11px")
-                                                                                             [])),
+                                                                                     Chakra.box
+                                                                                         (fun x -> x.width <- "11px")
+                                                                                         []),
                                                                                 Button.IconPosition.Left
                                                                             )
                                                                         Props =
@@ -266,8 +261,7 @@ module InformationSelector =
                                                                                 x.onClick <-
                                                                                     fun _ ->
                                                                                         promise {
-                                                                                            tempInformation.SetValue
-                                                                                                information
+                                                                                            input.OnSelect information
 
                                                                                             onHide ()
                                                                                         }
@@ -300,7 +294,7 @@ module InformationSelector =
                                                                                  Icons.fi.FiChevronUp
                                                                              else
                                                                                  Icons.fi.FiChevronDown)
-                                                                            |> Icons.wrap,
+                                                                            |> Icons.render,
                                                                             Button.IconPosition.Right
                                                                         )
                                                                     Props =
@@ -324,26 +318,24 @@ module InformationSelector =
                                                                 match informationSelected with
                                                                 | nameof Project ->
                                                                     ProjectForm.ProjectForm
-                                                                        (match tempInformation.Value with
+                                                                        (match input.Information with
                                                                          | Project project -> project
                                                                          | _ -> Project.Default)
                                                                         (fun project ->
                                                                             promise {
-                                                                                tempInformation.SetValue (
-                                                                                    Project project
-                                                                                )
+                                                                                input.OnSelect (Project project)
 
                                                                                 onHide ()
                                                                                 onHide2 ()
                                                                             })
                                                                 | nameof Area ->
                                                                     AreaForm.AreaForm
-                                                                        (match tempInformation.Value with
+                                                                        (match input.Information with
                                                                          | Area area -> area
                                                                          | _ -> Area.Default)
                                                                         (fun area ->
                                                                             promise {
-                                                                                tempInformation.SetValue (Area area)
+                                                                                input.OnSelect (Area area)
 
                                                                                 onHide ()
                                                                                 onHide2 ()

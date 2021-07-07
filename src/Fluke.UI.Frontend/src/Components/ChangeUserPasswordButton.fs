@@ -65,7 +65,7 @@ module ChangeUserPasswordButton =
                                 Icon =
                                     Some (
                                         (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
-                                        |> Icons.wrap,
+                                        |> Icons.render,
                                         Button.IconPosition.Right
                                     )
                                 Props = fun x -> x.onClick <- fun _ -> promise { setVisible (not visible) }
@@ -147,7 +147,7 @@ module ChangeUserPasswordButton =
                                             Button.Button
                                                 {|
                                                     Hint = None
-                                                    Icon = Some (Icons.fi.FiKey |> Icons.wrap, Button.IconPosition.Left)
+                                                    Icon = Some (Icons.fi.FiKey |> Icons.render, Button.IconPosition.Left)
                                                     Props =
                                                         fun x ->
                                                             x.onClick <-

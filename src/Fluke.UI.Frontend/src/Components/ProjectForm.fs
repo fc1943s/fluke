@@ -63,7 +63,7 @@ module ProjectForm =
                 Button.Button
                     {|
                         Hint = None
-                        Icon = Some (Icons.fi.FiSave |> Icons.wrap, Button.IconPosition.Left)
+                        Icon = Some (Icons.fi.FiSave |> Icons.render, Button.IconPosition.Left)
                         Props = fun x -> x.onClick <- onSave
                         Children =
                             [

@@ -77,7 +77,7 @@ module DatabaseSelector =
                                 Button.Button
                                     {|
                                         Hint = None
-                                        Icon = Some (Icons.fi.FiChevronDown |> Icons.wrap, Button.IconPosition.Right)
+                                        Icon = Some (Icons.fi.FiChevronDown |> Icons.render, Button.IconPosition.Right)
                                         Props =
                                             fun x ->
                                                 x.onClick <- fun _ -> promise { setVisible (not visible) }
@@ -142,7 +142,7 @@ module DatabaseSelector =
                                                                          Icons.fi.FiChevronUp
                                                                      else
                                                                          Icons.fi.FiChevronDown)
-                                                                    |> Icons.wrap,
+                                                                    |> Icons.render,
                                                                     Button.IconPosition.Right
                                                                 )
                                                             Props =

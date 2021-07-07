@@ -2,8 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Feliz
 open Fable.React
-open Fluke.Shared.Domain
-open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 
@@ -12,6 +10,7 @@ module InformationForm =
     [<ReactComponent>]
     let rec InformationForm information =
         let attachmentIdSet = Store.useValue (Selectors.Information.attachmentIdSet information)
+        let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
 
         let onAttachmentAdd =
             Store.useCallback (
@@ -74,12 +73,13 @@ module InformationForm =
                                 Chakra.box
                                     (fun _ -> ())
                                     [
-                                        str
-                                            $"""Information: {
-                                                                  information
-                                                                  |> Information.Name
-                                                                  |> InformationName.Value
-                                            }"""
+                                        InformationSelector.InformationSelector
+                                            {|
+                                                DisableResource = false
+                                                SelectionType = InformationSelector.InformationSelectionType.Information
+                                                Information = information
+                                                OnSelect = UIFlag.Information >> setInformationUIFlag
+                                            |}
                                     ]
                             ])
 

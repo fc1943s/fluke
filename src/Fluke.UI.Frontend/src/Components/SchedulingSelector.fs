@@ -611,7 +611,7 @@ module SchedulingSelector =
                                         Icon =
                                             Some (
                                                 (if visible then Icons.fi.FiChevronUp else Icons.fi.FiChevronDown)
-                                                |> Icons.wrap,
+                                                |> Icons.render,
                                                 Button.IconPosition.Right
                                             )
                                         Props =

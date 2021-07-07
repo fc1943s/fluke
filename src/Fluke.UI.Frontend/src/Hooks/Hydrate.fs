@@ -349,6 +349,7 @@ module Hydrate =
                     | Error error -> toast (fun x -> x.description <- error)
                 }),
             [|
+                box fetch
                 box toast
             |]
         )

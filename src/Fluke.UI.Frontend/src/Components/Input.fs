@@ -313,7 +313,7 @@ module Input =
                                     Button.Button
                                         {|
                                             Hint = None
-                                            Icon = Some (Icons.fa.FaSortUp |> Icons.wrap, Button.IconPosition.Left)
+                                            Icon = Some (Icons.fa.FaSortUp |> Icons.render, Button.IconPosition.Left)
                                             Props =
                                                 fun x ->
                                                     x.height <- "50%"
@@ -333,7 +333,7 @@ module Input =
                                     Button.Button
                                         {|
                                             Hint = None
-                                            Icon = Some (Icons.fa.FaSortDown |> Icons.wrap, Button.IconPosition.Left)
+                                            Icon = Some (Icons.fa.FaSortDown |> Icons.render, Button.IconPosition.Left)
                                             Props =
                                                 fun x ->
                                                     x.height <- "50%"

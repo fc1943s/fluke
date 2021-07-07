@@ -269,73 +269,76 @@ module Store =
                 $"atomFamily constructor
                 {baseInfo ()}")
 
-        let setInternalFromGun gunAtomNode setAtom (ticks, data) =
-            promise {
-                try
-                    let! newValue =
-                        match box data with
-                        | null -> unbox null |> Promise.lift
-                        | _ -> Gun.userDecode<'TValue> gunAtomNode data
+        let setInternalFromGun gunAtomNode setAtom =
+            JS.debounce
+                (fun (ticks, data) ->
+                    promise {
+                        try
+                            let! newValue =
+                                match box data with
+                                | null -> unbox null |> Promise.lift
+                                | _ -> Gun.userDecode<'TValue> gunAtomNode data
 
-                    lastGunValue <- newValue
+                            lastGunValue <- newValue
 
-                    match lastValue with
-                    | Some (lastValueTicks, lastValue) when
-                        lastValueTicks > ticks
-                        || lastValue |> DeepEqual.compare (unbox newValue)
-                        || (unbox lastValue = null && unbox newValue = null) ->
+                            match lastValue with
+                            | Some (lastValueTicks, lastValue) when
+                                lastValueTicks > ticks
+                                || lastValue |> DeepEqual.compare (unbox newValue)
+                                || (unbox lastValue = null && unbox newValue = null) ->
 
-                        Profiling.addCount $"{gunNodePath} on() skip"
+                                Profiling.addCount $"{gunNodePath} on() skip"
 
-                        JS.log
-                            (fun () ->
-                                if (string newValue).StartsWith "Ping " then
-                                    null
-                                else
-                                    $"gun.on() value. skipping.
+                                JS.log
+                                    (fun () ->
+                                        if (string newValue).StartsWith "Ping " then
+                                            null
+                                        else
+                                            $"gun.on() value. skipping.
                                                     jsTypeof-newValue={jsTypeof newValue}
                                                     newValue={newValue}
                                                     lastValue={lastValue}
                                                     {baseInfo ()} ")
-                    | _ ->
-                        Profiling.addCount $"{gunNodePath} on() assign"
+                            | _ ->
+                                Profiling.addCount $"{gunNodePath} on() assign"
 
-                        JS.log
-                            (fun () ->
-                                let _lastValue =
-                                    match unbox lastValue with
-                                    | Some (_, b) -> b
-                                    | _ -> null
+                                JS.log
+                                    (fun () ->
+                                        let _lastValue =
+                                            match unbox lastValue with
+                                            | Some (_, b) -> b
+                                            | _ -> null
 
-                                if string _lastValue = string newValue then
-                                    Browser.Dom.console.error
-                                        $"should have skipped assign
+                                        if string _lastValue = string newValue then
+                                            Browser.Dom.console.error
+                                                $"should have skipped assign
                                         _lastValue={_lastValue}
                                         typeof lastValue={jsTypeof _lastValue}
                                         newValue={newValue}
                                         typeof newValue={jsTypeof newValue}
                                         {baseInfo ()} "
 
-                                if (string newValue).StartsWith "Ping " then
-                                    null
-                                else
-                                    $"gun.on() value. triggering.
+                                        if (string newValue).StartsWith "Ping " then
+                                            null
+                                        else
+                                            $"gun.on() value. triggering.
                                 _lastValue={_lastValue}
                                 typeof lastValue={jsTypeof _lastValue}
                                 newValue={newValue}
                                 typeof newValue={jsTypeof newValue}
                                 {baseInfo ()} ")
 
-                        //                        Browser.Dom.window?atomPath <- atomPath
+                                //                        Browser.Dom.window?atomPath <- atomPath
 //                        Browser.Dom.window?lastValue <- _lastValue
 //                        Browser.Dom.window?newValue <- newValue
 //                        Browser.Dom.window?deepEqual <- DeepEqual.compare
 
-                        // setAtom internalAtom
+                                // setAtom internalAtom
 
-                        setAtom newValue
-                with ex -> Browser.Dom.console.error ("[exception1]", ex)
-            }
+                                setAtom newValue
+                        with ex -> Browser.Dom.console.error ("[exception1]", ex)
+                    })
+                50
 
         let mutable lastSubscription = None
 
@@ -445,7 +448,8 @@ module Store =
                                         if (string newValue).StartsWith "Ping " then
                                             null
                                         else
-                                            $"atomFamily.wrapper.set() debounceGunPut promise. #3. before put {key}")
+                                            $"atomFamily.wrapper.set() debounceGunPut promise. #3.
+                                            before put {key} newValue={newValue}")
 
                                 if lastGunValue.IsNone
                                    || lastGunValue

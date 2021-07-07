@@ -110,7 +110,7 @@ module LoginScreen =
                                                     {|
                                                         Icon =
                                                             Some (
-                                                                Icons.fi.FiKey |> Icons.wrap,
+                                                                Icons.fi.FiKey |> Icons.render,
                                                                 Button.IconPosition.Left
                                                             )
                                                         Hint = None
@@ -132,7 +132,7 @@ module LoginScreen =
                                                                      Icons.fi.FiChevronUp
                                                                  else
                                                                      Icons.fi.FiChevronDown)
-                                                                |> Icons.wrap,
+                                                                |> Icons.render,
                                                                 Button.IconPosition.Right
                                                             )
                                                         Props =
@@ -185,7 +185,7 @@ module LoginScreen =
                                                                     Hint = None
                                                                     Icon =
                                                                         Some (
-                                                                            Icons.fi.FiKey |> Icons.wrap,
+                                                                            Icons.fi.FiKey |> Icons.render,
                                                                             Button.IconPosition.Left
                                                                         )
                                                                     Props =

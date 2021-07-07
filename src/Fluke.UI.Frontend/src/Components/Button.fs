@@ -13,7 +13,7 @@ module Button =
 
     [<ReactComponent>]
     let Button
-        (input: {| Icon: ((unit -> ReactElement) * IconPosition) option
+        (input: {| Icon: (ReactElement * IconPosition) option
                    Hint: ReactElement option
                    Props: Chakra.IChakraProps -> unit
                    Children: seq<ReactElement> |})
@@ -31,7 +31,7 @@ module Button =
                 | Some icon, [] ->
                     Chakra.iconButton
                         (fun x ->
-                            x.icon <- icon ()
+                            x.icon <- icon
                             input.Props x)
                         []
                 | icon, children ->
@@ -41,7 +41,7 @@ module Button =
                             Chakra.box
                                 (fun _ -> ())
                                 [
-                                    icon ()
+                                    icon
                                 ]
                         | None -> nothing
 
