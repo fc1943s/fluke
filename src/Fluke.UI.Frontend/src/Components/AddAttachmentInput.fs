@@ -169,8 +169,8 @@ module AddAttachmentInput =
             Store.useCallback (
                 (fun _ setter attachmentId ->
                     promise {
-                        do! onAdd attachmentId
                         Store.change setter Atoms.User.clipboardAttachmentMap (Map.remove attachmentId)
+                        do! onAdd attachmentId
                     }),
                 [|
                     box onAdd

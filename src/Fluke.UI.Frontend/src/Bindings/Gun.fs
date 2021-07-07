@@ -292,7 +292,7 @@ module Gun =
                     })
              >> Promise.Parallel
              >> Promise.start)
-            {| interval = 1000 |}
+            {| interval = 500 |}
 
     let wrapAtomPath (atomPath: string) =
         let header = $"{nameof Fluke}/"

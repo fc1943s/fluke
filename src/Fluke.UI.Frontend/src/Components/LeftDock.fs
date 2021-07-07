@@ -19,7 +19,7 @@ module LeftDock =
 
         let deleteTemplates =
             Store.useCallback (
-                (fun getter _ _ ->
+                (fun getter setter _ ->
                     promise {
                         let asyncDatabaseIdAtoms = Store.value getter Selectors.asyncDatabaseIdAtoms
 
@@ -34,7 +34,7 @@ module LeftDock =
                             |> Store.waitForAll
                             |> Store.value getter
 
-                        do!
+                        let templatesDatabaseIdArray =
                             owners
                             |> Array.indexed
                             |> Array.choose
@@ -43,6 +43,17 @@ module LeftDock =
                                         Some databaseIdArray.[i]
                                     else
                                         None)
+
+                        Store.change
+                            setter
+                            Atoms.User.selectedDatabaseIdSet
+                            (fun selectedDatabaseIdSet ->
+                                Set.difference selectedDatabaseIdSet (templatesDatabaseIdArray |> Set.ofArray))
+
+                        Store.set setter Atoms.User.hideTemplates true
+
+                        do!
+                            templatesDatabaseIdArray
                             |> Array.map (fun databaseId -> Store.deleteRoot getter (Atoms.Database.name databaseId))
                             |> Promise.Parallel
                             |> Promise.ignore

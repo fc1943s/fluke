@@ -342,8 +342,13 @@ module Store =
         let unsubscribe =
             (fun () ->
                 match lastSubscription with
-                | Some ticks when DateTime.ticksDiff ticks < 1000. -> ()
-                | _ ->
+                | Some ticks when DateTime.ticksDiff ticks < 1000. ->
+                    JS.log
+                        (fun () ->
+                            $"[gunEffect.off()]
+                                                    {baseInfo ()}
+                                                    skipping unsubscribe. jotai resubscribe glitch.")
+                | Some _ ->
                     match lastGunAtomNode with
                     | Some (key, gunAtomNode) ->
 
@@ -362,38 +367,51 @@ module Store =
                             (fun () ->
                                 $"[gunEffect.off()]
                                 {baseInfo ()}
-                                skipping unsubscribe, no gun atom node."))
+                                skipping unsubscribe, no gun atom node.")
+                | None ->
+                    JS.log
+                        (fun () ->
+                            $"[gunEffect.off()]
+                                {baseInfo ()}
+                                skipping unsubscribe. no last subscription found."))
+
 
         let subscribe =
-            (fun setAtom ->
-                lastWrapperSet <- Some setAtom
+            JS.debounce
+                (fun setAtom ->
+                    lastWrapperSet <- Some setAtom
 
-                match lastGunAtomNode with
-                | Some (key, gunAtomNode) ->
-                    Profiling.addCount $"{gunNodePath} subscribe"
-                    JS.log (fun () -> $"[gunEffect.on()] atomPath={atomPath} {key}")
+                    match lastGunAtomNode with
+                    | Some (key, gunAtomNode) ->
+                        Profiling.addCount $"{gunNodePath} subscribe"
 
-                    //                    gunAtomNode.off () |> ignore
+                        JS.log
+                            (fun () ->
+                                $"[gunEffect.on()] batch subscribing.
+                        atomPath={atomPath} {key}")
 
-                    Gun.batchSubscribe
-                        {|
-                            GunAtomNode = gunAtomNode
-                            Fn = setInternalFromGun gunAtomNode setAtom
-                        |}
+                        //                    gunAtomNode.off () |> ignore
 
-                    //                        Gun.subscribe
+                        Gun.batchSubscribe
+                            {|
+                                GunAtomNode = gunAtomNode
+                                Fn = setInternalFromGun gunAtomNode setAtom
+                            |}
+
+                        //                        Gun.subscribe
 //                            gunAtomNode
 //                            (fun data ->
 //                                setInternalFromGun gunAtomNode setAtom (DateTime.Now.Ticks, data)
 //                                |> Promise.start)
 
-                    lastSubscription <- Some DateTime.Now.Ticks
-                | None ->
-                    JS.log
-                        (fun () ->
-                            $"[gunEffect.on()]
+                        lastSubscription <- Some DateTime.Now.Ticks
+                    | None ->
+                        JS.log
+                            (fun () ->
+                                $"[gunEffect.on()]
                                 {baseInfo ()}
                              skipping subscribe, no gun atom node."))
+                500
 
         let debounceGunPut =
             JS.debounce
@@ -514,8 +532,8 @@ module Store =
                     if userAtomId <> lastUserAtomId then
                         lastUserAtomId <- userAtomId
 
-                        match lastWrapperSet with
-                        | Some lastWrapperSet ->
+                        match lastWrapperSet, lastSubscription with
+                        | Some lastWrapperSet, None ->
                             JS.log
                                 (fun () ->
                                     $"subscribing
@@ -524,7 +542,7 @@ module Store =
                                 {baseInfo ()} ")
 
                             subscribe lastWrapperSet
-                        | None ->
+                        | _ ->
                             JS.log
                                 (fun () ->
                                     $"skipping subscribe

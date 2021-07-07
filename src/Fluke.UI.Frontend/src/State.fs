@@ -1450,10 +1450,6 @@ module State =
                 Store.readSelectorFamily (
                     $"{nameof FlukeDate}/{nameof hasCellSelection}",
                     (fun (date: FlukeDate) getter ->
-                        JS.log (fun () -> $"hasCellSelection date={date |> FlukeDate.Stringify}")
-
-                        Browser.Dom.window?lastDate <- date
-
                         let cellSelectionMap = Store.value getter Session.cellSelectionMap
 
                         cellSelectionMap

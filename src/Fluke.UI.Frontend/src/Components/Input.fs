@@ -132,14 +132,8 @@ module Input =
                 | _ ->
                     inputRef.current.value <- currentValueString
 
-                    if not alreadyFocused then
-                        if props.autoFocus
-                           && (not mounted || customProps.autoFocusOnAllMounts) then
-                            promise {
-                                inputRef.current.focus ()
-                                setAlreadyFocused true
-                            }
-                            |> Promise.start
+                    if props.autoFocus && not alreadyFocused then
+                        inputRef.current.focus ()
 
                     if not mounted then
                         setMounted true
@@ -248,6 +242,15 @@ module Input =
                         (if customProps.textarea then Chakra.textarea else Chakra.input)
                             (fun x ->
                                 x.onChange <- onChange
+
+                                x.onFocus <-
+                                    fun _ ->
+                                        promise {
+                                            if props.autoFocus && not alreadyFocused then
+                                                promise { setAlreadyFocused true }
+                                                |> Promise.start
+                                        }
+
                                 x.ref <- inputRef
                                 x._focus <- JS.newObj (fun x -> x.borderColor <- "heliotrope")
                                 x.borderColor <- if darkMode then "#484848" else "#b7b7b7"

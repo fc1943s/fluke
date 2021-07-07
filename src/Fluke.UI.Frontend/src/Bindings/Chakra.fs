@@ -106,6 +106,7 @@ module Chakra =
         abstract onChange : (_ -> JS.Promise<unit>) with get, set
         abstract onClick : (MouseEvent -> JS.Promise<unit>) with get, set
         abstract onClose : (unit -> JS.Promise<unit>) with get, set
+        abstract onFocus : (_ -> JS.Promise<unit>) with get, set
         abstract onKeyDown : (KeyboardEvent -> JS.Promise<unit>) with get, set
         abstract onOpen : (unit -> unit) with get, set
         abstract opacity : float with get, set
