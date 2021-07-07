@@ -386,6 +386,8 @@ module Store =
 
                     match lastGunAtomNode with
                     | Some (key, gunAtomNode) ->
+                        lastSubscription <- Some DateTime.Now.Ticks
+
                         Profiling.addCount $"{gunNodePath} subscribe"
 
                         JS.log
@@ -407,7 +409,6 @@ module Store =
 //                                setInternalFromGun gunAtomNode setAtom (DateTime.Now.Ticks, data)
 //                                |> Promise.start)
 
-                        lastSubscription <- Some DateTime.Now.Ticks
                     | None ->
                         JS.log
                             (fun () ->
@@ -768,48 +769,55 @@ module Store =
 
         let mutable lastSubscription = None
 
-        let subscribe setAtom =
-            JS.log (fun () -> "@@ #3")
+        let debouncedSet setAtom =
+            JS.debounce
+                (fun data ->
+                    //                        Browser.Dom.window?lastData <- data
 
-            let debouncedSet =
-                JS.debounce
-                    (fun data ->
-                        //                        Browser.Dom.window?lastData <- data
+                    let result =
+                        JS.Constructors.Object.entries data
+                        |> unbox<(string * obj) []>
+                        |> Array.filter
+                            (fun (guid, value) ->
+                                guid.Length = 36
+                                && guid <> string Guid.Empty
+                                && value <> null)
+                        |> Array.map (fst >> onFormat)
 
-                        let result =
-                            JS.Constructors.Object.entries data
-                            |> unbox<(string * obj) []>
-                            |> Array.filter
-                                (fun (guid, value) ->
-                                    guid.Length = 36
-                                    && guid <> string Guid.Empty
-                                    && value <> null)
-                            |> Array.map (fst >> onFormat)
-
-                        JS.log
-                            (fun () ->
-                                $"@@ [gunEffect.on()]
+                    JS.log
+                        (fun () ->
+                            $"@@ [gunEffect.on()]
                                                    atomPath={atomPath}
                                                    len={result.Length}
                                                    {key} ")
 
-                        setAtom result)
-                    750
+                    setAtom result)
+                750
 
-            match lastGunAtomNode with
-            | Some (key, gunAtomNode) ->
-                Profiling.addCount $"@@ {gunNodePath} subscribe"
-                JS.log (fun () -> $"@@ [gunEffect.on()] atomPath={atomPath} {key}")
+        let subscribe =
+            JS.debounce
+                (fun setAtom ->
+                    JS.log (fun () -> "@@ #3")
 
-                gunAtomNode.on (fun data _key -> debouncedSet data)
+                    match lastGunAtomNode with
+                    | Some (key, gunAtomNode) ->
+                        Profiling.addCount $"@@ {gunNodePath} subscribe"
+                        JS.log (fun () -> $"@@ [gunEffect.on()] atomPath={atomPath} {key}")
 
-                lastSubscription <- Some DateTime.Now.Ticks
-            | None ->
-                JS.log
-                    (fun () ->
-                        $"@@ [gunEffect.on()]
-                                               {baseInfo ()}
-                                            skipping subscribe, no gun atom node.")
+                        Gun.batchSubscribe
+                            {|
+                                GunAtomNode = gunAtomNode
+                                Fn = debouncedSet setAtom
+                            |}
+
+                        lastSubscription <- Some DateTime.Now.Ticks
+                    | None ->
+                        JS.log
+                            (fun () ->
+                                $"@@ [gunEffect.on()]
+                                                   {baseInfo ()}
+                                                skipping subscribe, no gun atom node."))
+                100
 
         let unsubscribe () =
             match lastSubscription with

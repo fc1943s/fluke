@@ -131,9 +131,6 @@ module Full =
 
                     Cy.wait 10000
 
-                    Cy.window ()
-                    |> Promise.iter (fun window -> window?Debug <- true)
-
                     Cy2.waitFor (nameof Databases) (Some {| timeout = timeout |})
 
                     Cy2.clickText (nameof Databases)
@@ -255,7 +252,7 @@ module Full =
 
                     Cy2.waitFor "0 of 1 visible" (Some {| timeout = timeout |})
 
-                    Cy.wait 1000
+                    Cy.wait 6000
 
                     Cy2.clickText "Priority View"
                     Cy.wait 200
