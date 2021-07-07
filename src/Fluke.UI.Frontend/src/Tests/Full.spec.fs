@@ -131,6 +131,9 @@ module Full =
 
                     Cy.wait 10000
 
+                    Cy.window ()
+                    |> Promise.iter (fun window -> window?Debug <- true)
+
                     Cy2.waitFor (nameof Databases) (Some {| timeout = timeout |})
 
                     Cy2.clickText (nameof Databases)
