@@ -215,20 +215,22 @@ module Full =
                     Cy2.clickText "Start Session"
                     Cy2.waitFor $"Session: 1 active ({taskName})" (Some {| timeout = timeout |})
 
-                    Cy.wait 1000
+                    Cy.wait 6000
 
                     Cy2.clickText (nameof Databases)
 
-                    Cy.wait 1000
+                    Cy.wait 6000
 
                     Cy2.clickText "Habit Tracker View"
                     Cy.wait 200
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 
+                    Cy.wait 6000
+
                     Cy2.clickSelectorChildFromText taskName ".chakra-button"
                     Cy2.clickText "Edit Task"
 
-                    Cy.wait 3000
+                    Cy.wait 6000
 
                     Cy2.clickSelectorChildFromText
                         (DateTime.Now
