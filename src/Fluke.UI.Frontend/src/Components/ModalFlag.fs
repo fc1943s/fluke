@@ -13,19 +13,19 @@ module ModalFlag =
         (input: {| UIFlagType: UIFlagType
                    Content: UIFlag * (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement |})
         =
-        let formIdFlag, setFormIdFlag = Store.useState (Atoms.User.uiFlag input.UIFlagType)
-        let formVisibleFlag, setFormVisibleFlag = Store.useState (Atoms.User.uiVisibleFlag input.UIFlagType)
+        let uiFlag, setUIFlag= Store.useState (Atoms.User.uiFlag input.UIFlagType)
+        let uiVisibleFlag, setUIVisibleFlag = Store.useState (Atoms.User.uiVisibleFlag input.UIFlagType)
 
         let onHide =
             Store.useCallback (
                 (fun _ _ _ ->
                     promise {
-                        setFormIdFlag UIFlag.None
-                        setFormVisibleFlag false
+                        setUIFlag UIFlag.None
+                        setUIVisibleFlag false
                     }),
                 [|
-                    box setFormVisibleFlag
-                    box setFormIdFlag
+                    box setUIVisibleFlag
+                    box setUIFlag
                 |]
             )
 
@@ -36,13 +36,13 @@ module ModalFlag =
             (fun () ->
                 promise {
                     let! callbacks = callbacks ()
-                    setContent (input.Content (formIdFlag, onHide) callbacks)
+                    setContent (input.Content (uiFlag, onHide) callbacks)
                 }
                 |> Promise.start),
             [|
                 box setContent
                 box onHide
-                box formIdFlag
+                box uiFlag
                 box input
                 box callbacks
 
@@ -55,7 +55,7 @@ module ModalFlag =
             Modal.Modal (
                 JS.newObj
                     (fun x ->
-                        x.isOpen <- formVisibleFlag
+                        x.isOpen <- uiVisibleFlag
                         x.onClose <- onHide
 
                         x.children <-

@@ -232,7 +232,8 @@ module Gun =
     let inline put (gun: IGunChainReference) (value: string) =
         Promise.create
             (fun res _err ->
-                let newValue = if value = JS.undefined && not JS.jestWorkerId then null else value
+                let newValue = value
+//                let newValue = if value = JS.undefined && not JS.jestWorkerId then null else value
                 gun.put
                     newValue
                     (fun ack _node ->
