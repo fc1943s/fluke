@@ -31,7 +31,7 @@ module Model =
 
     and ProjectName = ProjectName of name: string
 
-    and Resource = { Name: ResourceName; Area: Area }
+    and Resource = { Name: ResourceName }
 
     and ResourceName = ResourceName of name: string
 
@@ -163,11 +163,7 @@ module Model =
             }
 
     and Resource with
-        static member inline Default =
-            {
-                Name = ResourceName ""
-                Area = Area.Default
-            }
+        static member inline Default = { Name = ResourceName "" }
 
 
     and Minute with
@@ -185,6 +181,9 @@ module Model =
 
     and AreaName with
         static member inline Value (AreaName name) = name
+
+    and ResourceName with
+        static member inline Value (ResourceName name) = name
 
     and TaskName with
         static member inline Value (TaskName name) = name

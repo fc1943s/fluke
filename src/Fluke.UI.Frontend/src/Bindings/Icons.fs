@@ -76,8 +76,6 @@ module Icons =
     let inline renderChakra (props: IChakraProps -> unit) cmp =
         box
             (fun x ->
-                props x
-                x.``as`` <- cmp)
+                x.``as`` <- cmp
+                props x)
             []
-
-    let inline wrap cmp = fun () -> render cmp

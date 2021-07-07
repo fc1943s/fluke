@@ -338,7 +338,7 @@ module Store =
                                 setAtom newValue
                         with ex -> Browser.Dom.console.error ("[exception1]", ex)
                     })
-                50
+                500
 
         let mutable lastSubscription = None
 

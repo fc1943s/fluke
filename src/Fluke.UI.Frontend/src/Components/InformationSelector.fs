@@ -340,7 +340,18 @@ module InformationSelector =
                                                                                 onHide ()
                                                                                 onHide2 ()
                                                                             })
-                                                                | nameof Resource -> nothing
+                                                                | nameof Resource ->
+                                                                    ResourceForm.ResourceForm
+                                                                        (match input.Information with
+                                                                         | Resource resource -> resource
+                                                                         | _ -> Resource.Default)
+                                                                        (fun resource ->
+                                                                            promise {
+                                                                                input.OnSelect (Resource resource)
+
+                                                                                onHide ()
+                                                                                onHide2 ()
+                                                                            })
                                                                 | _ -> nothing
                                                             ]
                                                 |}

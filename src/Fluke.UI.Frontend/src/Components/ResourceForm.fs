@@ -9,26 +9,25 @@ open Fable.Core
 open Fluke.Shared
 
 
-module AreaForm =
-
+module ResourceForm =
     [<ReactComponent>]
-    let AreaForm (area: Area) (onSave: Area -> JS.Promise<unit>) =
+    let ResourceForm (resource: Resource) (onSave: Resource -> JS.Promise<unit>) =
         let toast = Chakra.useToast ()
-        let areaName, setAreaName = React.useState area.Name
+        let resourceName, setResourceName = React.useState resource.Name
 
         let onSave =
             Store.useCallback (
                 (fun _ _ _ ->
                     promise {
-                        match areaName |> AreaName.Value with
-                        | String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
+                        match resourceName with
+                        | ResourceName String.InvalidString -> toast (fun x -> x.description <- "Invalid name")
                         | _ ->
-                            let area : Area = { Name = areaName }
-                            do! onSave area
+                            let resource : Resource = { Name = resourceName }
+                            do! onSave resource
                     }),
                 [|
-                    box areaName
                     box onSave
+                    box resourceName
                     box toast
                 |]
             )
@@ -43,19 +42,18 @@ module AreaForm =
                             {|
                                 CustomProps =
                                     fun x ->
-                                        x.fixedValue <- areaName |> AreaName.Value |> Some
+                                        x.fixedValue <- resourceName |> ResourceName.Value |> Some
                                         x.onEnterPress <- Some onSave
                                 Props =
                                     fun x ->
                                         x.autoFocus <- true
                                         x.label <- str "Name"
-                                        x.placeholder <- "e.g. chores"
+                                        x.placeholder <- "e.g. linux"
 
                                         x.onChange <-
-                                            fun (e: KeyboardEvent) -> promise { setAreaName (AreaName e.Value) }
+                                            fun (e: KeyboardEvent) -> promise { setResourceName (ResourceName e.Value) }
                             |}
                     ]
-
 
                 Button.Button
                     {|
@@ -68,3 +66,4 @@ module AreaForm =
                             ]
                     |}
             ]
+
