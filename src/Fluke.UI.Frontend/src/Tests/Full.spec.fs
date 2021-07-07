@@ -27,7 +27,9 @@ module Full =
                     |> ignore
 
                     fn().first().``type`` (string letter) {| force = false |}
-                    |> ignore)
+                    |> ignore
+
+                    Cy.wait 50)
 
             fn().should "have.value" text null
 
@@ -127,12 +129,13 @@ module Full =
 
                     Cy2.waitFor "User registered successfully" (Some {| timeout = timeout |})
 
-                    Cy2.waitFor "Databases" (Some {| timeout = timeout |})
+                    Cy.wait 10000
+
+                    Cy2.waitFor (nameof Databases) (Some {| timeout = timeout |})
 
                     Cy2.clickText (nameof Databases)
                     Cy2.waitFor "Lane Rendering" (Some {| timeout = timeout |})
 
-                    Cy.wait 10000
 
                     Cy2.clickSelector "[data-testid='Add Database']"
 
@@ -197,13 +200,11 @@ module Full =
 
                     Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
 
-                    //                    Cy.wait 200
-                    Cy.wait 3000
+                    Cy2.clickText "Save"
+
 
                     Cy.window ()
                     |> Promise.iter (fun window -> window?Debug <- true)
-
-                    Cy2.clickText "Save"
 
                     Cy.wait 15000
 
