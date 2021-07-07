@@ -455,8 +455,9 @@ module Store =
 
                                     let! putResult = Gun.put gunAtomNode newValueJson
 
-
                                     if putResult then
+                                        lastGunValue <- Some newValue
+
                                         JS.log
                                             (fun () ->
                                                 if (string newValue).StartsWith "Ping " then
@@ -468,7 +469,6 @@ module Store =
                                                        {baseInfo ()} ")
                                     else
                                         Browser.Dom.window?lastPutResult <- putResult
-
 
                                         match JS.window id with
                                         | Some window ->

@@ -232,8 +232,9 @@ module Gun =
     let inline put (gun: IGunChainReference) (value: string) =
         Promise.create
             (fun res _err ->
+                let newValue = if value = JS.undefined then null else value
                 gun.put
-                    value
+                    newValue
                     (fun ack _node ->
                         if ack.ok = Some 1 && ack.err.IsNone then
                             res true
@@ -243,7 +244,7 @@ module Gun =
                             | Some window ->
                                 if window?Cypress = null then
                                     Browser.Dom.console.error
-                                        $"Gun.put error. value={value} ack={JS.JSON.stringify ack} "
+                                        $"Gun.put error. newValue={newValue} ack={JS.JSON.stringify ack} "
                             | None -> ()
 
                             res false)

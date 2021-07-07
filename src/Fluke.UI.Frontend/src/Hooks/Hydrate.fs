@@ -214,116 +214,139 @@ module Hydrate =
     let useExportDatabase () =
         let toast = Chakra.useToast ()
 
-        Store.useCallback (
-            (fun getter _ databaseId ->
-                promise {
-                    let database = Store.value getter (Selectors.Database.database databaseId)
+        let fetch =
+            Store.useCallback (
+                (fun getter _ databaseId ->
+                    promise {
+                        let database = Store.value getter (Selectors.Database.database databaseId)
 
-                    let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
+                        let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
 
-                    let taskStateList =
-                        taskIdAtoms
-                        |> Array.toList
-                        |> List.map (Store.value getter)
-                        |> List.map Selectors.Task.taskState
-                        |> List.map (Store.value getter)
+                        let taskStateList =
+                            taskIdAtoms
+                            |> Array.toList
+                            |> List.map (Store.value getter)
+                            |> List.map Selectors.Task.taskState
+                            |> List.map (Store.value getter)
 
-                    let fileIdList =
-                        taskStateList
-                        |> List.collect
-                            (fun taskState ->
-                                taskState.Attachments
-                                |> List.choose
-                                    (fun (_, attachment) ->
-                                        match attachment with
-                                        | Attachment.Image fileId -> Some fileId
-                                        | _ -> None))
-
-                    let hexStringList =
-                        fileIdList
-                        |> List.map Selectors.File.hexString
-                        |> List.toArray
-                        |> Store.waitForAll
-                        |> Store.value getter
-
-                    if hexStringList |> Array.contains None then
-                        toast (fun x -> x.description <- "Invalid files present")
-                    else
-                        let fileMap =
-                            fileIdList
-                            |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
-                            |> Map.ofList
-
-                        let informationSet = Store.value getter Selectors.Session.informationSet
-
-                        let informationStateMap =
-                            informationSet
-                            |> Set.toList
-                            |> List.map
-                                (fun information ->
-                                    let attachmentIdSet =
-                                        Store.value getter (Selectors.Information.attachmentIdSet information)
-
-                                    let attachments =
-                                        attachmentIdSet
-                                        |> Set.toArray
-                                        |> Array.map Selectors.Attachment.attachment
-                                        |> Store.waitForAll
-                                        |> Store.value getter
-                                        |> Array.toList
-                                        |> List.choose id
-
-                                    information,
-                                    {
-                                        Information = information
-                                        Attachments = attachments
-                                        SortList = []
-                                    })
-                            |> Map.ofSeq
-
-                        let taskStateMap =
+                        let fileIdList =
                             taskStateList
-                            |> List.map (fun taskState -> taskState.Task.Id, taskState)
-                            |> Map.ofSeq
+                            |> List.collect
+                                (fun taskState ->
+                                    taskState.Attachments
+                                    |> List.choose
+                                        (fun (_, attachment) ->
+                                            match attachment with
+                                            | Attachment.Image fileId -> Some fileId
+                                            | _ -> None))
 
-                        let databaseState =
-                            {
-                                Database = database
-                                InformationStateMap = informationStateMap
-                                TaskStateMap = taskStateMap
-                                FileMap = fileMap
-                            }
+                        let hexStringList =
+                            fileIdList
+                            |> List.map Selectors.File.hexString
+                            |> List.toArray
+                            |> Store.waitForAll
+                            |> Store.value getter
 
-                        if databaseState.TaskStateMap
-                           |> Map.exists
-                               (fun _ taskState ->
-                                   taskState.Task.Name
-                                   |> TaskName.Value
-                                   |> String.IsNullOrWhiteSpace
-                                   || taskState.Task.Information
-                                      |> Information.Name
-                                      |> InformationName.Value
-                                      |> String.IsNullOrWhiteSpace) then
-                            toast (fun x -> x.description <- "Database is not fully synced")
+                        if hexStringList |> Array.contains None then
+                            return (Error "Invalid files present")
                         else
+                            let fileMap =
+                                fileIdList
+                                |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
+                                |> Map.ofList
 
-                            let json = databaseState |> Json.encodeFormatted
+                            let informationSet = Store.value getter Selectors.Session.informationSet
 
-                            let timestamp =
-                                (FlukeDateTime.FromDateTime DateTime.Now)
-                                |> FlukeDateTime.Stringify
+                            let informationStateMap =
+                                informationSet
+                                |> Set.toList
+                                |> List.map
+                                    (fun information ->
+                                        let attachmentIdSet =
+                                            Store.value getter (Selectors.Information.attachmentIdSet information)
 
-                            JS.download
-                                json
-                                $"{database.Name |> DatabaseName.Value}-{timestamp}.json"
-                                "application/json"
+                                        let attachments =
+                                            attachmentIdSet
+                                            |> Set.toArray
+                                            |> Array.map Selectors.Attachment.attachment
+                                            |> Store.waitForAll
+                                            |> Store.value getter
+                                            |> Array.toList
+                                            |> List.choose id
 
-                            toast
-                                (fun x ->
-                                    x.description <- "Database exported successfully"
-                                    x.title <- "Success"
-                                    x.status <- "success")
+                                        information,
+                                        {
+                                            Information = information
+                                            Attachments = attachments
+                                            SortList = []
+                                        })
+                                |> Map.ofSeq
 
+                            let taskStateMap =
+                                taskStateList
+                                |> List.map (fun taskState -> taskState.Task.Id, taskState)
+                                |> Map.ofSeq
+
+                            let databaseState =
+                                {
+                                    Database = database
+                                    InformationStateMap = informationStateMap
+                                    TaskStateMap = taskStateMap
+                                    FileMap = fileMap
+                                }
+
+                            if databaseState.TaskStateMap
+                               |> Map.exists
+                                   (fun _ taskState ->
+                                       taskState.Task.Name
+                                       |> TaskName.Value
+                                       |> String.IsNullOrWhiteSpace
+                                       || taskState.Task.Information
+                                          |> Information.Name
+                                          |> InformationName.Value
+                                          |> String.IsNullOrWhiteSpace) then
+                                return (Error "Database is not fully synced")
+                            else
+                                return Ok databaseState
+                    }
+                 , [||])
+            )
+
+        Store.useCallback (
+            (fun _ _ databaseId ->
+                promise {
+                    toast
+                        (fun x ->
+                            x.description <- "Fetching data..."
+                            x.title <- "Loading"
+                            x.status <- "warning")
+
+                    let! _firstFetch = fetch databaseId
+
+                    do! Promise.sleep 2000
+
+                    let! secondFetch = fetch databaseId
+
+                    match secondFetch with
+                    | Ok databaseState ->
+                        let json = databaseState |> Json.encodeFormatted
+
+                        let timestamp =
+                            (FlukeDateTime.FromDateTime DateTime.Now)
+                            |> FlukeDateTime.Stringify
+
+                        JS.download
+                            json
+                            $"{databaseState.Database.Name |> DatabaseName.Value}-{timestamp}.json"
+                            "application/json"
+
+                        toast
+                            (fun x ->
+                                x.description <- "Database exported successfully"
+                                x.title <- "Success"
+                                x.status <- "success")
+
+                    | Error error -> toast (fun x -> x.description <- error)
                 }),
             [|
                 box toast
