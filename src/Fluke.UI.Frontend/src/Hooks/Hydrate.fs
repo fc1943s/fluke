@@ -323,7 +323,7 @@ module Hydrate =
 
                     let! _firstFetch = fetch databaseId
 
-                    do! Promise.sleep 2000
+                    do! Promise.sleep 4000
 
                     let! secondFetch = fetch databaseId
 

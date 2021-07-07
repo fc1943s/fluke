@@ -35,8 +35,10 @@ module PasteListener =
 
         let handlePasteEvent =
             Store.useCallback (
-                (fun getter setter (event: Browser.Types.Event) ->
+                (fun getter setter (e: Browser.Types.Event) ->
                     promise {
+                        e.preventDefault ()
+
                         let! blobs =
                             match Browser.Navigator.navigator.clipboard with
                             | Some clipboard ->
@@ -79,9 +81,6 @@ module PasteListener =
                                     })
                             |> Promise.Parallel
                             |> Promise.ignore
-
-                        event.preventDefault ()
-
                     }),
                 [|
                     box toast

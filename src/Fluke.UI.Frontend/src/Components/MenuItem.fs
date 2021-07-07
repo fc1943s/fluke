@@ -30,8 +30,8 @@ module MenuItem =
                 x.onClick <-
                     fun e ->
                         promise {
-                            do! onClick ()
                             e.preventDefault ()
+                            do! onClick ()
                         }
 
                 props x)

@@ -262,7 +262,7 @@ module Gun =
                     item.Fn (item.Timestamp, item.Data))
              >> Promise.Parallel
              >> Promise.start)
-            {| interval = 1000 |}
+            {| interval = 500 |}
 
     let subscribe (gun: IGunChainReference) fn =
         gun.on

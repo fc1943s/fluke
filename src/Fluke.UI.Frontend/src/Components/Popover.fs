@@ -28,8 +28,8 @@ module Popover =
                     x.onClick <-
                         fun e ->
                             promise {
-                                disclosure.onOpen ()
                                 e.preventDefault ()
+                                disclosure.onOpen ()
                             })
                 [
                     input.Trigger
@@ -96,8 +96,8 @@ module Popover =
                                                             x.onClick <-
                                                                 fun e ->
                                                                     promise {
-                                                                        disclosure.onClose ()
                                                                         e.preventDefault ()
+                                                                        disclosure.onClose ()
                                                                     }
                                                     Children = []
                                                 |}

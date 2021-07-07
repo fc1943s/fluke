@@ -414,7 +414,7 @@ module Store =
                                 $"[gunEffect.on()]
                                 {baseInfo ()}
                              skipping subscribe, no gun atom node."))
-                500
+                100
 
         let debounceGunPut =
             JS.debounce
@@ -503,7 +503,7 @@ module Store =
                         with ex -> Browser.Dom.console.error ("[exception2]", ex)
                     }
                     |> Promise.start)
-                0
+                100
 
         let rec wrapper =
             selector (

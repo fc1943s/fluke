@@ -54,9 +54,9 @@ module ConfirmPopover =
                                                                     x.onClick <-
                                                                         fun e ->
                                                                             promise {
+                                                                                e.preventDefault ()
                                                                                 do! fn ()
                                                                                 disclosure.onClose ()
-                                                                                e.preventDefault ()
                                                                             }
                                                             Children =
                                                                 [
