@@ -186,6 +186,10 @@ module Full =
 
                     Cy.wait 6000
 
+                    Cy2.clickText dbName
+
+                    Cy.wait 3000
+
                     Cy2.clickSelectorChildFromText dbName ".chakra-button"
                     Cy2.clickText "Edit Database"
 
@@ -202,9 +206,6 @@ module Full =
 
                     Cy.wait 3000
 
-                    Cy2.clickText $"{dbName}_edit"
-
-                    Cy.wait 3000
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})

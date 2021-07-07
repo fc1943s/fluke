@@ -39,6 +39,7 @@ module State =
         | Task of DatabaseId * TaskId
         | Cell of TaskId * DateId
         | File of FileId
+        | RawImage of url:string
 
     [<RequireQualifiedAccess>]
     type UIFlagType =
@@ -47,6 +48,7 @@ module State =
         | Task
         | Cell
         | File
+        | RawImage
 
     type DeviceId = DeviceId of guid: Guid
 

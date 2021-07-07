@@ -138,6 +138,7 @@ module Chakra =
         abstract textOverflow : string with get, set
         abstract textShadow : string with get, set
         abstract theme : obj with get, set
+        abstract title : string with get, set
         abstract top : string with get, set
         abstract transform : string with get, set
         abstract transformOrigin : string with get, set

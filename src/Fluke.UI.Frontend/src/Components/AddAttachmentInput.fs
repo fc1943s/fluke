@@ -11,9 +11,42 @@ open Fluke.Shared
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Feliz
+open Fluke.Shared.Domain
 
 
 module AddAttachmentInput =
+    [<ReactComponent>]
+    let ImageModal uiFlagType uiFlagValue title url =
+        ModalFlag.ModalFlagBundle
+            {|
+                UIFlagType = uiFlagType
+                UIFlagValue = uiFlagValue
+                Trigger =
+                    fun trigger _ ->
+                        Chakra.box
+                            (fun x ->
+                                x.``as`` <- "img"
+                                x.cursor <- "pointer"
+                                x.title <- title
+                                x.onClick <- fun _ -> promise { do! trigger () }
+                                x.src <- url)
+                            []
+                Content =
+                    fun onHide _ ->
+                        Chakra.box
+                            (fun _ -> ())
+                            [
+                                Chakra.box
+                                    (fun x ->
+                                        x.``as`` <- "img"
+                                        x.cursor <- "pointer"
+                                        x.title <- title
+                                        x.onClick <- fun _ -> promise { do! onHide () }
+                                        x.src <- url)
+                                    []
+                                str title
+                            ]
+            |}
 
     [<ReactComponent>]
     let FileThumbnail onDelete fileId =
@@ -33,29 +66,7 @@ module AddAttachmentInput =
                     [
                         match objectUrl with
                         | Some url ->
-                            ModalFlag.ModalFlagBundle
-                                {|
-                                    UIFlagType = UIFlagType.File
-                                    UIFlagValue = UIFlag.File fileId
-                                    Trigger =
-                                        fun trigger _ ->
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- "img"
-                                                    x.cursor <- "pointer"
-                                                    x.onClick <- fun _ -> promise { do! trigger () }
-                                                    x.src <- url)
-                                                []
-                                    Content =
-                                        fun onHide _ ->
-                                            Chakra.box
-                                                (fun x ->
-                                                    x.``as`` <- "img"
-                                                    x.cursor <- "pointer"
-                                                    x.onClick <- fun _ -> promise { do! onHide () }
-                                                    x.src <- url)
-                                                []
-                                |}
+                            ImageModal UIFlagType.File (UIFlag.File fileId) $"File ID: {fileId |> FileId.Value}" url
                         | None -> LoadingSpinner.InlineLoadingSpinner ()
                     ]
                 Chakra.box

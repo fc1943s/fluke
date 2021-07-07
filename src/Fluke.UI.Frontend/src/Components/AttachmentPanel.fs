@@ -8,6 +8,10 @@ open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
+open Fable.Extras
+open Fluke.UI.Frontend.Components
+open Fluke.UI.Frontend.Hooks
+open Fable.Core
 
 
 module AttachmentPanel =
@@ -63,6 +67,71 @@ module AttachmentPanel =
 
     [<ReactComponent>]
     let AttachmentComment text =
+        let youtubeIdList =
+            React.useMemo (
+                (fun () ->
+                    (JSe.RegExp (
+                        @"((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?\n ]*)",
+                        JSe.RegExpFlag().i.g
+                    ))
+                        .MatchAll text
+                    |> Seq.choose
+                        (fun matches ->
+                            let matches = matches |> Seq.toList
+                            if matches.Length = 8 then Some matches.[7] else None)
+                    |> Seq.toList),
+                [|
+                    box text
+                |]
+            )
+
+        let youtubeImgList =
+            React.useMemo (
+                (fun () ->
+                    youtubeIdList
+                    |> List.map (fun youtubeVideoId -> $"https://img.youtube.com/vi/{youtubeVideoId}/maxresdefault.jpg")),
+                [|
+                    box youtubeIdList
+                |]
+            )
+
+        let youtubeMetadataMap, setYoutubeMetadataMap = React.useState Map.empty
+
+        React.useEffect (
+            (fun () ->
+                async {
+                    let! newMetadataList =
+                        youtubeIdList
+                        |> List.map
+                            (fun youtubeId ->
+                                $"https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v={youtubeId}")
+                        |> List.map Fable.SimpleHttp.Http.get
+                        |> Async.Parallel
+
+                    if newMetadataList.Length > 0 then
+                        newMetadataList
+                        |> Array.map
+                            (fun (code, content) ->
+                                if code <> 200 then
+                                    None
+                                else
+                                    Some (content |> Json.decode<{| title: string |}>))
+                        |> Array.mapi
+                            (fun i metadata ->
+                                match metadata with
+                                | Some metadata -> Some (youtubeImgList.[i], metadata)
+                                | None -> None)
+                        |> Array.choose id
+                        |> Map.ofArray
+                        |> setYoutubeMetadataMap
+                }
+                |> Async.StartAsPromise
+                |> Promise.start),
+            [|
+                box youtubeIdList
+            |]
+        )
+
         Chakra.box
             (fun x ->
                 x.userSelect <- "text"
@@ -71,6 +140,38 @@ module AttachmentPanel =
                 x.paddingBottom <- "2px")
             [
                 Markdown.render text
+
+                match youtubeImgList with
+                | [] -> nothing
+                | youtubeImgList ->
+                    Chakra.flex
+                        (fun x ->
+                            x.marginTop <- "10px"
+                            x.overflow <- "auto")
+                        [
+                            yield!
+                                youtubeImgList
+                                |> List.map
+                                    (fun url ->
+                                        Chakra.flex
+                                            (fun x ->
+                                                x.width <- "75px"
+                                                x.height <- "75px"
+                                                x.justifyContent <- "center"
+                                                x.borderWidth <- "1px"
+                                                x.borderColor <- "gray.16"
+                                                x.alignItems <- "center")
+                                            [
+                                                AddAttachmentInput.ImageModal
+                                                    UIFlagType.RawImage
+                                                    (UIFlag.RawImage url)
+                                                    (youtubeMetadataMap
+                                                     |> Map.tryFind url
+                                                     |> Option.map (fun metadata -> metadata.title)
+                                                     |> Option.defaultValue "")
+                                                    url
+                                            ])
+                        ]
             ]
 
     [<ReactComponent>]
@@ -259,14 +360,22 @@ module AttachmentPanel =
                                     str "No attachments found"
                                 ]
                         | attachmentIdList ->
-                            Chakra.stack
-                                (fun x -> x.spacing <- "10px")
+                            Chakra.box
+                                (fun _ -> ())
                                 [
                                     yield!
                                         attachmentIdList
                                         |> List.map
                                             (fun attachmentId ->
-                                                Attachment (fun () -> onDelete attachmentId) attachmentId)
+                                                Chakra.box
+                                                    (fun x ->
+                                                        x.paddingTop <- "12px"
+                                                        x.paddingBottom <- "12px"
+                                                        x.borderBottomWidth <- "1px"
+                                                        x.borderBottomColor <- "gray.16")
+                                                    [
+                                                        Attachment (fun () -> onDelete attachmentId) attachmentId
+                                                    ])
                                 ]
                     ]
 
