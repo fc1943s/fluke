@@ -518,7 +518,10 @@ module Store =
 
                     JS.log
                         (fun () ->
-                            if (string result).StartsWith "Ping " then
+                            if (string result
+                                |> Option.ofObjUnbox
+                                |> Option.defaultValue "")
+                                .StartsWith "Ping " then
                                 null
                             else
                                 $"atomFamily.wrapper.get()

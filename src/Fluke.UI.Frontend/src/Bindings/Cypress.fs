@@ -70,7 +70,7 @@ module Cypress =
 
 
         [<Emit("cy.window()")>]
-        let window () : Window = jsNative
+        let window () : JS.Promise<Window> = jsNative
 
         [<Emit("cy.contains($0, $1)")>]
         let contains (_text: string) (_options: {| timeout: int |} option) : Chainable2<'T> = jsNative

@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Bindings
 
+open System
 open Browser.Types
 open Fable.Core
 open Fable.Core.JsInterop
@@ -31,6 +32,7 @@ module Promise =
 module Json =
     let inline encodeFormatted<'T> obj =
         Thoth.Json.Encode.Auto.toString<'T> (4, obj)
+
     let inline encode<'T> obj =
         Thoth.Json.Encode.Auto.toString<'T> (0, obj)
 
@@ -116,15 +118,7 @@ module JS =
             | None -> false
             | Some window -> window?Debug
 
-        let cypress =
-            match window id with
-            | None -> null
-            | Some window -> window?Cypress
-
-        cypress <> null || debug <> false && (debug || isDebugStatic)
-
-    //        true
-
+        debug <> false && (debug || isDebugStatic)
 
     let inline log fn =
         if isDebug () then
@@ -297,3 +291,7 @@ module JS =
         a?download <- fileName
         a.click ()
         a.remove ()
+
+    let randomSeq seq =
+        let arr = seq |> Seq.toArray
+        arr.[Random().Next (0, arr.Length - 1)]

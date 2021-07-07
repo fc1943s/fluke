@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Tests
 
+open Fable.Core.JsInterop
 open System
 open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
@@ -100,6 +101,9 @@ module Full =
             it
                 "login"
                 (fun () ->
+                    Cy.window ()
+                    |> Promise.iter (fun window -> window?indexedDB?deleteDatabase "radata")
+
                     let username = "x"
                     let password = "x"
                     let dbName = "db1"
@@ -196,6 +200,9 @@ module Full =
                     //                    Cy.wait 200
                     Cy.wait 3000
 
+                    Cy.window ()
+                    |> Promise.iter (fun window -> window?Debug <- true)
+
                     Cy2.clickText "Save"
 
                     Cy.wait 15000
@@ -205,6 +212,9 @@ module Full =
                     Cy2.clickText $"{dbName}_edit"
 
                     Cy.wait 15000
+
+                    Cy.window ()
+                    |> Promise.iter (fun window -> window?Debug <- false)
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})

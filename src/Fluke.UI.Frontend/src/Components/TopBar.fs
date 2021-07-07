@@ -25,7 +25,106 @@ module TopBar =
                 [||]
             )
 
-        let onRandom = Store.useCallback ((fun _ setter _ -> promise { () }), [||])
+        let onRandom =
+            Store.useCallback (
+                (fun getter setter _ ->
+                    promise {
+
+                        let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+
+                        let databaseId = selectedDatabaseIdSet |> JS.randomSeq
+
+                        let informationSet = Store.value getter Selectors.Session.informationSet
+
+                        let information = informationSet |> JS.randomSeq
+
+                        let attachmentIdSet = Store.value getter (Selectors.Information.attachmentIdSet information)
+
+                        let attachmentId = attachmentIdSet |> JS.randomSeq
+
+                        let attachment = Store.value getter (Selectors.Attachment.attachment attachmentId)
+
+                        let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
+
+                        ()
+
+                    //                    let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
+//
+//                    let taskStateList =
+//                        taskIdAtoms
+//                        |> Array.toList
+//                        |> List.map (Store.value getter)
+//                        |> List.map Selectors.Task.taskState
+//                        |> List.map (Store.value getter)
+//
+//                    let fileIdList =
+//                        taskStateList
+//                        |> List.collect
+//                            (fun taskState ->
+//                                taskState.Attachments
+//                                |> List.choose
+//                                    (fun (_, attachment) ->
+//                                        match attachment with
+//                                        | Attachment.Image fileId -> Some fileId
+//                                        | _ -> None))
+//
+//                    let hexStringList =
+//                        fileIdList
+//                        |> List.map Selectors.File.hexString
+//                        |> List.toArray
+//                        |> Store.waitForAll
+//                        |> Store.value getter
+//
+//                    if hexStringList |> Array.contains None then
+//                        toast (fun x -> x.description <- "Invalid files present")
+//                    else
+//                        let fileMap =
+//                            fileIdList
+//                            |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
+//                            |> Map.ofList
+//
+//                        let informationSet = Store.value getter Selectors.Session.informationSet
+//
+//                        let informationStateMap =
+//                            informationSet
+//                            |> Set.toList
+//                            |> List.map
+//                                (fun information ->
+//                                    let attachmentIdSet =
+//                                        Store.value getter (Selectors.Information.attachmentIdSet information)
+//
+//                                    let attachments =
+//                                        attachmentIdSet
+//                                        |> Set.toArray
+//                                        |> Array.map Selectors.Attachment.attachment
+//                                        |> Store.waitForAll
+//                                        |> Store.value getter
+//                                        |> Array.toList
+//                                        |> List.choose id
+//
+//                                    information,
+//                                    {
+//                                        Information = information
+//                                        Attachments = attachments
+//                                        SortList = []
+//                                    })
+//                            |> Map.ofSeq
+//
+//                        let taskStateMap =
+//                            taskStateList
+//                            |> List.map (fun taskState -> taskState.Task.Id, taskState)
+//                            |> Map.ofSeq
+
+                    //                        let databaseState =
+//                            {
+//                                Database = database
+//                                InformationStateMap = informationStateMap
+//                                TaskStateMap = taskStateMap
+//                                FileMap = fileMap
+//                            }
+                    }),
+                [||]
+            )
 
         Chakra.flex
             (fun x ->
@@ -111,7 +210,7 @@ module TopBar =
                                 ]
 
                         Tooltip.wrap
-                            (str "Random")
+                            (str "Randomize")
                             [
                                 TransparentIconButton.TransparentIconButton
                                     {|

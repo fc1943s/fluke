@@ -37,7 +37,7 @@ module CellMenu =
             | _ -> "later"
 
         let setRightDock = Store.useSetState Atoms.User.rightDock
-        let setCellUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Cell)
+        let cellUIFlag, setCellUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Cell)
 
         let onClick =
             Store.useCallback (
@@ -91,6 +91,57 @@ module CellMenu =
                     box postponedUntil
                     box setSessionStatus
                     box toast
+                |]
+            )
+
+        let random =
+            Store.useCallback (
+                (fun _ setter _ ->
+                    promise {
+                        let newMap =
+                            if cellSelectionMap.Count = 1 then
+                                cellSelectionMap
+                                |> Map.mapValues (JS.randomSeq >> Set.singleton)
+                            else
+                                let key = cellSelectionMap |> Map.keys |> JS.randomSeq
+
+                                cellSelectionMap
+                                |> Map.map (fun key' value -> if key' = key then value else Set.empty)
+
+                        match cellUIFlag with
+                        | UIFlag.Cell (taskId, dateId) when
+                            cellSelectionMap
+                            |> Map.keys
+                            |> Seq.contains taskId
+                            && cellSelectionMap.[taskId]
+                               |> Set.contains (dateId |> DateId.Value)
+                            && (newMap |> Map.keys |> Seq.contains taskId |> not
+                                || newMap.[taskId]
+                                   |> Set.contains (dateId |> DateId.Value)
+                                   |> not) ->
+                            let newTaskId =
+                                newMap
+                                |> Map.pick (fun k v -> if v.IsEmpty then None else Some k)
+
+                            setCellUIFlag (UIFlag.Cell (newTaskId, newMap.[newTaskId] |> JS.randomSeq |> DateId))
+                        | _ -> ()
+
+                        newMap
+                        |> Map.iter
+                            (fun taskId dates ->
+                                Store.set setter (Atoms.Task.selectionSet taskId) (dates |> Set.map DateId))
+
+                        match onClose with
+                        | Some onClose when
+                            newMap.Count = 1
+                            && newMap |> Map.values |> Seq.head |> Set.count = 1 -> onClose ()
+                        | _ -> ()
+                    }),
+                [|
+                    box onClose
+                    box cellUIFlag
+                    box cellSelectionMap
+                    box setCellUIFlag
                 |]
             )
 
@@ -313,6 +364,27 @@ overriding any other behavior.
                                     ]
                             ]
                         |> wrapButtonTooltip Scheduled
+
+                        if cellSelectionMap.IsEmpty
+                           || (cellSelectionMap.Count = 1
+                               && cellSelectionMap.[cellSelectionMap |> Map.keys |> Seq.head]
+                                   .Count = 1)
+                           || (not floating
+                               && cellSelectionMap
+                                  |> Map.tryFind taskId
+                                  |> Option.defaultValue Set.empty
+                                  |> Set.contains (dateId |> DateId.Value)
+                                  |> not) then
+                            nothing
+                        else
+                            Tooltip.wrap
+                                (str "Randomize Selection")
+                                [
+                                    wrapButton
+                                        (Icons.bi.BiShuffle |> Icons.render |> Some)
+                                        (TempUI.cellStatusColor Suggested)
+                                        (Some random)
+                                ]
 
                         match sessionStatus with
                         | UserStatus _ ->
