@@ -4,7 +4,6 @@ open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
-open Fable.Core.JsInterop
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
@@ -13,7 +12,6 @@ open Fluke.UI.Frontend.TempUI
 module LeftDock =
     [<ReactComponent>]
     let LeftDock () =
-        let isTesting = Store.useValue Store.Atoms.isTesting
         let leftDock, setLeftDock = Store.useState Atoms.User.leftDock
         let setRightDock = Store.useSetState Atoms.User.rightDock
         let deviceInfo = Store.useValue Selectors.deviceInfo
@@ -93,9 +91,7 @@ module LeftDock =
                                                         {|
                                                             Props =
                                                                 fun x ->
-                                                                    if isTesting then
-                                                                        x?``data-testid`` <- "Add Database"
-
+                                                                    Chakra.setTestId x "Add Database"
                                                                     x.icon <- Icons.fi.FiPlus |> Icons.render
 
                                                                     x.fontSize <- "17px"
@@ -137,7 +133,6 @@ module LeftDock =
                     box setLeftDock
                     box setRightDock
                     box deviceInfo
-                    box isTesting
                     box setDatabaseUIFlag
                     box deleteTemplates
                 |]

@@ -8,7 +8,6 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.Shared
-open Fable.Core.JsInterop
 
 
 module DatabaseSelector =
@@ -18,6 +17,7 @@ module DatabaseSelector =
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
         let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
+
         let databaseIdList =
             databaseIdAtoms
             |> Store.waitForAll
@@ -58,10 +58,8 @@ module DatabaseSelector =
                 |]
             )
 
-        let isTesting = Store.useValue Store.Atoms.isTesting
-
         Chakra.box
-            (fun x -> if isTesting then x?``data-testid`` <- nameof DatabaseSelector)
+            (fun x -> Chakra.setTestId x (nameof DatabaseSelector))
             [
                 InputLabel.InputLabel
                     {|

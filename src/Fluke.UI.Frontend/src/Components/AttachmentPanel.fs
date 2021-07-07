@@ -17,6 +17,7 @@ open Fable.Core
 module AttachmentPanel =
     [<ReactComponent>]
     let AttachmentHeader onDelete onEdit attachmentId =
+        let attachment = Store.useValue (Atoms.Attachment.attachment attachmentId)
         let timestamp = Store.useValue (Atoms.Attachment.timestamp attachmentId)
 
         Chakra.flex
@@ -50,8 +51,10 @@ module AttachmentPanel =
                                                 x.marginLeft <- "6px")
                                     Body =
                                         [
-
-                                            MenuItem.MenuItem Icons.bs.BsPen "Edit Attachment" onEdit (fun _ -> ())
+                                            match attachment with
+                                            | Some (Attachment.Comment _) ->
+                                                MenuItem.MenuItem Icons.bs.BsPen "Edit Attachment" onEdit (fun _ -> ())
+                                            | _ -> nothing
 
                                             ConfirmPopover.ConfirmPopover
                                                 ConfirmPopover.ConfirmPopoverType.MenuItem
@@ -129,6 +132,8 @@ module AttachmentPanel =
                 |> Promise.start),
             [|
                 box youtubeIdList
+                box setYoutubeMetadataMap
+                box youtubeImgList
             |]
         )
 
@@ -232,6 +237,7 @@ module AttachmentPanel =
                 AttachmentHeader onDelete onEdit attachmentId
 
                 match attachment with
+                | Some (Attachment.Image fileId) -> AddAttachmentInput.FileThumbnail fileId
                 | Some (Attachment.Comment (Comment.Comment comment)) ->
                     Chakra.box
                         (fun _ -> ())
@@ -294,7 +300,7 @@ module AttachmentPanel =
                                             [
                                                 InputLabelIconButton.InputLabelIconButton
                                                     (fun x ->
-                                                        x.icon <- Icons.md.MdClear |> Icons.render
+                                                        x.icon <- Icons.bs.BsTrash |> Icons.render
                                                         x.margin <- "0"
                                                         x.fontSize <- "11px"
                                                         x.height <- "15px"
@@ -303,7 +309,7 @@ module AttachmentPanel =
 
                                                 InputLabelIconButton.InputLabelIconButton
                                                     (fun x ->
-                                                        x.icon <- Icons.hi.HiOutlineCheck |> Icons.render
+                                                        x.icon <- Icons.fi.FiSave |> Icons.render
                                                         x.margin <- "0"
                                                         x.fontSize <- "11px"
                                                         x.height <- "15px"

@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend.Components
 open Browser.Types
 open Fable.Core
 open Fable.React
-open Fable.Core.JsInterop
 open Feliz
 open Fluke.Shared.Domain.Model
 open Fluke.UI.Frontend
@@ -26,7 +25,6 @@ module Cell =
         Profiling.addCount "- CellComponent.render"
 
         let cellSize = Store.useValue Atoms.User.cellSize
-        let isTesting = Store.useValue Store.Atoms.isTesting
         let showUser = Store.useValue (Selectors.Task.showUser input.TaskId)
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite input.TaskId)
         let sessionStatus = Store.useValue (Selectors.Cell.sessionStatus (input.TaskId, input.DateId))
@@ -71,10 +69,11 @@ module Cell =
 
         Chakra.center
             (fun x ->
-                if isTesting then
-                    x?``data-testid`` <- $"cell-{input.TaskId}-{
-                                                                    (input.DateId |> DateId.Value |> FlukeDate.DateTime)
-                                                                        .ToShortDateString ()
+                Chakra.setTestId
+                    x
+                    $"cell-{input.TaskId}-{
+                                               (input.DateId |> DateId.Value |> FlukeDate.DateTime)
+                                                   .ToShortDateString ()
                     }"
 
                 if isReadWrite then x.onClick <- onCellClick

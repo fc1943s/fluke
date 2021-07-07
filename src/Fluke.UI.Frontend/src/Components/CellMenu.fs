@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open System
-open Fable.Core.JsInterop
 open Fable.React
 open Feliz
 open Fluke.Shared
@@ -17,7 +16,6 @@ module CellMenu =
 
     [<ReactComponent>]
     let CellMenu (taskId: TaskId) (dateId: DateId) (onClose: (unit -> unit) option) (floating: bool) =
-        let isTesting = Store.useValue Store.Atoms.isTesting
         let username = Store.useValue Store.Atoms.username
         let toast = Chakra.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
@@ -116,7 +114,7 @@ module CellMenu =
                         let wrapButton icon color onClick =
                             Chakra.iconButton
                                 (fun x ->
-                                    if isTesting then x?``data-testid`` <- $"cell-button-{color}"
+                                    Chakra.setTestId x $"cell-button-{color}"
                                     x.icon <- icon
                                     x.display <- "flex"
                                     x.color <- "#dddddd"

@@ -1,6 +1,5 @@
 namespace rec Fluke.UI.Frontend.Components
 
-open Fable.Core.JsInterop
 open System
 open Fable.React
 open Feliz
@@ -55,8 +54,7 @@ module InformationSelector =
                     |> Information.Name
                     |> InformationName.Value,
 
-                    tempInformation.Value
-                    |> Information.toString),
+                    tempInformation.Value |> Information.toString),
                 [|
                     box tempInformation.Value
                 |]
@@ -107,12 +105,10 @@ module InformationSelector =
                 |]
             )
 
-        let isTesting = Store.useValue Store.Atoms.isTesting
-
         Chakra.box
             (fun x ->
-                x.display <- "inline"
-                if isTesting then x?``data-testid`` <- nameof InformationSelector)
+                Chakra.setTestId x (nameof InformationSelector)
+                x.display <- "inline")
             [
                 InputLabel.InputLabel
                     {|
@@ -169,17 +165,11 @@ module InformationSelector =
                                                                |> not then
                                                                 match radioValueSelected with
                                                                 | nameof Project ->
-                                                                    tempInformation.SetValue (
-                                                                        Project Project.Default
-                                                                    )
+                                                                    tempInformation.SetValue (Project Project.Default)
                                                                 | nameof Area ->
-                                                                    tempInformation.SetValue (
-                                                                        Area Area.Default
-                                                                    )
+                                                                    tempInformation.SetValue (Area Area.Default)
                                                                 | nameof Resource ->
-                                                                    tempInformation.SetValue (
-                                                                        Resource Resource.Default
-                                                                    )
+                                                                    tempInformation.SetValue (Resource Resource.Default)
                                                                 | _ -> ()
 
                                                             setSelected true
@@ -353,9 +343,7 @@ module InformationSelector =
                                                                          | _ -> Area.Default)
                                                                         (fun area ->
                                                                             promise {
-                                                                                tempInformation.SetValue (
-                                                                                    Area area
-                                                                                )
+                                                                                tempInformation.SetValue (Area area)
 
                                                                                 onHide ()
                                                                                 onHide2 ()

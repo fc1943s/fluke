@@ -369,5 +369,9 @@ module Chakra =
         )
         |> Option.map fn
 
+
+    let setTestId (props: IChakraProps) (value: obj) =
+        if JS.deviceInfo.IsTesting then props?``data-testid`` <- value
+
     let transformShiftBy x y =
         $"translate({x |> Option.defaultValue 0.}px, {y |> Option.defaultValue 0.}px)"

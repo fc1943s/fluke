@@ -23,7 +23,7 @@ module Popover =
         if not disclosure.isOpen then
             Chakra.box
                 (fun x ->
-                    x.display <- "inline"
+                    x.display <- "inline-flex"
 
                     x.onClick <-
                         fun e ->

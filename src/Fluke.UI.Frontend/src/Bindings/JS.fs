@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Bindings
 
-open System
 open Browser.Types
 open Fable.Core
 open Fable.Core.JsInterop

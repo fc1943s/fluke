@@ -1,7 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
 open System
-open Fable.Core.JsInterop
 open Browser.Types
 open Fable.React
 open Fluke.Shared.Domain.UserInteraction
@@ -49,73 +48,73 @@ module AddAttachmentInput =
             |}
 
     [<ReactComponent>]
-    let FileThumbnail onDelete fileId =
+    let FileThumbnail fileId =
         let objectUrl = Store.useValue (Selectors.File.objectUrl fileId)
+
+        Chakra.flex
+            (fun x ->
+                x.width <- "75px"
+                x.height <- "75px"
+                x.justifyContent <- "center"
+                x.borderWidth <- "1px"
+                x.borderColor <- "gray.16"
+                x.alignItems <- "center")
+            [
+                match objectUrl with
+                | Some url -> ImageModal UIFlagType.File (UIFlag.File fileId) $"File ID: {fileId |> FileId.Value}" url
+                | None -> LoadingSpinner.InlineLoadingSpinner ()
+            ]
+
+    [<ReactComponent>]
+    let TempFileThumbnail onDelete onAdd fileId =
 
         Chakra.box
             (fun x -> x.position <- "relative")
             [
-                Chakra.flex
+                FileThumbnail fileId
+
+                Chakra.stack
                     (fun x ->
-                        x.width <- "75px"
-                        x.height <- "75px"
-                        x.justifyContent <- "center"
-                        x.borderWidth <- "1px"
-                        x.borderColor <- "gray.16"
-                        x.alignItems <- "center")
-                    [
-                        match objectUrl with
-                        | Some url ->
-                            ImageModal UIFlagType.File (UIFlag.File fileId) $"File ID: {fileId |> FileId.Value}" url
-                        | None -> LoadingSpinner.InlineLoadingSpinner ()
-                    ]
-                Chakra.box
-                    (fun x ->
+                        x.direction <- "row"
+                        x.spacing <- "2px"
                         x.position <- "absolute"
-                        x.top <- "-1px"
+                        x.bottom <- "1px"
                         x.right <- "1px")
                     [
-                        Menu.Menu
-                            {|
-                                Tooltip = ""
-                                Trigger =
-                                    InputLabelIconButton.InputLabelIconButton
-                                        (fun x ->
-                                            x.``as`` <- Chakra.react.MenuButton
+                        InputLabelIconButton.InputLabelIconButton
+                            (fun x ->
+                                x.icon <- Icons.bs.BsTrash |> Icons.render
+                                x.margin <- "0"
+                                x.fontSize <- "11px"
+                                x.height <- "15px"
+                                x.color <- "whiteAlpha.700"
+                                x.onClick <- fun _ -> onDelete ())
 
-                                            x.icon <- Icons.bs.BsThreeDots |> Icons.render
-
-                                            x.margin <- "0"
-                                            x.fontSize <- "11px"
-                                            x.height <- "15px"
-                                            x.color <- "whiteAlpha.700")
-                                Body =
-                                    [
-                                        ConfirmPopover.ConfirmPopover
-                                            ConfirmPopover.ConfirmPopoverType.MenuItem
-                                            Icons.bi.BiTrash
-                                            "Delete Attachment"
-                                            onDelete
-                                    ]
-                                MenuListProps = fun _ -> ()
-                            |}
+                        InputLabelIconButton.InputLabelIconButton
+                            (fun x ->
+                                x.icon <- Icons.fi.FiSave |> Icons.render
+                                x.margin <- "0"
+                                x.fontSize <- "11px"
+                                x.height <- "15px"
+                                x.color <- "whiteAlpha.700"
+                                x.onClick <- fun _ -> onAdd ())
                     ]
             ]
 
     [<ReactComponent>]
-    let AttachmentThumbnail onDelete attachmentId =
+    let AttachmentThumbnail onDelete onAdd attachmentId =
         let attachment = Store.useValue (Selectors.Attachment.attachment attachmentId)
 
         match attachment with
         | Some (_moment, attachment) ->
             match attachment with
-            | Attachment.Image fileId -> FileThumbnail onDelete fileId
+            | Attachment.Image fileId -> TempFileThumbnail onDelete onAdd fileId
             | _ -> nothing
         | _ -> nothing
 
 
     [<ReactComponent>]
-    let rec AttachmentList onDelete attachmentIdList =
+    let rec AttachmentList onDelete onAdd attachmentIdList =
 
         //        DragDrop.droppable
 //            {|
@@ -126,7 +125,7 @@ module AddAttachmentInput =
             (fun x ->
                 //                x.display <- "flex"
 //                x.flexDirection <- "row"
-                x.marginBottom <- "5px"
+                x.marginTop <- "5px"
 
                 x.overflow <- "auto")
             [
@@ -143,28 +142,67 @@ module AddAttachmentInput =
                             Chakra.box
                                 (fun _ -> ())
                                 [
-                                    AttachmentThumbnail (fun () -> onDelete attachmentId) attachmentId
+                                    AttachmentThumbnail
+                                        (fun () -> onDelete attachmentId)
+                                        (fun () -> onAdd attachmentId)
+                                        attachmentId
                                 ])
             ]
 
 
     [<ReactComponent>]
+    let rec AttachmentsClipboard onAdd =
+        let clipboardVisible = Store.useValue Atoms.User.clipboardVisible
+        let clipboardAttachmentMap = Store.useValue Atoms.User.clipboardAttachmentMap
+
+        let deleteImageAttachment =
+            Store.useCallback (
+                (fun getter setter attachmentId ->
+                    promise {
+                        Store.change setter Atoms.User.clipboardAttachmentMap (Map.remove attachmentId)
+                        do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                    }),
+                [||]
+            )
+
+        let addImageAttachment =
+            Store.useCallback (
+                (fun _ setter attachmentId ->
+                    promise {
+                        do! onAdd attachmentId
+                        Store.change setter Atoms.User.clipboardAttachmentMap (Map.remove attachmentId)
+                    }),
+                [|
+                    box onAdd
+                |]
+            )
+
+        if not clipboardVisible then
+            nothing
+        else
+            Chakra.box
+                (fun _ -> ())
+                [
+                    if clipboardAttachmentMap.Count = 0 then
+                        Chakra.box
+                            (fun x -> x.padding <- "10px")
+                            [
+                                str "Empty clipboard"
+                            ]
+                    else
+                        AttachmentList
+                            deleteImageAttachment
+                            addImageAttachment
+                            (clipboardAttachmentMap |> Map.keys |> Seq.toList)
+                ]
+
+    [<ReactComponent>]
     let rec AddAttachmentInput onAdd =
-        let isTesting = Store.useValue Store.Atoms.isTesting
         let ctrlPressed = Store.useValue Atoms.ctrlPressed
         let addAttachmentText, setAddAttachmentText = React.useState ""
 
-        let deleteAttachment =
-            Store.useCallback (
-                (fun _getter setter attachmentId ->
-                    promise {
-                        Store.change setter Atoms.User.clipboardAttachmentMap (Map.remove attachmentId)
-                        ()
-                    }
-                    //                Store.deleteRoot getter (Atoms.Task.databaseId taskId)
-                    ),
-                [||]
-            )
+        let clipboardVisible, setClipboardVisible = Store.useState Atoms.User.clipboardVisible
+        let clipboardAttachmentMap = Store.useValue Atoms.User.clipboardAttachmentMap
 
         let addAttachment =
             Store.useCallback (
@@ -199,121 +237,98 @@ module AddAttachmentInput =
                 |]
             )
 
-        let clipboardVisible, setClipboardVisible = Store.useState Atoms.User.clipboardVisible
-        let clipboardAttachmentMap = Store.useValue Atoms.User.clipboardAttachmentMap
-
         if true then
-            React.fragment [
-                Chakra.stack
-                    (fun x -> x.spacing <- "0")
-                    [
-                        if not clipboardVisible then
-                            nothing
-                        else
-                            Chakra.box
-                                (fun _ -> ())
+            Chakra.stack
+                (fun x -> x.spacing <- "0")
+                [
+                    Chakra.flex
+                        (fun _ -> ())
+                        [
+                            Input.LeftIconInput
+                                {|
+                                    Icon = Icons.fi.FiPaperclip |> Icons.render
+                                    CustomProps =
+                                        fun x ->
+                                            x.textarea <- true
+                                            x.fixedValue <- Some addAttachmentText
+                                            x.autoFocusOnAllMounts <- true
+                                            x.variableHeight <- true
+
+                                            x.onEnterPress <-
+                                                Some (fun _ -> promise { if ctrlPressed then do! addAttachment () })
+                                    Props =
+                                        fun x ->
+                                            x.placeholder <- "Add Attachment"
+                                            x.autoFocus <- true
+                                            x.maxHeight <- "200px"
+                                            x.borderBottomRightRadius <- "0"
+                                            x.borderTopRightRadius <- "0"
+
+                                            x.onChange <-
+                                                (fun (e: KeyboardEvent) -> promise { setAddAttachmentText e.Value })
+                                |}
+
+                            Chakra.stack
+                                (fun x ->
+                                    x.spacing <- "0"
+                                    x.paddingTop <- "1px"
+                                    x.paddingBottom <- "1px")
                                 [
-                                    if clipboardAttachmentMap.Count = 0 then
-                                        Chakra.box
-                                            (fun x -> x.padding <- "10px")
-                                            [
-                                                str "Empty clipboard"
-                                            ]
-                                    else
-                                        AttachmentList
-                                            deleteAttachment
-                                            (clipboardAttachmentMap |> Map.keys |> Seq.toList)
-                                ]
-
-                        Chakra.flex
-                            (fun _ -> ())
-                            [
-                                Input.LeftIconInput
-                                    {|
-                                        Icon = Icons.fi.FiPaperclip |> Icons.render
-                                        CustomProps =
-                                            fun x ->
-                                                x.textarea <- true
-                                                x.fixedValue <- Some addAttachmentText
-                                                x.autoFocusOnAllMounts <- true
-                                                x.variableHeight <- true
-
-                                                x.onEnterPress <-
-                                                    Some (fun _ -> promise { if ctrlPressed then do! addAttachment () })
-                                        Props =
-                                            fun x ->
-                                                x.placeholder <- "Add Attachment"
-                                                x.autoFocus <- true
-                                                x.maxHeight <- "200px"
-                                                x.borderBottomRightRadius <- "0"
-                                                x.borderTopRightRadius <- "0"
-
-                                                x.onChange <-
-                                                    (fun (e: KeyboardEvent) -> promise { setAddAttachmentText e.Value })
-                                    |}
-
-                                Chakra.stack
-                                    (fun x -> x.spacing <- "0")
-                                    [
-                                        Tooltip.wrap
-                                            (str "Clipboard")
-                                            [
-                                                Chakra.box
-                                                    (fun _ -> ())
-                                                    [
-                                                        Button.Button
-                                                            {|
-                                                                Hint = None
-                                                                Icon =
-                                                                    Some (
-                                                                        Icons.io5.IoDocumentAttachOutline |> Icons.wrap,
-                                                                        Button.IconPosition.Left
-                                                                    )
-                                                                Props =
-                                                                    fun x ->
-                                                                        if isTesting then
-                                                                            x?``data-testid`` <- "Clipboard"
-                                                                        //                                                x.borderBottomLeftRadius <- "0"
-                                                                        //                                                x.borderTopLeftRadius <- "0"
-                                                                        x.onClick <-
-                                                                            fun _ ->
-                                                                                promise {
-                                                                                    setClipboardVisible (
-                                                                                        not clipboardVisible
-                                                                                    )
-                                                                                }
-                                                                Children =
-                                                                    [
-                                                                        Chakra.box
-                                                                            (fun _ -> ())
-                                                                            [
-                                                                                str (
-                                                                                    string clipboardAttachmentMap.Count
-                                                                                )
-                                                                            ]
-                                                                    ]
-                                                            |}
-                                                    ]
-                                            ]
-
-                                        Chakra.spacer (fun _ -> ()) []
-
-                                        Button.Button
-                                            {|
-                                                Hint = None
-                                                Icon = Some (Icons.fa.FaPlus |> Icons.wrap, Button.IconPosition.Left)
-                                                Props =
-                                                    fun x ->
-                                                        if isTesting then x?``data-testid`` <- "Add Attachment"
-                                                        //                                                x.borderBottomLeftRadius <- "0"
+                                    Button.Button
+                                        {|
+                                            Hint = None
+                                            Icon = Some (Icons.fa.FaPlus |> Icons.wrap, Button.IconPosition.Left)
+                                            Props =
+                                                fun x ->
+                                                    Chakra.setTestId x "Add Attachment"
+                                                    //                                                x.borderBottomLeftRadius <- "0"
 //                                                x.borderTopLeftRadius <- "0"
-                                                        x.onClick <- fun _ -> addAttachment ()
-                                                Children = []
-                                            |}
-                                    ]
-                            ]
-                    ]
-            ]
+                                                    x.onClick <- fun _ -> addAttachment ()
+                                            Children = []
+                                        |}
+
+                                    Chakra.spacer (fun _ -> ()) []
+
+                                    Tooltip.wrap
+                                        (str "Clipboard")
+                                        [
+                                            Chakra.box
+                                                (fun _ -> ())
+                                                [
+                                                    Button.Button
+                                                        {|
+                                                            Hint = None
+                                                            Icon =
+                                                                Some (
+                                                                    Icons.io5.IoDocumentAttachOutline |> Icons.wrap,
+                                                                    Button.IconPosition.Left
+                                                                )
+                                                            Props =
+                                                                fun x ->
+                                                                    Chakra.setTestId x "Clipboard"
+
+                                                                    x.onClick <-
+                                                                        fun _ ->
+                                                                            promise {
+                                                                                setClipboardVisible (
+                                                                                    not clipboardVisible
+                                                                                )
+                                                                            }
+                                                            Children =
+                                                                [
+                                                                    Chakra.box
+                                                                        (fun _ -> ())
+                                                                        [
+                                                                            str (string clipboardAttachmentMap.Count)
+                                                                        ]
+                                                                ]
+                                                        |}
+                                                ]
+                                        ]
+                                ]
+                        ]
+                    AttachmentsClipboard onAdd
+                ]
         else
             Vim.render
                 {|

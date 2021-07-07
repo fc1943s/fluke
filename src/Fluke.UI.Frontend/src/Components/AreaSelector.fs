@@ -1,6 +1,5 @@
 namespace rec Fluke.UI.Frontend.Components
 
-open Fable.Core.JsInterop
 open System
 open Fable.React
 open Feliz
@@ -51,12 +50,10 @@ module AreaSelector =
                 |]
             )
 
-        let isTesting = Store.useValue Store.Atoms.isTesting
-
         Chakra.box
             (fun x ->
-                x.display <- "inline"
-                if isTesting then x?``data-testid`` <- nameof AreaSelector)
+                Chakra.setTestId x (nameof AreaSelector)
+                x.display <- "inline")
             [
                 InputLabel.InputLabel
                     {|

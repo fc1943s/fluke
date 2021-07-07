@@ -5,7 +5,9 @@ open Fable.React
 open Fluke.UI.Frontend.Bindings
 
 module ConfirmPopover =
-    type ConfirmPopoverType = | MenuItem
+    type ConfirmPopoverType =
+        | MenuItem
+        | Element of ReactElement
 
     [<ReactComponent>]
     let ConfirmPopover confirmPopoverType icon label fn =
@@ -19,6 +21,7 @@ module ConfirmPopover =
                     match confirmPopoverType with
                     | MenuItem ->
                         MenuItem.MenuItem icon label (fun () -> promise { () }) (fun x -> x.closeOnSelect <- false)
+                    | Element element -> element
                 Body =
                     fun (disclosure, initialFocusRef) ->
                         [

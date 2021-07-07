@@ -1,6 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Fable.Core.JsInterop
 open Feliz
 open Fable.Core
 open Fluke.UI.Frontend.Bindings
@@ -14,7 +13,6 @@ module ModalFlag =
         (input: {| UIFlagType: UIFlagType
                    Content: UIFlag * (unit -> JS.Promise<unit>) -> Store.GetFn * Store.SetFn -> ReactElement |})
         =
-        let isTesting = Store.useValue Store.Atoms.isTesting
         let formIdFlag, setFormIdFlag = Store.useState (Atoms.User.uiFlag input.UIFlagType)
         let formVisibleFlag, setFormVisibleFlag = Store.useState (Atoms.User.uiVisibleFlag input.UIFlagType)
 
@@ -64,7 +62,7 @@ module ModalFlag =
                             [
                                 Chakra.box
                                     (fun x ->
-                                        if isTesting then x?``data-testid`` <- input.UIFlagType
+                                        Chakra.setTestId x input.UIFlagType
                                         x.minWidth <- "max-content")
                                     [
                                         content
