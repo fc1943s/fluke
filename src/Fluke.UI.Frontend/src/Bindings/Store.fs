@@ -503,7 +503,7 @@ module Store =
                         with ex -> Browser.Dom.console.error ("[exception2]", ex)
                     }
                     |> Promise.start)
-                750
+                0
 
         let rec wrapper =
             selector (
