@@ -237,7 +237,7 @@ module State =
                 Store.atomWithSync ($"{nameof User}/{nameof hideTemplates}", UserState.Default.HideTemplates, [])
 
             let rec enableCellPopover =
-                Store.atomWithSync ($"{nameof User}/{nameof hideTemplates}", UserState.Default.EnableCellPopover, [])
+                Store.atomWithSync ($"{nameof User}/{nameof enableCellPopover}", UserState.Default.EnableCellPopover, [])
 
             let rec hideSchedulingOverlay =
                 Store.atomWithSync (

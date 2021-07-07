@@ -229,6 +229,8 @@ module Full =
                     Cy2.clickSelectorChildFromText taskName ".chakra-button"
                     Cy2.clickText "Edit Task"
 
+                    Cy.wait 3000
+
                     Cy2.clickSelectorChildFromText
                         (DateTime.Now
                          |> FlukeDate.FromDateTime
