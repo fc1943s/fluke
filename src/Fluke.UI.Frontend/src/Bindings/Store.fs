@@ -403,7 +403,7 @@ module Store =
                                 Fn = setInternalFromGun gunAtomNode setAtom
                             |}
 
-                        //                        Gun.subscribe
+                    //                        Gun.subscribe
 //                            gunAtomNode
 //                            (fun data ->
 //                                setInternalFromGun gunAtomNode setAtom (DateTime.Now.Ticks, data)
@@ -804,11 +804,9 @@ module Store =
                         Profiling.addCount $"@@ {gunNodePath} subscribe"
                         JS.log (fun () -> $"@@ [gunEffect.on()] atomPath={atomPath} {key}")
 
-                        Gun.batchSubscribe
-                            {|
-                                GunAtomNode = gunAtomNode
-                                Fn = debouncedSet setAtom
-                            |}
+                        let setData = debouncedSet setAtom
+
+                        gunAtomNode.on (fun data _key -> setData data)
 
                         lastSubscription <- Some DateTime.Now.Ticks
                     | None ->
