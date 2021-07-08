@@ -200,7 +200,7 @@ module Hydrate =
                     do!
                         databaseStateMap
                         |> Map.values
-                        |> Seq.map (fun databaseState -> hydrateDatabaseState (Store.AtomScope.ReadOnly, databaseState))
+                        |> Seq.map (fun databaseState -> hydrateDatabaseState (Store.AtomScope.Current, databaseState))
                         |> Promise.Parallel
                         |> Promise.ignore
 
@@ -406,7 +406,7 @@ module Hydrate =
 
                                             do!
                                                 hydrateDatabaseState (
-                                                    Store.AtomScope.ReadOnly,
+                                                    Store.AtomScope.Current,
                                                     { databaseState with
                                                         Database = database
                                                         TaskStateMap =

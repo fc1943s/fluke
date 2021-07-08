@@ -22,7 +22,7 @@ module TaskForm =
         let tempDuration =
             Store.Hooks.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.duration taskId))))
-                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         Chakra.box
             (fun x -> x.display <- "inline")
@@ -103,7 +103,7 @@ module TaskForm =
         let tempPriority =
             Store.Hooks.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.priority taskId))))
-                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         let priorityNumber =
             React.useMemo (
@@ -262,17 +262,17 @@ module TaskForm =
         let tempInformation =
             Store.Hooks.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.information taskId))))
-                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         let onSave =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
-                        let taskName = Store.getReadWrite getter (Atoms.Task.name taskId)
-                        let taskInformation = Store.getReadWrite getter (Atoms.Task.information taskId)
-                        let taskScheduling = Store.getReadWrite getter (Atoms.Task.scheduling taskId)
-                        let taskPriority = Store.getReadWrite getter (Atoms.Task.priority taskId)
-                        let taskDuration = Store.getReadWrite getter (Atoms.Task.duration taskId)
+                        let taskName = Store.getTemp getter (Atoms.Task.name taskId)
+                        let taskInformation = Store.getTemp getter (Atoms.Task.information taskId)
+                        let taskScheduling = Store.getTemp getter (Atoms.Task.scheduling taskId)
+                        let taskPriority = Store.getTemp getter (Atoms.Task.priority taskId)
+                        let taskDuration = Store.getTemp getter (Atoms.Task.duration taskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -318,11 +318,11 @@ module TaskForm =
                                             }
                                     }
 
-                            Store.readWriteReset setter (Atoms.Task.name taskId)
-                            Store.readWriteReset setter (Atoms.Task.information taskId)
-                            Store.readWriteReset setter (Atoms.Task.scheduling taskId)
-                            Store.readWriteReset setter (Atoms.Task.priority taskId)
-                            Store.readWriteReset setter (Atoms.Task.duration taskId)
+                            Store.resetTemp setter (Atoms.Task.name taskId)
+                            Store.resetTemp setter (Atoms.Task.information taskId)
+                            Store.resetTemp setter (Atoms.Task.scheduling taskId)
+                            Store.resetTemp setter (Atoms.Task.priority taskId)
+                            Store.resetTemp setter (Atoms.Task.duration taskId)
                             Store.set setter (Atoms.User.uiFlag UIFlagType.Task) UIFlag.None
 
                             do! onSave task
@@ -388,7 +388,7 @@ module TaskForm =
                                                         )
                                                     )
 
-                                                x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
+                                                x.inputScope <- Some (Store.InputScope.Temp Gun.defaultSerializer)
 
                                                 x.onFormat <- Some (fun (TaskName name) -> name)
                                                 x.onEnterPress <- Some onSave
@@ -520,9 +520,9 @@ module TaskForm =
                                 CellStateMap = Map.empty
                             }
 
-                        do! hydrateTaskState (Store.AtomScope.ReadOnly, taskDatabaseId, taskState)
+                        do! hydrateTaskState (Store.AtomScope.Current, taskDatabaseId, taskState)
                     else
-                        do! hydrateTask (Store.AtomScope.ReadOnly, taskDatabaseId, task)
+                        do! hydrateTask (Store.AtomScope.Current, taskDatabaseId, task)
 
                     setRightDock None
                 })

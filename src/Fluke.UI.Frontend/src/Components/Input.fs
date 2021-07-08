@@ -181,7 +181,7 @@ module Input =
                             if customProps.atom.IsSome then
                                 match validValue with
                                 | Some value -> tempAtom.SetValue value
-                                | None -> tempAtom.SetValue tempAtom.ReadOnlyValue
+                                | None -> tempAtom.SetValue tempAtom.CurrentValue
                     }),
                 [|
                     box props

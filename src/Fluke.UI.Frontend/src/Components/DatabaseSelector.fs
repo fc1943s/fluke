@@ -163,7 +163,7 @@ module DatabaseSelector =
                                                                 promise {
                                                                     do!
                                                                         hydrateDatabase (
-                                                                            Store.AtomScope.ReadOnly,
+                                                                            Store.AtomScope.Current,
                                                                             database
                                                                         )
 

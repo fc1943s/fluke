@@ -24,7 +24,7 @@ module PasteListener =
                             Hydrate.hydrateAttachment
                                 getter
                                 setter
-                                (Store.AtomScope.ReadOnly, (FlukeDateTime.FromDateTime DateTime.Now, attachment))
+                                (Store.AtomScope.Current, (FlukeDateTime.FromDateTime DateTime.Now, attachment))
 
                         Store.change setter Atoms.User.clipboardAttachmentMap (Map.add attachmentId false)
                     }),
@@ -74,7 +74,7 @@ module PasteListener =
                                         let hexString = JS.byteArrayToHexString (bytes.Values () |> Seq.toArray)
 
                                         let fileId =
-                                            Hydrate.hydrateFile getter setter (Store.AtomScope.ReadOnly, hexString)
+                                            Hydrate.hydrateFile getter setter (Store.AtomScope.Current, hexString)
 
                                         let attachment = Attachment.Image fileId
                                         do! onFilePasted attachment

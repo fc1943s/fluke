@@ -587,7 +587,7 @@ module SchedulingSelector =
         let tempScheduling =
             Store.Hooks.useTempAtom
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling taskId))))
-                (Some (Store.InputScope.ReadWrite Gun.defaultSerializer))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
         Chakra.box
             (fun x -> x.display <- "inline")

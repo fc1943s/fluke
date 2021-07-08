@@ -145,7 +145,7 @@ module CellSelectionSetup =
             set Atoms.User.daysAfter 2
             set Atoms.position (Some dslTemplate.Position)
 
-            do! Hydrate.hydrateDatabase getFn setFn (Store.AtomScope.ReadOnly, databaseState.Database)
+            do! Hydrate.hydrateDatabase getFn setFn (Store.AtomScope.Current, databaseState.Database)
 
             do!
                 databaseState.TaskStateMap
@@ -156,7 +156,7 @@ module CellSelectionSetup =
                                 Hydrate.hydrateTaskState
                                     getFn
                                     setFn
-                                    (Store.AtomScope.ReadOnly, databaseState.Database.Id, taskState)
+                                    (Store.AtomScope.Current, databaseState.Database.Id, taskState)
                         })
                 |> Promise.Parallel
                 |> Promise.ignore

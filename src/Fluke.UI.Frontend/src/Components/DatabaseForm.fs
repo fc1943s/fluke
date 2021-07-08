@@ -26,7 +26,7 @@ module DatabaseForm =
             Store.useCallback (
                 (fun getter setter _ ->
                     promise {
-                        let databaseName = Store.getReadWrite getter (Atoms.Database.name databaseId)
+                        let databaseName = Store.getTemp getter (Atoms.Database.name databaseId)
                         let username = Store.value getter Store.Atoms.username
 
                         match databaseName with
@@ -73,7 +73,7 @@ module DatabaseForm =
                                     //                                setter.set (Atoms.Events.events eventId, event)
                                     //                                printfn $"event {event}"
 
-                                    Store.readWriteReset setter (Atoms.Database.name databaseId)
+                                    Store.resetTemp setter (Atoms.Database.name databaseId)
 
                                     Store.set setter (Atoms.User.uiFlag UIFlagType.Database) UIFlag.None
 
@@ -127,7 +127,7 @@ module DatabaseForm =
                                                         )
                                                     )
 
-                                                x.inputScope <- Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
+                                                x.inputScope <- Some (Store.InputScope.Temp Gun.defaultSerializer)
                                                 x.onFormat <- Some (fun (DatabaseName name) -> name)
                                                 x.onValidate <- Some (fst >> DatabaseName >> Some)
                                                 x.onEnterPress <- Some onSave
@@ -221,6 +221,6 @@ module DatabaseForm =
             databaseId
             (fun database ->
                 promise {
-                    do! hydrateDatabase (Store.AtomScope.ReadOnly, database)
+                    do! hydrateDatabase (Store.AtomScope.Current, database)
                     setRightDock None
                 })

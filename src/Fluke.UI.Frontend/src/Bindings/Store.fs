@@ -259,6 +259,7 @@ module Store =
                 atomPath={atomPath}
                 keyIdentifier={keyIdentifier}
                 lastValue={lastValue}
+                lastGunValue={lastGunValue}
                 lastGunAtomNode={lastGunAtomNode}
                 lastAtomPath={lastAtomPath}
                 lastUserAtomId={lastUserAtomId} """
@@ -268,6 +269,44 @@ module Store =
             (fun () ->
                 $"atomFamily constructor
                 {baseInfo ()}")
+
+        let mutable lastSubscription = None
+
+        let unsubscribe () =
+            match lastSubscription with
+            | Some ticks when DateTime.ticksDiff ticks < 1000. ->
+                JS.log
+                    (fun () ->
+                        $"[wrapper.off()]
+                                                    {baseInfo ()}
+                                                    skipping unsubscribe. jotai resubscribe glitch.")
+            | Some _ ->
+                match lastGunAtomNode with
+                | Some (key, gunAtomNode) ->
+
+                    Profiling.addCount $"{gunNodePath} unsubscribe"
+
+                    JS.log
+                        (fun () ->
+                            $"[atomFamily.unsubscribe()]
+                                {key}
+                                {baseInfo ()} (######## actually skipped) ")
+
+                    if false then
+                        gunAtomNode.off () |> ignore
+                        lastSubscription <- None
+                | None ->
+                    JS.log
+                        (fun () ->
+                            $"[wrapper.off()]
+                                {baseInfo ()}
+                                skipping unsubscribe, no gun atom node.")
+            | None ->
+                JS.log
+                    (fun () ->
+                        $"[wrapper.off()]
+                                {baseInfo ()}
+                                skipping unsubscribe. no last subscription found.")
 
         let setInternalFromGun gunAtomNode setAtom =
             JS.debounce
@@ -336,26 +375,31 @@ module Store =
                                 // setAtom internalAtom
 
                                 setAtom newValue
-                        with ex -> Browser.Dom.console.error ("[exception1]", ex)
+                        with ex ->
+                            Browser.Dom.console.error ("[exception1]", ex)
+                            lastSubscription <- None
                     })
                 500
-
-        let mutable lastSubscription = None
 
         let subscribe =
             JS.debounce
                 (fun setAtom ->
                     lastWrapperSet <- Some setAtom
 
-                    match lastGunAtomNode with
-                    | Some (key, gunAtomNode) ->
-                        lastSubscription <- Some DateTime.Now.Ticks
+                    match lastGunAtomNode, lastSubscription with
+                    | _, Some _ ->
+                        JS.log
+                            (fun () ->
+                                $"[wrapper.on() subscribe]
+                                {baseInfo ()}
+                             skipping subscribe, lastSubscription is set.")
+                    | Some (key, gunAtomNode), None ->
 
                         Profiling.addCount $"{gunNodePath} subscribe"
 
                         JS.log
                             (fun () ->
-                                $"[gunEffect.on()] batch subscribing.
+                                $"[wrapper.on() subscribe] batch subscribing.
                         atomPath={atomPath} {key}")
 
                         //                    gunAtomNode.off () |> ignore
@@ -366,55 +410,21 @@ module Store =
                                 Fn = setInternalFromGun gunAtomNode setAtom
                             |}
 
-                    //                        Gun.subscribe
+                        //                        Gun.subscribe
 //                            gunAtomNode
 //                            (fun data ->
 //                                setInternalFromGun gunAtomNode setAtom (DateTime.Now.Ticks, data)
 //                                |> Promise.start)
 
-                    | None ->
+                        lastSubscription <- Some DateTime.Now.Ticks
+
+                    | None, _ ->
                         JS.log
                             (fun () ->
-                                $"[gunEffect.on()]
+                                $"[wrapper.on() subscribe]
                                 {baseInfo ()}
                              skipping subscribe, no gun atom node."))
                 100
-
-        let unsubscribe () =
-            match lastSubscription with
-            | Some ticks when DateTime.ticksDiff ticks < 1000. ->
-                JS.log
-                    (fun () ->
-                        $"[gunEffect.off()]
-                                                    {baseInfo ()}
-                                                    skipping unsubscribe. jotai resubscribe glitch.")
-            | Some _ ->
-                match lastGunAtomNode with
-                | Some (key, gunAtomNode) ->
-
-                    Profiling.addCount $"{gunNodePath} unsubscribe"
-
-                    JS.log
-                        (fun () ->
-                            $"[atomFamily.unsubscribe()]
-                                {key}
-                                {baseInfo ()} ")
-
-                    gunAtomNode.off () |> ignore
-                    lastSubscription <- None
-                | None ->
-                    JS.log
-                        (fun () ->
-                            $"[gunEffect.off()]
-                                {baseInfo ()}
-                                skipping unsubscribe, no gun atom node.")
-            | None ->
-                JS.log
-                    (fun () ->
-                        $"[gunEffect.off()]
-                                {baseInfo ()}
-                                skipping unsubscribe. no last subscription found.")
-
 
         let debounceGunPut =
             JS.debounce
@@ -543,7 +553,7 @@ module Store =
                         | Some lastWrapperSet, None ->
                             JS.log
                                 (fun () ->
-                                    $"subscribing
+                                    $"atomFamily.wrapper.get() subscribing
                                 wrapper={wrapper}
                                 userAtom={userAtom}
                                 {baseInfo ()} ")
@@ -552,7 +562,7 @@ module Store =
                         | _ ->
                             JS.log
                                 (fun () ->
-                                    $"skipping subscribe
+                                    $"atomFamily.wrapper.get() skipping subscribe
                                 wrapper={wrapper}
                                 userAtom={userAtom}
                                 {baseInfo ()} ")
@@ -564,6 +574,8 @@ module Store =
                     let username = assignLastGunAtomNode getter wrapper
                     let userAtom = internalAtom username
 
+                    Profiling.addCount $"{gunNodePath} set"
+
                     set
                         setter
                         userAtom
@@ -574,43 +586,51 @@ module Store =
                                     | "function" -> (unbox newValueFn) oldValue |> unbox
                                     | _ -> newValueFn
 
-                                if true
-                                   || oldValue |> DeepEqual.compare newValue |> not
-                                   || (lastValue.IsNone
-                                       && newValue |> DeepEqual.compare defaultValue) then
-
-                                    Profiling.addCount $"{gunNodePath} set"
-
+                                match lastGunValue with
+                                | Some lastGunValue when lastGunValue |> DeepEqual.compare newValue ->
                                     JS.log
                                         (fun () ->
                                             if (string newValue).StartsWith "Ping " then
                                                 null
                                             else
-                                                $"atomFamily.wrapper.set()
+                                                $"atomFamily.wrapper.set() SKIPPED
                                                     wrapper={wrapper}
                                                     userAtom={userAtom}
                                                     jsTypeof-newValue={jsTypeof newValue}
                                                     oldValue={oldValue}
                                                     newValue={newValue}
                                                     {baseInfo ()} ")
+                                | _ ->
+                                    if true
+                                       || oldValue |> DeepEqual.compare newValue |> not
+                                       || (lastValue.IsNone
+                                           && newValue |> DeepEqual.compare defaultValue) then
 
-                                    debounceGunPut newValue
+                                        JS.log
+                                            (fun () ->
+                                                if (string newValue).StartsWith "Ping " then
+                                                    null
+                                                else
+                                                    $"atomFamily.wrapper.set()
+                                                    wrapper={wrapper}
+                                                    userAtom={userAtom}
+                                                    jsTypeof-newValue={jsTypeof newValue}
+                                                    oldValue={oldValue}
+                                                    newValue={newValue}
+                                                    {baseInfo ()}
+                                                    $$ (should abort set? oldValue==newValue==lastValue/defaultValue)
+                                                    ")
+
+                                        debounceGunPut newValue
 
                                 lastValue <- Some (DateTime.Now.Ticks, newValue)
 
-                                JS.log
-                                    (fun () ->
-                                        if (string newValue).StartsWith "Ping " then
-                                            null
-                                        else
-                                            $"atomFamily.wrapper.set()
-                                                    ##### lastValue setted. returning #####
-                                                    wrapper={wrapper}
-                                                    userAtom={userAtom}
-                                                    jsTypeof-newValue={jsTypeof newValue}
-                                                    oldValue={oldValue}
-                                                    newValue={newValue}
-                                                    {baseInfo ()} ")
+                                //                                JS.log
+//                                    (fun () ->
+//                                        if (string newValue).StartsWith "Ping " then
+//                                            null
+//                                        else
+//                                            "atomFamily.wrapper.set() ##### lastValue setted. returning ##### ")
 
                                 if JS.jestWorkerId then
                                     match splitAtomPath gunNodePath with
@@ -626,9 +646,13 @@ module Store =
                                 newValue)))
             )
 
-        wrapper?onMount <- fun setAtom ->
-                               subscribe setAtom
-                               fun () -> unsubscribe ()
+        if keyIdentifier
+           <> [
+               string Guid.Empty
+           ] then
+            wrapper?onMount <- fun setAtom ->
+                                   subscribe setAtom
+                                   fun () -> unsubscribe ()
 
         wrapper
 
@@ -785,7 +809,7 @@ module Store =
 
                     JS.log
                         (fun () ->
-                            $"@@ [gunEffect.on()]
+                            $"@@ [atomKeys debouncedSet gun.on() data]
                                                    atomPath={atomPath}
                                                    len={result.Length}
                                                    {key} ")
@@ -798,20 +822,26 @@ module Store =
                 (fun setAtom ->
                     JS.log (fun () -> "@@ #3")
 
-                    match lastGunAtomNode with
-                    | Some (key, gunAtomNode) ->
+                    match lastGunAtomNode, lastSubscription with
+                    | _, Some _ ->
+                        JS.log
+                            (fun () ->
+                                $"@@ [atomKeys gun.on() subscribing]
+                                                   {baseInfo ()}
+                                                skipping subscribe, lastSubscription is set.")
+                    | Some (key, gunAtomNode), None ->
                         Profiling.addCount $"@@ {gunNodePath} subscribe"
-                        JS.log (fun () -> $"@@ [gunEffect.on()] atomPath={atomPath} {key}")
+                        JS.log (fun () -> $"@@ [atomKeys gun.on() subscribing] atomPath={atomPath} {key}")
 
                         let setData = debouncedSet setAtom
 
                         gunAtomNode.on (fun data _key -> setData data)
 
                         lastSubscription <- Some DateTime.Now.Ticks
-                    | None ->
+                    | None, _ ->
                         JS.log
                             (fun () ->
-                                $"@@ [gunEffect.on()]
+                                $"@@ [atomKeys gun.on() subscribing]
                                                    {baseInfo ()}
                                                 skipping subscribe, no gun atom node."))
                 100
@@ -821,33 +851,35 @@ module Store =
             | Some ticks when DateTime.ticksDiff ticks < 1000. ->
                 JS.log
                     (fun () ->
-                        $"@@ [gunEffect.off()]
+                        $"@@ [atomKeys gun.off()]
                                                     {baseInfo ()}
                                                     skipping unsubscribe. jotai resubscribe glitch.")
             | Some _ ->
                 match lastGunAtomNode with
-                | Some (key, gunAtomNode) ->
+                | Some (key, _gunAtomNode) ->
 
                     Profiling.addCount $"@@ {gunNodePath} unsubscribe"
 
                     JS.log
                         (fun () ->
                             $"@@  [atomFamily.unsubscribe()]
-                                                               {key}
-                                                               {baseInfo ()} ")
+                               {key}
+                               {baseInfo ()}
+                               ############ (actually skipped)
+                               ")
 
-                    gunAtomNode.off () |> ignore
-                    lastSubscription <- None
+                //                    gunAtomNode.off () |> ignore
+//                    lastSubscription <- None
                 | None ->
                     JS.log
                         (fun () ->
-                            $"@@  [gunEffect.off()]
+                            $"@@  [atomKeys gun.off()]
                                                                {baseInfo ()}
                                                                skipping unsubscribe, no gun atom node.")
             | None ->
                 JS.log
                     (fun () ->
-                        $"[gunEffect.off()]
+                        $"[atomKeys gun.off()]
                                 {baseInfo ()}
                                 skipping unsubscribe. no last subscription found.")
 
@@ -916,10 +948,10 @@ module Store =
         wrapper
 
 
-    let readWriteValue =
-        let rec readWriteValue =
+    let tempValue =
+        let rec tempValue =
             atomFamilyWithSync (
-                $"{nameof readWriteValue}",
+                $"{nameof tempValue}",
                 (fun (_guid: Guid) -> null: string),
                 (fun (guid: Guid) ->
                     [
@@ -931,19 +963,19 @@ module Store =
             (fun (AtomPath atomPath) ->
 
                 let guidHash = Crypto.getTextGuidHash atomPath
-                let pathHash = guidHash
+                let atom = tempValue guidHash
 
-                JS.log (fun () -> $"readWriteValueWrapper constructor. atomPath={atomPath} guidHash={guidHash}")
+                JS.log (fun () -> $"tempValueWrapper constructor. atomPath={atomPath} guidHash={guidHash}")
 
                 let wrapper =
                     jotai.atom (
                         (fun getter ->
-                            let value = value getter (readWriteValue pathHash)
-                            Profiling.addCount $"{atomPath} readWriteValue set"
+                            let value = value getter atom
+                            Profiling.addCount $"{atomPath} tempValue set"
 
                             JS.log
                                 (fun () ->
-                                    $"readWriteValueWrapper.get(). atomPath={atomPath} guidHash={guidHash} value={value}")
+                                    $"tempValueWrapper.get(). atomPath={atomPath} guidHash={guidHash} value={value}")
 
                             match value with
                             | null -> null
@@ -953,18 +985,18 @@ module Store =
                                 | _ -> null),
                         Some
                             (fun _ setter newValue ->
-                                Profiling.addCount $"{atomPath} readWriteValue set"
+                                Profiling.addCount $"{atomPath} tempValue set"
 
                                 JS.log
                                     (fun () ->
-                                        $"readWriteValueWrapper.set(). atomPath={atomPath}
+                                        $"tempValueWrapper.set(). atomPath={atomPath}
                                         guidHash={guidHash} newValue={newValue}")
 
                                 let newValue = Json.encode (atomPath, newValue |> Option.ofObj)
 
-                                JS.log (fun () -> $"readWriteValueWrapper.set(). newValue2={newValue}")
+                                JS.log (fun () -> $"tempValueWrapper.set(). newValue2={newValue}")
 
-                                set setter (readWriteValue pathHash) (newValue |> box |> unbox))
+                                set setter atom (newValue |> box |> unbox))
                     )
 
                 wrapper)
@@ -1086,25 +1118,25 @@ module Store =
 
     [<RequireQualifiedAccess>]
     type InputScope<'TValue> =
-        | ReadOnly
-        | ReadWrite of Gun.Serializer<'TValue>
+        | Current
+        | Temp of Gun.Serializer<'TValue>
 
     and InputScope<'TValue> with
         static member inline AtomScope<'TValue> (inputScope: InputScope<'TValue> option) =
             match inputScope with
-            | Some (InputScope.ReadWrite _) -> AtomScope.ReadWrite
-            | _ -> AtomScope.ReadOnly
+            | Some (InputScope.Temp _) -> AtomScope.Temp
+            | _ -> AtomScope.Current
 
     and [<RequireQualifiedAccess>] AtomScope =
-        | ReadOnly
-        | ReadWrite
+        | Current
+        | Temp
 
     type InputAtom<'T> = InputAtom of atomPath: AtomReference<'T>
 
     type AtomField<'TValue67> =
         {
-            ReadOnly: Jotai.Atom<'TValue67> option
-            ReadWrite: Jotai.Atom<string> option
+            Current: Jotai.Atom<'TValue67> option
+            Temp: Jotai.Atom<string> option
         }
 
     let emptyAtom = jotai.atom<obj> null
@@ -1113,25 +1145,25 @@ module Store =
         match atom with
         | Some (InputAtom atomPath) ->
             {
-                ReadOnly =
+                Current =
                     match atomPath with
                     | AtomReference.Atom atom -> Some atom
                     | _ -> Some (unbox emptyAtom)
-                ReadWrite =
+                Temp =
                     //                    JS.log
 //                        (fun () -> $"getAtomField atomPath={atomPath} queryAtomPath atomPath={queryAtomPath atomPath}")
 
                     match queryAtomPath atomPath, inputScope with
-                    | Some atomPath, AtomScope.ReadWrite -> Some (readWriteValue atomPath)
+                    | Some atomPath, AtomScope.Temp -> Some (tempValue atomPath)
                     | _ -> None
             }
-        | _ -> { ReadOnly = None; ReadWrite = None }
+        | _ -> { Current = None; Temp = None }
 
 
-    let inline readWriteSet<'TValue9, 'TKey> (setter: Jotai.SetFn, atom: Jotai.Atom<'TValue9>, value: 'TValue9) =
-        let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.ReadWrite
+    let inline setTemp<'TValue9, 'TKey> (setter: Jotai.SetFn, atom: Jotai.Atom<'TValue9>, value: 'TValue9) =
+        let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.Temp
 
-        match atomField.ReadWrite with
+        match atomField.Temp with
         | Some atom -> set setter atom (value |> Json.encode<'TValue9>)
         | _ -> ()
 
@@ -1141,24 +1173,24 @@ module Store =
         (atom: 'TKey -> Jotai.Atom<'TValue10>, key: 'TKey, value: 'TValue10)
         =
         match atomScope with
-        | AtomScope.ReadOnly -> set setter (atom key) value
-        | AtomScope.ReadWrite -> readWriteSet<'TValue10, 'TKey> (setter, atom key, value)
+        | AtomScope.Current -> set setter (atom key) value
+        | AtomScope.Temp -> setTemp<'TValue10, 'TKey> (setter, atom key, value)
 
-    let inline readWriteReset<'TValue8, 'TKey> (setter: Jotai.SetFn) (atom: Jotai.Atom<'TValue8>) =
-        let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.ReadWrite
+    let inline resetTemp<'TValue8, 'TKey> (setter: Jotai.SetFn) (atom: Jotai.Atom<'TValue8>) =
+        let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.Temp
 
-        match atomField.ReadWrite with
+        match atomField.Temp with
         | Some atom -> set setter atom null
         | _ -> ()
 
     let rec ___emptyTempAtom = nameof ___emptyTempAtom
 
-    let inline getReadWrite<'TValue11, 'TKey> getter (atom: Jotai.Atom<'TValue11>) =
-        let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.ReadWrite
+    let inline getTemp<'TValue11, 'TKey> getter (atom: Jotai.Atom<'TValue11>) =
+        let atomField = getAtomField (Some (InputAtom (AtomReference.Atom atom))) AtomScope.Temp
 
-        match atomField.ReadWrite with
-        | Some readWriteAtom ->
-            let result = value getter readWriteAtom
+        match atomField.Temp with
+        | Some tempAtom ->
+            let result = value getter tempAtom
 
             match result with
             | result when result = ___emptyTempAtom -> unbox null
@@ -1214,75 +1246,74 @@ module Store =
                     |]
                 )
 
-            let readOnlyValue, setReadOnlyValue = useStateOption atomField.ReadOnly
-            let readWriteValue, setReadWriteValue = useStateOption atomField.ReadWrite
+            let currentValue, setCurrentValue = useStateOption atomField.Current
+            let tempValue, setTempValue = useStateOption atomField.Temp
 
             React.useMemo (
                 (fun () ->
                     let defaultJsonEncode, _defaultJsonDecode = unbox Gun.defaultSerializer
 
-                    let newReadWriteValue =
-                        match inputScope, readWriteValue |> Option.defaultValue null with
-                        | _, readWriteValue when readWriteValue = ___emptyTempAtom -> unbox null
-                        | _, null -> readOnlyValue |> Option.defaultValue (unbox null)
-                        | Some (InputScope.ReadWrite (_, jsonDecode)), readWriteValue ->
+                    let newTempValue =
+                        match inputScope, tempValue |> Option.defaultValue null with
+                        | _, tempValue when tempValue = ___emptyTempAtom -> unbox null
+                        | _, null -> currentValue |> Option.defaultValue (unbox null)
+                        | Some (InputScope.Temp (_, jsonDecode)), tempValue ->
                             try
                                 JS.log
                                     (fun () ->
                                         $"useTempAtom
-                                readOnlyValue={readOnlyValue}
+                                currentValue={currentValue}
                                 atom={atom}
-                                readWriteValue={readWriteValue}")
+                                tempValue={tempValue}")
 
-                                jsonDecode readWriteValue
+                                jsonDecode tempValue
                             with ex ->
-                                printfn $"Error decoding readWriteValue={readWriteValue} ex={ex}"
+                                printfn $"Error decoding tempValue={tempValue} ex={ex}"
 
-                                readOnlyValue
-                                |> Option.defaultValue (unbox readWriteValue)
+                                currentValue
+                                |> Option.defaultValue (unbox tempValue)
                         | _ ->
-                            readOnlyValue
-                            |> Option.defaultValue (unbox readWriteValue)
-                    //                    | _ -> defaultJsonDecode readWriteValue
+                            currentValue
+                            |> Option.defaultValue (unbox tempValue)
 
-                    let setReadWriteValue =
+                    let setTempValue =
                         if atom.IsSome then
                             (fun newValue ->
-                                setReadWriteValue (
+                                setTempValue (
                                     match box newValue with
                                     | null -> ___emptyTempAtom
                                     | _ ->
                                         match inputScope with
-                                        | Some (InputScope.ReadWrite (jsonEncode, _)) -> jsonEncode newValue
+                                        | Some (InputScope.Temp (jsonEncode, _)) -> jsonEncode newValue
                                         | _ -> defaultJsonEncode newValue
                                 ))
                         else
                             (fun _ -> ())
 
-                    let setReadOnlyValue = if atom.IsSome then setReadOnlyValue else (fun _ -> ())
+                    let setCurrentValue = if atom.IsSome then setCurrentValue else (fun _ -> ())
 
                     {|
-                        ReadWriteValue = newReadWriteValue
-                        SetReadWriteValue = setReadWriteValue
-                        ReadOnlyValue = readOnlyValue |> Option.defaultValue (unbox null)
-                        SetReadOnlyValue = setReadOnlyValue
                         AtomField = atomField
                         Value =
                             match inputScope with
-                            | Some (InputScope.ReadWrite _) -> newReadWriteValue
-                            | _ -> readOnlyValue |> Option.defaultValue (unbox null)
+                            | Some (InputScope.Temp _) -> newTempValue
+                            | _ -> currentValue |> Option.defaultValue (unbox null)
                         SetValue =
                             match inputScope with
-                            | Some (InputScope.ReadWrite _) -> setReadWriteValue
-                            | _ -> setReadOnlyValue
+                            | Some (InputScope.Temp _) -> setTempValue
+                            | _ -> setCurrentValue
+                        CurrentValue = currentValue |> Option.defaultValue (unbox null)
+                        SetCurrentValue = setCurrentValue
+                        TempValue = newTempValue
+                        SetTempValue = setTempValue
                     |}),
                 [|
                     box inputScope
                     box atom
                     box atomField
-                    box readOnlyValue
-                    box readWriteValue
-                    box setReadOnlyValue
-                    box setReadWriteValue
+                    box currentValue
+                    box tempValue
+                    box setCurrentValue
+                    box setTempValue
                 |]
             )

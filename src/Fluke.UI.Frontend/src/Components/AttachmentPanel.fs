@@ -202,7 +202,7 @@ module AttachmentPanel =
             Store.useCallback (
                 (fun _ setter _ ->
                     promise {
-                        Store.readWriteReset setter (Atoms.Attachment.attachment attachmentId)
+                        Store.resetTemp setter (Atoms.Attachment.attachment attachmentId)
                         setEditing false
                     }),
                 [|
@@ -215,7 +215,7 @@ module AttachmentPanel =
             Store.useCallback (
                 (fun getter setter () ->
                     promise {
-                        let attachment = Store.getReadWrite getter (Atoms.Attachment.attachment attachmentId)
+                        let attachment = Store.getTemp getter (Atoms.Attachment.attachment attachmentId)
 
                         match attachment with
                         | Some (Attachment.Comment (Comment.Comment (String.ValidString _))) ->
@@ -265,7 +265,7 @@ module AttachmentPanel =
                                                             )
 
                                                         x.inputScope <-
-                                                            Some (Store.InputScope.ReadWrite Gun.defaultSerializer)
+                                                            Some (Store.InputScope.Temp Gun.defaultSerializer)
 
                                                         x.onFormat <-
                                                             Some
