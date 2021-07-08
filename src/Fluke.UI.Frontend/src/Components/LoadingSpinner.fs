@@ -9,14 +9,14 @@ module LoadingSpinner =
 
     [<ReactComponent>]
     let LoadingSpinner () =
-        Chakra.center
+        UI.center
             (fun x -> x.flex <- "1")
             [
-                Chakra.stack
+                UI.stack
                     (fun x -> x.alignItems <- "center")
                     [
                         Spinner.Spinner (fun _ -> ())
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "Loading..."
@@ -26,7 +26,7 @@ module LoadingSpinner =
 
     [<ReactComponent>]
     let InlineLoadingSpinner () =
-        Chakra.flex
+        UI.flex
             (fun x -> x.alignItems <- "center")
             [
                 Spinner.Spinner

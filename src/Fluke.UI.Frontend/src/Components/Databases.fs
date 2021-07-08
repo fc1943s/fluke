@@ -18,7 +18,7 @@ module Databases =
     let icons =
         {|
             check =
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBox
                         x.tabIndex <- 0
@@ -29,7 +29,7 @@ module Databases =
                         x.color <- "gray.87")
                     []
             halfCheck =
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdIndeterminateCheckBox
                         x.tabIndex <- 0
@@ -40,7 +40,7 @@ module Databases =
                         x.color <- "gray.87")
                     []
             uncheck =
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.md.MdCheckBoxOutlineBlank
                         x.tabIndex <- 0
@@ -51,7 +51,7 @@ module Databases =
                         x.color <- "gray.87")
                     []
             expandOpen =
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronDown
                         x.height <- "16px"
@@ -60,7 +60,7 @@ module Databases =
                         x.color <- "gray.87")
                     []
             expandClose =
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaChevronRight
                         x.height <- "16px"
@@ -69,14 +69,14 @@ module Databases =
                         x.color <- "gray.87")
                     []
             parentClose =
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
                         x.marginLeft <- "-11px"
                         x.color <- "gray.87")
                     []
             parentOpen =
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.fi.FiDatabase
                         x.marginLeft <- "-11px"
@@ -118,7 +118,7 @@ module Databases =
             icon =
                 if input.IsEmptyNode then
                     box (
-                        Chakra.box
+                        UI.box
                             (fun x ->
                                 x.marginLeft <- "-10px"
                                 x.height <- "10px")
@@ -133,13 +133,13 @@ module Databases =
                      else
                          nothing)
                     [
-                        Chakra.box
+                        UI.box
                             (fun x ->
                                 x.display <- "inline"
                                 x.marginLeft <- "-2px"
                                 x.lineHeight <- "19px")
                             [
-                                Chakra.box
+                                UI.box
                                     (fun x ->
                                         x.fontSize <- "main"
                                         x.paddingTop <- "1px"
@@ -154,7 +154,7 @@ module Databases =
 
                                 match input.DatabaseId with
                                 | Some databaseId ->
-                                    Chakra.box
+                                    UI.box
                                         (fun x ->
                                             x.display <- "inline"
                                             x.fontSize <- "main"
@@ -166,7 +166,7 @@ module Databases =
                                         [
                                             match labelText with
                                             | Some label ->
-                                                Chakra.box
+                                                UI.box
                                                     (fun x -> x.display <- "inline")
                                                     [
                                                         str (label |> Seq.item 2)
@@ -179,7 +179,7 @@ module Databases =
 
                                 match input.IsEmptyNode, input.DatabaseId with
                                 | _, Some _
-                                | true, _ -> Chakra.box (fun x -> x.height <- "14px") []
+                                | true, _ -> UI.box (fun x -> x.height <- "14px") []
                                 | _ -> nothing
                             ]
                     ]
@@ -505,10 +505,10 @@ module Databases =
                 |]
             )
 
-        Chakra.stack
+        UI.stack
             props
             [
-                Chakra.flex
+                UI.flex
                     (fun x ->
                         x.marginLeft <- "6px"
                         x.flex <- "1")

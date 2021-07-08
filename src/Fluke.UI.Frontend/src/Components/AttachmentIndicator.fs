@@ -12,7 +12,7 @@ module AttachmentIndicator =
         let cellSize = Store.useValue Atoms.User.cellSize
         let color = Store.useValue Atoms.User.color
 
-        Chakra.box
+        UI.box
             (fun x ->
                 x.height <- $"{cellSize}px"
                 x.lineHeight <- $"{cellSize}px"

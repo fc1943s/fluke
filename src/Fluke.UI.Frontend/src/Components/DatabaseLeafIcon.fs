@@ -50,7 +50,7 @@ module DatabaseLeafIcon =
             )
 
 
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.display <- "inline"
                 x.spacing <- "4px"
@@ -60,7 +60,7 @@ module DatabaseLeafIcon =
                 match isPrivate with
                 | false ->
                     Tooltip.wrap
-                        (Chakra.box
+                        (UI.box
                             (fun _ -> ())
                             [
                                 str $"Owner: {owner |> Username.Value}"
@@ -74,10 +74,10 @@ module DatabaseLeafIcon =
                                         }"""
                             ])
                         [
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
-                                    Chakra.icon
+                                    UI.icon
                                         (fun x ->
                                             x.``as`` <- Icons.hi.HiUsers
                                             x.color <- "_orange"
@@ -89,10 +89,10 @@ module DatabaseLeafIcon =
                     Tooltip.wrap
                         (str "Private")
                         [
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
-                                    Chakra.icon
+                                    UI.icon
                                         (fun x ->
                                             x.``as`` <- Icons.fa.FaUserShield
                                             x.color <- "_green"
@@ -106,10 +106,10 @@ module DatabaseLeafIcon =
                     Tooltip.wrap
                         (str $"Database paused at position {position |> FlukeDateTime.Stringify}")
                         [
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
-                                    Chakra.icon
+                                    UI.icon
                                         (fun x ->
                                             x.``as`` <- Icons.bs.BsPauseFill
                                             x.color <- "_orange"
@@ -121,10 +121,10 @@ module DatabaseLeafIcon =
                     Tooltip.wrap
                         (str "Live Database")
                         [
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
-                                    Chakra.icon
+                                    UI.icon
                                         (fun x ->
                                             x.``as`` <- Icons.bs.BsPlayFill
                                             x.color <- "_green"

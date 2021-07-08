@@ -22,7 +22,7 @@ module AddAttachmentInput =
                 UIFlagValue = uiFlagValue
                 Trigger =
                     fun trigger _ ->
-                        Chakra.box
+                        UI.box
                             (fun x ->
                                 x.``as`` <- "img"
                                 x.cursor <- "pointer"
@@ -32,10 +32,10 @@ module AddAttachmentInput =
                             []
                 Content =
                     fun onHide _ ->
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
-                                Chakra.box
+                                UI.box
                                     (fun x ->
                                         x.``as`` <- "img"
                                         x.cursor <- "pointer"
@@ -51,7 +51,7 @@ module AddAttachmentInput =
     let FileThumbnail fileId =
         let objectUrl = Store.useValue (Selectors.File.objectUrl fileId)
 
-        Chakra.flex
+        UI.flex
             (fun x ->
                 x.width <- "75px"
                 x.height <- "75px"
@@ -68,12 +68,12 @@ module AddAttachmentInput =
     [<ReactComponent>]
     let TempFileThumbnail onDelete onAdd fileId =
 
-        Chakra.box
+        UI.box
             (fun x -> x.position <- "relative")
             [
                 FileThumbnail fileId
 
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "2px"
@@ -121,7 +121,7 @@ module AddAttachmentInput =
 //                droppableId = nameof AttachmentList
 //                direction = "horizontal"
 //            |}
-        Chakra.flex
+        UI.flex
             (fun x ->
                 //                x.display <- "flex"
 //                x.flexDirection <- "row"
@@ -139,7 +139,7 @@ module AddAttachmentInput =
 //                                    index = i
 //                                |}
 //                                (fun x -> ())
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
                                     AttachmentThumbnail
@@ -180,11 +180,11 @@ module AddAttachmentInput =
         if not clipboardVisible then
             nothing
         else
-            Chakra.box
+            UI.box
                 (fun _ -> ())
                 [
                     if clipboardAttachmentMap.Count = 0 then
-                        Chakra.box
+                        UI.box
                             (fun x -> x.padding <- "10px")
                             [
                                 str "Empty clipboard"
@@ -241,10 +241,10 @@ module AddAttachmentInput =
             )
 
         if true then
-            Chakra.stack
+            UI.stack
                 (fun x -> x.spacing <- "0")
                 [
-                    Chakra.flex
+                    UI.flex
                         (fun _ -> ())
                         [
 
@@ -281,7 +281,7 @@ module AddAttachmentInput =
                                         |}
                                 ]
 
-                            Chakra.stack
+                            UI.stack
                                 (fun x ->
                                     x.spacing <- "0"
                                     x.paddingTop <- "1px"
@@ -293,7 +293,7 @@ module AddAttachmentInput =
                                             Icon = Some (Icons.fa.FaPlus |> Icons.render, Button.IconPosition.Left)
                                             Props =
                                                 fun x ->
-                                                    Chakra.setTestId x "Add Attachment"
+                                                    UI.setTestId x "Add Attachment"
                                                     //                                                x.borderBottomLeftRadius <- "0"
 //                                                x.borderTopLeftRadius <- "0"
                                                     if onAdd.IsNone then x.disabled <- true
@@ -302,12 +302,12 @@ module AddAttachmentInput =
                                             Children = []
                                         |}
 
-                                    Chakra.spacer (fun _ -> ()) []
+                                    UI.spacer (fun _ -> ()) []
 
                                     Tooltip.wrap
                                         (str "Clipboard")
                                         [
-                                            Chakra.box
+                                            UI.box
                                                 (fun _ -> ())
                                                 [
                                                     Button.Button
@@ -320,7 +320,7 @@ module AddAttachmentInput =
                                                                 )
                                                             Props =
                                                                 fun x ->
-                                                                    Chakra.setTestId x "Clipboard"
+                                                                    UI.setTestId x "Clipboard"
 
                                                                     if onAdd.IsNone then x.disabled <- true
 
@@ -333,7 +333,7 @@ module AddAttachmentInput =
                                                                             }
                                                             Children =
                                                                 [
-                                                                    Chakra.box
+                                                                    UI.box
                                                                         (fun _ -> ())
                                                                         [
                                                                             str (string clipboardAttachmentMap.Count)

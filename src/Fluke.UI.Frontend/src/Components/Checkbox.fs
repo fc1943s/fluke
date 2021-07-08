@@ -8,10 +8,10 @@ open Fluke.UI.Frontend.State
 
 module Checkbox =
     [<ReactComponent>]
-    let Checkbox (label: string option) (props: Chakra.IChakraProps -> unit) =
+    let Checkbox (label: string option) (props: UI.IChakraProps -> unit) =
         let darkMode = Store.useValue Atoms.User.darkMode
 
-        Chakra.checkbox
+        UI.checkbox
             (fun x ->
                 x.colorScheme <- "purple"
                 x.borderColor <- if darkMode then "#484848" else "#b7b7b7"
@@ -21,7 +21,7 @@ module Checkbox =
             [
                 match label with
                 | Some label ->
-                    Chakra.box
+                    UI.box
                         (fun x -> x.fontSize <- "main")
                         [
                             str label

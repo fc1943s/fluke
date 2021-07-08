@@ -12,7 +12,7 @@ module MenuItemToggle =
 
         let key = atom.toString ()
 
-        Chakra.menuOptionGroup
+        UI.menuOptionGroup
             (fun x ->
                 x.``type`` <- "checkbox"
 
@@ -23,7 +23,7 @@ module MenuItemToggle =
 
                 x.onChange <- fun (checks: string []) -> promise { setValue (checks |> Array.contains key) })
             [
-                Chakra.menuItemOption
+                UI.menuItemOption
                     (fun x ->
                         x.closeOnSelect <- true
                         x.value <- key

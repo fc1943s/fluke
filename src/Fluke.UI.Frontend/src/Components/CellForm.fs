@@ -70,25 +70,25 @@ module CellForm =
                 Items =
                     [
                         "Info",
-                        (Chakra.stack
+                        (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
-                                Chakra.box
+                                UI.box
                                     (fun x -> x.userSelect <- "text")
                                     [
                                         str $"""Task: {taskName}"""
                                     ]
-                                Chakra.box
+                                UI.box
                                     (fun x -> x.userSelect <- "text")
                                     [
                                         str $"""Date: {dateId |> DateId.Value |> FlukeDate.Stringify}"""
                                     ]
-                                Chakra.stack
+                                UI.stack
                                     (fun x ->
                                         x.direction <- "row"
                                         x.alignItems <- "center")
                                     [
-                                        Chakra.box
+                                        UI.box
                                             (fun _ -> ())
                                             [
                                                 str "Status: "
@@ -98,7 +98,7 @@ module CellForm =
                             ])
 
                         "Attachments",
-                        (Chakra.stack
+                        (UI.stack
                             (fun x ->
                                 x.spacing <- "10px"
                                 x.flex <- "1")
@@ -133,7 +133,7 @@ module CellForm =
         match taskId, dateId with
         | Some taskId, Some dateId -> CellForm taskId dateId
         | _ ->
-            Chakra.box
+            UI.box
                 (fun x -> x.padding <- "15px")
                 [
                     str "No cell selected"

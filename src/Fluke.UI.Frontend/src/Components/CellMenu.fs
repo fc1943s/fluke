@@ -17,7 +17,7 @@ module CellMenu =
     [<ReactComponent>]
     let CellMenu (taskId: TaskId) (dateId: DateId) (onClose: (unit -> unit) option) (floating: bool) =
         let username = Store.useValue Store.Atoms.username
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
         let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
@@ -147,7 +147,7 @@ module CellMenu =
                 |]
             )
 
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.spacing <- "0"
 
@@ -156,7 +156,7 @@ module CellMenu =
                     x.borderColor <- if darkMode then TempUI.cellStatusColor Disabled else "gray.45"
                     x.boxShadow <- $"0px 0px 2px 1px #{if darkMode then 262626 else 777}")
             [
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.direction <- if floating then "column" else "row"
                         x.borderColor <- "gray.77"
@@ -165,9 +165,9 @@ module CellMenu =
                         x.width <- $"{cellSize (* * 2*) }px")
                     [
                         let wrapButton icon color onClick =
-                            Chakra.iconButton
+                            UI.iconButton
                                 (fun x ->
-                                    Chakra.setTestId x $"cell-button-{color}"
+                                    UI.setTestId x $"cell-button-{color}"
                                     x.icon <- icon
                                     x.display <- "flex"
                                     x.color <- "#dddddd"
@@ -227,22 +227,22 @@ module CellMenu =
                                                 }))
                                 ]
 
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "Complete"
                             ]
                         |> wrapButtonTooltip Completed
 
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
-                                Chakra.box
+                                UI.box
                                     (fun _ -> ())
                                     [
                                         str "Dismiss"
                                     ]
-                                Chakra.box
+                                UI.box
                                     (fun _ -> ())
                                     [
                                         str """???"""
@@ -250,7 +250,7 @@ module CellMenu =
                             ]
                         |> wrapButtonTooltip Dismissed
 
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "Postpone until tomorrow"
@@ -275,10 +275,10 @@ module CellMenu =
                                 Body =
                                     fun (_disclosure, initialFocusRef) ->
                                         [
-                                            Chakra.stack
+                                            UI.stack
                                                 (fun x -> x.spacing <- "10px")
                                                 [
-                                                    Chakra.box
+                                                    UI.box
                                                         (fun x ->
                                                             x.paddingBottom <- "5px"
                                                             x.marginRight <- "24px"
@@ -325,7 +325,7 @@ module CellMenu =
                                                                             }
                                                         |}
 
-                                                    Chakra.box
+                                                    UI.box
                                                         (fun _ -> ())
                                                         [
                                                             Button.Button
@@ -348,15 +348,15 @@ module CellMenu =
                                 Props = fun _ -> ()
                             |}
 
-                        Chakra.box
+                        UI.box
                             (fun x -> x.padding <- "4px")
                             [
-                                Chakra.box
+                                UI.box
                                     (fun _ -> ())
                                     [
                                         str "Schedule"
                                     ]
-                                Chakra.box
+                                UI.box
                                     (fun x -> x.marginTop <- "8px")
                                     [
                                         str

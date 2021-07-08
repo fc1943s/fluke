@@ -12,7 +12,7 @@ open Fluke.Shared
 module ProjectForm =
     [<ReactComponent>]
     let ProjectForm (project: Project) (onSave: Project -> JS.Promise<unit>) =
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
         let projectName, setProjectName = React.useState project.Name
         let area, setArea = React.useState project.Area
 
@@ -35,12 +35,12 @@ module ProjectForm =
                 |]
             )
 
-        Chakra.stack
+        UI.stack
             (fun x -> x.spacing <- "18px")
             [
                 AreaSelector.AreaSelector area setArea
 
-                Chakra.stack
+                UI.stack
                     (fun x -> x.spacing <- "15px")
                     [
                         Input.Input

@@ -50,9 +50,9 @@ module AreaSelector =
                 |]
             )
 
-        Chakra.box
+        UI.box
             (fun x ->
-                Chakra.setTestId x (nameof AreaSelector)
+                UI.setTestId x (nameof AreaSelector)
                 x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -97,7 +97,7 @@ module AreaSelector =
                         Body =
                             fun onHide ->
                                 [
-                                    Chakra.stack
+                                    UI.stack
                                         (fun x ->
                                             x.flex <- "1"
                                             x.spacing <- "1px"
@@ -121,10 +121,10 @@ module AreaSelector =
                                                                     Some (
                                                                         (if index = i then
                                                                              Icons.fi.FiCheck
-                                                                             |> Icons.renderChakra
+                                                                             |> Icons.renderWithProps
                                                                                  (fun x -> x.marginTop <- "3px")
                                                                          else
-                                                                             Chakra.box (fun x -> x.width <- "11px") []),
+                                                                             UI.box (fun x -> x.width <- "11px") []),
                                                                         Button.IconPosition.Left
                                                                     )
                                                                 Props =

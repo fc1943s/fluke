@@ -60,9 +60,9 @@ module ModalFlag =
 
                         x.children <-
                             [
-                                Chakra.box
+                                UI.box
                                     (fun x ->
-                                        Chakra.setTestId x input.UIFlagType
+                                        UI.setTestId x input.UIFlagType
                                         x.minWidth <- "max-content")
                                     [
                                         content

@@ -11,7 +11,7 @@ open Fluke.UI.Frontend.Bindings
 module Empty =
     [<ReactComponent>]
     let Empty props =
-        Chakra.box
+        UI.box
             (fun x -> props x)
             [
                 str ""

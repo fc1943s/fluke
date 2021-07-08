@@ -67,9 +67,9 @@ module Cell =
                 |]
             )
 
-        Chakra.center
+        UI.center
             (fun x ->
-                Chakra.setTestId
+                UI.setTestId
                     x
                     $"cell-{input.TaskId}-{
                                                (input.DateId |> DateId.Value |> FlukeDate.DateTime)
@@ -102,7 +102,7 @@ module Cell =
                 match rightDock, cellUIFlag with
                 | Some TempUI.DockType.Cell, UIFlag.Cell (taskId, dateId) when
                     taskId = input.TaskId && dateId = input.DateId ->
-                    Chakra.icon
+                    UI.icon
                         (fun x ->
                             x.``as`` <- Icons.ti.TiPin
                             x.fontSize <- $"{cellSize - 4}px"
@@ -156,7 +156,7 @@ module Cell =
                             ]
                 |}
         else
-            Chakra.box
+            UI.box
                 (fun x ->
                     x.onClick <-
                         fun _ ->

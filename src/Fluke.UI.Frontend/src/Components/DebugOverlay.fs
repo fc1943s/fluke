@@ -67,7 +67,7 @@ module DebugOverlay =
 //                        str "test1"
 //                    ]
 
-            Chakra.box
+            UI.box
                 (fun x ->
                     x.width <- "min-content"
                     x.height <- if debug then "60%" else "initial"

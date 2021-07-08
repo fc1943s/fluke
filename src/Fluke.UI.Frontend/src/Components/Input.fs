@@ -40,7 +40,7 @@ module Input =
     [<ReactComponent>]
     let Input
         (input: {| CustomProps: IProps<'TValue, 'TKey> -> unit
-                   Props: Chakra.IChakraProps -> unit |})
+                   Props: UI.IChakraProps -> unit |})
         =
         let darkMode = Store.useValue Atoms.User.darkMode
         let fontSize = Store.useValue Atoms.User.fontSize
@@ -218,7 +218,7 @@ module Input =
                 |]
             )
 
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.spacing <- "5px"
                 x.flex <- "1")
@@ -234,12 +234,12 @@ module Input =
                             Props = fun _ -> ()
                         |}
 
-                Chakra.box
+                UI.box
                     (fun x ->
                         x.position <- "relative"
                         x.flex <- "1")
                     [
-                        (if customProps.textarea then Chakra.textarea else Chakra.input)
+                        (if customProps.textarea then UI.textarea else UI.input)
                             (fun x ->
                                 x.onChange <- onChange
 
@@ -358,7 +358,7 @@ module Input =
 
                         match rightButton with
                         | Some rightButton ->
-                            Chakra.stack
+                            UI.stack
                                 (fun x ->
                                     x.position <- "absolute"
                                     x.right <- "1px"
@@ -377,9 +377,9 @@ module Input =
     let inline LeftIconInput
         (input: {| Icon: ReactElement
                    CustomProps: IProps<'TValue, 'TKey> -> unit
-                   Props: Chakra.IChakraProps -> unit |})
+                   Props: UI.IChakraProps -> unit |})
         =
-        Chakra.flex
+        UI.flex
             (fun x ->
                 x.flex <- "1"
                 x.position <- "relative")
@@ -393,7 +393,7 @@ module Input =
                                 input.Props x
                     |}
 
-                Chakra.flex
+                UI.flex
                     (fun x ->
                         x.position <- "absolute"
                         x.left <- "12px"

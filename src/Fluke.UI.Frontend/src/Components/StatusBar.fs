@@ -24,7 +24,7 @@ module StatusBar =
 
         let devicePingList = Store.useValue Selectors.Session.devicePingList
 
-        Chakra.box
+        UI.box
             (fun _ -> ())
             [
                 str $"Now: {now.ToString ()}"
@@ -73,10 +73,10 @@ module StatusBar =
     let UserIndicator () =
         let username = Store.useValue Store.Atoms.username
 
-        Chakra.flex
+        UI.flex
             (fun _ -> ())
             [
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.fa.FaRegUser
                         x.marginRight <- "4px")
@@ -95,10 +95,10 @@ module StatusBar =
         let (Minute sessionDuration) = Store.useValue Atoms.User.sessionDuration
         let (Minute sessionBreakDuration) = Store.useValue Atoms.User.sessionBreakDuration
 
-        Chakra.flex
+        UI.flex
             (fun _ -> ())
             [
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.gi.GiHourglass
                         x.marginRight <- "4px")
@@ -143,18 +143,18 @@ module StatusBar =
                                 Tooltip.wrap
                                     (str "Session Details")
                                     [
-                                        Chakra.box
+                                        UI.box
                                             (fun x -> x.cursor <- "pointer")
                                             [
                                                 let sessionInfo = getSessionInfo activeSessions.Head
 
-                                                Chakra.flex
+                                                UI.flex
                                                     (fun x -> x.color <- sessionInfo.Color)
                                                     [
                                                         str
                                                             $"{sessionInfo.SessionType}: {activeSessions.Length} active ("
 
-                                                        Chakra.box
+                                                        UI.box
                                                             (fun x ->
                                                                 x.display <- "inline"
                                                                 x.textOverflow <- "ellipsis"
@@ -179,10 +179,10 @@ module StatusBar =
                             Body =
                                 fun (_disclosure, _initialFocusRef) ->
                                     [
-                                        Chakra.stack
+                                        UI.stack
                                             (fun x -> x.spacing <- "10px")
                                             [
-                                                Chakra.box
+                                                UI.box
                                                     (fun x -> x.fontSize <- "15px")
                                                     [
                                                         str "Session Details"
@@ -194,7 +194,7 @@ module StatusBar =
                                                         (fun session ->
                                                             let sessionInfo = getSessionInfo session
 
-                                                            Chakra.flex
+                                                            UI.flex
                                                                 (fun x -> x.color <- sessionInfo.Color)
                                                                 [
                                                                     str
@@ -341,10 +341,10 @@ module StatusBar =
                 |]
             )
 
-        Chakra.flex
+        UI.flex
             (fun _ -> ())
             [
-                Chakra.icon
+                UI.icon
                     (fun x ->
                         x.``as`` <- Icons.bi.BiTask
                         x.marginRight <- "4px")
@@ -371,12 +371,12 @@ module StatusBar =
             (fun _ setter ->
                 promise { Store.set setter (Atoms.Device.devicePing deviceId) (Ping (string DateTime.Now.Ticks)) })
 
-        Chakra.simpleGrid
+        UI.simpleGrid
             (fun x ->
                 x.display <-
                     unbox (
                         JS.newObj
-                            (fun (x: Chakra.IBreakpoints<string>) ->
+                            (fun (x: UI.IBreakpoints<string>) ->
                                 x.``base`` <- "grid"
                                 x.md <- "flex")
                     )
@@ -413,10 +413,10 @@ module StatusBar =
                 match position with
                 | Some position ->
                     React.fragment [
-                        Chakra.flex
+                        UI.flex
                             (fun _ -> ())
                             [
-                                Chakra.icon
+                                UI.icon
                                     (fun x ->
                                         x.``as`` <- Icons.fa.FaRegClock
                                         x.marginRight <- "4px")

@@ -13,7 +13,7 @@ module AreaForm =
 
     [<ReactComponent>]
     let AreaForm (area: Area) (onSave: Area -> JS.Promise<unit>) =
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
         let areaName, setAreaName = React.useState area.Name
 
         let onSave =
@@ -33,10 +33,10 @@ module AreaForm =
                 |]
             )
 
-        Chakra.stack
+        UI.stack
             (fun x -> x.spacing <- "18px")
             [
-                Chakra.stack
+                UI.stack
                     (fun x -> x.spacing <- "15px")
                     [
                         Input.Input

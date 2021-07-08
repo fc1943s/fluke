@@ -126,7 +126,7 @@ module TopBar =
                 [||]
             )
 
-        Chakra.flex
+        UI.flex
             (fun x ->
                 x.height <- "29px"
                 x.alignItems <- "center"
@@ -138,7 +138,7 @@ module TopBar =
                 )
             [
 
-                Chakra.flex
+                UI.flex
                     (fun x ->
                         x.cursor <- "pointer"
                         x.paddingLeft <- "7px"
@@ -149,16 +149,16 @@ module TopBar =
                     [
                         Logo.Logo ()
 
-                        Chakra.box
+                        UI.box
                             (fun x -> x.marginLeft <- "5px")
                             [
                                 str "Fluke"
                             ]
                     ]
 
-                Chakra.spacer (fun x -> x.style <- JS.newObj (fun x -> x.WebkitAppRegion <- "drag")) []
+                UI.spacer (fun x -> x.style <- JS.newObj (fun x -> x.WebkitAppRegion <- "drag")) []
 
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.margin <- "1px"
                         x.spacing <- "1px"
@@ -230,7 +230,7 @@ module TopBar =
                                 ExternalLink.externalLinkIcon
                              ])
                             [
-                                Chakra.link
+                                UI.link
                                     (fun x ->
                                         x.href <- "https://github.com/fc1943s/fluke"
                                         x.isExternal <- true

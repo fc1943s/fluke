@@ -8,7 +8,7 @@ module Spinner =
 
     [<ReactComponent>]
     let Spinner props =
-        Chakra.spinner
+        UI.spinner
             (fun x ->
                 x.size <- "xl"
                 props x)

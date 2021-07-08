@@ -202,7 +202,7 @@ module Theme =
 
         React.useMemo (
             (fun () ->
-                Chakra.react.extendTheme (
+                UI.react.extendTheme (
                     JsInterop.toPlainJsObj (
                         theme
                             {|

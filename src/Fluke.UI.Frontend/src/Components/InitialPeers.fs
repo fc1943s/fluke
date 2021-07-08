@@ -25,10 +25,10 @@ module InitialPeers =
 
         let skipClick _ = promise { setInitialPeerSkipped true }
 
-        Chakra.center
+        UI.center
             (fun x -> x.flex <- "1")
             [
-                Chakra.stack
+                UI.stack
                     (fun x -> x.minWidth <- "200px")
                     [
                         Input.Input
@@ -55,7 +55,7 @@ module InitialPeers =
                                         x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value })
                             |}
 
-                        Chakra.hStack
+                        UI.hStack
                             (fun x -> x.alignItems <- "stretch")
                             [
                                 Button.Button

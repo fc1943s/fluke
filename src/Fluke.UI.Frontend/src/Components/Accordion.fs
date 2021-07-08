@@ -10,13 +10,13 @@ open Fable.React
 
 module Accordion =
     let accordionItem title children =
-        Chakra.accordionItem
+        UI.accordionItem
             (fun x ->
 
                 if children
                    |> Seq.exists
                        (fun cmp ->
-                           let props : {| props: Chakra.IChakraProps |} = unbox cmp
+                           let props : {| props: UI.IChakraProps |} = unbox cmp
 
                            match props.props.flex with
                            | String.ValidString _ -> true
@@ -28,21 +28,21 @@ module Accordion =
                 x.flexDirection <- "column"
                 x.display <- "flex")
             [
-                Chakra.accordionButton
+                UI.accordionButton
                     (fun x ->
                         x.backgroundColor <- "gray.16"
                         x.tabIndex <- -1)
                     [
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str title
                             ]
-                        Chakra.spacer (fun _ -> ()) []
-                        Chakra.accordionIcon (fun _ -> ()) []
+                        UI.spacer (fun _ -> ()) []
+                        UI.accordionIcon (fun _ -> ()) []
                     ]
 
-                Chakra.accordionPanel
+                UI.accordionPanel
                     (fun x ->
                         x.flex <- "1"
                         x.flexDirection <- "column"
@@ -55,11 +55,11 @@ module Accordion =
     let Accordion
         (input: {| Items: (string * ReactElement) list
                    Atom: Store.Atom<string []>
-                   Props: Chakra.IChakraProps -> unit |})
+                   Props: UI.IChakraProps -> unit |})
         =
         let atomValue, setAtomValue = Store.useState input.Atom
 
-        Chakra.accordion
+        UI.accordion
             (fun x ->
                 x.allowMultiple <- true
                 x.reduceMotion <- true

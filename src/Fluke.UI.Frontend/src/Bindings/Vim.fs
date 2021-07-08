@@ -9,12 +9,12 @@ module Vim =
 
     let render
         (input: {| OnVimCreated: obj -> unit
-                   Props: Chakra.IChakraProps -> unit
+                   Props: UI.IChakraProps -> unit
                    Fallback: unit -> ReactElement |})
         =
         match emitJsExpr () "typeof SharedArrayBuffer" with
         | "function" ->
-            Chakra.box
+            UI.box
                 (fun x -> input.Props x)
                 [
                     ReactBindings.React.createElement (

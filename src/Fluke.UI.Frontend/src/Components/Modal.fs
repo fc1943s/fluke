@@ -8,7 +8,7 @@ open Fluke.UI.Frontend.Bindings
 
 module Modal =
     type IProps =
-        inherit Chakra.IChakraProps
+        inherit UI.IChakraProps
 
     [<RequireQualifiedAccess>]
     type LocalState =
@@ -39,26 +39,26 @@ module Modal =
         if not props.isOpen && localState = LocalState.Closed then
             nothing
         else
-            Chakra.modal
+            UI.modal
                 (fun x ->
                     //                x.isCentered <- true
                     x.isLazy <- true
                     x.isOpen <- props.isOpen
                     x.onClose <- props.onClose)
                 [
-                    Chakra.modalOverlay (fun _ -> ()) []
-                    Chakra.modalContent
+                    UI.modalOverlay (fun _ -> ()) []
+                    UI.modalContent
                         (fun x ->
                             x.backgroundColor <- "gray.13"
                             x.maxWidth <- "95vw"
                             x.maxHeight <- "80vh"
                             x.overflow <- "auto")
                         [
-                            Chakra.modalBody
+                            UI.modalBody
                                 (fun x -> x.padding <- "40px")
                                 [
                                     yield! props.children
                                 ]
-                            Chakra.modalCloseButton (fun _ -> ()) []
+                            UI.modalCloseButton (fun _ -> ()) []
                         ]
                 ]

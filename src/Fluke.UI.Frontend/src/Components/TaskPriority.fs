@@ -18,7 +18,7 @@ module TaskPriority =
             |> Option.map (Priority.toTag >> (+) 1 >> string)
             |> Option.defaultValue ""
 
-        Chakra.box
+        UI.box
             (fun x ->
                 x.position <- "relative"
                 x.height <- $"{cellSize}px"

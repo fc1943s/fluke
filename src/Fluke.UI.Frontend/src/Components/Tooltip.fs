@@ -12,13 +12,13 @@ module Tooltip =
         let ref = React.useElementRef ()
         let hovered = Listener.useElementHover ref
 
-        Chakra.box
+        UI.box
             (fun x ->
                 x.ref <- ref
                 x.display <- "inline"
                 wrapperProps x)
             [
-                Chakra.tooltip
+                UI.tooltip
                     (fun x ->
                         x.isLazy <- true
                         x.isOpen <- hovered

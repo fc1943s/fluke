@@ -15,7 +15,7 @@ module Button =
     let Button
         (input: {| Icon: (ReactElement * IconPosition) option
                    Hint: ReactElement option
-                   Props: Chakra.IChakraProps -> unit
+                   Props: UI.IChakraProps -> unit
                    Children: seq<ReactElement> |})
         =
 
@@ -29,7 +29,7 @@ module Button =
             [
                 match icon, input.Children |> Seq.toList with
                 | Some icon, [] ->
-                    Chakra.iconButton
+                    UI.iconButton
                         (fun x ->
                             x.icon <- icon
                             input.Props x)
@@ -38,14 +38,14 @@ module Button =
                     let icon () =
                         match icon with
                         | Some icon ->
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
                                     icon
                                 ]
                         | None -> nothing
 
-                    Chakra.button
+                    UI.button
                         (fun x ->
                             x.height <- "auto"
                             x.alignSelf <- "flex-start"
@@ -55,7 +55,7 @@ module Button =
                             x.borderRadius <- "3px"
                             input.Props x)
                         [
-                            Chakra.stack
+                            UI.stack
                                 (fun x ->
                                     x.direction <- "row"
                                     x.spacing <- "7px"
@@ -65,7 +65,7 @@ module Button =
                                     | Some IconPosition.Left -> icon ()
                                     | _ -> nothing
 
-                                    Chakra.box
+                                    UI.box
                                         (fun _ -> ())
                                         [
                                             yield! children

@@ -12,7 +12,7 @@ open Fluke.Shared
 module ResourceForm =
     [<ReactComponent>]
     let ResourceForm (resource: Resource) (onSave: Resource -> JS.Promise<unit>) =
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
         let resourceName, setResourceName = React.useState resource.Name
 
         let onSave =
@@ -32,10 +32,10 @@ module ResourceForm =
                 |]
             )
 
-        Chakra.stack
+        UI.stack
             (fun x -> x.spacing <- "18px")
             [
-                Chakra.stack
+                UI.stack
                     (fun x -> x.spacing <- "15px")
                     [
                         Input.Input

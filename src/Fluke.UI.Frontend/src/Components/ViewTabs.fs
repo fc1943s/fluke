@@ -74,7 +74,7 @@ module ViewTabs =
 
         printfn $"ViewTabs.render. current view={view}. tabIndex={tabIndex} lastTabIndex={lastTabIndex.current}"
 
-        Chakra.tabs
+        UI.tabs
             (fun x ->
                 x.isLazy <- true
 
@@ -88,12 +88,12 @@ module ViewTabs =
                 x.flex <- "1"
                 x.overflow <- "auto")
             [
-                Chakra.flex
+                UI.flex
                     (fun x ->
                         x.margin <- "1px"
                         x.overflowX <- "auto")
                     [
-                        Chakra.tabList
+                        UI.tabList
                             (fun x ->
                                 x.flex <- "1 1 auto"
                                 x.display <- "flex"
@@ -108,7 +108,7 @@ module ViewTabs =
                                     tabs
                                     |> List.map
                                         (fun tab ->
-                                            Chakra.tab
+                                            UI.tab
                                                 (fun x ->
                                                     x.alignSelf <- "stretch"
                                                     x.padding <- "12px"
@@ -126,7 +126,7 @@ module ViewTabs =
                                                                 x.color <- "gray.77"
                                                                 x.borderColor <- "gray.77"))
                                                 [
-                                                    Chakra.icon
+                                                    UI.icon
                                                         (fun x ->
                                                             x.``as`` <- tab.Icon
                                                             x.marginRight <- "6px")
@@ -134,7 +134,7 @@ module ViewTabs =
                                                     str tab.Name
                                                 ])
 
-                                Chakra.spacer (fun _ -> ()) []
+                                UI.spacer (fun _ -> ()) []
 
                                 Menu.Menu
                                     {|
@@ -144,7 +144,7 @@ module ViewTabs =
                                                 {|
                                                     Props =
                                                         fun x ->
-                                                            x.``as`` <- Chakra.react.MenuButton
+                                                            x.``as`` <- UI.react.MenuButton
                                                             x.fontSize <- "14px"
                                                             x.icon <- Icons.bs.BsThreeDotsVertical |> Icons.render
                                                             x.alignSelf <- "center"
@@ -160,7 +160,7 @@ module ViewTabs =
                             ]
                     ]
 
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.paddingTop <- "4px"
                         x.paddingRight <- "10px"
@@ -181,7 +181,7 @@ module ViewTabs =
                             |}
                     ]
 
-                Chakra.tabPanels
+                UI.tabPanels
                     (fun x ->
                         x.flex <- "1"
                         x.display <- "flex"
@@ -192,7 +192,7 @@ module ViewTabs =
                             tabs
                             |> List.map
                                 (fun tab ->
-                                    Chakra.tabPanel
+                                    UI.tabPanel
                                         (fun x ->
                                             x.display <- "flex"
                                             x.padding <- "0"
@@ -203,7 +203,7 @@ module ViewTabs =
                                             match sortedTaskIdList with
                                             | [] ->
                                                 if filteredTaskIdSet.IsEmpty then
-                                                    Chakra.box
+                                                    UI.box
                                                         (fun x ->
                                                             x.padding <- "7px"
                                                             x.whiteSpace <- "nowrap")
@@ -211,7 +211,7 @@ module ViewTabs =
                                                             str "No tasks found. Add tasks in the Databases panel."
                                                         ]
                                                 else
-                                                    Chakra.box
+                                                    UI.box
                                                         (fun x -> x.padding <- "15px")
                                                         [
                                                             LoadingSpinner.InlineLoadingSpinner ()

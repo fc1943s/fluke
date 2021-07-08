@@ -104,7 +104,7 @@ module LeftDock =
                                                         {|
                                                             Props =
                                                                 fun x ->
-                                                                    Chakra.setTestId x "Add Database"
+                                                                    UI.setTestId x "Add Database"
                                                                     x.icon <- Icons.fi.FiPlus |> Icons.render
 
                                                                     x.fontSize <- "17px"
@@ -152,16 +152,16 @@ module LeftDock =
             )
 
 
-        Chakra.flex
+        UI.flex
             (fun _ -> ())
             [
-                Chakra.box
+                UI.box
                     (fun x ->
                         x.width <- "24px"
                         x.position <- "relative"
                         x.margin <- "1px")
                     [
-                        Chakra.stack
+                        UI.stack
                             (fun x ->
                                 x.spacing <- "1px"
                                 x.direction <- "row"
@@ -215,12 +215,12 @@ module LeftDock =
                                     |}
                             |}
                             [
-                                Chakra.flex
+                                UI.flex
                                     (fun x ->
                                         x.width <-
                                             unbox (
                                                 JS.newObj
-                                                    (fun (x: Chakra.IBreakpoints<string>) ->
+                                                    (fun (x: UI.IBreakpoints<string>) ->
                                                         x.``base`` <- "calc(100vw - 50px)"
                                                         x.md <- "auto")
                                             )

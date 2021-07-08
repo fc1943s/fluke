@@ -32,12 +32,12 @@ module Hint =
                         [
                             match props.hintTitle with
                             | Some hintTitle ->
-                                Chakra.box
+                                UI.box
                                     (fun x ->
                                         x.paddingBottom <- "12px"
                                         x.fontSize <- "15px")
                                     [
-                                        Chakra.icon
+                                        UI.icon
                                             (fun x ->
                                                 x.``as`` <- Icons.bs.BsQuestionCircle
                                                 x.marginTop <- "-3px"

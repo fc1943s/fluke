@@ -19,7 +19,7 @@ module DatabaseForm =
 
     [<ReactComponent>]
     let rec DatabaseForm (databaseId: DatabaseId) (onSave: Database -> JS.Promise<unit>) =
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
         let debug = Store.useValue Atoms.debug
 
         let onSave =
@@ -104,13 +104,13 @@ module DatabaseForm =
                 Items =
                     [
                         $"""{if databaseId = Database.Default.Id then "Add" else "Edit"} Database""",
-                        (Chakra.stack
+                        (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
                                 if not debug then
                                     nothing
                                 else
-                                    Chakra.box
+                                    UI.box
                                         (fun _ -> ())
                                         [
                                             str $"{databaseId}"
@@ -140,12 +140,12 @@ module DatabaseForm =
                                                     $"""new-database-%s{DateTime.Now.Format "yyyy-MM-dd"}"""
                                     |}
 
-                                Chakra.stack
+                                UI.stack
                                     (fun x ->
                                         x.direction <- "row"
                                         x.alignItems <- "center")
                                     [
-                                        Chakra.box
+                                        UI.box
                                             (fun _ -> ())
                                             [
                                                 str "Access:"
@@ -167,10 +167,10 @@ module DatabaseForm =
                             ])
 
                         "Import Database",
-                        (Chakra.stack
+                        (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
-                                Chakra.input
+                                UI.input
                                     (fun x ->
                                         x.``type`` <- "file"
                                         x.padding <- "10px"
@@ -179,7 +179,7 @@ module DatabaseForm =
                                         x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
                                     []
 
-                                Chakra.box
+                                UI.box
                                     (fun _ -> ())
                                     [
                                         Button.Button

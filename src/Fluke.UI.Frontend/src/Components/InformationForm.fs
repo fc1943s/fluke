@@ -92,7 +92,7 @@ module InformationForm =
                 Items =
                     [
                         "Info",
-                        (Chakra.stack
+                        (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
                                 DatabaseSelector.DatabaseSelector
@@ -117,7 +117,7 @@ module InformationForm =
                             |> String.IsNullOrWhiteSpace
                             |> not ->
                             "Attachments",
-                            (Chakra.stack
+                            (UI.stack
                                 (fun x ->
                                     x.spacing <- "10px"
                                     x.flex <- "1")

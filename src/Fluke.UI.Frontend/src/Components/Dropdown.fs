@@ -17,7 +17,7 @@ module Dropdown =
         let visible, setVisible = React.useState false
         let darkMode = Store.useValue Atoms.User.darkMode
 
-        Chakra.flex
+        UI.flex
             (fun x -> x.direction <- "column")
             [
                 Tooltip.wrap
@@ -28,7 +28,7 @@ module Dropdown =
                 if not visible then
                     nothing
                 else
-                    Chakra.box
+                    UI.box
                         (fun x ->
                             x.flex <- "1"
                             x.flexDirection <- "column"

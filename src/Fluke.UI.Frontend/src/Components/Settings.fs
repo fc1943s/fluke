@@ -25,7 +25,7 @@ module Settings =
                 Items =
                     [
                         "User",
-                        (Chakra.stack
+                        (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
                                 Input.Input
@@ -113,7 +113,7 @@ module Settings =
                                         Left = false
                                         Trigger =
                                             fun visible setVisible ->
-                                                Chakra.box
+                                                UI.box
                                                     (fun x -> x.position <- "relative")
                                                     [
                                                         Input.Input
@@ -185,7 +185,7 @@ module Settings =
                             ])
 
                         "View",
-                        (Chakra.stack
+                        (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
                                 Dropdown.Dropdown
@@ -194,7 +194,7 @@ module Settings =
                                         Left = false
                                         Trigger =
                                             fun visible setVisible ->
-                                                Chakra.box
+                                                UI.box
                                                     (fun x -> x.position <- "relative")
                                                     [
                                                         Input.Input
@@ -253,7 +253,7 @@ module Settings =
                                         Body =
                                             fun onHide ->
                                                 [
-                                                    Chakra.stack
+                                                    UI.stack
                                                         (fun x ->
                                                             x.flex <- "1"
                                                             x.spacing <- "1px"
@@ -389,7 +389,7 @@ module Settings =
                             ])
 
                         "Connection",
-                        (Chakra.stack
+                        (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
                                 InputList.InputList

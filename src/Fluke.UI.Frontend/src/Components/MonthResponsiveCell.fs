@@ -12,13 +12,13 @@ module MonthResponsiveCell =
     open Domain.UserInteraction
 
     [<ReactComponent>]
-    let MonthResponsiveCell (date: FlukeDate) (props: Chakra.IChakraProps -> unit) =
+    let MonthResponsiveCell (date: FlukeDate) (props: UI.IChakraProps -> unit) =
         let weekStart = Store.useValue Atoms.User.weekStart
         let cellSize = Store.useValue Atoms.User.cellSize
 
         let month = (date |> FlukeDate.DateTime).Format "MMM"
 
-        Chakra.box
+        UI.box
             (fun x ->
                 x.whiteSpace <- "nowrap"
                 x.textAlign <- "center"

@@ -108,9 +108,9 @@ module InformationSelector =
                 |]
             )
 
-        Chakra.box
+        UI.box
             (fun x ->
-                Chakra.setTestId x (nameof InformationSelector)
+                UI.setTestId x (nameof InformationSelector)
                 x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -158,7 +158,7 @@ module InformationSelector =
                                 [
                                     match input.SelectionType with
                                     | InformationSelectionType.Information ->
-                                        Chakra.radioGroup
+                                        UI.radioGroup
                                             (fun x ->
                                                 x.onChange <-
                                                     fun (radioValueSelected: string) ->
@@ -179,7 +179,7 @@ module InformationSelector =
 
                                                 x.value <- if not selected then null else informationSelected)
                                             [
-                                                Chakra.stack
+                                                UI.stack
                                                     (fun x ->
                                                         x.justifyContent <- "center"
                                                         x.flex <- "1"
@@ -187,7 +187,7 @@ module InformationSelector =
                                                         x.direction <- "row")
                                                     [
                                                         let label text =
-                                                            Chakra.box
+                                                            UI.box
                                                                 (fun x -> x.marginBottom <- "-2px")
                                                                 [
                                                                     str text
@@ -232,7 +232,7 @@ module InformationSelector =
                                     |> function
                                     | Some () ->
                                         React.fragment [
-                                            Chakra.stack
+                                            UI.stack
                                                 (fun x ->
                                                     x.flex <- "1"
                                                     x.spacing <- "1px"
@@ -255,10 +255,10 @@ module InformationSelector =
                                                                             Some (
                                                                                 (if index = i then
                                                                                      Icons.fi.FiCheck
-                                                                                     |> Icons.renderChakra
+                                                                                     |> Icons.renderWithProps
                                                                                          (fun x -> x.marginTop <- "3px")
                                                                                  else
-                                                                                     Chakra.box
+                                                                                     UI.box
                                                                                          (fun x -> x.width <- "11px")
                                                                                          []),
                                                                                 Button.IconPosition.Left

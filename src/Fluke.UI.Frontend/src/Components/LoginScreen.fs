@@ -10,7 +10,7 @@ open Fable.React
 module LoginScreen =
     [<ReactComponent>]
     let LoginScreen () =
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
         let usernameField, setUsernameField = React.useState ""
         let passwordField, setPasswordField = React.useState ""
         let password2Field, setPassword2Field = React.useState ""
@@ -64,10 +64,10 @@ module LoginScreen =
                 |]
             )
 
-        Chakra.center
+        UI.center
             (fun x -> x.flex <- "1")
             [
-                Chakra.stack
+                UI.stack
                     (fun _ -> ())
                     [
                         Input.Input
@@ -103,7 +103,7 @@ module LoginScreen =
                                 Left = false
                                 Trigger =
                                     fun visible setVisible ->
-                                        Chakra.hStack
+                                        UI.hStack
                                             (fun x -> x.alignItems <- "stretch")
                                             [
                                                 Button.Button
@@ -150,7 +150,7 @@ module LoginScreen =
                                 Body =
                                     fun onHide ->
                                         [
-                                            Chakra.stack
+                                            UI.stack
                                                 (fun x -> x.spacing <- "10px")
                                                 [
                                                     Input.Input
@@ -177,7 +177,7 @@ module LoginScreen =
                                                                             promise { setPassword2Field e.Value })
                                                         |}
 
-                                                    Chakra.box
+                                                    UI.box
                                                         (fun _ -> ())
                                                         [
                                                             Button.Button

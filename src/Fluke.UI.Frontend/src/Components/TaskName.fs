@@ -67,7 +67,7 @@ module TaskName =
                 |]
             )
 
-        Chakra.flex
+        UI.flex
             (fun x ->
                 x.flex <- "1"
                 x.alignItems <- "center"
@@ -75,7 +75,7 @@ module TaskName =
                 x.position <- "relative"
                 x.height <- $"{cellSize}px")
             [
-                Chakra.box
+                UI.box
                     (fun x ->
                         //                        x.backgroundColor <- if hovered then "#292929" else null
                         x.color <- if hasSelection then "#ff5656" else null
@@ -100,7 +100,7 @@ module TaskName =
                                     Trigger =
                                         InputLabelIconButton.InputLabelIconButton
                                             (fun x ->
-                                                x.``as`` <- Chakra.react.MenuButton
+                                                x.``as`` <- UI.react.MenuButton
                                                 x.icon <- Icons.bs.BsThreeDots |> Icons.render
                                                 x.fontSize <- "11px"
                                                 x.height <- "15px"

@@ -14,10 +14,10 @@ module RootWrapper =
         let theme = Theme.useTheme ()
         let darkMode = Store.useValue Atoms.User.darkMode
 
-        Chakra.provider
+        UI.provider
             (fun x -> x.theme <- theme)
             [
-                (if darkMode then Chakra.darkMode else Chakra.lightMode)
+                (if darkMode then UI.darkMode else UI.lightMode)
                     (fun _ -> ())
                     [
                         React.router [

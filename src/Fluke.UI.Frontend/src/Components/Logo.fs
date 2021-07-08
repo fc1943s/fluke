@@ -10,7 +10,7 @@ module Logo =
     open Domain.State
 
     let inline Logo () =
-        Chakra.simpleGrid
+        UI.simpleGrid
             (fun x ->
                 x.columns <- 2
                 x.borderWidth <- "1px"
@@ -25,7 +25,7 @@ module Logo =
                     ]
                     |> List.map
                         (fun color ->
-                            Chakra.box
+                            UI.box
                                 (fun x ->
                                     x.height <- "7px"
                                     x.width <- "7px"

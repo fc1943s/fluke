@@ -8,7 +8,7 @@ module CheckboxInput =
     let CheckboxInput
         (input: {| Atom: Store.Atom<_>
                    Label: string option
-                   Props: Chakra.IChakraProps -> unit |})
+                   Props: UI.IChakraProps -> unit |})
         =
         let value, setValue = Store.useState input.Atom
 

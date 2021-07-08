@@ -31,7 +31,7 @@ module PasteListener =
                 [||]
             )
 
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
 
         let handlePasteEvent =
             Store.useCallback (

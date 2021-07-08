@@ -20,15 +20,15 @@ module AttachmentPanel =
         let attachment = Store.useValue (Atoms.Attachment.attachment attachmentId)
         let timestamp = Store.useValue (Atoms.Attachment.timestamp attachmentId)
 
-        Chakra.flex
+        UI.flex
             (fun x -> x.color <- "whiteAlpha.600")
             [
-                Chakra.box
+                UI.box
                     (fun x -> x.lineHeight <- "16px")
                     [
                         match timestamp with
                         | Some timestamp ->
-                            Chakra.box
+                            UI.box
                                 (fun x ->
                                     x.userSelect <- "text"
                                     x.display <- "inline")
@@ -42,7 +42,7 @@ module AttachmentPanel =
                                     Trigger =
                                         InputLabelIconButton.InputLabelIconButton
                                             (fun x ->
-                                                x.``as`` <- Chakra.react.MenuButton
+                                                x.``as`` <- UI.react.MenuButton
                                                 x.icon <- Icons.bs.BsThreeDots |> Icons.render
                                                 x.fontSize <- "11px"
                                                 x.height <- "15px"
@@ -137,7 +137,7 @@ module AttachmentPanel =
             |]
         )
 
-        Chakra.box
+        UI.box
             (fun x ->
                 x.userSelect <- "text"
                 x.overflow <- "auto"
@@ -150,7 +150,7 @@ module AttachmentPanel =
                 match youtubeImgList with
                 | [] -> nothing
                 | youtubeImgList ->
-                    Chakra.flex
+                    UI.flex
                         (fun x ->
                             x.marginTop <- "10px"
                             x.overflow <- "auto")
@@ -159,7 +159,7 @@ module AttachmentPanel =
                                 youtubeImgList
                                 |> List.map
                                     (fun url ->
-                                        Chakra.flex
+                                        UI.flex
                                             (fun x ->
                                                 x.width <- "75px"
                                                 x.height <- "75px"
@@ -230,7 +230,7 @@ module AttachmentPanel =
                 |]
             )
 
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.flex <- "1"
                 x.spacing <- "6px")
@@ -240,13 +240,13 @@ module AttachmentPanel =
                 match attachment with
                 | Some (Attachment.Image fileId) -> AddAttachmentInput.FileThumbnail fileId
                 | Some (Attachment.Comment (Comment.Comment comment)) ->
-                    Chakra.box
+                    UI.box
                         (fun _ -> ())
                         [
                             if not editing then
                                 AttachmentComment comment
                             else
-                                Chakra.flex
+                                UI.flex
                                     (fun x -> x.position <- "relative")
                                     [
                                         Input.Input
@@ -291,7 +291,7 @@ module AttachmentPanel =
                                                 Props = fun x -> x.autoFocus <- true
                                             |}
 
-                                        Chakra.stack
+                                        UI.stack
                                             (fun x ->
                                                 x.direction <- "row"
                                                 x.spacing <- "2px"
@@ -346,12 +346,12 @@ module AttachmentPanel =
 //        DragDrop.dragDropContext
 //            onDragEnd
 //            [
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.spacing <- "15px"
                 x.flex <- "1")
             [
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.flex <- "1"
                         x.display <- "contents"
@@ -361,20 +361,20 @@ module AttachmentPanel =
                         match attachmentIdList with
                         //                                                | None -> LoadingSpinner.LoadingSpinner ()
                         | [] ->
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
                                     str "No attachments found"
                                 ]
                         | attachmentIdList ->
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
                                     yield!
                                         attachmentIdList
                                         |> List.map
                                             (fun attachmentId ->
-                                                Chakra.box
+                                                UI.box
                                                     (fun x ->
                                                         x.paddingTop <- "12px"
                                                         x.paddingBottom <- "12px"

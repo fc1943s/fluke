@@ -57,8 +57,8 @@ module DatabaseSelector =
                 |]
             )
 
-        Chakra.box
-            (fun x -> Chakra.setTestId x (nameof DatabaseSelector))
+        UI.box
+            (fun x -> UI.setTestId x (nameof DatabaseSelector))
             [
                 InputLabel.InputLabel
                     {|
@@ -90,7 +90,7 @@ module DatabaseSelector =
                         Body =
                             fun onHide ->
                                 [
-                                    Chakra.stack
+                                    UI.stack
                                         (fun x ->
                                             x.flex <- "1"
                                             x.spacing <- "1px"

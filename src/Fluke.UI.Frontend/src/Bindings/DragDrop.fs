@@ -24,7 +24,7 @@ module DragDrop =
 
                         printfn $"provided={provided} snapshot={snapshot}"
 
-                        Chakra.box
+                        UI.box
                             (fun x ->
                                 x.ref <- provided?innerRef
                                 x <+ provided?droppableProps
@@ -49,7 +49,7 @@ module DragDrop =
 
                         printfn $"@ provided={provided} snapshot={snapshot}"
 
-                        Chakra.box
+                        UI.box
                             (fun x ->
                                 x.ref <- provided?innerRef
                                 x <+ provided?draggableProps

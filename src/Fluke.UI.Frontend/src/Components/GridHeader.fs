@@ -22,10 +22,10 @@ module GridHeader =
             |> List.groupBy (fun date -> date.Month)
             |> List.map snd
 
-        Chakra.box
+        UI.box
             (fun _ -> ())
             [
-                Chakra.flex
+                UI.flex
                     (fun _ -> ())
                     [
                         yield!
@@ -45,7 +45,7 @@ module GridHeader =
                     ]
 
                 // Day of Week row
-                Chakra.flex
+                UI.flex
                     (fun _ -> ())
                     [
                         yield!
@@ -54,7 +54,7 @@ module GridHeader =
                     ]
 
                 // Day row
-                Chakra.flex
+                UI.flex
                     (fun _ -> ())
                     [
                         yield!

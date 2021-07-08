@@ -8,13 +8,13 @@ open Fluke.UI.Frontend.Bindings
 module MenuItem =
     [<ReactComponent>]
     let MenuItem icon label onClick props =
-        Chakra.menuItem
+        UI.menuItem
             (fun x ->
                 x.closeOnSelect <- true
 
                 x.icon <-
                     icon
-                    |> Icons.renderChakra
+                    |> Icons.renderWithProps
                         (fun x ->
                             x.fontSize <- "13px"
                             x.marginTop <- "1px")

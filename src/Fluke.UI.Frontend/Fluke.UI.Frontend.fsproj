@@ -14,7 +14,7 @@
         <Compile Include="src\Bindings\Profiling.fs" />
         <Compile Include="src\Bindings\Crypto.fs" />
         <Compile Include="src\Bindings\React.fs" />
-        <Compile Include="src\Bindings\Chakra.fs" />
+        <Compile Include="src\Bindings\UI.fs" />
         <Compile Include="src\Bindings\Batcher.fs" />
         <Compile Include="src\Bindings\Gun.fs" />
         <Compile Include="src\Bindings\DeepEqual.fs" />

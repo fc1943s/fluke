@@ -221,7 +221,7 @@ module Hydrate =
         )
 
     let useExportDatabase () =
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
 
         Store.useCallback (
             (fun getter _ databaseId ->
@@ -266,7 +266,7 @@ module Hydrate =
 
     let useImportDatabase () =
         let hydrateDatabaseState = useHydrateDatabaseState ()
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
 
         Store.useCallback (
             (fun getter _ files ->

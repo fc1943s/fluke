@@ -4,8 +4,8 @@ open Fluke.UI.Frontend.Bindings
 
 
 module TransparentIconButton =
-    let inline TransparentIconButton (input: {| Props: Chakra.IChakraProps -> unit |}) =
-        Chakra.iconButton
+    let inline TransparentIconButton (input: {| Props: UI.IChakraProps -> unit |}) =
+        UI.iconButton
             (fun x ->
                 x.backgroundColor <- "transparent"
                 x.variant <- "outline"

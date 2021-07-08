@@ -11,7 +11,7 @@ module ChangeUserPasswordButton =
     [<ReactComponent>]
     let rec ChangeUserPasswordButton () =
         let changePassword = Auth.useChangePassword ()
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
         let passwordField, setPasswordField = React.useState ""
         let newPasswordField, setNewPasswordField = React.useState ""
         let newPassword2Field, setNewPassword2Field = React.useState ""
@@ -77,10 +77,10 @@ module ChangeUserPasswordButton =
                 Body =
                     fun onHide ->
                         [
-                            Chakra.stack
+                            UI.stack
                                 (fun x -> x.spacing <- "10px")
                                 [
-                                    Chakra.box
+                                    UI.box
                                         (fun x ->
                                             x.paddingBottom <- "5px"
                                             x.fontSize <- "15px")
@@ -141,7 +141,7 @@ module ChangeUserPasswordButton =
                                                             promise { setNewPassword2Field e.Value })
                                         |}
 
-                                    Chakra.box
+                                    UI.box
                                         (fun _ -> ())
                                         [
                                             Button.Button

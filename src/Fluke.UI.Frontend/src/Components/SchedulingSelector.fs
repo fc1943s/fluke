@@ -50,13 +50,13 @@ module SchedulingSelector =
              | Manual WithoutSuggestion -> Some value
              | _ -> Some (Manual WithoutSuggestion))
             [
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.spacing <- "0"
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "Manual"
@@ -78,13 +78,13 @@ module SchedulingSelector =
              | Manual WithSuggestion -> Some value
              | _ -> Some (Manual WithSuggestion))
             [
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.spacing <- "0"
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "Suggested"
@@ -107,12 +107,12 @@ module SchedulingSelector =
              | Recurrency (Offset (Days _)) -> Some value
              | _ -> Some (Recurrency (Offset (Days 1))))
             [
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "Every"
@@ -122,7 +122,7 @@ module SchedulingSelector =
                              | Recurrency (Offset (Days n)) -> Some n
                              | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Days value))))
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "days"
@@ -138,12 +138,12 @@ module SchedulingSelector =
              | Recurrency (Offset (Weeks _)) -> Some value
              | _ -> Some (Recurrency (Offset (Weeks 1))))
             [
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "Every"
@@ -153,7 +153,7 @@ module SchedulingSelector =
                              | Recurrency (Offset (Weeks n)) -> Some n
                              | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Weeks value))))
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "weeks"
@@ -169,12 +169,12 @@ module SchedulingSelector =
              | Recurrency (Offset (Months _)) -> Some value
              | _ -> Some (Recurrency (Offset (Months 1))))
             [
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.alignItems <- "center"
                         x.direction <- "row")
                     [
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "Every"
@@ -184,7 +184,7 @@ module SchedulingSelector =
                              | Recurrency (Offset (Months n)) -> Some n
                              | _ -> Some 1)
                             (fun value -> setValue (Recurrency (Offset (Months value))))
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "months"
@@ -195,12 +195,12 @@ module SchedulingSelector =
 
     [<ReactComponent>]
     let FixedWeeklyRadio value setValue weekStart =
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.alignItems <- "center"
                 x.direction <- "row")
             [
-                Chakra.box
+                UI.box
                     (fun _ -> ())
                     [
                         str "Weekly: "
@@ -214,7 +214,7 @@ module SchedulingSelector =
                     )
                     |> Seq.map
                         (fun dayOfWeek ->
-                            Chakra.stack
+                            UI.stack
                                 (fun x ->
                                     x.alignItems <- "center"
                                     x.spacing <- "2px")
@@ -259,7 +259,7 @@ module SchedulingSelector =
                                                             | _ -> Recurrency (Fixed [ Weekly dayOfWeek ])
                                                         )
                                                     })
-                                    Chakra.box
+                                    UI.box
                                         (fun _ -> ())
                                         [
                                             str (Enum.name dayOfWeek)
@@ -270,18 +270,18 @@ module SchedulingSelector =
 
     [<ReactComponent>]
     let FixedMonthlyRadio value setValue =
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.alignItems <- "center"
                 x.direction <- "row")
             [
-                Chakra.box
+                UI.box
                     (fun _ -> ())
                     [
                         str "Monthly: "
                     ]
 
-                Chakra.stack
+                UI.stack
                     (fun _ -> ())
                     [
                         yield!
@@ -297,7 +297,7 @@ module SchedulingSelector =
                             |> List.map (
                                 List.map
                                     (fun day ->
-                                        Chakra.stack
+                                        UI.stack
                                             (fun x ->
                                                 x.alignItems <- "center"
                                                 x.spacing <- "2px")
@@ -346,7 +346,7 @@ module SchedulingSelector =
                                                                         | _ -> Recurrency (Fixed [ Monthly day ])
                                                                     )
                                                                 })
-                                                Chakra.box
+                                                UI.box
                                                     (fun _ -> ())
                                                     [
                                                         str (day |> Day.Value |> string)
@@ -355,7 +355,7 @@ module SchedulingSelector =
                             )
                             |> List.map
                                 (fun x ->
-                                    Chakra.stack
+                                    UI.stack
                                         (fun x -> x.direction <- "row")
                                         [
                                             yield! x
@@ -394,12 +394,12 @@ module SchedulingSelector =
                 |> List.map fst
                 |> List.mapi
                     (fun i row ->
-                        Chakra.stack
+                        UI.stack
                             (fun x ->
                                 x.alignItems <- "center"
                                 x.direction <- "row")
                             [
-                                Chakra.box
+                                UI.box
                                     (fun _ -> ())
                                     [
                                         str "Yearly: "
@@ -474,7 +474,7 @@ module SchedulingSelector =
                                         | _ -> nothing
                                     ]
 
-                                Chakra.radioGroup
+                                UI.radioGroup
                                     (fun x ->
                                         x.onChange <-
                                             fun (radioValueSelected: string) ->
@@ -513,10 +513,10 @@ module SchedulingSelector =
                                             | _ -> None
                                             |> Json.encode)
                                     [
-                                        Chakra.stack
+                                        UI.stack
                                             (fun _ -> ())
                                             [
-                                                Chakra.stack
+                                                UI.stack
                                                     (fun x -> x.direction <- "row")
                                                     [
                                                         yield!
@@ -548,7 +548,7 @@ module SchedulingSelector =
                                                     |> List.map (
                                                         List.map
                                                             (fun dayNumber ->
-                                                                Chakra.stack
+                                                                UI.stack
                                                                     (fun x ->
                                                                         x.alignItems <- "center"
                                                                         x.spacing <- "2px")
@@ -570,7 +570,7 @@ module SchedulingSelector =
                                                     )
                                                     |> List.map
                                                         (fun x ->
-                                                            Chakra.stack
+                                                            UI.stack
                                                                 (fun x -> x.direction <- "row")
                                                                 [
                                                                     yield! x
@@ -589,7 +589,7 @@ module SchedulingSelector =
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.scheduling taskId))))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
-        Chakra.box
+        UI.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -628,7 +628,7 @@ module SchedulingSelector =
                         Body =
                             fun _onHide ->
                                 [
-                                    Chakra.radioGroup
+                                    UI.radioGroup
                                         (fun x ->
                                             x.overflow <- "auto"
                                             x.maxHeight <- "350px"
@@ -641,7 +641,7 @@ module SchedulingSelector =
 
                                             x.value <- tempScheduling.Value |> Json.encode)
                                         [
-                                            Chakra.stack
+                                            UI.stack
                                                 (fun x ->
                                                     x.spacing <- "18px"
                                                     x.padding <- "5px")

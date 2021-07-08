@@ -25,13 +25,13 @@ module ConfirmPopover =
                 Body =
                     fun (disclosure, initialFocusRef) ->
                         [
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
-                                    Chakra.stack
+                                    UI.stack
                                         (fun x -> x.spacing <- "10px")
                                         [
-                                            Chakra.box
+                                            UI.box
                                                 (fun x ->
                                                     x.paddingBottom <- "5px"
                                                     x.marginRight <- "24px"
@@ -40,7 +40,7 @@ module ConfirmPopover =
                                                     str label
                                                 ]
 
-                                            Chakra.box
+                                            UI.box
                                                 (fun _ -> ())
                                                 [
                                                     Button.Button

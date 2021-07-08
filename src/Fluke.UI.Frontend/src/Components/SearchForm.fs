@@ -38,7 +38,7 @@ module SearchForm =
         let setCellUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Cell)
         let setRightDock = Store.useSetState Atoms.User.rightDock
 
-        Chakra.box
+        UI.box
             (fun x ->
                 x.overflow <- "auto"
                 x.maxHeight <- "50px"
@@ -83,7 +83,7 @@ module SearchForm =
         let searchResults, setSearchResults = React.useState []
         let searchText, setSearchText = Store.useState Atoms.User.searchText
         let loading, setLoading = React.useState (searchText.Length > 0)
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
 
         let search =
             Store.useCallback (
@@ -234,16 +234,16 @@ module SearchForm =
             |]
         )
 
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.spacing <- "10px"
                 x.padding <- "15px")
             [
-                Chakra.box
+                UI.box
                     (fun x -> x.position <- "relative")
                     [
                         if loading then
-                            Chakra.flex
+                            UI.flex
                                 (fun x ->
                                     x.position <- "absolute"
                                     x.top <- "0"
@@ -279,10 +279,10 @@ module SearchForm =
                     |> List.sortBy fst
                     |> List.map
                         (fun (searchResultType, results) ->
-                            Chakra.box
+                            UI.box
                                 (fun x -> x.marginBottom <- "10px")
                                 [
-                                    Chakra.box
+                                    UI.box
                                         (fun _ -> ())
                                         [
                                             str (
@@ -296,7 +296,7 @@ module SearchForm =
                                                     $"Cell Attachment (Task: {task} / Date: {date})"
                                             )
                                         ]
-                                    Chakra.box
+                                    UI.box
                                         (fun x -> x.marginLeft <- "25px")
                                         [
                                             yield!

@@ -8,7 +8,7 @@ open Fluke.UI.Frontend.Bindings
 
 module InputList =
     type IProps<'TValue> =
-        inherit Chakra.IChakraProps
+        inherit UI.IChakraProps
 
         abstract hint : ReactElement option with get, set
         abstract hintTitle : ReactElement option with get, set
@@ -28,7 +28,7 @@ module InputList =
 
         let tempAtom = Store.Hooks.useTempAtom<'TValue []> props.atom props.inputScope
 
-        Chakra.box
+        UI.box
             (fun _ -> ())
             [
                 match props.label with
@@ -37,7 +37,7 @@ module InputList =
                     InputLabel.InputLabel
                         {|
                             Label =
-                                Chakra.box
+                                UI.box
                                     (fun _ -> ())
                                     [
                                         props.label
@@ -78,7 +78,7 @@ module InputList =
                         inputList
                         |> Array.mapi
                             (fun i value ->
-                                Chakra.box
+                                UI.box
                                     (fun x -> x.position <- "relative")
                                     [
 

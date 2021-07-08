@@ -16,14 +16,14 @@ module BulletJournalView =
     let BulletJournalView () =
         let weekCellsMap = Store.useValue Selectors.BulletJournalView.weekCellsMap
 
-        Chakra.box
+        UI.box
             (fun x -> x.flex <- "1")
             [
                 yield!
                     weekCellsMap
                     |> List.map
                         (fun week ->
-                            Chakra.flex
+                            UI.flex
                                 (fun x ->
                                     x.flex <- "1"
                                     x.marginTop <- "15px"
@@ -46,13 +46,13 @@ module BulletJournalView =
                                                                 || not cell.Attachments.IsEmpty
                                                                 || cell.Status <> State.Disabled)
 
-                                                    Chakra.box
+                                                    UI.box
                                                         (fun x ->
                                                             x.flex <- "1"
                                                             x.paddingLeft <- "10px"
                                                             x.paddingRight <- "10px")
                                                         [
-                                                            Chakra.box
+                                                            UI.box
                                                                 (fun x ->
                                                                     x.visibility <-
                                                                         if visibleCells.IsEmpty then
@@ -82,7 +82,7 @@ module BulletJournalView =
                                                                 visibleCells
                                                                 |> List.map
                                                                     (fun cell ->
-                                                                        Chakra.flex
+                                                                        UI.flex
                                                                             (fun _ -> ())
                                                                             [
                                                                                 Cell.Cell
@@ -91,7 +91,7 @@ module BulletJournalView =
                                                                                         TaskId = cell.TaskId
                                                                                         SemiTransparent = false
                                                                                     |}
-                                                                                Chakra.box
+                                                                                UI.box
                                                                                     (fun x -> x.paddingLeft <- "4px")
                                                                                     [
                                                                                         TaskName.TaskName cell.TaskId

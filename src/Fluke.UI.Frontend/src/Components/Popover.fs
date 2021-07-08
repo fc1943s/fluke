@@ -13,15 +13,15 @@ module Popover =
                    RenderOnHover: bool
                    CloseButton: bool
                    Padding: string
-                   Body: Chakra.Disclosure * IRefValue<unit> -> ReactElement list
-                   Props: Chakra.IChakraProps -> unit |})
+                   Body: UI.Disclosure * IRefValue<unit> -> ReactElement list
+                   Props: UI.IChakraProps -> unit |})
         =
-        let disclosure = Chakra.react.useDisclosure ()
+        let disclosure = UI.react.useDisclosure ()
 
         let initialFocusRef = React.useRef ()
 
         if not disclosure.isOpen then
-            Chakra.box
+            UI.box
                 (fun x ->
                     x.display <- "inline"
 
@@ -35,10 +35,10 @@ module Popover =
                     input.Trigger
                 ]
         else
-            Chakra.box
+            UI.box
                 (fun x -> x.display <- "inline")
                 [
-                    Chakra.popover
+                    UI.popover
                         (fun x ->
                             //                            x.isLazy <- true
 
@@ -53,10 +53,10 @@ module Popover =
                             x.onClose <- fun x -> promise { disclosure.onClose x }
                             input.Props x)
                         [
-                            Chakra.popoverTrigger
+                            UI.popoverTrigger
                                 (fun _ -> ())
                                 [
-                                    Chakra.box
+                                    UI.box
                                         (fun x -> x.display <- "inline")
                                         [
                                             input.Trigger
@@ -66,13 +66,13 @@ module Popover =
                             match input.Body (disclosure, initialFocusRef) with
                             | [ x ] when x = nothing -> nothing
                             | content ->
-                                Chakra.popoverContent
+                                UI.popoverContent
                                     (fun x ->
                                         x.width <- "auto"
                                         x.border <- "0"
                                         x.borderRadius <- "0")
                                     [
-                                        Chakra.popoverArrow (fun _ -> ()) []
+                                        UI.popoverArrow (fun _ -> ()) []
 
                                         if not input.CloseButton then
                                             nothing
@@ -102,7 +102,7 @@ module Popover =
                                                     Children = []
                                                 |}
 
-                                        Chakra.popoverBody
+                                        UI.popoverBody
                                             (fun x ->
                                                 x.padding <- input.Padding
                                                 x.backgroundColor <- "gray.13"
@@ -118,8 +118,8 @@ module Popover =
 
     let inline Popover
         (input: {| Trigger: ReactElement
-                   Body: Chakra.Disclosure * IRefValue<unit> -> ReactElement list
-                   Props: Chakra.IChakraProps -> unit |})
+                   Body: UI.Disclosure * IRefValue<unit> -> ReactElement list
+                   Props: UI.IChakraProps -> unit |})
         =
         CustomPopover
             {| input with

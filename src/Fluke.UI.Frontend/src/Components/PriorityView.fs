@@ -12,10 +12,10 @@ module PriorityView =
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        Chakra.flex
+        UI.flex
             (fun x -> x.flex <- "1")
             [
-                Chakra.flex
+                UI.flex
                     (fun x ->
                         x.direction <- "column"
                         x.flex <- "1"
@@ -24,13 +24,13 @@ module PriorityView =
                         x.maxWidth <- "400px")
                     [
                         yield!
-                            Chakra.box (fun x -> x.minHeight <- $"{cellSize}px") []
+                            UI.box (fun x -> x.minHeight <- $"{cellSize}px") []
                             |> List.replicate 3
 
-                        Chakra.flex
+                        UI.flex
                             (fun _ -> ())
                             [
-                                Chakra.box
+                                UI.box
                                     (fun x -> x.paddingRight <- "10px")
                                     [
                                         yield!
@@ -38,7 +38,7 @@ module PriorityView =
                                             |> List.map TaskInformationName.TaskInformationName
                                     ]
                                 // Column: Priority
-                                Chakra.box
+                                UI.box
                                     (fun x ->
                                         x.paddingRight <- "10px"
                                         x.textAlign <- "center")
@@ -48,7 +48,7 @@ module PriorityView =
                                             |> List.map TaskPriority.TaskPriority
                                     ]
                                 // Column: Task Name
-                                Chakra.box
+                                UI.box
                                     (fun x -> x.flex <- "1")
                                     [
                                         yield! sortedTaskIdList |> List.map TaskName.TaskName
@@ -56,7 +56,7 @@ module PriorityView =
                             ]
                     ]
 
-                Chakra.box
+                UI.box
                     (fun _ -> ())
                     [
                         GridHeader.GridHeader ()

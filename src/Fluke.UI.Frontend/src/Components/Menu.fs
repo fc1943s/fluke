@@ -11,9 +11,9 @@ module Menu =
         (input: {| Tooltip: string
                    Trigger: ReactElement
                    Body: seq<ReactElement>
-                   MenuListProps: Chakra.IChakraProps -> unit |})
+                   MenuListProps: UI.IChakraProps -> unit |})
         =
-        Chakra.menu
+        UI.menu
             (fun x ->
                 x.isLazy <- true
                 x.closeOnSelect <- false)
@@ -23,9 +23,9 @@ module Menu =
                     [
                         input.Trigger
                     ]
-                Chakra.menuList
+                UI.menuList
                     (fun x ->
-                        x.``as`` <- Chakra.react.Stack
+                        x.``as`` <- UI.react.Stack
                         x.spacing <- "2px"
                         x.backgroundColor <- "gray.13"
                         input.MenuListProps x)

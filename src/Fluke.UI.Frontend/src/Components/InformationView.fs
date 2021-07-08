@@ -12,27 +12,27 @@ module InformationView =
     let InformationTree information taskIdList =
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        Chakra.box
+        UI.box
             (fun x -> x.paddingLeft <- $"{cellSize}px")
             [
                 InformationName.InformationName information
 
                 // Task Name
-                Chakra.box
+                UI.box
                     (fun x -> x.flex <- "1")
                     [
                         yield!
                             taskIdList
                             |> List.map
                                 (fun taskId ->
-                                    Chakra.stack
+                                    UI.stack
                                         (fun x ->
                                             x.position <- "relative"
                                             x.direction <- "row"
                                             x.spacing <- "10px"
                                             x.paddingLeft <- $"{cellSize}px")
                                         [
-                                            Chakra.box
+                                            UI.box
                                                 (fun x ->
                                                     x.position <- "absolute"
                                                     x.left <- "10px"
@@ -52,10 +52,10 @@ module InformationView =
         let tasksByInformationKind = Store.useValue Selectors.Session.tasksByInformationKind
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        Chakra.flex
+        UI.flex
             (fun x -> x.flex <- "1")
             [
-                Chakra.flex
+                UI.flex
                     (fun x ->
                         x.direction <- "column"
                         x.flex <- "1"
@@ -64,22 +64,22 @@ module InformationView =
                         x.maxWidth <- "400px")
                     [
                         yield!
-                            Chakra.box (fun x -> x.minHeight <- $"{cellSize}px") []
+                            UI.box (fun x -> x.minHeight <- $"{cellSize}px") []
                             |> List.replicate 3
 
-                        Chakra.flex
+                        UI.flex
                             (fun x -> x.direction <- "column")
                             [
                                 yield!
                                     tasksByInformationKind
                                     |> List.map
                                         (fun (informationKindName, groups) ->
-                                            Chakra.flex
+                                            UI.flex
                                                 (fun x ->
                                                     x.direction <- "column"
                                                     x.flex <- "1")
                                                 [
-                                                    Chakra.box
+                                                    UI.box
                                                         (fun x ->
                                                             x.height <- $"{cellSize}px"
                                                             x.lineHeight <- $"{cellSize}px"
@@ -88,7 +88,7 @@ module InformationView =
                                                             str informationKindName
                                                         ]
 
-                                                    Chakra.box
+                                                    UI.box
                                                         (fun _ -> ())
                                                         [
                                                             yield!
@@ -101,22 +101,22 @@ module InformationView =
                             ]
                     ]
                 // Column: Grid
-                Chakra.box
+                UI.box
                     (fun _ -> ())
                     [
                         GridHeader.GridHeader ()
 
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 yield!
                                     tasksByInformationKind
                                     |> List.map
                                         (fun (_, groups) ->
-                                            Chakra.box
+                                            UI.box
                                                 (fun _ -> ())
                                                 [
-                                                    Chakra.box
+                                                    UI.box
                                                         (fun x ->
                                                             x.position <- "relative"
                                                             x.height <- $"{cellSize}px"
@@ -126,10 +126,10 @@ module InformationView =
                                                         groups
                                                         |> List.map
                                                             (fun (_, taskIdList) ->
-                                                                Chakra.box
+                                                                UI.box
                                                                     (fun _ -> ())
                                                                     [
-                                                                        Chakra.box
+                                                                        UI.box
                                                                             (fun x ->
                                                                                 x.position <- "relative"
                                                                                 x.height <- $"{cellSize}px"

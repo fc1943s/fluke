@@ -24,7 +24,7 @@ module TaskForm =
                 (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.duration taskId))))
                 (Some (Store.InputScope.Temp Gun.defaultSerializer))
 
-        Chakra.box
+        UI.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -35,7 +35,7 @@ module TaskForm =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "15px")
@@ -118,7 +118,7 @@ module TaskForm =
                 |]
             )
 
-        Chakra.box
+        UI.box
             (fun x -> x.display <- "inline")
             [
                 InputLabel.InputLabel
@@ -129,7 +129,7 @@ module TaskForm =
                         Props = fun x -> x.marginBottom <- "5px"
                     |}
 
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "15px")
@@ -149,7 +149,7 @@ module TaskForm =
 
                         match priorityNumber with
                         | Some priorityNumber ->
-                            Chakra.slider
+                            UI.slider
                                 (fun x ->
                                     x.min <- 1
                                     x.max <- 10
@@ -180,16 +180,16 @@ module TaskForm =
                                         elif priorityNumber <= 9 then "#e44c07"
                                         else "#a13c0e"
 
-                                    Chakra.sliderTrack
+                                    UI.sliderTrack
                                         (fun x -> x.backgroundColor <- $"{bgColor}55")
                                         [
-                                            Chakra.sliderFilledTrack (fun x -> x.backgroundColor <- bgColor) []
+                                            UI.sliderFilledTrack (fun x -> x.backgroundColor <- bgColor) []
                                         ]
 
-                                    Chakra.sliderThumb (fun _ -> ()) []
+                                    UI.sliderThumb (fun _ -> ()) []
                                 ]
 
-                            Chakra.box
+                            UI.box
                                 (fun _ -> ())
                                 [
                                     str (string priorityNumber)
@@ -200,7 +200,7 @@ module TaskForm =
 
     [<ReactComponent>]
     let rec TaskForm (taskId: TaskId) (onSave: Task -> JS.Promise<unit>) =
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
         let debug = Store.useValue Atoms.debug
         let sessions, setSessions = Store.useState (Atoms.Task.sessions taskId)
 
@@ -350,15 +350,15 @@ module TaskForm =
                     [
                         if taskId <> Task.Default.Id then
                             "Info",
-                            (Chakra.stack
+                            (UI.stack
                                 (fun x -> x.spacing <- "15px")
                                 [
-                                    Chakra.box
+                                    UI.box
                                         (fun _ -> ())
                                         [
                                             str $"Cell Status Count: {statusMap |> Map.count}"
                                         ]
-                                    Chakra.box
+                                    UI.box
                                         (fun _ -> ())
                                         [
                                             str
@@ -373,13 +373,13 @@ module TaskForm =
 
 
                         $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task""",
-                        (Chakra.stack
+                        (UI.stack
                             (fun x -> x.spacing <- "15px")
                             [
                                 if not debug then
                                     nothing
                                 else
-                                    Chakra.box
+                                    UI.box
                                         (fun _ -> ())
                                         [
                                             str $"{taskId}"
@@ -443,7 +443,7 @@ module TaskForm =
                             "Sessions",
                             (match sessions with
                              | [] ->
-                                 Chakra.box
+                                 UI.box
                                      (fun _ -> ())
                                      [
                                          str "No sessions found"
@@ -454,10 +454,10 @@ module TaskForm =
                                          sessions
                                          |> List.map
                                              (fun (Session start) ->
-                                                 Chakra.flex
+                                                 UI.flex
                                                      (fun _ -> ())
                                                      [
-                                                         Chakra.box
+                                                         UI.box
                                                              (fun _ -> ())
                                                              [
                                                                  str (start |> FlukeDateTime.Stringify)
@@ -468,7 +468,7 @@ module TaskForm =
                                                                          Trigger =
                                                                              InputLabelIconButton.InputLabelIconButton
                                                                                  (fun x ->
-                                                                                     x.``as`` <- Chakra.react.MenuButton
+                                                                                     x.``as`` <- UI.react.MenuButton
 
                                                                                      x.icon <-
                                                                                          Icons.bs.BsThreeDots
@@ -494,7 +494,7 @@ module TaskForm =
                                  ])
 
                             "Attachments",
-                            (Chakra.stack
+                            (UI.stack
                                 (fun x ->
                                     x.spacing <- "10px"
                                     x.flex <- "1")

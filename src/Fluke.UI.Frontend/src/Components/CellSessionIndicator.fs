@@ -12,7 +12,7 @@ module CellSessionIndicator =
 
     [<ReactComponent>]
     let CellSessionIndicator (status: CellStatus) (sessions: Session list) =
-        Chakra.box
+        UI.box
             (fun x ->
                 x.fontSize <- "11px"
 

@@ -17,7 +17,7 @@ module Content =
             [
                 PositionUpdater.PositionUpdater ()
 
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.spacing <- "0"
                         x.flex <- "1"
@@ -30,7 +30,7 @@ module Content =
                         if color.IsNone then
                             LoadingSpinner.LoadingSpinner ()
                         else
-                            Chakra.flex
+                            UI.flex
                                 (fun x ->
                                     x.flex <- "1"
                                     x.overflow <- "auto")
@@ -78,7 +78,7 @@ module Content =
         let deviceInfo = Store.useValue Selectors.deviceInfo
         let username = Store.useValue Store.Atoms.username
 
-        Chakra.flex
+        UI.flex
             (fun x ->
                 x.flex <- "1"
                 x.minHeight <- "100vh"

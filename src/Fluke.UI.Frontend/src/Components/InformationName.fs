@@ -52,13 +52,13 @@ module InformationName =
                 |]
             )
 
-        Chakra.box
+        UI.box
             (fun x ->
                 x.position <- "relative"
                 x.height <- $"{cellSize}px"
                 x.lineHeight <- $"{cellSize}px")
             [
-                Chakra.box
+                UI.box
                     (fun x ->
                         x.whiteSpace <- "nowrap"
                         x.color <- TempUI.informationColor information)

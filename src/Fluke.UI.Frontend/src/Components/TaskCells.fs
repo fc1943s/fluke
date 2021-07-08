@@ -11,7 +11,7 @@ module TaskCells =
     let TaskCells index taskId =
         let dateSequence = Store.useValue Selectors.dateSequence
 
-        Chakra.flex
+        UI.flex
             (fun x -> x.backgroundColor <- "#212121")
             [
                 yield!

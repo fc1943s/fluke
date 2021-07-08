@@ -8,32 +8,32 @@ open Fluke.UI.Frontend.Bindings
 module DatabaseAccessIndicator =
     [<ReactComponent>]
     let DatabaseAccessIndicator () =
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.direction <- "row"
                 x.spacing <- "15px")
             [
-                Chakra.stack
+                UI.stack
                     (fun x ->
                         x.direction <- "row"
                         x.spacing <- "4px"
                         x.alignItems <- "center")
                     [
-                        Chakra.circle
+                        UI.circle
                             (fun x ->
                                 x.width <- "10px"
                                 x.height <- "10px"
                                 x.backgroundColor <- "#0f0")
                             []
 
-                        Chakra.box
+                        UI.box
                             (fun _ -> ())
                             [
                                 str "Private"
                             ]
 
                     ]
-                Chakra.iconButton
+                UI.iconButton
                     (fun x ->
                         x.icon <- Icons.bs.BsThreeDots |> Icons.render
                         x.disabled <- true

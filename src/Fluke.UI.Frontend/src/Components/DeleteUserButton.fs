@@ -11,10 +11,10 @@ module DeleteUserButton =
     [<ReactComponent>]
     let rec DeleteUserButton () =
         let deleteUser = Auth.useDeleteUser ()
-        let toast = Chakra.useToast ()
+        let toast = UI.useToast ()
         let passwordField, setPasswordField = React.useState ""
 
-        let confirmClick (disclosure: Chakra.Disclosure) _ =
+        let confirmClick (disclosure: UI.Disclosure) _ =
             promise {
                 match! deleteUser passwordField with
                 | Ok () ->
@@ -46,10 +46,10 @@ module DeleteUserButton =
                 Body =
                     fun (disclosure, initialFocusRef) ->
                         [
-                            Chakra.stack
+                            UI.stack
                                 (fun x -> x.spacing <- "10px")
                                 [
-                                    Chakra.box
+                                    UI.box
                                         (fun x ->
                                             x.paddingBottom <- "5px"
                                             x.fontSize <- "15px")
@@ -73,7 +73,7 @@ module DeleteUserButton =
                                                         (fun (e: KeyboardEvent) -> promise { setPasswordField e.Value })
                                         |}
 
-                                    Chakra.box
+                                    UI.box
                                         (fun _ -> ())
                                         [
                                             Button.Button

@@ -12,7 +12,7 @@ module CellStatusUserIndicator =
         let color = Store.useValue Atoms.User.color
         let cellSize = Store.useValue Atoms.User.cellSize
 
-        Chakra.box
+        UI.box
             (fun x ->
                 x.height <- $"{cellSize}px"
                 x.lineHeight <- $"{cellSize}px"

@@ -5,7 +5,7 @@ open Fluke.UI.Frontend.Bindings
 
 module InputLabelIconButton =
     let inline InputLabelIconButton props =
-        Chakra.iconButton
+        UI.iconButton
             (fun x ->
                 x.border <- "0"
                 x.color <- "heliotrope"

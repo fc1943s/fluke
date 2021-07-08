@@ -22,13 +22,13 @@ module DockPanel =
         =
         let setAtom = Store.useSetState input.Atom
 
-        Chakra.stack
+        UI.stack
             (fun x ->
                 x.spacing <- "0"
                 x.overflow <- "hidden"
                 x.flex <- "1")
             [
-                Chakra.flex
+                UI.flex
                     (fun x ->
                         x.paddingLeft <- "9px"
                         x.paddingTop <- "1px"
@@ -38,14 +38,14 @@ module DockPanel =
                         x.borderBottomColor <- "gray.16"
                         x.alignItems <- "center")
                     [
-                        Chakra.icon
+                        UI.icon
                             (fun x ->
                                 x.``as`` <- input.Icon
                                 x.marginRight <- "6px")
                             []
                         str input.Name
 
-                        Chakra.spacer (fun _ -> ()) []
+                        UI.spacer (fun _ -> ()) []
 
                         yield!
                             input.RightIcons
@@ -62,7 +62,7 @@ module DockPanel =
                                                         {|
                                                             Props =
                                                                 fun x ->
-                                                                    x.``as`` <- Chakra.react.MenuButton
+                                                                    x.``as`` <- UI.react.MenuButton
                                                                     x.fontSize <- "14px"
                                                                     x.icon <- icon
                                                         |}
@@ -83,7 +83,7 @@ module DockPanel =
                             ]
                     ]
 
-                Chakra.flex
+                UI.flex
                     (fun x ->
                         x.direction <- "column"
                         x.flex <- "1"

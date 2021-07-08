@@ -23,7 +23,7 @@ module CellBorder =
         | _ -> None
         |> Option.map
             (fun (borderLeftWidth, borderLeftColor) ->
-                Chakra.box
+                UI.box
                     (fun x ->
                         x.position <- "absolute"
                         x.top <- "-1px"
