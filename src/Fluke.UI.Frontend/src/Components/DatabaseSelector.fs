@@ -2,7 +2,6 @@ namespace Fluke.UI.Frontend.Components
 
 open Fable.React
 open Feliz
-open Fluke.Shared.Domain.Model
 open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.Hooks
@@ -12,7 +11,7 @@ open Fluke.Shared
 
 module DatabaseSelector =
     [<ReactComponent>]
-    let rec DatabaseSelector (databaseId: DatabaseId) (taskId: TaskId) (onChange: DatabaseId -> unit) =
+    let rec DatabaseSelector (databaseId: DatabaseId) (onChange: DatabaseId -> unit) =
         let (DatabaseName databaseName) = Store.useValue (Atoms.Database.name databaseId)
         let hydrateDatabase = Hydrate.useHydrateDatabase ()
 
@@ -81,7 +80,6 @@ module DatabaseSelector =
                                         Props =
                                             fun x ->
                                                 x.onClick <- fun _ -> promise { setVisible (not visible) }
-                                                if taskId <> Task.Default.Id then x.isDisabled <- true
                                         Children =
                                             [
                                                 match databaseName with

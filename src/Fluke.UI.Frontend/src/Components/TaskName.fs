@@ -128,9 +128,8 @@ module TaskName =
                                 |}
                     ]
 
-
-                //                match taskState.valueMaybe () with
-//                | Some taskState ->
-                AttachmentIndicator.AttachmentIndicator (attachmentIdSet |> Set.toList)
-            //                | None -> nothing
+                if not attachmentIdSet.IsEmpty then
+                    AttachmentIndicator.AttachmentIndicator ()
+                else
+                    nothing
             ]

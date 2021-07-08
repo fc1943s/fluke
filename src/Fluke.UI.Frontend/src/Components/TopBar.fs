@@ -38,11 +38,11 @@ module TopBar =
 
                         let information = informationSet |> JS.randomSeq
 
-                        let attachmentIdSet = Store.value getter (Selectors.Information.attachmentIdSet information)
+                        let attachmentIdMap = Store.value getter (Selectors.Information.attachmentIdMap information)
 
-                        let attachmentId = attachmentIdSet |> JS.randomSeq
+//                        let attachmentId = attachmentIdSet |> JS.randomSeq
 
-                        let attachment = Store.value getter (Selectors.Attachment.attachment attachmentId)
+//                        let attachment = Store.value getter (Selectors.Attachment.attachment attachmentId)
 
                         let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
 

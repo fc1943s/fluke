@@ -360,14 +360,13 @@ module TaskForm =
 
                                 DatabaseSelector.DatabaseSelector
                                     taskDatabaseId
-                                    taskId
                                     (fun databaseId -> setTaskUIFlag (UIFlag.Task (databaseId, taskId)))
 
                                 InformationSelector.InformationSelector
                                     {|
                                         DisableResource = true
                                         SelectionType = InformationSelector.InformationSelectionType.Information
-                                        Information = tempInformation.Value
+                                        Information = Some tempInformation.Value
                                         OnSelect = tempInformation.SetValue
                                     |}
 
@@ -474,7 +473,7 @@ module TaskForm =
                                     x.flex <- "1")
                                 [
                                     AttachmentPanel.AttachmentPanel
-                                        onAttachmentAdd
+                                        (Some onAttachmentAdd)
                                         onAttachmentDelete
                                         (attachmentIdSet |> Set.toList)
                                 ])

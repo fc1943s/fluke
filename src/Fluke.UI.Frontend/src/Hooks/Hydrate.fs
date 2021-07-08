@@ -137,15 +137,24 @@ module Hydrate =
                 promise {
                     do! hydrateDatabase (atomScope, databaseState.Database)
 
-                    databaseState.InformationStateMap
-                    |> Map.values
-                    |> Seq.iter
-                        (fun informationState ->
-                            informationState.Attachments
-                            |> List.iter
-                                (fun (timestamp, attachment) ->
-                                    hydrateAttachment getter setter (atomScope, (timestamp, attachment))
-                                    |> ignore))
+                    let informationAttachmentMap =
+                        databaseState.InformationStateMap
+                        |> Map.values
+                        |> Seq.map
+                            (fun informationState ->
+                                let attachmentIdList =
+                                    informationState.Attachments
+                                    |> List.map
+                                        (fun (timestamp, attachment) ->
+                                            hydrateAttachment getter setter (atomScope, (timestamp, attachment)))
+
+                                informationState.Information, (attachmentIdList |> Set.ofList))
+                        |> Map.ofSeq
+
+                    Store.scopedSet
+                        setter
+                        atomScope
+                        (Atoms.Database.informationAttachmentMap, databaseState.Database.Id, informationAttachmentMap)
 
                     let newFileIdMap =
                         databaseState.FileMap
@@ -255,16 +264,13 @@ module Hydrate =
                                 |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
                                 |> Map.ofList
 
-                            let informationSet = Store.value getter Selectors.Session.informationSet
+                            let informationAttachmentMap =
+                                Store.value getter (Atoms.Database.informationAttachmentMap databaseId)
 
                             let informationStateMap =
-                                informationSet
-                                |> Set.toList
-                                |> List.map
-                                    (fun information ->
-                                        let attachmentIdSet =
-                                            Store.value getter (Selectors.Information.attachmentIdSet information)
-
+                                informationAttachmentMap
+                                |> Map.map
+                                    (fun information attachmentIdSet ->
                                         let attachments =
                                             attachmentIdSet
                                             |> Set.toArray
@@ -274,13 +280,11 @@ module Hydrate =
                                             |> Array.toList
                                             |> List.choose id
 
-                                        information,
                                         {
                                             Information = information
                                             Attachments = attachments
                                             SortList = []
                                         })
-                                |> Map.ofSeq
 
                             let taskStateMap =
                                 taskStateList

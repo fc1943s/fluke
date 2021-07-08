@@ -165,7 +165,6 @@ module Auth =
                                         set Atoms.User.fontSize def.FontSize
                                         set Atoms.User.hideSchedulingOverlay def.HideSchedulingOverlay
                                         set Atoms.User.hideTemplates def.HideTemplates
-                                        set Atoms.User.informationAttachmentMap def.InformationAttachmentMap
                                         set Atoms.User.language def.Language
                                         set Atoms.User.leftDock def.LeftDock
                                         set Atoms.User.rightDock def.RightDock

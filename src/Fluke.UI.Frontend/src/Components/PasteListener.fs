@@ -37,7 +37,6 @@ module PasteListener =
             Store.useCallback (
                 (fun getter setter (e: Browser.Types.Event) ->
                     promise {
-                        e.preventDefault ()
 
                         let! blobs =
                             match Browser.Navigator.navigator.clipboard with
@@ -64,6 +63,8 @@ module PasteListener =
                                 toast (fun x -> x.description <- "Clipboard not available")
                                 None |> Promise.lift
                             |> Promise.map (Option.defaultValue [||])
+
+                        if blobs.Length > 0 then e.preventDefault ()
 
                         do!
                             blobs

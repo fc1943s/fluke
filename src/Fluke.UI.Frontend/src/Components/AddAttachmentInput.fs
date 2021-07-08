@@ -225,7 +225,10 @@ module AddAttachmentInput =
                                  |> Attachment.Comment
                                  |> Some)
 
-                            do! onAdd attachmentId
+
+                            match onAdd with
+                            | Some onAdd -> do! onAdd attachmentId
+                            | None -> ()
 
                             setAddAttachmentText ""
                         | _ -> ()
@@ -244,29 +247,39 @@ module AddAttachmentInput =
                     Chakra.flex
                         (fun _ -> ())
                         [
-                            Input.LeftIconInput
-                                {|
-                                    Icon = Icons.fi.FiPaperclip |> Icons.render
-                                    CustomProps =
-                                        fun x ->
-                                            x.textarea <- true
-                                            x.fixedValue <- Some addAttachmentText
-                                            x.autoFocusOnAllMounts <- true
-                                            x.variableHeight <- true
 
-                                            x.onEnterPress <-
-                                                Some (fun _ -> promise { if ctrlPressed then do! addAttachment () })
-                                    Props =
-                                        fun x ->
-                                            x.placeholder <- "Add Attachment"
-                                            x.autoFocus <- true
-                                            x.maxHeight <- "200px"
-                                            x.borderBottomRightRadius <- "0"
-                                            x.borderTopRightRadius <- "0"
+                            Tooltip.wrap
+                                (if onAdd.IsNone then str "No database selected" else nothing)
+                                [
+                                    Input.LeftIconInput
+                                        {|
+                                            Icon = Icons.fi.FiPaperclip |> Icons.render
+                                            CustomProps =
+                                                fun x ->
+                                                    x.textarea <- true
+                                                    x.fixedValue <- Some addAttachmentText
+                                                    x.autoFocusOnAllMounts <- true
+                                                    x.variableHeight <- true
 
-                                            x.onChange <-
-                                                (fun (e: KeyboardEvent) -> promise { setAddAttachmentText e.Value })
-                                |}
+                                                    x.onEnterPress <-
+                                                        Some
+                                                            (fun _ ->
+                                                                promise { if ctrlPressed then do! addAttachment () })
+                                            Props =
+                                                fun x ->
+                                                    x.placeholder <- "Add Attachment"
+                                                    x.autoFocus <- true
+                                                    x.maxHeight <- "200px"
+                                                    x.borderBottomRightRadius <- "0"
+                                                    x.borderTopRightRadius <- "0"
+
+                                                    if onAdd.IsNone then x.disabled <- true
+
+                                                    x.onChange <-
+                                                        (fun (e: KeyboardEvent) ->
+                                                            promise { setAddAttachmentText e.Value })
+                                        |}
+                                ]
 
                             Chakra.stack
                                 (fun x ->
@@ -283,6 +296,8 @@ module AddAttachmentInput =
                                                     Chakra.setTestId x "Add Attachment"
                                                     //                                                x.borderBottomLeftRadius <- "0"
 //                                                x.borderTopLeftRadius <- "0"
+                                                    if onAdd.IsNone then x.disabled <- true
+
                                                     x.onClick <- fun _ -> addAttachment ()
                                             Children = []
                                         |}
@@ -307,6 +322,8 @@ module AddAttachmentInput =
                                                                 fun x ->
                                                                     Chakra.setTestId x "Clipboard"
 
+                                                                    if onAdd.IsNone then x.disabled <- true
+
                                                                     x.onClick <-
                                                                         fun _ ->
                                                                             promise {
@@ -327,7 +344,9 @@ module AddAttachmentInput =
                                         ]
                                 ]
                         ]
-                    AttachmentsClipboard onAdd
+                    match onAdd with
+                    | Some onAdd -> AttachmentsClipboard onAdd
+                    | None -> nothing
                 ]
         else
             Vim.render

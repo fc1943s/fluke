@@ -7,12 +7,13 @@ open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared.Domain
 open Fluke.Shared.Domain.Model
+open Fluke.Shared
 
 
 module InformationName =
     [<ReactComponent>]
     let InformationName information =
-        let attachmentIdSet = Store.useValue (Selectors.Information.attachmentIdSet information)
+        let attachmentIdMap = Store.useValue (Selectors.Information.attachmentIdMap information)
         let cellSize = Store.useValue Atoms.User.cellSize
 
         let detailsClick =
@@ -23,8 +24,23 @@ module InformationName =
                         if deviceInfo.IsMobile then Store.set setter Atoms.User.leftDock None
                         Store.set setter Atoms.User.rightDock (Some TempUI.DockType.Information)
                         Store.set setter (Atoms.User.uiFlag UIFlagType.Information) (information |> UIFlag.Information)
+
+                        let databaseIdSearch =
+                            attachmentIdMap
+                            |> Map.map (fun _ attachmentIdSet -> not attachmentIdSet.IsEmpty)
+                            |> Map.toList
+                            |> List.filter snd
+                            |> List.map fst
+
+                        Store.set
+                            setter
+                            Atoms.User.lastInformationDatabase
+                            (match databaseIdSearch with
+                             | [ databaseId ] -> Some databaseId
+                             | _ -> None)
                     }),
                 [|
+                    box attachmentIdMap
                     box information
                 |]
             )
@@ -60,5 +76,11 @@ module InformationName =
                                 x.onClick <- detailsClick)
                     ]
 
-                AttachmentIndicator.AttachmentIndicator (attachmentIdSet |> Set.toList)
+                if attachmentIdMap
+                   |> Map.values
+                   |> Seq.map Set.count
+                   |> Seq.sum > 0 then
+                    AttachmentIndicator.AttachmentIndicator ()
+                else
+                    nothing
             ]

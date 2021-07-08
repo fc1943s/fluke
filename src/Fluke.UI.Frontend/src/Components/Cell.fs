@@ -121,7 +121,10 @@ module Cell =
                 | true, UserStatus (_username, _manualCellStatus) -> CellStatusUserIndicator.CellStatusUserIndicator ()
                 | _ -> nothing
 
-                AttachmentIndicator.AttachmentIndicator (attachmentIdSet |> Set.toList)
+                if not attachmentIdSet.IsEmpty then
+                    AttachmentIndicator.AttachmentIndicator ()
+                else
+                    nothing
             ]
 
     [<ReactComponent>]

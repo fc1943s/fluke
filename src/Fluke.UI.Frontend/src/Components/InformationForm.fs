@@ -1,34 +1,51 @@
 namespace Fluke.UI.Frontend.Components
 
 open Feliz
-open Fable.React
+open Fluke.Shared.Domain.Model
+open Fluke.Shared.Domain.State
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
+open System
+open Fluke.Shared.Domain
+open Fluke.Shared
 
 
 module InformationForm =
     [<ReactComponent>]
     let rec InformationForm information =
-        let attachmentIdSet = Store.useValue (Selectors.Information.attachmentIdSet information)
+        let attachmentIdMap =
+            Store.useValue (
+                Selectors.Information.attachmentIdMap (
+                    information
+                    |> Option.defaultValue (Area Area.Default)
+                )
+            )
+
         let setInformationUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Information)
+
+        let databaseId, setDatabaseId = Store.useState Atoms.User.lastInformationDatabase
 
         let onAttachmentAdd =
             Store.useCallback (
                 (fun _ setter attachmentId ->
                     promise {
-                        Store.change
-                            setter
-                            Atoms.User.informationAttachmentMap
-                            (fun informationAttachmentMap ->
-                                informationAttachmentMap
-                                |> Map.add
-                                    information
-                                    (informationAttachmentMap
-                                     |> Map.tryFind information
-                                     |> Option.defaultValue Set.empty
-                                     |> Set.add attachmentId))
+                        match databaseId, information with
+                        | Some databaseId, Some information ->
+                            Store.change
+                                setter
+                                (Atoms.Database.informationAttachmentMap databaseId)
+                                (fun informationAttachmentMap ->
+                                    informationAttachmentMap
+                                    |> Map.add
+                                        information
+                                        (informationAttachmentMap
+                                         |> Map.tryFind information
+                                         |> Option.defaultValue Set.empty
+                                         |> Set.add attachmentId))
+                        | _ -> ()
                     }),
                 [|
+                    box databaseId
                     box information
                 |]
             )
@@ -37,21 +54,29 @@ module InformationForm =
             Store.useCallback (
                 (fun getter setter attachmentId ->
                     promise {
-                        Store.change
-                            setter
-                            Atoms.User.informationAttachmentMap
-                            (fun informationAttachmentMap ->
-                                informationAttachmentMap
-                                |> Map.add
-                                    information
-                                    (informationAttachmentMap
-                                     |> Map.tryFind information
-                                     |> Option.defaultValue Set.empty
-                                     |> Set.remove attachmentId))
+                        let databaseIdSearch =
+                            attachmentIdMap
+                            |> Map.tryFindKey (fun _ attachmentIdSet -> attachmentIdSet.Contains attachmentId)
 
-                        do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                        match databaseIdSearch, information with
+                        | Some databaseIdSearch, Some information ->
+                            Store.change
+                                setter
+                                (Atoms.Database.informationAttachmentMap databaseIdSearch)
+                                (fun informationAttachmentMap ->
+                                    informationAttachmentMap
+                                    |> Map.add
+                                        information
+                                        (informationAttachmentMap
+                                         |> Map.tryFind information
+                                         |> Option.defaultValue Set.empty
+                                         |> Set.remove attachmentId))
+
+                            do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
+                        | _ -> ()
                     }),
                 [|
+                    box attachmentIdMap
                     box information
                 |]
             )
@@ -68,32 +93,44 @@ module InformationForm =
                     [
                         "Info",
                         (Chakra.stack
-                            (fun x -> x.spacing <- "10px")
+                            (fun x -> x.spacing <- "15px")
                             [
-                                Chakra.box
-                                    (fun _ -> ())
-                                    [
-                                        InformationSelector.InformationSelector
-                                            {|
-                                                DisableResource = false
-                                                SelectionType = InformationSelector.InformationSelectionType.Information
-                                                Information = information
-                                                OnSelect = UIFlag.Information >> setInformationUIFlag
-                                            |}
-                                    ]
+                                DatabaseSelector.DatabaseSelector
+                                    (databaseId
+                                     |> Option.defaultValue Database.Default.Id)
+                                    (Some >> setDatabaseId)
+
+                                InformationSelector.InformationSelector
+                                    {|
+                                        DisableResource = false
+                                        SelectionType = InformationSelector.InformationSelectionType.Information
+                                        Information = information
+                                        OnSelect = UIFlag.Information >> setInformationUIFlag
+                                    |}
                             ])
 
-                        "Attachments",
-                        (Chakra.stack
-                            (fun x ->
-                                x.spacing <- "10px"
-                                x.flex <- "1")
-                            [
-                                AttachmentPanel.AttachmentPanel
-                                    onAttachmentAdd
-                                    onAttachmentDelete
-                                    (attachmentIdSet |> Set.toList)
-                            ])
+                        match information with
+                        | Some information when
+                            information
+                            |> Information.Name
+                            |> InformationName.Value
+                            |> String.IsNullOrWhiteSpace
+                            |> not ->
+                            "Attachments",
+                            (Chakra.stack
+                                (fun x ->
+                                    x.spacing <- "10px"
+                                    x.flex <- "1")
+                                [
+                                    AttachmentPanel.AttachmentPanel
+                                        (if databaseId.IsSome then Some onAttachmentAdd else None)
+                                        onAttachmentDelete
+                                        (attachmentIdMap
+                                         |> Map.values
+                                         |> Seq.fold Set.union Set.empty
+                                         |> Seq.toList)
+                                ])
+                        | _ -> ()
                     ]
             |}
 
@@ -106,11 +143,4 @@ module InformationForm =
             | UIFlag.Information information -> Some information
             | _ -> None
 
-        match information with
-        | Some information -> InformationForm information
-        | _ ->
-            Chakra.box
-                (fun x -> x.padding <- "15px")
-                [
-                    str "No information selected"
-                ]
+        InformationForm information

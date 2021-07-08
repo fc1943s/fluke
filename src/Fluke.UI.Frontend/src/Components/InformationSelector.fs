@@ -20,18 +20,18 @@ module InformationSelector =
 
     let isVisibleInformation informationString information =
         match information with
-        | information when
+        | Some information when
             information
             |> Information.Name
             |> InformationName.Value
             |> String.IsNullOrWhiteSpace -> false
-        | information when
+        | Some information when
             information |> Information.isProject
             && informationString = nameof Project -> true
-        | information when
+        | Some information when
             information |> Information.isArea
             && informationString = nameof Area -> true
-        | information when
+        | Some information when
             information |> Information.isResource
             && informationString = nameof Resource -> true
         | _ -> false
@@ -40,17 +40,18 @@ module InformationSelector =
     let InformationSelector
         (input: {| DisableResource: bool
                    SelectionType: InformationSelectionType
-                   Information: Information
+                   Information: Information option
                    OnSelect: Information -> unit |})
         =
         let informationName, informationSelected =
             React.useMemo (
                 (fun () ->
                     input.Information
-                    |> Information.Name
-                    |> InformationName.Value,
-
-                    input.Information |> Information.toString),
+                    |> Option.map (Information.Name >> InformationName.Value)
+                    |> Option.defaultValue "",
+                    input.Information
+                    |> Option.map Information.toString
+                    |> Option.defaultValue ""),
                 [|
                     box input.Information
                 |]
@@ -78,8 +79,10 @@ module InformationSelector =
             React.useMemo (
                 (fun () ->
                     informationSet
-                    |> Set.add input.Information
-                    |> Set.filter (isVisibleInformation informationSelected)
+                    |> (match input.Information with
+                        | Some information -> Set.add information
+                        | _ -> id)
+                    |> Set.filter (fun information -> isVisibleInformation informationSelected (Some information))
                     |> Set.toList),
                 [|
                     box informationSelected
@@ -93,7 +96,11 @@ module InformationSelector =
                 (fun () ->
                     sortedInformationList
                     |> List.sort
-                    |> List.tryFindIndex ((=) input.Information)
+                    |> List.tryFindIndex
+                        (fun information ->
+                            match input.Information with
+                            | Some information' -> information' = information
+                            | _ -> false)
                     |> Option.defaultValue -1),
                 [|
                     box sortedInformationList
@@ -319,7 +326,7 @@ module InformationSelector =
                                                                 | nameof Project ->
                                                                     ProjectForm.ProjectForm
                                                                         (match input.Information with
-                                                                         | Project project -> project
+                                                                         | Some (Project project) -> project
                                                                          | _ -> Project.Default)
                                                                         (fun project ->
                                                                             promise {
@@ -331,7 +338,7 @@ module InformationSelector =
                                                                 | nameof Area ->
                                                                     AreaForm.AreaForm
                                                                         (match input.Information with
-                                                                         | Area area -> area
+                                                                         | Some (Area area) -> area
                                                                          | _ -> Area.Default)
                                                                         (fun area ->
                                                                             promise {
@@ -343,7 +350,7 @@ module InformationSelector =
                                                                 | nameof Resource ->
                                                                     ResourceForm.ResourceForm
                                                                         (match input.Information with
-                                                                         | Resource resource -> resource
+                                                                         | Some (Resource resource) -> resource
                                                                          | _ -> Resource.Default)
                                                                         (fun resource ->
                                                                             promise {

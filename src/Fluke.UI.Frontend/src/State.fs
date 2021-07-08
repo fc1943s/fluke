@@ -3,7 +3,6 @@ namespace Fluke.UI.Frontend
 #nowarn "40"
 
 open Fable.Extras
-open Fable.Core.JsInterop
 open System
 open Fluke.Shared
 open Fluke.Shared.Domain
@@ -39,7 +38,7 @@ module State =
         | Task of DatabaseId * TaskId
         | Cell of TaskId * DateId
         | File of FileId
-        | RawImage of url:string
+        | RawImage of url: string
 
     [<RequireQualifiedAccess>]
     type UIFlagType =
@@ -94,8 +93,8 @@ module State =
             FontSize: int
             HideSchedulingOverlay: bool
             HideTemplates: bool
-            InformationAttachmentMap: Map<Information, Set<AttachmentId>>
             Language: Language
+            LastInformationDatabase: DatabaseId option
             LeftDock: TempUI.DockType option
             RightDock: TempUI.DockType option
             SearchText: string
@@ -128,8 +127,8 @@ module State =
                 FontSize = 15
                 HideSchedulingOverlay = false
                 HideTemplates = false
-                InformationAttachmentMap = Map.empty
                 Language = Language.English
+                LastInformationDatabase = None
                 LeftDock = None
                 RightDock = None
                 SearchText = ""
@@ -237,12 +236,23 @@ module State =
                 Store.atomWithSync ($"{nameof User}/{nameof hideTemplates}", UserState.Default.HideTemplates, [])
 
             let rec enableCellPopover =
-                Store.atomWithSync ($"{nameof User}/{nameof enableCellPopover}", UserState.Default.EnableCellPopover, [])
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof enableCellPopover}",
+                    UserState.Default.EnableCellPopover,
+                    []
+                )
 
             let rec hideSchedulingOverlay =
                 Store.atomWithSync (
                     $"{nameof User}/{nameof hideSchedulingOverlay}",
                     UserState.Default.HideSchedulingOverlay,
+                    []
+                )
+
+            let rec lastInformationDatabase =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof lastInformationDatabase}",
+                    UserState.Default.LastInformationDatabase,
                     []
                 )
 
@@ -253,13 +263,6 @@ module State =
                 Store.atomWithSync (
                     $"{nameof User}/{nameof filterTasksByView}",
                     UserState.Default.FilterTasksByView,
-                    []
-                )
-
-            let rec informationAttachmentMap =
-                Store.atomWithSync (
-                    $"{nameof User}/{nameof informationAttachmentMap}",
-                    UserState.Default.InformationAttachmentMap,
                     []
                 )
 
@@ -344,6 +347,13 @@ module State =
                 Store.atomFamilyWithSync (
                     $"{nameof Database}/{nameof position}",
                     (fun (_databaseId: DatabaseId) -> Database.Default.Position),
+                    databaseIdIdentifier
+                )
+
+            let rec informationAttachmentMap =
+                Store.atomFamilyWithSync (
+                    $"{nameof Database}/{nameof informationAttachmentMap}",
+                    (fun (_databaseId: DatabaseId) -> Map.empty: Map<Information, Set<AttachmentId>>),
                     databaseIdIdentifier
                 )
 
@@ -716,34 +726,30 @@ module State =
                 )
 
 
-
         module Information =
-            let rec attachmentIdSet =
+            let rec attachmentIdMap =
                 Store.readSelectorFamily (
-                    $"{nameof Information}/{nameof attachmentIdSet}",
+                    $"{nameof Information}/{nameof attachmentIdMap}",
                     (fun (information: Information) getter ->
-                        Store.value getter Atoms.User.informationAttachmentMap
-                        |> Map.tryFind information
-                        |> Option.defaultValue Set.empty)
+                        let selectedDatabaseIdArray =
+                            Store.value getter Atoms.User.selectedDatabaseIdSet
+                            |> Set.toArray
+
+                        let informationAttachmentMapArray =
+                            selectedDatabaseIdArray
+                            |> Array.map Atoms.Database.informationAttachmentMap
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        informationAttachmentMapArray
+                        |> Array.mapi
+                            (fun i informationAttachmentMap ->
+                                selectedDatabaseIdArray.[i],
+                                informationAttachmentMap
+                                |> Map.tryFind information
+                                |> Option.defaultValue Set.empty)
+                        |> Map.ofSeq)
                 )
-
-        //                        |> Set.toArray
-//                        |> Array.map Attachment.attachment
-//                        |> Store.waitForAll
-//                        |> Store.value getter
-//                        |> Array.toList
-//                        |> List.choose id
-
-        //            let rec informationState =
-//                Store.readSelectorFamily (
-//                    $"{nameof Information}/{nameof informationState}",
-//                    (fun (information: Information) getter ->
-//                        {
-//                            Information = information
-//                            Attachments = Store.value getter (attachments information)
-//                            SortList = []
-//                        })
-//                )
 
 
         module Task =
@@ -1166,9 +1172,18 @@ module State =
                 Store.readSelector (
                     $"{nameof Session}/{nameof informationSet}",
                     (fun getter ->
+                        let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+
+                        let informationAttachmentMapArray =
+                            selectedDatabaseIdSet
+                            |> Set.toArray
+                            |> Array.map Atoms.Database.informationAttachmentMap
+                            |> Store.waitForAll
+                            |> Store.value getter
+
                         let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
 
-                        let informationArray =
+                        let taskInformationArray =
                             selectedTaskIdAtoms
                             |> Array.map (Store.value getter)
                             |> Array.map Atoms.Task.information
@@ -1176,15 +1191,23 @@ module State =
                             |> Store.value getter
 
                         let projectAreas =
-                            informationArray
+                            taskInformationArray
                             |> Array.choose
                                 (fun information ->
                                     match information with
                                     | Project project -> Some (Area project.Area)
                                     | _ -> None)
 
-                        informationArray
+                        taskInformationArray
                         |> Array.append projectAreas
+                        |> Array.append (
+                            informationAttachmentMapArray
+                            |> Array.collect (
+                                Map.filter (fun _ attachments -> attachments |> Set.isEmpty |> not)
+                                >> Map.keys
+                                >> Seq.toArray
+                            )
+                        )
                         |> Array.filter
                             (fun information ->
                                 information
@@ -1364,16 +1387,30 @@ module State =
 
                         let informationSet = Store.value getter informationSet
 
-                        let informationArray =
+                        let taskInformationArray =
                             sortedTaskIdList
                             |> List.toArray
                             |> Array.map Atoms.Task.information
                             |> Store.waitForAll
                             |> Store.value getter
 
-                        sortedTaskIdList
-                        |> List.indexed
-                        |> List.groupBy (fun (i, _) -> informationArray.[i])
+                        let taskMap =
+                            sortedTaskIdList
+                            |> List.mapi (fun i taskId -> taskInformationArray.[i], taskId)
+                            |> List.groupBy fst
+                            |> List.map (fun (information, tasks) -> information, tasks |> List.map snd)
+                            |> Map.ofList
+
+                        informationSet
+                        |> Set.toList
+                        |> List.map
+                            (fun information ->
+                                let tasks =
+                                    taskMap
+                                    |> Map.tryFind information
+                                    |> Option.defaultValue []
+
+                                information, tasks)
                         |> List.sortBy (fun (information, _) -> information |> Information.Name)
                         |> List.groupBy (fun (information, _) -> Information.toString information)
                         |> List.sortBy (
@@ -1388,8 +1425,7 @@ module State =
                                         -1
                             )
                             >> Option.defaultValue -1
-                        )
-                        |> List.map (fun (a, b) -> a, b |> List.map (fun (c, d) -> c, d |> List.map snd)))
+                        ))
                 )
 
             let rec selectionSetMap =

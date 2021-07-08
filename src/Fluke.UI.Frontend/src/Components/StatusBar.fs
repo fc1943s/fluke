@@ -242,14 +242,15 @@ module StatusBar =
             |> Store.waitForAll
             |> Store.useValue
 
-        let informationAttachments =
+        let informationAttachmentSet =
             informationSet
             |> Set.toArray
-            |> Array.map Selectors.Information.attachmentIdSet
+            |> Array.map Selectors.Information.attachmentIdMap
             |> Store.waitForAll
             |> Store.useValue
-            |> Array.map Set.toArray
+            |> Array.map (Map.values >> Seq.toArray)
             |> Array.collect id
+            |> Array.fold Set.union Set.empty
 
         let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
 
@@ -281,7 +282,7 @@ module StatusBar =
                     let database = databaseIdAtoms.Length
                     let information = informationSet.Count
                     let tasks = selectedTaskIdList.Length
-                    let informationAttachment = informationAttachments.Length
+                    let informationAttachment = informationAttachmentSet.Count
                     let taskAttachment = taskAttachments.Length
 
                     let cellStatus =
@@ -332,7 +333,7 @@ module StatusBar =
                     box taskAttachments
                     box selectedTaskIdList
                     box cellStateMapArray
-                    box informationAttachments
+                    box informationAttachmentSet
                     box cellAttachmentMapArray
                     box informationSet
                     box taskSessionLength
@@ -424,7 +425,7 @@ module StatusBar =
                                 Tooltip.wrap
                                     (NowIndicator ())
                                     [
-                                        str $"Position: {position |> FlukeDateTime.Stringify}"
+                                        str $"Position: {(position |> FlukeDateTime.Stringify).[0..-4]}"
                                     ]
                             ]
                     ]

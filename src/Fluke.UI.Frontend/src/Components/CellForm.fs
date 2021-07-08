@@ -103,7 +103,7 @@ module CellForm =
                                 x.flex <- "1")
                             [
                                 AttachmentPanel.AttachmentPanel
-                                    onAttachmentAdd
+                                    (Some onAttachmentAdd)
                                     onAttachmentDelete
                                     (attachmentIdSet |> Set.toList)
                             ])

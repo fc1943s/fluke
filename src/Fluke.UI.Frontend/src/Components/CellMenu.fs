@@ -133,8 +133,10 @@ module CellMenu =
 
                         match onClose with
                         | Some onClose when
-                            newMap.Count = 1
-                            && newMap |> Map.values |> Seq.head |> Set.count = 1 -> onClose ()
+                            newMap
+                            |> Map.values
+                            |> Seq.map Set.count
+                            |> Seq.sum = 1 -> onClose ()
                         | _ -> ()
                     }),
                 [|
