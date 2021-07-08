@@ -56,6 +56,14 @@ module RightDock =
                             Content = CellForm.CellFormWrapper
                             RightIcons = []
                         |}
+
+                        TempUI.DockType.Search,
+                        {|
+                            Name = "Search"
+                            Icon = Icons.bs.BsSearch
+                            Content = SearchForm.SearchForm
+                            RightIcons = []
+                        |}
                     ]),
                 [||]
             )

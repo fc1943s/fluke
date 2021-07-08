@@ -12,7 +12,6 @@ module ViewTabs =
 
     [<ReactComponent>]
     let ViewTabs () =
-        let showViewOptions = Store.useValue Atoms.User.showViewOptions
         let view, setView = Store.useState Atoms.User.view
         let filteredTaskIdSet = Store.useValue Selectors.Session.filteredTaskIdSet
         let sortedTaskIdList = Store.useValue Selectors.Session.sortedTaskIdList
@@ -155,50 +154,32 @@ module ViewTabs =
                                                 MenuItemToggle.MenuItemToggle
                                                     Atoms.User.hideSchedulingOverlay
                                                     "Hide Scheduling Overlay"
-
-                                                MenuItemToggle.MenuItemToggle
-                                                    Atoms.User.showViewOptions
-                                                    "Show View Options"
                                             ]
                                         MenuListProps = fun _ -> ()
                                     |}
                             ]
                     ]
 
-                if showViewOptions then
-                    Chakra.stack
-                        (fun x ->
-                            x.paddingTop <- "4px"
-                            x.paddingRight <- "10px"
-                            x.paddingBottom <- "4px"
-                            x.paddingLeft <- "10px")
-                        [
-                            Chakra.box
-                                (fun x -> x.marginLeft <- "2px")
-                                [
-                                    CheckboxInput.CheckboxInput
-                                        {|
-                                            Atom = Atoms.User.filterTasksByView
-                                            Label = Some "Filter tasks by view"
-                                            Props = (fun _ -> ())
-                                        |}
-                                ]
-
-                            Input.LeftIconInput
-                                {|
-                                    Icon = Icons.bs.BsSearch |> Icons.render
-                                    CustomProps =
-                                        fun x ->
-                                            x.atom <-
-                                                Some (Store.InputAtom (Store.AtomReference.Atom Atoms.User.searchText))
-                                    Props =
-                                        fun x ->
-                                            x.autoFocus <- true
-                                            x.placeholder <- "Search task or information"
-                                |}
-                        ]
-                else
-                    nothing
+                Chakra.stack
+                    (fun x ->
+                        x.paddingTop <- "4px"
+                        x.paddingRight <- "10px"
+                        x.paddingBottom <- "4px"
+                        x.paddingLeft <- "10px")
+                    [
+                        Input.LeftIconInput
+                            {|
+                                Icon = Icons.bs.BsSearch |> Icons.render
+                                CustomProps =
+                                    fun x ->
+                                        x.atom <-
+                                            Some (Store.InputAtom (Store.AtomReference.Atom Atoms.User.filterTasksText))
+                                Props =
+                                    fun x ->
+                                        x.autoFocus <- true
+                                        x.placeholder <- "Filter Tasks"
+                            |}
+                    ]
 
                 Chakra.tabPanels
                     (fun x ->

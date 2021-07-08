@@ -223,105 +223,8 @@ module Hydrate =
     let useExportDatabase () =
         let toast = Chakra.useToast ()
 
-        let fetch =
-            Store.useCallback (
-                (fun getter _ databaseId ->
-                    promise {
-                        let database = Store.value getter (Selectors.Database.database databaseId)
-
-                        let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
-
-                        let taskStateList =
-                            taskIdAtoms
-                            |> Array.toList
-                            |> List.map (Store.value getter)
-                            |> List.map Selectors.Task.taskState
-                            |> List.map (Store.value getter)
-
-                        let fileIdList =
-                            taskStateList
-                            |> List.collect
-                                (fun taskState ->
-                                    taskState.Attachments
-                                    |> List.choose
-                                        (fun (_, attachment) ->
-                                            match attachment with
-                                            | Attachment.Image fileId -> Some fileId
-                                            | _ -> None))
-
-                        let hexStringList =
-                            fileIdList
-                            |> List.map Selectors.File.hexString
-                            |> List.toArray
-                            |> Store.waitForAll
-                            |> Store.value getter
-
-                        if hexStringList |> Array.contains None then
-                            return (Error "Invalid files present")
-                        else
-                            let fileMap =
-                                fileIdList
-                                |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
-                                |> Map.ofList
-
-                            let informationAttachmentMap =
-                                Store.value getter (Atoms.Database.informationAttachmentMap databaseId)
-
-                            let informationStateMap =
-                                informationAttachmentMap
-                                |> Map.map
-                                    (fun information attachmentIdSet ->
-                                        let attachments =
-                                            attachmentIdSet
-                                            |> Set.toArray
-                                            |> Array.map Selectors.Attachment.attachment
-                                            |> Store.waitForAll
-                                            |> Store.value getter
-                                            |> Array.toList
-                                            |> List.choose id
-
-                                        {
-                                            Information = information
-                                            Attachments = attachments
-                                            SortList = []
-                                        })
-                                |> Map.filter
-                                    (fun _ informationState ->
-                                        not informationState.Attachments.IsEmpty
-                                        || not informationState.SortList.IsEmpty)
-
-                            let taskStateMap =
-                                taskStateList
-                                |> List.map (fun taskState -> taskState.Task.Id, taskState)
-                                |> Map.ofSeq
-
-                            let databaseState =
-                                {
-                                    Database = database
-                                    InformationStateMap = informationStateMap
-                                    TaskStateMap = taskStateMap
-                                    FileMap = fileMap
-                                }
-
-                            if databaseState.TaskStateMap
-                               |> Map.exists
-                                   (fun _ taskState ->
-                                       taskState.Task.Name
-                                       |> TaskName.Value
-                                       |> String.IsNullOrWhiteSpace
-                                       || taskState.Task.Information
-                                          |> Information.Name
-                                          |> InformationName.Value
-                                          |> String.IsNullOrWhiteSpace) then
-                                return (Error "Database is not fully synced")
-                            else
-                                return Ok databaseState
-                    }
-                 , [||])
-            )
-
         Store.useCallback (
-            (fun _ _ databaseId ->
+            (fun getter _ databaseId ->
                 promise {
                     toast
                         (fun x ->
@@ -329,11 +232,11 @@ module Hydrate =
                             x.title <- "Loading"
                             x.status <- "warning")
 
-                    let! _firstFetch = fetch databaseId
+                    let _firstFetch = Store.value getter (Selectors.Database.databaseState databaseId)
 
                     do! Promise.sleep 4000
 
-                    let! secondFetch = fetch databaseId
+                    let secondFetch = Store.value getter (Selectors.Database.databaseState databaseId)
 
                     match secondFetch with
                     | Ok databaseState ->
@@ -357,7 +260,6 @@ module Hydrate =
                     | Error error -> toast (fun x -> x.description <- error)
                 }),
             [|
-                box fetch
                 box toast
             |]
         )

@@ -7,7 +7,7 @@ open Fluke.Shared
 open Feliz
 
 
-module Chakra =
+module UI =
     open React
 
     type IBreakpoints<'T> =

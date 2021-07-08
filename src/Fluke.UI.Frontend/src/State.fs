@@ -90,6 +90,7 @@ module State =
             EnableCellPopover: bool
             ExpandedDatabaseIdSet: Set<DatabaseId>
             FilterTasksByView: bool
+            FilterTasksText: string
             FontSize: int
             HideSchedulingOverlay: bool
             HideTemplates: bool
@@ -103,7 +104,6 @@ module State =
             SelectedDatabaseIdSet: Set<DatabaseId>
             SessionBreakDuration: Minute
             SessionDuration: Minute
-            ShowViewOptions: bool
             SystemUiFont: bool
             UIFlagMap: Map<UIFlagType, UIFlag>
             UIVisibleFlagMap: Map<UIFlagType, bool>
@@ -126,6 +126,7 @@ module State =
                 EnableCellPopover = true
                 ExpandedDatabaseIdSet = Set.empty
                 FilterTasksByView = true
+                FilterTasksText = ""
                 FontSize = 15
                 HideSchedulingOverlay = false
                 HideTemplates = false
@@ -139,7 +140,6 @@ module State =
                 SelectedDatabaseIdSet = Set.empty
                 SessionBreakDuration = Minute 5
                 SessionDuration = Minute 25
-                ShowViewOptions = false
                 SystemUiFont = true
                 UIFlagMap = Map.empty
                 UIVisibleFlagMap = Map.empty
@@ -222,6 +222,9 @@ module State =
                     []
                 )
 
+            let rec filterTasksText =
+                Store.atomWithSync ($"{nameof User}/{nameof filterTasksText}", UserState.Default.FilterTasksText, [])
+
             let rec fontSize =
                 Store.atomWithStorageSync ($"{nameof User}/{nameof fontSize}", UserState.Default.FontSize, id)
 
@@ -274,9 +277,6 @@ module State =
 
             let rec sessionDuration =
                 Store.atomWithSync ($"{nameof User}/{nameof sessionDuration}", UserState.Default.SessionDuration, [])
-
-            let rec showViewOptions =
-                Store.atomWithSync ($"{nameof User}/{nameof showViewOptions}", UserState.Default.ShowViewOptions, [])
 
             let rec systemUiFont =
                 Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont, id)
@@ -658,6 +658,101 @@ module State =
                                 let taskId = Store.value getter taskIdAtom
                                 let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
                                 databaseId = databaseId'))
+                )
+
+            let rec databaseState =
+                Store.readSelectorFamily (
+                    $"{nameof Database}/{nameof databaseState}",
+                    (fun databaseId getter ->
+                        let database = Store.value getter (Selectors.Database.database databaseId)
+
+                        let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
+
+                        let taskStateList : TaskState list =
+                            taskIdAtoms
+                            |> Array.toList
+                            |> List.map (Store.value getter)
+                            |> List.map Selectors.Task.taskState
+                            |> List.map (Store.value getter)
+
+                        let fileIdList =
+                            taskStateList
+                            |> List.collect
+                                (fun taskState ->
+                                    taskState.Attachments
+                                    |> List.choose
+                                        (fun (_, attachment) ->
+                                            match attachment with
+                                            | Attachment.Image fileId -> Some fileId
+                                            | _ -> None))
+
+                        let hexStringList =
+                            fileIdList
+                            |> List.map Selectors.File.hexString
+                            |> List.toArray
+                            |> Store.waitForAll
+                            |> Store.value getter
+
+                        if hexStringList |> Array.contains None then
+                            Error "Invalid files present"
+                        else
+                            let fileMap =
+                                fileIdList
+                                |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
+                                |> Map.ofList
+
+                            let informationAttachmentMap =
+                                Store.value getter (Atoms.Database.informationAttachmentMap databaseId)
+
+                            let informationStateMap =
+                                informationAttachmentMap
+                                |> Map.map
+                                    (fun information attachmentIdSet ->
+                                        let attachments =
+                                            attachmentIdSet
+                                            |> Set.toArray
+                                            |> Array.map Selectors.Attachment.attachment
+                                            |> Store.waitForAll
+                                            |> Store.value getter
+                                            |> Array.toList
+                                            |> List.choose id
+
+                                        {
+                                            Information = information
+                                            Attachments = attachments
+                                            SortList = []
+                                        })
+                                |> Map.filter
+                                    (fun _ informationState ->
+                                        not informationState.Attachments.IsEmpty
+                                        || not informationState.SortList.IsEmpty)
+
+                            let taskStateMap =
+                                taskStateList
+                                |> List.map (fun taskState -> taskState.Task.Id, taskState)
+                                |> Map.ofSeq
+
+                            let databaseState =
+                                {
+                                    Database = database
+                                    InformationStateMap = informationStateMap
+                                    TaskStateMap = taskStateMap
+                                    FileMap = fileMap
+                                }
+
+                            if databaseState.TaskStateMap
+                               |> Map.exists
+                                   (fun _ taskState ->
+                                       taskState.Task.Name
+                                       |> TaskName.Value
+                                       |> String.IsNullOrWhiteSpace
+                                       || taskState.Task.Information
+                                          |> Information.Name
+                                          |> InformationName.Value
+                                          |> String.IsNullOrWhiteSpace) then
+                                Error "Database is not fully synced"
+                            else
+                                Ok databaseState)
                 )
 
 
@@ -1281,7 +1376,7 @@ module State =
                     $"{nameof Session}/{nameof filteredTaskIdSet}",
                     (fun getter ->
                         let filterTasksByView = Store.value getter Atoms.User.filterTasksByView
-                        let searchText = Store.value getter Atoms.User.searchText
+                        let filterTasksText = Store.value getter Atoms.User.filterTasksText
                         let view = Store.value getter Atoms.User.view
                         let dateSequence = Store.value getter dateSequence
 
@@ -1299,13 +1394,13 @@ module State =
                             |> Array.toList
 
                         let selectedTaskListSearch =
-                            match searchText with
+                            match filterTasksText with
                             | "" -> selectedTaskList
                             | _ ->
                                 selectedTaskList
                                 |> List.filter
                                     (fun task ->
-                                        let check (text: string) = text.IndexOf searchText >= 0
+                                        let check (text: string) = text.IndexOf filterTasksText >= 0
 
                                         (task.Name |> TaskName.Value |> check)
                                         || (task.Information

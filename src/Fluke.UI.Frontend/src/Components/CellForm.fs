@@ -9,6 +9,7 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
 open Fluke.UI.Frontend.State
 
+
 module CellForm =
     [<ReactComponent>]
     let rec CellForm (taskId: TaskId) (dateId: DateId) =

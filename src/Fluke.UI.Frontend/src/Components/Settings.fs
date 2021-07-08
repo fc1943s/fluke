@@ -346,13 +346,6 @@ module Settings =
 
                                 CheckboxInput.CheckboxInput
                                     {|
-                                        Atom = Atoms.User.enableCellPopover
-                                        Label = Some "Enable Cell Click Popup"
-                                        Props = fun _ -> ()
-                                    |}
-
-                                CheckboxInput.CheckboxInput
-                                    {|
                                         Atom = Atoms.User.darkMode
                                         Label = Some "Dark Mode"
                                         Props = fun _ -> ()
@@ -362,6 +355,20 @@ module Settings =
                                     {|
                                         Atom = Atoms.User.systemUiFont
                                         Label = Some "System UI Font"
+                                        Props = fun _ -> ()
+                                    |}
+
+                                CheckboxInput.CheckboxInput
+                                    {|
+                                        Atom = Atoms.User.filterTasksByView
+                                        Label = Some "Filter Tasks by View"
+                                        Props = fun _ -> ()
+                                    |}
+
+                                CheckboxInput.CheckboxInput
+                                    {|
+                                        Atom = Atoms.User.enableCellPopover
+                                        Label = Some "Enable Cell Click Popup"
                                         Props = fun _ -> ()
                                     |}
 

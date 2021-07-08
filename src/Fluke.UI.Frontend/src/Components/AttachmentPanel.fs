@@ -142,7 +142,8 @@ module AttachmentPanel =
                 x.userSelect <- "text"
                 x.overflow <- "auto"
                 x.paddingTop <- "2px"
-                x.paddingBottom <- "2px")
+                x.paddingBottom <- "2px"
+                x.maxHeight <- "50vh")
             [
                 Markdown.render text
 

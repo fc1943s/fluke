@@ -22,6 +22,7 @@ module TempUI =
         | Information
         | Task
         | Cell
+        | Search
 
     type ActiveSession = ActiveSession of taskName: string * duration: Minute
 

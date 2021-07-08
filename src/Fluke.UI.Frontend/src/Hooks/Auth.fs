@@ -162,6 +162,7 @@ module Auth =
                                         set Atoms.User.enableCellPopover def.EnableCellPopover
                                         set Atoms.User.expandedDatabaseIdSet def.ExpandedDatabaseIdSet
                                         set Atoms.User.filterTasksByView def.FilterTasksByView
+                                        set Atoms.User.filterTasksText def.FilterTasksText
                                         set Atoms.User.fontSize def.FontSize
                                         set Atoms.User.hideSchedulingOverlay def.HideSchedulingOverlay
                                         set Atoms.User.hideTemplates def.HideTemplates
@@ -175,7 +176,6 @@ module Auth =
                                         set Atoms.User.selectedDatabaseIdSet def.SelectedDatabaseIdSet
                                         set Atoms.User.sessionBreakDuration def.SessionBreakDuration
                                         set Atoms.User.sessionDuration def.SessionDuration
-                                        set Atoms.User.showViewOptions def.ShowViewOptions
                                         set Atoms.User.systemUiFont def.SystemUiFont
                                         set Atoms.User.view def.View
                                         set Atoms.User.weekStart def.WeekStart
