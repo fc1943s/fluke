@@ -46,7 +46,7 @@ module StatusBar =
 //                            diffSeconds={diffSeconds}
 //                            diffMinutes={diffMinutes} "
 //
-                            if diffMinutes <= 60 then
+                            if diffMinutes >= 0 && diffMinutes <= 60 then
                                 React.fragment [
                                     br []
 

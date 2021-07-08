@@ -173,7 +173,8 @@ module DatabaseForm =
                                 Chakra.input
                                     (fun x ->
                                         x.``type`` <- "file"
-                                        x.padding <- "5px"
+                                        x.padding <- "10px"
+                                        x.height <- "43px"
                                         x.ref <- inputRef
                                         x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
                                     []

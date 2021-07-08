@@ -16,6 +16,8 @@ module InformationName =
         let attachmentIdMap = Store.useValue (Selectors.Information.attachmentIdMap information)
         let cellSize = Store.useValue Atoms.User.cellSize
 
+        let selectedDatabaseIdSet = Store.useValue Atoms.User.selectedDatabaseIdSet
+
         let detailsClick =
             Store.useCallback (
                 (fun getter setter _ ->
@@ -37,9 +39,14 @@ module InformationName =
                             Atoms.User.lastInformationDatabase
                             (match databaseIdSearch with
                              | [ databaseId ] -> Some databaseId
-                             | _ -> None)
+                             | _ ->
+                                 if selectedDatabaseIdSet.Count = 1 then
+                                     (selectedDatabaseIdSet |> Seq.head |> Some)
+                                 else
+                                     None)
                     }),
                 [|
+                    box selectedDatabaseIdSet
                     box attachmentIdMap
                     box information
                 |]

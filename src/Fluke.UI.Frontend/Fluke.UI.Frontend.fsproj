@@ -8,8 +8,8 @@
         <Compile Include="src\Bindings\Vendor\ReactIcons.fs" />
         <Compile Include="src\Bindings\Dom.fs" />
         <Compile Include="src\Bindings\CheckboxTree.fs" />
-        <Compile Include="src\Bindings\Resizable.fs" />
         <Compile Include="src\Bindings\JS.fs" />
+        <Compile Include="src\Bindings\Resizable.fs" />
         <Compile Include="src\Bindings\Electron.fs" />
         <Compile Include="src\Bindings\Profiling.fs" />
         <Compile Include="src\Bindings\Crypto.fs" />

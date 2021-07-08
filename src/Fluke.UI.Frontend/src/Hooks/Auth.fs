@@ -166,8 +166,11 @@ module Auth =
                                         set Atoms.User.hideSchedulingOverlay def.HideSchedulingOverlay
                                         set Atoms.User.hideTemplates def.HideTemplates
                                         set Atoms.User.language def.Language
+                                        set Atoms.User.lastInformationDatabase def.LastInformationDatabase
                                         set Atoms.User.leftDock def.LeftDock
+                                        set Atoms.User.leftDockSize def.LeftDockSize
                                         set Atoms.User.rightDock def.RightDock
+                                        set Atoms.User.rightDockSize def.RightDockSize
                                         set Atoms.User.searchText def.SearchText
                                         set Atoms.User.selectedDatabaseIdSet def.SelectedDatabaseIdSet
                                         set Atoms.User.sessionBreakDuration def.SessionBreakDuration

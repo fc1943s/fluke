@@ -19,6 +19,8 @@ module RightDock =
         let setLeftDock = Store.useSetState Atoms.User.leftDock
         let rightDock = Store.useValue Atoms.User.rightDock
 
+        let rightDockSize, setRightDockSize = Store.useState Atoms.User.rightDockSize
+
         let items =
             React.useMemo (
                 (fun () ->
@@ -69,56 +71,59 @@ module RightDock =
                     match itemsMap |> Map.tryFind rightDock with
                     | None -> nothing
                     | Some item ->
-                        //                        Resizable.resizable
-//                            {|
-//                                defaultSize = {| width = "300px" |}
-//                                minWidth = "300px"
-//                                enable =
-//                                    {|
-//                                        top = false
-//                                        right = false
-//                                        bottom = false
-//                                        left = true
-//                                        topRight = false
-//                                        bottomRight = false
-//                                        bottomLeft = false
-//                                        topLeft = false
-//                                    |}
-//                            |}
-//                            [
-                        Chakra.flex
-                            (fun x ->
-                                x.width <-
-                                    unbox (
-                                        JS.newObj
-                                            (fun (x: Chakra.IBreakpoints<string>) ->
-                                                x.``base`` <- "calc(100vw - 50px)"
-                                                x.md <- "300px")
-                                    )
-
-                                x.height <- "100%"
-                                x.borderLeftWidth <- "1px"
-                                x.borderLeftColor <- "gray.16"
-                                x.flex <- "1")
-                            [
-                                DockPanel.DockPanel
+                        Resizable.resizable
+                            {|
+                                size = {| width = $"{rightDockSize}px" |}
+                                onResizeStop =
+                                    fun _e _direction _ref (d: {| width: int |}) ->
+                                        setRightDockSize (rightDockSize + d.width)
+                                minWidth = "200px"
+                                enable =
                                     {|
-                                        Name = item.Name
-                                        Icon = item.Icon
-                                        RightIcons = item.RightIcons
-                                        Atom = Atoms.User.rightDock
-                                        children =
-                                            [
-                                                React.suspense (
-                                                    [
-                                                        item.Content ()
-                                                    ],
-                                                    LoadingSpinner.LoadingSpinner ()
-                                                )
-                                            ]
+                                        top = false
+                                        right = false
+                                        bottom = false
+                                        left = true
+                                        topRight = false
+                                        bottomRight = false
+                                        bottomLeft = false
+                                        topLeft = false
                                     |}
+                            |}
+                            [
+                                Chakra.flex
+                                    (fun x ->
+                                        x.width <-
+                                            unbox (
+                                                JS.newObj
+                                                    (fun (x: Chakra.IBreakpoints<string>) ->
+                                                        x.``base`` <- "calc(100vw - 50px)"
+                                                        x.md <- "auto")
+                                            )
+
+                                        x.height <- "100%"
+                                        x.borderLeftWidth <- "1px"
+                                        x.borderLeftColor <- "gray.16"
+                                        x.flex <- "1")
+                                    [
+                                        DockPanel.DockPanel
+                                            {|
+                                                Name = item.Name
+                                                Icon = item.Icon
+                                                RightIcons = item.RightIcons
+                                                Atom = Atoms.User.rightDock
+                                                children =
+                                                    [
+                                                        React.suspense (
+                                                            [
+                                                                item.Content ()
+                                                            ],
+                                                            LoadingSpinner.LoadingSpinner ()
+                                                        )
+                                                    ]
+                                            |}
+                                    ]
                             ]
-                //                            ]
 
                 Chakra.box
                     (fun x ->

@@ -96,7 +96,9 @@ module State =
             Language: Language
             LastInformationDatabase: DatabaseId option
             LeftDock: TempUI.DockType option
+            LeftDockSize: int
             RightDock: TempUI.DockType option
+            RightDockSize: int
             SearchText: string
             SelectedDatabaseIdSet: Set<DatabaseId>
             SessionBreakDuration: Minute
@@ -130,7 +132,9 @@ module State =
                 Language = Language.English
                 LastInformationDatabase = None
                 LeftDock = None
+                LeftDockSize = 300
                 RightDock = None
+                RightDockSize = 300
                 SearchText = ""
                 SelectedDatabaseIdSet = Set.empty
                 SessionBreakDuration = Minute 5
@@ -174,97 +178,7 @@ module State =
         let rec shiftPressed = Store.atom ($"{nameof shiftPressed}", false)
 
         module User =
-            let rec expandedDatabaseIdSet =
-                Store.atomWithSync (
-                    $"{nameof User}/{nameof expandedDatabaseIdSet}",
-                    UserState.Default.ExpandedDatabaseIdSet,
-                    []
-                )
-
-            let rec selectedDatabaseIdSet =
-                Store.atomWithSync (
-                    $"{nameof User}/{nameof selectedDatabaseIdSet}",
-                    UserState.Default.SelectedDatabaseIdSet,
-                    []
-                )
-
-            let rec view = Store.atomWithSync ($"{nameof User}/{nameof view}", UserState.Default.View, [])
-            let rec language = Store.atomWithSync ($"{nameof User}/{nameof language}", UserState.Default.Language, [])
-            let rec color = Store.atomWithSync ($"{nameof User}/{nameof color}", (None: string option), [])
-
-            let rec weekStart =
-                Store.atomWithSync ($"{nameof User}/{nameof weekStart}", UserState.Default.WeekStart, [])
-
-            let rec dayStart = Store.atomWithSync ($"{nameof User}/{nameof dayStart}", UserState.Default.DayStart, [])
-
-            let rec sessionDuration =
-                Store.atomWithSync ($"{nameof User}/{nameof sessionDuration}", UserState.Default.SessionDuration, [])
-
-            let rec sessionBreakDuration =
-                Store.atomWithSync (
-                    $"{nameof User}/{nameof sessionBreakDuration}",
-                    UserState.Default.SessionBreakDuration,
-                    []
-                )
-
-            let rec daysBefore =
-                Store.atomWithSync ($"{nameof User}/{nameof daysBefore}", UserState.Default.DaysBefore, [])
-
-            let rec daysAfter =
-                Store.atomWithSync ($"{nameof User}/{nameof daysAfter}", UserState.Default.DaysAfter, [])
-
-            let rec searchText =
-                Store.atomWithSync ($"{nameof User}/{nameof searchText}", UserState.Default.SearchText, [])
-
             let rec cellSize = Store.atomWithSync ($"{nameof User}/{nameof cellSize}", UserState.Default.CellSize, [])
-
-            let rec fontSize =
-                Store.atomWithStorageSync ($"{nameof User}/{nameof fontSize}", UserState.Default.FontSize, id)
-
-            let rec darkMode =
-                Store.atomWithStorageSync ($"{nameof User}/{nameof darkMode}", UserState.Default.DarkMode, id)
-
-            let rec systemUiFont =
-                Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont, id)
-
-            let rec leftDock = Store.atomWithSync ($"{nameof User}/{nameof leftDock}", UserState.Default.LeftDock, [])
-
-            let rec rightDock =
-                Store.atomWithSync ($"{nameof User}/{nameof rightDock}", UserState.Default.RightDock, [])
-
-            let rec hideTemplates =
-                Store.atomWithSync ($"{nameof User}/{nameof hideTemplates}", UserState.Default.HideTemplates, [])
-
-            let rec enableCellPopover =
-                Store.atomWithSync (
-                    $"{nameof User}/{nameof enableCellPopover}",
-                    UserState.Default.EnableCellPopover,
-                    []
-                )
-
-            let rec hideSchedulingOverlay =
-                Store.atomWithSync (
-                    $"{nameof User}/{nameof hideSchedulingOverlay}",
-                    UserState.Default.HideSchedulingOverlay,
-                    []
-                )
-
-            let rec lastInformationDatabase =
-                Store.atomWithSync (
-                    $"{nameof User}/{nameof lastInformationDatabase}",
-                    UserState.Default.LastInformationDatabase,
-                    []
-                )
-
-            let rec showViewOptions =
-                Store.atomWithSync ($"{nameof User}/{nameof showViewOptions}", UserState.Default.ShowViewOptions, [])
-
-            let rec filterTasksByView =
-                Store.atomWithSync (
-                    $"{nameof User}/{nameof filterTasksByView}",
-                    UserState.Default.FilterTasksByView,
-                    []
-                )
 
             let rec clipboardAttachmentMap =
                 Store.atomWithSync (
@@ -276,13 +190,110 @@ module State =
             let rec clipboardVisible =
                 Store.atomWithSync ($"{nameof User}/{nameof clipboardVisible}", UserState.Default.ClipboardVisible, [])
 
+            let rec darkMode =
+                Store.atomWithStorageSync ($"{nameof User}/{nameof darkMode}", UserState.Default.DarkMode, id)
+
+            let rec daysAfter =
+                Store.atomWithSync ($"{nameof User}/{nameof daysAfter}", UserState.Default.DaysAfter, [])
+
+            let rec daysBefore =
+                Store.atomWithSync ($"{nameof User}/{nameof daysBefore}", UserState.Default.DaysBefore, [])
+
+            let rec dayStart = Store.atomWithSync ($"{nameof User}/{nameof dayStart}", UserState.Default.DayStart, [])
+
+            let rec enableCellPopover =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof enableCellPopover}",
+                    UserState.Default.EnableCellPopover,
+                    []
+                )
+
+            let rec expandedDatabaseIdSet =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof expandedDatabaseIdSet}",
+                    UserState.Default.ExpandedDatabaseIdSet,
+                    []
+                )
+
+            let rec filterTasksByView =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof filterTasksByView}",
+                    UserState.Default.FilterTasksByView,
+                    []
+                )
+
+            let rec fontSize =
+                Store.atomWithStorageSync ($"{nameof User}/{nameof fontSize}", UserState.Default.FontSize, id)
+
+            let rec hideSchedulingOverlay =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof hideSchedulingOverlay}",
+                    UserState.Default.HideSchedulingOverlay,
+                    []
+                )
+
+            let rec hideTemplates =
+                Store.atomWithSync ($"{nameof User}/{nameof hideTemplates}", UserState.Default.HideTemplates, [])
+
+            let rec language = Store.atomWithSync ($"{nameof User}/{nameof language}", UserState.Default.Language, [])
+
+            let rec lastInformationDatabase =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof lastInformationDatabase}",
+                    UserState.Default.LastInformationDatabase,
+                    []
+                )
+
+            let rec leftDock = Store.atomWithSync ($"{nameof User}/{nameof leftDock}", UserState.Default.LeftDock, [])
+
+            let rec leftDockSize =
+                Store.atomWithSync ($"{nameof User}/{nameof leftDockSize}", UserState.Default.LeftDockSize, [])
+
+            let rec rightDock =
+                Store.atomWithSync ($"{nameof User}/{nameof rightDock}", UserState.Default.RightDock, [])
+
+            let rec rightDockSize =
+                Store.atomWithSync ($"{nameof User}/{nameof rightDockSize}", UserState.Default.RightDockSize, [])
+
+            let rec searchText =
+                Store.atomWithSync ($"{nameof User}/{nameof searchText}", UserState.Default.SearchText, [])
+
+            let rec selectedDatabaseIdSet =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof selectedDatabaseIdSet}",
+                    UserState.Default.SelectedDatabaseIdSet,
+                    []
+                )
+
+            let rec sessionBreakDuration =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof sessionBreakDuration}",
+                    UserState.Default.SessionBreakDuration,
+                    []
+                )
+
+            let rec sessionDuration =
+                Store.atomWithSync ($"{nameof User}/{nameof sessionDuration}", UserState.Default.SessionDuration, [])
+
+            let rec showViewOptions =
+                Store.atomWithSync ($"{nameof User}/{nameof showViewOptions}", UserState.Default.ShowViewOptions, [])
+
+            let rec systemUiFont =
+                Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont, id)
+
+            let rec view = Store.atomWithSync ($"{nameof User}/{nameof view}", UserState.Default.View, [])
+
+            let rec weekStart =
+                Store.atomWithSync ($"{nameof User}/{nameof weekStart}", UserState.Default.WeekStart, [])
+
+            let rec color = Store.atomWithSync ($"{nameof User}/{nameof color}", (None: string option), [])
+
             let rec uiFlag =
                 Store.atomFamilyWithSync (
                     $"{nameof User}/{nameof uiFlag}",
                     (fun (_uiFlagType: UIFlagType) -> uiFlagDefault),
                     (string >> List.singleton)
                 )
-
 
             let rec uiVisibleFlag =
                 Store.atomFamilyWithSync (

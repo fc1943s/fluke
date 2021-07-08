@@ -285,6 +285,10 @@ module Hydrate =
                                             Attachments = attachments
                                             SortList = []
                                         })
+                                |> Map.filter
+                                    (fun _ informationState ->
+                                        not informationState.Attachments.IsEmpty
+                                        || not informationState.SortList.IsEmpty)
 
                             let taskStateMap =
                                 taskStateList

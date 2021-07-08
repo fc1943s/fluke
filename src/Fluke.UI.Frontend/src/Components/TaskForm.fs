@@ -236,6 +236,9 @@ module TaskForm =
 
         let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
 
+        let cellAttachmentMap = Store.useValue (Atoms.Task.cellAttachmentMap taskId)
+        let statusMap = Store.useValue (Atoms.Task.statusMap taskId)
+
         let onAttachmentAdd =
             Store.useCallback (
                 (fun _ setter attachmentId ->
@@ -345,6 +348,30 @@ module TaskForm =
                 Atom = Atoms.User.accordionFlag (TextKey (nameof TaskForm))
                 Items =
                     [
+                        if taskId <> Task.Default.Id then
+                            "Info",
+                            (Chakra.stack
+                                (fun x -> x.spacing <- "15px")
+                                [
+                                    Chakra.box
+                                        (fun _ -> ())
+                                        [
+                                            str $"Cell Status Count: {statusMap |> Map.count}"
+                                        ]
+                                    Chakra.box
+                                        (fun _ -> ())
+                                        [
+                                            str
+                                                $"Cell Attachment Count: {
+                                                                              cellAttachmentMap
+                                                                              |> Map.values
+                                                                              |> Seq.map Set.count
+                                                                              |> Seq.sum
+                                                }"
+                                        ]
+                                ])
+
+
                         $"""{if taskId = Task.Default.Id then "Add" else "Edit"} Task""",
                         (Chakra.stack
                             (fun x -> x.spacing <- "15px")
