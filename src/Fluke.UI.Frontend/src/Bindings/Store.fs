@@ -342,43 +342,6 @@ module Store =
 
         let mutable lastSubscription = None
 
-        let unsubscribe =
-            (fun () ->
-                match lastSubscription with
-                | Some ticks when DateTime.ticksDiff ticks < 1000. ->
-                    JS.log
-                        (fun () ->
-                            $"[gunEffect.off()]
-                                                    {baseInfo ()}
-                                                    skipping unsubscribe. jotai resubscribe glitch.")
-                | Some _ ->
-                    match lastGunAtomNode with
-                    | Some (key, gunAtomNode) ->
-
-                        Profiling.addCount $"{gunNodePath} unsubscribe"
-
-                        JS.log
-                            (fun () ->
-                                $"[atomFamily.unsubscribe()]
-                                {key}
-                                {baseInfo ()} ")
-
-                        gunAtomNode.off () |> ignore
-                        lastSubscription <- None
-                    | None ->
-                        JS.log
-                            (fun () ->
-                                $"[gunEffect.off()]
-                                {baseInfo ()}
-                                skipping unsubscribe, no gun atom node.")
-                | None ->
-                    JS.log
-                        (fun () ->
-                            $"[gunEffect.off()]
-                                {baseInfo ()}
-                                skipping unsubscribe. no last subscription found."))
-
-
         let subscribe =
             JS.debounce
                 (fun setAtom ->
@@ -416,6 +379,42 @@ module Store =
                                 {baseInfo ()}
                              skipping subscribe, no gun atom node."))
                 100
+
+        let unsubscribe () =
+            match lastSubscription with
+            | Some ticks when DateTime.ticksDiff ticks < 1000. ->
+                JS.log
+                    (fun () ->
+                        $"[gunEffect.off()]
+                                                    {baseInfo ()}
+                                                    skipping unsubscribe. jotai resubscribe glitch.")
+            | Some _ ->
+                match lastGunAtomNode with
+                | Some (key, gunAtomNode) ->
+
+                    Profiling.addCount $"{gunNodePath} unsubscribe"
+
+                    JS.log
+                        (fun () ->
+                            $"[atomFamily.unsubscribe()]
+                                {key}
+                                {baseInfo ()} ")
+
+                    gunAtomNode.off () |> ignore
+                    lastSubscription <- None
+                | None ->
+                    JS.log
+                        (fun () ->
+                            $"[gunEffect.off()]
+                                {baseInfo ()}
+                                skipping unsubscribe, no gun atom node.")
+            | None ->
+                JS.log
+                    (fun () ->
+                        $"[gunEffect.off()]
+                                {baseInfo ()}
+                                skipping unsubscribe. no last subscription found.")
+
 
         let debounceGunPut =
             JS.debounce
@@ -819,8 +818,13 @@ module Store =
 
         let unsubscribe () =
             match lastSubscription with
-            | Some ticks when DateTime.ticksDiff ticks < 1000. -> ()
-            | _ ->
+            | Some ticks when DateTime.ticksDiff ticks < 1000. ->
+                JS.log
+                    (fun () ->
+                        $"@@ [gunEffect.off()]
+                                                    {baseInfo ()}
+                                                    skipping unsubscribe. jotai resubscribe glitch.")
+            | Some _ ->
                 match lastGunAtomNode with
                 | Some (key, gunAtomNode) ->
 
@@ -840,6 +844,12 @@ module Store =
                             $"@@  [gunEffect.off()]
                                                                {baseInfo ()}
                                                                skipping unsubscribe, no gun atom node.")
+            | None ->
+                JS.log
+                    (fun () ->
+                        $"[gunEffect.off()]
+                                {baseInfo ()}
+                                skipping unsubscribe. no last subscription found.")
 
         wrapper?onMount <- fun setAtom ->
                                subscribe setAtom
