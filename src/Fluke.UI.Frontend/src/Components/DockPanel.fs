@@ -22,9 +22,9 @@ module DockPanel =
         =
         let setAtom = Store.useSetState input.Atom
 
-        UI.stack
+        UI.flex
             (fun x ->
-                x.spacing <- "0"
+                x.flexDirection <- "column"
                 x.overflow <- "hidden"
                 x.flex <- "1")
             [
@@ -85,10 +85,9 @@ module DockPanel =
 
                 UI.flex
                     (fun x ->
-                        x.direction <- "column"
-                        x.flex <- "1"
-                        x.overflow <- "auto"
-                        x.flexBasis <- 0)
+                        x.flexDirection <- "column"
+                        x.flex <- "1 1 0"
+                        x.overflow <- "auto")
                     [
                         yield! input.children
                     ]

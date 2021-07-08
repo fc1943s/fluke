@@ -134,9 +134,9 @@ module SearchForm =
                                                             if informationName.Contains searchText then
                                                                 yield
                                                                     SearchResultType.Information informationName,
-                                                                    (SearchResult.Information
+                                                                    SearchResult.Information
                                                                         informationState.Information,
-                                                                     informationName)
+                                                                    informationName
 
                                                             yield!
                                                                 searchAttachments informationState.Attachments
@@ -144,9 +144,9 @@ module SearchForm =
                                                                     (fun attachmentText ->
                                                                         SearchResultType.InformationAttachment
                                                                             informationName,
-                                                                        (SearchResult.InformationAttachment
+                                                                        SearchResult.InformationAttachment
                                                                             informationState.Information,
-                                                                         attachmentText))
+                                                                        attachmentText)
                                                         ])
 
                                             let taskResults =
@@ -160,22 +160,22 @@ module SearchForm =
                                                             if taskName.Contains searchText then
                                                                 yield
                                                                     SearchResultType.Task taskName,
-                                                                    (SearchResult.Task (
+                                                                    SearchResult.Task (
                                                                         databaseState.Database.Id,
                                                                         taskId
-                                                                     ),
-                                                                     taskName)
+                                                                    ),
+                                                                    taskName
 
                                                             yield!
                                                                 searchAttachments taskState.Attachments
                                                                 |> List.map
                                                                     (fun attachmentText ->
                                                                         SearchResultType.TaskAttachment taskName,
-                                                                        (SearchResult.TaskAttachment (
+                                                                        SearchResult.TaskAttachment (
                                                                             databaseState.Database.Id,
                                                                             taskId
-                                                                         ),
-                                                                         attachmentText))
+                                                                        ),
+                                                                        attachmentText)
 
                                                             yield!
                                                                 taskState.CellStateMap
@@ -193,19 +193,20 @@ module SearchForm =
                                                                                             |> DateId.Value
                                                                                             |> FlukeDate.Stringify
                                                                                         ),
-                                                                                        (SearchResult.CellAttachment (
+                                                                                        SearchResult.CellAttachment (
                                                                                             taskId,
                                                                                             dateId
-                                                                                         ),
-                                                                                         attachmentText))
+                                                                                        ),
+                                                                                        attachmentText)
                                                                         ])
-
                                                         ])
 
                                             informationResults @ taskResults
                                         | Error error ->
                                             toast (fun x -> x.description <- error)
+                                            setSearchText ""
                                             [])
+                                |> List.sortBy (fun (resultType, _, _) -> resultType)
 
                             setSearchResults results
 
@@ -215,6 +216,7 @@ module SearchForm =
                     box setLoading
                     box toast
                     box setSearchResults
+                    box setSearchText
                 |]
             )
 
@@ -263,8 +265,13 @@ module SearchForm =
                                         x.onChange <-
                                             fun (e: KeyboardEvent) ->
                                                 promise {
-                                                    setLoading true
-                                                    setSearchText e.Value
+                                                    match e.Value with
+                                                    | "" ->
+                                                        setSearchResults []
+                                                        setSearchText ""
+                                                    | value ->
+                                                        setLoading true
+                                                        setSearchText value
                                                 }
 
                                         x.autoFocus <- true
@@ -272,38 +279,48 @@ module SearchForm =
                             |}
                     ]
 
-                yield!
-                    searchResults
-                    |> List.groupBy fst
-                    |> List.map (fun (searchResultType, results) -> searchResultType, results |> List.map snd)
-                    |> List.sortBy fst
-                    |> List.map
-                        (fun (searchResultType, results) ->
-                            UI.box
-                                (fun x -> x.marginBottom <- "10px")
-                                [
-                                    UI.box
-                                        (fun _ -> ())
-                                        [
-                                            str (
-                                                match searchResultType with
-                                                | SearchResultType.Information _ -> "Information"
-                                                | SearchResultType.InformationAttachment information ->
-                                                    $"Information Attachment ({information})"
-                                                | SearchResultType.Task _ -> "Task"
-                                                | SearchResultType.TaskAttachment task -> $"Task Attachment ({task})"
-                                                | SearchResultType.CellAttachment (task, date) ->
-                                                    $"Cell Attachment (Task: {task} / Date: {date})"
-                                            )
-                                        ]
-                                    UI.box
-                                        (fun x -> x.marginLeft <- "25px")
-                                        [
-                                            yield!
-                                                results
-                                                |> List.map
-                                                    (fun (searchResult, resultText) ->
-                                                        SearchResultItem searchResult resultText)
-                                        ]
-                                ])
+                if searchResults.IsEmpty then
+                    UI.box
+                        (fun _ -> ())
+                        [
+                            str "No results"
+                        ]
+                else
+                    yield!
+                        searchResults
+                        |> List.map
+                            (fun (resultType, result, resultText) ->
+                                let header =
+                                    match resultType with
+                                    | SearchResultType.Information _ -> "Information"
+                                    | SearchResultType.InformationAttachment information ->
+                                        $"Information Attachment ({information})"
+                                    | SearchResultType.Task _ -> "Task"
+                                    | SearchResultType.TaskAttachment task -> $"Task Attachment ({task})"
+                                    | SearchResultType.CellAttachment (task, date) ->
+                                        $"Cell Attachment (Task: {task} / Date: {date})"
+
+                                header, (result, resultText))
+                        |> List.groupBy fst
+                        |> List.map (fun (header, results) -> header, results |> List.map snd)
+                        |> List.map
+                            (fun (header, results) ->
+                                UI.box
+                                    (fun x -> x.marginBottom <- "10px")
+                                    [
+                                        UI.box
+                                            (fun _ -> ())
+                                            [
+                                                str header
+                                            ]
+                                        UI.box
+                                            (fun x -> x.marginLeft <- "25px")
+                                            [
+                                                yield!
+                                                    results
+                                                    |> List.map
+                                                        (fun (searchResult, resultText) ->
+                                                            SearchResultItem searchResult resultText)
+                                            ]
+                                    ])
             ]
