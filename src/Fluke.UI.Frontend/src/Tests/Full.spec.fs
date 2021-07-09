@@ -214,8 +214,17 @@ module Full =
 
                     Cy.wait 15000
 
-                    Cy.window ()
-                    |> Promise.iter (fun window -> window?Debug <- false)
+                    Cy2.clickText (nameof Settings)
+
+                    Cy.wait 2000
+
+                    Cy2.clickText "Filter Tasks by View"
+
+                    Cy.wait 2000
+
+                    Cy2.clickText (nameof Settings)
+
+                    Cy.wait 6000
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
                     Cy2.waitFor taskName (Some {| timeout = timeout |})
@@ -224,9 +233,6 @@ module Full =
                     Cy2.clickText "Start Session"
                     Cy2.waitFor $"Session: 1 active ({taskName})" (Some {| timeout = timeout |})
 
-                    Cy.wait 6000
-
-                    Cy2.clickText (nameof Databases)
 
                     Cy.wait 6000
 
@@ -284,5 +290,8 @@ module Full =
                     Cy2.clickTestId $"[data-testid='cell-button-{(TempUI.cellStatusColor Disabled)}']"
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
+
+                    Cy.window ()
+                    |> Promise.iter (fun window -> window?Debug <- false)
 
                     Cy.visit homeUrl))

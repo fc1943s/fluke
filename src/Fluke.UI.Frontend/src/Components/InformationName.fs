@@ -74,7 +74,7 @@ module InformationName =
 
                         InputLabelIconButton.InputLabelIconButton
                             (fun x ->
-                                x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                x.icon <- Icons.fi.FiArrowRight |> Icons.render
                                 x.fontSize <- "11px"
                                 x.height <- "15px"
                                 x.color <- "whiteAlpha.700"
