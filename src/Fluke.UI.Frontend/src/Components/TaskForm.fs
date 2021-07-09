@@ -18,6 +18,162 @@ open Fluke.Shared
 
 module TaskForm =
     [<ReactComponent>]
+    let MissedAfterSelector taskId =
+        let dayStart = Store.useValue Atoms.User.dayStart
+
+        let tempMissedAfter =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.missedAfter taskId))))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
+        UI.box
+            (fun x -> x.display <- "inline")
+            [
+                InputLabel.InputLabel
+                    {|
+                        Hint = None
+                        HintTitle = None
+                        Label = str "Missed After"
+                        Props = fun x -> x.marginBottom <- "5px"
+                    |}
+
+                UI.stack
+                    (fun x ->
+                        x.direction <- "row"
+                        x.spacing <- "15px")
+                    [
+                        Checkbox.Checkbox
+                            (if tempMissedAfter.Value.IsNone then Some "Enable" else None)
+                            (fun x ->
+                                x.isChecked <- tempMissedAfter.Value.IsSome
+                                x.alignSelf <- "center"
+
+                                x.onChange <-
+                                    fun _ ->
+                                        promise {
+                                            tempMissedAfter.SetValue (
+                                                if tempMissedAfter.Value.IsSome then None else (Some dayStart)
+                                            )
+                                        })
+
+                        match tempMissedAfter.Value with
+                        | Some missedAfter ->
+                            Input.Input
+                                {|
+                                    CustomProps =
+                                        fun x ->
+                                            x.fixedValue <- Some missedAfter
+                                            x.onFormat <- Some FlukeTime.Stringify
+
+                                            x.onValidate <-
+                                                Some (
+                                                    fst
+                                                    >> DateTime.TryParse
+                                                    >> function
+                                                    | true, value -> value
+                                                    | _ -> DateTime.Parse "00:00"
+                                                    >> FlukeTime.FromDateTime
+                                                    >> Some
+                                                )
+
+                                            x.inputFormat <- Some Input.InputFormat.Time
+                                    Props =
+                                        fun x ->
+                                            x.placeholder <- "00:00"
+
+                                            x.onChange <-
+                                                (fun (e: KeyboardEvent) ->
+                                                    promise {
+                                                        e.Value
+                                                        |> DateTime.Parse
+                                                        |> FlukeTime.FromDateTime
+                                                        |> Some
+                                                        |> tempMissedAfter.SetValue
+                                                    })
+                                |}
+                        | None -> nothing
+                    ]
+            ]
+
+    [<ReactComponent>]
+    let PendingAfterSelector taskId =
+        let dayStart = Store.useValue Atoms.User.dayStart
+
+        let tempPendingAfter =
+            Store.Hooks.useTempAtom
+                (Some (Store.InputAtom (Store.AtomReference.Atom (Atoms.Task.pendingAfter taskId))))
+                (Some (Store.InputScope.Temp Gun.defaultSerializer))
+
+        UI.box
+            (fun x -> x.display <- "inline")
+            [
+                InputLabel.InputLabel
+                    {|
+                        Hint = None
+                        HintTitle = None
+                        Label = str "Pending After"
+                        Props = fun x -> x.marginBottom <- "5px"
+                    |}
+
+                UI.stack
+                    (fun x ->
+                        x.direction <- "row"
+                        x.spacing <- "15px")
+                    [
+                        Checkbox.Checkbox
+                            (if tempPendingAfter.Value.IsNone then Some "Enable" else None)
+                            (fun x ->
+                                x.isChecked <- tempPendingAfter.Value.IsSome
+                                x.alignSelf <- "center"
+
+                                x.onChange <-
+                                    fun _ ->
+                                        promise {
+                                            tempPendingAfter.SetValue (
+                                                if tempPendingAfter.Value.IsSome then None else (Some dayStart)
+                                            )
+                                        })
+
+                        match tempPendingAfter.Value with
+                        | Some pendingAfter ->
+                            Input.Input
+                                {|
+                                    CustomProps =
+                                        fun x ->
+                                            x.fixedValue <- Some pendingAfter
+                                            x.onFormat <- Some FlukeTime.Stringify
+
+                                            x.onValidate <-
+                                                Some (
+                                                    fst
+                                                    >> DateTime.TryParse
+                                                    >> function
+                                                    | true, value -> value
+                                                    | _ -> DateTime.Parse "00:00"
+                                                    >> FlukeTime.FromDateTime
+                                                    >> Some
+                                                )
+
+                                            x.inputFormat <- Some Input.InputFormat.Time
+                                    Props =
+                                        fun x ->
+                                            x.placeholder <- "00:00"
+
+                                            x.onChange <-
+                                                (fun (e: KeyboardEvent) ->
+                                                    promise {
+                                                        e.Value
+                                                        |> DateTime.Parse
+                                                        |> FlukeTime.FromDateTime
+                                                        |> Some
+                                                        |> tempPendingAfter.SetValue
+                                                    })
+                                |}
+                        | None -> nothing
+                    ]
+            ]
+
+    [<ReactComponent>]
     let DurationSelector taskId =
         let tempDuration =
             Store.Hooks.useTempAtom
@@ -276,6 +432,8 @@ module TaskForm =
                         let taskScheduling = Store.getTemp getter (Atoms.Task.scheduling taskId)
                         let taskPriority = Store.getTemp getter (Atoms.Task.priority taskId)
                         let taskDuration = Store.getTemp getter (Atoms.Task.duration taskId)
+                        let taskMissedAfter = Store.getTemp getter (Atoms.Task.missedAfter taskId)
+                        let taskPendingAfter = Store.getTemp getter (Atoms.Task.pendingAfter taskId)
 
                         if taskDatabaseId = Database.Default.Id then
                             toast (fun x -> x.description <- "Invalid database")
@@ -305,6 +463,8 @@ module TaskForm =
                                         Scheduling = taskScheduling
                                         Priority = taskPriority
                                         Duration = taskDuration
+                                        MissedAfter = taskMissedAfter
+                                        PendingAfter = taskPendingAfter
                                     }
                                     |> Promise.lift
                                 else
@@ -318,6 +478,8 @@ module TaskForm =
                                                 Scheduling = taskScheduling
                                                 Priority = taskPriority
                                                 Duration = taskDuration
+                                                MissedAfter = taskMissedAfter
+                                                PendingAfter = taskPendingAfter
                                             }
                                     }
 
@@ -326,6 +488,8 @@ module TaskForm =
                             Store.resetTemp setter (Atoms.Task.scheduling taskId)
                             Store.resetTemp setter (Atoms.Task.priority taskId)
                             Store.resetTemp setter (Atoms.Task.duration taskId)
+                            Store.resetTemp setter (Atoms.Task.missedAfter taskId)
+                            Store.resetTemp setter (Atoms.Task.pendingAfter taskId)
                             Store.set setter (Atoms.User.uiFlag UIFlagType.Task) UIFlag.None
 
                             do! onSave task
@@ -397,12 +561,6 @@ module TaskForm =
                                         OnSelect = tempInformation.SetValue
                                     |}
 
-                                SchedulingSelector.SchedulingSelector taskId
-
-                                PrioritySelector taskId
-
-                                DurationSelector taskId
-
                                 Input.Input
                                     {|
                                         CustomProps =
@@ -426,6 +584,16 @@ module TaskForm =
 
                                                 x.placeholder <- $"""new-task-{DateTime.Now.Format "yyyy-MM-dd"}"""
                                     |}
+
+                                SchedulingSelector.SchedulingSelector taskId
+
+                                PrioritySelector taskId
+
+                                DurationSelector taskId
+
+                                MissedAfterSelector taskId
+
+                                PendingAfterSelector taskId
 
                                 Button.Button
                                     {|
