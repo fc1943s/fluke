@@ -206,6 +206,7 @@ module SearchForm =
                                             toast (fun x -> x.description <- error)
                                             setSearchText ""
                                             [])
+                                |> List.sortBy (fun (_, _, resultText) -> resultText)
                                 |> List.sortBy (fun (resultType, _, _) -> resultType)
 
                             setSearchResults results
