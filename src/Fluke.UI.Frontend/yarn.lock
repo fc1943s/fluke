@@ -7019,13 +7019,13 @@ copyfiles@^2.3.0:
     untildify "^4.0.0"
     yargs "^16.1.0"
 
-cordova-android@nightly:
-  version "10.0.0-nightly.2021.6.28.0f13f4a5"
-  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-10.0.0-nightly.2021.6.28.0f13f4a5.tgz#2ac9bf6bc3b0318e60b316e0447011cf43aa1a3e"
-  integrity sha512-vbLAozJobpFQxGGBIPEkha2gBYeS54KEhyZSXXug7rF2VR53huFObGeF0eaEzQ1RsQ29KzlQbO1Sq7sKg/0auA==
+cordova-android@10.0.0-nightly.2021.7.8.8a9cb8f6:
+  version "10.0.0-nightly.2021.7.8.8a9cb8f6"
+  resolved "https://registry.yarnpkg.com/cordova-android/-/cordova-android-10.0.0-nightly.2021.7.8.8a9cb8f6.tgz#4b5631d53e77e38a9d012a2985892fac430104fe"
+  integrity sha512-yvpHwt0bAB15UJ917K6r0QsakUu7ABYisf/WDicrBN4mRkCWddYUOI3sJzWonZ3XBGD9hoALLfnaydBMFfsXTg==
   dependencies:
     android-versions "^1.6.0"
-    cordova-common "4.0.3-nightly.2021.6.28.3c9b9ffb"
+    cordova-common "4.0.3-nightly.2021.7.8.3c9b9ffb"
     execa "^5.0.0"
     fast-glob "^3.2.5"
     fs-extra "^9.1.0"
@@ -7040,10 +7040,10 @@ cordova-app-hello-world@^5.0.0:
   resolved "https://registry.yarnpkg.com/cordova-app-hello-world/-/cordova-app-hello-world-5.0.0.tgz#4a80460bf666c21a0fb0391d62ae9510f1ed86e9"
   integrity sha512-5My01wsYoeYwS0f/t5Ck52xPm0+2zYJ0SlvxG9vUsndDGtgiP6t/G8upPgWcyDRRz7Rs/50yZuOntmHqmJxccQ==
 
-cordova-common@4.0.3-nightly.2021.6.28.3c9b9ffb:
-  version "4.0.3-nightly.2021.6.28.3c9b9ffb"
-  resolved "https://registry.yarnpkg.com/cordova-common/-/cordova-common-4.0.3-nightly.2021.6.28.3c9b9ffb.tgz#ee685bddbe1def280c5a16a632821546a0980027"
-  integrity sha512-EsVPcBi6hGElZVJMu+qLCqzuB1+mIxpfS5MW1PR35cFw+/2SZk+TgZ5ekuD3uFYMTDo8rTp6efU8wSwqXPJi2g==
+cordova-common@4.0.3-nightly.2021.7.8.3c9b9ffb:
+  version "4.0.3-nightly.2021.7.8.3c9b9ffb"
+  resolved "https://registry.yarnpkg.com/cordova-common/-/cordova-common-4.0.3-nightly.2021.7.8.3c9b9ffb.tgz#4c02380c3117888388ad8ec134b328b53e733b4f"
+  integrity sha512-QvDMgYA3K3rAg08+rahiwG8/fBCkwM8GVnSJh0YqhiY/8lztJsl4Tyi5XvynDDR/PMKWPfEJswSzTmmEhWlRfQ==
   dependencies:
     "@netflix/nerror" "^1.1.3"
     ansi "^0.3.1"
@@ -7267,7 +7267,7 @@ cosmiconfig@^6.0.0:
     path-type "^4.0.0"
     yaml "^1.7.2"
 
-cra-build-watch@~4.0.0-beta.1:
+cra-build-watch@4.0.0-beta.1:
   version "4.0.0-beta.1"
   resolved "https://registry.yarnpkg.com/cra-build-watch/-/cra-build-watch-4.0.0-beta.1.tgz#8fab366e9e002f32af2b948d986a4e8d0e191e55"
   integrity sha512-3aF7WFifGjTTDGyup5zXejWK/w4QEZRYOkK9/XKBHpAWPg9qJkrjI44xJDLC6uQ6U1GG8jAiN3y/buq7AKeKBQ==
@@ -8567,10 +8567,10 @@ electron-window-state@~5.0:
     jsonfile "^4.0.0"
     mkdirp "^0.5.1"
 
-electron@beta:
-  version "14.0.0-beta.11"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-14.0.0-beta.11.tgz#9483efc4d98331b264729dde2335bec97ac1497d"
-  integrity sha512-1ESp7ahbNtWSuhMy4lbW+Wh4Wt5WLt7iznjrHS5H4eriqo0fyYg0j8zFd5nA1nMi27/89maBISnsksg7ih1urg==
+electron@14.0.0-beta.12:
+  version "14.0.0-beta.12"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-14.0.0-beta.12.tgz#c78b311f8edcde8ef8e187618c0ec85f878d02c3"
+  integrity sha512-it5X42fp899rGwoz42h9sNSgJxyBTLt+I6hd9bHVoIsL49Y4UXBfyu6p6gtNyZs4DfifAZrv6JJ/dhYkogxUGg==
   dependencies:
     "@electron/get" "^1.0.1"
     "@types/node" "^14.6.2"
@@ -13331,7 +13331,7 @@ joi@^17.2.1, joi@^17.4.0:
     "@sideway/formula" "^3.0.0"
     "@sideway/pinpoint" "^2.0.0"
 
-jotai@~1.1.3:
+jotai@~1.1:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.1.3.tgz#bf80b317562024117606b0cf9841db0b4bfd5e09"
   integrity sha512-7PZs8gHe8Y+7BkC6m32NbfeNGa8ybFMUoy2DbH542YVYrFEJPxqIE4Es/SXaII7f8r/UZGzg29XWNEDq+iCITg==
@@ -17676,7 +17676,7 @@ react-clientside-effect@^1.2.2:
   dependencies:
     "@babel/runtime" "^7.12.13"
 
-react-color@~3.0.0-beta.3:
+react-color@3.0.0-beta.3:
   version "3.0.0-beta.3"
   resolved "https://registry.yarnpkg.com/react-color/-/react-color-3.0.0-beta.3.tgz#5b59a1ed09066751409b98206fe265c7ff02d811"
   integrity sha1-W1mh7QkGZ1FAm5ggb+Jlx/8C2BE=
@@ -17717,14 +17717,14 @@ react-dev-utils@^11.0.3:
     strip-ansi "6.0.0"
     text-table "0.2.0"
 
-react-dom@18.0.0-alpha-241485a2c-20210708:
-  version "18.0.0-alpha-241485a2c-20210708"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.0.0-alpha-241485a2c-20210708.tgz#1c3bd0df601374eeccc26b54bbacee8da8cb92a6"
-  integrity sha512-abjnqkdRQ0FI2DGGzy/y1vu8kw7lathLQdFgudM1oo+qKOPihkZtPpPVI4TiMSTdeoWnENlALnkIG+qw2MjEWw==
+react-dom@18.0.0-alpha-cb8afda18-20210708:
+  version "18.0.0-alpha-cb8afda18-20210708"
+  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-18.0.0-alpha-cb8afda18-20210708.tgz#31b62b4afc805144b4ba989d74b2170cd3d0ba5c"
+  integrity sha512-J+8NglaCetnB84CA5YTUVel+2PUyKmsDf0nmzB0wlVEVeZkoP9MUG4baCBfHLDSSrCQ8QPSp5iBac1FolJc+oQ==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
-    scheduler "0.21.0-alpha-241485a2c-20210708"
+    scheduler "0.21.0-alpha-cb8afda18-20210708"
 
 react-error-overlay@^6.0.9:
   version "6.0.9"
@@ -17915,10 +17915,10 @@ react-vim-wasm@~0.1:
   dependencies:
     vim-wasm "~0.0.13"
 
-react@18.0.0-alpha-241485a2c-20210708:
-  version "18.0.0-alpha-241485a2c-20210708"
-  resolved "https://registry.yarnpkg.com/react/-/react-18.0.0-alpha-241485a2c-20210708.tgz#29f306e5fe3e0ccee043c75d0bb2c6579d86c737"
-  integrity sha512-b5CHMBYpULwtgkkXL2GA93IPJIk9ZoJfxKG50hnyK1Ri93FxPQxbRHQGvxa6CZkqlCtP1imUDqD15Zac8W7ljg==
+react@18.0.0-alpha-cb8afda18-20210708:
+  version "18.0.0-alpha-cb8afda18-20210708"
+  resolved "https://registry.yarnpkg.com/react/-/react-18.0.0-alpha-cb8afda18-20210708.tgz#9001938e66618e3e0f8a457b37c6abdab3f9536b"
+  integrity sha512-RG2EmvK5BvMbX/IDh0ubDJW0gxVQVmXpk2hry5W/Sx6DNtkUg3QJ3zySeLzoATAmvahDa/Qq7cxat3rVpSQEEQ==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -18728,10 +18728,10 @@ saxes@^5.0.1:
   dependencies:
     xmlchars "^2.2.0"
 
-scheduler@0.21.0-alpha-241485a2c-20210708:
-  version "0.21.0-alpha-241485a2c-20210708"
-  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.21.0-alpha-241485a2c-20210708.tgz#fe124de66bddba0acb4b8662d4c8a7e3c3454b39"
-  integrity sha512-0k/azQjCok+Xtk1pSyHGPN4WIexbZZKwgqpbQUdFndsMCxibOz3pM0EdHcbtavpOwK2GRbSAtXXVE1THKzX73Q==
+scheduler@0.21.0-alpha-cb8afda18-20210708:
+  version "0.21.0-alpha-cb8afda18-20210708"
+  resolved "https://registry.yarnpkg.com/scheduler/-/scheduler-0.21.0-alpha-cb8afda18-20210708.tgz#0d0188d66bcca1fd946c7f32eaa732c43e1aa922"
+  integrity sha512-+3Z8HqJkwZxXkTOM2VQH1pM2GaOhQnODpMAJUXV20SC5uoW2dZm+mr/ym9INe3zI9cpo6/Hx4fg+qiifo1FGfQ==
   dependencies:
     loose-envify "^1.1.0"
     object-assign "^4.1.1"
@@ -20381,7 +20381,7 @@ ts-pnp@1.2.0, ts-pnp@^1.1.6:
   resolved "https://registry.yarnpkg.com/ts-pnp/-/ts-pnp-1.2.0.tgz#a500ad084b0798f1c3071af391e65912c86bca92"
   integrity sha512-csd+vJOb/gkzvcCHgTGSChYpy5f1/XKNsmvBGO4JXS+z1v2HobugDz4s1IeFXM3wZB44uczs+eazB5Q/ccdhQw==
 
-ts2fable@~0.8.0-build.615:
+ts2fable@0.8.0-build.615:
   version "0.8.0-build.615"
   resolved "https://registry.yarnpkg.com/ts2fable/-/ts2fable-0.8.0-build.615.tgz#2a078d45ceef8bbb658f904756812f32f77b9f80"
   integrity sha512-3QeyrsGaRv1WFJTF9lHJL4t/wNwkD/TD4mOGOp3LK0xuiPDUvtYIwy+MhMSFhLhj43H/OPz9vbR3n+kZ01bk3Q==

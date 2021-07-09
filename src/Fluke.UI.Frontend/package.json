@@ -51,12 +51,12 @@
   "dependencies": {
     "@fontsource/roboto-condensed": "~4.5",
 
-    "react": "18.0.0-alpha-241485a2c-20210708",
-    "react-dom": "18.0.0-alpha-241485a2c-20210708",
+    "react": "18.0.0-alpha-cb8afda18-20210708",
+    "react-dom": "18.0.0-alpha-cb8afda18-20210708",
 
     "@pmmmwh/react-refresh-webpack-plugin": "~0.4",
 
-    "jotai": "~1.1.3",
+    "jotai": "~1.1",
 
     "gun": "amark/gun.git#manhattan",
 
@@ -82,7 +82,7 @@
 
     "react-beautiful-dnd": "~13.1",
     "rooks": "~5.0",
-    "react-color": "~3.0.0-beta.3",
+    "react-color": "3.0.0-beta.3",
     "react-markdown": "~6.0",
     "binconv": "~0.2",
     "remark-gfm": "~1.0",
@@ -97,14 +97,14 @@
     "typescript": "~4.3",
     "ts-node": "~10.0",
     "@types/node" : "~16.3",
-    "ts2fable" : "~0.8.0-build.615",
+    "ts2fable" : "0.8.0-build.615",
 
     "@welldone-software/why-did-you-render": "~6.2",
 
     "fable-loader": "~2.1",
     "fable-compiler": "~2.13",
 
-    "electron": "beta",
+    "electron": "14.0.0-beta.12",
     "electron-builder": "~22.11",
     "electronmon": "~2.0",
 
@@ -150,7 +150,7 @@
     "customize-cra-react-refresh": "~1.1",
     "@craco/craco": "~6.2",
     "@dealmore/craco-plugin-babel-include": "~1.0",
-    "cra-build-watch": "~4.0.0-beta.1",
+    "cra-build-watch": "4.0.0-beta.1",
 
     "parcel": "2.0.0-nightly.688",
 
@@ -159,7 +159,7 @@
     "concurrently": "~6.2",
 
     "cordova": "~10.0",
-    "cordova-android": "nightly",
+    "cordova-android": "10.0.0-nightly.2021.7.8.8a9cb8f6",
     "cordova-ios": "~6.2",
     "cordova-plugin-whitelist": "~1.3"
   },
