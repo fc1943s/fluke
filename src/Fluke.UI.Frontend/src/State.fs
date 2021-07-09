@@ -74,7 +74,7 @@ module State =
 
     let uiFlagDefault = UIFlag.None
     let uiVisibleFlagDefault = false
-    let accordionFlagDefault : string [] = [||]
+    let accordionFlagDefault: string [] = [||]
 
     type UserState =
         {
@@ -668,7 +668,7 @@ module State =
 
                         let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
 
-                        let taskStateList : TaskState list =
+                        let taskStateList: TaskState list =
                             taskIdAtoms
                             |> Array.toList
                             |> List.map (Store.value getter)
@@ -1286,6 +1286,11 @@ module State =
                             |> Array.map Atoms.Database.informationAttachmentMap
                             |> Store.waitForAll
                             |> Store.value getter
+                            |> Array.collect (
+                                Map.filter (fun _ attachments -> attachments |> Set.isEmpty |> not)
+                                >> Map.keys
+                                >> Seq.toArray
+                            )
 
                         let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
 
@@ -1296,24 +1301,21 @@ module State =
                             |> Store.waitForAll
                             |> Store.value getter
 
-                        let projectAreas =
+                        let informationArray =
                             taskInformationArray
+                            |> Array.append informationAttachmentMapArray
+
+                        let projectAreas =
+                            informationArray
                             |> Array.choose
                                 (fun information ->
                                     match information with
                                     | Project project -> Some (Area project.Area)
                                     | _ -> None)
 
-                        taskInformationArray
+                        informationArray
                         |> Array.append projectAreas
-                        |> Array.append (
-                            informationAttachmentMapArray
-                            |> Array.collect (
-                                Map.filter (fun _ attachments -> attachments |> Set.isEmpty |> not)
-                                >> Map.keys
-                                >> Seq.toArray
-                            )
-                        )
+                        |> Array.append informationAttachmentMapArray
                         |> Array.filter
                             (fun information ->
                                 information
@@ -1424,9 +1426,7 @@ module State =
 
                         JS.log
                             (fun () ->
-                                $"filteredTaskList.Length={filteredTaskList.Length} taskListSearch.Length={
-                                                                                                               selectedTaskListSearch.Length
-                                }")
+                                $"filteredTaskList.Length={filteredTaskList.Length} taskListSearch.Length={selectedTaskListSearch.Length}")
 
                         filteredTaskList
                         |> List.map (fun task -> task.Id)

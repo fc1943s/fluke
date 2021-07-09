@@ -301,7 +301,7 @@ module AttachmentPanel =
                                             [
                                                 InputLabelIconButton.InputLabelIconButton
                                                     (fun x ->
-                                                        x.icon <- Icons.bs.BsTrash |> Icons.render
+                                                        x.icon <- Icons.md.MdClear |> Icons.render
                                                         x.margin <- "0"
                                                         x.fontSize <- "11px"
                                                         x.height <- "15px"

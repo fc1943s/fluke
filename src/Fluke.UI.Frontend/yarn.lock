@@ -1489,7 +1489,7 @@
   dependencies:
     "@chakra-ui/utils" "1.8.1"
 
-"@chakra-ui/media-query@1.1.1", "@chakra-ui/media-query@~1.1.1":
+"@chakra-ui/media-query@1.1.1", "@chakra-ui/media-query@~1.1":
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/@chakra-ui/media-query/-/media-query-1.1.1.tgz#3950e223e28a7a6e3c29b3529698e15389facd5e"
   integrity sha512-KHsY4NzMl77yMyqpw3nleh1xM3zqAhCmSRBzQIh5fU/kT7r2tCwGl53djY5O2pl9VPMb4LhqPwkNd6vsscfCxQ==
@@ -1608,7 +1608,7 @@
   dependencies:
     "@chakra-ui/utils" "^1.7.0"
 
-"@chakra-ui/react@~1.6.5":
+"@chakra-ui/react@~1.6":
   version "1.6.5"
   resolved "https://registry.yarnpkg.com/@chakra-ui/react/-/react-1.6.5.tgz#f8d05b2bb7f98d73c9606b6abe02cec9598541e6"
   integrity sha512-kvBNX3gkg2CCbdaj585I8m7Wd+PGMLTpEM15WbII3t6E26lhKWwD5OXMomhWhsnBMCM9uSQ790dunhffcruUUg==
@@ -1720,7 +1720,7 @@
     "@chakra-ui/checkbox" "1.5.4"
     "@chakra-ui/utils" "1.8.1"
 
-"@chakra-ui/system@1.7.1", "@chakra-ui/system@~1.7.1":
+"@chakra-ui/system@1.7.1", "@chakra-ui/system@~1.7":
   version "1.7.1"
   resolved "https://registry.yarnpkg.com/@chakra-ui/system/-/system-1.7.1.tgz#b1f311a75963d5ac1f86873d17ba2ee5db59027d"
   integrity sha512-1G7+mAPbkGqtowZ4Bt9JwCB2wTJt701vj/vPLRW2KDYqlES5Xp2RomG8LdrGQcVWfiwO2wzpCYUZj2YLY4kbVA==
@@ -1765,7 +1765,7 @@
     "@chakra-ui/form-control" "1.3.8"
     "@chakra-ui/utils" "1.8.1"
 
-"@chakra-ui/theme-tools@1.1.8", "@chakra-ui/theme-tools@~1.1.8":
+"@chakra-ui/theme-tools@1.1.8", "@chakra-ui/theme-tools@~1.1":
   version "1.1.8"
   resolved "https://registry.yarnpkg.com/@chakra-ui/theme-tools/-/theme-tools-1.1.8.tgz#cc04947aaf5f553db84a32ba6c742f1fbc726f9b"
   integrity sha512-FQqHNfuvl2O1m7o6YY3ozqxnz74TWAhVzzfKrh7/eXcyA2IkF+MuKMUnyWXjOq1bcLt9rAGq0FQALisTd4YPWQ==
@@ -10909,7 +10909,7 @@ growly@^1.3.0:
 
 gun@amark/gun.git#manhattan:
   version "0.2020.520"
-  resolved "https://codeload.github.com/amark/gun/tar.gz/fe65f99ad56f888a9c0355e8417b749a118173b8"
+  resolved "https://codeload.github.com/amark/gun/tar.gz/4a022da60eef41c6c4eeea92bf5931f0b128cad2"
   dependencies:
     ws "^7.2.1"
   optionalDependencies:
@@ -13331,10 +13331,10 @@ joi@^17.2.1, joi@^17.4.0:
     "@sideway/formula" "^3.0.0"
     "@sideway/pinpoint" "^2.0.0"
 
-jotai@~1.1:
-  version "1.1.2"
-  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.1.2.tgz#3f211e0c03c74e95ea6fd7a69c1d2b65731009bf"
-  integrity sha512-dni4wtgYGG+s9YbOJN7lcfrrhxiD6bH1SN00Pnl0F2htgOXmjxqkGlFzw02OK0Rw35wGNzBfDTJVtbGD9wHOhg==
+jotai@~1.1.3:
+  version "1.1.3"
+  resolved "https://registry.yarnpkg.com/jotai/-/jotai-1.1.3.tgz#bf80b317562024117606b0cf9841db0b4bfd5e09"
+  integrity sha512-7PZs8gHe8Y+7BkC6m32NbfeNGa8ybFMUoy2DbH542YVYrFEJPxqIE4Es/SXaII7f8r/UZGzg29XWNEDq+iCITg==
 
 "js-tokens@^3.0.0 || ^4.0.0", js-tokens@^4.0.0:
   version "4.0.0"

@@ -24,16 +24,24 @@ module InformationSelector =
             information
             |> Information.Name
             |> InformationName.Value
-            |> String.IsNullOrWhiteSpace -> false
+            |> String.IsNullOrWhiteSpace
+            ->
+            false
         | Some information when
             information |> Information.isProject
-            && informationString = nameof Project -> true
+            && informationString = nameof Project
+            ->
+            true
         | Some information when
             information |> Information.isArea
-            && informationString = nameof Area -> true
+            && informationString = nameof Area
+            ->
+            true
         | Some information when
             information |> Information.isResource
-            && informationString = nameof Resource -> true
+            && informationString = nameof Resource
+            ->
+            true
         | _ -> false
 
     [<ReactComponent>]
@@ -83,7 +91,8 @@ module InformationSelector =
                         | Some information -> Set.add information
                         | _ -> id)
                     |> Set.filter (fun information -> isVisibleInformation informationSelected (Some information))
-                    |> Set.toList),
+                    |> Set.toList
+                    |> List.sortBy (Information.Name >> InformationName.Value)),
                 [|
                     box informationSelected
                     box informationSet
@@ -95,7 +104,6 @@ module InformationSelector =
             React.useMemo (
                 (fun () ->
                     sortedInformationList
-                    |> List.sort
                     |> List.tryFindIndex
                         (fun information ->
                             match input.Information with
@@ -230,140 +238,147 @@ module InformationSelector =
                                     | _, nameof Resource -> Some ()
                                     | _ -> None
                                     |> function
-                                    | Some () ->
-                                        React.fragment [
-                                            UI.stack
-                                                (fun x ->
-                                                    x.flex <- "1"
-                                                    x.spacing <- "1px"
-                                                    x.padding <- "1px"
-                                                    x.marginBottom <- "6px"
-                                                    x.marginTop <- "10px"
-                                                    x.maxHeight <- "217px"
-                                                    x.overflowY <- "auto"
-                                                    x.flexBasis <- 0)
-                                                [
-                                                    yield!
-                                                        sortedInformationList
-                                                        |> List.mapi
-                                                            (fun i information ->
+                                        | Some () ->
+                                            React.fragment [
+                                                UI.stack
+                                                    (fun x ->
+                                                        x.flex <- "1"
+                                                        x.spacing <- "1px"
+                                                        x.padding <- "1px"
+                                                        x.marginBottom <- "6px"
+                                                        x.marginTop <- "10px"
+                                                        x.maxHeight <- "217px"
+                                                        x.overflowY <- "auto"
+                                                        x.flexBasis <- 0)
+                                                    [
+                                                        yield!
+                                                            sortedInformationList
+                                                            |> List.mapi
+                                                                (fun i information ->
 
+                                                                    Button.Button
+                                                                        {|
+                                                                            Hint = None
+                                                                            Icon =
+                                                                                Some (
+                                                                                    (if index = i then
+                                                                                         Icons.fi.FiCheck
+                                                                                         |> Icons.renderWithProps
+                                                                                             (fun x ->
+                                                                                                 x.marginTop <- "3px")
+                                                                                     else
+                                                                                         UI.box
+                                                                                             (fun x ->
+                                                                                                 x.width <- "11px")
+                                                                                             []),
+                                                                                    Button.IconPosition.Left
+                                                                                )
+                                                                            Props =
+                                                                                fun x ->
+                                                                                    x.onClick <-
+                                                                                        fun _ ->
+                                                                                            promise {
+                                                                                                input.OnSelect
+                                                                                                    information
+
+                                                                                                onHide ()
+                                                                                            }
+
+                                                                                    x.alignSelf <- "stretch"
+
+                                                                                    x.backgroundColor <-
+                                                                                        "whiteAlpha.100"
+
+                                                                                    x.borderRadius <- "2px"
+                                                                            Children =
+                                                                                [
+                                                                                    information
+                                                                                    |> Information.Name
+                                                                                    |> InformationName.Value
+                                                                                    |> str
+                                                                                ]
+                                                                        |})
+                                                    ]
+
+                                                Dropdown.Dropdown
+                                                    {|
+                                                        Tooltip = ""
+                                                        Left = true
+                                                        Trigger =
+                                                            fun visible setVisible ->
                                                                 Button.Button
                                                                     {|
                                                                         Hint = None
                                                                         Icon =
                                                                             Some (
-                                                                                (if index = i then
-                                                                                     Icons.fi.FiCheck
-                                                                                     |> Icons.renderWithProps
-                                                                                         (fun x -> x.marginTop <- "3px")
+                                                                                (if visible then
+                                                                                     Icons.fi.FiChevronUp
                                                                                  else
-                                                                                     UI.box
-                                                                                         (fun x -> x.width <- "11px")
-                                                                                         []),
-                                                                                Button.IconPosition.Left
+                                                                                     Icons.fi.FiChevronDown)
+                                                                                |> Icons.render,
+                                                                                Button.IconPosition.Right
                                                                             )
                                                                         Props =
                                                                             fun x ->
                                                                                 x.onClick <-
                                                                                     fun _ ->
                                                                                         promise {
-                                                                                            input.OnSelect information
-
-                                                                                            onHide ()
-                                                                                        }
-
-                                                                                x.alignSelf <- "stretch"
-                                                                                x.backgroundColor <- "whiteAlpha.100"
-                                                                                x.borderRadius <- "2px"
+                                                                                            setVisible (not visible) }
                                                                         Children =
                                                                             [
-                                                                                information
-                                                                                |> Information.Name
-                                                                                |> InformationName.Value
+                                                                                match informationSelected with
+                                                                                | nameof Project -> "Add Project"
+                                                                                | nameof Area -> "Add Area"
+                                                                                | nameof Resource -> "Add Resource"
+                                                                                | _ -> ""
                                                                                 |> str
                                                                             ]
-                                                                    |})
-                                                ]
+                                                                    |}
+                                                        Body =
+                                                            fun onHide2 ->
+                                                                [
+                                                                    match informationSelected with
+                                                                    | nameof Project ->
+                                                                        ProjectForm.ProjectForm
+                                                                            (match input.Information with
+                                                                             | Some (Project project) -> project
+                                                                             | _ -> Project.Default)
+                                                                            (fun project ->
+                                                                                promise {
+                                                                                    input.OnSelect (Project project)
 
-                                            Dropdown.Dropdown
-                                                {|
-                                                    Tooltip = ""
-                                                    Left = true
-                                                    Trigger =
-                                                        fun visible setVisible ->
-                                                            Button.Button
-                                                                {|
-                                                                    Hint = None
-                                                                    Icon =
-                                                                        Some (
-                                                                            (if visible then
-                                                                                 Icons.fi.FiChevronUp
-                                                                             else
-                                                                                 Icons.fi.FiChevronDown)
-                                                                            |> Icons.render,
-                                                                            Button.IconPosition.Right
-                                                                        )
-                                                                    Props =
-                                                                        fun x ->
-                                                                            x.onClick <-
-                                                                                fun _ ->
-                                                                                    promise { setVisible (not visible) }
-                                                                    Children =
-                                                                        [
-                                                                            match informationSelected with
-                                                                            | nameof Project -> "Add Project"
-                                                                            | nameof Area -> "Add Area"
-                                                                            | nameof Resource -> "Add Resource"
-                                                                            | _ -> ""
-                                                                            |> str
-                                                                        ]
-                                                                |}
-                                                    Body =
-                                                        fun onHide2 ->
-                                                            [
-                                                                match informationSelected with
-                                                                | nameof Project ->
-                                                                    ProjectForm.ProjectForm
-                                                                        (match input.Information with
-                                                                         | Some (Project project) -> project
-                                                                         | _ -> Project.Default)
-                                                                        (fun project ->
-                                                                            promise {
-                                                                                input.OnSelect (Project project)
+                                                                                    onHide ()
+                                                                                    onHide2 ()
+                                                                                })
+                                                                    | nameof Area ->
+                                                                        AreaForm.AreaForm
+                                                                            (match input.Information with
+                                                                             | Some (Area area) -> area
+                                                                             | _ -> Area.Default)
+                                                                            (fun area ->
+                                                                                promise {
+                                                                                    input.OnSelect (Area area)
 
-                                                                                onHide ()
-                                                                                onHide2 ()
-                                                                            })
-                                                                | nameof Area ->
-                                                                    AreaForm.AreaForm
-                                                                        (match input.Information with
-                                                                         | Some (Area area) -> area
-                                                                         | _ -> Area.Default)
-                                                                        (fun area ->
-                                                                            promise {
-                                                                                input.OnSelect (Area area)
+                                                                                    onHide ()
+                                                                                    onHide2 ()
+                                                                                })
+                                                                    | nameof Resource ->
+                                                                        ResourceForm.ResourceForm
+                                                                            (match input.Information with
+                                                                             | Some (Resource resource) -> resource
+                                                                             | _ -> Resource.Default)
+                                                                            (fun resource ->
+                                                                                promise {
+                                                                                    input.OnSelect (Resource resource)
 
-                                                                                onHide ()
-                                                                                onHide2 ()
-                                                                            })
-                                                                | nameof Resource ->
-                                                                    ResourceForm.ResourceForm
-                                                                        (match input.Information with
-                                                                         | Some (Resource resource) -> resource
-                                                                         | _ -> Resource.Default)
-                                                                        (fun resource ->
-                                                                            promise {
-                                                                                input.OnSelect (Resource resource)
-
-                                                                                onHide ()
-                                                                                onHide2 ()
-                                                                            })
-                                                                | _ -> nothing
-                                                            ]
-                                                |}
-                                        ]
-                                    | _ -> nothing
+                                                                                    onHide ()
+                                                                                    onHide2 ()
+                                                                                })
+                                                                    | _ -> nothing
+                                                                ]
+                                                    |}
+                                            ]
+                                        | _ -> nothing
                                 ]
                     |}
             ]
