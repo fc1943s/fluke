@@ -37,6 +37,17 @@ module Cell =
         let rightDock = Store.useValue Atoms.User.rightDock
         let deviceInfo = Store.useValue Selectors.deviceInfo
 
+        let cellColorDisabled = Store.useValue Atoms.User.cellColorDisabled
+        let cellColorSuggested = Store.useValue Atoms.User.cellColorSuggested
+        let cellColorPending = Store.useValue Atoms.User.cellColorPending
+        let cellColorMissed = Store.useValue Atoms.User.cellColorMissed
+        let cellColorMissedToday = Store.useValue Atoms.User.cellColorMissedToday
+        let cellColorPostponedUntil = Store.useValue Atoms.User.cellColorPostponedUntil
+        let cellColorPostponed = Store.useValue Atoms.User.cellColorPostponed
+        let cellColorCompleted = Store.useValue Atoms.User.cellColorCompleted
+        let cellColorDismissed = Store.useValue Atoms.User.cellColorDismissed
+        let cellColorScheduled = Store.useValue Atoms.User.cellColorScheduled
+
         let onCellClick =
             Store.useCallback (
                 (fun getter _ (e: MouseEvent) ->
@@ -71,10 +82,8 @@ module Cell =
             (fun x ->
                 UI.setTestId
                     x
-                    $"cell-{input.TaskId}-{
-                                               (input.DateId |> DateId.Value |> FlukeDate.DateTime)
-                                                   .ToShortDateString ()
-                    }"
+                    $"cell-{input.TaskId}-{(input.DateId |> DateId.Value |> FlukeDate.DateTime)
+                                               .ToShortDateString ()}"
 
                 if isReadWrite then x.onClick <- onCellClick
                 x.width <- $"{cellSize}px"
@@ -83,7 +92,19 @@ module Cell =
                 x.position <- "relative"
 
                 x.backgroundColor <-
-                    (TempUI.cellStatusColor sessionStatus)
+                    (match sessionStatus with
+                     | Disabled -> cellColorDisabled
+                     | Suggested -> cellColorSuggested
+                     | Pending -> cellColorPending
+                     | Missed -> cellColorMissed
+                     | MissedToday -> cellColorMissedToday
+                     | UserStatus (_, status) ->
+                         match status with
+                         | Completed -> cellColorCompleted
+                         | Postponed until -> if until.IsSome then cellColorPostponedUntil else cellColorPostponed
+                         | Dismissed -> cellColorDismissed
+                         | Scheduled -> cellColorScheduled
+                     |> Color.Value)
                     + (if isToday then "aa"
                        elif input.SemiTransparent then "d9"
                        else "")
@@ -101,7 +122,8 @@ module Cell =
 
                 match rightDock, cellUIFlag with
                 | Some TempUI.DockType.Cell, UIFlag.Cell (taskId, dateId) when
-                    taskId = input.TaskId && dateId = input.DateId ->
+                    taskId = input.TaskId && dateId = input.DateId
+                    ->
                     UI.icon
                         (fun x ->
                             x.``as`` <- Icons.ti.TiPin

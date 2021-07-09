@@ -85,7 +85,6 @@ module View =
             taskStateSeq
             |> Seq.filter
                 (function
-                | { Task = { Information = Archive _ } } -> false
                 | {
                       Task = { Priority = Some priority }
                       Sessions = []

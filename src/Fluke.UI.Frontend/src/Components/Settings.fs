@@ -1,5 +1,7 @@
 namespace Fluke.UI.Frontend.Components
 
+open Browser.Types
+open Fable.Extras
 open Fable.React
 open Fable.Core.JsInterop
 open Feliz
@@ -13,15 +15,93 @@ open Fluke.Shared
 
 module Settings =
     [<ReactComponent>]
+    let ColorDropdown color setColor label =
+        Dropdown.Dropdown
+            {|
+                Tooltip = ""
+                Left = false
+                Trigger =
+                    fun visible setVisible ->
+                        UI.box
+                            (fun x -> x.position <- "relative")
+                            [
+                                Input.Input
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.fixedValue <- color |> Color.Value |> Some
+
+                                                x.rightButton <-
+                                                    Some (
+
+                                                        Button.Button
+                                                            {|
+                                                                Hint = None
+                                                                Icon =
+                                                                    Some (
+                                                                        Icons.io5.IoCaretDown |> Icons.render,
+                                                                        Button.IconPosition.Left
+                                                                    )
+                                                                Props =
+                                                                    fun x ->
+                                                                        x.borderRadius <- "0 5px 5px 0"
+
+                                                                        x.right <- "0"
+                                                                        x.top <- "0"
+                                                                        x.bottom <- "0"
+                                                                        x.minWidth <- "26px"
+
+                                                                        x.onClick <-
+                                                                            (fun _ ->
+                                                                                promise { setVisible (not visible) })
+                                                                Children = []
+                                                            |}
+                                                    )
+                                        Props =
+                                            fun x ->
+                                                x.label <- str label
+                                                x.color <- color |> Color.Value
+                                                x.fontWeight <- "bold"
+                                                x.isReadOnly <- true
+
+                                                x.onChange <-
+                                                    fun (e: KeyboardEvent) ->
+                                                        promise {
+                                                            match e.Value with
+                                                            | value when (JSe.RegExp @"#[a-fA-F0-9]{6}").Test value ->
+                                                                setColor (Color value)
+                                                            | _ -> ()
+                                                        }
+                                    |}
+                            ]
+                Body =
+                    fun _onHide ->
+                        [
+                            ColorPicker.render
+                                {|
+                                    color = color |> Color.Value
+                                    onChange = fun color -> setColor (Color (color.hex.ToUpper ()))
+                                |}
+                        ]
+            |}
+
+    [<ReactComponent>]
+    let ColorDropdownAtom atom label =
+        let value, setValue = Store.useState atom
+        ColorDropdown value setValue label
+
+
+    [<ReactComponent>]
     let rec Settings props =
         let weekStart, setWeekStart = Store.useState Atoms.User.weekStart
-        let color, setColor = Store.useState Atoms.User.color
         let debug = Store.useValue Atoms.debug
+
+        let userColor, setUserColor = Store.useState Atoms.User.userColor
 
         Accordion.Accordion
             {|
                 Props = props
-                Atom = Atoms.User.accordionFlag (TextKey (nameof Settings))
+                Atom = Atoms.User.accordionFlag AccordionType.Settings
                 Items =
                     [
                         "User",
@@ -45,8 +125,8 @@ module Settings =
                                                         fst
                                                         >> DateTime.TryParse
                                                         >> function
-                                                        | true, value -> value
-                                                        | _ -> DateTime.Parse "00:00"
+                                                            | true, value -> value
+                                                            | _ -> DateTime.Parse "00:00"
                                                         >> FlukeTime.FromDateTime
                                                         >> Some
                                                     )
@@ -107,79 +187,10 @@ module Settings =
                                         Props = fun x -> x.label <- str "Session Break Duration"
                                     |}
 
-                                Dropdown.Dropdown
-                                    {|
-                                        Tooltip = ""
-                                        Left = false
-                                        Trigger =
-                                            fun visible setVisible ->
-                                                UI.box
-                                                    (fun x -> x.position <- "relative")
-                                                    [
-                                                        Input.Input
-                                                            {|
-                                                                CustomProps =
-                                                                    fun x ->
-                                                                        x.atom <-
-                                                                            Some (
-                                                                                Store.InputAtom (
-                                                                                    Store.AtomReference.Atom
-                                                                                        Atoms.User.color
-                                                                                )
-                                                                            )
-
-                                                                        x.rightButton <-
-                                                                            Some (
-
-                                                                                Button.Button
-                                                                                    {|
-                                                                                        Hint = None
-                                                                                        Icon =
-                                                                                            Some (
-                                                                                                Icons.io5.IoCaretDown
-                                                                                                |> Icons.render,
-                                                                                                Button.IconPosition.Left
-                                                                                            )
-                                                                                        Props =
-                                                                                            fun x ->
-                                                                                                x.borderRadius <-
-                                                                                                    "0 5px 5px 0"
-
-                                                                                                x.right <- "0"
-                                                                                                x.top <- "0"
-                                                                                                x.bottom <- "0"
-                                                                                                x.minWidth <- "26px"
-
-                                                                                                x.onClick <-
-                                                                                                    (fun _ ->
-                                                                                                        promise {
-                                                                                                            setVisible (
-                                                                                                                not
-                                                                                                                    visible
-                                                                                                            )
-                                                                                                        })
-                                                                                        Children = []
-                                                                                    |}
-                                                                            )
-                                                                Props =
-                                                                    fun x ->
-                                                                        x.label <- str "Color"
-                                                                        x.color <- color |> Option.defaultValue ""
-                                                                        x.fontWeight <- "bold"
-                                                                        x.isReadOnly <- true
-                                                            |}
-                                                    ]
-                                        Body =
-                                            fun _onHide ->
-                                                [
-                                                    ColorPicker.render
-                                                        {|
-                                                            color = color |> Option.defaultValue ""
-                                                            onChange =
-                                                                fun color -> setColor (Some (color.hex.ToUpper ()))
-                                                        |}
-                                                ]
-                                    |}
+                                ColorDropdown
+                                    (userColor |> Option.defaultValue Color.Default)
+                                    (Some >> setUserColor)
+                                    "User Color"
 
                                 ChangeUserPasswordButton.ChangeUserPasswordButton ()
                             ])
@@ -386,6 +397,22 @@ module Settings =
                                                             | Some window -> window?Debug <- not debug
                                                         }
                                     |}
+                            ])
+
+                        "Cell Colors",
+                        (UI.stack
+                            (fun x -> x.spacing <- "10px")
+                            [
+                                ColorDropdownAtom Atoms.User.cellColorDisabled "Disabled"
+                                ColorDropdownAtom Atoms.User.cellColorSuggested "Suggested"
+                                ColorDropdownAtom Atoms.User.cellColorPending "Pending"
+                                ColorDropdownAtom Atoms.User.cellColorMissed "Missed"
+                                ColorDropdownAtom Atoms.User.cellColorMissedToday "Missed Today"
+                                ColorDropdownAtom Atoms.User.cellColorPostponedUntil "Postponed Until"
+                                ColorDropdownAtom Atoms.User.cellColorPostponed "Postponed"
+                                ColorDropdownAtom Atoms.User.cellColorCompleted "Completed"
+                                ColorDropdownAtom Atoms.User.cellColorDismissed "Dismissed"
+                                ColorDropdownAtom Atoms.User.cellColorScheduled "Scheduled"
                             ])
 
                         "Connection",

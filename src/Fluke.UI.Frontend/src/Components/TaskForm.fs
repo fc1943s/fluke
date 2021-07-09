@@ -70,8 +70,8 @@ module TaskForm =
                                                     fst
                                                     >> DateTime.TryParse
                                                     >> function
-                                                    | true, value -> value
-                                                    | _ -> DateTime.Parse "00:00"
+                                                        | true, value -> value
+                                                        | _ -> DateTime.Parse "00:00"
                                                     >> FlukeTime.FromDateTime
                                                     >> Some
                                                 )
@@ -148,8 +148,8 @@ module TaskForm =
                                                     fst
                                                     >> DateTime.TryParse
                                                     >> function
-                                                    | true, value -> value
-                                                    | _ -> DateTime.Parse "00:00"
+                                                        | true, value -> value
+                                                        | _ -> DateTime.Parse "00:00"
                                                     >> FlukeTime.FromDateTime
                                                     >> Some
                                                 )
@@ -509,7 +509,7 @@ module TaskForm =
                         x.flex <- "1"
                         x.overflowY <- "auto"
                         x.flexBasis <- 0
-                Atom = Atoms.User.accordionFlag (TextKey (nameof TaskForm))
+                Atom = Atoms.User.accordionFlag AccordionType.TaskForm
                 Items =
                     [
                         if taskId <> Task.Default.Id then
@@ -526,12 +526,10 @@ module TaskForm =
                                         (fun _ -> ())
                                         [
                                             str
-                                                $"Cell Attachment Count: {
-                                                                              cellAttachmentMap
-                                                                              |> Map.values
-                                                                              |> Seq.map Set.count
-                                                                              |> Seq.sum
-                                                }"
+                                                $"Cell Attachment Count: {cellAttachmentMap
+                                                                          |> Map.values
+                                                                          |> Seq.map Set.count
+                                                                          |> Seq.sum}"
                                         ]
                                 ])
 

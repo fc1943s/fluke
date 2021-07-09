@@ -22,7 +22,6 @@ module Information =
         | Project _ -> "Project"
         | Area _ -> "Area"
         | Resource _ -> "Resource"
-        | Archive _ -> "Archive"
 
     let fromString (x: string) =
         match x with
@@ -33,7 +32,6 @@ module Information =
         | Project _ -> 0
         | Area _ -> 1
         | Resource _ -> 2
-        | Archive _ -> 3
 
     let isProject (x: Information) =
         match x with
@@ -48,11 +46,6 @@ module Information =
     let isResource (x: Information) =
         match x with
         | Resource _ -> true
-        | _ -> false
-
-    let isArchive (x: Information) =
-        match x with
-        | Archive _ -> true
         | _ -> false
 namespace rec Fluke.Shared.Domain
 

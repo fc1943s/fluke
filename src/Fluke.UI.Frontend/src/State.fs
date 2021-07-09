@@ -41,6 +41,14 @@ module State =
         | RawImage of url: string
 
     [<RequireQualifiedAccess>]
+    type AccordionType =
+        | Settings
+        | DatabaseForm
+        | InformationForm
+        | TaskForm
+        | CellForm
+
+    [<RequireQualifiedAccess>]
     type UIFlagType =
         | Database
         | Information
@@ -60,6 +68,12 @@ module State =
     and Ping with
         static member inline Value (Ping ticks) = int64 ticks
 
+    type Color = Color of hex: string
+
+    and Color with
+        static member inline Value (Color hex) = hex
+        static member inline Default = Color "#000000"
+
     let deviceId =
         match JS.window id with
         | Some window ->
@@ -78,11 +92,20 @@ module State =
 
     type UserState =
         {
-            AccordionFlagMap: Map<string, string []>
+            AccordionFlagMap: Map<AccordionType, string []>
+            CellColorDisabled: Color
+            CellColorSuggested: Color
+            CellColorPending: Color
+            CellColorMissed: Color
+            CellColorMissedToday: Color
+            CellColorPostponedUntil: Color
+            CellColorPostponed: Color
+            CellColorCompleted: Color
+            CellColorDismissed: Color
+            CellColorScheduled: Color
             CellSize: int
             ClipboardAttachmentMap: Map<AttachmentId, bool>
             ClipboardVisible: bool
-            Color: string option
             DarkMode: bool
             DaysAfter: int
             DaysBefore: int
@@ -107,6 +130,7 @@ module State =
             SystemUiFont: bool
             UIFlagMap: Map<UIFlagType, UIFlag>
             UIVisibleFlagMap: Map<UIFlagType, bool>
+            UserColor: Color option
             View: View
             WeekStart: DayOfWeek
         }
@@ -114,11 +138,23 @@ module State =
     type UserState with
         static member inline Default =
             {
-                AccordionFlagMap = Map.empty
+                AccordionFlagMap =
+                    Union.ToList<AccordionType>
+                    |> List.map (fun accordionType -> accordionType, accordionFlagDefault)
+                    |> Map.ofList
+                CellColorDisabled = Color "#595959"
+                CellColorSuggested = Color "#4C664E"
+                CellColorPending = Color "#262626"
+                CellColorMissed = Color "#990022"
+                CellColorMissedToday = Color "#530011"
+                CellColorPostponedUntil = Color "#604800"
+                CellColorPostponed = Color "#B08200"
+                CellColorCompleted = Color "#339933"
+                CellColorDismissed = Color "#673AB7"
+                CellColorScheduled = Color "#003038"
                 CellSize = 19
                 ClipboardAttachmentMap = Map.empty
                 ClipboardVisible = false
-                Color = None
                 DarkMode = false
                 DaysAfter = 7
                 DaysBefore = 7
@@ -141,8 +177,15 @@ module State =
                 SessionBreakDuration = Minute 5
                 SessionDuration = Minute 25
                 SystemUiFont = true
-                UIFlagMap = Map.empty
-                UIVisibleFlagMap = Map.empty
+                UIFlagMap =
+                    Union.ToList<UIFlagType>
+                    |> List.map (fun uiFlagType -> uiFlagType, uiFlagDefault)
+                    |> Map.ofList
+                UIVisibleFlagMap =
+                    Union.ToList<UIFlagType>
+                    |> List.map (fun uiFlagType -> uiFlagType, uiVisibleFlagDefault)
+                    |> Map.ofList
+                UserColor = None
                 View = View.View.Information
                 WeekStart = DayOfWeek.Sunday
             }
@@ -178,6 +221,68 @@ module State =
         let rec shiftPressed = Store.atom ($"{nameof shiftPressed}", false)
 
         module User =
+            let rec cellColorDisabled =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof cellColorDisabled}",
+                    UserState.Default.CellColorDisabled,
+                    []
+                )
+
+            let rec cellColorSuggested =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof cellColorSuggested}",
+                    UserState.Default.CellColorSuggested,
+                    []
+                )
+
+            let rec cellColorPending =
+                Store.atomWithSync ($"{nameof User}/{nameof cellColorPending}", UserState.Default.CellColorPending, [])
+
+            let rec cellColorMissed =
+                Store.atomWithSync ($"{nameof User}/{nameof cellColorMissed}", UserState.Default.CellColorMissed, [])
+
+            let rec cellColorMissedToday =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof cellColorMissedToday}",
+                    UserState.Default.CellColorMissedToday,
+                    []
+                )
+
+            let rec cellColorPostponedUntil =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof cellColorPostponedUntil}",
+                    UserState.Default.CellColorPostponedUntil,
+                    []
+                )
+
+            let rec cellColorPostponed =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof cellColorPostponed}",
+                    UserState.Default.CellColorPostponed,
+                    []
+                )
+
+            let rec cellColorCompleted =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof cellColorCompleted}",
+                    UserState.Default.CellColorCompleted,
+                    []
+                )
+
+            let rec cellColorDismissed =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof cellColorDismissed}",
+                    UserState.Default.CellColorDismissed,
+                    []
+                )
+
+            let rec cellColorScheduled =
+                Store.atomWithSync (
+                    $"{nameof User}/{nameof cellColorScheduled}",
+                    UserState.Default.CellColorScheduled,
+                    []
+                )
+
             let rec cellSize = Store.atomWithSync ($"{nameof User}/{nameof cellSize}", UserState.Default.CellSize, [])
 
             let rec clipboardAttachmentMap =
@@ -281,6 +386,8 @@ module State =
             let rec systemUiFont =
                 Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont, id)
 
+            let rec userColor = Store.atomWithSync ($"{nameof User}/{nameof userColor}", (None: Color option), [])
+
             let rec view = Store.atomWithSync ($"{nameof User}/{nameof view}", UserState.Default.View, [])
 
             let rec weekStart =
@@ -305,10 +412,10 @@ module State =
             let rec accordionFlag =
                 Store.atomFamilyWithSync (
                     $"{nameof User}/{nameof accordionFlag}",
-                    (fun (_key: TextKey) -> accordionFlagDefault),
-                    (TextKey.Value >> List.singleton)
-
+                    (fun (_accordionType: AccordionType) -> accordionFlagDefault),
+                    (string >> List.singleton)
                 )
+
 
         module rec Device =
             let rec devicePing =
@@ -365,6 +472,13 @@ module State =
                 Store.atomFamilyWithSync (
                     $"{nameof Database}/{nameof informationAttachmentMap}",
                     (fun (_databaseId: DatabaseId) -> Map.empty: Map<Information, Set<AttachmentId>>),
+                    databaseIdIdentifier
+                )
+
+            let rec archivedTaskIdSet =
+                Store.atomFamilyWithSync (
+                    $"{nameof Database}/{nameof archivedTaskIdSet}",
+                    (fun (_databaseId: DatabaseId) -> None: Set<TaskId> option),
                     databaseIdIdentifier
                 )
 
@@ -595,6 +709,71 @@ module State =
                 deviceId,
                 (Guid >> DeviceId)
             )
+
+
+        module User =
+            let rec userState =
+                Store.readSelector (
+                    $"{nameof User}/{nameof userState}",
+                    (fun getter ->
+                        {
+                            AccordionFlagMap =
+                                Union.ToList<AccordionType>
+                                |> List.map
+                                    (fun accordionType ->
+                                        accordionType, Store.value getter (Atoms.User.accordionFlag accordionType))
+                                |> Map.ofList
+                            CellColorDisabled = Store.value getter Atoms.User.cellColorDisabled
+                            CellColorSuggested = Store.value getter Atoms.User.cellColorSuggested
+                            CellColorPending = Store.value getter Atoms.User.cellColorPending
+                            CellColorMissed = Store.value getter Atoms.User.cellColorMissed
+                            CellColorMissedToday = Store.value getter Atoms.User.cellColorMissedToday
+                            CellColorPostponedUntil = Store.value getter Atoms.User.cellColorPostponedUntil
+                            CellColorPostponed = Store.value getter Atoms.User.cellColorPostponed
+                            CellColorCompleted = Store.value getter Atoms.User.cellColorCompleted
+                            CellColorDismissed = Store.value getter Atoms.User.cellColorDismissed
+                            CellColorScheduled = Store.value getter Atoms.User.cellColorScheduled
+                            CellSize = Store.value getter Atoms.User.cellSize
+                            ClipboardAttachmentMap = Store.value getter Atoms.User.clipboardAttachmentMap
+                            ClipboardVisible = Store.value getter Atoms.User.clipboardVisible
+                            DarkMode = Store.value getter Atoms.User.darkMode
+                            DaysAfter = Store.value getter Atoms.User.daysAfter
+                            DaysBefore = Store.value getter Atoms.User.daysBefore
+                            DayStart = Store.value getter Atoms.User.dayStart
+                            EnableCellPopover = Store.value getter Atoms.User.enableCellPopover
+                            ExpandedDatabaseIdSet = Store.value getter Atoms.User.expandedDatabaseIdSet
+                            FilterTasksByView = Store.value getter Atoms.User.filterTasksByView
+                            FilterTasksText = Store.value getter Atoms.User.filterTasksText
+                            FontSize = Store.value getter Atoms.User.fontSize
+                            HideSchedulingOverlay = Store.value getter Atoms.User.hideSchedulingOverlay
+                            HideTemplates = Store.value getter Atoms.User.hideTemplates
+                            Language = Store.value getter Atoms.User.language
+                            LastInformationDatabase = Store.value getter Atoms.User.lastInformationDatabase
+                            LeftDock = Store.value getter Atoms.User.leftDock
+                            LeftDockSize = Store.value getter Atoms.User.leftDockSize
+                            RightDock = Store.value getter Atoms.User.rightDock
+                            RightDockSize = Store.value getter Atoms.User.rightDockSize
+                            SearchText = Store.value getter Atoms.User.searchText
+                            SelectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
+                            SessionBreakDuration = Store.value getter Atoms.User.sessionBreakDuration
+                            SessionDuration = Store.value getter Atoms.User.sessionDuration
+                            SystemUiFont = Store.value getter Atoms.User.systemUiFont
+                            UIFlagMap =
+                                Union.ToList<UIFlagType>
+                                |> List.map
+                                    (fun uiFlagType -> uiFlagType, Store.value getter (Atoms.User.uiFlag uiFlagType))
+                                |> Map.ofList
+                            UIVisibleFlagMap =
+                                Union.ToList<UIFlagType>
+                                |> List.map
+                                    (fun uiFlagType ->
+                                        uiFlagType, Store.value getter (Atoms.User.uiVisibleFlag uiFlagType))
+                                |> Map.ofList
+                            UserColor = Store.value getter Atoms.User.userColor
+                            View = Store.value getter Atoms.User.view
+                            WeekStart = Store.value getter Atoms.User.weekStart
+                        })
+                )
 
 
         module Database =

@@ -18,7 +18,9 @@ module Dropdown =
         let darkMode = Store.useValue Atoms.User.darkMode
 
         UI.flex
-            (fun x -> x.direction <- "column")
+            (fun x ->
+                x.direction <- "column"
+                x.overflow <- "auto")
             [
                 Tooltip.wrap
                     (str input.Tooltip)

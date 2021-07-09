@@ -9,7 +9,7 @@ open Fluke.Shared
 module CellStatusUserIndicator =
     [<ReactComponent>]
     let CellStatusUserIndicator () =
-        let color = Store.useValue Atoms.User.color
+        let userColor = Store.useValue Atoms.User.userColor
         let cellSize = Store.useValue Atoms.User.cellSize
 
         UI.box
@@ -18,16 +18,16 @@ module CellStatusUserIndicator =
                 x.lineHeight <- $"{cellSize}px"
                 x.position <- "absolute"
                 x.top <- "0"
-//                x.width <- "100%"
+                //                x.width <- "100%"
 
                 x._after <-
                     (JS.newObj
                         (fun x ->
 
                             x.borderBottomColor <-
-                                match color with
-                                | Some (String.ValidString color) -> color
-                                | _ -> "#000000"
+                                userColor
+                                |> Option.defaultValue Color.Default
+                                |> Color.Value
 
                             x.borderBottomWidth <- $"{min (cellSize / 2) 10}px"
                             x.borderLeftColor <- "transparent"

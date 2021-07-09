@@ -2,6 +2,8 @@ namespace Fluke.Shared
 
 open System.IO
 open System
+open Microsoft.FSharp.Reflection
+
 
 [<AutoOpen>]
 module CoreMagic =
@@ -12,14 +14,24 @@ module CoreMagic =
 
             Guid $"{ticks.[0..7]}-{ticks.[8..11]}-{ticks.[12..15]}-{guid.[19..]}"
 
+
+module Union =
+    let inline ToList<'T> =
+        FSharpType.GetUnionCases typeof<'T>
+        |> Array.toList
+        |> List.map (fun unionCaseInfo -> FSharpValue.MakeUnion (unionCaseInfo, [||]) :?> 'T)
+
+
 module private ListIter =
     let inline length (target: ^X when ^X: (member length : int)) = (^X: (member length : int) target)
 
     let inline item (target: ^X when ^X: (member item : int -> ^Y)) (index: int) =
         (^X: (member item : int -> ^Y) target, index)
 
+
 module Async =
     let lift (value: 'T) = async { return value }
+
 
 module Seq =
     let inline intersperse sep list =
@@ -60,11 +72,13 @@ module List =
         |> Seq.intersperse element
         |> Seq.toList
 
+
 module Result =
     let inline defaultValue def result =
         match result with
         | Ok result -> result
         | Error _ -> def
+
 
 module Map =
     let inline singleton key value =
@@ -95,6 +109,7 @@ module Map =
         unionWith (fun x _ -> x) source altSource
 
     let inline mapValues f (x: Map<'Key, 'T>) = Map.map (fun _ -> f) x
+
 
 module Set =
     let inline choose fn set =
@@ -179,6 +194,7 @@ module Enum =
         |> Array.toList
 
     let inline name<'T> (value: 'T) = Enum.GetName (typeof<'T>, value)
+
 
 module DateTime =
     let ticksDiff ticks =

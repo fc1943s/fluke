@@ -10,8 +10,20 @@ module Content =
     [<ReactComponent>]
     let LoggedContent () =
         let color = Store.useValue Atoms.User.color
+        let userColor, setUserColor = Store.useState Atoms.User.userColor
 
-        JS.log (fun () -> $"Content.render. color={color}")
+        React.useEffect (
+            (fun () ->
+                if color.IsSome && userColor.IsNone then
+                    setUserColor (color |> Option.map Color)),
+            [|
+                box color
+                box setUserColor
+                box userColor
+            |]
+        )
+
+        JS.log (fun () -> $"Content.render. userColor={userColor}")
 
         React.suspense (
             [
@@ -27,7 +39,7 @@ module Content =
 
                         TopBar.TopBar ()
 
-                        if color.IsNone then
+                        if userColor.IsNone then
                             LoadingSpinner.LoadingSpinner ()
                         else
                             UI.flex

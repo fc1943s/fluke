@@ -100,7 +100,7 @@ module DatabaseForm =
                         x.flex <- "1"
                         x.overflowY <- "auto"
                         x.flexBasis <- 0
-                Atom = Atoms.User.accordionFlag (TextKey (nameof DatabaseForm))
+                Atom = Atoms.User.accordionFlag AccordionType.DatabaseForm
                 Items =
                     [
                         $"""{if databaseId = Database.Default.Id then "Add" else "Edit"} Database""",

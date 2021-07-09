@@ -2,10 +2,9 @@ namespace Fluke.UI.Frontend.Tests
 
 open Fable.Core.JsInterop
 open System
-open Fluke.Shared.Domain.State
 open Fluke.Shared.Domain.UserInteraction
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.State
 
 
 module Full =
@@ -268,11 +267,11 @@ module Full =
 
                     Cy2.clickTestId "[data-testid^='cell-']"
 
-                    Cy2.clickTestId
-                        $"[data-testid='cell-button-{TempUI.cellStatusColor (UserStatus (unbox null, Completed))}']"
+                    Cy2.clickTestId $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorCompleted}']"
+
 
                     Cy2.clickTestId "[data-testid^='cell-']"
-                    Cy2.clickTestId $"[data-testid='cell-button-{(TempUI.cellStatusColor Pending)}']"
+                    Cy2.clickTestId $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorPending}']"
 
                     Cy.wait 200
 
@@ -288,7 +287,7 @@ module Full =
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 
                     Cy2.clickTestId "[data-testid^='cell-']"
-                    Cy2.clickTestId $"[data-testid='cell-button-{(TempUI.cellStatusColor Disabled)}']"
+                    Cy2.clickTestId $"[data-testid='cell-button-{Color.Value UserState.Default.CellColorDisabled}']"
 
                     Cy2.waitFor "1 of 1 visible" (Some {| timeout = timeout |})
 

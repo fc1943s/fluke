@@ -21,7 +21,6 @@ module Model =
         | Project of project: Project
         | Area of area: Area
         | Resource of resource: Resource
-        | Archive of information: Information
 
     and Area = { Name: AreaName }
 
@@ -121,7 +120,6 @@ module Model =
                       } -> InformationName.Project (areaName, name)
             | Area { Name = name } -> InformationName.Area name
             | Resource { Name = name } -> InformationName.Resource name
-            | Archive information -> information |> Information.Name
 
     and Scheduling with
         static member inline Label scheduling =

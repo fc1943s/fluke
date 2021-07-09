@@ -152,6 +152,16 @@ module Auth =
                                         let set atom value = Store.set setter atom value
                                         let def = UserState.Default
 
+                                        set Atoms.User.cellColorDisabled def.CellColorDisabled
+                                        set Atoms.User.cellColorSuggested def.CellColorSuggested
+                                        set Atoms.User.cellColorPending def.CellColorPending
+                                        set Atoms.User.cellColorMissed def.CellColorMissed
+                                        set Atoms.User.cellColorMissedToday def.CellColorMissedToday
+                                        set Atoms.User.cellColorPostponedUntil def.CellColorPostponedUntil
+                                        set Atoms.User.cellColorPostponed def.CellColorPostponed
+                                        set Atoms.User.cellColorCompleted def.CellColorCompleted
+                                        set Atoms.User.cellColorDismissed def.CellColorDismissed
+                                        set Atoms.User.cellColorScheduled def.CellColorScheduled
                                         set Atoms.User.cellSize def.CellSize
                                         set Atoms.User.clipboardAttachmentMap def.ClipboardAttachmentMap
                                         set Atoms.User.clipboardVisible def.ClipboardVisible
@@ -180,13 +190,23 @@ module Auth =
                                         set Atoms.User.view def.View
                                         set Atoms.User.weekStart def.WeekStart
 
+                                        def.AccordionFlagMap
+                                        |> Map.iter (Atoms.User.accordionFlag >> set)
+
+                                        def.UIFlagMap
+                                        |> Map.iter (Atoms.User.uiFlag >> set)
+
+                                        def.UIVisibleFlagMap
+                                        |> Map.iter (Atoms.User.uiVisibleFlag >> set)
 
                                         JS.setTimeout
                                             (fun () ->
                                                 Store.set
                                                     setter
-                                                    Atoms.User.color
-                                                    (Some (String.Format ("#{0:X6}", Random().Next 0x1000000))))
+                                                    Atoms.User.userColor
+                                                    (String.Format ("#{0:X6}", Random().Next 0x1000000)
+                                                     |> Color
+                                                     |> Some))
                                             0
                                         |> ignore
 

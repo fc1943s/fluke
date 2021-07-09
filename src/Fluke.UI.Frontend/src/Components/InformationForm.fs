@@ -88,7 +88,7 @@ module InformationForm =
                         x.flex <- "1"
                         x.overflowY <- "auto"
                         x.flexBasis <- 0
-                Atom = Atoms.User.accordionFlag (TextKey (nameof InformationForm))
+                Atom = Atoms.User.accordionFlag AccordionType.InformationForm
                 Items =
                     [
                         "Info",
@@ -115,7 +115,8 @@ module InformationForm =
                             |> Information.Name
                             |> InformationName.Value
                             |> String.IsNullOrWhiteSpace
-                            |> not ->
+                            |> not
+                            ->
                             "Attachments",
                             (UI.stack
                                 (fun x ->

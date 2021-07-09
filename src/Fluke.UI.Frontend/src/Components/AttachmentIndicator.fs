@@ -10,7 +10,7 @@ module AttachmentIndicator =
     [<ReactComponent>]
     let AttachmentIndicator () =
         let cellSize = Store.useValue Atoms.User.cellSize
-        let color = Store.useValue Atoms.User.color
+        let userColor = Store.useValue Atoms.User.userColor
 
         UI.box
             (fun x ->
@@ -25,7 +25,12 @@ module AttachmentIndicator =
                         (fun x ->
                             x.content <- "\"\""
                             x.borderTopWidth <- $"{min (cellSize / 2) 10}px"
-                            x.borderTopColor <- color |> Option.defaultValue "#000"
+
+                            x.borderTopColor <-
+                                userColor
+                                |> Option.defaultValue Color.Default
+                                |> Color.Value
+
                             x.borderLeftWidth <- $"{min (cellSize / 2) 10}px"
                             x.borderLeftColor <- "transparent"
                             x.position <- "absolute"

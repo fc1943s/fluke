@@ -66,7 +66,7 @@ module CellForm =
         Accordion.Accordion
             {|
                 Props = fun _ -> ()
-                Atom = Atoms.User.accordionFlag (TextKey (nameof CellForm))
+                Atom = Atoms.User.accordionFlag AccordionType.CellForm
                 Items =
                     [
                         "Info",

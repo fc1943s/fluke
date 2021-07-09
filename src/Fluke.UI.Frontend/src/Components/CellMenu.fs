@@ -21,7 +21,6 @@ module CellMenu =
         let cellSize = Store.useValue Atoms.User.cellSize
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
         let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
-        let dayStart = Store.useValue Atoms.User.dayStart
         let darkMode = Store.useValue Atoms.User.darkMode
 
         let postponedUntil, setPostponedUntil =
@@ -38,6 +37,11 @@ module CellMenu =
 
         let setRightDock = Store.useSetState Atoms.User.rightDock
         let cellUIFlag, setCellUIFlag = Store.useState (Atoms.User.uiFlag UIFlagType.Cell)
+        let cellColorPostponedUntil = Store.useValue Atoms.User.cellColorPostponedUntil
+        let cellColorPostponed = Store.useValue Atoms.User.cellColorPostponed
+        let cellColorCompleted = Store.useValue Atoms.User.cellColorCompleted
+        let cellColorDismissed = Store.useValue Atoms.User.cellColorDismissed
+        let cellColorScheduled = Store.useValue Atoms.User.cellColorScheduled
 
         let onClick =
             Store.useCallback (
@@ -118,7 +122,8 @@ module CellMenu =
                             && (newMap |> Map.keys |> Seq.contains taskId |> not
                                 || newMap.[taskId]
                                    |> Set.contains (dateId |> DateId.Value)
-                                   |> not) ->
+                                   |> not)
+                            ->
                             let newTaskId =
                                 newMap
                                 |> Map.pick (fun k v -> if v.IsEmpty then None else Some k)
@@ -136,7 +141,9 @@ module CellMenu =
                             newMap
                             |> Map.values
                             |> Seq.map Set.count
-                            |> Seq.sum = 1 -> onClose ()
+                            |> Seq.sum = 1
+                            ->
+                            onClose ()
                         | _ -> ()
                     }),
                 [|
@@ -153,7 +160,13 @@ module CellMenu =
 
                 if floating then
                     x.borderWidth <- "1px"
-                    x.borderColor <- if darkMode then TempUI.cellStatusColor Disabled else "gray.45"
+
+                    x.borderColor <-
+                        if darkMode then
+                            Color.Value UserState.Default.CellColorDisabled
+                        else
+                            "gray.45"
+
                     x.boxShadow <- $"0px 0px 2px 1px #{if darkMode then 262626 else 777}")
             [
                 UI.stack
@@ -189,7 +202,14 @@ module CellMenu =
                             wrapButton icon color (Some (fun () -> onClick status))
 
                         let wrapButtonTooltip status tooltipLabel =
-                            let color = TempUI.manualCellStatusColor status
+                            let color =
+                                match status with
+                                | Completed -> cellColorCompleted
+                                | Postponed until ->
+                                    if until.IsSome then cellColorPostponedUntil else cellColorPostponed
+                                | Dismissed -> cellColorDismissed
+                                | Scheduled -> cellColorScheduled
+                                |> Color.Value
 
                             Tooltip.wrap
                                 tooltipLabel
@@ -214,7 +234,7 @@ module CellMenu =
                                 [
                                     wrapButton
                                         (Icons.fi.FiArrowRight |> Icons.render |> Some)
-                                        (TempUI.cellStatusColor Pending)
+                                        (Color.Value UserState.Default.CellColorPending)
                                         (Some
                                             (fun () ->
                                                 promise {
@@ -263,14 +283,7 @@ module CellMenu =
                                     Tooltip.wrap
                                         (str $"Postpone until {postponedUntilLabel}")
                                         [
-                                            wrapButton
-                                                None
-                                                (postponedUntil
-                                                 |> Option.defaultValue dayStart
-                                                 |> Some
-                                                 |> Postponed
-                                                 |> TempUI.manualCellStatusColor)
-                                                None
+                                            wrapButton None (Color.Value cellColorPostponedUntil) None
                                         ]
                                 Body =
                                     fun (_disclosure, initialFocusRef) ->
@@ -300,9 +313,11 @@ module CellMenu =
                                                                             fst
                                                                             >> DateTime.TryParse
                                                                             >> function
-                                                                            | true, date ->
-                                                                                date |> FlukeTime.FromDateTime |> Some
-                                                                            | _ -> None
+                                                                                | true, date ->
+                                                                                    date
+                                                                                    |> FlukeTime.FromDateTime
+                                                                                    |> Some
+                                                                                | _ -> None
                                                                         )
                                                             Props =
                                                                 fun x ->
@@ -316,11 +331,11 @@ module CellMenu =
                                                                                 e.Value
                                                                                 |> DateTime.TryParse
                                                                                 |> function
-                                                                                | true, date ->
-                                                                                    date
-                                                                                    |> FlukeTime.FromDateTime
-                                                                                    |> Some
-                                                                                | _ -> None
+                                                                                    | true, date ->
+                                                                                        date
+                                                                                        |> FlukeTime.FromDateTime
+                                                                                        |> Some
+                                                                                    | _ -> None
                                                                                 |> setPostponedUntil
                                                                             }
                                                         |}
@@ -384,7 +399,7 @@ overriding any other behavior.
                                 [
                                     wrapButton
                                         (Icons.bi.BiShuffle |> Icons.render |> Some)
-                                        (TempUI.cellStatusColor Suggested)
+                                        (Color.Value UserState.Default.CellColorSuggested)
                                         (Some random)
                                 ]
 
@@ -395,7 +410,7 @@ overriding any other behavior.
                                 [
                                     wrapButtonStatus
                                         (Icons.md.MdClear |> Icons.render |> Some)
-                                        (TempUI.cellStatusColor Disabled)
+                                        (Color.Value UserState.Default.CellColorDisabled)
                                         Disabled
                                 ]
                         | _ -> nothing

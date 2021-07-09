@@ -1,27 +1,24 @@
 namespace Fluke.UI.Frontend.Components
 
-open Feliz
-open Fluke.UI.Frontend
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Fluke.UI.Frontend.State
 
 
 module Logo =
-    open Domain.State
-
     let inline Logo () =
         UI.simpleGrid
             (fun x ->
                 x.columns <- 2
                 x.borderWidth <- "1px"
-                x.borderColor <- TempUI.cellStatusColor Disabled)
+                x.borderColor <- Color.Value UserState.Default.CellColorDisabled)
             [
                 yield!
                     [
-                        TempUI.cellStatusColor Missed
-                        TempUI.cellStatusColor Pending
-                        TempUI.manualCellStatusColor (Postponed None)
-                        TempUI.manualCellStatusColor Completed
+                        Color.Value UserState.Default.CellColorMissed
+                        Color.Value UserState.Default.CellColorPending
+                        Color.Value UserState.Default.CellColorPostponed
+                        Color.Value UserState.Default.CellColorCompleted
                     ]
                     |> List.map
                         (fun color ->
