@@ -238,9 +238,6 @@ module UI =
     [<ImportAll "@chakra-ui/theme-tools">]
     let themeTools : {| mode: string * string -> obj -> obj |} = jsNative
 
-    [<ImportAll "@chakra-ui/icons">]
-    let icons : {| ExternalLinkIcon: obj |} = jsNative
-
     let chakraMemo =
         React.memo
             (fun (input: {| Props: IChakraProps
@@ -260,9 +257,6 @@ module UI =
         renderComponent cmp newProps children
 
     type ChakraInput<'T> = 'T -> unit
-
-    module Icons =
-        let externalLinkIcon<'T> = renderChakraComponent icons.ExternalLinkIcon
 
     let accordion<'T> = renderChakraComponent react.Accordion
     let accordionItem<'T> = renderChakraComponent react.AccordionItem

@@ -186,7 +186,7 @@ module UserInteraction =
                 |> FlukeTime.GreaterEqualThan dayStart
 
             let newDate =
-                if testingAfterMidnight && currentlyBeforeMidnight then
+                if testingAfterMidnight && currentlyBeforeMidnight && dayStart <> time then
                     (referenceDay |> FlukeDate.DateTime).AddDays 1.
                     |> FlukeDate.FromDateTime
                 else

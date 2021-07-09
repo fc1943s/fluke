@@ -87,45 +87,46 @@ module TaskName =
                         x.whiteSpace <- "nowrap"
                         x.textOverflow <- "ellipsis")
                     [
-                        //                        match taskState with
-//                        | Some taskState when taskState.Task.Name |> TaskName.Value <> "" ->
-                        name |> TaskName.Value |> str
+                        match name |> TaskName.Value with
+                        | "" -> LoadingSpinner.InlineLoadingSpinner ()
+                        | name ->
+                            str name
 
-                        if not isReadWrite then
-                            nothing
-                        else
-                            Menu.Menu
-                                {|
-                                    Tooltip = ""
-                                    Trigger =
-                                        InputLabelIconButton.InputLabelIconButton
-                                            (fun x ->
-                                                x.``as`` <- UI.react.MenuButton
-                                                x.icon <- Icons.bs.BsThreeDots |> Icons.render
-                                                x.fontSize <- "11px"
-                                                x.height <- "15px"
-                                                x.color <- "whiteAlpha.700"
-                                                x.display <- if isReadWrite then null else "none"
-                                                x.marginTop <- "-3px"
-                                                x.marginLeft <- "6px")
-                                    Body =
-                                        [
-                                            MenuItem.MenuItem Icons.bs.BsPen "Edit Task" editTask (fun _ -> ())
+                            if not isReadWrite then
+                                nothing
+                            else
+                                Menu.Menu
+                                    {|
+                                        Tooltip = ""
+                                        Trigger =
+                                            InputLabelIconButton.InputLabelIconButton
+                                                (fun x ->
+                                                    x.``as`` <- UI.react.MenuButton
+                                                    x.icon <- Icons.bs.BsThreeDots |> Icons.render
+                                                    x.fontSize <- "11px"
+                                                    x.height <- "15px"
+                                                    x.color <- "whiteAlpha.700"
+                                                    x.display <- if isReadWrite then null else "none"
+                                                    x.marginTop <- "-3px"
+                                                    x.marginLeft <- "6px")
+                                        Body =
+                                            [
+                                                MenuItem.MenuItem Icons.bs.BsPen "Edit Task" editTask (fun _ -> ())
 
-                                            MenuItem.MenuItem
-                                                Icons.gi.GiHourglass
-                                                "Start Session"
-                                                startSession
-                                                (fun _ -> ())
+                                                MenuItem.MenuItem
+                                                    Icons.gi.GiHourglass
+                                                    "Start Session"
+                                                    startSession
+                                                    (fun _ -> ())
 
-                                            ConfirmPopover.ConfirmPopover
-                                                ConfirmPopover.ConfirmPopoverType.MenuItem
-                                                Icons.bi.BiTrash
-                                                "Delete Task"
-                                                deleteTask
-                                        ]
-                                    MenuListProps = fun _ -> ()
-                                |}
+                                                ConfirmPopover.ConfirmPopover
+                                                    ConfirmPopover.ConfirmPopoverType.MenuItem
+                                                    Icons.bi.BiTrash
+                                                    "Delete Task"
+                                                    deleteTask
+                                            ]
+                                        MenuListProps = fun _ -> ()
+                                    |}
                     ]
 
                 if not attachmentIdSet.IsEmpty then

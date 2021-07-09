@@ -10909,7 +10909,7 @@ growly@^1.3.0:
 
 gun@amark/gun.git#manhattan:
   version "0.2020.520"
-  resolved "https://codeload.github.com/amark/gun/tar.gz/4a022da60eef41c6c4eeea92bf5931f0b128cad2"
+  resolved "https://codeload.github.com/amark/gun/tar.gz/fe65f99ad56f888a9c0355e8417b749a118173b8"
   dependencies:
     ws "^7.2.1"
   optionalDependencies:

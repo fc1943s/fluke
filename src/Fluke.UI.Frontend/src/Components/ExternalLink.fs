@@ -1,17 +1,17 @@
 namespace Fluke.UI.Frontend.Components
 
-open Feliz
 open Fluke.UI.Frontend.Bindings
 open Fable.React
 
 
 module ExternalLink =
     let externalLinkIcon =
-        UI.Icons.externalLinkIcon
+        Icons.bi.BiLinkExternal
+        |> Icons.renderWithProps
             (fun x ->
+                x.display <- "inline"
                 x.marginLeft <- "3px"
-                x.marginTop <- "-1px")
-            []
+                x.marginTop <- "-2px")
 
     let inline ExternalLink
         (input: {| Link: ReactElement
