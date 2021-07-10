@@ -252,30 +252,6 @@ module Databases =
 
     [<ReactComponent>]
     let rec Databases props =
-        let username = Store.useValue Store.Atoms.username
-        let isTesting = Store.useValue Store.Atoms.isTesting
-
-        let hideTemplates = Store.useValue Atoms.User.hideTemplates
-        let hideTemplatesCache = React.useRef<Flag option> None
-
-        let expandedDatabaseIdSet, setExpandedDatabaseIdSet = Store.useState Atoms.User.expandedDatabaseIdSet
-
-        React.useEffect (
-            (fun () ->
-                match hideTemplates, hideTemplatesCache.current with
-                | Some (Flag true),
-                  (None
-                  | Some (Flag false)) -> setExpandedDatabaseIdSet Set.empty
-                | _ -> ()
-
-                hideTemplatesCache.current <- hideTemplates),
-            [|
-                box setExpandedDatabaseIdSet
-                box hideTemplates
-                box hideTemplatesCache
-            |]
-        )
-
         let databaseIdAtoms = Store.useValue Selectors.asyncDatabaseIdAtoms
 
         let databaseIdList =
@@ -298,7 +274,11 @@ module Databases =
                             database.Name
                             |> DatabaseName.Value
                             |> String.IsNullOrWhiteSpace
-                            |> not)
+                            |> not
+                            && database.Owner
+                               |> Username.Value
+                               |> String.IsNullOrWhiteSpace
+                               |> not)
                     |> Seq.map (fun database -> database.Id, database)
                     |> Map.ofSeq),
                 [|
@@ -306,9 +286,29 @@ module Databases =
                 |]
             )
 
-        let selectedDatabaseIdSet, setSelectedDatabaseIdSet = Store.useState Atoms.User.selectedDatabaseIdSet
+        let username = Store.useValue Store.Atoms.username
+        let hideTemplates = Store.useValue Atoms.User.hideTemplates
+        let hideTemplatesCache = React.useRef<Flag option> None
 
-        let nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray =
+        let expandedDatabaseIdSet, setExpandedDatabaseIdSet = Store.useState Atoms.User.expandedDatabaseIdSet
+
+        React.useEffect (
+            (fun () ->
+                match hideTemplates, hideTemplatesCache.current with
+                | Some (Flag true),
+                  (None
+                  | Some (Flag false)) -> setExpandedDatabaseIdSet Set.empty
+                | _ -> ()
+
+                hideTemplatesCache.current <- hideTemplates),
+            [|
+                box setExpandedDatabaseIdSet
+                box hideTemplates
+                box hideTemplatesCache
+            |]
+        )
+
+        let nodeData =
             React.useMemo (
                 (fun () ->
                     let filteredDatabaseMap =
@@ -317,6 +317,8 @@ module Databases =
                         |> Seq.toList
                         |> List.map
                             (fun database ->
+                                printfn $"name={database.Name} owner={database.Owner}"
+
                                 let nodeType =
                                     match database.Owner with
                                     | owner when owner = Templates.templatesUser.Username -> NodeType.Template
@@ -332,33 +334,53 @@ module Databases =
                         |> Map.ofSeq
                         |> Map.map (fun _ v -> v |> List.map snd)
 
-                    let nodeData =
-                        [
-                            if hideTemplates = Some (Flag false) then yield NodeType.Template
-                            yield NodeType.Owned
-                            yield NodeType.Shared
-                        ]
-                        |> List.collect
-                            (fun nodeType ->
-                                let newDatabaseNameList =
-                                    filteredDatabaseMap
-                                    |> Map.tryFind nodeType
-                                    |> Option.map (List.map (fun database -> Some database, database.Name))
-                                    |> Option.defaultValue [
-                                        None, DatabaseName "None"
-                                       ]
+                    printfn
+                        $"
+                    hideTemplates={hideTemplates}
+                    [Some (Flag false)]={Some (Flag false)}
+                    [hideTemplates = Some (Flag false)]={hideTemplates = Some (Flag false)}
+                    [Some false = None]={Some false = None}
+                    "
 
-                                let prefix =
-                                    match nodeType with
-                                    | NodeType.Template -> "Templates\/Unit Tests"
-                                    | NodeType.Owned -> "Created by me"
-                                    | NodeType.Shared -> "Shared with me"
+                    [
+                        if hideTemplates = Some (Flag false) then yield NodeType.Template
+                        yield NodeType.Owned
+                        yield NodeType.Shared
+                    ]
+                    |> List.collect
+                        (fun nodeType ->
+                            let newDatabaseNameList =
+                                filteredDatabaseMap
+                                |> Map.tryFind nodeType
+                                |> Option.map (List.map (fun database -> Some database, database.Name))
+                                |> Option.defaultValue [
+                                    None, DatabaseName "None"
+                                   ]
 
-                                newDatabaseNameList
-                                |> List.map
-                                    (fun (database, databaseName) ->
-                                        database, $"{prefix}/{databaseName |> DatabaseName.Value}")
-                                |> List.sortBy snd)
+                            let prefix =
+                                match nodeType with
+                                | NodeType.Template -> "Templates\/Unit Tests"
+                                | NodeType.Owned -> "Created by me"
+                                | NodeType.Shared -> "Shared with me"
+
+                            newDatabaseNameList
+                            |> List.map
+                                (fun (database, databaseName) ->
+                                    database, $"{prefix}/{databaseName |> DatabaseName.Value}")
+                            |> List.sortBy snd)),
+                [|
+                    box databaseMap
+                    box hideTemplates
+                    box username
+                |]
+            )
+
+        let isTesting = Store.useValue Store.Atoms.isTesting
+        let selectedDatabaseIdSet, setSelectedDatabaseIdSet = Store.useState Atoms.User.selectedDatabaseIdSet
+
+        let nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray =
+            React.useMemo (
+                (fun () ->
 
                     let nodes =
                         let ids =
@@ -463,12 +485,11 @@ module Databases =
 
                     nodes, newExpandedDatabaseGuidArray, newSelectedDatabaseGuidArray),
                 [|
+                    box nodeData
                     box databaseMap
-                    box hideTemplates
                     box expandedDatabaseIdSet
                     box selectedDatabaseIdSet
                     box isTesting
-                    box username
                 |]
             )
 
