@@ -151,7 +151,7 @@ module ViewTabs =
                                                 |}
                                         Body =
                                             [
-                                                MenuItemToggle.MenuItemToggle
+                                                MenuItemToggle.MenuItemToggleAtom
                                                     Atoms.User.hideSchedulingOverlay
                                                     "Hide Scheduling Overlay"
                                             ]

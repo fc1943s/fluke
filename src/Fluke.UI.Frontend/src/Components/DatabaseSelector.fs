@@ -1,5 +1,6 @@
 namespace Fluke.UI.Frontend.Components
 
+open System
 open Fable.React
 open Feliz
 open Fluke.Shared.Domain.State
@@ -77,9 +78,7 @@ module DatabaseSelector =
                                     {|
                                         Hint = None
                                         Icon = Some (Icons.fi.FiChevronDown |> Icons.render, Button.IconPosition.Right)
-                                        Props =
-                                            fun x ->
-                                                x.onClick <- fun _ -> promise { setVisible (not visible) }
+                                        Props = fun x -> x.onClick <- fun _ -> promise { setVisible (not visible) }
                                         Children =
                                             [
                                                 match databaseName with
@@ -120,6 +119,11 @@ module DatabaseSelector =
                                                                 |}
 
                                                         Some (label, cmp))
+                                                |> List.filter (
+                                                    Option.map fst
+                                                    >> (Option.map (String.IsNullOrWhiteSpace >> not))
+                                                    >> Option.defaultValue false
+                                                )
                                                 |> List.sortBy (Option.map fst)
                                                 |> List.map (Option.map snd)
                                                 |> List.map (Option.defaultValue nothing)

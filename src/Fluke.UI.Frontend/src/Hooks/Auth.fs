@@ -175,7 +175,7 @@ module Auth =
                                         set Atoms.User.filterTasksText def.FilterTasksText
                                         set Atoms.User.fontSize def.FontSize
                                         set Atoms.User.hideSchedulingOverlay def.HideSchedulingOverlay
-                                        set Atoms.User.hideTemplates def.HideTemplates
+                                        set Atoms.User.hideTemplates (Some (Flag false))
                                         set Atoms.User.language def.Language
                                         set Atoms.User.lastInformationDatabase def.LastInformationDatabase
                                         set Atoms.User.leftDock def.LeftDock

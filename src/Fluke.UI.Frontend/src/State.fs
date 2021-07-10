@@ -74,6 +74,11 @@ module State =
         static member inline Value (Color hex) = hex
         static member inline Default = Color "#000000"
 
+    type Flag = Flag of bool
+
+    and Flag with
+        static member inline Value (Flag flag) = flag
+
     let deviceId =
         match JS.window id with
         | Some window ->
@@ -116,7 +121,7 @@ module State =
             FilterTasksText: string
             FontSize: int
             HideSchedulingOverlay: bool
-            HideTemplates: bool
+            HideTemplates: Flag option
             Language: Language
             LastInformationDatabase: DatabaseId option
             LeftDock: TempUI.DockType option
@@ -165,7 +170,7 @@ module State =
                 FilterTasksText = ""
                 FontSize = 15
                 HideSchedulingOverlay = false
-                HideTemplates = false
+                HideTemplates = None
                 Language = Language.English
                 LastInformationDatabase = None
                 LeftDock = None

@@ -3,15 +3,12 @@ namespace Fluke.UI.Frontend.Components
 open Feliz
 open Fable.React
 open Fluke.UI.Frontend.Bindings
+open Fluke.UI.Frontend.State
 
 
 module MenuItemToggle =
     [<ReactComponent>]
-    let MenuItemToggle (atom: Store.Atom<_>) label =
-        let value, setValue = Store.useState atom
-
-        let key = atom.toString ()
-
+    let MenuItemToggle key value setValue label =
         UI.menuOptionGroup
             (fun x ->
                 x.``type`` <- "checkbox"
@@ -33,3 +30,20 @@ module MenuItemToggle =
                         str label
                     ]
             ]
+
+    [<ReactComponent>]
+    let MenuItemToggleAtom (atom: Store.Atom<bool>) label =
+        let value, setValue = Store.useState atom
+        MenuItemToggle (atom.ToString ()) value setValue label
+
+    [<ReactComponent>]
+    let MenuItemToggleFlagAtom (atom: Store.Atom<Flag option>) label =
+        let value, setValue = Store.useState atom
+
+        MenuItemToggle
+            (atom.ToString ())
+            (value
+             |> Option.map Flag.Value
+             |> Option.defaultValue false)
+            (Flag >> Some >> setValue)
+            label

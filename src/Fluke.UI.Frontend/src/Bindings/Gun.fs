@@ -196,7 +196,7 @@ module Gun =
                 | _ -> return failwith $"No keys found for user {user.is}"
             with ex ->
                 Browser.Dom.console.error ("[exception5]", ex)
-                return raise ex
+                return None
         }
 
     let inline userEncode<'TValue> (gun: IGunChainReference) (value: 'TValue) =

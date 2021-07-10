@@ -256,19 +256,19 @@ module Databases =
         let isTesting = Store.useValue Store.Atoms.isTesting
 
         let hideTemplates = Store.useValue Atoms.User.hideTemplates
-        let hideTemplatesCache = React.useRef<bool option> None
+        let hideTemplatesCache = React.useRef<Flag option> None
 
         let expandedDatabaseIdSet, setExpandedDatabaseIdSet = Store.useState Atoms.User.expandedDatabaseIdSet
 
         React.useEffect (
             (fun () ->
                 match hideTemplates, hideTemplatesCache.current with
-                | true,
+                | Some (Flag true),
                   (None
-                  | Some false) -> setExpandedDatabaseIdSet Set.empty
+                  | Some (Flag false)) -> setExpandedDatabaseIdSet Set.empty
                 | _ -> ()
 
-                hideTemplatesCache.current <- Some hideTemplates),
+                hideTemplatesCache.current <- hideTemplates),
             [|
                 box setExpandedDatabaseIdSet
                 box hideTemplates
@@ -292,13 +292,13 @@ module Databases =
         let databaseMap =
             React.useMemo (
                 (fun () ->
-                    //                    databaseList
-//                    |> Seq.choose
-//                        (fun databaseLoadable ->
-//                            match databaseLoadable.valueMaybe () with
-//                            | Some database -> Some (database.Id, database)
-//                            | _ -> None)
                     databaseList
+                    |> Seq.filter
+                        (fun database ->
+                            database.Name
+                            |> DatabaseName.Value
+                            |> String.IsNullOrWhiteSpace
+                            |> not)
                     |> Seq.map (fun database -> database.Id, database)
                     |> Map.ofSeq),
                 [|
@@ -324,14 +324,17 @@ module Databases =
                                     | _ -> NodeType.Shared
 
                                 nodeType, database)
-                        |> List.filter (fun (nodeType, _) -> nodeType <> NodeType.Template || not hideTemplates)
+                        |> List.filter
+                            (fun (nodeType, _) ->
+                                nodeType <> NodeType.Template
+                                || hideTemplates = Some (Flag false))
                         |> List.groupBy fst
                         |> Map.ofSeq
                         |> Map.map (fun _ v -> v |> List.map snd)
 
                     let nodeData =
                         [
-                            if not hideTemplates then yield NodeType.Template
+                            if hideTemplates = Some (Flag false) then yield NodeType.Template
                             yield NodeType.Owned
                             yield NodeType.Shared
                         ]

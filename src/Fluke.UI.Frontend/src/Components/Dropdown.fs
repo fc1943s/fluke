@@ -20,7 +20,8 @@ module Dropdown =
         UI.flex
             (fun x ->
                 x.direction <- "column"
-                x.overflow <- "auto")
+                x.overflow <- "auto"
+                x.padding <- "1px")
             [
                 Tooltip.wrap
                     (str input.Tooltip)
