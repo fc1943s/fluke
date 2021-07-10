@@ -58,7 +58,7 @@
 
     "jotai": "~1.1",
 
-    "gun": "amark/gun.git#manhattan",
+    "gun": "amark/gun.git#a362460b0fb0b59543a997c051fd8cb1b863e8a1",
 
     "@chakra-ui/react": "~1.6",
     "@chakra-ui/system": "~1.7",

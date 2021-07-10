@@ -19,6 +19,7 @@ module Operators =
 [<AutoOpen>]
 module JSMagic =
     type Clipboard with
+
         [<Emit "$0.read()">]
         member _.read
             ()
@@ -31,17 +32,17 @@ module Promise =
 
 module Json =
     let inline encodeFormatted<'T> obj =
-        Thoth.Json.Encode.Auto.toString<'T> (4, obj)
+        Thoth.Json.Encode.Auto.toString<'T> (4, obj, skipNullField = false)
 
     let inline encode<'T> obj =
-        Thoth.Json.Encode.Auto.toString<'T> (0, obj)
+        Thoth.Json.Encode.Auto.toString<'T> (0, obj, skipNullField = false)
 
     let inline decode<'T> data =
         Thoth.Json.Decode.Auto.unsafeFromString<'T> data
 
 module JS =
     [<Emit "process.env.JEST_WORKER_ID">]
-    let jestWorkerId : bool = jsNative
+    let jestWorkerId: bool = jsNative
 
     let window fn =
         if jsTypeof Browser.Dom.window <> "undefined" then

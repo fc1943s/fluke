@@ -82,9 +82,9 @@ emailjs@^2.2.0:
     addressparser "^0.3.2"
     emailjs-mime-codec "^2.0.7"
 
-gun@amark/gun.git#master:
+gun@amark/gun.git#a362460b0fb0b59543a997c051fd8cb1b863e8a1:
   version "0.2020.1232"
-  resolved "https://codeload.github.com/amark/gun/tar.gz/fc10c250c95a698163b765e9b91ab647da89e7aa"
+  resolved "https://codeload.github.com/amark/gun/tar.gz/a362460b0fb0b59543a997c051fd8cb1b863e8a1"
   dependencies:
     ws "^7.2.1"
   optionalDependencies:

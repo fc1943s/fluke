@@ -211,8 +211,8 @@ module ViewTabs =
                                                             str "No tasks found. Add tasks in the Databases panel."
                                                         ]
                                                 else
-                                                    UI.box
-                                                        (fun x -> x.padding <- "15px")
+                                                    UI.flex
+                                                        (fun x -> x.flex <- "1")
                                                         [
                                                             LoadingSpinner.LoadingSpinner ()
                                                         ]

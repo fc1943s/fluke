@@ -228,6 +228,7 @@ module Store =
         let mutable lastAtomPath = None
         let mutable lastUserAtomId = None
         let mutable lastWrapperSet = None
+        let mutable syncPaused = false
 
         let assignLastGunAtomNode getter atom =
             if lastAtomPath.IsNone then
@@ -317,9 +318,21 @@ lastUserAtomId={lastUserAtomId} """
 
                             lastGunValue <- newValue
 
-                            match lastValue with
-                            | Some (lastValueTicks, lastValue) when
-                                (lastValueTicks > ticks || (ticks - lastValueTicks < 10000000L))
+                            match syncPaused, lastValue with
+                            | true, _ ->
+                                JS.log
+                                    (fun () ->
+                                        if (string newValue).StartsWith "Ping " then
+                                            null
+                                        else
+                                            $"gun.on() value. skipping. Sync paused.
+                                                    jsTypeof-newValue={jsTypeof newValue}
+                                                    newValue={newValue}
+                                                    lastValue={lastValue}
+                                                    ticks={ticks}
+                                                    {baseInfo ()} ")
+                            | _, Some (lastValueTicks, lastValue) when
+                                lastValueTicks > ticks
                                 || lastValue |> DeepEqual.compare (unbox newValue)
                                 || (unbox lastValue = null && unbox newValue = null)
                                 ->
@@ -335,6 +348,7 @@ lastUserAtomId={lastUserAtomId} """
                                                     jsTypeof-newValue={jsTypeof newValue}
                                                     newValue={newValue}
                                                     lastValue={lastValue}
+                                                    ticks={ticks}
                                                     {baseInfo ()} ")
                             | _ ->
                                 Profiling.addCount $"{gunNodePath} on() assign"
@@ -353,6 +367,7 @@ lastUserAtomId={lastUserAtomId} """
                                         typeof _lastValue={jsTypeof _lastValue}
                                         newValue={newValue}
                                         typeof newValue={jsTypeof newValue}
+                                        ticks={ticks}
                                         {baseInfo ()} "
 
                                         if (string newValue).StartsWith "Ping " then
@@ -363,6 +378,7 @@ lastUserAtomId={lastUserAtomId} """
                                 typeof _lastValue={jsTypeof _lastValue}
                                 newValue={newValue}
                                 typeof newValue={jsTypeof newValue}
+                                ticks={ticks}
                                 {baseInfo ()} ")
 
                                 //                        Browser.Dom.window?atomPath <- atomPath
@@ -511,6 +527,8 @@ lastUserAtomId={lastUserAtomId} """
                                         {baseInfo ()} ")
                         with
                         | ex -> Browser.Dom.console.error ("[exception2]", ex)
+
+                        syncPaused <- false
                     }
                     |> Promise.start)
                 100
@@ -621,6 +639,7 @@ lastUserAtomId={lastUserAtomId} """
                                                     $$ (should abort set? oldValue==newValue==lastValue/defaultValue)
                                                     ")
 
+                                        syncPaused <- true
                                         debounceGunPut newValue
 
                                 lastValue <- Some (DateTime.Now.Ticks, newValue)

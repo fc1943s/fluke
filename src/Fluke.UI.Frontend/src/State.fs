@@ -396,8 +396,6 @@ module State =
             let rec weekStart =
                 Store.atomWithSync ($"{nameof User}/{nameof weekStart}", UserState.Default.WeekStart, [])
 
-            let rec color = Store.atomWithSync ($"{nameof User}/{nameof color}", (None: string option), [])
-
             let rec uiFlag =
                 Store.atomFamilyWithSync (
                     $"{nameof User}/{nameof uiFlag}",

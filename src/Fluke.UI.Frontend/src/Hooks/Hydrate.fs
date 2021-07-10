@@ -65,7 +65,7 @@ module Hydrate =
             userState.UIVisibleFlagMap
             |> Map.iter (Atoms.User.uiVisibleFlag >> set)
 
-            JS.setTimeout (fun () -> Store.set setter Atoms.User.userColor userState.UserColor) 0
+            JS.setTimeout (fun () -> set Atoms.User.userColor userState.UserColor) 0
             |> ignore
         }
 

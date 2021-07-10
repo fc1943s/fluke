@@ -9,19 +9,7 @@ open Fluke.UI.Frontend.State
 module Content =
     [<ReactComponent>]
     let LoggedContent () =
-        let color = Store.useValue Atoms.User.color
-        let userColor, setUserColor = Store.useState Atoms.User.userColor
-
-        React.useEffect (
-            (fun () ->
-                if color.IsSome && userColor.IsNone then
-                    setUserColor (color |> Option.map Color)),
-            [|
-                box color
-                box setUserColor
-                box userColor
-            |]
-        )
+        let userColor = Store.useValue Atoms.User.userColor
 
         JS.log (fun () -> $"Content.render. userColor={userColor}")
 
