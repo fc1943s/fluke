@@ -1,12 +1,12 @@
 namespace Fluke.UI.Frontend.Bindings
 
-open System.Collections.Generic
-open Fable.Extras
-open Fluke.Shared.Domain.UserInteraction
 
 #nowarn "40"
 
 
+open System.Collections.Generic
+open Fable.Extras
+open Fluke.Shared.Domain.UserInteraction
 open Fluke.UI.Frontend.Bindings
 open Fable.Core.JsInterop
 open Fable.Core
@@ -192,10 +192,7 @@ module Store =
                             (fun () ->
                                 $"Invalid username.
                                                                                 atomPath={atomPath}
-                                                                                user.is={
-                                                                                             JS.JSON.stringify
-                                                                                                 gunNamespace.is
-                                }")
+                                                                                user.is={JS.JSON.stringify gunNamespace.is}")
 
                         None)
             )
@@ -256,13 +253,13 @@ module Store =
 
         let baseInfo () =
             $"""gunNodePath={gunNodePath}
-                atomPath={atomPath}
-                keyIdentifier={keyIdentifier}
-                lastValue={lastValue}
-                lastGunValue={lastGunValue}
-                lastGunAtomNode={lastGunAtomNode}
-                lastAtomPath={lastAtomPath}
-                lastUserAtomId={lastUserAtomId} """
+atomPath={atomPath}
+keyIdentifier={keyIdentifier}
+lastValue={lastValue}
+lastGunValue={lastGunValue}
+lastGunAtomNode={lastGunAtomNode}
+lastAtomPath={lastAtomPath}
+lastUserAtomId={lastUserAtomId} """
 
 
         JS.log
@@ -322,9 +319,10 @@ module Store =
 
                             match lastValue with
                             | Some (lastValueTicks, lastValue) when
-                                lastValueTicks > ticks
+                                (lastValueTicks > ticks || (ticks - lastValueTicks < 10000000L))
                                 || lastValue |> DeepEqual.compare (unbox newValue)
-                                || (unbox lastValue = null && unbox newValue = null) ->
+                                || (unbox lastValue = null && unbox newValue = null)
+                                ->
 
                                 Profiling.addCount $"{gunNodePath} on() skip"
 
@@ -351,8 +349,8 @@ module Store =
                                         if string _lastValue = string newValue then
                                             Browser.Dom.console.error
                                                 $"should have skipped assign
-                                        _lastValue={_lastValue}
-                                        typeof lastValue={jsTypeof _lastValue}
+                                        lastValue={lastValue}
+                                        typeof _lastValue={jsTypeof _lastValue}
                                         newValue={newValue}
                                         typeof newValue={jsTypeof newValue}
                                         {baseInfo ()} "
@@ -361,8 +359,8 @@ module Store =
                                             null
                                         else
                                             $"gun.on() value. triggering.
-                                _lastValue={_lastValue}
-                                typeof lastValue={jsTypeof _lastValue}
+                                lastValue={lastValue}
+                                typeof _lastValue={jsTypeof _lastValue}
                                 newValue={newValue}
                                 typeof newValue={jsTypeof newValue}
                                 {baseInfo ()} ")
@@ -375,7 +373,8 @@ module Store =
                                 // setAtom internalAtom
 
                                 setAtom newValue
-                        with ex ->
+                        with
+                        | ex ->
                             Browser.Dom.console.error ("[exception1]", ex)
                             lastSubscription <- None
                     })
@@ -510,7 +509,8 @@ module Store =
                                         $"[gunEffect.debounceGunPut promise]
                                         skipping gun put. no gun atom node.
                                         {baseInfo ()} ")
-                        with ex -> Browser.Dom.console.error ("[exception2]", ex)
+                        with
+                        | ex -> Browser.Dom.console.error ("[exception2]", ex)
                     }
                     |> Promise.start)
                 100
@@ -917,14 +917,17 @@ module Store =
                         syncValue |> DeepEqual.compare defaultValue
                         && (storageValue |> DeepEqual.compare defaultValue
                             || (value getter Atoms.username).IsNone
-                            || lastValue.IsNone) -> value getter storageAtom
+                            || lastValue.IsNone)
+                        ->
+                        value getter storageAtom
                     | syncValue, _ ->
                         match lastSetAtom with
                         | Some lastSetAtom when
                             lastValue.IsNone
                             || lastValue
                                |> DeepEqual.compare (Some syncValue)
-                               |> not ->
+                               |> not
+                            ->
                             lastValue <- Some syncValue
                             lastSetAtom syncValue
                         | _ -> ()
@@ -1031,7 +1034,8 @@ module Store =
                             (fun getter setter (arg, resolve, err) ->
                                 try
                                     resolve (fnCallback (getter, setter, arg))
-                                with ex ->
+                                with
+                                | ex ->
                                     printfn $"atomCallback fn error: {ex}"
                                     err ex
 
@@ -1267,7 +1271,8 @@ module Store =
                                 tempValue={tempValue}")
 
                                 jsonDecode tempValue
-                            with ex ->
+                            with
+                            | ex ->
                                 printfn $"Error decoding tempValue={tempValue} ex={ex}"
 
                                 currentValue
