@@ -130,6 +130,9 @@ module Full =
 
                     Cy.wait 10000
 
+                    Cy.window ()
+                    |> Promise.iter (fun window -> window?Debug <- true)
+
                     Cy2.waitFor (nameof Databases) (Some {| timeout = timeout |})
 
                     Cy2.clickText (nameof Databases)
@@ -138,6 +141,8 @@ module Full =
                     Cy.wait 2000
 
                     Cy2.clickSelector "[data-testid='Add Database']"
+
+                    Cy.wait 2000
 
                     Cy2.selectorTypeText "input[placeholder^=new-database-]" dbName None
                     Cy2.clickText "Save"
@@ -201,10 +206,6 @@ module Full =
                     Cy2.selectorFocusTypeText "input[placeholder^=new-database-]" $"{dbName}_edit"
 
                     Cy2.clickText "Save"
-
-
-                    Cy.window ()
-                    |> Promise.iter (fun window -> window?Debug <- true)
 
                     Cy.wait 15000
 
