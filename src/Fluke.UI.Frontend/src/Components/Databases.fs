@@ -288,16 +288,16 @@ module Databases =
 
         let username = Store.useValue Store.Atoms.username
         let hideTemplates = Store.useValue Atoms.User.hideTemplates
-        let hideTemplatesCache = React.useRef<Flag option> None
+        let hideTemplatesCache = React.useRef<bool option> None
 
         let expandedDatabaseIdSet, setExpandedDatabaseIdSet = Store.useState Atoms.User.expandedDatabaseIdSet
 
         React.useEffect (
             (fun () ->
                 match hideTemplates, hideTemplatesCache.current with
-                | Some (Flag true),
+                | Some true,
                   (None
-                  | Some (Flag false)) -> setExpandedDatabaseIdSet Set.empty
+                  | Some false) -> setExpandedDatabaseIdSet Set.empty
                 | _ -> ()
 
                 hideTemplatesCache.current <- hideTemplates),
@@ -317,8 +317,6 @@ module Databases =
                         |> Seq.toList
                         |> List.map
                             (fun database ->
-                                printfn $"name={database.Name} owner={database.Owner}"
-
                                 let nodeType =
                                     match database.Owner with
                                     | owner when owner = Templates.templatesUser.Username -> NodeType.Template
@@ -329,21 +327,13 @@ module Databases =
                         |> List.filter
                             (fun (nodeType, _) ->
                                 nodeType <> NodeType.Template
-                                || hideTemplates = Some (Flag false))
+                                || hideTemplates = Some false)
                         |> List.groupBy fst
                         |> Map.ofSeq
                         |> Map.map (fun _ v -> v |> List.map snd)
 
-                    printfn
-                        $"
-                    hideTemplates={hideTemplates}
-                    [Some (Flag false)]={Some (Flag false)}
-                    [hideTemplates = Some (Flag false)]={hideTemplates = Some (Flag false)}
-                    [Some false = None]={Some false = None}
-                    "
-
                     [
-                        if hideTemplates = Some (Flag false) then yield NodeType.Template
+                        if hideTemplates = Some false then yield NodeType.Template
                         yield NodeType.Owned
                         yield NodeType.Shared
                     ]
@@ -537,6 +527,8 @@ module Databases =
                         x.marginLeft <- "6px"
                         x.flex <- "1")
                     [
-                        CheckboxTree.render checkboxTreeProps
+                        match hideTemplates with
+                        | Some _ -> CheckboxTree.render checkboxTreeProps
+                        | None -> LoadingSpinner.LoadingSpinner ()
                     ]
             ]

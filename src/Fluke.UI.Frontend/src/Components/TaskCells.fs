@@ -14,19 +14,19 @@ module TaskCells =
         UI.flex
             (fun x -> x.backgroundColor <- "#212121")
             [
-                yield!
-                    dateSequence
-                    |> List.map
-                        (fun date ->
-                            React.suspense (
-                                [
+                React.suspense (
+                    [
+                        yield!
+                            dateSequence
+                            |> List.map
+                                (fun date ->
                                     Cell.CellWrapper
                                         {|
                                             TaskId = taskId
                                             DateId = DateId date
                                             SemiTransparent = index % 2 <> 0
-                                        |}
-                                ],
-                                LoadingSpinner.InlineLoadingSpinner ()
-                            ))
+                                        |})
+                    ],
+                    LoadingSpinner.LoadingSpinner ()
+                )
             ]

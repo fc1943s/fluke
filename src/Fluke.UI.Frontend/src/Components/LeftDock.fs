@@ -52,7 +52,7 @@ module LeftDock =
                             (fun selectedDatabaseIdSet ->
                                 Set.difference selectedDatabaseIdSet (templatesDatabaseIdArray |> Set.ofArray))
 
-                        Store.set setter Atoms.User.hideTemplates (Some (Flag true))
+                        Store.set setter Atoms.User.hideTemplates (Some true)
 
                         do!
                             templatesDatabaseIdArray
@@ -127,7 +127,7 @@ module LeftDock =
                                             "Options",
                                             Icons.bs.BsThreeDotsVertical |> Icons.render,
                                             [
-                                                MenuItemToggle.MenuItemToggleFlagAtom
+                                                MenuItemToggle.MenuItemToggleAtomOption
                                                     Atoms.User.hideTemplates
                                                     "Hide Templates"
 
