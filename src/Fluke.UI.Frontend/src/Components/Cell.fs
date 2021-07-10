@@ -164,8 +164,7 @@ module Cell =
             Popover.CustomPopover
                 {|
                     CloseButton = false
-                    RenderOnHover = false
-                    Padding = "3px"
+                    Padding = Some "3px"
                     Props = fun x -> x.placement <- "right-start"
                     Trigger = Cell input
                     Body =

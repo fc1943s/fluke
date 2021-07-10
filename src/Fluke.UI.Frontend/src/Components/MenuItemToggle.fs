@@ -24,7 +24,8 @@ module MenuItemToggle =
                         x.closeOnSelect <- true
                         x.value <- key
                         x.marginTop <- "2px"
-                        x.marginBottom <- "2px")
+                        x.marginBottom <- "2px"
+                        x._hover <- JS.newObj (fun x -> x.backgroundColor <- "gray.10"))
                     [
                         str label
                     ]

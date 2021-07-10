@@ -53,7 +53,11 @@ module AttachmentPanel =
                                         [
                                             match attachment with
                                             | Some (Attachment.Comment _) ->
-                                                MenuItem.MenuItem Icons.bs.BsPen "Edit Attachment" onEdit (fun _ -> ())
+                                                MenuItem.MenuItem
+                                                    Icons.bs.BsPen
+                                                    "Edit Attachment"
+                                                    (Some onEdit)
+                                                    (fun _ -> ())
                                             | _ -> nothing
 
                                             ConfirmPopover.ConfirmPopover
@@ -333,7 +337,7 @@ module AttachmentPanel =
                                     | Attachment.Comment (Comment.Comment comment) -> AttachmentComment comment
                                     | _ -> nothing)
 
-                    ]
+                        ]
 
                     nothing
                 | _ -> str "???"

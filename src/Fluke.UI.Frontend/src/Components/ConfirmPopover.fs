@@ -14,13 +14,11 @@ module ConfirmPopover =
         Popover.CustomPopover
             {|
                 CloseButton = true
-                RenderOnHover = true
                 Props = fun x -> x.closeOnBlur <- false
-                Padding = "10px"
+                Padding = None
                 Trigger =
                     match confirmPopoverType with
-                    | MenuItem ->
-                        MenuItem.MenuItem icon label (fun () -> promise { () }) (fun x -> x.closeOnSelect <- false)
+                    | MenuItem -> MenuItem.MenuItem icon label None (fun x -> x.closeOnSelect <- false)
                     | Element element -> element
                 Body =
                     fun (disclosure, initialFocusRef) ->
@@ -35,7 +33,7 @@ module ConfirmPopover =
                                                 (fun x ->
                                                     x.paddingBottom <- "5px"
                                                     x.marginRight <- "24px"
-                                                    x.fontSize <- "15px")
+                                                    x.fontSize <- "1.3rem")
                                                 [
                                                     str label
                                                 ]

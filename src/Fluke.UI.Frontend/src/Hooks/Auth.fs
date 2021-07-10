@@ -114,7 +114,6 @@ module Auth =
 
     let useSignUp () =
         let signIn = useSignIn ()
-        let hydrateTemplates = Hydrate.useHydrateTemplates ()
 
         Store.useCallback (
             (fun getter setter (username, password) ->
@@ -147,68 +146,19 @@ module Auth =
                                   } ->
                                     match! signIn (username, password) with
                                     | Ok (username, keys) ->
-                                        do! hydrateTemplates ()
+                                        do! Hydrate.hydrateTemplates getter setter
 
-                                        let set atom value = Store.set setter atom value
-                                        let def = UserState.Default
-
-                                        set Atoms.User.cellColorDisabled def.CellColorDisabled
-                                        set Atoms.User.cellColorSuggested def.CellColorSuggested
-                                        set Atoms.User.cellColorPending def.CellColorPending
-                                        set Atoms.User.cellColorMissed def.CellColorMissed
-                                        set Atoms.User.cellColorMissedToday def.CellColorMissedToday
-                                        set Atoms.User.cellColorPostponedUntil def.CellColorPostponedUntil
-                                        set Atoms.User.cellColorPostponed def.CellColorPostponed
-                                        set Atoms.User.cellColorCompleted def.CellColorCompleted
-                                        set Atoms.User.cellColorDismissed def.CellColorDismissed
-                                        set Atoms.User.cellColorScheduled def.CellColorScheduled
-                                        set Atoms.User.cellSize def.CellSize
-                                        set Atoms.User.clipboardAttachmentMap def.ClipboardAttachmentMap
-                                        set Atoms.User.clipboardVisible def.ClipboardVisible
-                                        set Atoms.User.darkMode def.DarkMode
-                                        set Atoms.User.daysAfter def.DaysAfter
-                                        set Atoms.User.daysBefore def.DaysBefore
-                                        set Atoms.User.dayStart def.DayStart
-                                        set Atoms.User.enableCellPopover def.EnableCellPopover
-                                        set Atoms.User.expandedDatabaseIdSet def.ExpandedDatabaseIdSet
-                                        set Atoms.User.filterTasksByView def.FilterTasksByView
-                                        set Atoms.User.filterTasksText def.FilterTasksText
-                                        set Atoms.User.fontSize def.FontSize
-                                        set Atoms.User.hideSchedulingOverlay def.HideSchedulingOverlay
-                                        set Atoms.User.hideTemplates (Some false)
-                                        set Atoms.User.language def.Language
-                                        set Atoms.User.lastInformationDatabase def.LastInformationDatabase
-                                        set Atoms.User.leftDock def.LeftDock
-                                        set Atoms.User.leftDockSize def.LeftDockSize
-                                        set Atoms.User.rightDock def.RightDock
-                                        set Atoms.User.rightDockSize def.RightDockSize
-                                        set Atoms.User.searchText def.SearchText
-                                        set Atoms.User.selectedDatabaseIdSet def.SelectedDatabaseIdSet
-                                        set Atoms.User.sessionBreakDuration def.SessionBreakDuration
-                                        set Atoms.User.sessionDuration def.SessionDuration
-                                        set Atoms.User.systemUiFont def.SystemUiFont
-                                        set Atoms.User.view def.View
-                                        set Atoms.User.weekStart def.WeekStart
-
-                                        def.AccordionFlagMap
-                                        |> Map.iter (Atoms.User.accordionFlag >> set)
-
-                                        def.UIFlagMap
-                                        |> Map.iter (Atoms.User.uiFlag >> set)
-
-                                        def.UIVisibleFlagMap
-                                        |> Map.iter (Atoms.User.uiVisibleFlag >> set)
-
-                                        JS.setTimeout
-                                            (fun () ->
-                                                Store.set
-                                                    setter
-                                                    Atoms.User.userColor
-                                                    (String.Format ("#{0:X6}", Random().Next 0x1000000)
-                                                     |> Color
-                                                     |> Some))
-                                            0
-                                        |> ignore
+                                        do!
+                                            Hydrate.hydrateUserState
+                                                getter
+                                                setter
+                                                { UserState.Default with
+                                                    HideTemplates = Some false
+                                                    UserColor =
+                                                        String.Format ("#{0:X6}", Random().Next 0x1000000)
+                                                        |> Color
+                                                        |> Some
+                                                }
 
 
 
@@ -239,7 +189,6 @@ module Auth =
                             }
                 }),
             [|
-                box hydrateTemplates
                 box signIn
             |]
         )

@@ -80,14 +80,6 @@ module ChangeUserPasswordButton =
                             UI.stack
                                 (fun x -> x.spacing <- "10px")
                                 [
-                                    UI.box
-                                        (fun x ->
-                                            x.paddingBottom <- "5px"
-                                            x.fontSize <- "15px")
-                                        [
-                                            str "Change Password"
-                                        ]
-
                                     Input.Input
                                         {|
                                             CustomProps =

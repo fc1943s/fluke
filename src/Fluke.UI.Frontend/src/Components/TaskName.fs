@@ -111,12 +111,16 @@ module TaskName =
                                                     x.marginLeft <- "6px")
                                         Body =
                                             [
-                                                MenuItem.MenuItem Icons.bs.BsPen "Edit Task" editTask (fun _ -> ())
+                                                MenuItem.MenuItem
+                                                    Icons.bs.BsPen
+                                                    "Edit Task"
+                                                    (Some editTask)
+                                                    (fun _ -> ())
 
                                                 MenuItem.MenuItem
                                                     Icons.gi.GiHourglass
                                                     "Start Session"
-                                                    startSession
+                                                    (Some startSession)
                                                     (fun _ -> ())
 
                                                 ConfirmPopover.ConfirmPopover

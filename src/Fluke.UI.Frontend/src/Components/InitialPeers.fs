@@ -37,20 +37,32 @@ module InitialPeers =
                                     fun x ->
                                         x.hint <-
                                             Some (
-                                                ExternalLink.ExternalLink
-                                                    {|
-                                                        Link = str "Read documentation"
-                                                        Href =
-                                                            "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers"
-                                                        Props = fun _ -> ()
-                                                    |}
+                                                UI.box
+                                                    (fun _ -> ())
+                                                    [
+                                                        UI.box
+                                                            (fun _ -> ())
+                                                            [
+                                                                str "Add a relay peer to sync data between devices"
+                                                            ]
+
+                                                        br []
+
+                                                        ExternalLink.ExternalLink
+                                                            {|
+                                                                Link = str "Read documentation"
+                                                                Href =
+                                                                    "https://gun.eco/docs/FAQ#what-is-the-difference-between-super-peer-and-other-peers"
+                                                                Props = fun _ -> ()
+                                                            |}
+                                                    ]
                                             )
 
                                         x.fixedValue <- Some gunPeer
                                         x.onEnterPress <- Some nextClick
                                 Props =
                                     fun x ->
-                                        x.label <- str "Gun peer"
+                                        x.label <- str "Relay peer"
                                         x.placeholder <- "https://??????.herokuapp.com/gun"
                                         x.onChange <- (fun (e: KeyboardEvent) -> promise { setGunPeer e.Value })
                             |}

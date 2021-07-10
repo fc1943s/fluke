@@ -19,6 +19,7 @@ module CellMenu =
         let username = Store.useValue Store.Atoms.username
         let toast = UI.useToast ()
         let cellSize = Store.useValue Atoms.User.cellSize
+        let position = Store.useValue Atoms.position
         let sessionStatus, setSessionStatus = Store.useState (Selectors.Cell.sessionStatus (taskId, dateId))
         let cellSelectionMap = Store.useValue Selectors.Session.cellSelectionMap
         let darkMode = Store.useValue Atoms.User.darkMode
@@ -273,7 +274,16 @@ module CellMenu =
                         UI.box
                             (fun _ -> ())
                             [
-                                str "Postpone until tomorrow"
+                                str
+                                    $"""Postpone{match position, dateId |> DateId.Value with
+                                                 | Some position, date when
+                                                     position.Date = date
+                                                     && cellSelectionMap
+                                                        |> Map.values
+                                                        |> Seq.forall ((=) (Set.singleton date))
+                                                     ->
+                                                     " until tomorrow"
+                                                 | _ -> ""}"""
                             ]
                         |> wrapButtonTooltip (Postponed None)
 
@@ -295,7 +305,7 @@ module CellMenu =
                                                         (fun x ->
                                                             x.paddingBottom <- "5px"
                                                             x.marginRight <- "24px"
-                                                            x.fontSize <- "15px")
+                                                            x.fontSize <- "1.3rem")
                                                         [
                                                             str $"Postpone until {postponedUntilLabel}"
                                                         ]

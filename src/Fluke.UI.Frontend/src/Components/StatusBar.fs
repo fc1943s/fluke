@@ -183,7 +183,7 @@ module StatusBar =
                                             (fun x -> x.spacing <- "10px")
                                             [
                                                 UI.box
-                                                    (fun x -> x.fontSize <- "15px")
+                                                    (fun x -> x.fontSize <- "1.3rem")
                                                     [
                                                         str "Session Details"
                                                     ]

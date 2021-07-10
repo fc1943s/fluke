@@ -48,35 +48,33 @@ module DatabaseNodeMenu =
                             MenuItem.MenuItem
                                 Icons.bs.BsPlus
                                 "Add Task"
-                                (fun () ->
-                                    promise {
-                                        if deviceInfo.IsMobile then setLeftDock None
-                                        setRightDock (Some DockType.Task)
-                                        setTaskUIFlag ((databaseId, Task.Default.Id) |> UIFlag.Task)
-                                    })
+                                (Some
+                                    (fun () ->
+                                        promise {
+                                            if deviceInfo.IsMobile then setLeftDock None
+                                            setRightDock (Some DockType.Task)
+                                            setTaskUIFlag ((databaseId, Task.Default.Id) |> UIFlag.Task)
+                                        }))
                                 (fun _ -> ())
 
                             MenuItem.MenuItem
                                 Icons.bs.BsPen
                                 "Edit Database"
-                                (fun () ->
-                                    promise {
-                                        if deviceInfo.IsMobile then setLeftDock None
-                                        setRightDock (Some DockType.Database)
-                                        setDatabaseUIFlag (databaseId |> UIFlag.Database)
-                                    })
+                                (Some
+                                    (fun () ->
+                                        promise {
+                                            if deviceInfo.IsMobile then setLeftDock None
+                                            setRightDock (Some DockType.Database)
+                                            setDatabaseUIFlag (databaseId |> UIFlag.Database)
+                                        }))
                                 (fun _ -> ())
 
-                        MenuItem.MenuItem
-                            Icons.fi.FiCopy
-                            "Clone Database"
-                            (fun () -> promise { () })
-                            (fun x -> x.isDisabled <- true)
+                        MenuItem.MenuItem Icons.fi.FiCopy "Clone Database" None (fun x -> x.isDisabled <- true)
 
                         MenuItem.MenuItem
                             Icons.bi.BiExport
                             "Export Database"
-                            (fun () -> exportDatabase databaseId)
+                            (Some (fun () -> exportDatabase databaseId))
                             (fun _ -> ())
 
                         ConfirmPopover.ConfirmPopover

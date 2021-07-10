@@ -10,9 +10,8 @@ module Popover =
     [<ReactComponent>]
     let CustomPopover
         (input: {| Trigger: ReactElement
-                   RenderOnHover: bool
                    CloseButton: bool
-                   Padding: string
+                   Padding: string option
                    Body: UI.Disclosure * IRefValue<unit> -> ReactElement list
                    Props: UI.IChakraProps -> unit |})
         =
@@ -70,6 +69,7 @@ module Popover =
                                     (fun x ->
                                         x.width <- "auto"
                                         x.border <- "0"
+                                        x.boxShadow <- "lg"
                                         x.borderRadius <- "0")
                                     [
                                         UI.popoverArrow (fun _ -> ()) []
@@ -104,7 +104,7 @@ module Popover =
 
                                         UI.popoverBody
                                             (fun x ->
-                                                x.padding <- input.Padding
+                                                x.padding <- input.Padding |> Option.defaultValue "15px"
                                                 x.backgroundColor <- "gray.13"
                                                 x.maxWidth <- "95vw"
                                                 x.maxHeight <- "95vh"
@@ -124,6 +124,5 @@ module Popover =
         CustomPopover
             {| input with
                 CloseButton = true
-                RenderOnHover = false
-                Padding = "10px"
+                Padding = None
             |}

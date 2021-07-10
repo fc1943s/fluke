@@ -4,6 +4,7 @@ open Fable.React
 open Feliz
 open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
+open Fluke.Shared
 
 
 module Dropdown =
@@ -59,3 +60,111 @@ module Dropdown =
                             yield! input.Body (fun () -> setVisible false)
                         ]
             ]
+
+
+    [<ReactComponent>]
+    let InputDropdown props customProps bodyFn =
+        Dropdown
+            {|
+                Tooltip = ""
+                Left = false
+                Trigger =
+                    fun visible setVisible ->
+                        UI.box
+                            (fun x -> x.position <- "relative")
+                            [
+                                Input.Input
+                                    {|
+                                        CustomProps =
+                                            fun x ->
+                                                x.rightButton <-
+                                                    Some (
+                                                        Button.Button
+                                                            {|
+                                                                Hint = None
+                                                                Icon =
+                                                                    Some (
+                                                                        Icons.io5.IoCaretDown |> Icons.render,
+                                                                        Button.IconPosition.Left
+                                                                    )
+                                                                Props =
+                                                                    fun x ->
+                                                                        x.borderRadius <- "0 5px 5px 0"
+                                                                        x.minWidth <- "26px"
+
+                                                                        x.onClick <-
+                                                                            (fun _ ->
+                                                                                promise { setVisible (not visible) })
+                                                                Children = []
+                                                            |}
+                                                    )
+
+                                                customProps x
+                                        Props =
+                                            fun x ->
+                                                x.isReadOnly <- true
+                                                props x
+                                    |}
+                            ]
+                Body = bodyFn
+            |}
+
+    [<ReactComponent>]
+    let inline EnumDropdown<'T when 'T: equality> (value: 'T) (setValue: 'T -> unit) props =
+        InputDropdown
+            props
+            (fun x ->
+                x.fixedValue <- Some value
+                x.onFormat <- Some Enum.name)
+            (fun onHide ->
+                [
+                    UI.stack
+                        (fun x ->
+                            x.flex <- "1"
+                            x.spacing <- "1px"
+                            x.padding <- "1px"
+                            x.marginBottom <- "6px"
+                            x.maxHeight <- "217px"
+                            x.overflowY <- "auto"
+                            x.flexBasis <- 0)
+                        [
+                            yield!
+                                Enum.ToList<'T> ()
+                                |> Seq.map
+                                    (fun value' ->
+                                        DropdownMenuButton.DropdownMenuButton
+                                            {|
+                                                Label = Enum.name value'
+                                                OnClick =
+                                                    fun () ->
+                                                        promise {
+                                                            setValue value'
+                                                            onHide ()
+                                                        }
+                                                Checked = (value' = value)
+                                            |})
+                        ]
+                ])
+
+    [<ReactComponent>]
+    let ColorDropdown color setColor props =
+        InputDropdown
+            (fun x ->
+                x.color <- color |> Color.Value
+                x.fontWeight <- "bold"
+                x.isReadOnly <- true
+                props x)
+            (fun x -> x.fixedValue <- color |> Color.Value |> Some)
+            (fun _onHide ->
+                [
+                    ColorPicker.render
+                        {|
+                            color = color |> Color.Value
+                            onChange = fun color -> setColor (Color (color.hex.ToUpper ()))
+                        |}
+                ])
+
+    [<ReactComponent>]
+    let ColorDropdownAtom atom props =
+        let value, setValue = Store.useState atom
+        ColorDropdown value setValue props

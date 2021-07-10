@@ -5,6 +5,7 @@ open Fable.React
 open Fluke.UI.Frontend.Components
 open Fluke.UI.Frontend.Bindings
 open Fluke.Shared
+open Fluke.UI.Frontend.Hooks
 open Fluke.UI.Frontend.State
 open Fluke.UI.Frontend.TempUI
 
@@ -12,12 +13,15 @@ open Fluke.UI.Frontend.TempUI
 module LeftDock =
     [<ReactComponent>]
     let LeftDock () =
-        let leftDock, setLeftDock = Store.useState Atoms.User.leftDock
+        let leftDock = Store.useValue Atoms.User.leftDock
         let setRightDock = Store.useSetState Atoms.User.rightDock
+        let templatesDeleted = Store.useValue Atoms.User.templatesDeleted
+
         let deviceInfo = Store.useValue Selectors.deviceInfo
-        let setDatabaseUIFlag = Store.useSetState (Atoms.User.uiFlag UIFlagType.Database)
 
         let leftDockSize, setLeftDockSize = Store.useState Atoms.User.leftDockSize
+
+        let exportUserSettings = Hydrate.useExportUserSettings ()
 
         let deleteTemplates =
             Store.useCallback (
@@ -53,6 +57,7 @@ module LeftDock =
                                 Set.difference selectedDatabaseIdSet (templatesDatabaseIdArray |> Set.ofArray))
 
                         Store.set setter Atoms.User.hideTemplates (Some true)
+                        Store.set setter Atoms.User.templatesDeleted true
 
                         do!
                             templatesDatabaseIdArray
@@ -78,7 +83,38 @@ module LeftDock =
                                             x.flex <- "1"
                                             x.overflowY <- "auto"
                                             x.flexBasis <- 0)
-                                RightIcons = []
+                                RightIcons =
+                                    [
+                                        DockPanel.DockPanelIcon.Menu (
+                                            "Options",
+                                            Icons.bs.BsThreeDotsVertical |> Icons.render,
+                                            [
+                                                Popover.CustomPopover
+                                                    {|
+                                                        CloseButton = true
+                                                        Props = fun x -> x.closeOnBlur <- false
+                                                        Padding = None
+                                                        Trigger =
+                                                            MenuItem.MenuItem
+                                                                Icons.bi.BiImport
+                                                                "Import User Settings"
+                                                                None
+                                                                (fun x -> x.closeOnSelect <- false)
+                                                        Body =
+                                                            fun (_disclosure, _initialFocusRef) ->
+                                                                [
+                                                                    Settings.ImportUserSettings ()
+                                                                ]
+                                                    |}
+
+                                                MenuItem.MenuItem
+                                                    Icons.bi.BiExport
+                                                    "Export User Settings"
+                                                    (Some exportUserSettings)
+                                                    (fun _ -> ())
+                                            ]
+                                        )
+                                    ]
                             |}
 
                             DockType.Databases,
@@ -96,46 +132,40 @@ module LeftDock =
                                             x.flexBasis <- 0)
                                 RightIcons =
                                     [
-                                        DockPanel.DockPanelIcon.Component (
-                                            Tooltip.wrap
-                                                (str "Add Database")
-                                                [
-                                                    TransparentIconButton.TransparentIconButton
-                                                        {|
-                                                            Props =
-                                                                fun x ->
-                                                                    UI.setTestId x "Add Database"
-                                                                    x.icon <- Icons.fi.FiPlus |> Icons.render
-
-                                                                    x.fontSize <- "17px"
-
-                                                                    x.onClick <-
-                                                                        fun _ ->
-                                                                            promise {
-                                                                                if deviceInfo.IsMobile then
-                                                                                    setLeftDock None
-
-                                                                                setRightDock (Some DockType.Database)
-
-                                                                                setDatabaseUIFlag UIFlag.None
-                                                                            }
-                                                        |}
-                                                ]
-                                        )
+                                        DockPanel.DockPanelIcon.Component (Databases.AddDatabaseButton ())
 
                                         DockPanel.DockPanelIcon.Menu (
                                             "Options",
                                             Icons.bs.BsThreeDotsVertical |> Icons.render,
                                             [
-                                                MenuItemToggle.MenuItemToggleAtomOption
-                                                    Atoms.User.hideTemplates
-                                                    "Hide Templates"
+                                                if not templatesDeleted then
+                                                    MenuItemToggle.MenuItemToggleAtomOption
+                                                        Atoms.User.hideTemplates
+                                                        "Hide Templates"
 
-                                                ConfirmPopover.ConfirmPopover
-                                                    ConfirmPopover.ConfirmPopoverType.MenuItem
-                                                    Icons.bi.BiTrash
-                                                    "Delete Templates"
-                                                    deleteTemplates
+                                                    ConfirmPopover.ConfirmPopover
+                                                        ConfirmPopover.ConfirmPopoverType.MenuItem
+                                                        Icons.bi.BiTrash
+                                                        "Delete Templates"
+                                                        deleteTemplates
+
+                                                Popover.CustomPopover
+                                                    {|
+                                                        CloseButton = true
+                                                        Props = fun x -> x.closeOnBlur <- false
+                                                        Padding = None
+                                                        Trigger =
+                                                            MenuItem.MenuItem
+                                                                Icons.bi.BiImport
+                                                                "Import Database"
+                                                                None
+                                                                (fun x -> x.closeOnSelect <- false)
+                                                        Body =
+                                                            fun (_disclosure, _initialFocusRef) ->
+                                                                [
+                                                                    Databases.ImportDatabase ()
+                                                                ]
+                                                    |}
                                             ]
                                         )
                                     ]
@@ -145,11 +175,9 @@ module LeftDock =
                     let itemsMap = items |> Map.ofSeq
                     items, itemsMap),
                 [|
-                    box setLeftDock
-                    box setRightDock
-                    box deviceInfo
-                    box setDatabaseUIFlag
                     box deleteTemplates
+                    box templatesDeleted
+                    box exportUserSettings
                 |]
             )
 

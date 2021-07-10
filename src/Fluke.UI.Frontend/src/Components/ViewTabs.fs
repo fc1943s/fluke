@@ -214,7 +214,7 @@ module ViewTabs =
                                                     UI.box
                                                         (fun x -> x.padding <- "15px")
                                                         [
-                                                            LoadingSpinner.InlineLoadingSpinner ()
+                                                            LoadingSpinner.LoadingSpinner ()
                                                         ]
                                             | _ -> tab.Content
                                         ])

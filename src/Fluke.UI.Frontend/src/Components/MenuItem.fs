@@ -23,15 +23,20 @@ module MenuItem =
                 x.paddingRight <- "10px"
                 x.paddingTop <- "5px"
                 x.paddingBottom <- "5px"
-
+                x.marginTop <- "2px"
+                x.marginBottom <- "2px"
                 x.color <- "gray.87"
+
                 x._hover <- JS.newObj (fun x -> x.backgroundColor <- "gray.10")
 
                 x.onClick <-
                     fun e ->
                         promise {
                             e.preventDefault ()
-                            do! onClick ()
+
+                            match onClick with
+                            | Some onClick -> do! onClick ()
+                            | None -> ()
                         }
 
                 props x)

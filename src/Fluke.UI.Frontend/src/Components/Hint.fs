@@ -35,7 +35,7 @@ module Hint =
                                 UI.box
                                     (fun x ->
                                         x.paddingBottom <- "12px"
-                                        x.fontSize <- "15px")
+                                        x.fontSize <- "1.3rem")
                                     [
                                         UI.icon
                                             (fun x ->

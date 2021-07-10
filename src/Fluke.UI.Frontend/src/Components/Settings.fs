@@ -1,7 +1,5 @@
 namespace Fluke.UI.Frontend.Components
 
-open Browser.Types
-open Fable.Extras
 open Fable.React
 open Fable.Core.JsInterop
 open Feliz
@@ -11,85 +9,61 @@ open Fluke.UI.Frontend.Bindings
 open Fluke.UI.Frontend.State
 open Fluke.Shared.Domain.Model
 open Fluke.Shared
+open Fable.Core
+open Fluke.UI.Frontend.Hooks
+open Browser.Types
 
 
 module Settings =
     [<ReactComponent>]
-    let ColorDropdown color setColor label =
-        Dropdown.Dropdown
-            {|
-                Tooltip = ""
-                Left = false
-                Trigger =
-                    fun visible setVisible ->
-                        UI.box
-                            (fun x -> x.position <- "relative")
-                            [
-                                Input.Input
-                                    {|
-                                        CustomProps =
-                                            fun x ->
-                                                x.fixedValue <- color |> Color.Value |> Some
+    let ImportUserSettings () =
+        let inputRef = React.useRef<HTMLInputElement> null
+        let files, setFiles = React.useState (None: FileList option)
+        let importUserSettings = Hydrate.useImportUserSettings ()
 
-                                                x.rightButton <-
-                                                    Some (
+        UI.stack
+            (fun x -> x.spacing <- "15px")
+            [
+                UI.box
+                    (fun x ->
+                        x.paddingBottom <- "5px"
+                        x.marginRight <- "24px"
+                        x.fontSize <- "1.3rem")
+                    [
+                        str "Import User Settings"
+                    ]
 
-                                                        Button.Button
-                                                            {|
-                                                                Hint = None
-                                                                Icon =
-                                                                    Some (
-                                                                        Icons.io5.IoCaretDown |> Icons.render,
-                                                                        Button.IconPosition.Left
-                                                                    )
-                                                                Props =
-                                                                    fun x ->
-                                                                        x.borderRadius <- "0 5px 5px 0"
+                UI.input
+                    (fun x ->
+                        x.``type`` <- "file"
+                        x.padding <- "10px"
+                        x.height <- "43px"
+                        x.ref <- inputRef
+                        x.onChange <- fun x -> promise { x?target?files |> Option.ofObj |> setFiles })
+                    []
 
-                                                                        x.right <- "0"
-                                                                        x.top <- "0"
-                                                                        x.bottom <- "0"
-                                                                        x.minWidth <- "26px"
-
-                                                                        x.onClick <-
-                                                                            (fun _ ->
-                                                                                promise { setVisible (not visible) })
-                                                                Children = []
-                                                            |}
-                                                    )
-                                        Props =
-                                            fun x ->
-                                                x.label <- str label
-                                                x.color <- color |> Color.Value
-                                                x.fontWeight <- "bold"
-                                                x.isReadOnly <- true
-
-                                                x.onChange <-
-                                                    fun (e: KeyboardEvent) ->
-                                                        promise {
-                                                            match e.Value with
-                                                            | value when (JSe.RegExp @"#[a-fA-F0-9]{6}").Test value ->
-                                                                setColor (Color value)
-                                                            | _ -> ()
-                                                        }
-                                    |}
-                            ]
-                Body =
-                    fun _onHide ->
-                        [
-                            ColorPicker.render
-                                {|
-                                    color = color |> Color.Value
-                                    onChange = fun color -> setColor (Color (color.hex.ToUpper ()))
-                                |}
-                        ]
-            |}
-
-    [<ReactComponent>]
-    let ColorDropdownAtom atom label =
-        let value, setValue = Store.useState atom
-        ColorDropdown value setValue label
-
+                UI.box
+                    (fun _ -> ())
+                    [
+                        Button.Button
+                            {|
+                                Hint = None
+                                Icon = Some (Icons.bi.BiImport |> Icons.render, Button.IconPosition.Left)
+                                Props =
+                                    fun x ->
+                                        x.onClick <-
+                                            fun _ ->
+                                                promise {
+                                                    do! importUserSettings files
+                                                    inputRef.current.value <- ""
+                                                }
+                                Children =
+                                    [
+                                        str "Confirm"
+                                    ]
+                            |}
+                    ]
+            ]
 
     [<ReactComponent>]
     let rec Settings props =
@@ -187,10 +161,10 @@ module Settings =
                                         Props = fun x -> x.label <- str "Session Break Duration"
                                     |}
 
-                                ColorDropdown
+                                Dropdown.ColorDropdown
                                     (userColor |> Option.defaultValue Color.Default)
                                     (Some >> setUserColor)
-                                    "User Color"
+                                    (fun x -> x.label <- str "User Color")
 
                                 ChangeUserPasswordButton.ChangeUserPasswordButton ()
                             ])
@@ -199,107 +173,10 @@ module Settings =
                         (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
-                                Dropdown.Dropdown
-                                    {|
-                                        Tooltip = ""
-                                        Left = false
-                                        Trigger =
-                                            fun visible setVisible ->
-                                                UI.box
-                                                    (fun x -> x.position <- "relative")
-                                                    [
-                                                        Input.Input
-                                                            {|
-                                                                CustomProps =
-                                                                    fun x ->
-                                                                        x.atom <-
-                                                                            Some (
-                                                                                Store.InputAtom (
-                                                                                    Store.AtomReference.Atom
-                                                                                        Atoms.User.weekStart
-                                                                                )
-                                                                            )
-
-                                                                        x.onFormat <- Some Enum.name
-
-                                                                        x.rightButton <-
-                                                                            Some (
-
-                                                                                Button.Button
-                                                                                    {|
-                                                                                        Hint = None
-                                                                                        Icon =
-                                                                                            Some (
-                                                                                                Icons.io5.IoCaretDown
-                                                                                                |> Icons.render,
-                                                                                                Button.IconPosition.Left
-                                                                                            )
-                                                                                        Props =
-                                                                                            fun x ->
-                                                                                                x.borderRadius <-
-                                                                                                    "0 5px 5px 0"
-
-                                                                                                x.right <- "0"
-                                                                                                x.top <- "0"
-                                                                                                x.bottom <- "0"
-                                                                                                x.minWidth <- "26px"
-
-                                                                                                x.onClick <-
-                                                                                                    (fun _ ->
-                                                                                                        promise {
-                                                                                                            setVisible (
-                                                                                                                not
-                                                                                                                    visible
-                                                                                                            )
-                                                                                                        })
-                                                                                        Children = []
-                                                                                    |}
-                                                                            )
-                                                                Props =
-                                                                    fun x ->
-                                                                        x.label <- str "Week Start"
-                                                                        x.isReadOnly <- true
-                                                            |}
-                                                    ]
-                                        Body =
-                                            fun onHide ->
-                                                [
-                                                    UI.stack
-                                                        (fun x ->
-                                                            x.flex <- "1"
-                                                            x.spacing <- "1px"
-                                                            x.padding <- "1px"
-                                                            x.marginBottom <- "6px"
-                                                            x.maxHeight <- "217px"
-                                                            x.overflowY <- "auto"
-                                                            x.flexBasis <- 0)
-                                                        [
-                                                            yield!
-                                                                Enum.ToList<DayOfWeek> ()
-                                                                |> List.sortBy (
-                                                                    int
-                                                                    >> fun x -> if int weekStart >= x then x * x else x
-                                                                )
-                                                                |> Seq.map
-                                                                    (fun dayOfWeek ->
-                                                                        DropdownMenuButton.DropdownMenuButton
-                                                                            {|
-                                                                                Label = Enum.name dayOfWeek
-                                                                                OnClick =
-                                                                                    fun () ->
-                                                                                        promise {
-                                                                                            setWeekStart dayOfWeek
-
-                                                                                            onHide ()
-                                                                                        }
-                                                                                Checked = weekStart = dayOfWeek
-                                                                            |}
-
-                                                                        )
-                                                        ]
-                                                ]
-                                    |}
-
+                                Dropdown.EnumDropdown<DayOfWeek>
+                                    weekStart
+                                    setWeekStart
+                                    (fun x -> x.label <- str "Week Start")
 
                                 Input.Input
                                     {|
@@ -314,7 +191,6 @@ module Settings =
                                         Props = fun x -> x.label <- str "Days Before"
                                     |}
 
-
                                 Input.Input
                                     {|
                                         CustomProps =
@@ -327,7 +203,6 @@ module Settings =
                                                 x.inputFormat <- Some Input.InputFormat.Number
                                         Props = fun x -> x.label <- str "Days After"
                                     |}
-
 
                                 Input.Input
                                     {|
@@ -403,16 +278,43 @@ module Settings =
                         (UI.stack
                             (fun x -> x.spacing <- "10px")
                             [
-                                ColorDropdownAtom Atoms.User.cellColorDisabled "Disabled"
-                                ColorDropdownAtom Atoms.User.cellColorSuggested "Suggested"
-                                ColorDropdownAtom Atoms.User.cellColorPending "Pending"
-                                ColorDropdownAtom Atoms.User.cellColorMissed "Missed"
-                                ColorDropdownAtom Atoms.User.cellColorMissedToday "Missed Today"
-                                ColorDropdownAtom Atoms.User.cellColorPostponedUntil "Postponed Until"
-                                ColorDropdownAtom Atoms.User.cellColorPostponed "Postponed"
-                                ColorDropdownAtom Atoms.User.cellColorCompleted "Completed"
-                                ColorDropdownAtom Atoms.User.cellColorDismissed "Dismissed"
-                                ColorDropdownAtom Atoms.User.cellColorScheduled "Scheduled"
+                                Dropdown.ColorDropdownAtom
+                                    Atoms.User.cellColorDisabled
+                                    (fun x -> x.label <- str "Disabled")
+
+                                Dropdown.ColorDropdownAtom
+                                    Atoms.User.cellColorSuggested
+                                    (fun x -> x.label <- str "Suggested")
+
+                                Dropdown.ColorDropdownAtom
+                                    Atoms.User.cellColorPending
+                                    (fun x -> x.label <- str "Pending")
+
+                                Dropdown.ColorDropdownAtom Atoms.User.cellColorMissed (fun x -> x.label <- str "Missed")
+
+                                Dropdown.ColorDropdownAtom
+                                    Atoms.User.cellColorMissedToday
+                                    (fun x -> x.label <- str "Missed Today")
+
+                                Dropdown.ColorDropdownAtom
+                                    Atoms.User.cellColorPostponedUntil
+                                    (fun x -> x.label <- str "Postponed Until")
+
+                                Dropdown.ColorDropdownAtom
+                                    Atoms.User.cellColorPostponed
+                                    (fun x -> x.label <- str "Postponed")
+
+                                Dropdown.ColorDropdownAtom
+                                    Atoms.User.cellColorCompleted
+                                    (fun x -> x.label <- str "Completed")
+
+                                Dropdown.ColorDropdownAtom
+                                    Atoms.User.cellColorDismissed
+                                    (fun x -> x.label <- str "Dismissed")
+
+                                Dropdown.ColorDropdownAtom
+                                    Atoms.User.cellColorScheduled
+                                    (fun x -> x.label <- str "Scheduled")
                             ])
 
                         "Connection",
@@ -422,7 +324,6 @@ module Settings =
                                 InputList.InputList
                                     (fun x ->
                                         x.label <- str "Gun peers"
-
                                         x.atom <- Some (Store.InputAtom (Store.AtomReference.Atom Store.Atoms.gunPeers)))
                             ])
                     ]

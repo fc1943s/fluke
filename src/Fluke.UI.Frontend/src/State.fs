@@ -386,6 +386,9 @@ module State =
             let rec systemUiFont =
                 Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont, id)
 
+            let rec templatesDeleted =
+                Store.atomWithSync ($"{nameof User}/{nameof templatesDeleted}", false, [])
+
             let rec userColor = Store.atomWithSync ($"{nameof User}/{nameof userColor}", (None: Color option), [])
 
             let rec view = Store.atomWithSync ($"{nameof User}/{nameof view}", UserState.Default.View, [])

@@ -73,7 +73,6 @@ module HabitTrackerView =
                                                     UI.box
                                                         (fun x -> x.height <- $"{cellSize}px")
                                                         [
-
                                                             React.suspense (
                                                                 [
                                                                     TaskName.TaskName taskId

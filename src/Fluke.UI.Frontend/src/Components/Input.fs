@@ -316,7 +316,7 @@ module Input =
                                             Icon = Some (Icons.fa.FaSortUp |> Icons.render, Button.IconPosition.Left)
                                             Props =
                                                 fun x ->
-                                                    x.height <- "50%"
+                                                    x.height <- "calc(50% - 0.5px)"
                                                     x.paddingTop <- "6px"
                                                     x.borderRadius <- "0 5px 0 0"
                                                     x.minWidth <- "26px"
@@ -336,7 +336,7 @@ module Input =
                                             Icon = Some (Icons.fa.FaSortDown |> Icons.render, Button.IconPosition.Left)
                                             Props =
                                                 fun x ->
-                                                    x.height <- "50%"
+                                                    x.height <- "calc(50% - 0.5px)"
                                                     x.paddingBottom <- "6px"
                                                     x.borderRadius <- "0 0 5px 0"
                                                     x.minWidth <- "26px"
@@ -363,7 +363,7 @@ module Input =
                                     x.position <- "absolute"
                                     x.right <- "1px"
                                     x.top <- "1px"
-                                    x.bottom <- "2px"
+                                    x.bottom <- "1px"
                                     x.borderLeftWidth <- "1px"
                                     x.borderLeftColor <- if darkMode then "#484848" else "#b7b7b7"
                                     x.spacing <- "1px")
