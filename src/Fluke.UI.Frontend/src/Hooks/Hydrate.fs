@@ -90,7 +90,6 @@ module Hydrate =
             Store.scopedSet setter atomScope (Atoms.Task.missedAfter, task.Id, task.MissedAfter)
             Store.scopedSet setter atomScope (Atoms.Task.scheduling, task.Id, task.Scheduling)
             Store.scopedSet setter atomScope (Atoms.Task.priority, task.Id, task.Priority)
-            Store.scopedSet setter atomScope (Atoms.Task.selectionSet, task.Id, Set.empty)
         }
 
     let useHydrateTask () = Store.useCallback (hydrateTask, [||])
@@ -133,6 +132,9 @@ module Hydrate =
     let hydrateTaskState getter setter (atomScope, databaseId, taskState) =
         promise {
             do! hydrateTask getter setter (atomScope, databaseId, taskState.Task)
+
+            Store.scopedSet setter atomScope (Atoms.Task.selectionSet, taskState.Task.Id, Set.empty)
+            Store.scopedSet setter atomScope (Atoms.Task.archived, taskState.Task.Id, Some false)
 
             Store.scopedSet
                 setter

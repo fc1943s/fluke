@@ -153,6 +153,7 @@ module Auth =
                                                 getter
                                                 setter
                                                 { UserState.Default with
+                                                    Archive = Some false
                                                     HideTemplates = Some false
                                                     UserColor =
                                                         String.Format ("#{0:X6}", Random().Next 0x1000000)

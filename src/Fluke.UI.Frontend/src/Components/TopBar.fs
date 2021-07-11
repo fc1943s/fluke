@@ -25,6 +25,8 @@ module TopBar =
                 [||]
             )
 
+        let archive, setArchive = Store.useState Atoms.User.archive
+
         let onRandom =
             Store.useCallback (
                 (fun getter setter _ ->
@@ -40,9 +42,9 @@ module TopBar =
 
                         let attachmentIdMap = Store.value getter (Selectors.Information.attachmentIdMap information)
 
-//                        let attachmentId = attachmentIdSet |> JS.randomSeq
+                        //                        let attachmentId = attachmentIdSet |> JS.randomSeq
 
-//                        let attachment = Store.value getter (Selectors.Attachment.attachment attachmentId)
+                        //                        let attachment = Store.value getter (Selectors.Attachment.attachment attachmentId)
 
                         let taskIdAtoms = Store.value getter (Selectors.Database.taskIdAtoms databaseId)
 
@@ -208,6 +210,23 @@ module TopBar =
                                                             }
                                         |}
                                 ]
+
+                        Tooltip.wrap
+                            (str "Toggle Task Archive")
+                            [
+                                TransparentIconButton.TransparentIconButton
+                                    {|
+                                        Props =
+                                            fun x ->
+                                                x.icon <- Icons.ri.RiArchiveLine |> Icons.render
+                                                x.height <- "27px"
+                                                x.fontSize <- "17px"
+
+                                                if archive = Some true then x.backgroundColor <- "gray.45"
+
+                                                x.onClick <- fun _ -> promise { setArchive (archive |> Option.map not) }
+                                    |}
+                            ]
 
                         Tooltip.wrap
                             (str "Randomize")

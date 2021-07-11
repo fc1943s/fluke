@@ -13,6 +13,38 @@ module Content =
 
         JS.log (fun () -> $"Content.render. userColor={userColor}")
 
+//        let asyncTaskIdAtoms = Store.useValue Selectors.asyncTaskIdAtoms
+//        let archive = Store.useValue Atoms.User.archive
+//
+//        let callbacks = Store.useCallbacks ()
+//
+//        React.useEffect (
+//            (fun () ->
+//                promise {
+//                    let! getter, setter = callbacks ()
+//
+//                    if archive.IsNone then
+//                        printfn "setting archive"
+//                        Store.set setter Atoms.User.archive (Some false)
+//
+//                    asyncTaskIdAtoms
+//                    |> Array.iter
+//                        (fun taskIdAtom ->
+//                            let taskId = Store.value getter taskIdAtom
+//                            let archived = Store.value getter (Atoms.Task.archived taskId)
+//
+//                            if archived.IsNone then
+//                                printfn "setting task archive"
+//                                Store.set setter (Atoms.Task.archived taskId) (Some false))
+//                }
+//                |> Promise.start),
+//            [|
+//                box archive
+//                box asyncTaskIdAtoms
+//                box callbacks
+//            |]
+//        )
+
         React.suspense (
             [
                 PositionUpdater.PositionUpdater ()

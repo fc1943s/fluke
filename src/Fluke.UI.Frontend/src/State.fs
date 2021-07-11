@@ -92,6 +92,7 @@ module State =
 
     type UserState =
         {
+            Archive: bool option
             AccordionFlagMap: Map<AccordionType, string []>
             CellColorDisabled: Color
             CellColorSuggested: Color
@@ -138,6 +139,7 @@ module State =
     type UserState with
         static member inline Default =
             {
+                Archive = None
                 AccordionFlagMap =
                     Union.ToList<AccordionType>
                     |> List.map (fun accordionType -> accordionType, accordionFlagDefault)
@@ -221,6 +223,8 @@ module State =
         let rec shiftPressed = Store.atom ($"{nameof shiftPressed}", false)
 
         module User =
+            let rec archive = Store.atomWithSync ($"{nameof User}/{nameof archive}", UserState.Default.Archive, [])
+
             let rec cellColorDisabled =
                 Store.atomWithSync (
                     $"{nameof User}/{nameof cellColorDisabled}",
@@ -386,8 +390,7 @@ module State =
             let rec systemUiFont =
                 Store.atomWithStorageSync ($"{nameof User}/{nameof systemUiFont}", UserState.Default.SystemUiFont, id)
 
-            let rec templatesDeleted =
-                Store.atomWithSync ($"{nameof User}/{nameof templatesDeleted}", false, [])
+            let rec templatesDeleted = Store.atomWithSync ($"{nameof User}/{nameof templatesDeleted}", false, [])
 
             let rec userColor = Store.atomWithSync ($"{nameof User}/{nameof userColor}", (None: Color option), [])
 
@@ -473,13 +476,6 @@ module State =
                 Store.atomFamilyWithSync (
                     $"{nameof Database}/{nameof informationAttachmentMap}",
                     (fun (_databaseId: DatabaseId) -> Map.empty: Map<Information, Set<AttachmentId>>),
-                    databaseIdIdentifier
-                )
-
-            let rec archivedTaskIdSet =
-                Store.atomFamilyWithSync (
-                    $"{nameof Database}/{nameof archivedTaskIdSet}",
-                    (fun (_databaseId: DatabaseId) -> None: Set<TaskId> option),
                     databaseIdIdentifier
                 )
 
@@ -624,6 +620,13 @@ module State =
                     taskIdIdentifier
                 )
 
+            let rec archived =
+                Store.atomFamilyWithSync (
+                    $"{nameof Task}/{nameof archived}",
+                    (fun (_taskId: TaskId) -> None: bool option),
+                    taskIdIdentifier
+                )
+
 
 
         //
@@ -718,6 +721,7 @@ module State =
                     $"{nameof User}/{nameof userState}",
                     (fun getter ->
                         {
+                            Archive = Store.value getter Atoms.User.archive
                             AccordionFlagMap =
                                 Union.ToList<AccordionType>
                                 |> List.map
@@ -831,13 +835,22 @@ module State =
                 Store.readSelectorFamily (
                     $"{nameof Database}/{nameof taskIdAtoms}",
                     (fun databaseId getter ->
-                        asyncTaskIdAtoms
-                        |> Store.value getter
-                        |> Array.filter
-                            (fun taskIdAtom ->
-                                let taskId = Store.value getter taskIdAtom
-                                let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
-                                databaseId = databaseId'))
+                        let archive = Store.value getter Atoms.User.archive
+
+                        match archive with
+                        | Some archive ->
+                            asyncTaskIdAtoms
+                            |> Store.value getter
+                            |> Array.filter
+                                (fun taskIdAtom ->
+                                    let taskId = Store.value getter taskIdAtom
+                                    let databaseId' = Store.value getter (Atoms.Task.databaseId taskId)
+                                    let archived = Store.value getter (Atoms.Task.archived taskId)
+
+                                    match archived with
+                                    | Some archived -> databaseId = databaseId' && archived = archive
+                                    | None -> false)
+                        | None -> [||])
                 )
 
             let rec databaseState =
