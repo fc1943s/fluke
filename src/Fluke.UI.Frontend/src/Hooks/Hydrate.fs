@@ -134,7 +134,7 @@ module Hydrate =
             do! hydrateTask getter setter (atomScope, databaseId, taskState.Task)
 
             Store.scopedSet setter atomScope (Atoms.Task.selectionSet, taskState.Task.Id, Set.empty)
-            Store.scopedSet setter atomScope (Atoms.Task.archived, taskState.Task.Id, Some false)
+            Store.scopedSet setter atomScope (Atoms.Task.archived, taskState.Task.Id, Some taskState.Archived)
 
             Store.scopedSet
                 setter

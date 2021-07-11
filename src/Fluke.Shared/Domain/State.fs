@@ -62,6 +62,7 @@ module State =
     and TaskState =
         {
             Task: Task
+            Archived: bool
             Sessions: Session list
             Attachments: (FlukeDateTime * Attachment) list
             SortList: (TaskId option * TaskId option) list
@@ -111,6 +112,7 @@ module State =
         static member inline Default =
             {
                 Task = Task.Default
+                Archived = false
                 Sessions = []
                 Attachments = []
                 SortList = []
@@ -348,7 +350,8 @@ module State =
 
     let inline mergeTaskState (oldValue: TaskState) (newValue: TaskState) =
         {
-            Task = oldValue.Task
+            Task = newValue.Task
+            Archived = newValue.Archived
             Sessions = oldValue.Sessions @ newValue.Sessions
             Attachments = oldValue.Attachments @ newValue.Attachments
             SortList = oldValue.SortList @ newValue.SortList

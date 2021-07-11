@@ -1176,6 +1176,7 @@ module State =
 
                         let task = Store.value getter (task taskId)
                         let sessions = Store.value getter (Atoms.Task.sessions taskId)
+                        let archived = Store.value getter (Atoms.Task.archived taskId)
                         let cellStateMap = Store.value getter (cellStateMap taskId)
                         let attachmentIdSet = Store.value getter (Atoms.Task.attachmentIdSet taskId)
 
@@ -1191,6 +1192,7 @@ module State =
 
                         {
                             Task = task
+                            Archived = archived |> Option.defaultValue false
                             Sessions = sessions
                             Attachments = attachments
                             SortList = []

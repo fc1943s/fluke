@@ -706,6 +706,7 @@ module TaskForm =
                         let taskState =
                             {
                                 Task = task
+                                Archived = false
                                 SortList = []
                                 Sessions = []
                                 Attachments = []
