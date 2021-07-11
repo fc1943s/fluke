@@ -1,10 +1,10 @@
 namespace Fluke.UI.Frontend.Tests.Core
 
+open Feliz
+open Fluke.UI.Frontend.Bindings
 open Fable.Jester
 open Fable.ReactTestingLibrary
 open Fable.Core.JsInterop
-open Feliz
-open Fluke.UI.Frontend.Bindings
 open Fable.React
 open Fluke.UI.Frontend.Hooks
 open Microsoft.FSharp.Core.Operators
@@ -29,8 +29,11 @@ module Setup =
 
     Jest.afterAll (
         promise {
-            Browser.Dom.window?exit <- true
             printfn "after all"
+            Browser.Dom.window?exit <- true
+
+//            JS.setTimeout (fun () -> emitJsExpr () "process.exit()") 1000
+//            |> ignore
         }
     )
 
@@ -43,16 +46,16 @@ module Setup =
                 (fun (error, info) -> printfn $"ReactErrorBoundary Error: {info.componentStack} {error}")
                 (str "error")
                 cmp
-        //                ]
+            //                ]
 //            ]
-        ]
+            ]
 
     let render (cmp: ReactElement) =
         promise {
             //            let mutable peekFn : (CallbackMethods -> JS.Promise<unit>) -> JS.Promise<unit> =
 //                fun _ -> failwith "called empty callback"
 //
-            let mutable callbacksRef : Store.GetFn * Store.SetFn = unbox null
+            let mutable callbacksRef: Store.GetFn * Store.SetFn = unbox null
             //
 //            let cmpWrapper =
 //                React.memo
