@@ -266,7 +266,7 @@ module CellMenu =
                                 UI.box
                                     (fun _ -> ())
                                     [
-                                        str """???"""
+//                                        str """???"""
                                     ]
                             ]
                         |> wrapButtonTooltip Dismissed

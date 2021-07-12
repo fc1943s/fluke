@@ -23,12 +23,12 @@ module CellForm =
                     promise {
                         Store.change
                             setter
-                            (Atoms.Task.cellAttachmentMap taskId)
-                            (fun cellAttachmentMap ->
-                                cellAttachmentMap
+                            (Atoms.Task.cellAttachmentIdMap taskId)
+                            (fun cellAttachmentIdMap ->
+                                cellAttachmentIdMap
                                 |> Map.add
                                     dateId
-                                    (cellAttachmentMap
+                                    (cellAttachmentIdMap
                                      |> Map.tryFind dateId
                                      |> Option.defaultValue Set.empty
                                      |> Set.add attachmentId))
@@ -45,12 +45,12 @@ module CellForm =
                     promise {
                         Store.change
                             setter
-                            (Atoms.Task.cellAttachmentMap taskId)
-                            (fun cellAttachmentMap ->
-                                cellAttachmentMap
+                            (Atoms.Task.cellAttachmentIdMap taskId)
+                            (fun cellAttachmentIdMap ->
+                                cellAttachmentIdMap
                                 |> Map.add
                                     dateId
-                                    (cellAttachmentMap
+                                    (cellAttachmentIdMap
                                      |> Map.tryFind dateId
                                      |> Option.defaultValue Set.empty
                                      |> Set.remove attachmentId))

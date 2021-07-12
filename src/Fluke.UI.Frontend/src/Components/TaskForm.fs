@@ -392,7 +392,7 @@ module TaskForm =
 
         let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
 
-        let cellAttachmentMap = Store.useValue (Atoms.Task.cellAttachmentMap taskId)
+        let cellAttachmentIdMap = Store.useValue (Atoms.Task.cellAttachmentIdMap taskId)
         let statusMap = Store.useValue (Atoms.Task.statusMap taskId)
 
         let onAttachmentAdd =
@@ -526,7 +526,7 @@ module TaskForm =
                                         (fun _ -> ())
                                         [
                                             str
-                                                $"Cell Attachment Count: {cellAttachmentMap
+                                                $"Cell Attachment Count: {cellAttachmentIdMap
                                                                           |> Map.values
                                                                           |> Seq.map Set.count
                                                                           |> Seq.sum}"
@@ -677,6 +677,7 @@ module TaskForm =
     let TaskFormWrapper () =
         let hydrateTaskState = Hydrate.useHydrateTaskState ()
         let hydrateTask = Hydrate.useHydrateTask ()
+        let archive = Store.useValue Atoms.User.archive
         let selectedTaskIdList = Store.useValue Selectors.Session.selectedTaskIdList
         let setRightDock = Store.useSetState Atoms.User.rightDock
         let taskUIFlag = Store.useValue (Atoms.User.uiFlag UIFlagType.Task)
@@ -706,7 +707,7 @@ module TaskForm =
                         let taskState =
                             {
                                 Task = task
-                                Archived = false
+                                Archived = archive |> Option.defaultValue false
                                 SortList = []
                                 Sessions = []
                                 Attachments = []

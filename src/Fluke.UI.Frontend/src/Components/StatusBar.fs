@@ -218,9 +218,9 @@ module StatusBar =
             |> Store.useValue
             |> Array.collect Set.toArray
 
-        let cellAttachmentMapArray =
+        let cellAttachmentIdMapArray =
             selectedTaskIdList
-            |> List.map Atoms.Task.cellAttachmentMap
+            |> List.map Atoms.Task.cellAttachmentIdMap
             |> List.toArray
             |> Store.waitForAll
             |> Store.useValue
@@ -280,7 +280,7 @@ module StatusBar =
                         |> Array.sum
 
                     let cellAttachment =
-                        cellAttachmentMapArray
+                        cellAttachmentIdMapArray
                         |> Array.map (Map.values >> Seq.map Set.count >> Seq.sum)
                         |> Array.sum
 
@@ -300,6 +300,7 @@ module StatusBar =
                             $"Information: {information}"
                             $"Information Attachment: {informationAttachment}"
                             $"Task: {tasks}"
+                            $"Archived Task: ???"
                             $"Task Attachment: {taskAttachment}"
                             $"Task Session: {taskSessionLength}"
                             $"Cell Status: {cellStatus}"
@@ -316,7 +317,7 @@ module StatusBar =
                     box selectedTaskIdList
                     box cellStateMapArray
                     box informationAttachmentSet
-                    box cellAttachmentMapArray
+                    box cellAttachmentIdMapArray
                     box informationSet
                     box taskSessionLength
                     box databaseIdAtoms

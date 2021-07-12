@@ -33,12 +33,12 @@ module InformationForm =
                         | Some databaseId, Some information ->
                             Store.change
                                 setter
-                                (Atoms.Database.informationAttachmentMap databaseId)
-                                (fun informationAttachmentMap ->
-                                    informationAttachmentMap
+                                (Atoms.Database.informationAttachmentIdMap databaseId)
+                                (fun informationAttachmentIdMap ->
+                                    informationAttachmentIdMap
                                     |> Map.add
                                         information
-                                        (informationAttachmentMap
+                                        (informationAttachmentIdMap
                                          |> Map.tryFind information
                                          |> Option.defaultValue Set.empty
                                          |> Set.add attachmentId))
@@ -62,12 +62,12 @@ module InformationForm =
                         | Some databaseIdSearch, Some information ->
                             Store.change
                                 setter
-                                (Atoms.Database.informationAttachmentMap databaseIdSearch)
-                                (fun informationAttachmentMap ->
-                                    informationAttachmentMap
+                                (Atoms.Database.informationAttachmentIdMap databaseIdSearch)
+                                (fun informationAttachmentIdMap ->
+                                    informationAttachmentIdMap
                                     |> Map.add
                                         information
-                                        (informationAttachmentMap
+                                        (informationAttachmentIdMap
                                          |> Map.tryFind information
                                          |> Option.defaultValue Set.empty
                                          |> Set.remove attachmentId))

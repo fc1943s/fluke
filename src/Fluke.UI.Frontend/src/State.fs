@@ -99,7 +99,7 @@ module State =
             CellColorDismissed: Color
             CellColorScheduled: Color
             CellSize: int
-            ClipboardAttachmentMap: Map<AttachmentId, bool>
+            ClipboardAttachmentIdMap: Map<AttachmentId, bool>
             ClipboardVisible: bool
             DarkMode: bool
             DaysAfter: int
@@ -149,7 +149,7 @@ module State =
                 CellColorDismissed = Color "#673AB7"
                 CellColorScheduled = Color "#003038"
                 CellSize = 19
-                ClipboardAttachmentMap = Map.empty
+                ClipboardAttachmentIdMap = Map.empty
                 ClipboardVisible = false
                 DarkMode = false
                 DaysAfter = 7
@@ -283,10 +283,10 @@ module State =
 
             let rec cellSize = Store.atomWithSync ($"{nameof User}/{nameof cellSize}", UserState.Default.CellSize, [])
 
-            let rec clipboardAttachmentMap =
+            let rec clipboardAttachmentIdMap =
                 Store.atomWithSync (
-                    $"{nameof User}/{nameof clipboardAttachmentMap}",
-                    UserState.Default.ClipboardAttachmentMap,
+                    $"{nameof User}/{nameof clipboardAttachmentIdMap}",
+                    UserState.Default.ClipboardAttachmentIdMap,
                     []
                 )
 
@@ -464,10 +464,17 @@ module State =
                     databaseIdIdentifier
                 )
 
-            let rec informationAttachmentMap =
+            let rec informationAttachmentIdMap =
                 Store.atomFamilyWithSync (
-                    $"{nameof Database}/{nameof informationAttachmentMap}",
+                    $"{nameof Database}/{nameof informationAttachmentIdMap}",
                     (fun (_databaseId: DatabaseId) -> Map.empty: Map<Information, Set<AttachmentId>>),
+                    databaseIdIdentifier
+                )
+
+            let rec archivedAttachmentIdSet =
+                Store.atomFamilyWithSync (
+                    $"{nameof Database}/{nameof archivedAttachmentIdSet}",
+                    (fun (_databaseId: DatabaseId) -> Set.empty: Set<AttachmentId>),
                     databaseIdIdentifier
                 )
 
@@ -549,9 +556,9 @@ module State =
                     taskIdIdentifier
                 )
 
-            let rec cellAttachmentMap =
+            let rec cellAttachmentIdMap =
                 Store.atomFamilyWithSync (
-                    $"{nameof Task}/{nameof cellAttachmentMap}",
+                    $"{nameof Task}/{nameof cellAttachmentIdMap}",
                     (fun (_taskId: TaskId) -> Map.empty: Map<DateId, Set<AttachmentId>>),
                     taskIdIdentifier
                 )
@@ -763,7 +770,7 @@ module State =
                             CellColorDismissed = Store.value getter Atoms.User.cellColorDismissed
                             CellColorScheduled = Store.value getter Atoms.User.cellColorScheduled
                             CellSize = Store.value getter Atoms.User.cellSize
-                            ClipboardAttachmentMap = Store.value getter Atoms.User.clipboardAttachmentMap
+                            ClipboardAttachmentIdMap = Store.value getter Atoms.User.clipboardAttachmentIdMap
                             ClipboardVisible = Store.value getter Atoms.User.clipboardVisible
                             DarkMode = Store.value getter Atoms.User.darkMode
                             DaysAfter = Store.value getter Atoms.User.daysAfter
@@ -932,11 +939,11 @@ module State =
                                 |> List.mapi (fun i fileId -> fileId, hexStringList.[i].Value)
                                 |> Map.ofList
 
-                            let informationAttachmentMap =
-                                Store.value getter (Atoms.Database.informationAttachmentMap databaseId)
+                            let informationAttachmentIdMap =
+                                Store.value getter (Atoms.Database.informationAttachmentIdMap databaseId)
 
                             let informationStateMap =
-                                informationAttachmentMap
+                                informationAttachmentIdMap
                                 |> Map.map
                                     (fun information attachmentIdSet ->
                                         let attachments =
@@ -1072,17 +1079,17 @@ module State =
                             Store.value getter Atoms.User.selectedDatabaseIdSet
                             |> Set.toArray
 
-                        let informationAttachmentMapArray =
+                        let informationAttachmentIdMapArray =
                             selectedDatabaseIdArray
-                            |> Array.map Atoms.Database.informationAttachmentMap
+                            |> Array.map Atoms.Database.informationAttachmentIdMap
                             |> Store.waitForAll
                             |> Store.value getter
 
-                        informationAttachmentMapArray
+                        informationAttachmentIdMapArray
                         |> Array.mapi
-                            (fun i informationAttachmentMap ->
+                            (fun i informationAttachmentIdMap ->
                                 selectedDatabaseIdArray.[i],
-                                informationAttachmentMap
+                                informationAttachmentIdMap
                                 |> Map.tryFind information
                                 |> Option.defaultValue Set.empty)
                         |> Map.ofSeq)
@@ -1111,7 +1118,7 @@ module State =
                     $"{nameof Task}/{nameof cellStateMap}",
                     (fun (taskId: TaskId) getter ->
                         let statusMap = Store.value getter (Atoms.Task.statusMap taskId)
-                        let cellAttachmentMap = Store.value getter (Atoms.Task.cellAttachmentMap taskId)
+                        let cellAttachmentIdMap = Store.value getter (Atoms.Task.cellAttachmentIdMap taskId)
 
                         let sessions = Store.value getter (Atoms.Task.sessions taskId)
                         let dayStart = Store.value getter Atoms.User.dayStart
@@ -1123,8 +1130,8 @@ module State =
                             |> Map.ofList
                             |> Map.mapValues (List.map snd)
 
-                        let newAttachmentMap =
-                            cellAttachmentMap
+                        let cellStateAttachmentMap =
+                            cellAttachmentIdMap
                             |> Map.mapValues
                                 (fun attachmentIdSet ->
                                     let attachments =
@@ -1143,7 +1150,7 @@ module State =
                                         Attachments = attachments
                                     })
 
-                        let newSessionMap =
+                        let cellStateSessionMap =
                             sessionMap
                             |> Map.mapValues
                                 (fun sessions ->
@@ -1164,8 +1171,8 @@ module State =
                                     })
 
                         newStatusMap
-                        |> mergeCellStateMap newSessionMap
-                        |> mergeCellStateMap newAttachmentMap
+                        |> mergeCellStateMap cellStateSessionMap
+                        |> mergeCellStateMap cellStateAttachmentMap
                         |> Map.filter
                             (fun _ cellState ->
                                 match cellState with
@@ -1413,39 +1420,15 @@ module State =
                 Store.readSelectorFamily (
                     $"{nameof Cell}/{nameof attachmentIdSet}",
                     (fun (taskId: TaskId, dateId: DateId) getter ->
-                        let cellAttachmentMap = Store.value getter (Atoms.Task.cellAttachmentMap taskId)
+                        let cellAttachmentIdMap = Store.value getter (Atoms.Task.cellAttachmentIdMap taskId)
 
-                        cellAttachmentMap
+                        cellAttachmentIdMap
                         |> Map.tryFind dateId
                         |> Option.defaultValue Set.empty)
                 )
 
-        //            let rec attachments =
-//                Store.readSelectorFamily (
-//                    $"{nameof Cell}/{nameof attachments}",
-//                    (fun (taskId: TaskId, dateId: DateId) getter ->
-//                        let attachmentIdSet = Store.value getter (attachmentIdSet (taskId, dateId))
-//
-//                        attachmentIdSet
-//                        |> Map.tryFind dateId
-//                        |> Option.map (fun x -> x.Attachments)
-//                        |> Option.defaultValue [])
-//                )
-
 
         module Session =
-            //            let rec taskIdSet =
-//                Store.readSelector (
-//                    $"{nameof Session}/{nameof taskIdSet}",
-//                    (fun getter ->
-//                        let taskIdMap = Store.value getter taskIdMap
-//
-//                        if taskIdMap.IsEmpty then
-//                            Set.empty
-//                        else
-//                            taskIdMap |> Map.values |> Seq.reduce Set.union)
-//                )
-
             let rec devicePingList =
                 Store.readSelector (
                     $"{nameof Session}/{nameof devicePingList}",
@@ -1493,34 +1476,20 @@ module State =
                         |> Array.toList)
                 )
 
-            //            let rec selectedTaskStateList =
-//                Store.readSelector (
-//                    $"{nameof Session}/{nameof selectedTaskStateList}",
-//                    (fun getter ->
-//                        let selectedTaskIdAtoms = Store.value getter selectedTaskIdAtoms
-//
-//                        selectedTaskIdAtoms
-//                        |> Array.map (Store.value getter)
-////                        |> Array.map Task.taskState
-//                        |> Store.waitForAll
-//                        |> Store.value getter
-//                        |> Array.toList)
-//                )
-
             let rec informationSet =
                 Store.readSelector (
                     $"{nameof Session}/{nameof informationSet}",
                     (fun getter ->
                         let selectedDatabaseIdSet = Store.value getter Atoms.User.selectedDatabaseIdSet
 
-                        let informationAttachmentMapArray =
+                        let informationAttachmentIdMapArray =
                             selectedDatabaseIdSet
                             |> Set.toArray
-                            |> Array.map Atoms.Database.informationAttachmentMap
+                            |> Array.map Atoms.Database.informationAttachmentIdMap
                             |> Store.waitForAll
                             |> Store.value getter
                             |> Array.collect (
-                                Map.filter (fun _ attachments -> attachments |> Set.isEmpty |> not)
+                                Map.filter (fun _ attachmentIdSet -> attachmentIdSet |> Set.isEmpty |> not)
                                 >> Map.keys
                                 >> Seq.toArray
                             )
@@ -1536,7 +1505,7 @@ module State =
 
                         let informationArray =
                             taskInformationArray
-                            |> Array.append informationAttachmentMapArray
+                            |> Array.append informationAttachmentIdMapArray
 
                         let projectAreas =
                             informationArray
@@ -1548,7 +1517,7 @@ module State =
 
                         informationArray
                         |> Array.append projectAreas
-                        |> Array.append informationAttachmentMapArray
+                        |> Array.append informationAttachmentIdMapArray
                         |> Array.filter
                             (fun information ->
                                 information
@@ -1558,20 +1527,6 @@ module State =
                                 |> not)
                         |> Set.ofSeq)
                 )
-
-            //            let rec informationStateList =
-//                Store.readSelector (
-//                    $"{nameof Session}/{nameof informationStateList}",
-//                    (fun getter ->
-//                        let informationSet = Store.value getter informationSet
-//
-//                        informationSet
-//                        |> Set.toArray
-//                        |> Array.map Information.informationState
-//                        |> Store.waitForAll
-//                        |> Store.value getter
-//                        |> Array.toList)
-//                )
 
             let rec activeSessions =
                 Store.readSelector (

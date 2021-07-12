@@ -6,6 +6,6 @@ you can test, but I might need to do some changes in the persistence layer soon,
 
 there is import/export functionality, keep backups
 
-
+more about P.A.R.A in [this](https://www.youtube.com/watch?v=yIc5SpuvmJg) podcast episode
 
 ![image](https://user-images.githubusercontent.com/688618/124764028-ee8fca80-df0a-11eb-9b9e-64160777a4d7.png)

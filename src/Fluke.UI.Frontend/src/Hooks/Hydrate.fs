@@ -30,7 +30,7 @@ module Hydrate =
             set Atoms.User.cellColorDismissed userState.CellColorDismissed
             set Atoms.User.cellColorScheduled userState.CellColorScheduled
             set Atoms.User.cellSize userState.CellSize
-            set Atoms.User.clipboardAttachmentMap userState.ClipboardAttachmentMap
+            set Atoms.User.clipboardAttachmentIdMap userState.ClipboardAttachmentIdMap
             set Atoms.User.clipboardVisible userState.ClipboardVisible
             set Atoms.User.darkMode userState.DarkMode
             set Atoms.User.daysAfter userState.DaysAfter
@@ -166,7 +166,7 @@ module Hydrate =
             Store.scopedSet
                 setter
                 atomScope
-                (Atoms.Task.cellAttachmentMap,
+                (Atoms.Task.cellAttachmentIdMap,
                  taskState.Task.Id,
                  taskState.CellStateMap
                  |> Seq.map
@@ -189,7 +189,7 @@ module Hydrate =
         promise {
             do! hydrateDatabase getter setter (atomScope, databaseState.Database)
 
-            let informationAttachmentMap =
+            let informationAttachmentIdMap =
                 databaseState.InformationStateMap
                 |> Map.values
                 |> Seq.map
@@ -206,7 +206,7 @@ module Hydrate =
             Store.scopedSet
                 setter
                 atomScope
-                (Atoms.Database.informationAttachmentMap, databaseState.Database.Id, informationAttachmentMap)
+                (Atoms.Database.informationAttachmentIdMap, databaseState.Database.Id, informationAttachmentIdMap)
 
             let newFileIdMap =
                 databaseState.FileMap

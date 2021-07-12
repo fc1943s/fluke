@@ -153,13 +153,13 @@ module AddAttachmentInput =
     [<ReactComponent>]
     let rec AttachmentsClipboard onAdd =
         let clipboardVisible = Store.useValue Atoms.User.clipboardVisible
-        let clipboardAttachmentMap = Store.useValue Atoms.User.clipboardAttachmentMap
+        let clipboardAttachmentIdMap = Store.useValue Atoms.User.clipboardAttachmentIdMap
 
         let deleteImageAttachment =
             Store.useCallback (
                 (fun getter setter attachmentId ->
                     promise {
-                        Store.change setter Atoms.User.clipboardAttachmentMap (Map.remove attachmentId)
+                        Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
                         do! Store.deleteRoot getter (Atoms.Attachment.attachment attachmentId)
                     }),
                 [||]
@@ -169,7 +169,7 @@ module AddAttachmentInput =
             Store.useCallback (
                 (fun _ setter attachmentId ->
                     promise {
-                        Store.change setter Atoms.User.clipboardAttachmentMap (Map.remove attachmentId)
+                        Store.change setter Atoms.User.clipboardAttachmentIdMap (Map.remove attachmentId)
                         do! onAdd attachmentId
                     }),
                 [|
@@ -183,7 +183,7 @@ module AddAttachmentInput =
             UI.box
                 (fun _ -> ())
                 [
-                    if clipboardAttachmentMap.Count = 0 then
+                    if clipboardAttachmentIdMap.Count = 0 then
                         UI.box
                             (fun x -> x.padding <- "10px")
                             [
@@ -193,7 +193,7 @@ module AddAttachmentInput =
                         AttachmentList
                             deleteImageAttachment
                             addImageAttachment
-                            (clipboardAttachmentMap |> Map.keys |> Seq.toList)
+                            (clipboardAttachmentIdMap |> Map.keys |> Seq.toList)
                 ]
 
     [<ReactComponent>]
@@ -202,7 +202,7 @@ module AddAttachmentInput =
         let addAttachmentText, setAddAttachmentText = React.useState ""
 
         let clipboardVisible, setClipboardVisible = Store.useState Atoms.User.clipboardVisible
-        let clipboardAttachmentMap = Store.useValue Atoms.User.clipboardAttachmentMap
+        let clipboardAttachmentIdMap = Store.useValue Atoms.User.clipboardAttachmentIdMap
 
         let addAttachment =
             Store.useCallback (
@@ -336,7 +336,7 @@ module AddAttachmentInput =
                                                                     UI.box
                                                                         (fun _ -> ())
                                                                         [
-                                                                            str (string clipboardAttachmentMap.Count)
+                                                                            str (string clipboardAttachmentIdMap.Count)
                                                                         ]
                                                                 ]
                                                         |}

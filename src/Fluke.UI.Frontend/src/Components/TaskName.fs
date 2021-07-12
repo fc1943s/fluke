@@ -20,6 +20,7 @@ module TaskName =
         let hasSelection = Store.useValue (Selectors.Task.hasSelection taskId)
 
         let name = Store.useValue (Atoms.Task.name taskId)
+        let archived, setArchived = Store.useState (Atoms.Task.archived taskId)
         let attachmentIdSet = Store.useValue (Atoms.Task.attachmentIdSet taskId)
         let cellSize = Store.useValue Atoms.User.cellSize
         let isReadWrite = Store.useValue (Selectors.Task.isReadWrite taskId)
@@ -115,6 +116,13 @@ module TaskName =
                                                     Icons.bs.BsPen
                                                     "Edit Task"
                                                     (Some editTask)
+                                                    (fun _ -> ())
+
+                                                MenuItem.MenuItem
+                                                    Icons.ri.RiArchiveLine
+                                                    $"""{if archived = Some true then "Unarchive" else "Archive"} Task"""
+                                                    (Some
+                                                        (fun () -> promise { setArchived (archived |> Option.map not) }))
                                                     (fun _ -> ())
 
                                                 MenuItem.MenuItem
